@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import grails.web.UrlConverter
+import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.validation.DataBinder
 
@@ -24,7 +25,6 @@ import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.context.ApplicationContext
 
 /**
@@ -76,7 +76,7 @@ class ForwardMethod {
          
         def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
         request.setAttribute(IN_PROGRESS, true)
-        String uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
+        String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
         request.setAttribute(CALLED, true)
         return uri
     }

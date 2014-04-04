@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.codehaus.groovy.grails.compiler;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,18 +32,25 @@ import org.springframework.util.StringUtils;
  */
 public class DirectoryWatcher extends Thread {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DirectoryWatcher.class);
+
+	private final AbstractDirectoryWatcher directoryWatcherDelegate;
+
     public static final String SVN_DIR_NAME = ".svn";
-    protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
-    private List<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
 
-    private Map<File, Long> lastModifiedMap = new ConcurrentHashMap<File, Long>();
-    private Map<File, Collection<String>> directoryToExtensionsMap = new ConcurrentHashMap<File, Collection<String>>();
-    private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
-    private boolean active = true;
-    private long sleepTime = 3000;
-
+    /**
+     * Constructor. Automatically selects the best means of watching for file system changes.
+     */
     public DirectoryWatcher() {
         setDaemon(true);
+        AbstractDirectoryWatcher directoryWatcherDelegate;
+        try {
+			directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.codehaus.groovy.grails.compiler.WatchServiceDirectoryWatcher").newInstance();
+		} catch (Exception e) {
+			LOG.info("Exception while trying to load WatchServiceDirectoryWatcher (this is probably Java 6 and WatchService isn't available). Falling back to PollingDirectoryWatcher.", e);
+	        directoryWatcherDelegate = new PollingDirectoryWatcher();
+		}
+        this.directoryWatcherDelegate = directoryWatcherDelegate;
     }
 
     /**
@@ -54,7 +59,7 @@ public class DirectoryWatcher extends Thread {
      * @param active False if you want to stop watching
      */
     public void setActive(boolean active) {
-        this.active = active;
+    	directoryWatcherDelegate.setActive(active);
     }
 
     /**
@@ -63,7 +68,7 @@ public class DirectoryWatcher extends Thread {
      * @param sleepTime The sleep time
      */
     public void setSleepTime(long sleepTime) {
-        this.sleepTime = sleepTime;
+    	directoryWatcherDelegate.setSleepTime(sleepTime);
     }
 
     /**
@@ -72,7 +77,7 @@ public class DirectoryWatcher extends Thread {
      * @param listener The file listener
      */
     public void addListener(FileChangeListener listener) {
-        listeners.add(listener);
+    	directoryWatcherDelegate.addListener(listener);
     }
 
     /**
@@ -81,7 +86,7 @@ public class DirectoryWatcher extends Thread {
      * @param fileToWatch The file to watch
      */
     public void addWatchFile(File fileToWatch) {
-        lastModifiedMap.put(fileToWatch, fileToWatch.lastModified());
+    	directoryWatcherDelegate.addWatchFile(fileToWatch);
     }
 
     /**
@@ -91,18 +96,20 @@ public class DirectoryWatcher extends Thread {
      * @param fileExtensions The extensions
      */
     public void addWatchDirectory(File dir, List<String> fileExtensions) {
-        trackDirectoryExtensions(dir, fileExtensions);
-        cacheFilesForDirectory(dir, fileExtensions, false);
+    	List<String> fileExtensionsWithoutDot = new ArrayList<String>(fileExtensions.size());
+    	for(String fileExtension : fileExtensions){
+    		fileExtensionsWithoutDot.add(removeStartingDotIfPresent(fileExtension));
+    	}
+    	directoryWatcherDelegate.addWatchDirectory(dir, fileExtensions);
     }
 
-    protected void trackDirectoryExtensions(File dir, List<String> fileExtensions) {
-        Collection<String> existingExtensions = directoryToExtensionsMap.get(dir);
-        if(existingExtensions == null) {
-            directoryToExtensionsMap.put(dir, new ArrayList<String>(fileExtensions));
-        }
-        else {
-            existingExtensions.addAll(fileExtensions);
-        }
+    /**
+     * Adds a directory to watch for the given file. All files and subdirectories in the directory will be watched. 
+     *
+     * @param dir The directory
+     */
+    public void addWatchDirectory(File dir) {
+    	addWatchDirectory(dir, "*");
     }
 
     /**
@@ -120,8 +127,7 @@ public class DirectoryWatcher extends Thread {
         else {
             fileExtensions.add(extension);
         }
-        trackDirectoryExtensions(dir, fileExtensions);
-        cacheFilesForDirectory(dir, fileExtensions, false);
+        addWatchDirectory(dir, fileExtensions);
     }
 
     /**
@@ -145,83 +151,7 @@ public class DirectoryWatcher extends Thread {
 
     @Override
     public void run() {
-        int count = 0;
-        while (active) {
-            Set<File> files = lastModifiedMap.keySet();
-            for (File file : files) {
-                long currentLastModified = file.lastModified();
-                Long cachedTime = lastModifiedMap.get(file);
-                if (currentLastModified > cachedTime) {
-                    lastModifiedMap.put(file, currentLastModified);
-                    fireOnChange(file);
-                }
-            }
-            try {
-                count++;
-                if (count > 2) {
-                    count = 0;
-                    checkForNewFiles();
-                }
-                sleep(sleepTime);
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        }
-    }
-
-    private void fireOnChange(File file) {
-        for (FileChangeListener listener : listeners) {
-            listener.onChange(file);
-        }
-    }
-
-    private void checkForNewFiles() {
-        for (File directory : directoryWatch.keySet()) {
-            final Long currentTimestamp = directoryWatch.get(directory);
-
-            if (currentTimestamp < directory.lastModified()) {
-                Collection<String> extensions = directoryToExtensionsMap.get(directory);
-                if (extensions == null) {
-                    extensions = this.extensions;
-                }
-                cacheFilesForDirectory(directory, extensions, true);
-            }
-        }
-    }
-
-    private void cacheFilesForDirectory(File directory, Collection<String> fileExtensions, boolean fireEvent) {
-        addExtensions(fileExtensions);
-
-        directoryWatch.put(directory, directory.lastModified());
-        File[] files = directory.listFiles();
-        if (files == null) {
-            return;
-        }
-
-        for (File file : files) {
-            if (file.isDirectory() && !file.isHidden()) {
-                if (!SVN_DIR_NAME.equals(file.getName())) {
-                    cacheFilesForDirectory(file, fileExtensions, fireEvent);
-                }
-            }
-            else if (isValidFileToMonitor(file, fileExtensions)) {
-                if (!lastModifiedMap.containsKey(file) && fireEvent) {
-                    for (FileChangeListener listener : listeners) {
-                        listener.onNew(file);
-                    }
-                }
-                lastModifiedMap.put(file, file.lastModified());
-            }
-        }
-    }
-
-    private void addExtensions(Collection<String> toAdd) {
-        for (String extension : toAdd) {
-            extension = removeStartingDotIfPresent(extension);
-            if (!extensions.contains(extension)) {
-                extensions.add(extension);
-            }
-        }
+        directoryWatcherDelegate.run();
     }
 
     private String removeStartingDotIfPresent(String extension) {
@@ -229,15 +159,5 @@ public class DirectoryWatcher extends Thread {
             extension = extension.substring(1);
         }
         return extension;
-    }
-
-    private boolean isValidFileToMonitor(File file, Collection<String> fileExtensions) {
-        String name = file.getName();
-        String path = file.getAbsolutePath();
-        boolean isSvnFile = path.indexOf(File.separator + SVN_DIR_NAME + File.separator) > 0;
-        return !isSvnFile &&
-                !file.isHidden() &&
-                !file.getName().startsWith(".") &&
-                (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
     }
 }

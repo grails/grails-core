@@ -28,7 +28,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
-import org.springframework.web.context.ServletContextAware;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -63,7 +62,7 @@ import org.springframework.web.context.ServletContextAware;
  * @author Graeme Rocher
  * @since 0.4
  */
-public interface GrailsPluginManager extends ApplicationContextAware, ServletContextAware {
+public interface GrailsPluginManager extends ApplicationContextAware {
 
     String BEAN_NAME = "pluginManager";
 

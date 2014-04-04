@@ -39,7 +39,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     boolean https
     boolean warMode
     String baseUrl
-    String httpsBaseUrl
+    boolean httpsBaseUrl
 
     GrailsProjectRunner projectRunner
 
@@ -61,7 +61,11 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         Holders.pluginManager = null
         Holders.grailsApplication = null
 
+        https = testOptions.https ? true : false
         warMode = testOptions.war ? true : false
+        baseUrl =  testOptions.baseUrl
+        httpsBaseUrl = testOptions.httpsBaseUrl ? true : false
+
         final packager = projectRunner.projectPackager
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()

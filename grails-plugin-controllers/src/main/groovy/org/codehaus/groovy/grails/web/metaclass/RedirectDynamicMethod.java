@@ -19,31 +19,27 @@ import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
+import org.codehaus.groovy.grails.web.mapping.ResponseRedirector;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.support.RequestDataValueProcessor;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "redirect" Controller method for action redirection.
@@ -116,17 +112,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        LinkGenerator requestLinkGenerator = getLinkGenerator(webRequest);
-
         HttpServletRequest request = webRequest.getCurrentRequest();
-        if (request.getAttribute(GRAILS_REDIRECT_ISSUED) != null) {
-            throw new CannotRedirectException("Cannot issue a redirect(..) here. A previous call to redirect(..) has already redirected the response.");
-        }
-
         HttpServletResponse response = webRequest.getCurrentResponse();
-        if (response.isCommitted()) {
-            throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
-        }
 
         if(target instanceof GroovyObject) {
             GroovyObject controller = (GroovyObject)target;
@@ -150,14 +137,13 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 argMap.put(GrailsControllerClass.NAMESPACE_PROPERTY, GrailsClassUtils.getStaticFieldValue(controller.getClass(), GrailsControllerClass.NAMESPACE_PROPERTY));
             }
         }
-        boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
 
-
-        // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
-        // which includes the contextPath
-        argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
-
-        return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
+        ResponseRedirector redirector = new ResponseRedirector(getLinkGenerator(webRequest));
+        redirector.setRedirectListeners(redirectListeners);
+        redirector.setRequestDataValueProcessor(initRequestDataValueProcessor());
+        redirector.setUseJessionId(useJessionId);
+        redirector.redirect(request, response, argMap);
+        return null;
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -171,34 +157,6 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         return linkGenerator;
     }
 
-    /*
-     * Redirects the response the the given URI
-     */
-    private Object redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
-        }
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing redirect with response ["+response+"]");
-        }
-        String processedActualUri = processedUrl(actualUri, request);
-        String absoluteURL = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri;
-        String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
-        int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
-
-        response.setStatus(status);
-        response.setHeader(HttpHeaders.LOCATION, redirectUrl);
-
-        if (redirectListeners != null) {
-            for (RedirectEventListener redirectEventListener : redirectListeners) {
-                redirectEventListener.responseRedirected(redirectUrl);
-            }
-        }
-
-        request.setAttribute(GRAILS_REDIRECT_ISSUED, processedActualUri);
-        return null;
-    }
 
     /*
      * Figures out the action name from the specified action reference (either a string or closure)
@@ -221,19 +179,13 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     /**
      * getter to obtain RequestDataValueProcessor from
      */
-    private void initRequestDataValueProcessor() {
+    private RequestDataValueProcessor initRequestDataValueProcessor() {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
         ApplicationContext applicationContext = webRequest.getApplicationContext();
         if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")) {
             requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor", RequestDataValueProcessor.class);
         }
+        return requestDataValueProcessor;
     }
 
-    private String processedUrl(String link, HttpServletRequest request) {
-        initRequestDataValueProcessor();
-        if (requestDataValueProcessor != null) {
-            link = requestDataValueProcessor.processUrl(request, link);
-        }
-        return link;
-    }
 }

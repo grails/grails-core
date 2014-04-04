@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
+import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
@@ -313,6 +314,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         } else {
             flatConfig = config.flatten(new LinkedHashMap());
         }
+        Holders.setConfig(config);
     }
 
     @SuppressWarnings("unchecked")
@@ -794,12 +796,15 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public void configChanged() {
         ConfigObject co = getConfig();
+        Holders.setConfig(co);
         // not thread safe
         flatConfig = co.flatten(new LinkedHashMap());
         final ArtefactHandler[] handlers = getArtefactHandlers();
-        for (ArtefactHandler handler : handlers) {
-            if (handler instanceof GrailsConfigurationAware) {
-                ((GrailsConfigurationAware)handler).setConfiguration(co);
+        if(handlers != null) {
+            for (ArtefactHandler handler : handlers) {
+                if (handler instanceof GrailsConfigurationAware) {
+                    ((GrailsConfigurationAware)handler).setConfiguration(co);
+                }
             }
         }
     }

@@ -47,6 +47,24 @@ class BindingListenerSpec extends Specification {
         then:
         listener.valuesAfterBinding.name == 'Phil'
     }
+    
+    void 'Test listener for properties with a converter associated with them'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def p = new Person()
+        def listener = new  PersonBindingListener()
+        
+        when:
+        binder.bind p, [birthDate: '11151969'] as SimpleMapDataBindingSource, listener
+        
+        then:
+        listener.valuesAfterBinding.birthDate instanceof Date
+        listener.valuesAfterBinding.birthDate.month == Calendar.NOVEMBER
+        listener.valuesAfterBinding.birthDate.year == 69
+        listener.valuesAfterBinding.birthDate.date == 15
+        listener.valuesAfterBinding.birthDate == p.birthDate
+        listener.valuesBeforeBinding.birthDate == p.birthDate
+    }
 
     void 'Test that beforeBinding can return null or true to indicate that binding should proceed'() {
         given:
@@ -101,10 +119,17 @@ class PersonBindingListener2 extends DataBindingListenerAdapter {
 class PersonBindingListener extends DataBindingListenerAdapter {
 
     def valuesAfterBinding = [:]
+    def valuesBeforeBinding = [:]
 
     void afterBinding(obj, String propertyName, errors) {
         valuesAfterBinding[propertyName] = obj[propertyName]
     }
+    
+    public Boolean beforeBinding(Object obj, String propertyName, Object value, Object errors) {
+        valuesBeforeBinding[propertyName] = value
+        true
+    }
+
 }
 
 class EmployeeBindingListener extends DataBindingListenerAdapter {
@@ -120,6 +145,9 @@ class EmployeeBindingListener extends DataBindingListenerAdapter {
 
 class Person {
     String name
+    
+    @BindingFormat('MMddyyyy')
+    Date birthDate
 }
 
 class Employee extends Person {

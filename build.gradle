@@ -23,12 +23,11 @@ ext {
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
     aspectjVersion = "1.7.4"
-    commonsBeanUtilsVersion = "1.8.3"
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "3.0.2.RELEASE"
+    datastoreVersion = "3.0.4.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.2.2"
@@ -204,6 +203,10 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
+        if(System.getProperty("debug.tests")) {
+            jvmArgs '-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
+                    '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+        }
     }
 
     if(!isTestSuite) {

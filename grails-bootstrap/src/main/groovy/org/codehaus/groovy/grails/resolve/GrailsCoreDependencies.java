@@ -97,14 +97,14 @@ public class GrailsCoreDependencies {
             String[] spockExcludes = {"org.codehaus.groovy:groovy-all", "junit:junit-dep"};
             testDependencies = Arrays.asList(
                 new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
-                new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes),
-                new Dependency("org.grails", "grails-test", grailsVersion, true)
+                new Dependency("junit", "junit", "4.11", true),
+                new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes)
             );
         }
         else {
             testDependencies = Arrays.asList(
-                new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
-                new Dependency("org.grails", "grails-test", grailsVersion, true)
+                new Dependency("junit", "junit", "4.11", true),
+                new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true)
             );
         }
 

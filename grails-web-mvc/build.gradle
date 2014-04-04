@@ -1,0 +1,5 @@
+dependencies {
+    compile project(":grails-web-common"),
+            project(":grails-web-sitemesh"),
+            project(":grails-web-url-mappings")
+}

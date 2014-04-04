@@ -18,7 +18,6 @@ package grails.validation;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
 import grails.util.GrailsNameUtils;
-import grails.util.Holders;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -54,11 +53,9 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTValidationErrorsHelper;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class DefaultASTValidateableHelper implements ASTValidateableHelper{
 
@@ -99,21 +96,11 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final BooleanExpression isConstraintsPropertyNull = new BooleanExpression(new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(
                         Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null)));
 
-            final String servletContextHolderVariableName = "$sch";
-            final String applicationContextVariableName = "$ctx";
-            final String constraintsEvaluatorVariableName = "$evaluator";
-            final String evaluateMethodName = "evaluate";
-
             final BlockStatement ifConstraintsPropertyIsNullBlockStatement = new BlockStatement();
-            final Expression declareServletContextExpression = new DeclarationExpression(new VariableExpression(servletContextHolderVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(Holders.class), "getServletContext", new ArgumentListExpression()));
-            final Expression declareApplicationContextExpression = new DeclarationExpression(new VariableExpression(applicationContextVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(WebApplicationContextUtils.class), "getWebApplicationContext", new ArgumentListExpression(new VariableExpression(servletContextHolderVariableName))));
-            final Expression declareConstraintsEvaluatorExpression = new DeclarationExpression(new VariableExpression(constraintsEvaluatorVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(applicationContextVariableName), "getBean", new ArgumentListExpression(new ConstantExpression(ConstraintsEvaluator.BEAN_NAME))));
-            final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(constraintsEvaluatorVariableName), evaluateMethodName, new ArgumentListExpression(new VariableExpression("this"))));
+            Expression ez = new StaticMethodCallExpression(ClassHelper.make(ValidationSupport.class), "getConstrainedPropertiesForClass", new VariableExpression("this"));
+            final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), ez);
             final Statement ifConstraintsPropertyIsNullStatement = new IfStatement(isConstraintsPropertyNull, ifConstraintsPropertyIsNullBlockStatement, new ExpressionStatement(new EmptyExpression()));
 
-            ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareServletContextExpression));
-            ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareApplicationContextExpression));
-            ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareConstraintsEvaluatorExpression));
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(initializeConstraintsFieldExpression));
             
             final Map<String, ClassNode> propertiesToConstrain = getPropertiesToEnsureConstraintsFor(classNode);
@@ -147,7 +134,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
                 addNullableConstraintBlock.addStatement(new ExpressionStatement(addToConstraintsMapExpression));
 
                 final Expression constraintsMapContainsKeyExpression = new MethodCallExpression(
-                        new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME),
+                        new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME, ClassHelper.make(Map.class)),
                         "containsKey", new ArgumentListExpression(new ConstantExpression(propertyName)));
                 final BooleanExpression ifPropertyIsAlreadyConstrainedExpression = new BooleanExpression(constraintsMapContainsKeyExpression);
                 final Statement ifPropertyIsAlreadyConstrainedStatement = new IfStatement(
@@ -223,8 +210,8 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final BlockStatement validateMethodCode = new BlockStatement();
             final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression();
             validateInstanceArguments.addExpression(new VariableExpression("this"));
-            validateInstanceArguments.addExpression(new VariableExpression(fieldsToValidateParameterName));
-            final ClassNode validationSupportClassNode = new ClassNode(ValidationSupport.class);
+            validateInstanceArguments.addExpression(new VariableExpression(fieldsToValidateParameterName, ClassHelper.LIST_TYPE));
+            final ClassNode validationSupportClassNode = ClassHelper.make(ValidationSupport.class);
             final StaticMethodCallExpression invokeValidateInstanceExpression = new StaticMethodCallExpression(validationSupportClassNode, "validateInstance", validateInstanceArguments);
             validateMethodCode.addStatement(new ExpressionStatement(invokeValidateInstanceExpression));
             final Parameter fieldsToValidateParameter = new Parameter(new ClassNode(List.class), fieldsToValidateParameterName);

@@ -26,6 +26,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 import java.lang.reflect.Modifier
 
@@ -71,7 +72,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
         }
-        grailsApplication.applicationContext = applicationContext
         runtime.putValue("grailsApplication", grailsApplication)
         registerBeans(runtime, grailsApplication)
         executeDoWithSpringCallback(runtime, grailsApplication, callerInfo)
@@ -89,6 +89,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         mainContext.servletContext = servletContext
         
         Holders.setServletContext servletContext
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+        Holders.setGrailsApplication(grailsApplication)
         runtime.putValue("servletContext", servletContext)
         
         applicationInitialized(runtime, grailsApplication)
@@ -96,6 +98,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     void initialState() {
         ExpandoMetaClass.enableGlobally()
+        Holders.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
         Promises.promiseFactory = new SynchronousPromiseFactory()
@@ -132,6 +135,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         }
         if(configClosure) {
             configClosure(grailsApplication.config)
+            // reset flatConfig
+            grailsApplication.configChanged() 
         }
     }
 

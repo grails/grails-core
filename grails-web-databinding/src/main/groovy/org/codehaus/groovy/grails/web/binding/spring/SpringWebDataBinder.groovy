@@ -1,0 +1,53 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.codehaus.groovy.grails.web.binding.spring
+
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.springframework.beans.PropertyValues
+import org.springframework.validation.BindingResult
+import org.springframework.web.bind.WebDataBinder
+
+import javax.servlet.ServletRequest
+
+/**
+ * Interface to bridge the legacy Spring binding APIs
+ *
+ * @author Graeme Rocher
+ * @since 2.4
+ */
+interface SpringWebDataBinder {
+
+    String[] getAllowedFields()
+
+    String[] getDisallowedFields()
+
+    void setDisallowedFields(String[] dissallowed)
+
+    void setAllowedFields(String[] allowed)
+
+    void bind(ServletRequest request, String filter);
+
+    void bind(ServletRequest request);
+
+    void bind(PropertyValues propertyValues, String filter);
+
+    void bind(PropertyValues propertyValues);
+
+    void bind(GrailsParameterMap map, String filter);
+
+    BindingResult getBindingResult()
+
+}

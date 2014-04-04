@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.validation;
 
 import grails.util.Holders;
+import grails.validation.Constrained;
 import groovy.lang.GroovyClassLoader;
 
 import java.util.Collection;
@@ -104,18 +105,18 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         DefaultGrailsDomainClass bookClass = new DefaultGrailsDomainClass(gcl.parseClass(bookClassSource, "Book"));
 
         Map constraints = bookClass.getConstrainedProperties();
-        ConstrainedProperty p = (ConstrainedProperty)constraints.get("title");
+        Constrained p = (Constrained)constraints.get("title");
         assertFalse("Title property should be required", p.isNullable());
-        p = (ConstrainedProperty)constraints.get("description");
+        p = (Constrained)constraints.get("description");
         assertTrue("Description property should be optional", p.isNullable());
-        p = (ConstrainedProperty)constraints.get("author");
+        p = (Constrained)constraints.get("author");
         assertFalse("Author property should be required", p.isNullable());
-        p = (ConstrainedProperty)constraints.get("assistent");
+        p = (Constrained)constraints.get("assistent");
         assertTrue("Assistent property should be optional", p.isNullable());
         // Test that Collections and Maps are nullable by default
-        p = (ConstrainedProperty)constraints.get("chapters");
+        p = (Constrained)constraints.get("chapters");
         assertTrue("Chapters property should be optional", p.isNullable());
-        p = (ConstrainedProperty)constraints.get("remarks");
+        p = (Constrained)constraints.get("remarks");
         assertTrue("Remarks property should be optional", p.isNullable());
     }
 

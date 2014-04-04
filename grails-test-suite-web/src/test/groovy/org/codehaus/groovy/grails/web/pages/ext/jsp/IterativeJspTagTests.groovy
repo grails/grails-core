@@ -25,19 +25,19 @@ class IterativeJspTagTests extends GroovyTestCase {
 
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
-        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolver
+        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolverImpl
     }
 
     void testIterativeTag() {
 
-        TagLibraryResolver.metaClass.resolveRootLoader = {->
+        TagLibraryResolverImpl.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
             def res = new FileSystemResource("../lib/taglibs/standard/jars/standard-1.1.2.jar")
             rootLoader.addURL res.getURL()
             return rootLoader
         }
 
-        def resolver =  new TagLibraryResolver()
+        def resolver =  new TagLibraryResolverImpl()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication= new DefaultGrailsApplication()
 

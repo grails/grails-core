@@ -59,7 +59,7 @@ class TagLibraryResolverTests extends GroovyTestCase {
     }
 }
 
-class MockWebXmlTagLibraryResolver extends TagLibraryResolver {
+class MockWebXmlTagLibraryResolver extends TagLibraryResolverImpl {
 
     protected RootLoader resolveRootLoader() {
         new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())

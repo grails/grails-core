@@ -26,11 +26,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import grails.web.UrlConverter;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
@@ -43,13 +43,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Collections;
 
 /**
  * A servlet for handling errors.
@@ -149,11 +142,11 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             WrappedResponseHolder.setWrappedResponse(response);
             String viewName = urlMappingInfo.getViewName();
             if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                GrailsClass controller = WebUtils.passControllerForUrlMappingInfoInRequest( webRequest, urlMappingInfo,
-                                                                                            webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
-                                                                                            webRequest.getAttributes().getGrailsApplication());
+                GrailsClass controller = UrlMappingUtils.passControllerForUrlMappingInfoInRequest(webRequest, urlMappingInfo,
+                        webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
+                        webRequest.getAttributes().getGrailsApplication());
                 if(controller != null) {
-                    WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+                    UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
                 }
 
             }
@@ -166,7 +159,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                             response.setContentType("text/html;charset="+defaultEncoding);
 
                         }
-                        v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
+                        v = UrlMappingUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
                         v.render(Collections.EMPTY_MAP, request, response);
                     }
                     catch (Throwable e) {

@@ -464,7 +464,8 @@ class ValidationTagLib {
      * conversion to a string.
      */
     def formatValue(value, String propertyPath = null, Boolean tagSyntaxCall = false) {
-        PropertyEditorRegistry registry = RequestContextHolder.currentRequestAttributes().getPropertyEditorRegistry()
+        def webRequest = GrailsWebRequest.lookup()
+        PropertyEditorRegistry registry = webRequest.getPropertyEditorRegistry()
         PropertyEditor editor = registry.findCustomEditor(value.getClass(), propertyPath)
         if (editor) {
             editor.setValue(value)
@@ -476,7 +477,8 @@ class ValidationTagLib {
             if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
                 pattern = "0.00#####"
             }
-            def locale = GrailsWebRequest.lookup().getLocale()
+
+            def locale = webRequest.getLocale()
             def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
             def decimalFormat = new DecimalFormat(pattern, dcfs)
             value = decimalFormat.format(value)

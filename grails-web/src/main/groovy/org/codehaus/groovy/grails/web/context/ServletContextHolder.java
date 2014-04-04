@@ -24,16 +24,15 @@ import javax.servlet.ServletContext;
  *
  * @author Graeme Rocher
  * @since 1.0
- * @deprecated Use {@link grails.util.Holders} instead
  */
-@Deprecated
 public class ServletContextHolder {
 
     public static void setServletContext(final ServletContext servletContext) {
         Holders.setServletContext(servletContext);
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
     }
 
     public static ServletContext getServletContext() {
-        return Holders.getServletContext();
+        return (ServletContext) Holders.getServletContext();
     }
 }

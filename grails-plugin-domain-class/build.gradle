@@ -1,6 +1,6 @@
 dependencies {
 
-    compile project(":grails-core"), project(":grails-spring")
+    compile project(":grails-core"), project(":grails-spring"), project(":grails-validation")
 
     compile project(":grails-async"), {
         ext.notInPom = true

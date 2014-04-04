@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -752,7 +752,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private void initializeConstraints() {
         // process the constraints
         final ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
-        constraints = constraintsEvaluator.evaluate(getClazz(), persistentProperties);
+        if(constraintsEvaluator != null) {
+            constraints = constraintsEvaluator.evaluate(getClazz(), persistentProperties);
+        }
+        else {
+            constraints = Collections.emptyMap();
+        }
     }
 
     /* (non-Javadoc)
@@ -811,7 +816,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 return context.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator.class);
             }
         }
-        return new DefaultConstraintEvaluator(defaultConstraints);
+        return GrailsFactoriesLoader.loadFactory(ConstraintsEvaluator.class, defaultConstraints);
     }
 
     public Map getMappedBy() {

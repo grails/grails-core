@@ -17,8 +17,12 @@ package org.codehaus.groovy.grails.web.plugins.support
 
 import grails.util.Holders
 import grails.validation.ValidationErrors
+import groovy.transform.CompileStatic
 
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.grails.datastore.gorm.support.BeforeValidateHelper
+import org.springframework.beans.factory.BeanFactory
 import org.springframework.validation.FieldError
 import org.springframework.web.context.support.WebApplicationContextUtils
 
@@ -67,5 +71,12 @@ class ValidationSupport {
         }
 
         return !object.errors.hasErrors()
+    }
+    
+    @CompileStatic
+    static Map<String, ConstrainedProperty> getConstrainedPropertiesForClass(Class<?> clazz) {
+        BeanFactory ctx = Holders.applicationContext
+        ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
+        evaluator.evaluate clazz
     }
 }

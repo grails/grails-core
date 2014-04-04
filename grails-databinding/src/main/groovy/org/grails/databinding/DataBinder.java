@@ -27,6 +27,8 @@ import org.grails.databinding.events.DataBindingListener;
  */
 public interface DataBinder {
 
+    String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+
     /**
      * 
      * @param obj The object being bound to

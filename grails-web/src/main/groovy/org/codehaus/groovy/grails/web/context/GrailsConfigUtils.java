@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * A common class where shared configurational methods can reside.
@@ -86,8 +88,9 @@ public class GrailsConfigUtils {
         }
     }
 
-    public static WebApplicationContext configureWebApplicationContext(ServletContext servletContext, WebApplicationContext parent) {
+    public static WebApplicationContext configureWebApplicationContext(final ServletContext servletContext, WebApplicationContext parent) {
         Holders.setServletContext(servletContext);
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
         GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
 
         if (LOG.isDebugEnabled()) {

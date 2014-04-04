@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 /**
  * Test phase configurer for the integration test phase
@@ -58,7 +59,10 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
         appCtx = (GrailsWebApplicationContext)projectLoader.configureApplication()
         currentApplicationContext = appCtx
 
-        Holders.servletContext = appCtx.servletContext
+
+        def servletContext = appCtx.servletContext
+        Holders.servletContext = servletContext
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
         // Get the Grails application instance created by the bootstrap process.
         def app = appCtx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
         final pluginManager = appCtx.getBean(GrailsPluginManager)
@@ -74,8 +78,8 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
         PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
 
 
-        GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
-        GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
+        GrailsConfigUtils.configureServletContextAttributes(servletContext, app, pluginManager, appCtx)
+        GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, servletContext)
     }
 
     @Override

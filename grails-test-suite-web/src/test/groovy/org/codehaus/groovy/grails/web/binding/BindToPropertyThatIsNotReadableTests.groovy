@@ -1,11 +1,13 @@
 package org.codehaus.groovy.grails.web.binding
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.junit.Ignore
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
+@Ignore
 class BindToPropertyThatIsNotReadableTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {

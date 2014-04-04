@@ -225,7 +225,7 @@ class SimpleDataBinder implements DataBinder {
                         try {
                             def converter = getValueConverter(obj, metaProperty.name)
                             if(converter) {
-                                setPropertyValue(obj, source, metaProperty, converter.convert(source), listener, false)
+                                bindProperty obj, source, metaProperty, converter.convert(source), listener, errors
                             } else {
                                 processProperty obj, metaProperty, preprocessValue(val), source, listener, errors
                             }

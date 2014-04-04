@@ -1,10 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.springframework.core.io.ByteArrayResource
-import org.springframework.mock.web.MockServletContext
 import org.codehaus.groovy.grails.web.util.WebUtils
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 
 /**
  * @author Graeme Rocher
@@ -56,7 +52,7 @@ class UrlMappings {
         def mappings = evaluator.evaluateMappings(closure)
 
         webRequest.currentRequest.addParameter("${WebUtils.DISPATCH_ACTION_PARAMETER}foo", "true")
-        webRequest.currentRequest.setAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE, new RuntimeException("bad"))
+        webRequest.currentRequest.setAttribute(WebUtils.EXCEPTION_ATTRIBUTE, new RuntimeException("bad"))
         def holder = new DefaultUrlMappingsHolder(mappings)
         def info = holder.match('/foo/list')
 

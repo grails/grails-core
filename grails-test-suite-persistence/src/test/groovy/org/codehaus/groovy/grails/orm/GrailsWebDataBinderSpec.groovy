@@ -992,7 +992,7 @@ class GrailsWebDataBinderSpec extends Specification {
         pub.widgets[2] instanceof Widget
         pub.widgets[3] instanceof Widget
     }
-    
+
     void 'Test @BindUsing on a List<Integer>'() {
         given:
         def widget = new Widget()
@@ -1325,7 +1325,7 @@ class Widget implements Comparable {
         }
         result
     })
-    List listOfIntegers = []
+    List<Integer> listOfIntegers = []
     TimeZone timeZone
 
     static constraints = {

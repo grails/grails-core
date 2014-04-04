@@ -58,10 +58,8 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         gpte.afterPropertiesSet();
 
         GrailsViewResolver grailsViewResolver=new GrailsViewResolver();
-        grailsViewResolver.setGrailsApplication(grailsApplication);
         grailsViewResolver.setApplicationContext(appCtx);
         grailsViewResolver.setGroovyPageLocator(pageLocator);
-        grailsViewResolver.setPluginManager(new MockGrailsPluginManager(grailsApplication));
         grailsViewResolver.setTemplateEngine(gpte);
 
         GroovyPageLayoutFinder layoutFinder = new GroovyPageLayoutFinder();
