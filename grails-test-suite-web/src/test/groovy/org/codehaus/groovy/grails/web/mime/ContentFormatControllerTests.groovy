@@ -5,17 +5,14 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
 import grails.util.Holders
-
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.junit.Ignore
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@Ignore
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {

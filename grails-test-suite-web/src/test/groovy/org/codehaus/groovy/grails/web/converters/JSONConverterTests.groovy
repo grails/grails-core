@@ -7,7 +7,6 @@ import grails.persistence.Entity
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
 import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
-import org.junit.Ignore;
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -17,7 +16,6 @@ import org.springframework.validation.Errors
  * @author Graeme Rocher
  * @since 0.4
  */
-@Ignore
 class JSONConverterTests extends AbstractGrailsControllerTests {
 
     @Override
