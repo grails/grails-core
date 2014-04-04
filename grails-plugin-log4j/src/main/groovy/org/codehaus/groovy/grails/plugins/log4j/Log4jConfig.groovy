@@ -98,7 +98,7 @@ class Log4jConfig {
     @CompileStatic
     def propertyMissing(String name) {
         if (LAYOUTS.containsKey(name)) {
-            return ((Class)LAYOUTS[name]).newInstance()
+            return LAYOUTS[name].newInstance()
         }
 
         LogLog.error "Property missing when configuring log4j: $name"

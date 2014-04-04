@@ -152,7 +152,7 @@ class IncludeTargets {
 
         def className = theClass.name
         if ( ! ( className in loadedClasses ) ) {
-            Script script = (Script)((Class)theClass).newInstance ( )
+            Script script = theClass.newInstance ( )
             script.binding = binding
             script.run ( )
             loadedClasses << className
