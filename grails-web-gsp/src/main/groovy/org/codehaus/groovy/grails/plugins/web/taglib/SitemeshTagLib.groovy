@@ -18,7 +18,9 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.Encoder
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
@@ -38,6 +40,7 @@ class SitemeshTagLib implements RequestConstants {
     protected static final String GSP_SITEMESH_PAGE = 'org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter.GSP_SITEMESH_PAGE'
 
     static namespace = 'sitemesh'
+    CodecLookup codecLookup
 
     def captureTagContent(Writer writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {
         def content = null
@@ -61,11 +64,12 @@ class SitemeshTagLib implements RequestConstants {
             if (xmlClosingString=='/') {
                 useXmlClosingForEmptyTag = true
             }
+            Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
             attrs.each { k, v ->
                 writer << ' '
                 writer << k
                 writer << '="'
-                writer << InvokerHelper.invokeMethod(v ? v.toString() : "", "encodeAsHTML", null)
+                writer << (htmlEncoder != null ? htmlEncoder.encode(v) : v) 
                 writer << '"'
             }
         }
