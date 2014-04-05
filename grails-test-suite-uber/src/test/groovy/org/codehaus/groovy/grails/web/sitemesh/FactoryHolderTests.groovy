@@ -12,11 +12,9 @@ class FactoryHolderTests extends GroovyTestCase {
         assertSame factory, FactoryHolder.getFactory()
     }
 
-    void testGetFactoryThrowsExceptionForNullFactory() {
+    void testGetFactoryForNullFactory() {
         FactoryHolder.setFactory(null)
-        shouldFail(IllegalStateException) {
-            FactoryHolder.getFactory()
-        }
+        assertNull FactoryHolder.getFactory()
     }
 
     void testSetFactory() {

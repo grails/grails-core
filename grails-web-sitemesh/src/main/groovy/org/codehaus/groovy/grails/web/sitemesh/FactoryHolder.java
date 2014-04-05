@@ -17,8 +17,6 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import grails.util.Holder;
 
-import org.springframework.util.Assert;
-
 import com.opensymphony.module.sitemesh.Factory;
 
 /**
@@ -37,7 +35,6 @@ public class FactoryHolder {
 
     public static Factory getFactory() {
         Factory factory = holder.get();
-        Assert.state(factory != null, "Cannot return Sitemesh factory it has not been set!");
         return factory;
     }
     
