@@ -23,11 +23,13 @@ import com.opensymphony.module.sitemesh.html.util.CharArray;
 import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage;
 
 public class GrailsTokenizedHTMLPage extends TokenizedHTMLPage {
-    private CharArray body;
-    private CharArray head;
+    private final CharArray body;
+    private final CharArray head;
+    private final char[] data;
 
-    public GrailsTokenizedHTMLPage(char[] original, CharArray body, CharArray head) {
-        super(original, body, head);
+    public GrailsTokenizedHTMLPage(char[] data, CharArray body, CharArray head) {
+        super(data, body, head);
+        this.data = data;
         this.body = body;
         this.head = head;
     }
@@ -50,5 +52,9 @@ public class GrailsTokenizedHTMLPage extends TokenizedHTMLPage {
         else {
             super.writeBody(out);
         }
+    }
+
+    public char[] getData() {
+        return data;
     }
 }

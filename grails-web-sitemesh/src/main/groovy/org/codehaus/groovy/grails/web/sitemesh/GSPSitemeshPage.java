@@ -219,6 +219,8 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
         HTMLPage htmlPage = null;
         if (content instanceof HTMLPage) {
             htmlPage = (HTMLPage) content;
+        } else if (content instanceof TokenizedHTMLPage2Content) {
+            htmlPage = ((TokenizedHTMLPage2Content)content).getPage();
         } else {
             htmlPage = new Content2HTMLPage(content);
         }

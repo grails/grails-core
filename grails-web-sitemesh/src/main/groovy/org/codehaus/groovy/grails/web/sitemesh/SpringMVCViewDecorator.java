@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import groovy.text.Template;
 
 import java.util.Collections;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -51,10 +52,10 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
 
     public void render(Content content, SiteMeshContext context) {
         SiteMeshWebAppContext ctx = (SiteMeshWebAppContext) context;
-        render(content, ctx.getRequest(), ctx.getResponse(), ctx.getServletContext());
+        render(content, Collections.<String, Object>emptyMap(), ctx.getRequest(), ctx.getResponse(), ctx.getServletContext());
     }
 
-    public void render(Content content, HttpServletRequest request,
+    public void render(Content content, Map<String, ?> model, HttpServletRequest request,
                        HttpServletResponse response, ServletContext servletContext) {
         HTMLPage htmlPage = GSPSitemeshPage.content2htmlPage(content);
         request.setAttribute(RequestConstants.PAGE, htmlPage);
@@ -66,7 +67,7 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
                 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage(true));
                 request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, Boolean.TRUE);
                 try {
-                    view.render(Collections.<String, Object>emptyMap(), request, response);
+                    view.render(model, request, response);
                     dispatched = true;
                     if (!response.isCommitted()) {
                         response.getWriter().flush();

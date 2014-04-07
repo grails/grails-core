@@ -21,7 +21,6 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.plugins.web.taglib.UrlMappingTagLib
 
 import java.lang.reflect.Modifier
 
@@ -41,6 +40,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.PluginTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.SitemeshTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.UrlMappingTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
@@ -55,7 +55,7 @@ import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGro
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
+import org.codehaus.groovy.grails.web.servlet.view.GroovyPageViewResolver
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.codehaus.groovy.grails.web.util.StreamCharBufferMetaUtils
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
@@ -223,7 +223,7 @@ class GroovyPagesGrailsPlugin {
             }
         }
         // Configure a Spring MVC view resolver
-        jspViewResolver(GrailsViewResolver) { bean ->
+        jspViewResolver(GroovyPageViewResolver) { bean ->
             bean.lazyInit = true
             bean.parent = "abstractViewResolver"
         }

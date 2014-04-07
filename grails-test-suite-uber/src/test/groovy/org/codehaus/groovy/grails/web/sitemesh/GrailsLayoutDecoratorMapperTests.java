@@ -17,7 +17,6 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
@@ -26,7 +25,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
+import org.codehaus.groovy.grails.web.servlet.view.GroovyPageViewResolver;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
@@ -57,7 +56,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         gpte.setApplicationContext(appCtx);
         gpte.afterPropertiesSet();
 
-        GrailsViewResolver grailsViewResolver=new GrailsViewResolver();
+        GroovyPageViewResolver grailsViewResolver=new GroovyPageViewResolver();
         grailsViewResolver.setApplicationContext(appCtx);
         grailsViewResolver.setGroovyPageLocator(pageLocator);
         grailsViewResolver.setTemplateEngine(gpte);
