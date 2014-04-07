@@ -2,7 +2,7 @@ dependencies {
     compile project(":grails-core"), {
         exclude group:'org.grails', module:'grails-spring'
     }
-    compile project(":grails-databinding")
+    compile project(":grails-databinding"), project(":grails-encoder")
 
     compile 'javax.servlet:javax.servlet-api:3.0.1', provided
 

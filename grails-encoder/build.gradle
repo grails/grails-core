@@ -1,3 +1,5 @@
 dependencies {
     compile project(":grails-core")
+    // HtmlUtils is used from spring-web
+    compile "org.springframework:spring-web:${springVersion}"
 }

@@ -18,10 +18,10 @@ package org.codehaus.groovy.grails.support.encoding
 import grails.util.Environment
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.runtime.GStringImpl
 import org.codehaus.groovy.runtime.NullObject
+import org.springframework.util.Assert
 
 /**
  * Helper methods for Codec metaclass operations.
@@ -40,20 +40,23 @@ class CodecMetaClassSupport {
      * @param codecClass the codec class
      */
     @CompileStatic
-    void configureCodecMethods(GrailsCodecClass codecClass) {
+    void configureCodecMethods(CodecFactory codecFactory, boolean cacheLookup = !Environment.getCurrent().isDevelopmentMode(), List<ExpandoMetaClass> targetMetaClasses = resolveDefaultMetaClasses()) {
         Closure<String> encodeMethodNameClosure = { String codecName -> "${ENCODE_AS_PREFIX}${codecName}".toString() }
         Closure<String> decodeMethodNameClosure = { String codecName -> "${DECODE_PREFIX}${codecName}".toString() }
 
-        String encodeMethodName = encodeMethodNameClosure(codecClass.name)
-        String decodeMethodName = decodeMethodNameClosure(codecClass.name)
+        String codecName = resolveCodecName(codecFactory)
+        Assert.hasText(codecName)
+        
+        String encodeMethodName = encodeMethodNameClosure(codecName)
+        String decodeMethodName = decodeMethodNameClosure(codecName)
 
         Closure encoderClosure
         Closure decoderClosure
-        if (Environment.current == Environment.DEVELOPMENT) {
+        if (!cacheLookup) {
             // Resolve codecs in every call in case of a codec reload
             encoderClosure = {
                 ->
-                def encoder = codecClass.getEncoder()
+                def encoder = codecFactory.getEncoder()
                 if (encoder) {
                     return encoder.encode(CodecMetaClassSupport.filterNullObject(delegate))
                 }
@@ -66,7 +69,7 @@ class CodecMetaClassSupport {
 
             decoderClosure = {
                 ->
-                def decoder = codecClass.getDecoder()
+                def decoder = codecFactory.getDecoder()
                 if (decoder) {
                     return decoder.decode(CodecMetaClassSupport.filterNullObject(delegate))
                 }
@@ -79,13 +82,13 @@ class CodecMetaClassSupport {
         }
         else {
             // Resolve codec methods once only at startup
-            def encoder = codecClass.getEncoder()
+            def encoder = codecFactory.getEncoder()
             if (encoder) {
                 encoderClosure = { -> encoder.encode(CodecMetaClassSupport.filterNullObject(delegate)) }
             } else {
                 encoderClosure = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
-            def decoder = codecClass.getDecoder()
+            def decoder = codecFactory.getDecoder()
             if (decoder) {
                 decoderClosure = { -> decoder.decode(CodecMetaClassSupport.filterNullObject(delegate)) }
             } else {
@@ -93,14 +96,14 @@ class CodecMetaClassSupport {
             }
         }
 
-        addMetaMethod(encodeMethodName, encoderClosure)
-        if(codecClass.encoder) {
-            addAliasMetaMethods(codecClass.encoder.codecIdentifier.codecAliases, encodeMethodNameClosure, encoderClosure)
+        addMetaMethod(targetMetaClasses, encodeMethodName, encoderClosure)
+        if(codecFactory.encoder) {
+            addAliasMetaMethods(targetMetaClasses, codecFactory.encoder.codecIdentifier.codecAliases, encodeMethodNameClosure, encoderClosure)
         }
 
-        addMetaMethod(decodeMethodName, decoderClosure)
-        if(codecClass.decoder) {
-            addAliasMetaMethods(codecClass.decoder.codecIdentifier.codecAliases, decodeMethodNameClosure, decoderClosure)
+        addMetaMethod(targetMetaClasses, decodeMethodName, decoderClosure)
+        if(codecFactory.decoder) {
+            addAliasMetaMethods(targetMetaClasses, codecFactory.decoder.codecIdentifier.codecAliases, decodeMethodNameClosure, decoderClosure)
         }
     }
 
@@ -121,19 +124,31 @@ class CodecMetaClassSupport {
     }
 
     @CompileStatic
-    private addAliasMetaMethods(Set<String> aliases, Closure<String> methodNameClosure, Closure methodClosure) {
+    private addAliasMetaMethods(List<ExpandoMetaClass> targetMetaClasses, Set<String> aliases, Closure<String> methodNameClosure, Closure methodClosure) {
         aliases?.each { String aliasName ->
-            addMetaMethod(methodNameClosure(aliasName), methodClosure)
+            addMetaMethod(targetMetaClasses, methodNameClosure(aliasName), methodClosure)
         }
     }
+    
+    private String resolveCodecName(CodecFactory codecFactory) {
+        codecFactory.encoder?.codecIdentifier?.codecName ?: codecFactory.decoder?.codecIdentifier?.codecName
+    }
 
-    protected void addMetaMethod(String methodName, Closure closure) {
+    private static List<ExpandoMetaClass> resolveDefaultMetaClasses() {
         [
             String,
             GStringImpl,
             StringBuffer,
             StringBuilder,
             Object
-        ].each { Class clazz -> GrailsMetaClassUtils.getExpandoMetaClass(clazz)."${methodName}" << closure }
+        ].collect { Class clazz ->
+            GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        }
+    }
+    
+    protected void addMetaMethod(List<ExpandoMetaClass> targetMetaClasses, String methodName, Closure closure) {
+        targetMetaClasses.each { ExpandoMetaClass emc -> 
+            emc."${methodName}" << closure 
+        }
     }
 }

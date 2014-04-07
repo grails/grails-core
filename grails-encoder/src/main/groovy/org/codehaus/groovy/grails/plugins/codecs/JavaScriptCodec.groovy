@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.codecs
 
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.StringEscapeUtils
+import groovy.json.StringEscapeUtils
 import org.codehaus.groovy.grails.support.encoding.CodecFactory
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier
 import org.codehaus.groovy.grails.support.encoding.Decoder

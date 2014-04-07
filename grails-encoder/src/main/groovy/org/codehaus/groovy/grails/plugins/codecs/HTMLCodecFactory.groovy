@@ -1,5 +1,4 @@
-/*
- * Copyright 2013 the original author or authors.
+/* Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +16,18 @@ package org.codehaus.groovy.grails.plugins.codecs
 
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.support.encoding.CodecFactory
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier
 import org.codehaus.groovy.grails.support.encoding.Decoder
 import org.codehaus.groovy.grails.support.encoding.Encoder
 
-/**
- * A codec that encodes strings to JSON
- *
- * @author Lari Hotari
- * @since 2.3.4
- */
 @CompileStatic
-class JSONCodec implements CodecFactory {
-
-    static Encoder ENCODER = new JSONEncoder()
-
-    private static Decoder DECODER = new Decoder() {
-        def decode(Object obj) {
-            obj != null ? StringEscapeUtils.unescapeJavaScript(obj.toString()) : null
+class HTMLCodecFactory implements CodecFactory {
+    Encoder encoder = new HTMLEncoder()
+    Decoder decoder = decoder = new HTML4Decoder() {
+        @Override
+        public CodecIdentifier getCodecIdentifier() {
+            return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
-
-        CodecIdentifier getCodecIdentifier() {
-            JSONEncoder.JSON_CODEC_IDENTIFIER
-        }
-    }
-
-    Encoder getEncoder() { ENCODER }
-
-    Decoder getDecoder() { DECODER }
+    } 
 }

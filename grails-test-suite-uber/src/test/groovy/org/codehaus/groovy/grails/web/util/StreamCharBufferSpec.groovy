@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder
 
 import spock.lang.Issue
 import spock.lang.Specification
@@ -49,7 +50,7 @@ class StreamCharBufferSpec extends Specification {
         out=new GrailsPrintWriter(buffer.writerForEncoder)
 
         codecClasses*.configureCodecMethods()
-        codecOut=new GrailsPrintWriter(out.getWriterForEncoder(htmlCodecClass.encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup()))
+        codecOut=new GrailsPrintWriter(out.getWriterForEncoder(htmlCodecClass.encoder, EncodingStateRegistryLookupHolder.getEncodingStateRegistryLookup().lookup()))
     }
 
     def "stream char buffer should support encoding"() {
@@ -75,7 +76,7 @@ class StreamCharBufferSpec extends Specification {
     def "stream char buffer should support automaticly encoding to connected writer"() {
         given:
         def connectedBuffer=new StreamCharBuffer()
-        buffer.encodeInStreamingModeTo([getEncoder: { -> htmlCodecClass.encoder}] as EncoderAware, DefaultGrailsCodecClass.getEncodingStateRegistryLookup(), true, connectedBuffer.writer)
+        buffer.encodeInStreamingModeTo([getEncoder: { -> htmlCodecClass.encoder}] as EncoderAware, EncodingStateRegistryLookupHolder.getEncodingStateRegistryLookup(), true, connectedBuffer.writer)
         when:
         def hello="Hello world & hi"
         out << hello

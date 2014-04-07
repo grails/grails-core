@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
  * @author Lari Hotari
  * @since 2.3
  */
-public class HTMLEncoder extends XMLEncoder {
+public class HTMLEncoder extends BasicXMLEncoder {
     public static final CodecIdentifier HTML_CODEC_IDENTIFIER = new DefaultCodecIdentifier("HTML");
 
     public HTMLEncoder() {

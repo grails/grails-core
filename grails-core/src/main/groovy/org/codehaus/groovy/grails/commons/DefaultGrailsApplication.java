@@ -189,11 +189,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             registerArtefactHandler(tagLibArtefactHandler);
         }
 
-        final CodecArtefactHandler codecArtefactHandler = new CodecArtefactHandler();
-        if (!hasArtefactHandler(codecArtefactHandler.getType())) {
-            registerArtefactHandler(codecArtefactHandler);
-        }
-
         final UrlMappingsArtefactHandler urlMappingsArtefactHandler = new UrlMappingsArtefactHandler();
         if (!hasArtefactHandler(urlMappingsArtefactHandler.getType())) {
             registerArtefactHandler(urlMappingsArtefactHandler);

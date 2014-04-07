@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs
 
-import java.net.URLEncoder
-import java.net.URLDecoder
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -25,16 +23,8 @@ import org.springframework.web.context.request.RequestContextHolder
  * @author Marc Palmer
  * @since 0.5
  */
-class URLCodec {
-    static encode = { obj ->
-        URLEncoder.encode(obj.toString(), URLCodec.getEncoding())
-    }
-
-    static decode = { obj ->
-        URLDecoder.decode(obj.toString(), URLCodec.getEncoding())
-    }
-
-    private static String getEncoding() {
+class URLCodec extends URLCodecFactory {
+    protected String resolveEncoding() {
         RequestContextHolder.getRequestAttributes()?.request?.characterEncoding ?: 'UTF-8'
     }
 }

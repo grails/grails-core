@@ -42,7 +42,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.CharArrayAccessible;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
@@ -58,6 +57,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
 
 /**
@@ -2621,7 +2621,9 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
     }
 
     public Writer getWriterForEncoder(Encoder encoder) {
-        return getWriterForEncoder(encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null);
+        EncodingStateRegistryLookup encodingStateRegistryLookup = EncodingStateRegistryLookupHolder.getEncodingStateRegistryLookup();
+        EncodingStateRegistry encodingStateRegistry = encodingStateRegistryLookup != null ? encodingStateRegistryLookup.lookup() : null;
+        return getWriterForEncoder(encoder, encodingStateRegistry);
     }
 
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
