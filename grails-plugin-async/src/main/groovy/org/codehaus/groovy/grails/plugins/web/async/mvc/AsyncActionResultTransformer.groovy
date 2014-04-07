@@ -18,9 +18,11 @@ package org.codehaus.groovy.grails.plugins.web.async.mvc
 import grails.async.Promise
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
 
@@ -33,6 +35,9 @@ import org.springframework.web.servlet.ModelAndView
 @CompileStatic
 class AsyncActionResultTransformer implements ActionResultTransformer {
 
+
+    private GrailsExceptionResolver exceptionResolver
+
     Object transformActionResult(GrailsWebRequest webRequest, String viewName, Object actionResult) {
         if (actionResult instanceof Promise) {
 
@@ -44,33 +49,44 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
             asyncContext = new GrailsAsyncContext(asyncContext, webRequest)
 
             asyncContext.start {
-                Promise p = (Promise)actionResult
+                Promise p = (Promise) actionResult
                 p.onComplete {
-                    if(it instanceof Map) {
+                    if (it instanceof Map) {
                         def modelAndView = new ModelAndView(viewName, it)
                         asyncContext.getRequest().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView);
 
                         asyncContext.dispatch()
-                    }
-                    else {
+                    } else {
                         final modelAndView = asyncContext.getRequest().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
-                        if(modelAndView) {
+                        if (modelAndView) {
                             asyncContext.dispatch()
-                        }
-                        else {
+                        } else {
                             asyncContext.complete()
                         }
                     }
                 }
                 p.onError { Throwable t ->
-                    if(!response.isCommitted())
-                        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    asyncContext.complete()
-                    throw t
+                    if (!response.isCommitted()) {
+                        GrailsExceptionResolver exceptionResolver = createExceptionResolver(webRequest)
+                        request.setAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE, t)
+                        exceptionResolver.resolveException(request, response, this, (Exception) t)
+                        asyncContext.complete()
+                    }
                 }
             }
             return null;
         }
         return actionResult;
+    }
+
+    private GrailsExceptionResolver createExceptionResolver(GrailsWebRequest webRequest) {
+        if (!exceptionResolver) {
+            exceptionResolver = new GrailsExceptionResolver()
+            exceptionResolver.servletContext = webRequest.servletContext
+            exceptionResolver.grailsApplication = webRequest.attributes.grailsApplication
+            exceptionResolver.mappedHandlers = [this] as Set
+            exceptionResolver.exceptionMappings = ['java.lang.Exception': '/error']
+        }
+        return exceptionResolver
     }
 }
