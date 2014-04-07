@@ -5,6 +5,10 @@ import grails.converters.XML;
 public class XMLEncoder extends BasicXMLEncoder {
     @Override
     protected Object encodeAsXmlObject(Object o) {
-        return new XML(o).toString(); 
+        if(o instanceof XML) {
+            return o;
+        } else {
+            return new XML(o); 
+        }
     }
 }

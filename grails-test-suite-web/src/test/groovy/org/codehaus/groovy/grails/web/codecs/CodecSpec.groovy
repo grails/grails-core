@@ -36,7 +36,7 @@ class CodecSpec extends Specification {
         when:
             String x=null
         then:
-            [a: 1, b: 2, c: 3].encodeAsJSON() == '{"a":1,"b":2,"c":3}'
+            [a: 1, b: 2, c: 3].encodeAsJSON().toString() == '{"a":1,"b":2,"c":3}'
             x.encodeAsJSON() == null
             1.encodeAsJSON() == '1' // convert primitives to string
             true.encodeAsJSON() == 'true'
@@ -47,7 +47,7 @@ class CodecSpec extends Specification {
         when:
             String x=null
         then:
-            [a: 1, b: 2, c: 3].encodeAsXML() == '<?xml version="1.0" encoding="UTF-8"?><map><entry key="a">1</entry><entry key="b">2</entry><entry key="c">3</entry></map>'
+            [a: 1, b: 2, c: 3].encodeAsXML().toString() == '<?xml version="1.0" encoding="UTF-8"?><map><entry key="a">1</entry><entry key="b">2</entry><entry key="c">3</entry></map>'
             x.encodeAsXML() == null
             1.encodeAsXML() == '1' // convert primitives to string
             true.encodeAsXML() == 'true'
