@@ -61,12 +61,12 @@ class ConfigurationHelper {
     }
     
     @CompileStatic
-    static void clearCachedConfig(DefaultGrailsApplication application) {
+    static void clearCachedConfig(GrailsApplication application) {
         getCachedConfigs().remove(getCacheKey(application))
     }
 
     @CompileStatic
-    static ConfigObject loadConfigFromClasspath(DefaultGrailsApplication application = null,
+    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null,
             String environment = Environment.current.name) {
 
         ConfigObject co
@@ -85,9 +85,7 @@ class ConfigurationHelper {
             ConfigSlurper configSlurper = getConfigSlurper(environment, application)
             try {
                 try {
-                    application?.config = new ConfigObject() // set empty config to avoid stack overflow
                     co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
-                    application?.config = co
                 }
                 catch (ClassNotFoundException e) {
                     LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
@@ -120,7 +118,7 @@ class ConfigurationHelper {
     }
 
     @CompileStatic
-    private static int getCacheKey(DefaultGrailsApplication application) {
+    private static int getCacheKey(GrailsApplication application) {
         Integer cacheKey = DEV_CACHE_KEY
         if (application != null && (Environment.isWarDeployed() || !Environment.isWithinShell())) {
             // use unique cache keys for each config based on the application instance

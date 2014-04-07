@@ -18,19 +18,14 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
-import grails.util.Holders;
-import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObjectSupport;
 import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -41,13 +36,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -72,19 +62,15 @@ import org.springframework.util.StringUtils;
  * @see org.codehaus.groovy.grails.commons.ArtefactInfo
  * @since 0.1
  */
-public class DefaultGrailsApplication extends GroovyObjectSupport implements GrailsApplication, BeanClassLoaderAware {
+public class DefaultGrailsApplication extends AbstractGrailsApplication implements GrailsApplication, BeanClassLoaderAware {
 
     protected static final Pattern GETCLASSESPROP_PATTERN = Pattern.compile("(\\w+)(Classes)");
     protected static final Pattern GETCLASSESMETH_PATTERN = Pattern.compile("(get)(\\w+)(Classes)");
     protected static final Pattern ISCLASS_PATTERN = Pattern.compile("(is)(\\w+)(Class)");
     protected static final Pattern GETCLASS_PATTERN = Pattern.compile("(get)(\\w+)Class");
 
-    protected ClassLoader cl;
-
     protected Class<?>[] allClasses = new Class[0];
     protected static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
-    protected ApplicationContext parentContext;
-    protected ApplicationContext mainContext;
 
     protected List<Class<?>> loadedClasses = new ArrayList<Class<?>>();
     protected ArtefactHandler[] artefactHandlers;
@@ -92,19 +78,15 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected List<Class<?>> allArtefactClasses = new ArrayList<Class<?>>();
     protected Map<String, ArtefactInfo> artefactInfo = new HashMap<String, ArtefactInfo>();
     protected Class<?>[] allArtefactClassesArray;
-    protected Metadata applicationMeta = Metadata.getCurrent();
     protected Resource[] resources;
     protected boolean initialised = false;
-    protected ConfigObject config;
-    @SuppressWarnings("rawtypes")
-    protected Map flatConfig = Collections.emptyMap();
 
     /**
      * Creates a new empty Grails application.
      */
     public DefaultGrailsApplication() {
-        ConfigurationHelper.clearCachedConfig(this);
-        cl = new GroovyClassLoader();
+        super();
+        classLoader = new GroovyClassLoader();
     }
 
     /**
@@ -114,12 +96,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param classLoader The GroovyClassLoader to use
      */
     public DefaultGrailsApplication(final Class<?>[] classes, ClassLoader classLoader) {
-        ConfigurationHelper.clearCachedConfig(this);
+        super();
         Assert.notNull(classes, "Constructor argument 'classes' cannot be null");
 
         loadedClasses.addAll(Arrays.asList(classes));
         allClasses = classes;
-        cl = classLoader;
+        this.classLoader = classLoader;
     }
 
     /**
@@ -132,7 +114,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
             Class<?> aClass;
             try {
-                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
+                aClass = classLoader.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
             } catch (ClassNotFoundException e) {
                 throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
             } catch (IOException e) {
@@ -152,7 +134,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
             Class<?> aClass;
             try {
-                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
+                aClass = classLoader.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
             } catch (ClassNotFoundException e) {
                 throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
             } catch (IOException e) {
@@ -291,30 +273,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         populateAllClasses();
     }
 
-    public ClassLoader getClassLoader() {
-        return cl;
-    }
-
     public ConfigObject getConfig() {
         if (config == null) {
+            this.config = new ConfigObject();
             setConfig(ConfigurationHelper.loadConfigFromClasspath(this));
         }
         return config;
-    }
-
-    public void setConfig(ConfigObject config) {
-        this.config = config;
-        if (config == null) {
-            flatConfig = Collections.emptyMap();
-        } else {
-            flatConfig = config.flatten(new LinkedHashMap());
-        }
-        Holders.setConfig(config);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getFlatConfig() {
-        return flatConfig;
     }
 
     /**
@@ -335,46 +299,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     public Class<?>[] getAllClasses() {
         return allClasses;
-    }
-
-    public ApplicationContext getMainContext() {
-        return mainContext;
-    }
-
-    public void setMainContext(ApplicationContext context) {
-        mainContext = context;
-        if (mainContext == null) {
-            return;
-        }
-        if (!mainContext.containsBean("pluginManager")) {
-            return;
-        }
-        if (mainContext instanceof ConfigurableApplicationContext) {
-            if (!((ConfigurableApplicationContext) mainContext).isActive()) {
-                // unrefreshed context - plugin manager will get the context from GrailsRuntimeConfiguration
-                return;
-            }
-        }
-        mainContext.getBean("pluginManager", GrailsPluginManager.class).setApplicationContext(context);
-    }
-
-    /**
-     * Sets the parent ApplicationContext for the GrailsApplication.
-     *
-     * @param applicationContext The ApplicationContext
-     * @throws BeansException Thrown when an error occurs setting the ApplicationContext
-     */
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        parentContext = applicationContext;
-    }
-
-    /**
-     * Retrieves the parent ApplicationContext for this GrailsApplication.
-     *
-     * @return The parent ApplicationContext
-     */
-    public ApplicationContext getParentContext() {
-        return parentContext;
     }
 
     /**
@@ -414,8 +338,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * defined by the registered ArtefactHandler instances.
      */
     public void refresh() {
-        if (cl instanceof GroovyClassLoader) {
-            configureLoadedClasses(((GroovyClassLoader)cl).getLoadedClasses());
+        if (classLoader instanceof GroovyClassLoader) {
+            configureLoadedClasses(((GroovyClassLoader)classLoader).getLoadedClasses());
         }
     }
 
@@ -756,10 +680,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return initialised;
     }
 
-    public Metadata getMetadata() {
-        return applicationMeta;
-    }
-
     public GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
         ArtefactInfo info = getArtefactInfo(type);
         return info == null ? null : info.getGrailsClassByLogicalPropertyName(logicalName);
@@ -773,10 +693,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         }
     }
 
-    public boolean isWarDeployed() {
-        return getMetadata().isWarDeployed();
-    }
-
     public void setBeanClassLoader(ClassLoader classLoader) {
         // do nothing
     }
@@ -785,21 +701,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(artefact)) {
                 addOverridableArtefact(artefactHandler.getType(), artefact);
-            }
-        }
-    }
-
-    public void configChanged() {
-        ConfigObject co = getConfig();
-        Holders.setConfig(co);
-        // not thread safe
-        flatConfig = co.flatten(new LinkedHashMap());
-        final ArtefactHandler[] handlers = getArtefactHandlers();
-        if(handlers != null) {
-            for (ArtefactHandler handler : handlers) {
-                if (handler instanceof GrailsConfigurationAware) {
-                    ((GrailsConfigurationAware)handler).setConfiguration(co);
-                }
             }
         }
     }
