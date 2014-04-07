@@ -85,7 +85,9 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
             exceptionResolver.servletContext = webRequest.servletContext
             exceptionResolver.grailsApplication = webRequest.attributes.grailsApplication
             exceptionResolver.mappedHandlers = [this] as Set
-            exceptionResolver.exceptionMappings = ['java.lang.Exception': '/error']
+            def properties = new Properties()
+            properties['java.lang.Exception'] =  '/error'
+            exceptionResolver.exceptionMappings = properties
         }
         return exceptionResolver
     }
