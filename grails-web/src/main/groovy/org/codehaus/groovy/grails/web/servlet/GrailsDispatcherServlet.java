@@ -318,7 +318,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 // Determine handler for the current request.
                 mappedHandler = getHandler(processedRequest);
-                Object handler = mappedHandler.getHandler();
+                Object handler = mappedHandler != null ? mappedHandler.getHandler() : null;
                 if (mappedHandler == null || handler == null) {
                     noHandlerFound(processedRequest, response);
                     return;
