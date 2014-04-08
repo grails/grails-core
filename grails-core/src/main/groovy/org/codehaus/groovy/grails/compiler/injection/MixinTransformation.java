@@ -17,9 +17,11 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.GrailsNameUtils;
 import grails.util.Mixin;
+import grails.util.MixinTargetAware;
 import groovy.lang.GroovyObjectSupport;
 
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -27,10 +29,7 @@ import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
@@ -83,7 +82,20 @@ public class MixinTransformation implements ASTTransformation {
 
                     final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
 
-                    GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+                    if (classNode != null && classNode.getField(fieldName) == null) {
+                        boolean isTargetAware = GrailsASTUtils.findInterface(mixinClassNode, new ClassNode(MixinTargetAware.class)) != null;
+
+                        ConstructorCallExpression initialValue;
+                        if(isTargetAware) {
+                            initialValue = new ConstructorCallExpression(mixinClassNode, new MapExpression(
+                                    Arrays.asList(new MapEntryExpression(new ConstantExpression("target"), new VariableExpression("this")))
+                            ));
+                        }  else {
+                            initialValue = new ConstructorCallExpression(mixinClassNode, GrailsASTUtils.ZERO_ARGUMENTS);
+                        }
+                        classNode.addField(fieldName, Modifier.PRIVATE, mixinClassNode,initialValue);
+                    }
+
                     VariableExpression fieldReference = new VariableExpression(fieldName, mixinClassNode);
 
                     while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
