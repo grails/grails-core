@@ -106,8 +106,8 @@ class HelloService {
     }
 }
 
-class AMixin implements MixinTargetAware {
-    Object target
+class AMixin implements MixinTargetAware<A> {
+    A target
     String prop = "foo"
     String mixMe() {"mixMe from AMixin $target.me"}
     static mixStatic() { "mix static"}

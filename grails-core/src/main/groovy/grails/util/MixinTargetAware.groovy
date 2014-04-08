@@ -6,7 +6,7 @@ package grails.util
  * @author Graeme Rocher
  * @since 2.3.8
  */
-public interface MixinTargetAware {
+public interface MixinTargetAware<T> {
 
-    void setTarget(Object targetObject)
+    void setTarget(T targetObject)
 }
