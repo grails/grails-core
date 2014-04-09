@@ -94,7 +94,7 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
 
     @Override
     public void sendError(int sc) throws IOException {
-        GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
 
         try {
             if (!redirectCalled && !isCommitted()) {
@@ -102,20 +102,24 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
             }
         }
         finally {
-            WebUtils.storeGrailsWebRequest(webRequest);
+            if(webRequest != null) {
+                WebUtils.storeGrailsWebRequest(webRequest);
+            }
         }
     }
 
     @Override
     public void sendError(int sc, String msg) throws IOException {
-        GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         try {
             if (!redirectCalled && !isCommitted()) {
                 super.sendError(sc, msg);
             }
         }
         finally {
-            WebUtils.storeGrailsWebRequest(webRequest);
+            if(webRequest != null) {
+                WebUtils.storeGrailsWebRequest(webRequest);
+            }
         }
     }
 
