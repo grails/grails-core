@@ -6,11 +6,6 @@ import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
 import org.codehaus.groovy.grails.test.junit4.runner.GrailsTestCaseRunnerBuilder
 import org.codehaus.groovy.grails.test.spock.listener.OverallRunListener
-
-/**
- * @author Graeme Rocher
- */
-
 import org.junit.runner.JUnitCore
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
@@ -24,11 +19,14 @@ import spock.config.RunnerConfiguration
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.junit.runner.Request
-import org.junit.internal.requests.FilterRequest
 import org.junit.runner.manipulation.Filter
 import org.junit.runner.Description
 import org.objenesis.ObjenesisHelper
 import org.objenesis.ObjenesisBase
+
+/**
+ * @author Graeme Rocher
+ */
 
 @CompileStatic
 class GrailsSpecTestType extends GrailsTestTypeSupport {
