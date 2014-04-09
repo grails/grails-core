@@ -19,10 +19,10 @@ import java.io.Reader;
 
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-import org.objenesis.ObjenesisStd;
-import org.objenesis.instantiator.ObjectInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.objenesis.ObjenesisStd;
+import org.springframework.objenesis.instantiator.ObjectInstantiator;
 
 /**
  * Fast in-memory PrintWriter implementation.

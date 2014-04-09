@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import org.objenesis.ObjenesisStd;
-import org.objenesis.instantiator.ObjectInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.objenesis.ObjenesisStd;
+import org.springframework.objenesis.instantiator.ObjectInstantiator;
 
 /**
  * @author Lari Hotari

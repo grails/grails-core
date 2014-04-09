@@ -33,10 +33,10 @@ import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.LazyInitializingWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
-import org.objenesis.ObjenesisStd;
-import org.objenesis.instantiator.ObjectInstantiator;
 
 import com.opensymphony.module.sitemesh.RequestConstants;
+import org.springframework.objenesis.ObjenesisStd;
+import org.springframework.objenesis.instantiator.ObjectInstantiator;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -161,9 +161,8 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
 
     /**
      * Private constructor.  Use getInstance() instead.
-     * @param activeWriter buffered writer
-     * @param response
-     * @param streamBuffer StreamCharBuffer instance
+     * @param buffer buffered writer
+     * @param response The servlet response
      * @param bytesCounter    Keeps count of encoded bytes count
      */
     private GSPResponseWriter(final StreamCharBuffer buffer, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {

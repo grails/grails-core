@@ -9,5 +9,4 @@ dependencies {
     compile "org.springframework:spring-webmvc:${springVersion}"
     compile "org.springframework:spring-context-support:${springVersion}"
     compile 'com.google.code.gson:gson:2.2.4'
-    compile 'org.objenesis:objenesis:1.4'
 }
