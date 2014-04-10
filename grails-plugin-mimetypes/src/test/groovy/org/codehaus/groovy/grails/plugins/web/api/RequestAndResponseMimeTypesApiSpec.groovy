@@ -234,14 +234,14 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             formatResponse == responseResult
 
         where:
-            formatResponse  | acceptHeader                       | userAgent  | additionalConfig
-             null      | 'application/xml, text/csv'        | 'Mozilla'  | ''
-            'got html'      | 'application/xml, text/html, */*'  | 'Mozilla'  | ''
-            'got json'      | 'application/xml, */*, text/html'  | 'Mozilla'  | ''
-            'got json'      | 'application/xml, text/csv, */*'   | 'Mozilla'  | ''
-            'got json'      | 'application/xml, text/html, */*'  | 'Trident'   | ''
-            'got html'      | 'application/xml, text/html, */*'  | 'Trident'   | 'grails.mime.disable.accept.header.userAgents = []'
-            'got html'      | 'application/xml, text/html, */*'  | 'Trident'   | 'grails.mime.disable.accept.header.userAgents = null'
+            formatResponse  | acceptHeader                       | userAgent    | additionalConfig
+            null            | 'application/xml, text/csv'        | 'Mozilla'    | ''
+            'got html'      | 'application/xml, text/html, */*'  | 'Mozilla'    | ''
+            'got json'      | 'application/xml, */*, text/html'  | 'Mozilla'    | ''
+            'got json'      | 'application/xml, text/csv, */*'   | 'Mozilla'    | ''
+            'got json'      | 'application/xml, text/html, */*'  | 'Trident'    | ''
+            'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = []'
+            'got html'      | 'application/xml, text/html, */*'  | 'Trident'    | 'grails.mime.disable.accept.header.userAgents = null'
     }
 
     

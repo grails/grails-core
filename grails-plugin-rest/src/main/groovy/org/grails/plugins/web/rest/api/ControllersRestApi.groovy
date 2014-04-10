@@ -20,6 +20,8 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
+import org.springframework.util.Assert
 
 import javax.servlet.http.HttpServletResponse
 
@@ -56,6 +58,9 @@ class ControllersRestApi {
 
     @Autowired
     GroovyPageLocator groovyPageLocator
+
+    @Autowired
+    ResponseMimeTypesApi responseMimeTypesApi
 
     ControllersRestApi(RendererRegistry rendererRegistry, ControllersApi controllersApi, ControllersMimeTypesApi mimeTypesApi) {
         this.controllersApi = controllersApi
@@ -219,8 +224,8 @@ class ControllersRestApi {
         return null
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     protected MimeType[] getResponseFormat(HttpServletResponse response) {
-        response.mimeTypes
+        Assert.notNull(responseMimeTypesApi, "No configured ResponseMimeTypesApi instance")
+        responseMimeTypesApi.getMimeTypesFormatAware(response)
     }
 }
