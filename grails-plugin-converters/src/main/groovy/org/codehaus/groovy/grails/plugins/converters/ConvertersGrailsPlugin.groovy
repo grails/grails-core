@@ -17,15 +17,12 @@ package org.codehaus.groovy.grails.plugins.converters
 
 import grails.converters.JSON
 import grails.converters.XML
-import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Allows the "obj as XML" and "obj as JSON" syntax.

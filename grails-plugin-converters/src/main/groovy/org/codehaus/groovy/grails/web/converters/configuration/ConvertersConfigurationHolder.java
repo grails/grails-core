@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
@@ -36,9 +34,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ConvertersConfigurationHolder {
 	
-	private final static Log log = LogFactory.getLog(ConvertersConfigurationHolder.class);
-
-    public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";
+	public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";
 
     static {
         ShutdownOperations.addOperation(new Runnable() {
@@ -83,27 +79,14 @@ public class ConvertersConfigurationHolder {
     }
 
     public static <C extends Converter> ConverterConfiguration<C> getConverterConfiguration(Class<C> converterClass) throws ConverterException {
-    	if (log.isDebugEnabled()) {
-    		log.debug(String.format("entering getConverterConfiguration(%s)", converterClass.getSimpleName()));
-    	}
-        ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);
-        
+        ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);        
         if (cfg == null) {
-        	log.debug("getThreadLocalConverterConfiguration returned null, continue lookup...");
-        	cfg = getInstance().defaultConfiguration.get(converterClass);
-        	
+        	cfg = getInstance().defaultConfiguration.get(converterClass);        	
         	if (cfg == null) {
-        		if (log.isDebugEnabled()) {
-        			log.debug(String.format("defaultConfiguration.get(%s) returned null, initializing DefaultConverterConfiguration",converterClass.getSimpleName()));
-        		}
         		cfg = new DefaultConverterConfiguration();
         	}        	
         	setTheadLocalConverterConfiguration(converterClass, cfg);
         }        
-        
-        if (log.isDebugEnabled()) {
-        	log.debug(String.format("exiting with cfg = %s", cfg.toString()));
-        }
         return cfg;
     }
 
