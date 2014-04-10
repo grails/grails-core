@@ -13,9 +13,6 @@ dependencies {
         exclude group: 'javax.servlet', module:'servlet-api'
     }
 
-    // Required for tag library support
-    runtime 'taglibs:standard:1.1.2'
-    runtime "javax.servlet:jstl:1.1.2"
 
     // Needed by GSP's jsp tag library resolver
     compile 'xpp3:xpp3_min:1.1.4c'

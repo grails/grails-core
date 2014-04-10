@@ -43,6 +43,11 @@ dependencies {
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
     }
+
+
+    // Required for tag library support
+    testRuntime 'taglibs:standard:1.1.2'
+    testRuntime "javax.servlet:jstl:1.1.2"
 }
 
 // javaee-web-api has a bad versions of classes we need to compile against
