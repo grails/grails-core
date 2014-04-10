@@ -10,6 +10,7 @@ dependencies {
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-converters'),
             project(':grails-plugin-rest'),
+            project(':grails-plugin-codecs'),
             project(':grails-logging'),
             project(':grails-test')
 
