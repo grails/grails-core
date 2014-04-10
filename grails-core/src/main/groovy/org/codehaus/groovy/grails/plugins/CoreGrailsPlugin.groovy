@@ -86,13 +86,13 @@ class CoreGrailsPlugin {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
 
-        grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication", true))
+        grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
         if (getParentCtx()?.containsBean('pluginManager')) {
-            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager', true))
+            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager'))
         }
 
         classLoader(MethodInvokingFactoryBean) {
-            targetObject = ref("grailsApplication", true)
+            targetObject = ref("grailsApplication")
             targetMethod = "getClassLoader"
         }
 
