@@ -15,44 +15,34 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.xml.sax.helpers.DefaultHandler
-import org.xml.sax.Attributes
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 /**
- * A SAX handler that reads the tag library definitions from a web.xml file
+ * reads the tag library definitions from a web.xml file
  *
  * @author Graeme Rocher
  */
-class WebXmlTagLibraryReader extends DefaultHandler {
-
-    static final String TAG_TAGLIB_URI = "taglib-uri"
-    static final String TAG_TAGLIB_LOC = "taglib-location"
-    static final String TAG_TAGLIB = "taglib"
-
+@CompileStatic
+class WebXmlTagLibraryReader {
     /**
      * Contains a map of URI to tag library locations once the handler has read the web.xml file
      */
-    Map tagLocations = [:]
+    Map<String, String> tagLocations = [:]
 
-    private String location
-    private String uri
-    private StringBuilder buf
-
-    void startElement(String ns, String localName, String qName, Attributes attributes) {
-        if (TAG_TAGLIB_URI == qName || TAG_TAGLIB_LOC == qName) {
-            buf = new StringBuilder()
+    public WebXmlTagLibraryReader(InputStream inputStream) {
+        inputStream.withStream {
+            init(new BufferedInputStream(inputStream))
         }
     }
 
-    void characters(char[] chars, int offset, int length) {
-        buf?.append(chars, offset, length)
-    }
-
-    void endElement(String ns, String localName, String qName) {
-        switch (qName) {
-            case TAG_TAGLIB_URI: uri = buf.toString().trim();      break
-            case TAG_TAGLIB_LOC: location = buf.toString().trim(); break
-            case TAG_TAGLIB:     tagLocations[uri] = location;     break
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private init(InputStream inputStream) {
+        def rootNode = new XmlSlurper(false, false, true).parse(inputStream)
+        rootNode.taglib.each { taglib ->
+            String uri = taglib.'taglib-uri'.text()
+            String location =  taglib.'taglib-location'.text()
+            tagLocations[uri] = location
         }
     }
 }

@@ -216,6 +216,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         grailsApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
         ga = grailsApplication
+        ga.config.grails.gsp.tldScanPattern = 'classpath*:/META-INF/spring*.tld,classpath*:/META-INF/fmt.tld,classpath*:/META-INF/c.tld,classpath*:/META-INF/core.tld,classpath*:/META-INF/c-1_0-rt.tld'
         grailsApplication.initialise()
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)

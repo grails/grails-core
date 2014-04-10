@@ -26,18 +26,9 @@ class TldReaderTests extends GroovyTestCase{
     void testTldReader() {
         def res = new ClassPathResource("org/codehaus/groovy/grails/web/pages/ext/jsp/tld-reader-test.tld")
 
-        def is = new InputSource(res.getInputStream())
-
-        SAXParserFactory factory = SAXParserFactory.newInstance()
-        factory.namespaceAware = false
-        factory.validating = true
-        def reader = factory.newSAXParser().getXMLReader()
-        TldReader tldReader = new TldReader()
-        reader.setContentHandler tldReader
-        reader.setEntityResolver new LocalEntityResolver()
-        reader.parse is
+        TldReader tldReader = new TldReader(res.getInputStream())
 
         assert tldReader.tags
-        assertEquals tldReader.tags.localeSelect, JspLocaleSelectTag
+        assertEquals tldReader.tags.localeSelect, JspLocaleSelectTag.class.name
     }
 }

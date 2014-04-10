@@ -15,23 +15,28 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
+import groovy.transform.CompileStatic;
+
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.util.Assert
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@CompileStatic
 class JspTagLibImpl implements JspTagLib {
+    private String uri
+    private Map<String, JspTagImpl> tags = [:]
 
-    private uri
-    private tags = [:]
-
-    JspTagLibImpl(String uri, Map tagClasses) {
+    JspTagLibImpl(String uri, Map<String, String> tagClasses, ClassLoader classLoader) {
         Assert.notNull uri, "The URI of the tag library must be specified!"
         this.uri = uri
-        for (t in tagClasses) {
-            tags[t.key] = new JspTagImpl(t.value)
+        tagClasses.each { String tagName, String className ->
+            tags[tagName] = new JspTagImpl(className, classLoader)
         }
     }
 
@@ -46,16 +51,18 @@ class JspTagLibImpl implements JspTagLib {
     /**
      * Overrides invoke method so tags can be invoked as methods
      */
-    Object invokeMethod(String name, Object args) {
+    Object invokeMethod(String name, Object argsParam) {
         JspTag tag = getTag(name)
 
         if (tag) {
-            args = args ?: [[:]] // default to an list with an empty map inside
-            def sw = new FastStringPrintWriter()
+            Object[] args = (Object[])argsParam 
+            if(args == null || args.length==0) {
+                 args = [[:]] as Object[]
+            }
 
-            Map attrs = args[0] instanceof Map ? args[0] : [:]
-            def body = args[0] instanceof Closure ? args[0] : null
-            if (args.size() > 1) body = args[1] instanceof Closure ? args[1] : null
+            Map attrs = args[0] instanceof Map ? (Map)args[0] : [:]
+            Closure body = args[0] instanceof Closure ? (Closure)args[0] : null
+            if (args.size() > 1) body = args[1] instanceof Closure ? (Closure)args[1] : null
             if (body == null && args.size() > 1) {
                 body = { args[1] }
             }
@@ -63,11 +70,11 @@ class JspTagLibImpl implements JspTagLib {
                 body = {}
             }
 
-            tag.doTag sw,attrs,body
-
-            return sw.toString()
+            def sw = new FastStringPrintWriter()
+            tag.doTag(sw, attrs, body)
+            return sw.buffer
         }
 
-        return super.invokeMethod(name, args)
+        return super.invokeMethod(name, argsParam)
     }
 }
