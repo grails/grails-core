@@ -16,23 +16,26 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
 import grails.util.BuildSettingsHolder
+import groovy.transform.CompileStatic
 
+import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 import javax.servlet.ServletContext
-import javax.xml.parsers.SAXParserFactory
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import org.springframework.beans.factory.BeanClassLoaderAware
+import org.springframework.beans.factory.InitializingBean
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-import org.springframework.util.Assert
+import org.springframework.core.io.ResourceLoader
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.support.ServletContextResource
-import org.xml.sax.InputSource
-import org.xmlpull.mxp1.MXParser
-import org.xmlpull.v1.XmlPullParser
 
 /**
  * Resolves all of the available tag libraries from web.xml and all available JAR files.
@@ -41,89 +44,92 @@ import org.xmlpull.v1.XmlPullParser
  *
  * @author Graeme Rocher
  */
-class TagLibraryResolverImpl implements ServletContextAware, GrailsApplicationAware, TagLibraryResolver {
-
-    private tagLibs = [:]
-    private tagLibLocations = [:]
-
+@CompileStatic
+class TagLibraryResolverImpl implements ServletContextAware, GrailsApplicationAware, TagLibraryResolver, ResourceLoaderAware, BeanClassLoaderAware {
+    protected Map<String, JspTagLib> tagLibs = new ConcurrentHashMap<String, JspTagLib>()
     GrailsApplication grailsApplication
     ServletContext servletContext
+    ClassLoader classLoader
+    ResourceLoader resourceLoader
+    @Value('#{\'${grails.gsp.tldScanPattern:}\'?:\'${spring.gsp.tldScanPattern:}\'}')
+    String[] tldScanPatterns = [] as String[];
+    volatile boolean initialized = false
 
     /**
      * Resolves a JspTagLib instance for the given URI
      */
     JspTagLib resolveTagLibrary(String uri) {
-        if (tagLibs[uri]) return tagLibs[uri]
-
-        JspTagLib jspTagLib
-
-        String loc = tagLibLocations[uri]
-
-        if (loc) {
-            if (loc.startsWith("jar:")) {
-                def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader().getURLs()
-                def fileLoc = loc[4..loc.indexOf('!')-1]
-                String pathWithinZip = loc[loc.indexOf('!')+1..-1]
-                URL jarFile = jarURLs.find { it.toExternalForm() == fileLoc}
-                if (jarFile) {
-                    ZipInputStream zipInput = new ZipInputStream(jarFile.openStream())
-                    ZipEntry entry = zipInput.getNextEntry()
-                    while (entry) {
-                        if (entry.name == pathWithinZip) {
-                            jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(zipInput, "UTF-8"))
-                            break
-                        }
-                        entry = zipInput.getNextEntry()
-                    }
-                }
-            }
-            else {
-                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc), "UTF-8"))
-            }
+        if(!initialized) {
+            initialize()
         }
-        else {
-            Assert.notNull servletContext, "TagLibraryResolver requires an instance of the ServletContext!"
-            Resource webXml = getWebXmlFromServletContext()
+        return tagLibs[uri]
+    }
 
+    public synchronized void initialize() {
+        if(servletContext) {
+            Resource webXml = getWebXmlFromServletContext()
             if (webXml?.exists()) {
                 loadTagLibLocations(webXml)
             }
-
-            if (tagLibLocations[uri]) {
-                // in this case the tag lib was discovered in the web.xml so we use the servlet context
-                loc = tagLibLocations[uri]
-                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc), "UTF-8"))
+        }
+        if(resourceLoader && tldScanPatterns) {
+            PathMatchingResourcePatternResolver patternResolver=new PathMatchingResourcePatternResolver(resourceLoader)
+            for(String tldResourcePattern : tldScanPatterns) {
+                patternResolver.getResources(tldResourcePattern).each { Resource resource ->
+                    JspTagLib jspTagLib = loadJspTagLib(resource.getInputStream())
+                    if(jspTagLib) {
+                        tagLibs[jspTagLib.URI] = jspTagLib
+                    }
+                }
+            }
+        }
+        initialized = true
+    }
+    
+    private loadTagLibLocations(Resource webXml) {
+        if (!webXml) {
+            return
+        }
+        WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader(webXml.getInputStream())
+        webXmlReader.getTagLocations().each { String uri, String location ->
+            JspTagLib jspTagLib
+            if (location.startsWith("jar:")) {
+                jspTagLib = loadFromJar(uri, location)
             }
             else {
-                def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader()?.getURLs()
-                for (url in jarURLs) {
-                    if (url.file.endsWith(".jar")) {
-                        jspTagLib = attempLoadTagLibFromJAR(uri, url, new ZipInputStream(url.openStream()))
-                        if (jspTagLib) break
+                jspTagLib = loadJspTagLib(getTldFromServletContext(location), uri)
+            }
+            if(jspTagLib) {
+                tagLibs[uri] = jspTagLib
+            }
+        }
+    }
+
+    private JspTagLib loadFromJar(String uri, String loc) {
+        JspTagLib jspTagLib = null
+        List<URL> jarURLs = resolveJarUrls()
+        def fileLoc = loc[4..loc.indexOf('!')-1]
+        String pathWithinZip = loc[loc.indexOf('!')+1..-1]
+        URL jarFile = jarURLs.find { URL url -> url.toExternalForm() == fileLoc}
+        if (jarFile) {
+            jarFile.openStream().withStream { InputStream jarFileInputStream ->
+                ZipInputStream zipInput = new ZipInputStream(jarFileInputStream)
+                ZipEntry entry = zipInput.getNextEntry()
+                while (entry) {
+                    if (entry.name == pathWithinZip) {
+                        jspTagLib = loadJspTagLib(zipInput, uri)
+                        break
                     }
+                    entry = zipInput.getNextEntry()
                 }
             }
         }
         return jspTagLib
     }
-
-    private loadTagLibLocations(Resource webXml) {
-        if (!webXml) {
-            return
-        }
-
-        SAXParserFactory factory = SAXParserFactory.newInstance()
-        factory.namespaceAware = false
-        factory.validating = false
-        def reader = factory.newSAXParser().getXMLReader()
-        WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader()
-        reader.setContentHandler webXmlReader
-        reader.setEntityResolver new LocalEntityResolver()
-        reader.parse new InputSource(webXml.getInputStream())
-
-        for (entry in webXmlReader.getTagLocations()) {
-            tagLibLocations[entry.key] = entry.value
-        }
+    
+    private List resolveJarUrls() {
+        List<URL> jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader()?.getURLs() as List
+        return jarURLs
     }
 
     protected InputStream getTldFromServletContext(String loc) {
@@ -141,84 +147,40 @@ class TagLibraryResolverImpl implements ServletContextAware, GrailsApplicationAw
         }
     }
 
-    protected List getJarsFromServletContext() {
+    protected List<URL> getJarsFromServletContext() {
         def files = servletContext.getResourcePaths("/WEB-INF/lib")
-        files = files.findAll {  it.endsWith(".jar") || it.endsWith(".zip")}
-        files.collect { servletContext.getResource(it) }
-    }
-
-    private JspTagLib attempLoadTagLibFromJAR(String uri, URL jarURL, ZipInputStream zipInput) {
-        JspTagLib jspTagLib
-
-        try {
-            zipInput = new ZipInputStream(jarURL.openStream())
-            ZipEntry entry = zipInput.getNextEntry()
-            while (entry) {
-                def name = entry.getName()
-
-                if (name.startsWith("META-INF/") && name.endsWith(".tld")) {
-                    def tagLibLocation = "jar:${jarURL.toExternalForm()}!$name"
-                    def inputStreamReader = new BufferedReader(new InputStreamReader(new UncloseableInputStream(zipInput), "UTF-8"))
-                    inputStreamReader.mark 1024
-                    XmlPullParser pullParser = new MXParser()
-                    pullParser.setInput(inputStreamReader)
-
-                    pullParser.nextTag()
-                    if ("taglib".equals(pullParser.getName())) {
-                        def tagLibURI
-                        int token
-                        while (true) {
-                            token = pullParser.nextToken()
-                            if (token == XmlPullParser.END_DOCUMENT) break
-                            if (token == XmlPullParser.START_TAG && "uri".equals(pullParser.getName())) {
-                                pullParser.next()
-                                tagLibURI = pullParser.getText()?.trim()
-                                break
-                            }
-                        }
-
-                        if (tagLibURI) {
-                            tagLibLocations[tagLibURI] = tagLibLocation
-                            if (tagLibURI == uri) {
-                                inputStreamReader.reset()
-                                jspTagLib = loadJspTagLib(uri, tagLibLocation, inputStreamReader)
-                            }
-                        }
-                    }
-                }
-                entry = zipInput.getNextEntry()
-            }
-        }
-        finally {
-            zipInput?.close()
-        }
-
-        return jspTagLib
+        files = files.findAll { String path ->  path.endsWith(".jar") || path.endsWith(".zip")}
+        files.collect { String path -> servletContext.getResource(path) } as List
     }
 
     /**
-     * Obtains a reference to the RootLoader instance
+     * Obtains a reference to the first parent classloader that is a URLClassLoader and contains some URLs
+     * 
      */
-    protected resolveRootLoader() {
-        getClass().classLoader.rootLoader
+    protected URLClassLoader resolveRootLoader() {
+        def classLoader = getClass().classLoader
+        while(classLoader != null) {
+            if(classLoader instanceof URLClassLoader && ((URLClassLoader)classLoader).getURLs()) {
+                return (URLClassLoader)classLoader
+            }
+            classLoader = classLoader.parent
+        }
+        return null
     }
 
-    private JspTagLib loadJspTagLib(String uri, String loc, Reader r) {
-
-        def source = new InputSource(r)
-        source.setSystemId loc
-
-        SAXParserFactory factory = SAXParserFactory.newInstance()
-        factory.namespaceAware = false
-        factory.validating = false
-        def reader = factory.newSAXParser().getXMLReader()
-        TldReader tldReader = new TldReader()
-        reader.setContentHandler tldReader
-        reader.setEntityResolver new LocalEntityResolver()
-        reader.parse source
-
-        def taglib = new JspTagLibImpl(uri, tldReader.tags)
-        tagLibs[uri] = taglib
-        return taglib
+    private JspTagLib loadJspTagLib(InputStream inputStream, String specifiedUri = null) {
+        TldReader tldReader = new TldReader(inputStream)
+        String uri = specifiedUri?:tldReader.uri
+        if(tldReader.tags) {
+            return new JspTagLibImpl(uri, tldReader.tags, classLoader)
+        } else {
+            return null
+        }
     }
+
+    @Override
+    public void setBeanClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader
+    }
+
 }

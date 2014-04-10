@@ -22,16 +22,8 @@ import org.xml.sax.InputSource
 class WebXmlTagLibraryReaderTests extends GroovyTestCase {
 
     void testWebXmlTagLibraryReader() {
-        def is = new InputSource(new StringReader(testWebXml))
-
-        SAXParserFactory factory = SAXParserFactory.newInstance()
-        factory.namespaceAware = false
-        factory.validating = true
-        def reader = factory.newSAXParser().getXMLReader()
-        WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader()
-        reader.setContentHandler webXmlReader
-        reader.setEntityResolver new LocalEntityResolver()
-        reader.parse is
+        def is = new ByteArrayInputStream(testWebXml.getBytes())
+        WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader(is)
 
         assert webXmlReader.tagLocations
 

@@ -13,9 +13,6 @@ dependencies {
         exclude group: 'javax.servlet', module:'servlet-api'
     }
 
-
-    // Needed by GSP's jsp tag library resolver
-    compile 'xpp3:xpp3_min:1.1.4c'
 }
 
 sourceSets {

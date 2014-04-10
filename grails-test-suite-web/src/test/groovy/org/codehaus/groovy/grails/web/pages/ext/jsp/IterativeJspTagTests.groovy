@@ -1,14 +1,14 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.mock.web.MockServletContext
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.core.io.DefaultResourceLoader
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.JstlUtils
-import org.codehaus.groovy.tools.RootLoader
-import org.springframework.core.io.FileSystemResource
 
 /**
  * @author Graeme Rocher
@@ -29,17 +29,11 @@ class IterativeJspTagTests extends GroovyTestCase {
     }
 
     void testIterativeTag() {
-
-        TagLibraryResolverImpl.metaClass.resolveRootLoader = {->
-            def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-            def res = new FileSystemResource("../lib/taglibs/standard/jars/standard-1.1.2.jar")
-            rootLoader.addURL res.getURL()
-            return rootLoader
-        }
-
         def resolver =  new TagLibraryResolverImpl()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication= new DefaultGrailsApplication()
+        resolver.tldScanPatterns = ['classpath*:/META-INF/c-1_0-rt.tld'] as String[]
+        resolver.resourceLoader = new DefaultResourceLoader(this.class.classLoader)
 
         JspTagLib tagLib = resolver.resolveTagLibrary("http://java.sun.com/jstl/core_rt")
         assert tagLib

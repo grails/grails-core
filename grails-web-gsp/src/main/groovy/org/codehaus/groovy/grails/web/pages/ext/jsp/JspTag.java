@@ -31,8 +31,7 @@ public interface JspTag {
      * @param targetWriter The writer the tag should write to
      * @param attributes The tag attributes
      */
-    @SuppressWarnings("rawtypes")
-    void doTag(Writer targetWriter, Map attributes);
+    void doTag(Writer targetWriter, Map<String,Object> attributes);
 
     /**
      * Invokes a tag with a closure representing the body of the tag
@@ -40,8 +39,7 @@ public interface JspTag {
      * @param attributes The tag attributes
      * @param body The body of the tag
      */
-    @SuppressWarnings("rawtypes")
-    void doTag(Writer targetWriter, Map attributes, Closure body);
+    void doTag(Writer targetWriter, Map<String,Object> attributes, Closure<?> body);
 
     /**
      * @return Return true if the tag class implements the TryCatchFinally interface

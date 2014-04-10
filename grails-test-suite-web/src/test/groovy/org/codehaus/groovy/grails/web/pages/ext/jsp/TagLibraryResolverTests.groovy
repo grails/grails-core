@@ -18,16 +18,19 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.tools.RootLoader
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.core.io.Resource
 import org.springframework.mock.web.MockServletContext
 
 class TagLibraryResolverTests extends GroovyTestCase {
 
     void testResolveTagLibraryFromJar() {
-        def resolver = new MockRootLoaderTagLibraryResolver()
+        def resolver = new TagLibraryResolverImpl()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication= new DefaultGrailsApplication()
-
+        resolver.tldScanPatterns = ['classpath*:/META-INF/fmt.tld', 'classpath*:/META-INF/c-1_0-rt.tld'] as String[]
+        resolver.resourceLoader = new DefaultResourceLoader(this.class.classLoader)
+        
         JspTagLib tagLib = resolver.resolveTagLibrary("http://java.sun.com/jsp/jstl/fmt")
 
         assert tagLib
@@ -61,7 +64,7 @@ class TagLibraryResolverTests extends GroovyTestCase {
 
 class MockWebXmlTagLibraryResolver extends TagLibraryResolverImpl {
 
-    protected RootLoader resolveRootLoader() {
+    protected URLClassLoader resolveRootLoader() {
         new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
     }
 
