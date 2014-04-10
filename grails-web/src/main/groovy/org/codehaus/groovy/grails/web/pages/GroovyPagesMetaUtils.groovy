@@ -4,6 +4,7 @@ import grails.util.Environment;
 import groovy.lang.MetaClass
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import org.codehaus.groovy.reflection.ClassInfo
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 class GroovyPagesMetaUtils {
@@ -11,6 +12,17 @@ class GroovyPagesMetaUtils {
 
     public static void registerMethodMissingForGSP(Class gspClass, TagLibraryLookup gspTagLibraryLookup) {
         registerMethodMissingForGSP(GrailsMetaClassUtils.getExpandoMetaClass(gspClass), gspTagLibraryLookup)
+        // change the metaclass reference from a Strong to a Weak Reference
+        // this way, when the GSP class is no longer used, it'll be eligible for GC
+        final ClassInfo info = ClassInfo.getClassInfo(gspClass)
+        info.lock()
+        try {
+            MetaClass mc = info.getStrongMetaClass()
+            info.setStrongMetaClass(null)
+            info.setWeakMetaClass(mc)
+        } finally {
+            info.unlock()
+        }
     }
 
     public static void registerMethodMissingForGSP(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup) {
