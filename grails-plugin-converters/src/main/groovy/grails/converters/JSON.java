@@ -442,12 +442,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         registerObjectMarshaller(new ClosureObjectMarshaller<JSON>(clazz, callable), priority);
     }
 
-    public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {
-    	if (log.isDebugEnabled()) {
-    		log.debug(String.format("entering registerObjectMarshaller(%s)", om.getClass().getSimpleName()));
-    	}    	
-    	ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
-        
+    public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {  	    	
+    	ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);    	
         if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + JSON.class.getName());
         }

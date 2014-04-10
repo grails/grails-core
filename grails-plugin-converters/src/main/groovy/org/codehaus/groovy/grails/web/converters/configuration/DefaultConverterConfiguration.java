@@ -23,8 +23,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
@@ -39,8 +37,6 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  */
 @SuppressWarnings("rawtypes")
 public class DefaultConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
-
-	private final static Log log = LogFactory.getLog(DefaultConverterConfiguration.class);
 	
     public static final int DEFAULT_PRIORITY = 0;
 
@@ -133,13 +129,6 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public void registerObjectMarshaller(ObjectMarshaller<C> marshaller, int priority) {
-    	if (log.isDebugEnabled()) {
-    		log.debug(String.format("[%s] registerObjectMarshaller(%s,%d)",
-    				getClass().getSimpleName(),
-    				marshaller.getClass().getSimpleName(),
-    				priority));
-    	}
-    	
         objectMarshallers.add(new Entry(marshaller, priority));
     }
 
@@ -152,13 +141,7 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public ObjectMarshaller<C> getMarshaller(Object o) {
-        ObjectMarshaller<C> marshaller = findMarshallerFor(o);        
-        if (log.isDebugEnabled()) {
-        	log.debug(String.format("[getMarshaller] found marshaller %s for object with class %s",
-        			marshaller.getClass().getSimpleName(),
-        			o.getClass().getSimpleName()));
-        }
-        return marshaller;
+        return findMarshallerFor(o);
     }
     
     private ObjectMarshaller<C> findMarshallerFor(Object o) {
