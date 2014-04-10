@@ -41,6 +41,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String CONTENT_FORMAT = "org.codehaus.groovy.grails.CONTENT_FORMAT";
     String RESPONSE_FORMAT = "org.codehaus.groovy.grails.RESPONSE_FORMAT";
     String RESPONSE_MIME_TYPE = "org.codehaus.groovy.grails.RESPONSE_MIME_TYPE";
+    String RESPONSE_MIME_TYPES = "org.codehaus.groovy.grails.RESPONSE_MIME_TYPES";
     String REQUEST_FORMATS = "org.codehaus.groovy.grails.REQUEST_FORMATS";
     String RESPONSE_FORMATS = "org.codehaus.groovy.grails.RESPONSE_FORMATS";
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
