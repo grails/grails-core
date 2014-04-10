@@ -21,6 +21,8 @@ import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.InstanceFactoryBean
+import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
+import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
@@ -61,6 +63,8 @@ public class CoreBeansTestPlugin implements TestPlugin {
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             conversionService(ConversionServiceFactoryBean)
             grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
+            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplicationParam)
+            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplicationParam) 
         }
     }
     
