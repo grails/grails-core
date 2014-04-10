@@ -61,6 +61,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     String[] requiredFeatures = ['metaClassCleaner']
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
+    List<Closure> queuedBeanClosures = null
 
     void initGrailsApplication(TestRuntime runtime, Map callerInfo) {
         GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext()
@@ -73,8 +74,16 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
         }
         runtime.putValue("grailsApplication", grailsApplication)
+        queuedBeanClosures = []
         registerBeans(runtime, grailsApplication)
+        defineBeans(runtime, queuedBeanClosures)
+        queuedBeanClosures = null
+        
         executeDoWithSpringCallback(runtime, grailsApplication, callerInfo)
+        
+        // process queued defineBean bean here! 
+        
+        
         applicationContext.refresh()
 
         GrailsWebApplicationContext mainContext = new GrailsWebApplicationContext(applicationContext)
@@ -173,14 +182,17 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         MockUtils.prepareForConstraintsTests(clazz, (Map)runtime.getValueOrCreate("validationErrorsMap", { new IdentityHashMap() }), instances ?: [], ConstraintEvalUtils.getDefaultConstraints(getGrailsApplication(runtime).config))
     }
 
-    void defineBeans(TestRuntime runtime, Closure callable) {
+    void defineBeans(TestRuntime runtime, List<Closure> callables) {
+        if(!callables) return
         def bb = new BeanBuilder()
         def binding = new Binding()
         DefaultGrailsApplication grailsApplication = (DefaultGrailsApplication)runtime.getValue("grailsApplication")
         binding.setVariable "application", grailsApplication
         bb.setBinding binding
-        def beans = bb.beans(callable)
-        beans.registerBeans((BeanDefinitionRegistry)grailsApplication.getParentContext())
+        for(Closure callable : callables) {
+            bb.beans(callable)
+        }
+        bb.registerBeans((BeanDefinitionRegistry)grailsApplication.getParentContext())
     }
 
     void resetGrailsApplication(TestRuntime runtime) {
@@ -247,7 +259,12 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 }
                 break
             case 'defineBeans':
-                defineBeans(runtime, (Closure)event.arguments.closure)
+                def beansClosure = (Closure)event.arguments.closure
+                if(queuedBeanClosures != null) {
+                     queuedBeanClosures << beansClosure
+                } else {
+                    defineBeans(runtime, [beansClosure])
+                }
                 break
             case 'mockCodec':   
                 mockCodec(runtime, (Class)event.arguments.codecClass)
