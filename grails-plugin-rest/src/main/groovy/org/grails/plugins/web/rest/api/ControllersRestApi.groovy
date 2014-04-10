@@ -103,68 +103,76 @@ class ControllersRestApi {
         final webRequest = getWebRequest(controller)
         List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
         final response = webRequest.getCurrentResponse()
-        MimeType mimeType = getResponseFormat(response)
+        MimeType[] mimeTypes = getResponseFormat(response)
         def registry = rendererRegistry
         if (registry == null) {
             registry = new DefaultRendererRegistry()
             registry.initialize()
         }
-        if (mimeType == MimeType.ALL && formats) {
-            final allMimeTypes = MimeType.getConfiguredMimeTypes()
-            final firstFormat = formats[0]
-            mimeType = allMimeTypes.find { MimeType mt -> mt.extension == firstFormat}
-            if(mimeType) {
-                webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
-            }
-        }
 
-        if (mimeType && formats.contains(mimeType.extension)) {
-            Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
+        Renderer renderer = null
 
-            Renderer renderer
-            if (errors && errors.hasErrors()) {
-                def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
-                if (proxyHandler != null && target != null) {
-                    target = proxyHandler.unwrapIfProxy(target)
+        for(MimeType mimeType in mimeTypes) {
+            if (mimeType == MimeType.ALL && formats) {
+                final allMimeTypes = MimeType.getConfiguredMimeTypes()
+                final firstFormat = formats[0]
+                mimeType = allMimeTypes.find { MimeType mt -> mt.extension == firstFormat}
+                if(mimeType) {
+                    webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
                 }
-                Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
-                if (errorsRenderer) {
-                    final context = new ServletRenderContext(webRequest, [model: args.model])
-                    if (args.view) {
-                        context.viewName = args.view
-                    }
-                    if(statusCode != null) {
-                        context.setStatus(HttpStatus.valueOf(statusCode))
-                    }
-                    errorsRenderer.render(errors, context)
-                    return
-                }
-
-                return render(controller,[status: statusCode ?: 404 ])
             }
 
-            final valueType = value.getClass()
-            if (registry.isContainerType(valueType)) {
-                renderer = registry.findContainerRenderer(mimeType,valueType, value)
-                if (renderer == null) {
+
+
+            if (mimeType && formats.contains(mimeType.extension)) {
+                Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
+
+
+                if (errors && errors.hasErrors()) {
+                    def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
+                    if (proxyHandler != null && target != null) {
+                        target = proxyHandler.unwrapIfProxy(target)
+                    }
+                    Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
+                    if (errorsRenderer) {
+                        final context = new ServletRenderContext(webRequest, [model: args.model])
+                        if (args.view) {
+                            context.viewName = args.view
+                        }
+                        if(statusCode != null) {
+                            context.setStatus(HttpStatus.valueOf(statusCode))
+                        }
+                        errorsRenderer.render(errors, context)
+                        return
+                    }
+
+                    return render(controller,[status: statusCode ?: 404 ])
+                }
+
+                final valueType = value.getClass()
+                if (registry.isContainerType(valueType)) {
+                    renderer = registry.findContainerRenderer(mimeType,valueType, value)
+                    if (renderer == null) {
+                        renderer = registry.findRenderer(mimeType, value)
+                    }
+                } else {
                     renderer = registry.findRenderer(mimeType, value)
                 }
-            } else {
-                renderer = registry.findRenderer(mimeType, value)
             }
 
-            if (renderer) {
-                final context = new ServletRenderContext(webRequest, args)
-                if(statusCode != null) {
-                    context.setStatus(HttpStatus.valueOf(statusCode))
-                }
-                renderer.render(value, context)
-            } else {
-                render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
-            }
-        } else {
-            render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
+            if(renderer) break
         }
+
+
+        if (renderer) {
+            final context = new ServletRenderContext(webRequest, args)
+            if(statusCode != null) {
+                context.setStatus(HttpStatus.valueOf(statusCode))
+            }
+            renderer.render(value, context)
+            return
+        }
+        render(controller,[status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
     }
 
     protected List<String> calculateFormats(controller, String actionName, value, Map args) {
@@ -212,7 +220,7 @@ class ControllersRestApi {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected MimeType getResponseFormat(HttpServletResponse response) {
-        response.mimeType
+    protected MimeType[] getResponseFormat(HttpServletResponse response) {
+        response.mimeTypes
     }
 }
