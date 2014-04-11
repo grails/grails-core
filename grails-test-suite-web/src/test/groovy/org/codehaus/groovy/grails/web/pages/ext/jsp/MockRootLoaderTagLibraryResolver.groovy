@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils
 import org.codehaus.groovy.tools.RootLoader
 import org.springframework.core.io.FileSystemResource
 
@@ -14,7 +13,7 @@ class MockRootLoaderTagLibraryResolver extends TagLibraryResolverImpl {
 
     protected RootLoader resolveRootLoader() {
         def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-        def res = new FileSystemResource(GrailsIOUtils.findJarFile(org.apache.taglibs.standard.tag.el.core.OutTag))
+        def res = new FileSystemResource("../lib/taglibs/standard/jars/standard-1.1.2.jar")
         rootLoader.addURL res.getURL()
         return rootLoader
     }

@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import grails.util.GrailsWebUtil
@@ -33,7 +32,7 @@ class IterativeJspTagTests extends GroovyTestCase {
 
         TagLibraryResolverImpl.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-            def res = new FileSystemResource(GrailsIOUtils.findJarFile(org.apache.taglibs.standard.tag.el.core.OutTag))
+            def res = new FileSystemResource("../lib/taglibs/standard/jars/standard-1.1.2.jar")
             rootLoader.addURL res.getURL()
             return rootLoader
         }

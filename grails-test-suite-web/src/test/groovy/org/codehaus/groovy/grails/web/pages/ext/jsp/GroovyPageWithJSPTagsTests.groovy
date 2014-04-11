@@ -1,12 +1,9 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 import org.codehaus.groovy.tools.RootLoader
 import org.springframework.core.io.FileSystemResource
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
-import org.springframework.web.servlet.tags.form.FormTag
-
 import javax.servlet.http.HttpServletRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -24,8 +21,11 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests {
         String parentPath = System.getProperty("user.dir").endsWith("grails-core") ? "" : "../"
         TagLibraryResolverImpl.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-            rootLoader.addURL GrailsIOUtils.findJarFile(org.apache.taglibs.standard.tag.el.core.OutTag).toURL()
-            rootLoader.addURL GrailsIOUtils.findJarFile(FormTag).toURL()
+            def res = new FileSystemResource("${parentPath}lib/taglibs/standard/jars/standard-1.1.2.jar")
+            rootLoader.addURL res.getURL()
+            resolver.getResources("file:${parentPath}lib/org.springframework/spring-web*/jars/*.jar").each {
+                rootLoader.addURL it.getURL()
+            }
             return rootLoader
         }
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
