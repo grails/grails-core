@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.servlet.SmartView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
@@ -41,7 +42,12 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
 
     @Override
     public View resolveViewName(String viewName, Locale locale) throws Exception {
-        return new GrailsLayoutView(groovyPageLayoutFinder, innerViewResolver.resolveViewName(viewName, locale));
+        View innerView = innerViewResolver.resolveViewName(viewName, locale);
+        if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
+            return innerView;
+        } else {
+            return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
+        }
     }
 
     @Override
