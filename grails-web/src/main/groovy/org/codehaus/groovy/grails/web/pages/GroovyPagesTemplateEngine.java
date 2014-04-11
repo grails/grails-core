@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovySystem;
 import groovy.text.Template;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -587,7 +589,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         }
 
         if (!name.startsWith(GENERATED_GSP_NAME_PREFIX)) {
-            pageCache.put(name, metaInfo);
+            GroovyPageMetaInfo oldMetaInfo = pageCache.put(name, metaInfo);
+            if(oldMetaInfo!=null) {
+                Class<?> oldPageClass = oldMetaInfo.getPageClass();
+                if(oldPageClass!=null) GroovySystem.getMetaClassRegistry().removeMetaClass(oldPageClass);
+            }
         }
 
         return metaInfo;
@@ -800,7 +806,12 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      * Clears the page cache. Views will be re-compiled.
      */
     public void clearPageCache() {
-        pageCache.clear();
+        for(Iterator<Map.Entry<String, GroovyPageMetaInfo>> it = pageCache.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<String, GroovyPageMetaInfo> entry = it.next();
+            Class<?> oldPageClass = entry.getValue().getPageClass();
+            if(oldPageClass!=null) GroovySystem.getMetaClassRegistry().removeMetaClass(oldPageClass);
+            it.remove();
+        }
     }
 
     public boolean isCacheResources() {
