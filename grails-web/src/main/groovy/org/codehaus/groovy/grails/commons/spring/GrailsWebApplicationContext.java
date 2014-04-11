@@ -57,7 +57,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     private GrailsApplication grailsApplication;
 
     public GrailsWebApplicationContext() throws BeansException {
-        super();
+        super(new OptimizedAutowireCapableBeanFactory());
     }
     
     public GrailsWebApplicationContext(GrailsApplication grailsApplication) {
@@ -66,7 +66,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     }
 
     public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
-        super(parent);
+        this(new OptimizedAutowireCapableBeanFactory(), parent);
     }
 
     public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
