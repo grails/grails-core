@@ -64,9 +64,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     List<Closure> queuedBeanClosures = null
 
     void initGrailsApplication(TestRuntime runtime, Map callerInfo) {
-        GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext()
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication()
+        GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext(grailsApplication)
         executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
         grailsApplication.initialise()
         grailsApplication.setApplicationContext(applicationContext)
