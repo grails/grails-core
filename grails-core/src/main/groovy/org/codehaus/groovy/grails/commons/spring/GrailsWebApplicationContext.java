@@ -56,11 +56,11 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     private String[] configLocations = new String[0];
 
     public GrailsWebApplicationContext() throws BeansException {
-        super();
+        super(new ReloadAwareAutowireCapableBeanFactory());
     }
 
     public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
-        super(parent);
+        this(new ReloadAwareAutowireCapableBeanFactory(), parent);
     }
 
     public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
