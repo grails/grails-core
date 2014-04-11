@@ -25,6 +25,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils
 
 import java.lang.reflect.Method
 
@@ -632,9 +633,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected File findJarFile(Class targetClass) {
-        def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
-        final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
-        new File(jarPath)
+        GrailsIOUtils.findJarFile(targetClass)
     }
 
     @CompileStatic

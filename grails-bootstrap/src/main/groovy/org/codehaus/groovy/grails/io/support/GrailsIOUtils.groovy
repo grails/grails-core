@@ -80,4 +80,17 @@ class GrailsIOUtils extends IOUtils{
         def reader = encoding ? new InputStreamReader(input) : new InputStreamReader(input)
         copy(reader, output)
     }
+
+    /**
+     * Finds a JAR file for the given class
+     * @param targetClass The target class
+     * @return The JAR file
+     */
+    static File findJarFile(Class targetClass) {
+        def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class")?.getPath()
+        if(absolutePath) {
+            final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
+            new File(jarPath)
+        }
+    }
 }
