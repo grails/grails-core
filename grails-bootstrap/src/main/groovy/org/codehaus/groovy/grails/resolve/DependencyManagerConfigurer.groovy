@@ -193,13 +193,17 @@ class DependencyManagerConfigurer {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void configureRepoAuthentication(grailsConfig, DependencyManager dependencyManager) {
-        def credentials = grailsConfig.project.ivy.authentication
-        if (credentials instanceof Closure) {
-            dependencyManager.parseDependencies credentials
+        if(dependencyManager instanceof IvyDependencyManager) {
+            def credentials = grailsConfig.project.ivy.authentication
+            if (credentials instanceof Closure) {
+                dependencyManager.parseDependencies credentials
+            }
         }
-        credentials = grailsConfig.project.dependency.authentication
-        if (credentials instanceof Closure) {
-            dependencyManager.parseDependencies credentials
+        else {
+            def credentials = grailsConfig.project.dependency.authentication
+            if (credentials instanceof Closure) {
+                dependencyManager.parseDependencies credentials
+            }
         }
     }
 

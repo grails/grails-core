@@ -59,7 +59,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     public GrailsWebApplicationContext() throws BeansException {
         super(new OptimizedAutowireCapableBeanFactory());
     }
-    
+
     public GrailsWebApplicationContext(GrailsApplication grailsApplication) {
         this();
         this.grailsApplication = grailsApplication;
@@ -86,7 +86,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     private GrailsApplication getGrailsApplication() {
         if(grailsApplication==null) {
             ApplicationContext parent = getParent();
-            if (parent != null) { 
+            if (parent != null) {
                 if(parent instanceof GrailsWebApplicationContext) {
                     grailsApplication = ((GrailsWebApplicationContext)parent).getGrailsApplication();
                 } else if (parent.containsBean(GrailsApplication.APPLICATION_ID)) {
