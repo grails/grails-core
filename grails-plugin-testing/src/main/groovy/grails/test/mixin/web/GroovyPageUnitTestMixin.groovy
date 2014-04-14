@@ -156,6 +156,12 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     }
 
     private renderTemplateToStringWriter(StringWriter sw, Template t, params) {
+        if (!webRequest.controllerName) {
+            webRequest.controllerName = 'test'
+        }
+        if (!webRequest.actionName) {
+            webRequest.actionName = 'index'
+        }
         def w = t.make(params)
         def previousOut = webRequest.out
         try {
