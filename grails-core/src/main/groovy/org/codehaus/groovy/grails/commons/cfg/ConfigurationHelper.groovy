@@ -233,32 +233,37 @@ class ConfigurationHelper {
                 }
                 else {
                     def resource = resolver.getResource(location.toString())
-                    InputStream stream = null
-                    try {
-                        stream = resource.getInputStream()
-                        if (resource.filename.endsWith('.groovy')) {
-                            def newConfig = configSlurper.parse(stream.getText("UTF-8"))
-                            config.merge(newConfig)
+                    if(resource.exists()) {
+                        InputStream stream = null
+                        try {
+                            stream = resource.getInputStream()
+                            if (resource.filename.endsWith('.groovy')) {
+                                def newConfig = configSlurper.parse(stream.getText("UTF-8"))
+                                config.merge(newConfig)
+                            }
+                            else if (resource.filename.endsWith('.properties')) {
+                                def props = new Properties()
+                                props.load(stream)
+                                def newConfig = configSlurper.parse(props)
+                                config.merge(newConfig)
+                            }
+                            else if (resource.filename.endsWith('.class')) {
+                                def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass( (String)null, stream.getBytes())
+                                def newConfig = configSlurper.parse(configClass)
+                                config.merge(newConfig)
+                            }
                         }
-                        else if (resource.filename.endsWith('.properties')) {
-                            def props = new Properties()
-                            props.load(stream)
-                            def newConfig = configSlurper.parse(props)
-                            config.merge(newConfig)
+                        finally {
+                            stream?.close()
                         }
-                        else if (resource.filename.endsWith('.class')) {
-                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass( (String)null, stream.getBytes())
-                            def newConfig = configSlurper.parse(configClass)
-                            config.merge(newConfig)
-                        }
+                    } else {
+                        LOG.warn "Unable to load specified config location $location : File does not exist."
                     }
-                    finally {
-                        stream?.close()
-                    }
+                    
                 }
             }
             catch (Exception e) {
-                LOG.warn "Unable to load specified config location $location : ${e.message}"
+                LOG.error "Unable to load specified config location $location : ${e.message}"
             }
         }
     }
