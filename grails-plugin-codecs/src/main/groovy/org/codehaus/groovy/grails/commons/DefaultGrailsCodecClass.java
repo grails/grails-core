@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.Ordered;
@@ -43,19 +44,10 @@ import org.springframework.util.ReflectionUtils;
  */
 public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements GrailsCodecClass, Ordered {
     public static final String CODEC = CodecArtefactHandler.TYPE;
-    private static EncodingStateRegistryLookup encodingStateRegistryLookup=null;
     private Encoder encoder;
     private Decoder decoder;
     private static int instantionCounter=0;
     private int order = 100 + instantionCounter++;
-
-    public static void setEncodingStateRegistryLookup(EncodingStateRegistryLookup lookup) {
-        encodingStateRegistryLookup = lookup;
-    }
-
-    public static EncodingStateRegistryLookup getEncodingStateRegistryLookup() {
-        return encodingStateRegistryLookup;
-    }
 
     public DefaultGrailsCodecClass(Class<?> clazz) {
         super(clazz, CODEC);
@@ -207,6 +199,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         }
 
         protected EncodingStateRegistry lookupEncodingState() {
+            EncodingStateRegistryLookup encodingStateRegistryLookup = EncodingStateRegistryLookupHolder.getEncodingStateRegistryLookup();
             return encodingStateRegistryLookup != null ? encodingStateRegistryLookup.lookup() : null;
         }
 

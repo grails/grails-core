@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.io.IOException;
 
+import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
@@ -32,7 +33,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  * @author Lari Hotari
  * @since 2.3
  */
-public class RawCodec implements Encoder, Decoder, StreamingEncoder {
+public class RawCodec implements Encoder, Decoder, StreamingEncoder, CodecFactory {
     static final CodecIdentifier RAW_CODEC_IDENTIFIER = new DefaultCodecIdentifier("Raw") {
         // using RawCodec will prevent all other codecs from encoding a part encoded with this codec
         public boolean isEquivalent(CodecIdentifier other) { return true; };
@@ -94,5 +95,15 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
      */
     public boolean isApplyToSafelyEncoded() {
         return false;
+    }
+
+    @Override
+    public Encoder getEncoder() {
+        return this;
+    }
+
+    @Override
+    public Decoder getDecoder() {
+        return this;
     }
 }

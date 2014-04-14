@@ -5,8 +5,7 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.tools.RootLoader
-import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.JstlUtils
@@ -30,10 +29,12 @@ class SimpleJspTagTests extends GroovyTestCase {
 
     void testSimpleTagUsage() {
 
-        def resolver = new MockRootLoaderTagLibraryResolver()
+        def resolver = new TagLibraryResolverImpl()
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication = new DefaultGrailsApplication()
-
+        resolver.tldScanPatterns = ['classpath*:/META-INF/fmt.tld'] as String[]
+        resolver.resourceLoader = new DefaultResourceLoader(this.class.classLoader)
+        
         JspTagLib tagLib = resolver.resolveTagLibrary("http://java.sun.com/jsp/jstl/fmt")
 
         assert tagLib

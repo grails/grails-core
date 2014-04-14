@@ -15,6 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
+import java.io.Writer;
+import java.util.Map;
+
+import groovy.lang.Closure;
+import groovy.transform.CompileStatic
+
 import javax.servlet.jsp.JspContext
 import javax.servlet.jsp.JspWriter
 import javax.servlet.jsp.tagext.BodyContent
@@ -26,71 +32,76 @@ import javax.servlet.jsp.tagext.Tag
 import javax.servlet.jsp.tagext.TagAdapter
 import javax.servlet.jsp.tagext.TryCatchFinally
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.springframework.beans.BeanWrapperImpl
+import org.springframework.util.ClassUtils
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@CompileStatic
 class JspTagImpl implements JspTag {
-
-    static final LOG = LogFactory.getLog(JspTagImpl)
-
-    Class tagClass
+    static final Log LOG = LogFactory.getLog(JspTagImpl)
+    ClassLoader classLoader
+    String tagClassName
+    volatile Class tagClass
     boolean tryCatchFinally
     boolean body
     boolean iteration
 
+    JspTagImpl(String tagClassName, ClassLoader classLoader) {
+        this.tagClassName = tagClassName
+        this.classLoader = classLoader
+    }
+    
     JspTagImpl(Class tagClass) {
         this.tagClass = tagClass
+        this.tagClassName = tagClass.name
+        this.classLoader = tagClass.classLoader
+        initializeTagClassTypes()
+    }
+
+    void doTag(Writer targetWriter, Map<String,Object> attributes) {
+        doTag targetWriter,attributes, null
+    }
+    
+    protected void checkInitialized() {
+        if(tagClass==null) {
+            synchronized(this) {
+                tagClass = ClassUtils.forName(tagClassName, classLoader)
+                initializeTagClassTypes()
+            }
+        }
+    }
+
+    private initializeTagClassTypes() {
         tryCatchFinally = TryCatchFinally.isAssignableFrom(tagClass)
         body = BodyTag.isAssignableFrom(tagClass)
         iteration = IterationTag.isAssignableFrom(tagClass)
     }
 
-    void doTag(Writer targetWriter, Map attributes) {
-        doTag targetWriter,attributes, null
+    protected javax.servlet.jsp.tagext.JspTag createTagInstance() {
+        checkInitialized()
+        (javax.servlet.jsp.tagext.JspTag)tagClass.newInstance()
     }
 
-    private createTagInstance() {
-        tagClass.newInstance()
-    }
-
-    void doTag(Writer targetWriter, Map attributes, Closure body) {
-        def tag = createTagInstance()
+    void doTag(Writer targetWriter, Map<String,Object> attributes, Closure<?> body) {
+        javax.servlet.jsp.tagext.JspTag tag = createTagInstance()
         GroovyPagesPageContext pageContext = PageContextFactory.getCurrent()
-        if (tag.metaClass.hasProperty(tag, "jspContext")) {
-            tag.jspContext = pageContext
-        }
 
-        if (tag.metaClass.hasProperty(tag, "pageContext")) {
-            tag.pageContext = pageContext
-        }
+        assignParentTag(pageContext, tag)
 
-        def parentTag = pageContext.peekTopTag(javax.servlet.jsp.tagext.JspTag)
-        if (parentTag) {
-            if (tag instanceof Tag && parentTag instanceof SimpleTag) {
-                tag.parent = new TagAdapter(parentTag)
-            }
-            else {
-                tag.parent = parentTag
-            }
-        }
-
-        def tagBean = new BeanWrapperImpl(tag)
-
-        for (entry in attributes) {
-            if (tagBean.isWritableProperty(entry.key)) {
-                tagBean.setPropertyValue entry.key, entry.value
-            }
-        }
+        applyAttributes(tag, attributes)
 
         if (tag instanceof SimpleTag) {
+            tag.jspContext = pageContext
             handleSimpleTag(tag, attributes, pageContext, targetWriter, body)
         }
         else if (tag instanceof Tag) {
+            tag.pageContext = pageContext
             withJspWriterDelegate pageContext, targetWriter, {
 
                 try {
@@ -102,15 +113,16 @@ class JspTagImpl implements JspTag {
                         if (state == BodyTag.EVAL_BODY_BUFFERED && isBody()) {
                             bodyContent = pageContext.pushBody()
                             out = bodyContent
-                            tag.bodyContent = bodyContent
-                            tag.doInitBody()
+                            BodyTag bodyTag = (BodyTag)tag
+                            bodyTag.bodyContent = bodyContent
+                            bodyTag.doInitBody()
                         }
                         out << body.call()
                         if (isIterationTag()) {
-                            state = tag.doAfterBody()
-
-                            while (state != IterationTag.SKIP_BODY) {
-                                out << body.call(); state = tag.doAfterBody()
+                            state = ((IterationTag)tag).doAfterBody()
+                            while (state != Tag.SKIP_BODY) {
+                                out << body.call()
+                                state = ((IterationTag)tag).doAfterBody()
                             }
                         }
                     }
@@ -124,19 +136,44 @@ class JspTagImpl implements JspTag {
                 }
                 catch (Throwable t) {
                     if (isTryCatchFinally() && tag) {
-                        tag?.doCatch(t)
+                        ((TryCatchFinally)tag).doCatch(t)
                     }
                     else {
                         throw t
                     }
                 }
                 finally {
-                    if (isTryCatchFinally()) {
-                        tag?.doFinally()
+                    if (isTryCatchFinally() && tag) {
+                        ((TryCatchFinally)tag).doFinally()
                     }
                     pageContext.popTopTag()
                     tag?.release()
                 }
+            }
+        }
+    }
+
+    private applyAttributes(javax.servlet.jsp.tagext.JspTag tag, Map<String,Object> attributes) {
+        BeanWrapperImpl tagBean = new BeanWrapperImpl(tag)
+
+        attributes?.each { String key, Object value ->
+            if (key && tagBean.isWritableProperty(key)) {
+                tagBean.setPropertyValue key, value
+            }
+        }
+    }
+
+    private assignParentTag(GroovyPagesPageContext pageContext, javax.servlet.jsp.tagext.JspTag tag) {
+        def parentTag = pageContext.peekTopTag(javax.servlet.jsp.tagext.JspTag)
+        if (parentTag) {
+            if (tag instanceof Tag && parentTag instanceof SimpleTag) {
+                tag.parent = new TagAdapter(parentTag)
+            }
+            else if (tag instanceof Tag) {
+                tag.parent = (Tag)parentTag
+            }
+            else if (tag instanceof SimpleTag) {
+                tag.parent = (Tag)parentTag
             }
         }
     }
@@ -179,14 +216,17 @@ class JspTagImpl implements JspTag {
 // Workarounds for http://jira.codehaus.org/browse/GROOVY-2897
 //
     boolean isBodyTag() {
+        checkInitialized()
         return body
     }
 
     boolean isIterationTag() {
+        checkInitialized()
         return iteration
     }
 
     boolean isTryCatchFinallyTag() {
+        checkInitialized()
         return tryCatchFinally
     }
 }

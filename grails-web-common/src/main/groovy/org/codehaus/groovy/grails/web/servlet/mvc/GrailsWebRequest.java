@@ -28,7 +28,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
@@ -37,6 +36,7 @@ import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder;
 import org.codehaus.groovy.grails.web.beans.PropertyEditorRegistryUtils;
 import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
@@ -455,7 +455,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     static {
-        DefaultGrailsCodecClass.setEncodingStateRegistryLookup(new DefaultEncodingStateRegistryLookup());
+        EncodingStateRegistryLookupHolder.setEncodingStateRegistryLookup(new DefaultEncodingStateRegistryLookup());
     }
 
     /**

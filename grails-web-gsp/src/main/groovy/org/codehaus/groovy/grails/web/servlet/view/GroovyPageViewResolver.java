@@ -48,8 +48,8 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class GrailsViewResolver extends InternalResourceViewResolver {
-    private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
+public class GroovyPageViewResolver extends InternalResourceViewResolver implements GrailsViewResolver {
+    private static final Log LOG = LogFactory.getLog(GroovyPageViewResolver.class);
 
     public static final String GSP_SUFFIX = ".gsp";
     public static final String JSP_SUFFIX = ".jsp";
@@ -57,17 +57,23 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
     protected GroovyPagesTemplateEngine templateEngine;
     protected GrailsConventionGroovyPageLocator groovyPageLocator;
 
-    // no need for static cache since GrailsViewResolver is in app context
-    private Map<String, CacheEntry<View>> VIEW_CACHE = new ConcurrentHashMap<String, CacheEntry<View>>();
+    private Map<String, CacheEntry<View>> viewCache = new ConcurrentHashMap<String, CacheEntry<View>>();
     private boolean allowGrailsViewCaching = !GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
 
     /**
      * Constructor.
      */
-    public GrailsViewResolver() {
+    public GroovyPageViewResolver() {
         setCache(false);
         setOrder(Ordered.LOWEST_PRECEDENCE - 20);
+    }
+    
+    public GroovyPageViewResolver(GroovyPagesTemplateEngine templateEngine,
+            GrailsConventionGroovyPageLocator groovyPageLocator) {
+        this();
+        this.templateEngine = templateEngine;
+        this.groovyPageLocator = groovyPageLocator;
     }
 
     public void setGroovyPageLocator(GrailsConventionGroovyPageLocator groovyPageLocator) {
@@ -92,7 +98,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
 
         String viewCacheKey = groovyPageLocator.resolveViewFormat(viewName);
 
-        CacheEntry<View> entry = VIEW_CACHE.get(viewCacheKey);
+        CacheEntry<View> entry = viewCache.get(viewCacheKey);
 
         final String lookupViewName = viewName;
         PrivilegedAction<View> updater=new PrivilegedAction<View>() {
@@ -114,7 +120,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
                 e.rethrow();
             }
             entry = new CacheEntry<View>(view);
-            VIEW_CACHE.put(viewCacheKey, entry);
+            viewCache.put(viewCacheKey, entry);
             return view;
         }
 

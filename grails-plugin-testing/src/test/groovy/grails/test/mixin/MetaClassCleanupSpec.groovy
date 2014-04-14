@@ -2,7 +2,7 @@ package grails.test.mixin
 
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.Mixin
-
+import grails.util.MixinTargetAware
 import org.junit.AfterClass
 import org.junit.Assert
 import org.junit.ClassRule;
@@ -69,7 +69,7 @@ class MetaClassCleanupSpec extends Specification {
             def rs = a.doStuff()
 
         then:"The the mixin method works"
-            rs == "A with mixin: mixMe from AMixin mix static"
+            rs == "A with mixin: mixMe from AMixin good mix static"
     }
 
     def "Test that mixins are re-applied after cleanup - step 2"() {
@@ -79,7 +79,7 @@ class MetaClassCleanupSpec extends Specification {
             def rs = a.doStuff()
 
         then:"The the mixin method works"
-            rs == "A with mixin: mixMe from AMixin mix static"
+            rs == "A with mixin: mixMe from AMixin good mix static"
     }
     
     @Shared @ClassRule TestRule checkCleanupRule = new ExternalResource() {
@@ -113,14 +113,16 @@ class HelloService {
     }
 }
 
-class AMixin {
+class AMixin implements MixinTargetAware<A> {
+    A target
     String prop = "foo"
-    String mixMe() {"mixMe from AMixin"}
+    String mixMe() {"mixMe from AMixin $target.me"}
     static mixStatic() { "mix static"}
 }
 
 @Mixin(AMixin)
 class A {
+    String me = "good"
     String doStuff() {
         "A with mixin: ${mixMe()} ${mixStatic()}"
     }

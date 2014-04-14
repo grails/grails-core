@@ -132,7 +132,7 @@ class RespondMethodSpec extends Specification{
             response.json.title == 'The Stand'
     }
 
-    void "Test that the respond method produces a 415 for a format not supported"() {
+    void "Test that the respond method produces a 406 for a format not supported"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
 
@@ -141,8 +141,8 @@ class RespondMethodSpec extends Specification{
 
             def result = controller.showWithFormats(book.id)
 
-        then:"A modelAndView and view is produced"
-            response.status == 415
+        then:"A 406 status is set"
+            response.status == 406
     }
 
     void "Test that the respond method produces JSON for an action that specifies explicit formats"() {

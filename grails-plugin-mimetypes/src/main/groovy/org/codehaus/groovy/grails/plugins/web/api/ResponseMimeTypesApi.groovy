@@ -159,6 +159,46 @@ class ResponseMimeTypesApi {
     }
 
     /**
+     * Gets the configured mime types for the response
+     *
+     * @param response The response
+     * @return The configured mime types
+     */
+    MimeType[] getMimeTypesFormatAware(HttpServletResponse response) {
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup()
+        HttpServletRequest request = webRequest.getCurrentRequest()
+        MimeType[] result = (MimeType[]) request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPES)
+        if (!result) {
+            def formatOverride = webRequest?.params?.format
+            if (!formatOverride) {
+                formatOverride = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT)
+            }
+            if (formatOverride) {
+                def allMimes = getMimeTypes()
+                MimeType mime = allMimes.find { MimeType it -> it.extension == formatOverride }
+                result = [ mime ? mime : getMimeTypes()[0] ] as MimeType[]
+
+                // Save the evaluated format as a request attribute.
+                // This is a blatant hack because we should to this
+                // on the first call. Unfortunately, doing so breaks
+                // integration tests:
+                //   - Test uses "c.params.format = ..."
+                //   - "c.params" creates parameter map
+                //   - which triggers the parameter parsing listeners
+                //   - which call "request.format"
+                //   - which initialises the CONTENT_FORMAT attribute
+                //   - *before* the "format" parameter is added to the map
+                //   - so the saved format is wrong
+                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPES, result)
+            } else {
+                result = getMimeTypesInternal(request)
+            }
+
+        }
+        return result
+    }
+
+    /**
      * Allows for the response.withFormat { } syntax
      *
      * @param response The response

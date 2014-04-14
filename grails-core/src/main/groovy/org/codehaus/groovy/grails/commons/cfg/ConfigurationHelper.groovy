@@ -61,12 +61,12 @@ class ConfigurationHelper {
     }
     
     @CompileStatic
-    static void clearCachedConfig(DefaultGrailsApplication application) {
+    static void clearCachedConfig(GrailsApplication application) {
         getCachedConfigs().remove(getCacheKey(application))
     }
 
     @CompileStatic
-    static ConfigObject loadConfigFromClasspath(DefaultGrailsApplication application = null,
+    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null,
             String environment = Environment.current.name) {
 
         ConfigObject co
@@ -85,9 +85,7 @@ class ConfigurationHelper {
             ConfigSlurper configSlurper = getConfigSlurper(environment, application)
             try {
                 try {
-                    application?.config = new ConfigObject() // set empty config to avoid stack overflow
                     co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
-                    application?.config = co
                 }
                 catch (ClassNotFoundException e) {
                     LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
@@ -120,7 +118,7 @@ class ConfigurationHelper {
     }
 
     @CompileStatic
-    private static int getCacheKey(DefaultGrailsApplication application) {
+    private static int getCacheKey(GrailsApplication application) {
         Integer cacheKey = DEV_CACHE_KEY
         if (application != null && (Environment.isWarDeployed() || !Environment.isWithinShell())) {
             // use unique cache keys for each config based on the application instance
@@ -235,32 +233,37 @@ class ConfigurationHelper {
                 }
                 else {
                     def resource = resolver.getResource(location.toString())
-                    InputStream stream = null
-                    try {
-                        stream = resource.getInputStream()
-                        if (resource.filename.endsWith('.groovy')) {
-                            def newConfig = configSlurper.parse(stream.getText("UTF-8"))
-                            config.merge(newConfig)
+                    if(resource.exists()) {
+                        InputStream stream = null
+                        try {
+                            stream = resource.getInputStream()
+                            if (resource.filename.endsWith('.groovy')) {
+                                def newConfig = configSlurper.parse(stream.getText("UTF-8"))
+                                config.merge(newConfig)
+                            }
+                            else if (resource.filename.endsWith('.properties')) {
+                                def props = new Properties()
+                                props.load(stream)
+                                def newConfig = configSlurper.parse(props)
+                                config.merge(newConfig)
+                            }
+                            else if (resource.filename.endsWith('.class')) {
+                                def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass( (String)null, stream.getBytes())
+                                def newConfig = configSlurper.parse(configClass)
+                                config.merge(newConfig)
+                            }
                         }
-                        else if (resource.filename.endsWith('.properties')) {
-                            def props = new Properties()
-                            props.load(stream)
-                            def newConfig = configSlurper.parse(props)
-                            config.merge(newConfig)
+                        finally {
+                            stream?.close()
                         }
-                        else if (resource.filename.endsWith('.class')) {
-                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass( (String)null, stream.getBytes())
-                            def newConfig = configSlurper.parse(configClass)
-                            config.merge(newConfig)
-                        }
+                    } else {
+                        LOG.warn "Unable to load specified config location $location : File does not exist."
                     }
-                    finally {
-                        stream?.close()
-                    }
+                    
                 }
             }
             catch (Exception e) {
-                LOG.warn "Unable to load specified config location $location : ${e.message}"
+                LOG.error "Unable to load specified config location $location : ${e.message}"
             }
         }
     }

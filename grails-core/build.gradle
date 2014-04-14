@@ -24,9 +24,6 @@ dependencies {
         ext.notInPom = true
     }
 
-    runtime 'cglib:cglib:2.2.2' // Used to generate proxies for classes via Spring AOP
-    runtime 'asm:asm:3.3.1'
-
     // Used by Spring AOP
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion"

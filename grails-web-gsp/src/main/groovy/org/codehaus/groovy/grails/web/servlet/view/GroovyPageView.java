@@ -20,7 +20,6 @@ import groovy.text.Template;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,14 +29,10 @@ import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.ScriptSource;
-import org.springframework.util.Assert;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * A Spring View that renders Groovy Server Pages to the response. It requires an instance
@@ -57,7 +52,6 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @since 0.4
  */
 public class GroovyPageView extends AbstractGrailsView {
-
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
     protected GroovyPagesTemplateEngine templateEngine;
     private long createTimestamp = System.currentTimeMillis();
@@ -66,119 +60,19 @@ public class GroovyPageView extends AbstractGrailsView {
     protected Template template;
     public static final String EXCEPTION_MODEL_KEY = "exception";
 
-    /**
-     * Delegates to renderMergedOutputModel(..)
-     *
-     * @see #renderMergedOutputModel(java.util.Map, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     *
-     * @param model The view model
-     * @param request The HttpServletRequest
-     * @param response The HttpServletResponse
-     * @throws Exception When an error occurs rendering the view
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    
     @Override
-    protected final void renderMergedOutputModel(Map model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        // templateEngine is always same instance in context, can use cached; removed static cache in GrailsViewResolver
-        Assert.state(templateEngine != null, "No GroovyPagesTemplateEngine found in ApplicationContext!");
-
-        exposeModelAsRequestAttributes(model, request);
-        
-        renderWithinGrailsWebRequest(model, request, response);
-    }
-
-    protected void renderWithinGrailsWebRequest(Map model, HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        boolean attributesChanged = false;
-        try {
-            if(!(requestAttributes instanceof GrailsWebRequest)) {
-                GrailsWebRequest webRequest = createGrailsWebRequest(request, response, getServletContext());
-                RequestContextHolder.setRequestAttributes(webRequest);
-                attributesChanged = true;
-                request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
-            }
-            renderWithTemplateEngine(templateEngine, model, response, request);
-        } finally {
-            if(attributesChanged) {
-                request.removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-                RequestContextHolder.setRequestAttributes(requestAttributes);
-            }
-        }
-    }
-
-    protected GrailsWebRequest createGrailsWebRequest(HttpServletRequest request, HttpServletResponse response,
-            ServletContext servletContext) {
-        return new GrailsWebRequest(request, response, servletContext);
-    }
-
-    /**
-     * Replaces the requirement for "super.exposeModelAsRequestAttributes(model, request);" in renderMergedOutputModel.
-     *
-     *  not in use, since causes bugs, could improve performance
-     *
-     * @author Lari Hotari
-    private static class ModelExposingHttpRequestWrapper extends HttpServletRequestWrapper {
-        Map model;
-
-        public ModelExposingHttpRequestWrapper(HttpServletRequest request, Map model) {
-            super(request);
-            this.model = model;
-        }
-
-        @Override
-        public Object getAttribute(String name) {
-            Object value = super.getAttribute(name);
-            if (value == null) {
-                return model.get(name);
-            }
-            return value;
-        }
-
-        @Override
-        public Enumeration<?> getAttributeNames() {
-            return CollectionUtils.append(super.getAttributeNames(),
-                    CollectionUtils.asEnumeration(model.keySet().iterator()));
-        }
-
-        @Override
-        public void removeAttribute(String name) {
-            super.removeAttribute(name);
-            model.remove(name);
-        }
-
-        @Override
-        public void setAttribute(String name, Object o) {
-            super.setAttribute(name, o);
-            if (o == null) {
-                model.remove(name);
-            }
-        }
-    }
-    */
-
-    /**
-     * Renders a page with the specified TemplateEngine, mode and response.
-     *
-     * @param engine The TemplateEngine to use
-     * @param model The model to use
-     * @param response The HttpServletResponse instance
-     * @param request The HttpServletRequest
-     *
-     * @throws java.io.IOException Thrown when an error occurs writing the response
-     */
-    @SuppressWarnings("rawtypes")
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
-            HttpServletResponse response, HttpServletRequest request) throws IOException {
+    protected void renderTemplate(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
+            HttpServletResponse response) {
         request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
         GSPResponseWriter out = null;
         try {
-            out = createResponseWriter(response);
+            out = createResponseWriter(webRequest, response);
             template.make(model).writeTo(out);
         }
         catch (Exception e) {
             out.setError();
-            handleException(e, engine);
+            handleException(e, templateEngine);
         }
         finally {
             if (out != null) {
@@ -240,10 +134,8 @@ public class GroovyPageView extends AbstractGrailsView {
      * @param response The HttpServletResponse instance
      * @return A response Writer
      */
-    //TODO this method is dupe'd across GSP servlet, reload servlet and here...
-    protected GSPResponseWriter createResponseWriter(HttpServletResponse response) {
+    protected GSPResponseWriter createResponseWriter(GrailsWebRequest webRequest, HttpServletResponse response) {
         GSPResponseWriter out = GSPResponseWriter.getInstance(response);
-        GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;
     }

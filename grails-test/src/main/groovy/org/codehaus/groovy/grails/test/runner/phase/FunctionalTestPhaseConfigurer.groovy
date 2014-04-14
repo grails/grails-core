@@ -79,13 +79,11 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
 
         registryCleaner = MetaClassRegistryCleaner.createAndRegister()
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
         if (!isServerRunning) {
 
             packager.createConfig()
             if (warMode) {
-
                 // need to swap out the args map so any test phase/targeting patterns
                 // aren't interpreted as the war name.
                 if( !Environment.isFork() ) {
@@ -98,50 +96,70 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 else {
                     projectRunner.runWar()
                 }
+                initFunctionalBaseUrl()
             } else {
                 final config = projectRunner.projectPackager.packageApplication()
                 testExecutionContext.setVariable("config", config)
+
                 if (https) {
                     projectRunner.runAppHttps()
                 }
                 else {
                     projectRunner.runApp()
                 }
+                initFunctionalBaseUrl()
 
                 if (!isForkedRun) {
-                    try {
-                        def appCtx = Holders.applicationContext
-                        PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
-                    } catch (IllegalStateException e) {
-                        // no appCtx configured, ignore
-                    } catch (IllegalArgumentException e) {
-                        // no appCtx configured, ignore
-                    }
+                    initPersistenceContext()
                 }
                 else {
-                    final console = GrailsConsole.getInstance()
-                    console.updateStatus("Waiting for server availability")
-                    int maxWait = 10000
-                    int timeout = 0
-                    while(true) {
-                        if (timeout>maxWait) break
-                        try {
-                            new URL(functionalBaseUrl).getText(connectTimeout:1000, readTimeout:1000, "UTF-8")
-                            break
-                        } catch (Throwable e) {
-                            console.indicateProgress()
-                            timeout += 1000
-                            sleep(1000)
-                        }
-                    }
+                    waitForServer()
                 }
             }
 
         }
         else {
             existingServer = true
+            initFunctionalBaseUrl()
+        }
+    }
+
+    private void waitForServer() {
+        final console = GrailsConsole.getInstance()
+        console.updateStatus("Waiting for server availability")
+
+        int maxWait = 10000
+        int timeout = 0
+        while (timeout <= maxWait) {
+            try {
+                new URL(functionalBaseUrl).getText(connectTimeout: 1000, readTimeout: 1000, "UTF-8")
+                break
+            } catch (Throwable ignored) {
+                console.indicateProgress()
+                timeout += 1000
+                sleep(1000)
+            }
+        }
+    }
+
+    @Override
+    void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
+        if (!warMode && !isForkedRun) {
+            destroyPersistenceContext()
         }
 
+        if (!existingServer) {
+            projectRunner.stopServer()
+        }
+
+        clearFunctionalBaseUrl()
+
+        if (registryCleaner) {
+            MetaClassRegistryCleaner.cleanAndRemove(registryCleaner)
+        }
+    }
+
+    private void initFunctionalBaseUrl() {
         if (baseUrl) {
             functionalBaseUrl = baseUrl
         } else {
@@ -152,32 +170,34 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
     }
 
-    @Override
-    void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
-        if (!warMode && !isForkedRun) {
-            GrailsWebApplicationContext appCtx
-            try {
-                appCtx = (GrailsWebApplicationContext)Holders.applicationContext
-            } catch (IllegalStateException e ) {
-                // no configured app ctx
-            } catch (IllegalArgumentException e ) {
-                // no configured app ctx
-            }
-            if (appCtx) {
-                PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
-                appCtx?.close()
-            }
-        }
-
-        if (!existingServer) {
-            projectRunner.stopServer()
-        }
-
+    private void clearFunctionalBaseUrl() {
         functionalBaseUrl = null
         System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
-        if (registryCleaner) {
-            registryCleaner.clean()
-            GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+    }
+
+    private static void initPersistenceContext() {
+        try {
+            def appCtx = Holders.applicationContext
+            PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
+        } catch (IllegalStateException ignored) {
+            // no appCtx configured, ignore
+        } catch (IllegalArgumentException ignored) {
+            // no appCtx configured, ignore
+        }
+    }
+
+    private static void destroyPersistenceContext() {
+        GrailsWebApplicationContext appCtx
+        try {
+            appCtx = (GrailsWebApplicationContext)Holders.applicationContext
+        } catch (IllegalStateException ignored) {
+            // no configured app ctx
+        } catch (IllegalArgumentException ignored) {
+            // no configured app ctx
+        }
+        if (appCtx) {
+            PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
+            appCtx?.close()
         }
     }
 }

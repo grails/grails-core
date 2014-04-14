@@ -33,9 +33,9 @@ import com.opensymphony.module.sitemesh.html.rules.ParameterExtractingRule;
 import com.opensymphony.module.sitemesh.html.rules.TitleExtractingRule;
 import com.opensymphony.module.sitemesh.html.util.CharArray;
 import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
+import com.opensymphony.sitemesh.Content;
 
 public class GrailsHTMLPageParser extends HTMLPageParser {
-
     @Override
     public Page parse(char[] data) throws IOException {
         CharArray head = new CharArray(64);
@@ -55,6 +55,10 @@ public class GrailsHTMLPageParser extends HTMLPageParser {
 
         processor.process();
         return page;
+    }
+    
+    public Content parseContent(char[] data) throws IOException {
+        return new TokenizedHTMLPage2Content((GrailsTokenizedHTMLPage)parse(data));
     }
 
     @Override

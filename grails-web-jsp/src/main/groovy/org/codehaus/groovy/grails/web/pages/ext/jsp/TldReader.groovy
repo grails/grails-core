@@ -15,56 +15,40 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.springframework.util.ClassUtils
-import org.xml.sax.Attributes
-import org.xml.sax.helpers.DefaultHandler
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 
 /**
  * A SAX parser implementation that reads the contents of a tag library definition (TLD) into two properties
  * called tags and listeners (for the tag listeners)
  */
-class TldReader extends DefaultHandler {
-
-    final Map tags = [:]
-    final List listeners = []
-
-    StringBuilder buf
-
-    private String tagName
-    private String className
-
-    void startElement(String nsuri, String localName, String qName, Attributes attributes) {
-        if ("name" == qName || "tagclass" == qName || "tag-class" == qName || "listener-class" == qName) {
-            buf = new StringBuilder()
+@CompileStatic
+class TldReader {
+    private static final Log log=LogFactory.getLog(TldReader.class)
+    final Map<String,String> tags = [:]
+    final List<String> listeners = []
+    String uri
+        
+    public TldReader(InputStream inputStream) {
+        inputStream.withStream { 
+            init(new BufferedInputStream(inputStream))
         }
     }
 
-    void characters(char[] chars, int offset, int length) {
-        buf?.append chars, offset, length
-    }
-
-    void endElement(String nsuri, String localName, String qName) {
-        switch (qName) {
-            case "name":
-                if (!tagName) {
-                    tagName = buf.toString().trim()
-                    buf = null
-                }
-                break
-            case "tag":
-                Class tagClass = ClassUtils.forName(className)
-                tags[tagName] = tagClass
-                tagName = null
-                className = null
-                break
-            case "listener-class":
-                Class listenerClass = ClassUtils.forName(buf.toString().trim())
-                listeners << listenerClass.newInstance()
-                break
-            case ~/tag-{0,1}class/:
-                className = buf.toString().trim()
-                buf = null
-            break
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private init(InputStream inputStream) {
+        def rootNode = new XmlSlurper(false, false, true).parse(inputStream)
+        uri = rootNode.uri.text()
+        rootNode.tag.each { tag ->
+            String tagName = tag.name.text()
+            String className = tag.'tag-class'.text() ?: tag.'tagclass'.text()
+            tags[tagName] = className
+        }
+        rootNode.'listener-class'.each { listenerClassNode ->
+            listeners << listenerClassNode.text()
         }
     }
 }

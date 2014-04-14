@@ -54,13 +54,19 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     private String namespace;
     private ServletConfig servletConfig;
     private String[] configLocations = new String[0];
+    private GrailsApplication grailsApplication;
 
     public GrailsWebApplicationContext() throws BeansException {
-        super();
+        super(new OptimizedAutowireCapableBeanFactory());
+    }
+
+    public GrailsWebApplicationContext(GrailsApplication grailsApplication) {
+        this();
+        this.grailsApplication = grailsApplication;
     }
 
     public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
-        super(parent);
+        this(new OptimizedAutowireCapableBeanFactory(), parent);
     }
 
     public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
@@ -78,12 +84,20 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     }
 
     private GrailsApplication getGrailsApplication() {
-        ApplicationContext parent = getParent();
-        if (parent == null || !parent.containsBean(GrailsApplication.APPLICATION_ID)) {
-            return null;
+        if(grailsApplication==null) {
+            ApplicationContext parent = getParent();
+            if (parent != null) {
+                if(parent instanceof GrailsWebApplicationContext) {
+                    grailsApplication = ((GrailsWebApplicationContext)parent).getGrailsApplication();
+                } else if (parent.containsBean(GrailsApplication.APPLICATION_ID)) {
+                    grailsApplication = parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+                }
+            }
+            if (grailsApplication == null && containsBean(GrailsApplication.APPLICATION_ID)) {
+                grailsApplication = getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            }
         }
-
-        return (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
+        return grailsApplication;
     }
 
     /**

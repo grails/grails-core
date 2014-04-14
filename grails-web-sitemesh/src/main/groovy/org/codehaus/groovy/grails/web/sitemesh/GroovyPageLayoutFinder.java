@@ -31,6 +31,10 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.view.AbstractGrailsView;
+import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
+import org.codehaus.groovy.grails.web.servlet.view.LayoutViewResolver;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
@@ -45,7 +49,7 @@ import com.opensymphony.sitemesh.Content;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class GroovyPageLayoutFinder {
+public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefreshedEvent>{
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
     public static final String NONE_LAYOUT = "_none_";
     public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
@@ -79,7 +83,11 @@ public class GroovyPageLayoutFinder {
     }
 
     public void setViewResolver(ViewResolver viewResolver) {
-        this.viewResolver = viewResolver;
+        if(viewResolver instanceof LayoutViewResolver) {
+            this.viewResolver = ((LayoutViewResolver)viewResolver).getInnerViewResolver();
+        } else {
+            this.viewResolver = viewResolver;
+        }
     }
 
     public Decorator findLayout(HttpServletRequest request, Content page) {
@@ -272,5 +280,13 @@ public class GroovyPageLayoutFinder {
         public boolean isExpired() {
             return System.currentTimeMillis() - createTimestamp > LAYOUT_CACHE_EXPIRATION_MILLIS;
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (!(viewResolver instanceof GrailsViewResolver)) {
+            setViewResolver(event.getApplicationContext().getBean(GrailsViewResolver.class));
+        }
+        
     }
 }

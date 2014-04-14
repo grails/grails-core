@@ -27,6 +27,8 @@ import javax.servlet.http.HttpSession
  */
 class SynchronizerTokensHolder implements Serializable {
 
+    private static final long serialVersionUID = 1
+
     public static final String HOLDER = "SYNCHRONIZER_TOKENS_HOLDER"
     public static final String TOKEN_KEY = "SYNCHRONIZER_TOKEN"
     public static final String TOKEN_URI = "SYNCHRONIZER_URI"

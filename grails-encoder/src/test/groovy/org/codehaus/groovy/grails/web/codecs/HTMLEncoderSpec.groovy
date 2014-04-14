@@ -14,9 +14,9 @@
  */
 package org.codehaus.groovy.grails.web.codecs;
 
+import org.codehaus.groovy.grails.plugins.codecs.BasicXMLEncoder
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Encoder
 import org.codehaus.groovy.grails.plugins.codecs.HTMLEncoder
-import org.codehaus.groovy.grails.plugins.codecs.XMLEncoder
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender
 import org.codehaus.groovy.grails.support.encoding.EncodingState
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder
@@ -69,7 +69,7 @@ class HTMLEncoderSpec extends Specification {
             1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 35, 7)
             0 * _
         where:
-            streamingEncoder << [new HTMLEncoder(), new HTML4Encoder(), new XMLEncoder()]
+            streamingEncoder << [new HTMLEncoder(), new HTML4Encoder(), new BasicXMLEncoder()]
     }
     
     @Issue("GRAILS-10684")

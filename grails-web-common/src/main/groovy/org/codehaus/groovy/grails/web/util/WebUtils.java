@@ -51,6 +51,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
+import org.springframework.web.servlet.view.UrlBasedViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
 /**
@@ -181,6 +182,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
     public static String addViewPrefix(String viewName, String controllerName) {
         if (!viewName.startsWith(String.valueOf(SLASH))) {
+            if(viewName.startsWith(UrlBasedViewResolver.REDIRECT_URL_PREFIX) || viewName.startsWith(UrlBasedViewResolver.FORWARD_URL_PREFIX)) {
+                return viewName;
+            }
             StringBuilder buf = new StringBuilder();
             buf.append(SLASH);
             if (controllerName != null) {

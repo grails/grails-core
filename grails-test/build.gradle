@@ -33,4 +33,7 @@ dependencies {
         exclude group:'junit', module: 'junit-dep'
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
+
+    // needed for Spock
+    compile 'org.objenesis:objenesis:1.4'
 }
