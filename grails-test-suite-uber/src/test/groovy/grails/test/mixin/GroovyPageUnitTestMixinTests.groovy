@@ -2,6 +2,7 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.test.mixin.web.GroovyPageUnitTestMixin
+import spock.lang.Issue
 
 /**
  * @author Graeme Rocher
@@ -41,6 +42,25 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
         def result = render(view:"/foo/bar")
 
         assert result == 'Hello /bar'
+    }
+    
+    @Issue("GRAILS-10723")
+    void testCreateLinkWithoutController() {
+        views['/foo/bar.gsp'] = 'Hello <g:createLink action="bar" />'
+
+        def result = render(view:"/foo/bar")
+
+        assert result == 'Hello /test/bar'
+    }
+
+    @Issue("GRAILS-10723")
+    void testCreateLinkWithSpecifiedController() {
+        webRequest.controllerName = 'foo'
+        views['/foo/bar.gsp'] = 'Hello <g:createLink action="bar" />'
+
+        def result = render(view:"/foo/bar")
+
+        assert result == 'Hello /foo/bar'
     }
 
     void testThatViewsAreClearedBetweenTests() {
