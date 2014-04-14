@@ -37,6 +37,6 @@ class DateContainer {
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface BindingFormat {
-    String value();
+    String value() default "";
     String code() default "";
 }
