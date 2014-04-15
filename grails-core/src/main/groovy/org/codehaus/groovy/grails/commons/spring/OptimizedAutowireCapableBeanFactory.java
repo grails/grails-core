@@ -116,7 +116,19 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
             if (DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS || dependencyCheck || existingBean instanceof Aware) {
                 super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
             } else {
-                populateBeanInAutowireByName(existingBean);
+                try {
+                    populateBeanInAutowireByName(existingBean);
+                } catch (Exception e) {
+                    logger.error("Bean couldn't be autowired using grails optimization: " + e.getMessage());
+                    logger.error("Retrying using spring autowire");
+
+                    // Remove the cache value in order to asure there is no problem with a previous value
+                    Class<?> beanClass = ClassUtils.getUserClass(existingBean.getClass());
+                    autowireableBeanPropsCacheForClass.remove(beanClass);
+
+                    // Calls the spring method
+                    super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
+                }
             }
         } else {
             super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
