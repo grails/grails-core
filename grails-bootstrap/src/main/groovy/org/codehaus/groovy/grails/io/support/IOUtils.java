@@ -376,6 +376,16 @@ public class IOUtils {
             } catch (Exception e) {
                 // ignore, parser doesn't support
             }
+            try {
+                saxParserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+            } catch (Exception e) {
+                // ignore, parser doesn't support
+            }
+            try {
+                saxParserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            } catch (Exception e) {
+                // ignore, parser doesn't support
+            }
         }
         return saxParserFactory;
     }

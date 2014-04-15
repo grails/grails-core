@@ -20,6 +20,8 @@ import grails.artefact.Artefact
 import javax.annotation.PostConstruct
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -43,11 +45,17 @@ class JavascriptTagLib implements ApplicationContextAware {
     static final PROVIDER_MAPPINGS = [:]
 
     GrailsPluginManager pluginManager
+    CodecLookup codecLookup
 
     Class<JavascriptProvider> defaultProvider
     boolean hasResourceProcessor = false
 
-    static encodeAsForTags = [escapeJavascript: 'JavaScript', javascript: [expressionCodec:"JavaScript", scriptletCodec:"JavaScript", replaceOnly:true]]
+    static encodeAsForTags = [escapeJavascript: 'JavaScript', 
+                              javascript: [expressionCodec:"JavaScript", scriptletCodec:"JavaScript", replaceOnly:true],
+                              remoteFunction: 'raw',
+                              remoteLink: 'raw',
+                              remoteField: 'raw'
+                              ]
 
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
@@ -245,10 +253,11 @@ class JavascriptTagLib implements ApplicationContextAware {
      * @attr elementId the DOM element id
      */
     Closure remoteLink = { attrs, body ->
+        Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
         out << '<a href="'
 
         def cloned = deepClone(attrs)
-        out << createLink(cloned)
+        out << htmlEncoder.encode(createLink(cloned))
 
         out << '" onclick="'
         // create remote function
@@ -264,12 +273,12 @@ class JavascriptTagLib implements ApplicationContextAware {
         // handle elementId like link
         def elementId = attrs.remove('elementId')
         if (elementId) {
-            out << " id=\"${elementId}\""
+            out << " id=\"${htmlEncoder.encode(elementId)}\""
         }
 
         // process remaining attributes
         attrs.each { k,v ->
-            out << ' ' << k << "=\"" << v << "\""
+            out << ' ' << htmlEncoder.encode(k) << "=\"" << htmlEncoder.encode(v) << "\""
         }
         out << ">"
         // output the body
@@ -297,11 +306,12 @@ class JavascriptTagLib implements ApplicationContextAware {
      * @attr method The method to use the execute the call (defaults to "post")
      */
     Closure remoteField = { attrs, body ->
+        Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
         def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
         def value = attrs.remove('value')
         if (!value) value = ''
 
-        out << "<input type=\"text\" name=\"${attrs.remove('name')}\" value=\"${value}\" onkeyup=\""
+        out << "<input type=\"text\" name=\"${htmlEncoder.encode(attrs.remove('name'))}\" value=\"${htmlEncoder.encode(value)}\" onkeyup=\""
 
         if (attrs.params) {
             if (attrs.params instanceof Map) {
@@ -319,7 +329,7 @@ class JavascriptTagLib implements ApplicationContextAware {
         out << "\""
         attrs.remove('url')
         attrs.each { k,v->
-            out << " $k=\"$v\""
+            out << ' ' << htmlEncoder.encode(k) << "=\"" << htmlEncoder.encode(v) << "\""
         }
         out <<" />"
     }
