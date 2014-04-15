@@ -43,7 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import groovy.xml.FactorySupport;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 import org.codehaus.groovy.grails.io.support.ClassPathResource;
@@ -54,10 +55,6 @@ import org.codehaus.groovy.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.xml.sax.SAXException;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 
 /**
  * Utility methods used on the command line.
@@ -321,16 +318,7 @@ public class BaseSettingsApi {
     }
 
     public XmlSlurper createXmlSlurper() throws ParserConfigurationException, SAXException {
-        SAXParserFactory factory = FactorySupport.createSaxParserFactory();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
-
-        try {
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (ParserConfigurationException pce) {
-        }
-        return new XmlSlurper(factory.newSAXParser());
+        return IOUtils.createXmlSlurper();
     }
     /**
      * Times the execution of a closure, which can include a target. For
