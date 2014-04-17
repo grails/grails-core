@@ -65,17 +65,19 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         def writer = new StringBuilder()
         // prefer URI attribute
         if (attrs.get(ATTRIBUTE_URI) != null) {
-            final base = handleAbsolute(attrs)
-            if (base != null) {
-                writer << base
-            }
-            else {
-                final cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
-                if (cp == null) cp = getContextPath()
-                if (cp != null)
-                    writer << cp
-            }
             final uriPath = attrs.get(ATTRIBUTE_URI).toString()
+            if(!isUriAbsolute(uriPath)){
+                final base = handleAbsolute(attrs)
+                if (base != null) {
+                    writer << base
+                }
+                else {
+                    final cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
+                    if (cp == null) cp = getContextPath()
+                    if (cp != null)
+                        writer << cp
+                }
+            }
             writer << uriPath
         }
         else {
@@ -241,6 +243,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             }
 
             throw new IllegalStateException("Attribute absolute='true' specified but no grails.serverURL set in Config")
+        }
+    }
+
+    private boolean isUriAbsolute(String uri){
+	try{
+            return new URI(uri).absolute
+	}catch(Exception e){
+            // assume unparseable URIs are absolute
+            return true
         }
     }
 
