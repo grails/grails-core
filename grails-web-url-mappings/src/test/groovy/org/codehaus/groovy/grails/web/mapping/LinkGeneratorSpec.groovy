@@ -19,11 +19,26 @@ class LinkGeneratorSpec extends Specification {
 
     def baseUrl = "http://myserver.com/foo"
     def context = "/bar"
+    def someAbsoluteUrl = "http://www.grails.org/"
     def resource = null
     def linkParams = [:]
     def pluginManager
 
     def mainCssResource = [dir:'css', file:'main.css']
+
+    def "Test absolute link"() {
+        when:
+            linkParams.uri = someAbsoluteUrl
+            linkParams.absolute = true
+        then:
+            link == someAbsoluteUrl
+
+        when:
+            linkParams.uri = someAbsoluteUrl
+
+        then:
+            link == someAbsoluteUrl
+    }
 
     def "Test create link with root URI"() {
         when:
