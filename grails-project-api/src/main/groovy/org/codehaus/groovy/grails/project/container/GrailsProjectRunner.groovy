@@ -81,13 +81,17 @@ class GrailsProjectRunner extends BaseSettingsApi {
         "https://${serverHost ?: 'localhost'}:$serverPortHttps$serverContextPath"
     }
 
+    ServerSocket createServerSocket (int port) {
+        return new ServerSocket(port, 50, serverHost ? InetAddress.getByName(serverHost) : null)
+    }
+
     /**
      * @return Whether the server is running
      */
     boolean isServerRunning() {
         ServerSocket serverSocket = null
         try {
-            serverSocket = new ServerSocket(serverPort)
+            serverSocket = createServerSocket(serverPort)
             return false
         } catch (e) {
             return true
@@ -215,7 +219,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
 
             profile("start server") {
 
-                try { new ServerSocket(args.httpPort).close() }
+                try { createServerSocket(args.httpPort).close() }
                 catch (IOException e) {
                     grailsConsole.error("Server failed to start for port $args.httpPort: $e.message", e)
                     exit(1)
@@ -223,7 +227,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
 
                 if (args.scheme == 'https') {
 
-                    try { new ServerSocket(args.httpsPort).close() }
+                    try { createServerSocket(args.httpsPort).close() }
                     catch (IOException e) {
                         grailsConsole.error("Server failed to start for port $args.httpsPort: $e.message", e)
                         exit(1)
