@@ -16,10 +16,11 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.PluginBuildSettings;
-import org.codehaus.groovy.grails.io.support.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.codehaus.groovy.grails.io.support.Resource;
 
 /**
  * Combines different implementation into one.
@@ -30,14 +31,20 @@ import java.util.List;
 public class CompositePluginDescriptorReader implements PluginDescriptorReader {
 
     private List<PluginDescriptorReader> pluginDescriptorReaders = new ArrayList<PluginDescriptorReader>();
+    private PluginBuildSettings pluginSettings;
 
     public CompositePluginDescriptorReader(PluginBuildSettings pluginSettings) {
+        this.pluginSettings = pluginSettings;
         pluginDescriptorReaders.add(new XmlPluginDescriptorReader(pluginSettings));
         pluginDescriptorReaders.add(new AstPluginDescriptorReader());
     }
 
     public GrailsPluginInfo readPluginInfo(Resource r) {
         for (PluginDescriptorReader reader : pluginDescriptorReaders) {
+            if(reader instanceof XmlPluginDescriptorReader && pluginSettings.isInlinePluginLocation(r.createRelative("."))) {
+                // never use plugin.xml for inline plugins
+                continue;
+            }
             GrailsPluginInfo info = reader.readPluginInfo(r);
             if (info != null) return info;
         }
