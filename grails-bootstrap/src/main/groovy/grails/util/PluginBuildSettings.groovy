@@ -233,7 +233,7 @@ class PluginBuildSettings {
      * Returns true if the specified plugin location is an inline location.
      */
     boolean isInlinePluginLocation(Resource pluginLocation) {
-        buildSettings?.isInlinePluginLocation(pluginLocation?.getFile())
+        pluginLocation in getInlinePluginDirectories() || buildSettings?.isInlinePluginLocation(pluginLocation?.getFile())
     }
 
     /**
