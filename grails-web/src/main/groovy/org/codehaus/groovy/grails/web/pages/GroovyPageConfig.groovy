@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages
 
+import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
@@ -82,15 +83,22 @@ class GroovyPageConfig {
     }
 
     private Map mergePluginCodecSettings(GrailsPluginInfo pluginInfo, Map codecSettings) {
+        if(!codecSettings) {
+            codecSettings = [:]
+        }
         def pluginName = pluginInfo.getName()
+        // handle lower case hyphen separated name format, for example 'ui-platform'
+        doMergePluginCodecSettings(pluginName, codecSettings)
+        // handle property name format for plugin name, for example 'uiPlatform'
+        doMergePluginCodecSettings(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName), codecSettings)
+        return codecSettings
+    }
+
+    private void doMergePluginCodecSettings(String pluginName, Map codecSettings) {
         Map codecSettingsForPlugin = getConfigForPrefix("${pluginName}.${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}.".toString())
         if(codecSettingsForPlugin) {
-            if(!codecSettings) {
-                codecSettings = [:]
-            }
             codecSettings.putAll(codecSettingsForPlugin)
         }
-        return codecSettings
     }
 
     private Map getConfigForPrefix(String gspCodecsPrefix) {
