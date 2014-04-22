@@ -191,7 +191,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
      * @return The plugin properties
      */
 //    @CompileStatic
-    def generatePluginXml(File descriptor, boolean compilePlugin = true ) {
+    def generatePluginXml(File descriptor, boolean compilePlugin = true, File targetDirectory = null ) {
         def pluginBaseDir = descriptor.parentFile
         def pluginProps = pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
         def plugin
@@ -224,9 +224,12 @@ class GrailsProjectPackager extends BaseSettingsApi {
         // Work out what the name of the plugin is from the name of the descriptor file.
         String pluginName = GrailsNameUtils.getPluginName(descriptor.name)
 
+        def pluginXmlDirectory = targetDirectory ?: pluginBaseDir
         // Remove the existing 'plugin.xml' if there is one.
-        def pluginXml = new File(pluginBaseDir, "plugin.xml")
-        pluginXml.delete()
+        def pluginXml = new File(pluginXmlDirectory, "plugin.xml")
+        if(pluginXml.exists()) {
+            pluginXml.delete()
+        }
 
         // Use MarkupBuilder with indenting to generate the file.
         pluginXml.withWriter('UTF-8') { Writer writer ->
