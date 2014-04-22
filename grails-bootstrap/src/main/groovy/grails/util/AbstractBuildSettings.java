@@ -256,7 +256,12 @@ public abstract class AbstractBuildSettings {
         if (pluginLocation == null) return false;
         getPluginDirectories(); // initialize the cache
         ConcurrentLinkedQueue<File> locations = (ConcurrentLinkedQueue<File>) cache.get(KEY_INLINE_PLUGIN_LOCATIONS);
-        return locations != null && locations.contains(pluginLocation);
+        try {
+            return locations != null && (locations.contains(pluginLocation) || locations.contains(pluginLocation.getCanonicalFile()));
+        }
+        catch (IOException e) {
+            return false;
+        }
     }
 
     /**
