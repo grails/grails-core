@@ -56,7 +56,7 @@ class GroovyPageConfig {
         if (!codecWriterName) return null
 
         Map codecSettings = getConfigForPrefix(GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS + ".")
-        if(pluginInfo) {
+        if(pluginInfo != null) {
             codecSettings = mergePluginCodecSettings(pluginInfo, codecSettings)
         }
         String codecInfo = null
@@ -82,7 +82,8 @@ class GroovyPageConfig {
     }
 
     private Map mergePluginCodecSettings(GrailsPluginInfo pluginInfo, Map codecSettings) {
-        Map codecSettingsForPlugin = getConfigForPrefix("${pluginInfo.name}.${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}.".toString())
+        def pluginName = pluginInfo.getName()
+        Map codecSettingsForPlugin = getConfigForPrefix("${pluginName}.${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}.".toString())
         if(codecSettingsForPlugin) {
             if(!codecSettings) {
                 codecSettings = [:]
