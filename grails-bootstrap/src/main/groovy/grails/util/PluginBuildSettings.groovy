@@ -749,8 +749,9 @@ class PluginBuildSettings {
      * @return A list
      */
     List readMetadataFromZip(String zipLocation) {
+        def zipFile = null
         try {
-            def zipFile = new ZipFile(zipLocation)
+            zipFile = new ZipFile(zipLocation)
             ZipEntry entry = zipFile.entries().find {ZipEntry entry -> entry.name == 'plugin.xml'}
             if (entry) {
                 def pluginXml = IOUtils.createXmlSlurper().parse(zipFile.getInputStream(entry))
@@ -761,6 +762,8 @@ class PluginBuildSettings {
         }
         catch (e) {
             // ignore
+        } finally {
+            try { zipFile?.close() } catch (e) { }
         }
         return null
     }
