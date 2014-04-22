@@ -48,7 +48,7 @@ public class GrailsCoreDependencies {
     protected Collection<Dependency> testDependencies;
 
     public GrailsCoreDependencies(String grailsVersion) {
-        this(grailsVersion, "2.5", false, true);
+        this(grailsVersion, "3.0", false, true);
     }
 
     public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
@@ -57,7 +57,7 @@ public class GrailsCoreDependencies {
 
     public GrailsCoreDependencies(String grailsVersion, String servletVersion, boolean java5compatible, boolean isGrailsProject) {
         this.grailsVersion = grailsVersion;
-        this.servletVersion = servletVersion == null ? "2.5" : servletVersion;
+        this.servletVersion = servletVersion == null ? "3.0" : servletVersion;
         this.java5compatible = java5compatible;
 
         buildDependencies = Arrays.asList(
