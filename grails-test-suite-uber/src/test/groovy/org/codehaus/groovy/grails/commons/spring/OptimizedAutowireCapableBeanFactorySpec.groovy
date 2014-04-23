@@ -8,12 +8,12 @@ import org.springframework.beans.*
 import java.beans.PropertyDescriptor
 import org.springframework.beans.factory.support.GenericBeanDefinition
 
-class ReloadAwareAutowireCapableBeanFactorySpec extends Specification {
+class OptimizedAutowireCapableBeanFactorySpec extends Specification {
     static int AUTOWIRE_BY_NAME = 1
 
     void "Test factory bean cache fallback"() {
         setup: "Setup the factory bean"
-            def factoryBean = new ReloadAwareAutowireCapableBeanFactory()
+            def factoryBean = new OptimizedAutowireCapableBeanFactory()
 
         and: "Bean to be inspected for autowire"
             def existingBean = new TestObject()
