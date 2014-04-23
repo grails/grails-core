@@ -202,7 +202,12 @@ public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFact
         return resolveAutowireablePropertyDescriptorsForClass(existingBean.getClass(), new Callable<BeanWrapper>() {
             public BeanWrapper call() throws Exception {
                 BeanWrapperImpl bw = new BeanWrapperImpl(false);
-                bw.setWrappedInstance(existingBean);
+                Class userClass = ClassUtils.getUserClass(existingBean.getClass());
+                if(userClass != existingBean.getClass()) {
+                    bw.setWrappedInstance(BeanUtils.instantiate(userClass));
+                } else {
+                    bw.setWrappedInstance(existingBean);
+                }
                 bw.setConversionService(getConversionService());
                 return bw;
             }
