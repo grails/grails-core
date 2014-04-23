@@ -27,7 +27,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "3.0.6.BUILD-SNAPSHOT"
+    datastoreVersion = "3.0.6.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.3.0-beta-2"
@@ -85,6 +85,7 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
+        mavenLocal()
     }
 
     configurations {
@@ -340,6 +341,7 @@ subprojects { project ->
             }
             providedDeps.each { dep ->
                 pom.dependencies.find { it.artifactId == dep.name }?.scope = 'provided'
+
             }
 
             configurations.runtime.allDependencies.each { dependency ->
