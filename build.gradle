@@ -338,6 +338,7 @@ subprojects { project ->
             }
             providedDeps.each { dep ->
                 pom.dependencies.find { it.artifactId == dep.name }?.scope = 'provided'
+
             }
 
             configurations.runtime.allDependencies.each { dependency ->

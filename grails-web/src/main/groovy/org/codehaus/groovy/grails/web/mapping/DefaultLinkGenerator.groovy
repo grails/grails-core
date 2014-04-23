@@ -347,6 +347,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         }
     }
 
+
     /**
      * Get the declared URL of the server from config, or guess at localhost for non-production.
      */
