@@ -43,7 +43,9 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
     @Override
     public View resolveViewName(String viewName, Locale locale) throws Exception {
         View innerView = innerViewResolver.resolveViewName(viewName, locale);
-        if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
+        if(innerView == null) {
+            return null;
+        } else if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
             return innerView;
         } else {
             return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
