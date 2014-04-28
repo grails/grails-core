@@ -70,7 +70,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
 
         this.request = request;
 
-        gspSitemeshPage = (GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        gspSitemeshPage = (GSPSitemeshPage)request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
     }
 
     @Override
@@ -237,7 +237,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
             return null;
         }
 
-        GSPSitemeshPage page = (GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        GSPSitemeshPage page = (GSPSitemeshPage)request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
         if (page != null && page.isUsed()) {
             return page;
         }

@@ -79,7 +79,7 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
             return null;
         }
 
-        GSPSitemeshPage content = (GSPSitemeshPage)webAppContext.getRequest().getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        GSPSitemeshPage content = (GSPSitemeshPage)webAppContext.getRequest().getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
         if (content != null && content.isUsed()) {
             return content;
         }

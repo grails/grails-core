@@ -179,8 +179,6 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         webRequest.controllerName = "render"
         mockController.renderTemplate.call()
 
-        def response = mockController.response
-
         assertEquals "text/html;charset=UTF-8", response.contentType
         assertEquals "hello world!", response.contentAsString
     }
@@ -195,7 +193,6 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         webRequest.controllerName = 'render'
         mockController.renderTemplateWithCollection()
 
-        def resopnse = mockController.response
         assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
     }
 
@@ -209,7 +206,6 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         webRequest.controllerName = 'render'
         mockController.renderTemplateWithCollectionAndExplicitVarName()
 
-        def resopnse = mockController.response
         assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
     }
 
@@ -222,8 +218,6 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "render"
         mockController.renderXmlTemplate()
-
-        def response = mockController.response
 
         assertEquals "<hello>world</hello>", response.contentAsString
         assertEquals "text/xml;charset=utf-8", response.contentType

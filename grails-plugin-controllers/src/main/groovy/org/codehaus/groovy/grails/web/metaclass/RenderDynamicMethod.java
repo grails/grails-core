@@ -55,19 +55,23 @@ import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeUtility;
-import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 
 /**
  * Allows rendering of text, views, and templates to the response
@@ -207,7 +211,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
                 else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                     applyContentType(response, argMap, null, false);
-                    renderView = renderTemplate(target, controller, webRequest, argMap);
+                    renderView = renderTemplate(target, controller, webRequest, argMap, explicitSiteMeshLayout);
                 }
                 else if (argMap.containsKey(ARGUMENT_FILE)) {
                     renderView = false;
@@ -365,15 +369,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         return mimeUtility;
     }
     
-    private GSPResponseWriter createResponseWriter(GrailsWebRequest webRequest) {
-        GSPResponseWriter out = GSPResponseWriter.getInstance(webRequest.getCurrentResponse());
-        webRequest.setOut(out);
-        return out;
-    }
-
     private boolean renderTemplate(Object target, GroovyObject controller, GrailsWebRequest webRequest,
-            Map argMap) {
-        GSPResponseWriter out = createResponseWriter(webRequest);
+            Map argMap, String explicitSiteMeshLayout) {
         boolean renderView;
         boolean hasModel = argMap.containsKey(ARGUMENT_MODEL);
         Object modelObject = null;
@@ -406,6 +403,26 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             if (t instanceof GroovyPageTemplate) {
                 ((GroovyPageTemplate)t).setAllowSettingContentType(true);
             }
+            
+            GroovyPageView gspView = new GroovyPageView();
+            gspView.setTemplate(t);
+            try {
+                gspView.afterPropertiesSet();
+            } catch (Exception e) {
+                throw new RuntimeException("Problem initializing view", e);
+            }
+            
+            View view = gspView;            
+            boolean renderWithLayout = (explicitSiteMeshLayout != null || webRequest.getCurrentRequest().getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE) != null);
+            if(renderWithLayout) {
+                applySiteMeshLayout(webRequest.getCurrentRequest(), false, explicitSiteMeshLayout);
+                try {
+                    GroovyPageLayoutFinder groovyPageLayoutFinder = webRequest.getApplicationContext().getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
+                    view = new GrailsLayoutView(groovyPageLayoutFinder, gspView);
+                } catch (NoSuchBeanDefinitionException e) {
+                    // ignore
+                }
+            }
 
             Map binding = new HashMap();
 
@@ -416,7 +433,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                         setTemplateModel(webRequest, binding, (Map) modelObject);
                     }
                 }
-                renderTemplateForBean(t, binding, bean, var, out);
+                renderTemplateForBean(webRequest, view, binding, bean, var);
             }
             else if (argMap.containsKey(ARGUMENT_COLLECTION)) {
                 Object colObject = argMap.get(ARGUMENT_COLLECTION);
@@ -425,19 +442,17 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                         setTemplateModel(webRequest, binding, (Map)modelObject);
                     }
                 }
-                renderTemplateForCollection(t, binding, colObject, var, out);
+                renderTemplateForCollection(webRequest, view, binding, colObject, var);
             }
             else if (hasModel) {
                 if (modelObject instanceof Map) {
                     setTemplateModel(webRequest, binding, (Map)modelObject);
                 }
-                renderTemplateForModel(t, modelObject, target, out);
+                renderViewForTemplate(webRequest, view, binding);
             }
             else {
-                Writable w = t.make();
-                w.writeTo(out);
+                renderViewForTemplate(webRequest, view, binding);
             }
-            out.flush();
             renderView = false;
         }
         catch (GroovyRuntimeException gre) {
@@ -447,6 +462,15 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex);
         }
         return renderView;
+    }
+
+    protected void renderViewForTemplate(GrailsWebRequest webRequest, View view, Map binding) {
+        try {
+            view.render(binding, webRequest.getCurrentRequest(), webRequest.getResponse());
+        }
+        catch (Exception e) {
+            throw new ControllerExecutionException(e.getMessage(), e);
+        }
     }
 
     protected Collection<ActionResultTransformer> getActionResultTransformers(GrailsWebRequest webRequest) {
@@ -506,18 +530,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         return renderView;
     }
 
-    private void renderTemplateForModel(Template template, Object modelObject, Object target, Writer out) throws IOException {
-        if (modelObject instanceof Map) {
-            template.make((Map) modelObject).writeTo(out);
-        }
-        else {
-            template.make().writeTo(out);
-        }
-    }
-
-    private void renderTemplateForCollection(Template template, Map binding, Object colObject, String var, Writer out) throws IOException {
-        if (colObject instanceof Collection) {
-            Collection c = (Collection) colObject;
+    private void renderTemplateForCollection(GrailsWebRequest webRequest, View view, Map binding, Object colObject, String var) throws IOException {
+        if (colObject instanceof Iterable) {
+            Iterable c = (Iterable) colObject;
             for (Object o : c) {
                 if (GrailsStringUtils.isBlank(var)) {
                     binding.put(DEFAULT_ARGUMENT, o);
@@ -525,7 +540,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 else {
                     binding.put(var, o);
                 }
-                template.make(binding).writeTo(out);
+                renderViewForTemplate(webRequest, view, binding);
             }
         }
         else {
@@ -536,18 +551,18 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 binding.put(var, colObject);
             }
 
-            template.make(binding).writeTo(out);
+            renderViewForTemplate(webRequest, view, binding);
         }
     }
 
-    private void renderTemplateForBean(Template template, Map binding, Object bean, String varName, Writer out) throws IOException {
+    private void renderTemplateForBean(GrailsWebRequest webRequest, View view, Map binding, Object bean, String varName) throws IOException {
         if (GrailsStringUtils.isBlank(varName)) {
             binding.put(DEFAULT_ARGUMENT, bean);
         }
         else {
             binding.put(varName, bean);
         }
-        template.make(binding).writeTo(out);
+        renderViewForTemplate(webRequest, view, binding);
     }
 
     private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller) {
