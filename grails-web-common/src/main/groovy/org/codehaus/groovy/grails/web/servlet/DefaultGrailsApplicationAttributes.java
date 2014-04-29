@@ -248,14 +248,6 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getNoSuffixViewURI(GroovyObject controller, String viewName) {
-    	Object controllerArtefact = grailsApplication.getArtefact("Controller", controller.getClass().getName());
-    	if(controllerArtefact instanceof GrailsControllerClass) {
-    		GrailsControllerClass grailsControllerClass = (GrailsControllerClass)controllerArtefact;
-    		String namespace = grailsControllerClass.getNamespace();
-    		if(namespace != null) {
-        		return getGroovyPagesUriService().getNoSuffixViewURI(namespace, viewName);    			
-    		}
-    	} 
    		return getGroovyPagesUriService().getNoSuffixViewURI(controller, viewName);
     }
 

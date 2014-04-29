@@ -20,7 +20,10 @@ import grails.util.GrailsNameUtils;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
@@ -37,13 +40,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator {
+public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator implements GrailsApplicationAware {
 
     private static final char DOT = '.';
 
     private GroovyPagesUriService uriService = new DefaultGroovyPagesUriService();
 
     private MimeTypeResolver mimeTypeResolver;
+    
+    private GrailsApplication grailsApplication;
 
     @Autowired(required = false)
     public void setMimeTypeResolver(MimeTypeResolver mimeTypeResolver) {
@@ -129,7 +134,23 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         String controllerName = getNameForController(controller);
         String viewNameWithFormat = resolveViewFormat(viewName);
 
-        GroovyPageScriptSource scriptSource = findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
+        GroovyPageScriptSource scriptSource = null;
+        if(grailsApplication != null) {
+        	Object controllerArtefact = grailsApplication.getArtefact("Controller", controller.getClass().getName());
+        	if(controllerArtefact instanceof GrailsControllerClass) {
+        		GrailsControllerClass gcc = (GrailsControllerClass)controllerArtefact;
+        		String namespace = gcc.getNamespace();
+        		if(namespace != null) {
+					scriptSource = findPage("/" + namespace + uriService.getViewURI(controllerName, viewNameWithFormat));
+					if(scriptSource == null) {
+						scriptSource = findPage("/" + namespace + uriService.getViewURI(controllerName, viewName));
+					}
+        		}
+        	}
+        }
+        if(scriptSource == null) {
+			scriptSource = findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
+        }
         if (scriptSource == null) {
             scriptSource = findPage(uriService.getViewURI(controllerName, viewName));
         }
@@ -261,4 +282,9 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     protected String getNameForController(Object controller) {
         return GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
     }
+
+	@Override
+	public void setGrailsApplication(GrailsApplication grailsApplication) {
+		this.grailsApplication = grailsApplication;
+	}
 }

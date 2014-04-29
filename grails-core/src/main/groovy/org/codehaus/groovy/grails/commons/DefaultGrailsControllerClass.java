@@ -164,7 +164,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             return;
         }
 
-        final String defaultViewPath = SLASH + getViewPathPrefix() + SLASH + defaultActionName;
+        final String defaultViewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + defaultActionName;
 
         uri2methodMap.put(uri, defaultActionName);
         uri2methodMap.put(controllerPath, defaultActionName);
@@ -178,15 +178,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         uri2methodMap.put(tmpUri, closureName);
         uri2methodMap.put(tmpUri + SLASH + "**", closureName);
 
-        String viewPath = SLASH + getViewPathPrefix() + SLASH + closureName;
+        String viewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + closureName;
         
         uri2viewMap.put(tmpUri, viewPath);
         viewNames.put(closureName, viewPath);
     }
-
-	protected String getViewPathPrefix() {
-		return namespace == null ? GrailsNameUtils.getPropertyNameRepresentation(getName()) : namespace;
-	}
 
     public String[] getURIs() {
         return uris;
