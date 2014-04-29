@@ -227,6 +227,12 @@ class GroovyPagesGrailsPlugin {
             bean.lazyInit = true
             bean.parent = "abstractViewResolver"
         }
+        
+        // "grails.gsp.view.layoutViewResolver=false" can be used to disable GrailsLayoutViewResolver
+        // containsKey check must be made to check existence of boolean false values in ConfigObject
+        if(!(application.config.grails.gsp.view.containsKey('layoutViewResolver') && application.config.grails.gsp.view.layoutViewResolver==false)) {
+            grailsLayoutViewResolverPostProcessor(GrailsLayoutViewResolverPostProcessor)
+        }
 
         final pluginManager = manager
         instanceTagLibraryApi(TagLibraryApi, pluginManager)
