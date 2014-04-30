@@ -101,7 +101,7 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
 
             classNode.addField(field);
 
-            if(classNode.getMethod(WITH_FORMAT_METHOD, CLOSURE_PARAMETER) == null) {
+            if(!classNode.hasMethod(WITH_FORMAT_METHOD, CLOSURE_PARAMETER)) {
                 final BlockStatement methodBody = new BlockStatement();
                 final ArgumentListExpression args = new ArgumentListExpression();
                 args.addExpression(new VariableExpression("this", classNode))
