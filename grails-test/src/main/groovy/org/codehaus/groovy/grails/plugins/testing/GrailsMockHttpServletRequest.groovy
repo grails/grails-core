@@ -66,6 +66,11 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     private cachedXml
     DispatcherType dispatcherType
     AsyncContext asyncContext
+    
+
+    GrailsMockHttpServletRequest() {
+        method = 'GET'
+    }
 
     /**
      * Sets the request format to use

@@ -44,6 +44,7 @@ class GrailsMockHttpServletRequestTests extends GroovyTestCase {
     void testGetXML() {
         // Set up the test data.
         def request = new GrailsMockHttpServletRequest()
+        request.method = 'POST'
         request.contentType = "application/xml; charset=UTF-8"
         request.content = TEST_XML_CONTENT.getBytes("UTF-8")
 
@@ -53,6 +54,7 @@ class GrailsMockHttpServletRequestTests extends GroovyTestCase {
 
     void testGetXMLMultipleCalls() {
         def request = new GrailsMockHttpServletRequest()
+        request.method = 'POST'
         request.contentType = "application/xml; charset=UTF-8"
         request.content = TEST_XML_CONTENT.getBytes("UTF-8")
 
@@ -68,6 +70,7 @@ class GrailsMockHttpServletRequestTests extends GroovyTestCase {
 
     void testGetXMLNoContent() {
         def request = new GrailsMockHttpServletRequest()
+        request.method = 'POST'
         shouldFail {
             request.XML
         }
@@ -80,6 +83,7 @@ First line
 Second line
 """
         def request = new GrailsMockHttpServletRequest()
+        request.method = 'POST'
         request.contentType = "text/plain; charset=UTF-8"
         request.content = content.getBytes("UTF-8")
 
