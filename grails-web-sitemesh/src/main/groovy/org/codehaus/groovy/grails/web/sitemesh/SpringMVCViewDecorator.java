@@ -64,8 +64,7 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
         if (!response.isCommitted()) {
             boolean dispatched = false;
             try {
-                request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage(true));
-                request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, Boolean.TRUE);
+                request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, new GSPSitemeshPage(true));
                 try {
                     view.render(model, request, response);
                     dispatched = true;
@@ -89,13 +88,12 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
         }
 
         request.removeAttribute(RequestConstants.PAGE);
-        request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        request.removeAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
     }
 
     private void cleanRequestAttributes(HttpServletRequest request) {
         request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
         request.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE);
-        request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, null);
     }
 
     public View getView() {

@@ -20,6 +20,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+
 /**
  * Apply BindingFormat to a field to provide a format
  * to be used when binding a String to this field.
@@ -36,7 +38,8 @@ class DateContainer {
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+@GroovyASTTransformationClass("org.grails.databinding.compiler.BindingFormatASTTransformation")
 public @interface BindingFormat {
-    String value();
+    String value() default "";
     String code() default "";
 }

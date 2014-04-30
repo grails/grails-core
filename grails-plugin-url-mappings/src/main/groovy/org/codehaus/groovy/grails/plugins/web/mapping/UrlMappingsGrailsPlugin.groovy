@@ -89,14 +89,7 @@ class UrlMappingsGrailsPlugin {
     }
 
     def doWithWebDescriptor = { webXml ->
-        def filters = webXml.filter
-        def lastFilter = filters[filters.size()-1]
-        lastFilter + {
-            filter {
-                'filter-name'('urlMapping')
-                'filter-class'(UrlMappingsFilter.name)
-            }
-        }
+        addUrlMappingsFilterAndMapping(webXml)
 
         // here we augment web.xml with all the error codes contained within the UrlMapping definitions
         def servlets = webXml.servlet
@@ -154,15 +147,37 @@ class UrlMappingsGrailsPlugin {
             lastMapping +  errorPages
         }
 
-        def filterMappings = webXml.'filter-mapping'
-        def lastFilterMapping = filterMappings[filterMappings.size() - 1]
+    }
 
-        lastFilterMapping + {
+    private addUrlMappingsFilterAndMapping(webXml) {
+        def urlMappingsFilter = {
+            filter {
+                'filter-name'('urlMapping')
+                'filter-class'(UrlMappingsFilter.name)
+            }
+        }
+
+        def urlMappingsFilterMapping = {
             'filter-mapping' {
                 'filter-name'('urlMapping')
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
                 'dispatcher'("REQUEST")
+            }
+        }
+
+        def filters = webXml.filter
+        if(filters?.size()) {
+            def lastFilter = filters[filters.size()-1]
+            lastFilter + urlMappingsFilter
+            def filterMappings = webXml.'filter-mapping'
+            filterMappings[filterMappings.size() - 1] + urlMappingsFilterMapping
+        } else {
+            def firstChild = webXml.children()[0]
+            firstChild.replaceNode { Object[] args ->
+                mkp.yield urlMappingsFilter
+                mkp.yield urlMappingsFilterMapping
+                mkp.yield args
             }
         }
     }

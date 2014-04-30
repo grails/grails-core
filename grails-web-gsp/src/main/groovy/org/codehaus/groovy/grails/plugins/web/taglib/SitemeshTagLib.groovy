@@ -37,7 +37,7 @@ import com.opensymphony.module.sitemesh.RequestConstants
 @Artefact("TagLibrary")
 @CompileStatic
 class SitemeshTagLib implements RequestConstants {
-    protected static final String GSP_SITEMESH_PAGE = 'org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter.GSP_SITEMESH_PAGE'
+    protected static final String GSP_SITEMESH_PAGE = 'org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView.GSP_SITEMESH_PAGE'
 
     static namespace = 'sitemesh'
     CodecLookup codecLookup

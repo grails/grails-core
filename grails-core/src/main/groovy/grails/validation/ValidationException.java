@@ -54,7 +54,7 @@ public class ValidationException extends GrailsException {
             b.append(msg).append(":\n");
         }
         for (ObjectError error : errors.getAllErrors()) {
-            b.append("\n- ").append(error).append("\n");
+            b.append("- ").append(error).append("\n");
         }
         return b.toString();
     }

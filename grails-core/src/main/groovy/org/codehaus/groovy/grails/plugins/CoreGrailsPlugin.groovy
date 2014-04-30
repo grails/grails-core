@@ -87,8 +87,11 @@ class CoreGrailsPlugin {
         }
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
+        
         if (getParentCtx()?.containsBean('pluginManager')) {
             pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager'))
+        } else {
+            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
         }
 
         classLoader(MethodInvokingFactoryBean) {

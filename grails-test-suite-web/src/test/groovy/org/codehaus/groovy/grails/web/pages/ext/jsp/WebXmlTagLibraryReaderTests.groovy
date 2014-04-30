@@ -58,12 +58,6 @@ class WebXmlTagLibraryReaderTests extends GroovyTestCase {
         <param-value>@grails.project.key@</param-value>
     </context-param>
 
-    <filter>
-	   	<filter-name>sitemesh</filter-name>
-	    <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
-	</filter>
-
-
      <filter>
         <filter-name>charEncodingFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -79,11 +73,6 @@ class WebXmlTagLibraryReaderTests extends GroovyTestCase {
 
     <filter-mapping>
         <filter-name>charEncodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <filter-mapping>
-        <filter-name>sitemesh</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

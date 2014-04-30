@@ -39,11 +39,17 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
         this.innerViewResolver = innerViewResolver;
         this.groovyPageLayoutFinder = groovyPageLayoutFinder;
     }
+    
+    public GrailsLayoutViewResolver() {
+        
+    }
 
     @Override
     public View resolveViewName(String viewName, Locale locale) throws Exception {
         View innerView = innerViewResolver.resolveViewName(viewName, locale);
-        if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
+        if(innerView == null) {
+            return null;
+        } else if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
             return innerView;
         } else {
             return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
@@ -75,5 +81,13 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
         if(innerViewResolver instanceof ApplicationContextAware) {
             ((ApplicationContextAware)innerViewResolver).setApplicationContext(applicationContext);
         }
+    }
+
+    public void setInnerViewResolver(ViewResolver innerViewResolver) {
+        this.innerViewResolver = innerViewResolver;
+    }
+
+    public void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
+        this.groovyPageLayoutFinder = groovyPageLayoutFinder;
     }
 }

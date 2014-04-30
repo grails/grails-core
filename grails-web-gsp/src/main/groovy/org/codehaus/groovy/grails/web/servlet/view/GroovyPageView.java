@@ -163,10 +163,12 @@ public class GroovyPageView extends AbstractGrailsView {
     }
 
     protected void initTemplate() throws IOException {
-        if (scriptSource == null) {
-            template = templateEngine.createTemplate(getUrl());
-        } else {
-            template = templateEngine.createTemplate(scriptSource);
+        if (template == null) {
+            if (scriptSource == null) {
+                template = templateEngine.createTemplate(getUrl());
+            } else {
+                template = templateEngine.createTemplate(scriptSource);
+            }
         }
         if (template instanceof GroovyPageTemplate) {
             ((GroovyPageTemplate)template).setAllowSettingContentType(true);
@@ -179,5 +181,14 @@ public class GroovyPageView extends AbstractGrailsView {
 
     public Template getTemplate() {
         return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    @Override
+    protected boolean isUrlRequired() {
+        return template == null;
     }
 }

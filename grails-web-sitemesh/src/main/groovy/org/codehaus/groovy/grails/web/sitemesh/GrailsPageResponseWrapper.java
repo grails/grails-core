@@ -51,6 +51,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     private GrailsBuffer buffer;
     private boolean parseablePage = false;
     private GSPSitemeshPage gspSitemeshPage;
+    private String wrapperContentType = null;
 
     public GrailsPageResponseWrapper(final HttpServletRequest request, final HttpServletResponse response,
             PageParserSelector parserSelector) {
@@ -70,7 +71,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
 
         this.request = request;
 
-        gspSitemeshPage = (GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        gspSitemeshPage = (GSPSitemeshPage)request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
     }
 
     @Override
@@ -105,6 +106,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
      */
     @Override
     public void setContentType(String type) {
+        this.wrapperContentType = type;        
         super.setContentType(type);
 
         if (type == null) {
@@ -119,6 +121,11 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         else {
             deactivateSiteMesh();
         }
+    }
+    
+    @Override
+    public String getContentType() {
+        return this.wrapperContentType;
     }
 
     public void activateSiteMesh(String contentType, String encoding) {
@@ -237,7 +244,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
             return null;
         }
 
-        GSPSitemeshPage page = (GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        GSPSitemeshPage page = (GSPSitemeshPage)request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
         if (page != null && page.isUsed()) {
             return page;
         }
@@ -372,4 +379,5 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
             return byteBuffer != null;
         }
     }
+
 }

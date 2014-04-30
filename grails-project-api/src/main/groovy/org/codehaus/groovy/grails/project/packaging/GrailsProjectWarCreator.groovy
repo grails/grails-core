@@ -132,11 +132,6 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
         def includeOsgiHeaders = grailsSettings.projectWarOsgiHeaders
 
         try {
-            for (pluginDir in pluginSettings.inlinePluginDirectories) {
-                grailsConsole.updateStatus "Generating plugin.xml for inline plugin"
-                projectPackager.generatePluginXml(pluginSettings.getPluginDescriptor(pluginDir).file, false)
-            }
-
             configureWarName()
 
             ant.mkdir(dir:stagingDir)
@@ -477,6 +472,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
 
     private void warPluginForPluginInfo(GrailsPluginInfo info) {
         def pluginBase = info.pluginDir.file
+        boolean inlinePlugin = pluginSettings.isInlinePluginLocation(info.pluginDir)
         ant.sequential {
             // Note that with in-place plugins, the name of the plugin's
             // directory may not match the "<name>-<version>" form that
@@ -487,7 +483,9 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
             mkdir(dir: targetPluginDir)
             copy(todir: targetPluginDir, failonerror: true, preservelastmodified:true) {
                 fileset(dir: pluginBase.absolutePath) {
-                    include(name: "plugin.xml")
+                    if(!inlinePlugin) {
+                        include(name: "plugin.xml")
+                    }
                     include(name: "grails-app/views/**")
                     exclude(name: "grails-app/**/*.groovy")
                 }
@@ -498,6 +496,14 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                         exclude(name: "grails-app/**/*.groovy")
                     }
                 }
+            }
+            if(inlinePlugin) {
+                grailsConsole.updateStatus "Generating plugin.xml for inline plugin ${info.name}"
+                File targetDir = new File(new File(basedir), targetPluginDir)
+                if(!targetDir.exists()) {
+                    targetDir.mkdirs()
+                }
+                projectPackager.generatePluginXml(pluginSettings.getPluginDescriptor(info.pluginDir).file, false, targetDir)
             }
         }
 

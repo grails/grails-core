@@ -15,7 +15,7 @@ grails.views.gsp.sitemesh.preprocess=false
         buildMockRequest(config)
         def page = new GSPSitemeshPage()
         request.setAttribute(RequestConstants.PAGE, page)
-        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, page)
+        request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, page)
     }
 
 }

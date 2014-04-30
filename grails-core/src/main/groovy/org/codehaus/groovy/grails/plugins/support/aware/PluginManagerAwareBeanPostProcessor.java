@@ -19,6 +19,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 
 /**
  * Auto-injects beans that implement PluginManagerAware.
@@ -26,9 +28,14 @@ import org.springframework.beans.BeansException;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapter {
+public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapter implements BeanFactoryAware {
 
     private GrailsPluginManager pluginManager;
+    private BeanFactory beanFactory;
+    
+    public PluginManagerAwareBeanPostProcessor() {
+        
+    }
 
     public PluginManagerAwareBeanPostProcessor(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -36,9 +43,21 @@ public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapte
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof PluginManagerAware) {
+        if(pluginManager == null) {
+            if(beanFactory.containsBean(GrailsPluginManager.BEAN_NAME)) {
+                pluginManager = beanFactory.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+            }
+        }
+        if (pluginManager != null && bean instanceof PluginManagerAware) {
             ((PluginManagerAware)bean).setPluginManager(pluginManager);
         }
         return bean;
     }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
+    
+    
 }

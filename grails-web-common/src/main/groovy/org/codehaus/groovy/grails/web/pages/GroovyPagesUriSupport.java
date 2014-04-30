@@ -192,13 +192,13 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
         return getAbsoluteViewURIInternal(viewName, buf, true);
     }
 
-    private String getViewURIInternal(String controllerName, String viewName, FastStringWriter buf, boolean includeSuffix) {
+    private String getViewURIInternal(String viewPathPrefix, String viewName, FastStringWriter buf, boolean includeSuffix) {
         if (viewName != null && viewName.startsWith(SLASH_STR)) {
             return getAbsoluteViewURIInternal(viewName, buf, includeSuffix);
         }
 
-        if (controllerName != null) {
-            buf.append(SLASH).append(controllerName);
+        if (viewPathPrefix != null) {
+            buf.append(SLASH).append(viewPathPrefix);
         }
         if (viewName != null) {
             buf.append(SLASH).append(viewName);
