@@ -88,6 +88,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 class ResourceTransform implements ASTTransformation{
     private static final ClassNode MY_TYPE = new ClassNode(Resource)
     public static final String ATTR_READY_ONLY = "readOnly"
+    public static final String ATTR_SUPER_CLASS = "superClass"
     public static final String RESPOND_METHOD = "respond"
     public static final String ATTR_RESPONSE_FORMATS = "formats"
     public static final String ATTR_URI = "uri"
@@ -135,8 +136,16 @@ class ResourceTransform implements ASTTransformation{
         LinkableTransform.addLinkingMethods(parent)
 
         if (resource == null) {
+            ClassNode<?> superClassNode
+            Expression superClassAttribute = annotationNode.getMember(ATTR_SUPER_CLASS)
+            if(superClassAttribute instanceof ClassExpression) {
+                superClassNode = ((ClassExpression)superClassAttribute).getType()
+            } else {
+                superClassNode = ClassHelper.make(RestfulController)
+            }
+            
             final ast = source.getAST()
-            final newControllerClassNode = new ClassNode(className, PUBLIC, nonGeneric(ClassHelper.make(RestfulController), parent))
+            final newControllerClassNode = new ClassNode(className, PUBLIC, nonGeneric(superClassNode, parent))
             
             final transactionalAnn = new AnnotationNode(TransactionalTransform.MY_TYPE)
             transactionalAnn.addMember(ATTR_READY_ONLY,ConstantExpression.PRIM_TRUE)

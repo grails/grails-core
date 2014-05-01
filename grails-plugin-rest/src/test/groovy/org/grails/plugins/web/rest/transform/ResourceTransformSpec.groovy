@@ -1,12 +1,17 @@
 package org.grails.plugins.web.rest.transform
 
+import grails.artefact.Artefact
+import grails.rest.RestfulController
+import grails.transaction.Transactional
 import grails.web.Action
-import spock.lang.Issue
-import spock.lang.Specification
 
 import java.lang.reflect.Method
 
-import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.CompilerConfiguration
+
+import spock.lang.Issue
+import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * @author Graeme Rocher
@@ -28,19 +33,20 @@ class ResourceTransformSpec extends Specification {
         return compilerConfig
     }
 
-    void "Test that the resource transform creates a controller class"() {
+    @Unroll
+    void "Test that the resource transform creates a controller class when super class is #superClass"() {
          given:"A parsed class with a @Resource annotation"
             def gcl = createGroovyClassLoader()
-            gcl.parseClass('''
+            gcl.parseClass("""
 import grails.rest.*
 import grails.persistence.*
 
 @Entity
-@Resource(formats=['html','xml'])
+@Resource(formats=['html','xml']${superClass ? (', superClass=' + superClass) : ''})
 class Book {
 }
-''')
-
+""")
+            def superClazz = superClass ? gcl.loadClass(superClass) : RestfulController
         when:"The controller class is loaded"
             def domain = gcl.loadClass("Book")
             def ctrl = gcl.loadClass('BookController')
@@ -58,6 +64,9 @@ class Book {
             getMethod(ctrl, "delete")
 
             ctrl.scope == "singleton"
+       
+        then:"The superClass is correct"
+            ctrl.getSuperclass() == superClazz
 
         when:"A link is added"
             def book = domain.newInstance()
@@ -67,22 +76,25 @@ class Book {
         then:"The link is added to the available links"
             links[0].href == '/foo'
 
+        where:
+            superClass << ['', RestfulController.name, SubclassRestfulController.name]
     }
 
     @Issue("GRAILS-10741")
-    void "Test that the resource transform creates a read only controller class"() {
+    @Unroll
+    void "Test that the resource transform creates a read only controller class when super class is #superClass"() {
         given:"A parsed class with a @Resource annotation"
         def gcl = createGroovyClassLoader()
-        gcl.parseClass('''
+        gcl.parseClass("""
 import grails.rest.*
 import grails.persistence.*
 
 @Entity
-@Resource(formats=['html','xml'], readOnly=true)
+@Resource(formats=['html','xml'], readOnly=true${superClass ? (', superClass=' + superClass) : ''})
 class Book {
 }
-''')
-
+""")
+            def superClazz = superClass ? gcl.loadClass(superClass) : RestfulController
         when:"The controller class is loaded"
             def domain = gcl.loadClass("Book")
             def ctrl = gcl.loadClass('BookController')
@@ -95,6 +107,9 @@ class Book {
             getMethod(ctrl, "show")
             ctrl.scope == "singleton"
 
+        then:"The superClass is correct"
+            ctrl.getSuperclass() == superClazz
+
         when:"A link is added"
             def book = domain.newInstance()
             book.link(rel:'foos', href:"/foo")
@@ -102,6 +117,9 @@ class Book {
 
         then:"The link is added to the available links"
             links[0].href == '/foo'
+        
+        where:
+            superClass << ['', RestfulController.name, SubclassRestfulController.name]
     }
 
     private Method getMethod(Class clazz, String methodName, Class[] paramTypes) {
@@ -110,5 +128,17 @@ class Book {
         } catch (NoSuchMethodException e) {
             return null
         }
+    }
+}
+
+@Artefact("Controller")
+@Transactional(readOnly = true)
+class SubclassRestfulController<T> extends RestfulController<T> {
+    SubclassRestfulController(Class<T> resource) {
+        this(resource, false)
+    }
+
+    SubclassRestfulController(Class<T> resource, boolean readOnly) {
+        super(resource, readOnly)
     }
 }
