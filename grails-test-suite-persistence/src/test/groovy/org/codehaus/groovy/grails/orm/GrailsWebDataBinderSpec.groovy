@@ -127,6 +127,41 @@ class GrailsWebDataBinderSpec extends Specification {
         locale << [Locale.getInstance("fi", "FI", ""), Locale.getInstance("en", "US", "")]
         decimalSeparator << [',', '.']
     }
+    
+    void 'Test binding to primitive numbers from malformed Strings when locale is #locale'() {
+        given:
+        Locale.setDefault(locale)
+        def obj = new PrimitiveContainer()
+
+        when:
+        binder.bind(obj, new SimpleMapDataBindingSource([
+            someShort: '2x',
+            someInt: '3x',
+            someLong: '4x',
+            someFloat: '5.5x'.replace('.', decimalSeparator),
+            someDouble: '6.6x'.replace('.', decimalSeparator)]))
+
+        then:
+        obj.someShort == 0
+        obj.someInt == 0
+        obj.someLong == 0
+        obj.someFloat == 0
+        obj.someDouble == 0
+        obj.errors.getFieldError('someShort').defaultMessage == 'Unable to parse number [2x]'
+        obj.errors.getFieldError('someShort').rejectedValue == '2x'
+        obj.errors.getFieldError('someInt').defaultMessage == 'Unable to parse number [3x]'
+        obj.errors.getFieldError('someInt').rejectedValue == '3x'
+        obj.errors.getFieldError('someLong').defaultMessage == 'Unable to parse number [4x]'
+        obj.errors.getFieldError('someLong').rejectedValue == '4x'
+        obj.errors.getFieldError('someFloat').defaultMessage == 'Unable to parse number [5' + decimalSeparator + '5x]'
+        obj.errors.getFieldError('someFloat').rejectedValue == '5' + decimalSeparator + '5x'
+        obj.errors.getFieldError('someDouble').defaultMessage == 'Unable to parse number [6' + decimalSeparator + '6x]'
+        obj.errors.getFieldError('someDouble').rejectedValue == '6' + decimalSeparator + '6x'
+
+        where:
+        locale << [Locale.getInstance("fi", "FI", ""), Locale.getInstance("en", "US", "")]
+        decimalSeparator << [',', '.']
+    }
 
     void 'Test binding null to id of element nested in a List'() {
         given:
@@ -1390,6 +1425,7 @@ class ObjectId {
     }
 }
 
+@Validateable
 class PrimitiveContainer {
     boolean someBoolean
     byte someByte
