@@ -20,6 +20,7 @@ import java.util.Properties;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -46,7 +47,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper {
         super.init(c, properties, parentMapper);
         ServletContext servletContext = c.getServletContext();
         WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
+        GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        groovyPageLayoutFinder = grailsApplication.getMainContext().getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
     }
 
     @Override
