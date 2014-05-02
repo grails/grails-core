@@ -61,7 +61,8 @@ import org.codehaus.groovy.grails.web.util.StreamCharBufferMetaUtils
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.web.servlet.view.JstlView
+import org.springframework.util.ClassUtils
+import org.springframework.web.servlet.view.InternalResourceViewResolver
 
 /**
  * Sets up and configures the GSP and GSP tag library support in Grails.
@@ -211,11 +212,13 @@ class GroovyPagesGrailsPlugin {
         groovyPagesUriService(DefaultGroovyPagesUriService) { bean ->
             bean.lazyInit = true
         }
-
+        
+        boolean jstlPresent = ClassUtils.isPresent(
+            "javax.servlet.jsp.jstl.core.Config", InternalResourceViewResolver.class.getClassLoader())
+        
         abstractViewResolver {
-            viewClass = JstlView
             prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
-            suffix = ".jsp"
+            suffix = jstlPresent ? GroovyPageViewResolver.JSP_SUFFIX : GroovyPageViewResolver.GSP_SUFFIX
             templateEngine = groovyPagesTemplateEngine
             groovyPageLocator = groovyPageLocator
             if (enableReload) {
