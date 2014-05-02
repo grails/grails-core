@@ -205,7 +205,6 @@ class GroovyPagesGrailsPlugin {
             gspReloadEnabled = enableReload
             defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: null
             enableNonGspViews = application.flatConfig['grails.sitemesh.enable.nongsp'] ?: false
-            viewResolver = ref('jspViewResolver')
         }
 
         // Setup the GroovyPagesUriService
