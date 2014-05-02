@@ -83,6 +83,15 @@ public class Grails5535Factory extends BaseFactory {
 
         loadConfig();
     }
+    
+    @Override
+    protected void pushDecoratorMapper(String className, Properties properties) {
+        try {
+            super.pushDecoratorMapper(className, properties);
+        } catch (Exception e) {
+            log.warn("Error initializing decorator mapper",e);
+        }
+    }
 
     /** Load configuration from file. */
     private synchronized void loadConfig() {
@@ -150,6 +159,10 @@ public class Grails5535Factory extends BaseFactory {
             is = configFile.toURI().toURL().openStream();
         }
 
+        if (is == null) { // load the default sitemesh configuration
+            is = getClass().getResourceAsStream("sitemesh-default.xml");
+        }
+        
         if (is == null) { // load the default sitemesh configuration
             is = getClass().getClassLoader().getResourceAsStream("com/opensymphony/module/sitemesh/factory/sitemesh-default.xml");
         }
