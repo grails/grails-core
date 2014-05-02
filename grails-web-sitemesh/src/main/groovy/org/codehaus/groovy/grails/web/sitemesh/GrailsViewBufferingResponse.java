@@ -32,7 +32,7 @@ public class GrailsViewBufferingResponse extends GrailsContentBufferingResponse{
         }
     }
     
-    private static class SimpleContentProcessor implements ContentProcessor {
+    private static class SimpleHtmlOnlyContentProcessor implements ContentProcessor {
         @Override
         public Content build(final char[] data, SiteMeshContext context) throws IOException {
             return new GrailsHTMLPageParser().parseContent(data);
@@ -40,16 +40,16 @@ public class GrailsViewBufferingResponse extends GrailsContentBufferingResponse{
 
         @Override
         public boolean handles(SiteMeshContext context) {
-            return true;
+            return handles(context.getContentType());
         }
 
         @Override
-        public boolean handles(String context) {
-            return true;
+        public boolean handles(String contentType) {
+            return contentType != null && contentType.contains("html");
         }
     }
 
     public GrailsViewBufferingResponse(HttpServletRequest request, HttpServletResponse response) {
-        super(response, new SimpleContentProcessor(), new SimpleWebAppContext(request, response));
+        super(response, new SimpleHtmlOnlyContentProcessor(), new SimpleWebAppContext(request, response));
     }
 }
