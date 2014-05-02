@@ -71,6 +71,8 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         this.request = request;
 
         gspSitemeshPage = (GSPSitemeshPage)request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
+        
+        applyContentType(response.getContentType());
     }
 
     @Override
@@ -107,6 +109,10 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     public void setContentType(String type) {
         super.setContentType(type);
 
+        applyContentType(type);
+    }
+
+    protected void applyContentType(String type) {
         if (type == null) {
             return;
         }
