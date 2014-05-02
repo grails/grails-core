@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
-import org.codehaus.groovy.grails.web.servlet.view.GrailsLayoutViewResolver
+import org.codehaus.groovy.grails.web.servlet.view.SitemeshLayoutViewResolver
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -43,6 +43,9 @@ class GrailsLayoutViewResolverPostProcessor implements BeanDefinitionRegistryPos
     private static final String GRAILS_VIEW_RESOLVER_BEAN_NAME = "jspViewResolver"
     private static final String GROOVY_PAGE_LAYOUT_FINDER_BEAN_NAME = "groovyPageLayoutFinder"
     int order = 0
+    Class<?> layoutViewResolverClass = SitemeshLayoutViewResolver
+    String layoutViewResolverBeanParentName = null
+    boolean markBeanPrimary = true
     
     boolean enabled=true
     
@@ -58,8 +61,13 @@ class GrailsLayoutViewResolverPostProcessor implements BeanDefinitionRegistryPos
             registry.removeBeanDefinition(GRAILS_VIEW_RESOLVER_BEAN_NAME);
             
             GenericBeanDefinition beanDefinition = new GenericBeanDefinition()
-            beanDefinition.beanClass = GrailsLayoutViewResolver
-            beanDefinition.primary = true
+            beanDefinition.beanClass = layoutViewResolverClass
+            if(layoutViewResolverBeanParentName) {
+                beanDefinition.parentName = layoutViewResolverBeanParentName
+            }
+            if (markBeanPrimary) {
+                beanDefinition.primary = true
+            }
             beanDefinition.getPropertyValues().with {
                 addPropertyValue('innerViewResolver', previousViewResolver)
                 addPropertyValue('groovyPageLayoutFinder', new RuntimeBeanReference(GROOVY_PAGE_LAYOUT_FINDER_BEAN_NAME, false))
