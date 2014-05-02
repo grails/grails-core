@@ -31,9 +31,10 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
 public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, ServletContextAware, ApplicationContextAware {
-    ViewResolver innerViewResolver;
-    GroovyPageLayoutFinder groovyPageLayoutFinder;
-    int order = Ordered.LOWEST_PRECEDENCE - 30;
+    protected ViewResolver innerViewResolver;
+    protected GroovyPageLayoutFinder groovyPageLayoutFinder;
+    private int order = Ordered.LOWEST_PRECEDENCE - 30;
+    protected ServletContext servletContext;
     
     public GrailsLayoutViewResolver(ViewResolver innerViewResolver, GroovyPageLayoutFinder groovyPageLayoutFinder) {
         this.innerViewResolver = innerViewResolver;
@@ -52,8 +53,12 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
         } else if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
             return innerView;
         } else {
-            return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
+            return createLayoutView(innerView);
         }
+    }
+
+    protected View createLayoutView(View innerView) {
+        return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
     }
 
     @Override
@@ -71,6 +76,7 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
 
     @Override
     public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
         if(innerViewResolver instanceof ServletContextAware) {
             ((ServletContextAware)innerViewResolver).setServletContext(servletContext);
         }

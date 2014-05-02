@@ -54,6 +54,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
             HttpServletResponse response) throws Exception {
         Content content = obtainContent(model, webRequest, request, response);
         if (content != null) {
+            beforeDecorating(content, model, webRequest, request, response);
             SpringMVCViewDecorator decorator = (SpringMVCViewDecorator)groovyPageLayoutFinder.findLayout(request, content);
             if(decorator != null) {
                 decorator.render(content, model, request, response, request.getServletContext());
@@ -67,6 +68,18 @@ public class GrailsLayoutView extends AbstractGrailsView {
         }
     }
 
+    protected void beforeDecorating(Content content, Map<String, Object> model, GrailsWebRequest webRequest,
+            HttpServletRequest request, HttpServletResponse response) {
+        applyMetaHttpEquivContentType(content, response);
+    }
+
+    protected void applyMetaHttpEquivContentType(Content content, HttpServletResponse response) {
+        String contentType = content.getProperty("meta.http-equiv.Content-Type");
+        if (contentType != null && "text/html".equals(response.getContentType())) {
+            response.setContentType(contentType);
+        }
+    }
+
     protected Content obtainContent(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
         Object oldPage = request.getAttribute(RequestConstants.PAGE);
@@ -77,11 +90,11 @@ public class GrailsLayoutView extends AbstractGrailsView {
         try {
             request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, new GSPSitemeshPage());
             
-            GrailsViewBufferingResponse contentBufferingResponse = new GrailsViewBufferingResponse(request, response);
+            GrailsContentBufferingResponse contentBufferingResponse = createContentBufferingResponse(model, webRequest, request, response);
             webRequest.setWrappedResponse(contentBufferingResponse);
             WrappedResponseHolder.setWrappedResponse(contentBufferingResponse);
             
-            innerView.render(model, request, contentBufferingResponse);
+            renderInnerView(model, webRequest, request, response, contentBufferingResponse);
             
             return contentBufferingResponse.getContent();
         }
@@ -97,6 +110,17 @@ public class GrailsLayoutView extends AbstractGrailsView {
             }
             WrappedResponseHolder.setWrappedResponse(previousWrappedResponse);
         }
+    }
+
+    protected void renderInnerView(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
+            HttpServletResponse response,
+            GrailsContentBufferingResponse contentBufferingResponse) throws Exception {
+        innerView.render(model, request, contentBufferingResponse);
+    }
+
+    protected GrailsContentBufferingResponse createContentBufferingResponse(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
+            HttpServletResponse response) {
+        return new GrailsViewBufferingResponse(request, response);
     }
 
     @Override
