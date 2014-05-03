@@ -75,7 +75,7 @@ task configurePopulateDependencies << {
 
                 populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
                     include "**/*ivy.xml"
-                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }   
+                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
                 }
             }
         }
@@ -101,7 +101,7 @@ task pluginsFromRepo {
         cache: "1.1.2",
         'database-migration': "1.4.0",
         hibernate: "3.6.10.13",
-        jquery: "1.11.0.2",
+        jquery: "1.11.1",
         resources: "1.2.7",
         scaffolding: "2.0.3",
         tomcat: "7.0.52.1",
@@ -223,7 +223,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         }
         from("conf") {
             into "conf"
-        }        
+        }
         from(homeDistDir) {
             into "dist"
             exclude "*.zip"
