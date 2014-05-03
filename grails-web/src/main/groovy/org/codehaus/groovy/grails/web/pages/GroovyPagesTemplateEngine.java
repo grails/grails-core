@@ -650,7 +650,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         if (!(classLoader instanceof GroovyPageClassLoader)) {
             classLoader = initGroovyClassLoader(classLoader);
         }
-        return (GroovyClassLoader)classLoader;
+        return new GroovyClassLoader(classLoader);
     }
 
     /**
