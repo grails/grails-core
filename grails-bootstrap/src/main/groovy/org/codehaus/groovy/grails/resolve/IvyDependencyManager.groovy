@@ -20,17 +20,14 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
-import org.apache.ivy.core.cache.ArtifactOrigin
-import org.apache.ivy.plugins.repository.Repository
-import org.apache.ivy.plugins.repository.Resource
-import org.apache.ivy.plugins.resolver.RepositoryResolver
-import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
+import org.apache.ivy.core.cache.ArtifactOrigin
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Artifact
 import org.apache.ivy.core.module.descriptor.Configuration
+import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.module.id.ModuleRevisionId
@@ -40,11 +37,15 @@ import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
+import org.apache.ivy.plugins.repository.Repository
+import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.repository.TransferListener
+import org.apache.ivy.plugins.resolver.RepositoryResolver
+import org.codehaus.groovy.grails.io.support.IOUtils
 import org.codehaus.groovy.grails.plugins.VersionComparator
+import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
 import org.codehaus.groovy.grails.resolve.ivy.IvyGraphNode
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
-import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -291,7 +292,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         // return an empty resolve report
-        initializeModuleDescriptor();
+        initializeModuleDescriptor()
         return new ResolveReport(moduleDescriptor)
     }
 
@@ -340,7 +341,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         // return an empty resolve report
-        initializeModuleDescriptor();
+        initializeModuleDescriptor()
         return new ResolveReport(moduleDescriptor)
     }
 
@@ -507,7 +508,18 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     DependencyReport resolve() {
         final resolveReport = resolveDependencies()
         return new IvyDependencyReport("compile", resolveReport)
+    }
 
+    @Override
+    public DependencyReport resolveDependency(Dependency dependency) {
+        ModuleRevisionId revId = ModuleRevisionId.newInstance(dependency.group, dependency.name, dependency.version)
+
+        ResolveOptions options = new ResolveOptions()
+        options.setDownload(false)
+        options.setOutputReport(false)
+        options.setValidate(false)
+
+        return resolveEngine.resolve(DefaultModuleDescriptor.newDefaultInstance(revId), options)
     }
 
     @Override
