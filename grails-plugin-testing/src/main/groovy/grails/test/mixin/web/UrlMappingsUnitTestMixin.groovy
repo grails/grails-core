@@ -235,8 +235,12 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
                 paramAssertions.delegate = params
                 paramAssertions.resolveStrategy = Closure.DELEGATE_ONLY
                 paramAssertions.call()
-                params.each {name, value ->
-                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value, mapping.params[name])
+                params.each {name, expectedValue ->
+                    def actualValue = webRequest.params[name]
+                    if(actualValue instanceof Map) {
+                        actualValue = actualValue[webRequest.currentRequest.method ?: 'GET']
+                    }
+                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", expectedValue, actualValue)
                 }
             }
             return true
