@@ -37,7 +37,9 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
@@ -63,18 +65,27 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
     List<Closure> queuedBeanClosures = null
+    List<Closure> queuedParentBeanClosures = null
 
-    protected void startQueuingDefineBeans(TestRuntime runtime) {
-        queuedBeanClosures = []
+    protected void startQueuingDefineBeans(TestRuntime runtime, boolean parent=false) {
+        if(!parent) {
+            queuedBeanClosures = []
+        } else {
+            queuedParentBeanClosures = []
+        }
     }
     
-    protected void finishQueuingDefineBeans(TestRuntime runtime, RuntimeSpringConfiguration targetSpringConfig) {
-        defineBeans(runtime, queuedBeanClosures, targetSpringConfig)
-        queuedBeanClosures = null
+    protected void finishQueuingDefineBeans(TestRuntime runtime, RuntimeSpringConfiguration targetSpringConfig, boolean parent=false) {
+        defineBeans(runtime, parent == false ? queuedBeanClosures : queuedParentBeanClosures, targetSpringConfig, parent)
+        if(!parent) {
+            queuedBeanClosures = null
+        } else {
+            queuedParentBeanClosures = null
+        }
     }
     
     void initGrailsApplication(final TestRuntime runtime, final Map callerInfo) {
-        ServletContext servletContext = createServletContext()
+        ServletContext servletContext = createServletContext(runtime, callerInfo)
         runtime.putValue("servletContext", servletContext)
         addServletContextHolder(servletContext);
         
@@ -82,8 +93,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         runtime.putValue("grailsApplication", grailsApplication)
         addGrailsApplicationHolder(grailsApplication)
         
-        GrailsWebApplicationContext parentContext = createParentContext(grailsApplication, servletContext)
-        grailsApplication.setApplicationContext(parentContext)
+        GrailsWebApplicationContext parentContext = createParentContext(runtime, callerInfo, grailsApplication, servletContext)
                 
         GrailsWebApplicationContext mainContext = createMainContext(runtime, callerInfo, grailsApplication, servletContext)
         servletContext?.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, mainContext)
@@ -120,18 +130,28 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         return mainContext
     }
 
-    protected ServletContext createServletContext() {
+    protected ServletContext createServletContext(final TestRuntime runtime, final Map callerInfo) {
         MockServletContext servletContext = new MockServletContext()
         return servletContext
     }
 
-    protected GrailsWebApplicationContext createParentContext(GrailsApplication grailsApplication, ServletContext servletContext) {
-        GrailsWebApplicationContext parentContext = new GrailsWebApplicationContext(grailsApplication)
+    protected GrailsWebApplicationContext createParentContext(final TestRuntime runtime, final Map callerInfo, GrailsApplication grailsApplication, ServletContext servletContext) {
+        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(null, grailsApplication.getClassLoader());
+        springConfig.setBeanFactory(new OptimizedAutowireCapableBeanFactory());
+        grailsApplication.setApplicationContext(springConfig.getUnrefreshedApplicationContext());
+        createParentBeans(runtime, springConfig, grailsApplication);
+        GrailsWebApplicationContext parentContext = (GrailsWebApplicationContext)springConfig.getApplicationContext();
         if(servletContext != null) {
             servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, parentContext
             parentContext.servletContext = servletContext
         }
         return parentContext
+    }
+    
+    protected void createParentBeans(final TestRuntime runtime, RuntimeSpringConfiguration targetSpringConfig, GrailsApplication grailsApplication) {
+        startQueuingDefineBeans(runtime, true)
+        registerParentBeans(runtime, grailsApplication)
+        finishQueuingDefineBeans(runtime, targetSpringConfig, true)
     }
 
     protected DefaultGrailsApplication createGrailsApplication(TestRuntime runtime, Map callerInfo) {
@@ -161,7 +181,11 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     void registerBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
         runtime.publishEvent("registerBeans", [grailsApplication: grailsApplication], [immediateDelivery: true])
     }
-    
+
+    void registerParentBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
+        runtime.publishEvent("registerParentBeans", [grailsApplication: grailsApplication], [immediateDelivery: true])
+    }
+        
     void executeDoWithSpringCallback(TestRuntime runtime, GrailsApplication grailsApplication, Map callerInfo) {
         def doWithSpringClosure = resolveTestCallback(callerInfo, "doWithSpring", null)
         if(doWithSpringClosure) {
@@ -227,21 +251,21 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         MockUtils.prepareForConstraintsTests(clazz, (Map)runtime.getValueOrCreate("validationErrorsMap", { new IdentityHashMap() }), instances ?: [], ConstraintEvalUtils.getDefaultConstraints(getGrailsApplication(runtime).config))
     }
 
-    void defineBeans(TestRuntime runtime, List<Closure> callables, RuntimeSpringConfiguration targetSpringConfig = null) {
+    void defineBeans(TestRuntime runtime, List<Closure> callables, RuntimeSpringConfiguration targetSpringConfig = null, boolean parent = false) {
         if(!callables) return
         def binding = new Binding()
         DefaultGrailsApplication grailsApplication = (DefaultGrailsApplication)runtime.getValue("grailsApplication")
-        def bb = new BeanBuilder(grailsApplication.getParentContext(), targetSpringConfig, grailsApplication.getClassLoader())
+        def bb = new BeanBuilder(parent==false ? grailsApplication.getParentContext() : null, targetSpringConfig, grailsApplication.getClassLoader())
         binding.setVariable "application", grailsApplication
         bb.setBinding binding
         for(Closure callable : callables) {
             bb.beans(callable)
         }
         if (targetSpringConfig == null) {
-            bb.registerBeans((BeanDefinitionRegistry)grailsApplication.getMainContext())
+            bb.registerBeans((BeanDefinitionRegistry)((parent==false) ? grailsApplication.getMainContext() : grailsApplication.getParentContext()))
         }
     }
-
+    
     void resetGrailsApplication(TestRuntime runtime) {
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
@@ -311,6 +335,14 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                      queuedBeanClosures << beansClosure
                 } else {
                     defineBeans(runtime, [beansClosure])
+                }
+                break
+            case 'defineParentBeans':
+                def beansClosure = (Closure)event.arguments.closure
+                if(queuedParentBeanClosures != null) {
+                     queuedParentBeanClosures << beansClosure
+                } else {
+                    defineBeans(runtime, [beansClosure], null, true)
                 }
                 break
             case 'mockCodec':   
