@@ -16,12 +16,12 @@
 
 package grails.rest
 
-import org.codehaus.groovy.transform.GroovyASTTransformationClass
-
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
+
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 /**
  *
@@ -51,4 +51,8 @@ public @interface Resource {
      */
     String uri() default ""
 
+    /**
+     * @return The super class to use for the generated controller class
+     */
+    Class<?> superClass() default RestfulController 
 }

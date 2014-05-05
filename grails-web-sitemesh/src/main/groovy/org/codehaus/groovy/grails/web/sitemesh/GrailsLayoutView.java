@@ -17,11 +17,13 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import groovy.text.Template;
 
+import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.view.AbstractGrailsView;
 import org.springframework.http.MediaType;
@@ -34,6 +36,8 @@ public class GrailsLayoutView extends AbstractGrailsView {
     GroovyPageLayoutFinder groovyPageLayoutFinder;
     
     protected View innerView;
+
+    public static final String GSP_SITEMESH_PAGE = GrailsLayoutView.class.getName() + ".GSP_SITEMESH_PAGE";
     
     public GrailsLayoutView(GroovyPageLayoutFinder groovyPageLayoutFinder, View innerView) {
         this.groovyPageLayoutFinder = groovyPageLayoutFinder;
@@ -50,12 +54,29 @@ public class GrailsLayoutView extends AbstractGrailsView {
             HttpServletResponse response) throws Exception {
         Content content = obtainContent(model, webRequest, request, response);
         if (content != null) {
+            beforeDecorating(content, model, webRequest, request, response);
             SpringMVCViewDecorator decorator = (SpringMVCViewDecorator)groovyPageLayoutFinder.findLayout(request, content);
             if(decorator != null) {
                 decorator.render(content, model, request, response, request.getServletContext());
             } else {
-                content.writeOriginal(response.getWriter());
+                PrintWriter writer = response.getWriter();
+                content.writeOriginal(writer);
+                if (!response.isCommitted()) {
+                    writer.flush();
+                }                
             }
+        }
+    }
+
+    protected void beforeDecorating(Content content, Map<String, Object> model, GrailsWebRequest webRequest,
+            HttpServletRequest request, HttpServletResponse response) {
+        applyMetaHttpEquivContentType(content, response);
+    }
+
+    protected void applyMetaHttpEquivContentType(Content content, HttpServletResponse response) {
+        String contentType = content.getProperty("meta.http-equiv.Content-Type");
+        if (contentType != null && "text/html".equals(response.getContentType())) {
+            response.setContentType(contentType);
         }
     }
 
@@ -63,21 +84,23 @@ public class GrailsLayoutView extends AbstractGrailsView {
             HttpServletResponse response) throws Exception {
         Object oldPage = request.getAttribute(RequestConstants.PAGE);
         request.removeAttribute(RequestConstants.PAGE);
-        Object oldGspSiteMeshPage=request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        Object oldGspSiteMeshPage=request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
         HttpServletResponse previousResponse = webRequest.getWrappedResponse();
+        HttpServletResponse previousWrappedResponse = WrappedResponseHolder.getWrappedResponse();
         try {
-            request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage());
+            request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, new GSPSitemeshPage());
             
-            GrailsViewBufferingResponse contentBufferingResponse = new GrailsViewBufferingResponse(request, response);
+            GrailsContentBufferingResponse contentBufferingResponse = createContentBufferingResponse(model, webRequest, request, response);
             webRequest.setWrappedResponse(contentBufferingResponse);
+            WrappedResponseHolder.setWrappedResponse(contentBufferingResponse);
             
-            innerView.render(model, request, contentBufferingResponse);
+            renderInnerView(model, webRequest, request, response, contentBufferingResponse);
             
             return contentBufferingResponse.getContent();
         }
         finally {
             if (oldGspSiteMeshPage != null) {
-                request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage);
+                request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, oldGspSiteMeshPage);
             }
             if (oldPage != null) {
                 request.setAttribute(RequestConstants.PAGE, oldPage);
@@ -85,7 +108,19 @@ public class GrailsLayoutView extends AbstractGrailsView {
             if (previousResponse != null) {
                 webRequest.setWrappedResponse(previousResponse);
             }
+            WrappedResponseHolder.setWrappedResponse(previousWrappedResponse);
         }
+    }
+
+    protected void renderInnerView(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
+            HttpServletResponse response,
+            GrailsContentBufferingResponse contentBufferingResponse) throws Exception {
+        innerView.render(model, request, contentBufferingResponse);
+    }
+
+    protected GrailsContentBufferingResponse createContentBufferingResponse(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
+            HttpServletResponse response) {
+        return new GrailsViewBufferingResponse(request, response);
     }
 
     @Override

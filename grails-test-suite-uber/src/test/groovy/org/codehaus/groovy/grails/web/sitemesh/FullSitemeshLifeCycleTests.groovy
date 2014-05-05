@@ -132,7 +132,7 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
 </g:applyLayout></g:applyLayout>
 '''
         request.setAttribute(RequestConstants.PAGE, new GSPSitemeshPage())
-        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
+        request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
         assertOutputEquals '''
 <html>
         <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Base - Dialog - This is the title</title></head>

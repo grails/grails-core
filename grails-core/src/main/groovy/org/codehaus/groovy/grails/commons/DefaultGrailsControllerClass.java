@@ -179,6 +179,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         uri2methodMap.put(tmpUri + SLASH + "**", closureName);
 
         String viewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + closureName;
+        
         uri2viewMap.put(tmpUri, viewPath);
         viewNames.put(closureName, viewPath);
     }

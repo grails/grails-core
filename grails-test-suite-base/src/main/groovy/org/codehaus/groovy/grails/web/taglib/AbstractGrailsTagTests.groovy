@@ -36,7 +36,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsHTMLPageParser
-import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView
 import org.codehaus.groovy.grails.web.util.WithCodecHelper
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
@@ -459,9 +459,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     
     String applyLayout(String layout, String template, Map params=[:]) {
         def gspSiteMeshPage = new GSPSitemeshPage()
-        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+        request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def content = applyTemplate(template, params)
-        request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+        request.removeAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE)
 
         def page = null
         if (!params.parse && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
@@ -473,12 +473,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         }
         try {
             request.setAttribute(RequestConstants.PAGE, page)
-            request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
+            request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
             return applyTemplate(layout, params,null, "/layouts/test_"+System.currentTimeMillis())
         }
         finally {
             request.removeAttribute(RequestConstants.PAGE)
-            request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+            request.removeAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE)
         }
     }
     /**

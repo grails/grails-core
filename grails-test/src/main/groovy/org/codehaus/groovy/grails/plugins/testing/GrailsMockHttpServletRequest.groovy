@@ -70,10 +70,12 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     
     public GrailsMockHttpServletRequest() {
         super();
+        method = 'GET'
     }
 
     public GrailsMockHttpServletRequest(ServletContext servletContext) {
         super(servletContext);
+        method = 'GET'
     }
 
     /**

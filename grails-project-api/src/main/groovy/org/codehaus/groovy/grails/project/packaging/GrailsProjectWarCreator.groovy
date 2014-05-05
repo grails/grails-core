@@ -499,7 +499,10 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
             }
             if(inlinePlugin) {
                 grailsConsole.updateStatus "Generating plugin.xml for inline plugin ${info.name}"
-                File targetDir = new File(new File(basedir), targetPluginDir)
+                File targetDir = new File(targetPluginDir)
+                if(!targetDir.absolute) {
+                    targetDir = new File(new File(basedir), targetPluginDir)
+                }
                 if(!targetDir.exists()) {
                     targetDir.mkdirs()
                 }

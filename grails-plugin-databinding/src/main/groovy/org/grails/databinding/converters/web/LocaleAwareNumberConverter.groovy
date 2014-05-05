@@ -18,6 +18,7 @@ package org.grails.databinding.converters.web
 import groovy.transform.CompileStatic
 
 import java.text.NumberFormat
+import java.text.ParsePosition
 
 import javax.servlet.http.HttpServletRequest
 
@@ -51,7 +52,13 @@ class LocaleAwareNumberConverter implements ValueConverter {
 
     @Override
     public Object convert(Object value) {
-        numberFormatter.parse((String)value).asType(getTargetType())
+        def trimmedValue = value.toString().trim()
+        def parsePosition = new ParsePosition(0)
+        def result = numberFormatter.parse((String)value, parsePosition).asType(getTargetType())
+        if(parsePosition.index != trimmedValue.size()) {
+            throw new NumberFormatException("Unable to parse number [${value}]")
+        }
+        result
     }
 
     protected NumberFormat getNumberFormatter() {

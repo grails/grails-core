@@ -61,7 +61,8 @@ import org.codehaus.groovy.grails.web.util.StreamCharBufferMetaUtils
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.web.servlet.view.JstlView
+import org.springframework.util.ClassUtils
+import org.springframework.web.servlet.view.InternalResourceViewResolver
 
 /**
  * Sets up and configures the GSP and GSP tag library support in Grails.
@@ -204,18 +205,19 @@ class GroovyPagesGrailsPlugin {
             gspReloadEnabled = enableReload
             defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: null
             enableNonGspViews = application.flatConfig['grails.sitemesh.enable.nongsp'] ?: false
-            viewResolver = ref('jspViewResolver')
         }
 
         // Setup the GroovyPagesUriService
         groovyPagesUriService(DefaultGroovyPagesUriService) { bean ->
             bean.lazyInit = true
         }
-
+        
+        boolean jstlPresent = ClassUtils.isPresent(
+            "javax.servlet.jsp.jstl.core.Config", InternalResourceViewResolver.class.getClassLoader())
+        
         abstractViewResolver {
-            viewClass = JstlView
             prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
-            suffix = ".jsp"
+            suffix = jstlPresent ? GroovyPageViewResolver.JSP_SUFFIX : GroovyPageViewResolver.GSP_SUFFIX
             templateEngine = groovyPagesTemplateEngine
             groovyPageLocator = groovyPageLocator
             if (enableReload) {
@@ -226,6 +228,12 @@ class GroovyPagesGrailsPlugin {
         jspViewResolver(GroovyPageViewResolver) { bean ->
             bean.lazyInit = true
             bean.parent = "abstractViewResolver"
+        }
+        
+        // "grails.gsp.view.layoutViewResolver=false" can be used to disable GrailsLayoutViewResolver
+        // containsKey check must be made to check existence of boolean false values in ConfigObject
+        if(!(application.config.grails.gsp.view.containsKey('layoutViewResolver') && application.config.grails.gsp.view.layoutViewResolver==false)) {
+            grailsLayoutViewResolverPostProcessor(GrailsLayoutViewResolverPostProcessor)
         }
 
         final pluginManager = manager

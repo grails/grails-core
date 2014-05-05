@@ -20,6 +20,18 @@ import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.Script;
+
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -31,7 +43,7 @@ import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTagLib;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
@@ -40,10 +52,6 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.Writer;
-import java.util.*;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -702,7 +710,7 @@ public abstract class GroovyPage extends Script {
             return;
         }
 
-        GSPSitemeshPage page = (GSPSitemeshPage) request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        GSPSitemeshPage page = (GSPSitemeshPage) request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE);
         if (page != null) {
             page.setUsed(true);
         }

@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsHTMLPageParser
-import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.codehaus.groovy.grails.web.sitemesh.SpringMVCViewDecorator
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
@@ -106,10 +106,10 @@ class RenderTagLib implements RequestConstants {
             content = GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'include', includeAttrs, null, webRequest)
         }
         else {
-            def oldGspSiteMeshPage = request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
+            def oldGspSiteMeshPage = request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE)
             try {
                 gspSiteMeshPage = new GSPSitemeshPage()
-                request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+                request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, gspSiteMeshPage)
                 if (attrs.view || attrs.template) {
                     content = GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'render', attrs, null, webRequest)
                 }
@@ -129,7 +129,7 @@ class RenderTagLib implements RequestConstants {
                 }
             }
             finally {
-                request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
+                request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
             }
         }
         if(content==null) {
