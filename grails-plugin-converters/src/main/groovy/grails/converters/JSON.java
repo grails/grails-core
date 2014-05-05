@@ -24,14 +24,16 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
@@ -51,6 +53,8 @@ import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
 import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.
@@ -438,8 +442,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         registerObjectMarshaller(new ClosureObjectMarshaller<JSON>(clazz, callable), priority);
     }
 
-    public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {
-        ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
+    public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {  	    	
+    	ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);    	
         if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + JSON.class.getName());
         }
@@ -509,7 +513,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
 
         public void execute(Closure<?> callable) {
             callable.setDelegate(this);
-//            callable.setDelegate(Closure.DELEGATE_FIRST);
             invokeMethod("json", new Object[] { callable });
         }
 

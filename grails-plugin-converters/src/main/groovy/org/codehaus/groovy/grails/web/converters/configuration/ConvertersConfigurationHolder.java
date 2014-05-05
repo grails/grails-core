@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
+
 /**
  * Singleton which holds all default and named configurations for the Converter classes.
  *
@@ -32,8 +33,8 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ConvertersConfigurationHolder {
-
-    public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";
+	
+	public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";
 
     static {
         ShutdownOperations.addOperation(new Runnable() {
@@ -78,13 +79,14 @@ public class ConvertersConfigurationHolder {
     }
 
     public static <C extends Converter> ConverterConfiguration<C> getConverterConfiguration(Class<C> converterClass) throws ConverterException {
-        ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);
+        ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);        
         if (cfg == null) {
-            cfg = getInstance().defaultConfiguration.get(converterClass);
-        }
-        if (cfg == null) {
-            cfg = new DefaultConverterConfiguration();
-        }
+        	cfg = getInstance().defaultConfiguration.get(converterClass);        	
+        	if (cfg == null) {
+        		cfg = new DefaultConverterConfiguration();
+        	}        	
+        	setTheadLocalConverterConfiguration(converterClass, cfg);
+        }        
         return cfg;
     }
 

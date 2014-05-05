@@ -37,7 +37,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  */
 @SuppressWarnings("rawtypes")
 public class DefaultConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
-
+	
     public static final int DEFAULT_PRIORITY = 0;
 
     private static final AtomicInteger MARSHALLER_SEQUENCE = new AtomicInteger(0);
@@ -141,7 +141,11 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public ObjectMarshaller<C> getMarshaller(Object o) {
-        for (Entry entry : objectMarshallers) {
+        return findMarshallerFor(o);
+    }
+    
+    private ObjectMarshaller<C> findMarshallerFor(Object o) {
+    	for (Entry entry : objectMarshallers) {
             if (entry.marshaller.supports(o)) {
                 return entry.marshaller;
             }

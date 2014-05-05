@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.plugins.converters
 
 import grails.converters.JSON
 import grails.converters.XML
-import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -48,6 +47,8 @@ class ConvertersGrailsPlugin {
     def dependsOn = [controllers: version, domainClass: version]
 
     def doWithSpring = {
+		log.debug 'entering doWithSpring to register some converter beans...'
+		
         jsonErrorsMarshaller(JsonErrorsMarshaller)
 
         xmlErrorsMarshaller(XmlErrorsMarshaller)
@@ -65,14 +66,17 @@ class ConvertersGrailsPlugin {
         }
 
         instanceConvertersControllersApi(ConvertersControllersApi)
+		
+		log.debug 'exiting doWithSpring - beans registered'
     }
 
     def doWithDynamicMethods = {applicationContext ->
+		log.debug 'entering doWithDynamicMethods'
 
         applicationContext.convertersConfigurationInitializer.initialize(application)
 
         ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 
-        log.debug "Converters Plugin configured successfully"
+        log.debug 'Converters Plugin configured successfully'
     }
 }
