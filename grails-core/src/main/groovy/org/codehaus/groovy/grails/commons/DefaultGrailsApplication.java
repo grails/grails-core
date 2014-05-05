@@ -85,9 +85,13 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * Creates a new empty Grails application.
      */
     public DefaultGrailsApplication() {
-        super();
-        classLoader = new GroovyClassLoader();
+        this(new GroovyClassLoader());
     }
+    
+    public DefaultGrailsApplication(ClassLoader classLoader) {
+        super();
+        this.classLoader = classLoader;
+    }    
 
     /**
      * Creates a new GrailsApplication instance using the given classes and GroovyClassLoader.
