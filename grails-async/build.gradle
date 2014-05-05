@@ -1,5 +1,5 @@
 dependencies {
-    compile 'org.codehaus.gpars:gpars:1.1.0', {
+    compile 'org.codehaus.gpars:gpars:1.2.0', {
         exclude group:'org.multiverse', module:'multiverse-core'
     }
 }
