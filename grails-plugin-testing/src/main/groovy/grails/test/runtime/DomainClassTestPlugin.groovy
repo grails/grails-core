@@ -53,7 +53,7 @@ class DomainClassTestPlugin implements TestPlugin {
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
         defineBeans(runtime) {
-            grailsDatastore(SimpleMapDatastore, grailsApplication.parentContext)
+            grailsDatastore(SimpleMapDatastore, grailsApplication.mainContext)
             transactionManager(DatastoreTransactionManager) {
                 datastore = ref("grailsDatastore")
             }
@@ -69,8 +69,7 @@ class DomainClassTestPlugin implements TestPlugin {
     }
     
     protected void initializeDatastoreImplementation(GrailsApplication grailsApplication) {
-        // TODO: parentContext or mainContext?
-        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.parentContext
+        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         ((AbstractMappingContext)simpleDatastore.mappingContext).setCanInitializeEntities(false)
         applicationContext.addApplicationListener applicationContext.getBean(GrailsDomainClassCleaner)
@@ -84,7 +83,7 @@ class DomainClassTestPlugin implements TestPlugin {
     }
 
     protected void connectDatastore(TestRuntime runtime, GrailsApplication grailsApplication) {
-        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.parentContext
+        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
         Session currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
@@ -97,7 +96,7 @@ class DomainClassTestPlugin implements TestPlugin {
             currentSession.disconnect()
             DatastoreUtils.unbindSession(currentSession)
         }
-        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.parentContext
+        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         simpleDatastore.clearData()
     }

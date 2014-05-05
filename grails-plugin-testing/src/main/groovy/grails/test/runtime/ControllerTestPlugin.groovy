@@ -155,7 +155,6 @@ class ControllerTestPlugin implements TestPlugin {
             runtime.putValue("codecsChanged", false)
         }
 
-        // TODO: which is correct mainContext or parentContext ?
         def applicationContext = grailsApplication.mainContext
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest((ServletContext)runtime.getValue("servletContext"))
         request.method = 'GET'
