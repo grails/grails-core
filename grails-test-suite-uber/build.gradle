@@ -63,7 +63,8 @@ test {
          "**/UrlMappingsTestMixinTests.class",
          "**/WebUtilsTests.class",
          "**/RestfulControllerSpec.class",
-         "**/ResourceAnnotationRestfulControllerSpec.class"
+         "**/ResourceAnnotationRestfulControllerSpec.class",
+         "**/SimpleGrailsControllerTests.class"
      ]
 }
 
@@ -85,7 +86,8 @@ task isolatedTestsTwo(type:Test) {
     includes = [
         "**/UrlMappingsTestMixinTests.class",
         "**/SetupTeardownInvokeTests.class",
-        "**/TestMixinSetupTeardownInvokeTests.class"
+        "**/TestMixinSetupTeardownInvokeTests.class",
+        "**/SimpleGrailsControllerTests.class"
     ]
 }
 
