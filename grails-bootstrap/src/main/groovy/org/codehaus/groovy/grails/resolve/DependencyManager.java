@@ -93,6 +93,13 @@ public interface DependencyManager {
     DependencyReport resolve();
 
     /**
+     * Resolves a single dependency.
+     * @param dependency A {@link Dependency} instance.
+     * @return The {@link DependencyReport} instance for the given dependency
+     */
+    DependencyReport resolveDependency(Dependency dependency);
+
+    /**
      * The direct dependencies of the application, not including framework or dependencies inherited from plugins
      *
      * @return Direct application dependencies
