@@ -43,6 +43,7 @@ import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.springframework.beans.CachedIntrospectionResults
@@ -87,7 +88,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     void initGrailsApplication(final TestRuntime runtime, final Map callerInfo) {
         ServletContext servletContext = createServletContext(runtime, callerInfo)
         runtime.putValue("servletContext", servletContext)
-        addServletContextHolder(servletContext);
         
         DefaultGrailsApplication grailsApplication = createGrailsApplication(runtime, callerInfo)
         runtime.putValue("grailsApplication", grailsApplication)
@@ -96,18 +96,12 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         GrailsWebApplicationContext parentContext = createParentContext(runtime, callerInfo, grailsApplication, servletContext)
                 
         GrailsWebApplicationContext mainContext = createMainContext(runtime, callerInfo, grailsApplication, servletContext)
-        servletContext?.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, mainContext)
 
         applicationInitialized(runtime, grailsApplication)
     }
 
     protected addGrailsApplicationHolder(DefaultGrailsApplication grailsApplication) {
         Holders.setGrailsApplication(grailsApplication)
-    }
-
-    protected addServletContextHolder(ServletContext servletContext) {
-        Holders.setServletContext servletContext
-        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext))
     }
 
     protected GrailsWebApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final GrailsApplication grailsApplication, final ServletContext servletContext) {
@@ -127,6 +121,13 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         boolean loadExternalBeans = resolveTestCallback(callerInfo, "loadExternalBeans")
         
         GrailsWebApplicationContext mainContext = (GrailsWebApplicationContext)runtimeConfigurator.configure(servletContext, loadExternalBeans)
+        
+        if(servletContext != null) {
+            Holders.setServletContext(servletContext);
+            Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+            GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication, runtimeConfigurator.getPluginManager(), mainContext)
+        }
+        
         return mainContext
     }
 
@@ -142,7 +143,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         createParentBeans(runtime, springConfig, grailsApplication);
         GrailsWebApplicationContext parentContext = (GrailsWebApplicationContext)springConfig.getApplicationContext();
         if(servletContext != null) {
-            servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, parentContext
             parentContext.servletContext = servletContext
         }
         return parentContext

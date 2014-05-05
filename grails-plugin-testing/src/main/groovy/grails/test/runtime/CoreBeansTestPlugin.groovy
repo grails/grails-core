@@ -50,7 +50,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
     protected void registerParentBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         defineParentBeans(runtime) {
             grailsApplication(InstanceFactoryBean, grailsApplicationParam, GrailsApplication)
-            pluginManager(DefaultGrailsPluginManager, [] as Class[], grailsApplicationParam)
+            pluginManager(NoOpGrailsPluginManager)
             conversionService(ConversionServiceFactoryBean)
         }
     }
