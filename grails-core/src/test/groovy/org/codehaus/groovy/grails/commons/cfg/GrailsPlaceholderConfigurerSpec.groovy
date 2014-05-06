@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import grails.spring.BeanBuilder
+import grails.util.Holders
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import spock.lang.Issue
 import spock.lang.Specification
@@ -9,6 +10,10 @@ import spock.lang.Specification
  * @author Graeme Rocher
  */
 class GrailsPlaceholderConfigurerSpec extends Specification {
+
+    void cleanup() {
+        Holders.setConfig(null)
+    }
 
     void "Test that property placeholder configuration works for simple properties"() {
         when:"A bean is defined with a placeholder"
