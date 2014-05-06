@@ -472,6 +472,7 @@ class AetherDependencyManager implements DependencyManager {
 
             final modelRequest = new DefaultModelBuildingRequest()
             modelRequest.setPomFile(pomFile)
+            modelRequest.setSystemProperties(System.properties)
             modelRequest.setModelResolver(new GrailsModelResolver(repositorySystem, session, repositories))
             ModelBuildingResult modelBuildingResult = modelBuilder.build(modelRequest)
             final mavenDependencies = modelBuildingResult.getEffectiveModel().getDependencies()
