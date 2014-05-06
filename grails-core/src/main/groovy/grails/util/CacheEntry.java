@@ -43,9 +43,7 @@ public class CacheEntry<V> {
     }
     
     public CacheEntry(V value) {
-        this.valueRef.set(value);
-        setInitialized(true);
-        resetTimestamp(true);
+        setValue(value);
     }
     
     /**
@@ -128,7 +126,7 @@ public class CacheEntry<V> {
                 if(returnExpiredWhileUpdating) {
                     if(!writeLock.tryLock()) {
                         if(isInitialized()) {
-                            return getValueWhileUpdating();
+                            return getValueWhileUpdating(cacheRequestObject);
                         } else {
                             writeLock.lock();
                         }
@@ -142,12 +140,10 @@ public class CacheEntry<V> {
                     try {
                         value = updateValue(getValue(), updater, cacheRequestObject);
                         setValue(value);
-                        setInitialized(true);
                     }
                     catch (Exception e) {
                         throw new UpdateException(e);
                     }
-                    resetTimestamp(true);
                 } else {
                     value = getValue();
                     resetTimestamp(false);
@@ -163,7 +159,7 @@ public class CacheEntry<V> {
         }
     }
     
-    protected V getValueWhileUpdating() {
+    protected V getValueWhileUpdating(Object cacheRequestObject) {
         return getValue();
     }
 
@@ -177,6 +173,8 @@ public class CacheEntry<V> {
     
     public void setValue(V val) {
         valueRef.set(val);
+        setInitialized(true);
+        resetTimestamp(true);
     }
 
     protected boolean hasExpired(long timeout, Object cacheRequestObject) {
