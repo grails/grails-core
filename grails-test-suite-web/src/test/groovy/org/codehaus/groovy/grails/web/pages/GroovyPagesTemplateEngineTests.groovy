@@ -214,8 +214,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         </script>
 '''
 
-        gpte.createTemplate(src, "hello_test")
-        t = gpte.createTemplate(src, "hello_test")
+        gpte.createTemplate(src, "hello_test2")
+        t = gpte.createTemplate(src, "hello_test2")
         w = t.make(bandName: 'Genesis', title: 'Selling England By The Pound')
 
         sw = new StringWriter()
