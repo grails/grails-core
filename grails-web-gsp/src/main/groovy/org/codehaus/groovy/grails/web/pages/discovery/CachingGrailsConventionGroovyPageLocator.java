@@ -105,7 +105,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
                 public CacheEntry call() throws Exception {
                     return new CustomCacheEntry();
                 }
-            });
+            }, true);
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }

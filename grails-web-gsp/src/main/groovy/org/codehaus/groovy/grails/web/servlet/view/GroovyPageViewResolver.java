@@ -125,7 +125,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         }
 
         try {
-            view = entry.getValue(cacheTimeout, updater);
+            view = entry.getValue(cacheTimeout, updater, true);
         } catch (WrappedInitializationException e) {
             e.rethrow();
         }

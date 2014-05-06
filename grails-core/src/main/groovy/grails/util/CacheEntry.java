@@ -33,10 +33,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * @since 2.3.4
  */
 public class CacheEntry<V> {
-    protected AtomicReference<V> valueRef=new AtomicReference<V>(null);
-    protected long createdMillis;
-    protected Lock writeLock=new ReentrantLock();
-    protected volatile boolean initialized=false;
+    private AtomicReference<V> valueRef=new AtomicReference<V>(null);
+    private long createdMillis;
+    private Lock writeLock=new ReentrantLock();
+    private volatile boolean initialized=false;
 
     public CacheEntry() {
         expire();
@@ -60,10 +60,11 @@ public class CacheEntry<V> {
      * @param timeoutMillis cache entry timeout
      * @param updater callback to create/update value
      * @param cacheEntryClass CacheEntry implementation class to use
+     * @param returnExpiredWhileUpdating when true, return expired value while updating new value
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater, Callable<? extends CacheEntry> cacheEntryFactory) {
+    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater, Callable<? extends CacheEntry> cacheEntryFactory, boolean returnExpiredWhileUpdating) {
         CacheEntry<V> cacheEntry = map.get(key);
         if(cacheEntry==null) {
             try {
@@ -77,7 +78,7 @@ public class CacheEntry<V> {
                 cacheEntry = previousEntry;
             }
         }
-        return cacheEntry.getValue(timeoutMillis, updater);
+        return cacheEntry.getValue(timeoutMillis, updater, returnExpiredWhileUpdating);
     }
     
     @SuppressWarnings("rawtypes")
@@ -89,7 +90,7 @@ public class CacheEntry<V> {
     };
     
     public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater) {
-        return getValue(map, key, timeoutMillis, updater, DEFAULT_CACHE_ENTRY_FACTORY);
+        return getValue(map, key, timeoutMillis, updater, DEFAULT_CACHE_ENTRY_FACTORY, true);
     }
     
     /**
@@ -99,16 +100,29 @@ public class CacheEntry<V> {
      *
      * @param timeout
      * @param updater
-     * @return The atomic reference
+     * @param returnExpiredWhileUpdating
+     * @return the current value
      */
-    public V getValue(long timeout, Callable<V> updater) {
+    public V getValue(long timeout, Callable<V> updater, boolean returnExpiredWhileUpdating) {
         if (!initialized || hasExpired(timeout)) {
+            boolean lockAcquired = false;
             try {
                 long beforeLockingCreatedMillis = createdMillis;
-                writeLock.lock();
+                if(returnExpiredWhileUpdating) {
+                    if(!writeLock.tryLock()) {
+                        if(initialized) {
+                            return getValueWhileUpdating();
+                        } else {
+                            writeLock.lock();
+                        }
+                    }
+                } else {
+                    writeLock.lock();
+                }
+                lockAcquired = true;
                 if (!initialized || shouldUpdate(beforeLockingCreatedMillis)) {
                     try {
-                        valueRef.set(updateValue(valueRef.get(), updater));
+                        setValue(updateValue(getValue(), updater));
                         initialized=true;
                     }
                     catch (Exception e) {
@@ -119,11 +133,17 @@ public class CacheEntry<V> {
                     resetTimestamp(false);
                 }
             } finally {
-                writeLock.unlock();
+                if(lockAcquired) {
+                    writeLock.unlock();
+                }
             }
         }
 
-        return valueRef.get();
+        return getValue();
+    }
+    
+    protected V getValueWhileUpdating() {
+        return getValue();
     }
 
     protected V updateValue(V oldValue, Callable<V> updater) throws Exception {
@@ -132,6 +152,10 @@ public class CacheEntry<V> {
 
     public V getValue() {
         return valueRef.get();
+    }
+    
+    public void setValue(V val) {
+        valueRef.set(val);
     }
 
     protected boolean hasExpired(long timeout) {

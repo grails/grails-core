@@ -410,7 +410,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
                 return null;
             }
         };
-        return shouldReloadCacheEntry.getValue(LASTMODIFIED_CHECK_INTERVAL, checkerCallable);
+        return shouldReloadCacheEntry.getValue(LASTMODIFIED_CHECK_INTERVAL, checkerCallable, true);
     }
 
     public boolean isPrecompiledMode() {

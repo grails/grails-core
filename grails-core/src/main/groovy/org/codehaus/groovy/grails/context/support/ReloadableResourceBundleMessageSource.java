@@ -465,7 +465,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
             public CacheEntry call() throws Exception {
                 return new PropertiesHolderCacheEntry();
             }
-        });
+        }, true);
 	}
 	
     protected static class PropertiesHolderCacheEntry extends CacheEntry<PropertiesHolder> {
