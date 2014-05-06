@@ -46,7 +46,7 @@ dependencies {
 sourceSets {
     main {
         compileClasspath += files(configurations.scripts)
-        groovy.srcDirs = ['../scripts']
+        groovy.srcDirs = ['src/main/scripts']
     }
 }
 

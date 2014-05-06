@@ -395,8 +395,9 @@ class BuildSettings extends AbstractBuildSettings {
             Object doCall(String name) {
                 if(grailsHome != null) {
 
-                    def potentialScript = new File(grailsHome, "scripts/${name}.groovy")
-                    potentialScript = potentialScript.exists() ? potentialScript : new File(grailsHome, "scripts/${name}_.groovy")
+                    def potentialScript = new File(grailsHome, "grails-scripts/src/main/scripts/${name}.groovy")
+                    potentialScript = potentialScript.exists() ? potentialScript : new File(grailsHome, "grails-scripts/src/main/scripts/${name}_.groovy")
+
                     if (potentialScript.exists()) {
                         return potentialScript
                     }

@@ -367,6 +367,7 @@ class PluginBuildSettings {
             def basedir = buildSettings.baseDir.absolutePath
             if (grailsHome != null) {
                 resourceResolver("file:${grailsHome}/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
+                resourceResolver("file:${grailsHome}/grails-scripts/src/main/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             }
             resourceResolver("file:${basedir}/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             pluginScripts.each { if (!it.file.name.startsWith('_')) scripts << it }
