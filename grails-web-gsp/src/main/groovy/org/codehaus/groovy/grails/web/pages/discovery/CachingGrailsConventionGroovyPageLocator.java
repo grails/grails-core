@@ -15,13 +15,15 @@
  */
 package org.codehaus.groovy.grails.web.pages.discovery;
 
-import java.security.PrivilegedAction;
+import grails.util.CacheEntry;
+
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
-import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.springframework.core.io.ByteArrayResource;
 
 /**
@@ -33,15 +35,15 @@ import org.springframework.core.io.ByteArrayResource;
 public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGroovyPageLocator {
 
     private static final GroovyPageResourceScriptSource NULL_SCRIPT = new GroovyPageResourceScriptSource("/null",new ByteArrayResource("".getBytes()));
-    private Map<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> uriResolveCache = new ConcurrentHashMap<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>();
+    private ConcurrentMap<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> uriResolveCache = new ConcurrentHashMap<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>();
     private long cacheTimeout = -1;
 
     @Override
     public GroovyPageScriptSource findPageInBinding(final String uri, final GroovyPageBinding binding) {
         if (uri == null) return null;
 
-        PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
-            public GroovyPageScriptSource run() {
+        Callable<GroovyPageScriptSource> updater = new Callable<GroovyPageScriptSource>() {
+            public GroovyPageScriptSource call() {
                 GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPageInBinding(uri, binding);
                 if (scriptSource == null) {
                     scriptSource = NULL_SCRIPT;
@@ -57,8 +59,8 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     public GroovyPageScriptSource findPageInBinding(final String pluginName, final String uri, final GroovyPageBinding binding) {
         if (uri == null || pluginName == null) return null;
 
-        PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
-            public GroovyPageScriptSource run() {
+        Callable<GroovyPageScriptSource> updater = new Callable<GroovyPageScriptSource>() {
+            public GroovyPageScriptSource call() {
                 GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPageInBinding(pluginName, uri, binding);
                 if (scriptSource == null) {
                     scriptSource = NULL_SCRIPT;
@@ -74,8 +76,8 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     public GroovyPageScriptSource findPage(final String uri) {
        if (uri == null) return null;
 
-       PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
-           public GroovyPageScriptSource run() {
+       Callable<GroovyPageScriptSource> updater = new Callable<GroovyPageScriptSource>() {
+           public GroovyPageScriptSource call() {
                GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPage(uri);
                if (scriptSource == null) {
                    scriptSource = NULL_SCRIPT;
@@ -87,18 +89,23 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
        return lookupCache(GroovyPageLocatorCacheKey.build(uri, null, null), updater);
     }
 
-    protected GroovyPageScriptSource lookupCache(final GroovyPageLocatorCacheKey cacheKey, PrivilegedAction<GroovyPageScriptSource> updater) {
+    @SuppressWarnings("rawtypes")
+    protected GroovyPageScriptSource lookupCache(final GroovyPageLocatorCacheKey cacheKey, Callable<GroovyPageScriptSource> updater) {
         GroovyPageScriptSource scriptSource = null;
         if (cacheTimeout == 0) {
-            scriptSource = updater.run();
-        } else {
-            CacheEntry<GroovyPageScriptSource> entry = uriResolveCache.get(cacheKey);
-            if (entry == null) {
-                scriptSource = updater.run();
-                uriResolveCache.put(cacheKey, new CustomCacheEntry<GroovyPageScriptSource>(scriptSource));
-            } else {
-                scriptSource = entry.getValue(cacheTimeout, updater);
+            try {
+                scriptSource = updater.call();
             }
+            catch (Exception e) {
+                throw new CacheEntry.UpdateException(e);
+            }
+        } else {
+            scriptSource = CacheEntry.getValue(uriResolveCache, cacheKey, cacheTimeout, updater, new Callable<CacheEntry>() {
+                @Override
+                public CacheEntry call() throws Exception {
+                    return new CustomCacheEntry();
+                }
+            });
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }
@@ -173,19 +180,20 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
         }
     }
 
-    private static class CustomCacheEntry<T> extends CacheEntry<T> {
-        public CustomCacheEntry(T value) {
-            super(value);
+    static class CustomCacheEntry<T> extends CacheEntry<T> {
+        public CustomCacheEntry() {
+            super();
         }
 
         @Override
         protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
             // Never expire GroovyPageCompiledScriptSource entry in cache
-            boolean compiledScriptSourceInstance=getValue() instanceof GroovyPageCompiledScriptSource;
-            if (compiledScriptSourceInstance) {
-                resetTimestamp();
+            if (getValue() instanceof GroovyPageCompiledScriptSource) {
+                resetTimestamp(true);
+                return false;
+            } else {
+                return super.shouldUpdate(beforeLockingCreatedMillis);
             }
-            return !compiledScriptSourceInstance && super.shouldUpdate(beforeLockingCreatedMillis);
         }
     }
 }
