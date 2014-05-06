@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons.cfg
 
 import grails.util.Environment
 import grails.util.Holder
+import grails.util.Holders
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 
@@ -82,38 +83,41 @@ class ConfigurationHelper {
 
         co = getCachedConfigs().get(cacheKey)
         if (co == null) {
-            ConfigSlurper configSlurper = getConfigSlurper(environment, application)
-            try {
+            co = Holders.config
+            if( co == null ) {
+                ConfigSlurper configSlurper = getConfigSlurper(environment, application)
                 try {
-                    application?.config = new ConfigObject() // set empty config to avoid stack overflow
-                    co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
-                    application?.config = co
+                    try {
+                        application?.config = new ConfigObject() // set empty config to avoid stack overflow
+                        co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
+                        application?.config = co
+                    }
+                    catch (ClassNotFoundException e) {
+                        LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
+                                "nothing to worry about; it is not required to have a config: $e.message"
+                        // ignore, it is ok not to have a configuration file
+                        co = new ConfigObject()
+                    }
+                    try {
+                        co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
+                    }
+                    catch (ClassNotFoundException e) {
+                        LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
+                                "be what you are expecting, but will result in Grails loading with an in-memory database"
+                        // ignore
+                    }
                 }
-                catch (ClassNotFoundException e) {
-                    LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
-                            "nothing to worry about; it is not required to have a config: $e.message"
-                    // ignore, it is ok not to have a configuration file
-                    co = new ConfigObject()
+                catch (Throwable t) {
+                    LOG.error("Error loading application Config: $t.message", t)
+                    throw t
                 }
-                try {
-                    co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
-                }
-                catch (ClassNotFoundException e) {
-                    LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
-                        "be what you are expecting, but will result in Grails loading with an in-memory database"
-                    // ignore
-                }
-            }
-            catch (Throwable t) {
-                LOG.error("Error loading application Config: $t.message", t)
-                throw t
             }
 
             if (co == null) co = new ConfigObject()
 
             initConfig(co, null, classLoader)
             getCachedConfigs().put(cacheKey, co)
-            ConfigurationHolder.config = co
+            Holders.setConfig( co )
         }
 
         return co
