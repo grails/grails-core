@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 
 /**
@@ -86,6 +87,7 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
         appCtx?.close()
         registryCleaner.clean()
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+        ConstrainedProperty.removeConstraint("unique")
         Holders.clear()
     }
 }
