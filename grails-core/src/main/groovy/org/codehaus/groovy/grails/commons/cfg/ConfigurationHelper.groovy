@@ -47,12 +47,7 @@ class ConfigurationHelper {
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion"
 
     private static Holder<Map<Integer, ConfigObject>> cachedConfigs = new Holder<Map<Integer, ConfigObject>>('cachedConfigs')
-
     public static final int DEV_CACHE_KEY = -1
-    /**
-     * Name of the system property used to indicate whether Grails should load the config with the holder
-     * */
-    public static final String LOAD_CONFIG_WITH_HOLDER = "grails.load.config.with.holder"
 
     static final List DEFAULT_RESOURCES_PLUGIN_EXCLUDES = ['**/WEB-INF/**', '**/META-INF/**', '**/*.class', '**/*.jar', '**/*.properties', '**/*.groovy', '**/*.gsp', '**/*.java']
 
@@ -88,7 +83,7 @@ class ConfigurationHelper {
 
         co = getCachedConfigs().get(cacheKey)
         if (co == null) {
-            co = Boolean.getBoolean(LOAD_CONFIG_WITH_HOLDER) ? Holders.config : null
+            co = Holders.config
             if( co == null ) {
                 ConfigSlurper configSlurper = getConfigSlurper(environment, application)
                 try {
