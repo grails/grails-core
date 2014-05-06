@@ -127,7 +127,7 @@ abstract class AbstractCliTests extends GroovyTestCase {
             globalPluginsDirPath = settings.globalPluginsDir.path
 
             // Closure for specifying script dependencies.
-            grailsScript = { new File("./scripts/${it}.groovy") }
+            grailsScript = { new File("./grails-scripts/src/main/scripts/${it}.groovy") }
         }
 
         BuildSettingsHolder.settings = settings

@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.servlet.view;
 
 import java.util.Locale;
 
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
@@ -25,15 +25,16 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
-import org.springframework.web.context.ServletConfigAware;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.SmartView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
-public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, ServletConfigAware, ApplicationContextAware {
-    ViewResolver innerViewResolver;
-    GroovyPageLayoutFinder groovyPageLayoutFinder;
-    int order = Ordered.LOWEST_PRECEDENCE - 30;
+public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, ServletContextAware, ApplicationContextAware {
+    protected ViewResolver innerViewResolver;
+    protected GroovyPageLayoutFinder groovyPageLayoutFinder;
+    private int order = Ordered.LOWEST_PRECEDENCE - 30;
+    protected ServletContext servletContext;
     
     public GrailsLayoutViewResolver(ViewResolver innerViewResolver, GroovyPageLayoutFinder groovyPageLayoutFinder) {
         this.innerViewResolver = innerViewResolver;
@@ -52,8 +53,12 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
         } else if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
             return innerView;
         } else {
-            return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
+            return createLayoutView(innerView);
         }
+    }
+
+    protected View createLayoutView(View innerView) {
+        return new GrailsLayoutView(groovyPageLayoutFinder, innerView);
     }
 
     @Override
@@ -70,9 +75,10 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
     }
 
     @Override
-    public void setServletConfig(ServletConfig servletConfig) {
-        if(innerViewResolver instanceof ServletConfigAware) {
-            ((ServletConfigAware)innerViewResolver).setServletConfig(servletConfig);
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+        if(innerViewResolver instanceof ServletContextAware) {
+            ((ServletContextAware)innerViewResolver).setServletContext(servletContext);
         }
     }
 

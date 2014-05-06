@@ -138,7 +138,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
     }
     
     GrailsWebApplicationContext getApplicationContext() {
-        (GrailsWebApplicationContext)grailsApplication.parentContext
+        getMainContext()
     }
     
     GrailsWebApplicationContext getMainContext() {

@@ -22,13 +22,12 @@ import grails.test.MockUtils
 import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 import java.lang.reflect.Modifier
+
+import javax.servlet.ServletContext
 
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
@@ -38,9 +37,14 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
@@ -62,47 +66,107 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
     List<Closure> queuedBeanClosures = null
+    List<Closure> queuedParentBeanClosures = null
 
-    void initGrailsApplication(TestRuntime runtime, Map callerInfo) {
+    protected void startQueuingDefineBeans(TestRuntime runtime, boolean parent=false) {
+        if(!parent) {
+            queuedBeanClosures = []
+        } else {
+            queuedParentBeanClosures = []
+        }
+    }
+    
+    protected void finishQueuingDefineBeans(TestRuntime runtime, RuntimeSpringConfiguration targetSpringConfig, boolean parent=false) {
+        defineBeans(runtime, parent == false ? queuedBeanClosures : queuedParentBeanClosures, targetSpringConfig, parent)
+        if(!parent) {
+            queuedBeanClosures = null
+        } else {
+            queuedParentBeanClosures = null
+        }
+    }
+    
+    void initGrailsApplication(final TestRuntime runtime, final Map callerInfo) {
+        ServletContext servletContext = createServletContext(runtime, callerInfo)
+        runtime.putValue("servletContext", servletContext)
+        
+        DefaultGrailsApplication grailsApplication = createGrailsApplication(runtime, callerInfo)
+        runtime.putValue("grailsApplication", grailsApplication)
+        addGrailsApplicationHolder(grailsApplication)
+        
+        GrailsWebApplicationContext parentContext = createParentContext(runtime, callerInfo, grailsApplication, servletContext)
+                
+        GrailsWebApplicationContext mainContext = createMainContext(runtime, callerInfo, grailsApplication, servletContext)
 
-        DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication()
-        GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext(grailsApplication)
-        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
-        grailsApplication.initialise()
-        grailsApplication.setApplicationContext(applicationContext)
+        applicationInitialized(runtime, grailsApplication)
+    }
+
+    protected addGrailsApplicationHolder(DefaultGrailsApplication grailsApplication) {
+        Holders.setGrailsApplication(grailsApplication)
+    }
+
+    protected GrailsWebApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final GrailsApplication grailsApplication, final ServletContext servletContext) {
+        GrailsTestRuntimeConfigurator runtimeConfigurator = new GrailsTestRuntimeConfigurator(grailsApplication, grailsApplication.getParentContext()) {
+                    protected void initializeContext(ApplicationContext mainContext) {
+                        startQueuingDefineBeans(runtime)
+                        registerBeans(runtime, grailsApplication)
+                        finishQueuingDefineBeans(runtime, webSpringConfig)
+
+                        startQueuingDefineBeans(runtime)
+                        executeDoWithSpringCallback(runtime, grailsApplication, callerInfo)
+                        finishQueuingDefineBeans(runtime, webSpringConfig)
+
+                        super.initializeContext(mainContext)
+                    }
+                }
+        boolean loadExternalBeans = resolveTestCallback(callerInfo, "loadExternalBeans")
+        
+        GrailsWebApplicationContext mainContext = (GrailsWebApplicationContext)runtimeConfigurator.configure(servletContext, loadExternalBeans)
+        
+        if(servletContext != null) {
+            Holders.setServletContext(servletContext);
+            Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+            GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication, runtimeConfigurator.getPluginManager(), mainContext)
+        }
+        
+        return mainContext
+    }
+
+    protected ServletContext createServletContext(final TestRuntime runtime, final Map callerInfo) {
+        MockServletContext servletContext = new MockServletContext()
+        return servletContext
+    }
+
+    protected GrailsWebApplicationContext createParentContext(final TestRuntime runtime, final Map callerInfo, GrailsApplication grailsApplication, ServletContext servletContext) {
+        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(null, grailsApplication.getClassLoader());
+        springConfig.setBeanFactory(new OptimizedAutowireCapableBeanFactory());
+        grailsApplication.setApplicationContext(springConfig.getUnrefreshedApplicationContext());
+        createParentBeans(runtime, springConfig, grailsApplication);
+        GrailsWebApplicationContext parentContext = (GrailsWebApplicationContext)springConfig.getApplicationContext();
+        if(servletContext != null) {
+            parentContext.servletContext = servletContext
+        }
+        return parentContext
+    }
+    
+    protected void createParentBeans(final TestRuntime runtime, RuntimeSpringConfiguration targetSpringConfig, GrailsApplication grailsApplication) {
+        startQueuingDefineBeans(runtime, true)
+        registerParentBeans(runtime, grailsApplication)
+        finishQueuingDefineBeans(runtime, targetSpringConfig, true)
+    }
+
+    protected DefaultGrailsApplication createGrailsApplication(TestRuntime runtime, Map callerInfo) {
+        def classLoader = resolveClassLoader()
+        DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication(classLoader)
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
         }
-        runtime.putValue("grailsApplication", grailsApplication)
-        queuedBeanClosures = []
-        registerBeans(runtime, grailsApplication)
-        defineBeans(runtime, queuedBeanClosures)
-        queuedBeanClosures = null
-        
-        executeDoWithSpringCallback(runtime, grailsApplication, callerInfo)
-        
-        // process queued defineBean bean here! 
-        
-        
-        applicationContext.refresh()
+        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
+        grailsApplication.initialise()
+        return grailsApplication
+    }
 
-        GrailsWebApplicationContext mainContext = new GrailsWebApplicationContext(applicationContext)
-        mainContext.registerSingleton UrlConverter.BEAN_NAME, CamelCaseUrlConverter
-        mainContext.refresh()
-        grailsApplication.mainContext = mainContext
-        
-        MockServletContext servletContext = new MockServletContext()
-        servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
-        servletContext.setAttribute ApplicationAttributes.APPLICATION_CONTEXT, applicationContext
-        applicationContext.servletContext = servletContext
-        mainContext.servletContext = servletContext
-        
-        Holders.setServletContext servletContext
-        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
-        Holders.setGrailsApplication(grailsApplication)
-        runtime.putValue("servletContext", servletContext)
-        
-        applicationInitialized(runtime, grailsApplication)
+    protected ClassLoader resolveClassLoader() {
+        Thread.currentThread().getContextClassLoader()
     }
 
     void initialState() {
@@ -110,38 +174,27 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         Holders.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
+        CachedIntrospectionResults.clearClassLoader(resolveClassLoader())
         Promises.promiseFactory = new SynchronousPromiseFactory()
     }
     
-    void registerBeans(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
+    void registerBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
         runtime.publishEvent("registerBeans", [grailsApplication: grailsApplication], [immediateDelivery: true])
     }
-    
-    @CompileStatic(TypeCheckingMode.SKIP)
-    void executeDoWithSpringCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Map callerInfo) {
-        def testInstanceOrClass=callerInfo.testInstance ?: callerInfo.testClass
-        MetaProperty doWithSpringProperty=testInstanceOrClass.getMetaClass().hasProperty(testInstanceOrClass, "doWithSpring")
-        boolean atClassLevel=(testInstanceOrClass instanceof Class) as boolean
-        if(doWithSpringProperty != null && (!atClassLevel || Modifier.isStatic(doWithSpringProperty.getModifiers()))) {
-            def closure=doWithSpringProperty.getProperty(testInstanceOrClass)
-            runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: true])
+
+    void registerParentBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
+        runtime.publishEvent("registerParentBeans", [grailsApplication: grailsApplication], [immediateDelivery: true])
+    }
+        
+    void executeDoWithSpringCallback(TestRuntime runtime, GrailsApplication grailsApplication, Map callerInfo) {
+        def doWithSpringClosure = resolveTestCallback(callerInfo, "doWithSpring", null)
+        if(doWithSpringClosure) {
+            runtime.publishEvent("defineBeans", [closure: doWithSpringClosure], [immediateDelivery: true])
         }
     }
     
-    @CompileStatic(TypeCheckingMode.SKIP)
-    void executeDoWithConfigCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Map callerInfo) {
-        def testInstanceOrClass=callerInfo.testInstance ?: callerInfo.testClass
-        def configClosure
-        MetaProperty doWithConfigProperty=testInstanceOrClass.getMetaClass().hasProperty(testInstanceOrClass, "doWithConfig")
-        boolean atClassLevel=(testInstanceOrClass instanceof Class) as boolean
-        if(doWithConfigProperty != null && (!atClassLevel || Modifier.isStatic(doWithConfigProperty.getModifiers()))) {
-            configClosure=doWithConfigProperty.getProperty(testInstanceOrClass)
-        } else {
-            MetaMethod doWithConfigMetaMethod=testInstanceOrClass.getMetaClass().respondsTo(testInstanceOrClass, "doWithConfig")?.find{it}
-            if(doWithConfigMetaMethod && (!atClassLevel || doWithConfigMetaMethod.isStatic())) {
-                configClosure={config -> testInstanceOrClass.doWithConfig(config) }
-            }
-        }
+    void executeDoWithConfigCallback(TestRuntime runtime, GrailsApplication grailsApplication, Map callerInfo) {
+        Closure configClosure = (Closure)resolveTestCallback(callerInfo, "doWithConfig", "doWithConfig")
         if(configClosure) {
             configClosure(grailsApplication.config)
             // reset flatConfig
@@ -149,9 +202,25 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         }
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected Object resolveTestCallback(Map callerInfo, String propertyName, String methodName = null) {
+        def testInstanceOrClass=callerInfo.testInstance ?: callerInfo.testClass
+        def value
+        MetaProperty metaProperty=testInstanceOrClass.getMetaClass().hasProperty(testInstanceOrClass, propertyName)
+        boolean atClassLevel=(testInstanceOrClass instanceof Class) as boolean
+        if(metaProperty != null && (!atClassLevel || Modifier.isStatic(metaProperty.getModifiers()))) {
+            value=metaProperty.getProperty(testInstanceOrClass)
+        } else if (methodName != null) {
+            MetaMethod metaMethod=testInstanceOrClass.getMetaClass().respondsTo(testInstanceOrClass, methodName)?.find{it}
+            if(metaMethod && (!atClassLevel || metaMethod.isStatic())) {
+                value={ Object[] params -> metaMethod.doMethodInvoke(testInstanceOrClass, params) }
+            }
+        }
+        return value
+    }
+
     void applicationInitialized(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
         runtime.publishEvent("applicationInitialized", [grailsApplication: grailsApplication])
-        // TODO: which is correct mainContext or parentContext?
         ConvertersPluginSupport.enhanceApplication(grailsApplication, grailsApplication.mainContext)
     }
     
@@ -182,19 +251,21 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         MockUtils.prepareForConstraintsTests(clazz, (Map)runtime.getValueOrCreate("validationErrorsMap", { new IdentityHashMap() }), instances ?: [], ConstraintEvalUtils.getDefaultConstraints(getGrailsApplication(runtime).config))
     }
 
-    void defineBeans(TestRuntime runtime, List<Closure> callables) {
+    void defineBeans(TestRuntime runtime, List<Closure> callables, RuntimeSpringConfiguration targetSpringConfig = null, boolean parent = false) {
         if(!callables) return
-        def bb = new BeanBuilder()
         def binding = new Binding()
         DefaultGrailsApplication grailsApplication = (DefaultGrailsApplication)runtime.getValue("grailsApplication")
+        def bb = new BeanBuilder(parent==false ? grailsApplication.getParentContext() : null, targetSpringConfig, grailsApplication.getClassLoader())
         binding.setVariable "application", grailsApplication
         bb.setBinding binding
         for(Closure callable : callables) {
             bb.beans(callable)
         }
-        bb.registerBeans((BeanDefinitionRegistry)grailsApplication.getParentContext())
+        if (targetSpringConfig == null) {
+            bb.registerBeans((BeanDefinitionRegistry)((parent==false) ? grailsApplication.getMainContext() : grailsApplication.getParentContext()))
+        }
     }
-
+    
     void resetGrailsApplication(TestRuntime runtime) {
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
@@ -264,6 +335,14 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                      queuedBeanClosures << beansClosure
                 } else {
                     defineBeans(runtime, [beansClosure])
+                }
+                break
+            case 'defineParentBeans':
+                def beansClosure = (Closure)event.arguments.closure
+                if(queuedParentBeanClosures != null) {
+                     queuedParentBeanClosures << beansClosure
+                } else {
+                    defineBeans(runtime, [beansClosure], null, true)
                 }
                 break
             case 'mockCodec':   

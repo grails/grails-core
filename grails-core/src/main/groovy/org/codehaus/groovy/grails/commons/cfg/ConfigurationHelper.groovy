@@ -20,15 +20,13 @@ import grails.util.Holder
 import grails.util.Holders
 import grails.util.Metadata
 import groovy.transform.CompileStatic
-
-import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Helper methods for initialising config object.
@@ -98,7 +96,7 @@ class ConfigurationHelper {
                 }
                 catch (ClassNotFoundException e) {
                     LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
-                        "be what you are expecting, but will result in Grails loading with an in-memory database"
+                            "be what you are expecting, but will result in Grails loading with an in-memory database"
                     // ignore
                 }
             }

@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastruct
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfigUtilities
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
@@ -36,7 +37,6 @@ import org.codehaus.groovy.grails.support.PropertiesEditor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.core.io.Resource
 
@@ -160,7 +160,7 @@ class CoreGrailsPlugin {
 
     def onChange = { event ->
         if (event.source instanceof Resource) {
-            def xmlBeans = new DefaultListableBeanFactory()
+            def xmlBeans = new OptimizedAutowireCapableBeanFactory()
             new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(event.source)
             xmlBeans.beanDefinitionNames.each { name ->
                 event.ctx.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))

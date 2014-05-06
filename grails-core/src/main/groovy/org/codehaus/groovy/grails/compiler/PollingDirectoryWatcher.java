@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 class PollingDirectoryWatcher extends AbstractDirectoryWatcher {
 
-    protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
+    private Collection<String> extensions = new ConcurrentLinkedQueue<String>();
 
     private Map<File, Long> lastModifiedMap = new ConcurrentHashMap<File, Long>();
     private Map<File, Collection<String>> directoryToExtensionsMap = new ConcurrentHashMap<File, Collection<String>>();

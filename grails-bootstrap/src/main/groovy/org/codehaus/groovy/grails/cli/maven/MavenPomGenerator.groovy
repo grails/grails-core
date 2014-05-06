@@ -17,16 +17,17 @@ package org.codehaus.groovy.grails.cli.maven
 
 import grails.util.BuildSettings
 import grails.util.Metadata
-
 import groovy.text.SimpleTemplateEngine
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.codehaus.groovy.grails.io.support.IOUtils
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyManager
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.resolve.DependencyReport
+import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
 
 /**
  * Generates a POM for a Grails application.
@@ -257,8 +258,71 @@ class MavenPomGenerator extends BaseSettingsApi {
                 name: dd.name,
                 version: dd.version,
                 scope: newScope ?: scope,
-                type: type)
+                type: type,
+                excludes: convertExclusionsToRealDeps(dd))
         }
+    }
+
+    /**
+     * Converts the exclusions of a dependency into real, resolved dependencies.  This is to
+     * account for the fact that Ivy allows for exclusions based on group or name alone.  Maven
+     * requires both the group and name for exclusion.  Therefore, this method resolves the
+     * current dependency and looks for matching transitive dependencies that are to be excluded
+     * from the current dependency in the generated POM file.
+     * @param dependency The current dependency that may have exclusions.
+     * @return The list of actually excluded transitive dependencies or an empty list if
+     * 	there are no excluded dependencies.
+     */
+    protected List<DependencyInfo> convertExclusionsToRealDeps(Dependency dependency) {
+        if(dependency.excludes) {
+            Set<Dependency> transitiveDependencies = getTransitiveDependencies(dependency)
+
+            transitiveDependencies.findAll { Dependency transitiveDependency ->
+                isExclusion(transitiveDependency, dependency.excludes)
+            }?.collect { Dependency excludedDependency ->
+                new DependencyInfo(group: excludedDependency.group, name: excludedDependency.name)
+            }.sort { a, b -> a.group <=> b.group ?: a.name <=> b.name } ?: []
+        } else {
+            []
+        }
+    }
+
+    /**
+     * Checks to see if the provided dependency matches any of the excluded dependencies in
+     * the provided list.
+     * @param dependency The dependency to be compared to the exclusion list.
+     * @param exclusion The list of excluded dependencies.
+     * @return {@code true} if the provided dependency matches any of the excluded dependencies
+     * 		or {@code false} if the provided dependency should not be excluded.
+     */
+    private boolean isExclusion(Dependency dependency, List<Dependency> exclusions) {
+        exclusions.find { Dependency ivyExclusion ->
+            boolean isMatch = false
+
+            if(ivyExclusion.group) {
+                isMatch = ivyExclusion.group != '*' ? ivyExclusion.group == dependency.group : true
+            }
+
+            if(ivyExclusion.name) {
+                isMatch = ivyExclusion.name != '*' ? ivyExclusion.name == dependency.name : true
+            }
+
+            isMatch
+        } != null
+    }
+
+    /**
+     * Finds the transitive dependencies of the provided root dependency.
+     * @param rootDependency A dependency that may or may not have transitive dependencies.
+     * @return A set containing the transitive dependencies of the provided root
+     * 	dependency or an empty set if there are no transitive dependencies.
+     */
+    private Set<Dependency> getTransitiveDependencies(Dependency rootDependency) {
+        // Generate the Ivy resolution report and extract the transitive dependencies...
+        DependencyReport report = buildSettings.dependencyManager.resolveDependency(rootDependency)
+        report.getResolvedArtifacts().collect { ResolvedArtifactReport artifactReport ->
+            artifactReport.dependency
+        } as Set
     }
 }
 
@@ -268,4 +332,5 @@ class DependencyInfo {
     String version
     String scope
     String type
+    List<Dependency> excludes
 }

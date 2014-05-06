@@ -29,6 +29,7 @@ import org.apache.maven.settings.Settings
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest
 import org.apache.maven.settings.building.SettingsBuilder
 import org.apache.maven.settings.building.SettingsBuildingResult
+import org.codehaus.groovy.grails.io.support.IOUtils
 import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.DependencyManagerUtils
 import org.codehaus.groovy.grails.resolve.DependencyReport
@@ -36,20 +37,25 @@ import org.codehaus.groovy.grails.resolve.ExcludeResolver
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
 import org.codehaus.groovy.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
+import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsModelResolver
+import org.codehaus.groovy.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
+import org.codehaus.groovy.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 import org.codehaus.plexus.DefaultPlexusContainer
 import org.eclipse.aether.DefaultRepositorySystemSession
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.artifact.Artifact
+import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.collection.CollectRequest
 import org.eclipse.aether.collection.DependencyCollectionException
+import org.eclipse.aether.collection.DependencyGraphTransformer
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory
+import org.eclipse.aether.graph.DefaultDependencyNode
 import org.eclipse.aether.graph.Dependency
 import org.eclipse.aether.graph.DependencyNode
 import org.eclipse.aether.graph.Exclusion
 import org.eclipse.aether.impl.DefaultServiceLocator
-import org.eclipse.aether.internal.impl.DefaultTransporterProvider
 import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.repository.RemoteRepository
@@ -62,35 +68,24 @@ import org.eclipse.aether.resolution.DependencyResolutionException
 import org.eclipse.aether.resolution.DependencyResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
-import org.eclipse.aether.spi.connector.transport.TransporterProvider
-import org.eclipse.aether.spi.log.LoggerFactory
 import org.eclipse.aether.transfer.AbstractTransferListener
 import org.eclipse.aether.transfer.ArtifactTransferException
 import org.eclipse.aether.transfer.TransferCancelledException
 import org.eclipse.aether.transfer.TransferEvent
-import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.transport.file.FileTransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
 import org.eclipse.aether.util.filter.ScopeDependencyFilter
-import org.eclipse.aether.graph.DefaultDependencyNode
 import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
+import org.eclipse.aether.util.graph.transformer.ChainedDependencyGraphTransformer
+import org.eclipse.aether.util.graph.transformer.ConflictResolver
+import org.eclipse.aether.util.graph.transformer.JavaDependencyContextRefiner
+import org.eclipse.aether.util.graph.transformer.JavaScopeDeriver
+import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator
 import org.eclipse.aether.util.repository.AuthenticationBuilder
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector
 import org.eclipse.aether.util.repository.DefaultMirrorSelector
 import org.eclipse.aether.util.repository.DefaultProxySelector
-import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsModelResolver
-import org.eclipse.aether.collection.DependencyGraphTransformer
-import org.eclipse.aether.util.graph.transformer.ConflictResolver
-import org.eclipse.aether.util.graph.transformer.NearestVersionSelector
-import org.eclipse.aether.util.graph.transformer.JavaScopeSelector
-import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector
-import org.eclipse.aether.util.graph.transformer.JavaScopeDeriver
-import org.eclipse.aether.util.graph.transformer.ChainedDependencyGraphTransformer
-import org.eclipse.aether.util.graph.transformer.JavaDependencyContextRefiner
-import org.codehaus.groovy.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
-import org.codehaus.groovy.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
-import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * An implementation of the {@link DependencyManager} interface that uses Aether, the dependency resolution
@@ -161,7 +156,7 @@ class AetherDependencyManager implements DependencyManager {
 
             settingsBuilder = container.lookup(SettingsBuilder)
             modelBuilder = container.lookup(ModelBuilder)
-            DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+            DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator()
             locator.addService( RepositoryConnectorFactory, BasicRepositoryConnectorFactory )
             locator.addService( TransporterFactory, FileTransporterFactory )
             locator.addService( TransporterFactory, HttpTransporterFactory )
@@ -171,7 +166,7 @@ class AetherDependencyManager implements DependencyManager {
             session.setAuthenticationSelector(new DefaultAuthenticationSelector())
             DependencyGraphTransformer transformer =
                 new ConflictResolver( new ScopeAwareNearestVersionSelector(), new MultipleTopLevelJavaScopeSelector(),
-                    new SimpleOptionalitySelector(), new JavaScopeDeriver() );
+                    new SimpleOptionalitySelector(), new JavaScopeDeriver() )
 
             session.setDependencyGraphTransformer( new ChainedDependencyGraphTransformer( transformer, new JavaDependencyContextRefiner() ) )
 
@@ -410,6 +405,18 @@ class AetherDependencyManager implements DependencyManager {
         root.accept nlg
 
         return new AetherDependencyReport(nlg, scope)
+    }
+
+    @Override
+    public DependencyReport resolveDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
+        DefaultDependencyNode node = new DefaultDependencyNode(new DefaultArtifact(dependency.group, dependency.name, dependency.classifier, dependency.extension, dependency.version))
+
+        DependencyResult resolveResult = resolveToResult(node, null)
+
+        PreorderNodeListGenerator nlg = new PreorderNodeListGenerator()
+        resolveResult.getRoot()?.accept(nlg)
+
+        return new AetherDependencyReport(nlg, null)
     }
 
     protected void addAttachments(DependencyNode root, String classifier) {

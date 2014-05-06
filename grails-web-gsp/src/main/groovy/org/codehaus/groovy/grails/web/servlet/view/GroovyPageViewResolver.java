@@ -15,13 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
+import grails.util.CacheEntry;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
 
-import java.security.PrivilegedAction;
 import java.util.Locale;
-import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +32,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -57,7 +57,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
     protected GroovyPagesTemplateEngine templateEngine;
     protected GrailsConventionGroovyPageLocator groovyPageLocator;
 
-    private Map<String, CacheEntry<View>> viewCache = new ConcurrentHashMap<String, CacheEntry<View>>();
+    private ConcurrentMap<String, CacheEntry<View>> viewCache = new ConcurrentHashMap<String, CacheEntry<View>>();
     private boolean allowGrailsViewCaching = !GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
 
@@ -101,8 +101,8 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         CacheEntry<View> entry = viewCache.get(viewCacheKey);
 
         final String lookupViewName = viewName;
-        PrivilegedAction<View> updater=new PrivilegedAction<View>() {
-            public View run() {
+        Callable<View> updater=new Callable<View>() {
+            public View call() throws Exception {
                 try {
                     return createGrailsView(lookupViewName);
                 }
@@ -115,13 +115,13 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         View view = null;
         if (entry == null) {
             try {
-                view = updater.run();
-            } catch (WrappedInitializationException e) {
-                e.rethrow();
+                return CacheEntry.getValue(viewCache, viewCacheKey, cacheTimeout, updater);
             }
-            entry = new CacheEntry<View>(view);
-            viewCache.put(viewCacheKey, entry);
-            return view;
+            catch (CacheEntry.UpdateException e) {
+                e.rethrow();
+                // make compiler happy
+                return null;
+            }
         }
 
         try {
@@ -158,7 +158,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
             HttpServletRequest request = webRequest.getCurrentRequest();
             controller = webRequest.getAttributes().getController(request);
         }
-
+        
         GroovyPageScriptSource scriptSource;
         if (controller == null) {
             scriptSource = groovyPageLocator.findViewByPath(viewName);

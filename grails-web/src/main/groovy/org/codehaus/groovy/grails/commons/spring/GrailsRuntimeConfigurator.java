@@ -76,11 +76,11 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     private static final Log LOG = LogFactory.getLog(GrailsRuntimeConfigurator.class);
     public static final String GRAILS_INITIALIZING = "org.grails.internal.INITIALIZING";
 
-    private GrailsApplication application;
-    private ApplicationContext parent;
-    private GrailsPluginManager pluginManager;
-    private WebRuntimeSpringConfiguration webSpringConfig;
-    private static final String DEVELOPMENT_SPRING_RESOURCES_XML = "file:./grails-app/conf/spring/resources.xml";
+    protected GrailsApplication application;
+    protected ApplicationContext parent;
+    protected GrailsPluginManager pluginManager;
+    protected WebRuntimeSpringConfiguration webSpringConfig;
+    protected static final String DEVELOPMENT_SPRING_RESOURCES_XML = "file:./grails-app/conf/spring/resources.xml";
 
 
     public GrailsRuntimeConfigurator(GrailsApplication application) {
@@ -90,7 +90,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public GrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent) {
         this.application = application;
         this.parent = parent;
+        initializePluginManager();
+    }
 
+    protected void initializePluginManager() {
         try {
             pluginManager = parent == null ? null : parent.getBean(GrailsPluginManager.class);
         } catch (BeansException e) {
@@ -128,10 +131,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         Assert.notNull(application);
 
         // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
-        WebApplicationContext ctx;
+        WebApplicationContext mainContext;
         try {
             webSpringConfig = createWebRuntimeSpringConfiguration(application, parent, application.getClassLoader());
-            webSpringConfig.setBeanFactory(new OptimizedAutowireCapableBeanFactory());
 
             if (context != null) {
                 webSpringConfig.setServletContext(context);
@@ -154,23 +156,24 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             LOG.debug("[RuntimeConfiguration] Processing additional external configurations");
 
             if (loadExternalBeans) {
-                doPostResourceConfiguration(application,webSpringConfig);
+                doPostResourceConfiguration(application, webSpringConfig);
             }
 
             reset();
 
-            application.setMainContext(webSpringConfig.getUnrefreshedApplicationContext());
+            mainContext = (WebApplicationContext)webSpringConfig.getUnrefreshedApplicationContext();
+            application.setMainContext(mainContext);
 
             Environment.setInitializing(true);
-            ctx = (WebApplicationContext) webSpringConfig.getApplicationContext();
+            initializeContext(mainContext);
             Environment.setInitializing(false);
 
-            pluginManager.setApplicationContext(ctx);
+            pluginManager.setApplicationContext(mainContext);
             pluginManager.doDynamicMethods();
 
-            ctx.publishEvent(new GrailsContextEvent(ctx, GrailsContextEvent.DYNAMIC_METHODS_REGISTERED));
+            mainContext.publishEvent(new GrailsContextEvent(mainContext, GrailsContextEvent.DYNAMIC_METHODS_REGISTERED));
 
-            performPostProcessing(ctx);
+            performPostProcessing(mainContext);
 
             application.refreshConstraints();
         }
@@ -178,16 +181,22 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             ClassPropertyFetcher.clearClassPropertyFetcherCache();
         }
 
-        return ctx;
+        return mainContext;
+    }
+
+    protected void initializeContext(ApplicationContext mainContext) {
+        webSpringConfig.getApplicationContext();
     }
 
     protected WebRuntimeSpringConfiguration createWebRuntimeSpringConfiguration(GrailsApplication app,
             ApplicationContext parentCtx, ClassLoader classLoader) {
-        return new WebRuntimeSpringConfiguration(parentCtx, classLoader);
+        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parentCtx, classLoader);
+        springConfig.setBeanFactory(new OptimizedAutowireCapableBeanFactory());
+        return springConfig;
     }
 
     @SuppressWarnings("rawtypes")
-    private void registerParentBeanFactoryPostProcessors(WebRuntimeSpringConfiguration springConfig) {
+    protected void registerParentBeanFactoryPostProcessors(WebRuntimeSpringConfiguration springConfig) {
         if (parent == null) {
             return;
         }
@@ -227,7 +236,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         reset();
     }
 
-    private void performPostProcessing(WebApplicationContext ctx) {
+    protected void performPostProcessing(WebApplicationContext ctx) {
         pluginManager.doPostProcessing(ctx);
     }
 
@@ -254,8 +263,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         return ctx;
     }
 
-    private void doPostResourceConfiguration(GrailsApplication app, RuntimeSpringConfiguration springConfig) {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    protected void doPostResourceConfiguration(GrailsApplication app, RuntimeSpringConfiguration springConfig) {
+        ClassLoader classLoader = app.getClassLoader();
         String resourceName = null;
         try {
             Resource springResources;
@@ -271,7 +280,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
             if (springResources != null && springResources.exists()) {
                 if (LOG.isDebugEnabled()) LOG.debug("[RuntimeConfiguration] Configuring additional beans from " + springResources.getURL());
-                DefaultListableBeanFactory xmlBf = new DefaultListableBeanFactory();
+                DefaultListableBeanFactory xmlBf = new OptimizedAutowireCapableBeanFactory();
                 new XmlBeanDefinitionReader(xmlBf).loadBeanDefinitions(springResources);
                 xmlBf.setBeanClassLoader(classLoader);
                 String[] beanNames = xmlBf.getBeanDefinitionNames();

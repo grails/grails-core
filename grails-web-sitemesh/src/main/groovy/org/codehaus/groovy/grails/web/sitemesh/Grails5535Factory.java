@@ -28,6 +28,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -46,6 +48,7 @@ import com.opensymphony.module.sitemesh.factory.FactoryException;
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class Grails5535Factory extends BaseFactory {
+    private static final Log log=LogFactory.getLog(Grails5535Factory.class);
     String configFileName;
     private static final String DEFAULT_CONFIG_FILENAME = "/WEB-INF/sitemesh.xml";
 
@@ -79,6 +82,15 @@ public class Grails5535Factory extends BaseFactory {
         }
 
         loadConfig();
+    }
+    
+    @Override
+    protected void pushDecoratorMapper(String className, Properties properties) {
+        try {
+            super.pushDecoratorMapper(className, properties);
+        } catch (Exception e) {
+            log.warn("Error initializing decorator mapper",e);
+        }
     }
 
     /** Load configuration from file. */
@@ -148,6 +160,10 @@ public class Grails5535Factory extends BaseFactory {
         }
 
         if (is == null) { // load the default sitemesh configuration
+            is = getClass().getResourceAsStream("sitemesh-default.xml");
+        }
+        
+        if (is == null) { // load the default sitemesh configuration
             is = getClass().getClassLoader().getResourceAsStream("com/opensymphony/module/sitemesh/factory/sitemesh-default.xml");
         }
 
@@ -184,7 +200,8 @@ public class Grails5535Factory extends BaseFactory {
         }
 
         if (is == null) {
-            throw new IllegalStateException("Cannot load excludes configuration file \"" + excludesFileName + "\" as specified in \"sitemesh.xml\" or \"sitemesh-default.xml\"");
+            log.warn("Cannot load excludes configuration file \"" + excludesFileName + "\" as specified in \"sitemesh.xml\" or \"sitemesh-default.xml\"");
+            return;
         }
 
         Document document = builder.parse(is);
