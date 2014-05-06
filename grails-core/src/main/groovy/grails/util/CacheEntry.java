@@ -33,9 +33,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * @since 2.3.4
  */
 public class CacheEntry<V> {
-    private AtomicReference<V> valueRef=new AtomicReference<V>(null);
+    private final AtomicReference<V> valueRef=new AtomicReference<V>(null);
     private long createdMillis;
-    private Lock writeLock=new ReentrantLock();
+    private transient final Lock writeLock=new ReentrantLock();
     private volatile boolean initialized=false;
 
     public CacheEntry() {
