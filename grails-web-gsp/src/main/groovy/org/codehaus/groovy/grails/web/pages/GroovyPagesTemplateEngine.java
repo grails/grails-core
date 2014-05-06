@@ -273,6 +273,9 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
                                 @Override
                                 protected GroovyPageMetaInfo updateValue(GroovyPageMetaInfo oldValue, Callable<GroovyPageMetaInfo> updater, Object cacheRequestObject)
                                         throws Exception {
+                                    if(oldValue != null) {
+                                        oldValue.removePageMetaClass();
+                                    }
                                     Resource resource = (Resource)cacheRequestObject;
                                     return buildPageMetaInfo(resource, pageName);
                                 }
@@ -780,10 +783,9 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             Map.Entry<String, CacheEntry<GroovyPageMetaInfo>> entry = it.next();
             GroovyPageMetaInfo metaInfo = entry.getValue().getValue();
             if(metaInfo != null) {
-                Class<?> oldPageClass = metaInfo.getPageClass();
-                if(oldPageClass!=null) GroovySystem.getMetaClassRegistry().removeMetaClass(oldPageClass);
-                it.remove();
+                metaInfo.removePageMetaClass();
             }
+            it.remove();
         }
     }
 
