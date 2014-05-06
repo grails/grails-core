@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.text.Template;
@@ -26,10 +27,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
@@ -61,7 +61,7 @@ import org.springframework.util.ReflectionUtils;
 public class GroovyPagesTemplateRenderer implements InitializingBean {
     private GrailsConventionGroovyPageLocator groovyPageLocator;
     private GroovyPagesTemplateEngine groovyPagesTemplateEngine;
-    private ConcurrentMap<String,TemplateRendererCacheEntry> templateCache = new ConcurrentHashMap<String,TemplateRendererCacheEntry>();
+    private ConcurrentMap<String,CacheEntry<Template>> templateCache = new ConcurrentHashMap<String,CacheEntry<Template>>();
     private Object scaffoldingTemplateGenerator;
     private Map<String, Collection<String>> scaffoldedActionMap;
     private Map<String, GrailsDomainClass> controllerToScaffoldedDomainClassMap;
@@ -102,11 +102,11 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         makeTemplate(webRequest, t, attrs, body, out);
     }
 
-    private Template findAndCacheTemplate(GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
-            String contextPath, String pluginName, String uri) throws IOException {
+    private Template findAndCacheTemplate(final GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
+            String contextPath, String pluginName, final String uri) throws IOException {
 
         String templatePath = GrailsStringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
-        GroovyPageScriptSource scriptSource;
+        final GroovyPageScriptSource scriptSource;
         if (pluginName == null) {
             scriptSource = groovyPageLocator.findTemplateInBinding(templatePath, pageScope);
         }  else {
@@ -120,45 +120,47 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             cacheKey = scriptSource.getURI();
         }
 
-        TemplateRendererCacheEntry cacheEntry = templateCache.get(cacheKey);
-        if (cacheEntry != null && cacheEntry.isValid()) {
-            return cacheEntry.template;
-        }
+        return CacheEntry.getValue(templateCache, cacheKey, reloadEnabled ? GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL : -1, null,
+                new Callable<CacheEntry<Template>>() {
+                    public CacheEntry<Template> call() {
+                        return new CacheEntry<Template>() {
+                            boolean allowCaching = cacheEnabled;
 
-        Template t = null;
-        try {
-            if (cacheEntry != null) {
-                // prevent several competing threads to update the template at the same time
-                cacheEntry.getLock().lock();
-                if (cacheEntry.isValid()) {
-                    // another thread already updated the entry
-                    t = cacheEntry.template;
-                }
-            }
-            if (t == null) {
-                if (scriptSource != null) {
-                    t = groovyPagesTemplateEngine.createTemplate(scriptSource);
-                }
-                boolean allowCaching = cacheEnabled;
-                if (t == null && scaffoldingTemplateGenerator != null) {
-                    t = generateScaffoldedTemplate(webRequest, uri);
-                    // always enable caching for generated scaffolded template
-                    allowCaching = true;
-                }
-                if (t != null && allowCaching) {
-                    if (cacheEntry == null) {
-                        templateCache.put(cacheKey, new TemplateRendererCacheEntry(t, reloadEnabled));
-                    } else {
-                        cacheEntry.setTemplate(t);
+                            @Override
+                            protected boolean hasExpired(long timeout, Object cacheRequestObject) {
+                                return allowCaching ? super.hasExpired(timeout, cacheRequestObject) : true;
+                            }
+                            
+                            @Override
+                            public boolean isInitialized() {
+                                return allowCaching ? super.isInitialized() : false;
+                            }
+                            
+                            @Override
+                            public void setValue(Template val) {
+                                if(allowCaching) {
+                                    super.setValue(val);
+                                }
+                            }
+
+                            @Override
+                            protected Template updateValue(Template oldValue, Callable<Template> updater, Object cacheRequestObject)
+                                    throws Exception {
+                                Template t = null;
+                                if (scriptSource != null) {
+                                    t = groovyPagesTemplateEngine.createTemplate(scriptSource);
+                                }
+                                if (t == null && scaffoldingTemplateGenerator != null) {
+                                    t = generateScaffoldedTemplate(webRequest, uri);
+                                    // always enable caching for generated
+                                    // scaffolded template
+                                    allowCaching = true;
+                                }
+                                return t;
+                            }
+                        };
                     }
-                }
-            }
-        } finally {
-            if (cacheEntry != null) {
-                cacheEntry.getLock().unlock();
-            }
-        }
-        return t;
+                }, true, null);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -244,31 +246,6 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             }
         }
         return t;
-    }
-
-    private static class TemplateRendererCacheEntry {
-        private long timestamp=System.currentTimeMillis();
-        private Template template;
-        private boolean reloadEnabled;
-        private final Lock lock = new ReentrantLock();
-
-        public TemplateRendererCacheEntry(Template t, boolean reloadEnabled) {
-            this.template = t;
-            this.reloadEnabled = reloadEnabled;
-        }
-
-        public Lock getLock() {
-            return lock;
-        }
-
-        public boolean isValid() {
-            return !reloadEnabled || (System.currentTimeMillis() - timestamp < GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL);
-        }
-
-        public void setTemplate(Template template) {
-            this.template = template;
-            this.timestamp = System.currentTimeMillis();
-        }
     }
 
     private String getStringValue(Map<String, Object> attrs, String key) {

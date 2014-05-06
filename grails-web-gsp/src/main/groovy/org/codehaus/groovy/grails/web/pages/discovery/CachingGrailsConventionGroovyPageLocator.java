@@ -105,7 +105,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
                 public CacheEntry call() throws Exception {
                     return new CustomCacheEntry();
                 }
-            });
+            }, true, null);
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }
@@ -186,13 +186,13 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
         }
 
         @Override
-        protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
+        protected boolean shouldUpdate(long beforeLockingCreatedMillis, Object cacheRequestObject) {
             // Never expire GroovyPageCompiledScriptSource entry in cache
             if (getValue() instanceof GroovyPageCompiledScriptSource) {
                 resetTimestamp(true);
                 return false;
             } else {
-                return super.shouldUpdate(beforeLockingCreatedMillis);
+                return super.shouldUpdate(beforeLockingCreatedMillis, cacheRequestObject);
             }
         }
     }

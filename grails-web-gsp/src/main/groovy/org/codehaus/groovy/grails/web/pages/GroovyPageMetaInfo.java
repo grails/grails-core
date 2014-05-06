@@ -16,12 +16,14 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.CacheEntry;
+import groovy.lang.GroovySystem;
 
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.PrivilegedAction;
@@ -90,6 +92,8 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>();
     public static String DEFAULT_PLUGIN_PATH = "";
+    
+    volatile boolean metaClassShouldBeRemoved=false;
 
     public GroovyPageMetaInfo() {
 
@@ -410,7 +414,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
                 return null;
             }
         };
-        return shouldReloadCacheEntry.getValue(LASTMODIFIED_CHECK_INTERVAL, checkerCallable);
+        return shouldReloadCacheEntry.getValue(LASTMODIFIED_CHECK_INTERVAL, checkerCallable, true, null);
     }
 
     public boolean isPrecompiledMode() {
@@ -463,5 +467,18 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     public void setTaglibCodecName(String taglibCodecName) {
         this.taglibCodecName = taglibCodecName;
+    }
+    
+    public void removePageMetaClass() {
+        metaClassShouldBeRemoved = true;
+        if(pageClass!=null) { 
+            GroovySystem.getMetaClassRegistry().removeMetaClass(pageClass);
+        }
+    }
+
+    public void writeToFinished(Writer out) {
+        if(metaClassShouldBeRemoved) {
+            removePageMetaClass();
+        }
     }
 }
