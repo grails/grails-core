@@ -44,7 +44,7 @@ public class CacheEntry<V> {
     
     public CacheEntry(V value) {
         this.valueRef.set(value);
-        initialized=true;
+        setInitialized(true);
         resetTimestamp(true);
     }
     
@@ -104,13 +104,13 @@ public class CacheEntry<V> {
      * @return the current value
      */
     public V getValue(long timeout, Callable<V> updater, boolean returnExpiredWhileUpdating) {
-        if (!initialized || hasExpired(timeout)) {
+        if (!isInitialized() || hasExpired(timeout)) {
             boolean lockAcquired = false;
             try {
                 long beforeLockingCreatedMillis = createdMillis;
                 if(returnExpiredWhileUpdating) {
                     if(!writeLock.tryLock()) {
-                        if(initialized) {
+                        if(isInitialized()) {
                             return getValueWhileUpdating();
                         } else {
                             writeLock.lock();
@@ -120,26 +120,30 @@ public class CacheEntry<V> {
                     writeLock.lock();
                 }
                 lockAcquired = true;
-                if (!initialized || shouldUpdate(beforeLockingCreatedMillis)) {
+                V value;
+                if (!isInitialized() || shouldUpdate(beforeLockingCreatedMillis)) {
                     try {
-                        setValue(updateValue(getValue(), updater));
-                        initialized=true;
+                        value = updateValue(getValue(), updater);
+                        setValue(value);
+                        setInitialized(true);
                     }
                     catch (Exception e) {
                         throw new UpdateException(e);
                     }
                     resetTimestamp(true);
                 } else {
+                    value = getValue();
                     resetTimestamp(false);
                 }
+                return value;
             } finally {
                 if(lockAcquired) {
                     writeLock.unlock();
                 }
             }
+        } else {
+            return getValue();
         }
-
-        return getValue();
     }
     
     protected V getValueWhileUpdating() {
@@ -180,6 +184,14 @@ public class CacheEntry<V> {
         createdMillis = 0L;
     }
     
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
+    }
+
     public static final class UpdateException extends RuntimeException {
         private static final long serialVersionUID = 1L;
 
