@@ -20,15 +20,13 @@ import grails.util.Holder
 import grails.util.Holders
 import grails.util.Metadata
 import groovy.transform.CompileStatic
-
-import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Helper methods for initialising config object.
@@ -46,12 +44,7 @@ class ConfigurationHelper {
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion"
 
     private static Holder<Map<Integer, ConfigObject>> cachedConfigs = new Holder<Map<Integer, ConfigObject>>('cachedConfigs')
-
     public static final int DEV_CACHE_KEY = -1
-    /**
-     * Name of the system property used to indicate whether Grails should load the config with the holder
-     * */
-    public static final String LOAD_CONFIG_WITH_HOLDER = "grails.load.config.with.holder"
 
     static final List DEFAULT_RESOURCES_PLUGIN_EXCLUDES = ['**/WEB-INF/**', '**/META-INF/**', '**/*.class', '**/*.jar', '**/*.properties', '**/*.groovy', '**/*.gsp', '**/*.java']
 
@@ -87,39 +80,36 @@ class ConfigurationHelper {
 
         co = getCachedConfigs().get(cacheKey)
         if (co == null) {
-            co = Boolean.getBoolean(LOAD_CONFIG_WITH_HOLDER) ? Holders.config : null
-            if( co == null ) {
-                ConfigSlurper configSlurper = getConfigSlurper(environment, application)
+            ConfigSlurper configSlurper = getConfigSlurper(environment, application)
+            try {
                 try {
-                    try {
-                        co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
-                    }
-                    catch (ClassNotFoundException e) {
-                        LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
-                                "nothing to worry about; it is not required to have a config: $e.message"
-                        // ignore, it is ok not to have a configuration file
-                        co = new ConfigObject()
-                    }
-                    try {
-                        co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
-                    }
-                    catch (ClassNotFoundException e) {
-                        LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
-                                "be what you are expecting, but will result in Grails loading with an in-memory database"
-                        // ignore
-                    }
+                    co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
                 }
-                catch (Throwable t) {
-                    LOG.error("Error loading application Config: $t.message", t)
-                    throw t
+                catch (ClassNotFoundException e) {
+                    LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
+                            "nothing to worry about; it is not required to have a config: $e.message"
+                    // ignore, it is ok not to have a configuration file
+                    co = new ConfigObject()
                 }
+                try {
+                    co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
+                }
+                catch (ClassNotFoundException e) {
+                    LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
+                            "be what you are expecting, but will result in Grails loading with an in-memory database"
+                    // ignore
+                }
+            }
+            catch (Throwable t) {
+                LOG.error("Error loading application Config: $t.message", t)
+                throw t
             }
 
             if (co == null) co = new ConfigObject()
 
             initConfig(co, null, classLoader)
             getCachedConfigs().put(cacheKey, co)
-            Holders.setConfig( co )
+            Holders.config = co
         }
 
         return co

@@ -331,7 +331,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
     ConfigObject createConfig() {
         config = Holders.config
         if (config == null) {
-            System.setProperty(ConfigurationHelper.LOAD_CONFIG_WITH_HOLDER, "true")
             config = new ConfigObject()
             if (configFile.exists()) {
                 Class configClass = null
