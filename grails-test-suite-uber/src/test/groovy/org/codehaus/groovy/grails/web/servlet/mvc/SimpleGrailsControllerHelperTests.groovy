@@ -1,10 +1,13 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.web.Action
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException
 import grails.artefact.Artefact
+import grails.web.Action
 
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException
+import org.junit.Ignore
+import org.springframework.web.context.request.RequestContextHolder
+
+@Ignore
 class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
     @Override
