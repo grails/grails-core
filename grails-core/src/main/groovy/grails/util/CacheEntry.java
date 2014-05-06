@@ -79,7 +79,14 @@ public class CacheEntry<V> {
                 cacheEntry = previousEntry;
             }
         }
-        return cacheEntry.getValue(timeoutMillis, updater, returnExpiredWhileUpdating, cacheRequestObject);
+        try {
+            return cacheEntry.getValue(timeoutMillis, updater, returnExpiredWhileUpdating, cacheRequestObject);
+        }
+        catch (UpdateException e) {
+            e.rethrowRuntimeException();
+            // make compiler happy
+            return null;
+        }
     }
     
     @SuppressWarnings("rawtypes")
@@ -213,12 +220,20 @@ public class CacheEntry<V> {
             super(cause);
         }
 
-        public void rethrow() throws Exception {
+        public void rethrowCause() throws Exception {
             if (getCause() instanceof Exception) {
                 throw (Exception)getCause();
             }
 
             throw this;
         }
+        
+        public void rethrowRuntimeException() {
+            if (getCause() instanceof RuntimeException) {
+                throw (RuntimeException)getCause();
+            }
+            throw this;
+        }
+        
     }
 }
