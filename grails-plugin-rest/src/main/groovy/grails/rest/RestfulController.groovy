@@ -77,7 +77,7 @@ class RestfulController<T> {
         if(handleReadOnly()) {
             return
         }
-        respond createResource(getParametersToBind())
+        respond createResource()
     }
 
     /**
@@ -88,7 +88,7 @@ class RestfulController<T> {
         if(handleReadOnly()) {
             return
         }
-        def instance = createResource(getParametersToBind())
+        def instance = createResource()
 
         instance.validate()
         if (instance.hasErrors()) {
@@ -227,6 +227,20 @@ class RestfulController<T> {
      */
     protected T createResource(Map params) {
         resource.newInstance(params)
+    }
+    
+    /**
+     * Creates a new instance of the resource.  If the request
+     * contains a body the body will be parsed and used to
+     * initialize the new instance, otherwise request parameters
+     * will be used to initialized the new instance.
+     *
+     * @return The resource instance
+     */
+    protected T createResource() {
+        T instance = resource.newInstance()
+        bindData instance, request
+        instance
     }
 
     /**
