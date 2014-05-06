@@ -124,21 +124,32 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 new Callable<CacheEntry<Template>>() {
                     public CacheEntry<Template> call() {
                         return new CacheEntry<Template>() {
-                            boolean allowCaching = false;
+                            boolean allowCaching = cacheEnabled;
 
                             @Override
-                            protected boolean hasExpired(long timeout) {
-                                return allowCaching ? super.hasExpired(timeout) : true;
+                            protected boolean hasExpired(long timeout, Object cacheRequestObject) {
+                                return allowCaching ? super.hasExpired(timeout, cacheRequestObject) : true;
+                            }
+                            
+                            @Override
+                            public boolean isInitialized() {
+                                return allowCaching ? super.isInitialized() : false;
+                            }
+                            
+                            @Override
+                            public void setValue(Template val) {
+                                if(allowCaching) {
+                                    super.setValue(val);
+                                }
                             }
 
                             @Override
-                            protected Template updateValue(Template oldValue, Callable<Template> updater)
+                            protected Template updateValue(Template oldValue, Callable<Template> updater, Object cacheRequestObject)
                                     throws Exception {
                                 Template t = null;
                                 if (scriptSource != null) {
                                     t = groovyPagesTemplateEngine.createTemplate(scriptSource);
                                 }
-                                allowCaching = cacheEnabled;
                                 if (t == null && scaffoldingTemplateGenerator != null) {
                                     t = generateScaffoldedTemplate(webRequest, uri);
                                     // always enable caching for generated
@@ -149,7 +160,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                             }
                         };
                     }
-                }, true);
+                }, true, null);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

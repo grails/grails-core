@@ -465,7 +465,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
             public CacheEntry call() throws Exception {
                 return new PropertiesHolderCacheEntry();
             }
-        }, true);
+        }, true, null);
 	}
 	
     protected static class PropertiesHolderCacheEntry extends CacheEntry<PropertiesHolder> {
@@ -474,7 +474,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
         }
 
         @Override
-        protected PropertiesHolder updateValue(PropertiesHolder oldValue, Callable<PropertiesHolder> updater)
+        protected PropertiesHolder updateValue(PropertiesHolder oldValue, Callable<PropertiesHolder> updater, Object cacheRequestObject)
                 throws Exception {
             if(oldValue != null) {
                 oldValue.update();
