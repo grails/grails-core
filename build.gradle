@@ -22,7 +22,7 @@ ext {
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
-    aspectjVersion = "1.7.4"
+    aspectjVersion = "1.8.0"
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
