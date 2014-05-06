@@ -4,7 +4,6 @@ import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -53,7 +52,6 @@ class GrailsParameterMapBindingSpec extends Specification {
     }
     
     @Issue('GRAILS-11179')
-    @Ignore
     void 'Test binding nested parameter Map to command object when the request has a body'() {
         when: 'nested request parameters are present and the request has a body'
         request.json = '{"name":"JSON Name"}'
@@ -74,7 +72,6 @@ class GrailsParameterMapBindingSpec extends Specification {
     }
     
     @Issue('GRAILS-11179')
-    @Ignore
     void 'Test binding with request parameters when the request has a body'() {
         when: 'the request contains a body and request parameters'
         params.name = 'Request Parameter Name'
