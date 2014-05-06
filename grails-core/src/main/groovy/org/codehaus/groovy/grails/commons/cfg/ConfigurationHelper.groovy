@@ -46,7 +46,12 @@ class ConfigurationHelper {
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion"
 
     private static Holder<Map<Integer, ConfigObject>> cachedConfigs = new Holder<Map<Integer, ConfigObject>>('cachedConfigs')
+
     public static final int DEV_CACHE_KEY = -1
+    /**
+     * Name of the system property used to indicate whether Grails should load the config with the holder
+     * */
+    public static final String LOAD_CONFIG_WITH_HOLDER = "grails.load.config.with.holder"
 
     static final List DEFAULT_RESOURCES_PLUGIN_EXCLUDES = ['**/WEB-INF/**', '**/META-INF/**', '**/*.class', '**/*.jar', '**/*.properties', '**/*.groovy', '**/*.gsp', '**/*.java']
 
@@ -82,36 +87,39 @@ class ConfigurationHelper {
 
         co = getCachedConfigs().get(cacheKey)
         if (co == null) {
-            ConfigSlurper configSlurper = getConfigSlurper(environment, application)
-            try {
+            co = Boolean.getBoolean(LOAD_CONFIG_WITH_HOLDER) ? Holders.config : null
+            if( co == null ) {
+                ConfigSlurper configSlurper = getConfigSlurper(environment, application)
                 try {
-                    co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
+                    try {
+                        co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
+                    }
+                    catch (ClassNotFoundException e) {
+                        LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
+                                "nothing to worry about; it is not required to have a config: $e.message"
+                        // ignore, it is ok not to have a configuration file
+                        co = new ConfigObject()
+                    }
+                    try {
+                        co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
+                    }
+                    catch (ClassNotFoundException e) {
+                        LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
+                                "be what you are expecting, but will result in Grails loading with an in-memory database"
+                        // ignore
+                    }
                 }
-                catch (ClassNotFoundException e) {
-                    LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
-                            "nothing to worry about; it is not required to have a config: $e.message"
-                    // ignore, it is ok not to have a configuration file
-                    co = new ConfigObject()
+                catch (Throwable t) {
+                    LOG.error("Error loading application Config: $t.message", t)
+                    throw t
                 }
-                try {
-                    co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
-                }
-                catch (ClassNotFoundException e) {
-                    LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
-                        "be what you are expecting, but will result in Grails loading with an in-memory database"
-                    // ignore
-                }
-            }
-            catch (Throwable t) {
-                LOG.error("Error loading application Config: $t.message", t)
-                throw t
             }
 
             if (co == null) co = new ConfigObject()
 
             initConfig(co, null, classLoader)
             getCachedConfigs().put(cacheKey, co)
-            Holders.config = co
+            Holders.setConfig( co )
         }
 
         return co
