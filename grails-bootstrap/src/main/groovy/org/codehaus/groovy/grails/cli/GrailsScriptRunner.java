@@ -812,6 +812,7 @@ public class GrailsScriptRunner {
         List<File> scripts = new ArrayList<File>();
         if (settings.getGrailsHome() != null) {
             addCommandScripts(new File(settings.getGrailsHome(), "scripts"), scripts);
+            addCommandScripts(new File(settings.getGrailsHome(), "grails-scripts/src/main/scripts"), scripts);
         }
         addCommandScripts(new File(settings.getBaseDir(), "scripts"), scripts);
         addCommandScripts(new File(settings.getUserHome(), ".grails/scripts"), scripts);
