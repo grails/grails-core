@@ -654,8 +654,14 @@ public class GrailsScriptRunner {
             Class<?> cls = Thread.currentThread().getContextClassLoader().loadClass("org.apache.log4j.PropertyConfigurator");
             Method configure = cls.getMethod("configure", URL.class);
             configure.setAccessible(true);
-            File f = new File(settings.getGrailsHome() + "/scripts/log4j.properties");
-            configure.invoke(cls, f.toURI().toURL());
+            File f = new File(settings.getGrailsHome() + "/grails-scripts/src/main/scripts/log4j.properties");
+            if(f.exists()) {
+                configure.invoke(cls, f.toURI().toURL());
+            }
+            else {
+                f = new File(settings.getGrailsHome() + "/scripts/log4j.properties");
+                configure.invoke(cls, f.toURI().toURL());
+            }
         } catch (Throwable e) {
             console.verbose("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
         }
