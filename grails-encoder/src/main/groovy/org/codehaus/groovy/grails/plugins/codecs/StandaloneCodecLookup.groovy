@@ -37,6 +37,7 @@ class StandaloneCodecLookup extends BasicCodecLookup {
             HTMLCodecFactory,
             JSONCodecFactory,
             JavaScriptCodec,
+            HTMLJSCodec,
             URLCodecFactory,
             RawCodec
         ]
