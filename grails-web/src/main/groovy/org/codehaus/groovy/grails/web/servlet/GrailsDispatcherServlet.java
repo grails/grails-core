@@ -385,25 +385,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 try {
                     render(mv, processedRequest, response);
-                    if (isAsyncRequest && (response instanceof GrailsContentBufferingResponse)) {
-                        GroovyPageLayoutFinder groovyPageLayoutFinder = getWebApplicationContext().getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
-                        GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
-                        HttpServletResponse targetResponse = bufferingResponse.getTargetResponse();
-                        Content content = bufferingResponse.getContent();
-                        if (content != null) {
-                            Decorator decorator = groovyPageLayoutFinder.findLayout(request, content);
-                            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, targetResponse, getServletContext());
-                            if (decorator != null) {
-                                if (decorator instanceof com.opensymphony.sitemesh.Decorator) {
-                                    ((com.opensymphony.sitemesh.Decorator)decorator).render(content, webAppContext);
-                                } else {
-                                    new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
-                                }
-                            } else {
-                                content.writeOriginal(targetResponse.getWriter());
-                            }
-                        }
-                    }
                     if (errorView) {
                         WebUtils.clearErrorRequestAttributes(request);
                     }

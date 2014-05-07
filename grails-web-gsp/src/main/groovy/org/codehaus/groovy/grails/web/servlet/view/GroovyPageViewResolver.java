@@ -153,7 +153,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
 
         GroovyObject controller = null;
         
-        GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if(webRequest != null) {
             HttpServletRequest request = webRequest.getCurrentRequest();
             controller = webRequest.getAttributes().getController(request);
