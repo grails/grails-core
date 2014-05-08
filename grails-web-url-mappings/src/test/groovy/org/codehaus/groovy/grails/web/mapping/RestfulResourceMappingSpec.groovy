@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.web.mapping
 import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
 
-import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
 
 import spock.lang.Issue
@@ -167,14 +166,14 @@ class RestfulResourceMappingSpec extends Specification{
         def locationsMappings = urlMappings.findAll { it.controllerName == 'location' }
         
         then: 'There are the correct number of mappings'
-        urlMappings.size() == 35
+        urlMappings.size() == 40
         
         and: 'Each controller has 7 mappings'
-        bookMappings.size() == 7
-        authorMappings.size() == 7
-        titleMappings.size() == 7
-        sellersMappings.size() == 7
-        locationsMappings.size() == 7
+        bookMappings.size() == 8
+        authorMappings.size() == 8
+        titleMappings.size() == 8
+        sellersMappings.size() == 8
+        locationsMappings.size() == 8
         
         and: 'the book mappings have the expected constrained properties'
         bookMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['format']
@@ -183,6 +182,7 @@ class RestfulResourceMappingSpec extends Specification{
         bookMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['id', 'format']
         bookMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['id']
         bookMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['id', 'format']
+        bookMappings.find { it.actionName == 'patch' }.constraints*.propertyName == ['id', 'format']
         bookMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['id', 'format']
         
         and: 'the author mappings have the expected constrained properties'
@@ -192,6 +192,7 @@ class RestfulResourceMappingSpec extends Specification{
         authorMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
         authorMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
         authorMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        authorMappings.find { it.actionName == 'patch' }.constraints*.propertyName == ['bookId', 'id', 'format']
         authorMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
         
         and: 'the title mappings have the expected constrained properties'
@@ -201,6 +202,7 @@ class RestfulResourceMappingSpec extends Specification{
         titleMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
         titleMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
         titleMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        titleMappings.find { it.actionName == 'patch' }.constraints*.propertyName == ['bookId', 'id', 'format']
         titleMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
         
         and: 'the seller mappings have the expected constrained properties'
@@ -210,6 +212,7 @@ class RestfulResourceMappingSpec extends Specification{
         sellersMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
         sellersMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
         sellersMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        sellersMappings.find { it.actionName == 'patch' }.constraints*.propertyName == ['bookId', 'id', 'format']
         sellersMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
 
         and: 'the location mappings have the expected constrained properties'
@@ -219,6 +222,7 @@ class RestfulResourceMappingSpec extends Specification{
         locationsMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
         locationsMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'sellerId', 'id']
         locationsMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
+        locationsMappings.find { it.actionName == 'patch' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
         locationsMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
     }
     
@@ -236,8 +240,8 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URL mappings are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are eight of them in total"
-            urlMappings.size() == 20
+        then:"There are correct number of them in total"
+            urlMappings.size() == 23
 
         expect:
             urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')
@@ -258,12 +262,12 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URL mappings are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are eight of them in total"
-            urlMappings.size() == 8
+        then:"There are the correct number of them in total"
+            urlMappings.size() == 9
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
             urlMappingsHolder.allowedMethods('/books') == [POST, GET] as Set
-            urlMappingsHolder.allowedMethods('/books/1') == [GET, DELETE, PUT] as Set
+            urlMappingsHolder.allowedMethods('/books/1') == [GET, DELETE, PUT, PATCH] as Set
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
             urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
@@ -279,6 +283,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books', 'POST')
@@ -288,6 +293,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books/1', 'DELETE')
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
@@ -305,14 +314,15 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are fourteen of them in total"
-            urlMappings.size() == 14
+        then:"There are the correct number of them in total"
+            urlMappings.size() == 16
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
             !urlMappingsHolder.matchAll('/author/create', 'GET')
             !urlMappingsHolder.matchAll('/author/edit', 'GET')
             !urlMappingsHolder.matchAll('/author', 'POST')
             !urlMappingsHolder.matchAll('/author', 'PUT')
+            !urlMappingsHolder.matchAll('/author', 'PATCH')
             !urlMappingsHolder.matchAll('/author', 'DELETE')
             !urlMappingsHolder.matchAll('/author', 'GET')
             urlMappingsHolder.matchAll('/books/create', 'GET')
@@ -324,6 +334,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books', 'POST')
@@ -333,6 +344,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books/1', 'DELETE')
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
@@ -351,6 +366,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/authors/1/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/authors/1/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/authors/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/authors/1/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/authors/1/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books/1/authors', 'POST')
@@ -360,6 +376,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/authors/1', 'PUT')
             urlMappingsHolder.matchAll('/books/1/authors/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1/authors/1', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1/authors/1', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1/authors/1', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1/authors/1', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books/1/authors/1', 'DELETE')
             urlMappingsHolder.matchAll('/books/1/authors/1', 'DELETE')[0].actionName == 'delete'
@@ -380,14 +400,15 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are seven of them in total"
-            urlMappings.size() == 13
+        then:"There are the correct number of them in total"
+            urlMappings.size() == 15
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
             !urlMappingsHolder.matchAll('/author/create', 'GET')
             !urlMappingsHolder.matchAll('/author/edit', 'GET')
             !urlMappingsHolder.matchAll('/author', 'POST')
             !urlMappingsHolder.matchAll('/author', 'PUT')
+            !urlMappingsHolder.matchAll('/author', 'PATCH')
             !urlMappingsHolder.matchAll('/author', 'DELETE')
             !urlMappingsHolder.matchAll('/author', 'GET')
             urlMappingsHolder.matchAll('/books/create', 'GET')
@@ -399,6 +420,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books', 'POST')
@@ -408,6 +430,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books/1', 'DELETE')
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
@@ -423,6 +449,7 @@ class RestfulResourceMappingSpec extends Specification{
 
             !urlMappingsHolder.matchAll('/books/1/author/create', 'POST')
             !urlMappingsHolder.matchAll('/books/1/author/create', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/author/create', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/author/create', 'DELETE')
 
             urlMappingsHolder.matchAll('/books/1/author/edit', 'GET')
@@ -430,6 +457,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/author/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/author/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/author/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/author/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/author/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books/1/author', 'POST')
@@ -439,6 +467,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/author', 'PUT')
             urlMappingsHolder.matchAll('/books/1/author', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1/author', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1/author', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1/author', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1/author', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books/1/author', 'DELETE')
             urlMappingsHolder.matchAll('/books/1/author', 'DELETE')[0].actionName == 'delete'
@@ -457,8 +489,8 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are seven of them in total"
-            urlMappings.size() == 7
+        then:"There are the correct number of them in total"
+            urlMappings.size() == 8
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
             urlMappingsHolder.matchAll('/books/create', 'GET')
@@ -470,6 +502,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books', 'POST')
@@ -479,6 +512,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books/1', 'DELETE')
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
@@ -497,8 +534,8 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are seven of them in total"
-            urlMappings.size() == 6
+        then:"There are the correct number of them in total"
+            urlMappings.size() == 7
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
 
@@ -512,6 +549,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/books/1/edit', 'POST')
             !urlMappingsHolder.matchAll('/books/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/books/1/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/books', 'POST')
@@ -522,7 +560,9 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
 
-
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/books/1', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
@@ -554,8 +594,6 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
 
-
-
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
             urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
@@ -572,8 +610,8 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
         def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are six of them in total"
-        urlMappings.size() == 6
+        then:"There are the correct number of them in total"
+        urlMappings.size() == 7
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
         urlMappingsHolder.matchAll('/admin/book/create', 'GET')
@@ -582,6 +620,7 @@ class RestfulResourceMappingSpec extends Specification{
 
         !urlMappingsHolder.matchAll('/admin/book/create', 'POST')
         !urlMappingsHolder.matchAll('/admin/book/create', 'PUT')
+        !urlMappingsHolder.matchAll('/admin/book/create', 'PATCH')
         !urlMappingsHolder.matchAll('/admin/book/create', 'DELETE')
 
         urlMappingsHolder.matchAll('/admin/book/edit', 'GET')
@@ -589,6 +628,7 @@ class RestfulResourceMappingSpec extends Specification{
         urlMappingsHolder.matchAll('/admin/book/edit', 'GET')[0].httpMethod == 'GET'
         !urlMappingsHolder.matchAll('/admin/book/edit', 'POST')
         !urlMappingsHolder.matchAll('/admin/book/edit', 'PUT')
+        !urlMappingsHolder.matchAll('/admin/book/edit', 'PATCH')
         !urlMappingsHolder.matchAll('/admin/book/edit', 'DELETE')
 
         urlMappingsHolder.matchAll('/admin/book', 'POST')
@@ -598,6 +638,10 @@ class RestfulResourceMappingSpec extends Specification{
         urlMappingsHolder.matchAll('/admin/book', 'PUT')
         urlMappingsHolder.matchAll('/admin/book', 'PUT')[0].actionName == 'update'
         urlMappingsHolder.matchAll('/admin/book', 'PUT')[0].httpMethod == 'PUT'
+
+        urlMappingsHolder.matchAll('/admin/book', 'PATCH')
+        urlMappingsHolder.matchAll('/admin/book', 'PATCH')[0].actionName == 'patch'
+        urlMappingsHolder.matchAll('/admin/book', 'PATCH')[0].httpMethod == 'PATCH'
 
         urlMappingsHolder.matchAll('/admin/book', 'DELETE')
         urlMappingsHolder.matchAll('/admin/book', 'DELETE')[0].actionName == 'delete'
@@ -617,8 +661,8 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are six of them in total"
-            urlMappings.size() == 6
+        then:"There are the correct number of them in total"
+            urlMappings.size() == 7
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
             urlMappingsHolder.matchAll('/book/create', 'GET')
@@ -627,6 +671,7 @@ class RestfulResourceMappingSpec extends Specification{
 
             !urlMappingsHolder.matchAll('/book/create', 'POST')
             !urlMappingsHolder.matchAll('/book/create', 'PUT')
+            !urlMappingsHolder.matchAll('/book/create', 'PATCH')
             !urlMappingsHolder.matchAll('/book/create', 'DELETE')
 
             urlMappingsHolder.matchAll('/book/edit', 'GET')
@@ -634,6 +679,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/book/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/book/edit', 'POST')
             !urlMappingsHolder.matchAll('/book/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/book/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/book/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/book', 'POST')
@@ -643,6 +689,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/book', 'PUT')
             urlMappingsHolder.matchAll('/book', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/book', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/book', 'PATCH')
+            urlMappingsHolder.matchAll('/book', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/book', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/book', 'DELETE')
             urlMappingsHolder.matchAll('/book', 'DELETE')[0].actionName == 'delete'
@@ -662,8 +712,8 @@ class RestfulResourceMappingSpec extends Specification{
         when:"The URLs are obtained"
             def urlMappings = urlMappingsHolder.urlMappings
 
-        then:"There are six of them in total"
-            urlMappings.size() == 5
+        then:"There are correct of them in total"
+            urlMappings.size() == 6
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
             !urlMappingsHolder.matchAll('/book', 'DELETE')
@@ -673,6 +723,7 @@ class RestfulResourceMappingSpec extends Specification{
 
             !urlMappingsHolder.matchAll('/book/create', 'POST')
             !urlMappingsHolder.matchAll('/book/create', 'PUT')
+            !urlMappingsHolder.matchAll('/book/create', 'PATCH')
             !urlMappingsHolder.matchAll('/book/create', 'DELETE')
 
             urlMappingsHolder.matchAll('/book/edit', 'GET')
@@ -680,6 +731,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/book/edit', 'GET')[0].httpMethod == 'GET'
             !urlMappingsHolder.matchAll('/book/edit', 'POST')
             !urlMappingsHolder.matchAll('/book/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/book/edit', 'PATCH')
             !urlMappingsHolder.matchAll('/book/edit', 'DELETE')
 
             urlMappingsHolder.matchAll('/book', 'POST')
@@ -690,7 +742,9 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/book', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/book', 'PUT')[0].httpMethod == 'PUT'
 
-
+            urlMappingsHolder.matchAll('/book', 'PATCH')
+            urlMappingsHolder.matchAll('/book', 'PATCH')[0].actionName == 'patch'
+            urlMappingsHolder.matchAll('/book', 'PATCH')[0].httpMethod == 'PATCH'
 
             urlMappingsHolder.matchAll('/book', 'GET')
             urlMappingsHolder.matchAll('/book', 'GET')[0].actionName == 'show'
@@ -709,6 +763,7 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(controller:"book", action:"edit", method:"GET") == "http://localhost/book/edit"
             linkGenerator.link(controller:"book", action:"delete", method:"DELETE") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"update", method:"PUT") == "http://localhost/book"
+            linkGenerator.link(controller:"book", action:"patch", method:"PATCH") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"create") == "http://localhost/book/create"
             linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/book/create"
     }
@@ -726,6 +781,7 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
             linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+            linkGenerator.link(controller:"book", action:"patch", id:1, method:"PATCH") == "http://localhost/books/1"
     }
 
     void "Test it is possible to link to a single resource nested within another resource"() {
@@ -744,6 +800,7 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(resource:"book/author", action:"edit", bookId:1) == "http://localhost/books/1/author/edit"
             linkGenerator.link(resource:"book/author", action:"delete", bookId:1) == "http://localhost/books/1/author"
             linkGenerator.link(resource:"book/author", action:"update", bookId:1) == "http://localhost/books/1/author"
+            linkGenerator.link(resource:"book/author", action:"patch", bookId:1) == "http://localhost/books/1/author"
 
             linkGenerator.link(controller:"author", action:"create", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author/create"
             linkGenerator.link(controller:"author", action:"save", method:"POST", params:[bookId:1]) == "http://localhost/books/1/author"
@@ -751,7 +808,7 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(controller:"author", action:"edit", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author/edit"
             linkGenerator.link(controller:"author", action:"delete", method:"DELETE", params:[bookId:1]) == "http://localhost/books/1/author"
             linkGenerator.link(controller:"author", action:"update", method:"PUT", params:[bookId:1]) == "http://localhost/books/1/author"
-
+            linkGenerator.link(controller:"author", action:"patch", method:"PATCH", params:[bookId:1]) == "http://localhost/books/1/author"
 
             linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/books/create"
             linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/books"
@@ -759,6 +816,7 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
             linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+            linkGenerator.link(controller:"book", action:"patch", id:1, method:"PATCH") == "http://localhost/books/1"
 
     }
 
@@ -779,6 +837,7 @@ class RestfulResourceMappingSpec extends Specification{
         linkGenerator.link(resource:"book/author", action:"edit", id:1,bookId:1) == "http://localhost/books/1/authors/1/edit"
         linkGenerator.link(resource:"book/author", action:"delete", id:1,bookId:1) == "http://localhost/books/1/authors/1"
         linkGenerator.link(resource:"book/author", action:"update", id:1,bookId:1) == "http://localhost/books/1/authors/1"
+        linkGenerator.link(resource:"book/author", action:"patch", id:1,bookId:1) == "http://localhost/books/1/authors/1"
 
         linkGenerator.link(controller:"author", action:"create", method:"GET", params:[bookId:1]) == "http://localhost/books/1/authors/create"
         linkGenerator.link(controller:"author", action:"save", method:"POST", params:[bookId:1]) == "http://localhost/books/1/authors"
@@ -786,7 +845,7 @@ class RestfulResourceMappingSpec extends Specification{
         linkGenerator.link(controller:"author", action:"edit", id:1,method:"GET", params:[bookId:1]) == "http://localhost/books/1/authors/1/edit"
         linkGenerator.link(controller:"author", action:"delete", id:1,method:"DELETE", params:[bookId:1]) == "http://localhost/books/1/authors/1"
         linkGenerator.link(controller:"author", action:"update", id:1,method:"PUT", params:[bookId:1]) == "http://localhost/books/1/authors/1"
-
+        linkGenerator.link(controller:"author", action:"patch", id:1,method:"PATCH", params:[bookId:1]) == "http://localhost/books/1/authors/1"
 
         linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/books/create"
         linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/books"
@@ -794,6 +853,7 @@ class RestfulResourceMappingSpec extends Specification{
         linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
         linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
         linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+        linkGenerator.link(controller:"book", action:"patch", id:1, method:"PATCH") == "http://localhost/books/1"
 
     }
 
@@ -820,6 +880,7 @@ class RestfulResourceMappingSpec extends Specification{
         linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
         linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
         linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+        linkGenerator.link(controller:"book", action:"patch", id:1, method:"PATCH") == "http://localhost/books/1"
 
     }
 
