@@ -191,7 +191,9 @@ class JavascriptTagLib implements ApplicationContextAware {
      * @attr id The id to use in the link
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true, specified in 'options' array)
      * @attr method The method to use the execute the call (defaults to "post")
+     * @deprecated
      */
+    @Deprecated
     Closure remoteFunction = { attrs ->
         // before remote function
         def after = ''
@@ -251,7 +253,9 @@ class JavascriptTagLib implements ApplicationContextAware {
      * @attr params A map containing URL query parameters
      * @attr mapping The named URL mapping to use to rewrite the link
      * @attr elementId the DOM element id
+     * @deprecated
      */
+    @Deprecated
     Closure remoteLink = { attrs, body ->
         Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
         out << '<a href="'
@@ -304,7 +308,9 @@ class JavascriptTagLib implements ApplicationContextAware {
      * @attr after The javascript function to call after the remote function call
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
      * @attr method The method to use the execute the call (defaults to "post")
+     * @deprecated
      */
+    @Deprecated
     Closure remoteField = { attrs, body ->
         Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
         def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
@@ -345,7 +351,9 @@ class JavascriptTagLib implements ApplicationContextAware {
      * @attr after The javascript function to call after the remote function call
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
      * @attr method The method to use the execute the call (defaults to "post")
+     * @deprecated
      */
+    @Deprecated
     Closure formRemote = { attrs, body ->
         if (!attrs.name) {
             throwTagError("Tag [formRemote] is missing required attribute [name]")
@@ -398,7 +406,9 @@ a 'params' key to the [url] attribute instead.""")
      * @attr after The javascript function to call after the remote function call
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
      * @attr method The method to use the execute the call (defaults to "post")
+     * @deprecated
      */
+    @Deprecated
     Closure submitToRemote = { attrs, body ->
         // get javascript provider
         def p = getProvider()
