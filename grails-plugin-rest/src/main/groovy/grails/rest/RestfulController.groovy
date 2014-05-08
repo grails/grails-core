@@ -32,7 +32,7 @@ import org.springframework.http.HttpStatus
 @Artefact("Controller")
 @Transactional(readOnly = true)
 class RestfulController<T> {
-    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+    static allowedMethods = [save: "POST", update: "PUT", patch: "PATCH", delete: "DELETE"]
 
     Class<T> resource
     String resourceName
@@ -125,7 +125,25 @@ class RestfulController<T> {
      * @param id
      */
     @Transactional
+    def patch() {
+        patchOrUpdate(true)
+    }
+
+    /**
+     * Updates a resource for the given id
+     * @param id
+     */
+    @Transactional
     def update() {
+        patchOrUpdate(false)
+    }
+
+    /**
+     * Updates a resource for the given id
+     * @param patch If true do not update the whole resource, just the parameters provided by getParametersToBind
+     */
+    @Transactional
+    private patchOrUpdate(boolean patch) {
         if(handleReadOnly()) {
             return
         }
@@ -136,7 +154,13 @@ class RestfulController<T> {
             return
         }
 
-        instance.properties = getParametersToBind()
+        if (patch) {
+            getParametersToBind().each {
+                instance."${it.key}" = it.value
+            }
+        } else {
+            instance.properties = getParametersToBind()
+        }
 
         if (instance.hasErrors()) {
             respond instance.errors, view:'edit' // STATUS CODE 422

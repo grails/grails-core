@@ -85,7 +85,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
     public GrailsParameterMap(HttpServletRequest request) {
         this.request = request;
         final Map requestMap = new LinkedHashMap(request.getParameterMap());
-        if (requestMap.isEmpty() && "PUT".equals(request.getMethod()) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
+        if (requestMap.isEmpty() && ("PUT".equals(request.getMethod()) || "PATCH".equals(request.getMethod())) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
             // attempt manual parse of request body. This is here because some containers don't parse the request body automatically for PUT request
             String contentType = request.getContentType();
             if ("application/x-www-form-urlencoded".equals(contentType)) {
@@ -94,7 +94,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                     request.setAttribute(REQUEST_BODY_PARSED, true);
                     requestMap.putAll(WebUtils.fromQueryString(contents));
                 } catch (Exception e) {
-                    LOG.error("Error processing form encoded PUT request", e);
+                    LOG.error("Error processing form encoded " + request.getMethod() + " request", e);
                 }
             }
         }
