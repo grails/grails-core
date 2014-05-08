@@ -117,7 +117,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
         try {
             def localeToUse = locale ?: (oldRequestAttributes?.locale ?: Locale.default)
             def webRequest = new GrailsWebRequest(PageRenderRequestCreator.createInstance(source.URI, localeToUse),
-                PageRenderResponseCreator.createInstance(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
+                PageRenderResponseCreator.createInstance(writer instanceof PrintWriter ? writer : new PrintWriter(writer), localeToUse),
                 servletContext, applicationContext)
             RequestContextHolder.setRequestAttributes(webRequest)
             def template = templateEngine.createTemplate(source)
@@ -322,7 +322,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
 
     static class PageRenderResponseCreator {
 
-        static HttpServletResponse createInstance(final PrintWriter writer) {
+        static HttpServletResponse createInstance(final PrintWriter writer, Locale localeToUse = Locale.getDefault()) {
 
             String characterEncoding = "UTF-8"
             String contentType = null
@@ -376,7 +376,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
                     }
 
                     if (methodName == 'getLocale') {
-                        return Locale.getDefault()
+                        return localeToUse
                     }
 
                     if (methodName == 'getStatus') {
