@@ -75,10 +75,12 @@ class RestfulControllerSuperClassSpec extends Specification {
             request.method = 'PATCH'
             controller.params['id']=video.id
             controller.params['title'] = 'Updated'
+            controller.params.numberOfMinutes = '42'
             controller.patch()
 
         then:"The model is created successfully"
             model.video != null
+            model.video.numberOfMinutes == 42
             response.status == HttpStatus.OK.value()
             response.getHeader('Location') != null
 

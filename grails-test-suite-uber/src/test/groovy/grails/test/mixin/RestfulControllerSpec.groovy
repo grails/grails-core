@@ -180,9 +180,10 @@ class RestfulControllerSpec extends Specification {
 @Entity
 class Video {
     String title
-
+    Integer numberOfMinutes
     static constraints = {
         title blank:false
+        numberOfMinutes nullable: true
     }
 }
 
