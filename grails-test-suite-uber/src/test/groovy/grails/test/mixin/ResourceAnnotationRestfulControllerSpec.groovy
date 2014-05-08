@@ -150,6 +150,28 @@ class Video {
 
     }
 
+    void "Test the patch action performs an update on a valid domain instance"() {
+        when:"Patch is called for a domain instance that doesn't exist"
+            request.method = 'PATCH'
+            controller.patch()
+
+        then:"A 404 error is returned"
+            status == 404
+
+        when:"A valid domain instance is passed to the update action"
+            def video = domainClass.newInstance(title: 'Title').save(flush: true)
+            response.reset()
+            request.contentType = FORM_CONTENT_TYPE
+            params.id = video.id
+            params.title = 'Game of Thrones'
+            controller.patch()
+
+        then:"A redirect is issues to the show action"
+            response.status == 200
+            domainClass.get(video.id).title == 'Game of Thrones'
+
+    }
+
     void "Test that the delete action deletes an instance if it exists"() {
         when:"The delete action is called for a null instance"
             controller.delete()

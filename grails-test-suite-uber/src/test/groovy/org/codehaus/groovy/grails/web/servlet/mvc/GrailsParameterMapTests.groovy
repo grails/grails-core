@@ -75,6 +75,28 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert '' == params.foo
     }
 
+    void testParseRequestBodyForPatchRequest() {
+        def request = new MockHttpServletRequest()
+        request.content = 'foo=bar&one=two'.bytes
+        request.method = 'PATCH'
+        request.contentType = "application/x-www-form-urlencoded"
+
+        def params = new GrailsParameterMap(request)
+
+        assert 'bar' == params.foo
+        assert 'two' == params.one
+
+        params = new GrailsParameterMap(request)
+        assert params.foo == null // should be null, request can't be parsed twice
+
+        request.content = 'foo='.bytes
+        request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
+
+        params = new GrailsParameterMap(request)
+
+        assert '' == params.foo
+    }
+
     void testPlusOperator() {
         mockRequest.addParameter("album", "Foxtrot")
 

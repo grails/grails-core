@@ -68,6 +68,22 @@ class RestfulControllerSuperClassSpec extends Specification {
 
     }
 
+    void "Test the patch action returns the correct model, status and location"() {
+        given: "An existing domain object and Restful controller"
+            def video = new Video(title:'Existing').save()
+        when:"The patch action is executed on controller"
+            request.method = 'PATCH'
+            controller.params['id']=video.id
+            controller.params['title'] = 'Updated'
+            controller.patch()
+
+        then:"The model is created successfully"
+            model.video != null
+            response.status == HttpStatus.OK.value()
+            response.getHeader('Location') != null
+
+    }
+
 
 }
 

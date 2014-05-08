@@ -121,6 +121,36 @@ class RestfulControllerSpec extends Specification {
             flash.message != null
     }
 
+    void "Test the patch action performs an update on a valid domain instance"() {
+        when:"Patch is called for a domain instance that doesn't exist"
+            request.method = 'PATCH'
+            controller.patch(null)
+
+        then:"A 404 error is returned"
+            status == 404
+
+        when:"An invalid domain instance is passed to the patch action"
+            response.reset()
+            def video = new Video(title: '')
+            video.validate()
+            controller.patch(video)
+
+        then:"The edit view is rendered again with the invalid instance"
+            view == 'edit'
+            model.video == video
+
+        when:"A valid domain instance is passed to the patch action"
+            response.reset()
+            //populateValidParams(params)
+            video = new Video(title: 'Game of Thrones').save(flush: true)
+            controller.request.format = 'form'
+            controller.patch(video)
+
+        then:"A redirect is issues to the show action"
+            response.redirectedUrl == "/video/show/$video.id"
+            flash.message != null
+    }
+
     void "Test that the delete action deletes an instance if it exists"() {
         when:"The delete action is called for a null instance"
             controller.delete(null)
@@ -160,7 +190,7 @@ class Video {
 @Artefact("Controller")
 class VideoController {
 
-    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+    static allowedMethods = [save: "POST", update: "PUT", patch: "PATCH", delete: "DELETE"]
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
@@ -204,6 +234,29 @@ class VideoController {
 
     @Transactional
     def update(Video video) {
+        if (video == null) {
+            notFound()
+            return
+        }
+
+        if (video.hasErrors()) {
+            respond video.errors, view:'edit'
+            return
+        }
+
+        video.save flush:true
+
+        request.withFormat {
+            form multipartForm {
+                flash.message = message(code: 'default.updated.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
+                redirect video
+            }
+            '*'{ respond video, [status: OK] }
+        }
+    }
+
+    @Transactional
+    def patch(Video video) {
         if (video == null) {
             notFound()
             return

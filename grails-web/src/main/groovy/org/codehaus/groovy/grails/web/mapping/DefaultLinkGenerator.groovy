@@ -50,6 +50,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         index:"GET",
         edit:"GET",
         update:"PUT",
+        patch:"PATCH",
         delete:"DELETE"
     ]
 
@@ -58,7 +59,8 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         GET:"index",
         POST:"save",
         DELETE:"delete",
-        PUT:"UPDATE"
+        PUT:"update",
+        PATCH:"patch"
     ]
     String configuredServerBaseURL
     String contextPath

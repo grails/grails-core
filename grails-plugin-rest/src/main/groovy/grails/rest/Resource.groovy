@@ -37,7 +37,7 @@ import java.lang.annotation.Target
 public @interface Resource {
 
     /**
-     * @return Whether this is a read-only resource (one that doesn't allow DELETE, POST or PUT requests)
+     * @return Whether this is a read-only resource (one that doesn't allow DELETE, POST, PUT or PATCH requests)
      */
     boolean readOnly() default false
 

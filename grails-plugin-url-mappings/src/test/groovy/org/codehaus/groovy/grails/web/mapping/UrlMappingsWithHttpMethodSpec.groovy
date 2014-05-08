@@ -13,6 +13,7 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
          "/foo"( controller:"bar", action:"save", method:"POST" )
          "/foo2"( controller:"bar", action:"save", method:"PUT" )
          "/foo"( controller:"bar", action:"update", method:"PUT" )
+         "/foo"( controller:"bar", action:"patch", method:"PATCH" )
          "/bar"( controller:"bar", action:"list", method:"*" )
          "/bar2"( controller:"bar", action:"list" )
 
@@ -27,7 +28,7 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
             def mappings = evaluator.evaluateMappings mappings
 
         then:"The mapping only accepts POST requests"
-            mappings.size() == 5
+            mappings.size() == 6
             mappings[0].httpMethod == 'POST'
             mappings[1].httpMethod == 'PUT'
 
@@ -60,6 +61,7 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
             linkGenerator.link( controller:"bar", action:"list", method:'GET') == 'http://localhost/bar'
             linkGenerator.link( controller:"bar", action:"save", method:"POST" ) == 'http://localhost/foo'
             linkGenerator.link( controller:"bar", action:"save", method:"PUT" ) == 'http://localhost/foo2'
+            linkGenerator.link( controller:"bar", action:"patch", method:"PATCH" ) == 'http://localhost/foo'
             linkGenerator.link( controller:"bar", action:"list") == 'http://localhost/bar'
 
     }
