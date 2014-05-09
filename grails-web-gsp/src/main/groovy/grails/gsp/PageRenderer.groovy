@@ -47,6 +47,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
     GrailsConventionGroovyPageLocator groovyPageLocator
     ApplicationContext applicationContext
     ServletContext servletContext
+    Locale locale
 
     PageRenderer(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine
@@ -112,10 +113,11 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
             return
         }
 
-        def oldRequestAttributes = RequestContextHolder.getRequestAttributes()
+        def oldRequestAttributes = GrailsWebRequest.lookup()
         try {
-            def webRequest = new GrailsWebRequest(PageRenderRequestCreator.createInstance(source.URI),
-                PageRenderResponseCreator.createInstance(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
+            def localeToUse = locale ?: (oldRequestAttributes?.locale ?: Locale.default)
+            def webRequest = new GrailsWebRequest(PageRenderRequestCreator.createInstance(source.URI, localeToUse),
+                PageRenderResponseCreator.createInstance(writer instanceof PrintWriter ? writer : new PrintWriter(writer), localeToUse),
                 servletContext, applicationContext)
             RequestContextHolder.setRequestAttributes(webRequest)
             def template = templateEngine.createTemplate(source)
@@ -137,7 +139,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
      */
     static class PageRenderRequestCreator {
 
-        static HttpServletRequest createInstance(final String requestURI) {
+        static HttpServletRequest createInstance(final String requestURI, Locale localeToUse = Locale.getDefault()) {
 
             def params = new ConcurrentHashMap()
             def attributes = new ConcurrentHashMap()
@@ -270,10 +272,10 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
                     }
 
                     if (methodName == 'getLocale') {
-                        return Locale.getDefault()
+                        return localeToUse
                     }
                     if (methodName == 'getLocales') {
-                        def iterator = Locale.getAvailableLocales().iterator()
+                        def iterator = [localeToUse].iterator()
                         PageRenderRequestCreator.iteratorAsEnumeration(iterator)
                     }
 
@@ -320,7 +322,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
 
     static class PageRenderResponseCreator {
 
-        static HttpServletResponse createInstance(final PrintWriter writer) {
+        static HttpServletResponse createInstance(final PrintWriter writer, Locale localeToUse = Locale.getDefault()) {
 
             String characterEncoding = "UTF-8"
             String contentType = null
@@ -374,7 +376,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
                     }
 
                     if (methodName == 'getLocale') {
-                        return Locale.getDefault()
+                        return localeToUse
                     }
 
                     if (methodName == 'getStatus') {

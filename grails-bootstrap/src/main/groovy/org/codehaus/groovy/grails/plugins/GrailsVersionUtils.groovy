@@ -54,7 +54,7 @@ class GrailsVersionUtils {
             def tokens = requiredVersion.split(">")*.trim()
             tokens = tokens.collect { String it -> trimTag(it) }
             tokens << pluginVersion
-            Collections.sort tokens, vc
+            tokens.sort(true, vc)
 
             if (tokens[1] == pluginVersion) {
                 return true
@@ -76,7 +76,7 @@ class GrailsVersionUtils {
     static boolean isVersionGreaterThan(String leftVersion, String rightVersion) {
         if (leftVersion == rightVersion) return false
         def versions = [leftVersion, rightVersion]
-        Collections.sort versions, new VersionComparator()
+        versions.sort(true, new VersionComparator())
         return versions[1] == rightVersion
     }
     /**

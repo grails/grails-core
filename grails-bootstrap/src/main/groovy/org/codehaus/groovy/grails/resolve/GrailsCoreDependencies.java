@@ -32,6 +32,7 @@ public class GrailsCoreDependencies {
     public final String grailsVersion;
     public final String servletVersion;
     protected final String groovyVersion = "2.3.0";
+    protected final String springVersion = "4.0.4.RELEASE";
     protected final String log4jVersion = "1.2.17";
     protected final String h2Version = "1.3.173";
     protected final String jaxbVersion = "2.0";
@@ -127,6 +128,18 @@ public class GrailsCoreDependencies {
 
     public String getGrailsVersion() {
         return grailsVersion;
+    }
+
+    public String getGroovyVersion() {
+        return groovyVersion;
+    }
+
+    public String getServletVersion() {
+        return servletVersion;
+    }
+
+    public String getSpringVersion() {
+        return springVersion;
     }
 
     public boolean isJava5compatible() {

@@ -21,14 +21,7 @@ import grails.web.UrlConverter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -172,7 +165,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws Exception Thrown if an error occurs
      */
     public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
-        return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), GrailsWebRequest.lookup(request).getLocale());
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+        Locale locale = webRequest != null ? webRequest.getLocale() : Locale.getDefault() ;
+        return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), locale);
     }
 
     public static String addViewPrefix(String viewName) {

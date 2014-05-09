@@ -124,6 +124,18 @@ class GroovyPageWritable implements Writable {
      * @throws IOException
      */
     public Writer writeTo(Writer out) throws IOException {
+        try {
+            return doWriteTo(out);
+        } finally {
+            doCleanUp(out);
+        }
+    }
+
+    protected void doCleanUp(Writer out) {
+        metaInfo.writeToFinished(out);
+    }
+
+    protected Writer doWriteTo(Writer out) throws IOException {
         if (showSource) {
             // Set it to TEXT
             response.setContentType(GROOVY_SOURCE_CONTENT_TYPE); // must come before response.getOutputStream()

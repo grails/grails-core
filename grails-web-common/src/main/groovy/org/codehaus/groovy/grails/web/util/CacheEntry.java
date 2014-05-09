@@ -43,6 +43,6 @@ public class CacheEntry<T> extends grails.util.CacheEntry<T> {
             public T call() throws Exception {
                 return updater.run();
             }
-        });
+        }, false, null);
     }
 }

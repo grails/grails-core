@@ -757,7 +757,12 @@ abstract class ForkedGrailsProcess {
             Method configure = cls.getMethod("configure", URL)
             configure.setAccessible(true)
             File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties")
-            configure.invoke(cls, f.toURI().toURL())
+            if(!f.exists()) {
+                f = new File(grailsHome.absolutePath + "/grails-scripts/src/main/scripts/log4j.properties")
+            }
+            if(f.exists()) {
+                configure.invoke(cls, f.toURI().toURL())
+            }
         } catch (Throwable e) {
             println("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage())
         }

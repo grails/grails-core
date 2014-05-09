@@ -17,6 +17,7 @@ package grails.doc
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 
+import org.jsoup.Jsoup
 import org.w3c.dom.Document
 import org.xhtmlrenderer.pdf.ITextRenderer
 
@@ -61,14 +62,31 @@ class PdfBuilder {
 
         // convert tabs to spaces otherwise they only take up one space
         xml = xml.replaceAll('\t', '    ')
-        xml
+        cleanupHtml(htmlFile, xml)
+    }
+
+    static boolean cleanHtml = Boolean.getBoolean("grails.docs.clean.html")
+    static boolean debugPdf = Boolean.getBoolean("grails.docs.debug.pdf")
+    
+    private static cleanupHtml(File htmlFile, String xml) {
+        def result = cleanHtml ? Jsoup.parse(xml).outerHtml() : xml
+        if(debugPdf) {
+            File before = new File(htmlFile.absolutePath + '.before.xml')
+            before.setText(xml, 'UTF-8')
+            if(result != xml) {
+                File after = new File(htmlFile.absolutePath + '.after.xml')
+                after.setText(result, 'UTF-8')
+            }
+        }
+        result
     }
 
     static void createPdf(String xml, File outputFile, File urlBase) {
         def dbf = DocumentBuilderFactory.newInstance()
         dbf.validating = false
         dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
-
+        dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false
+        
         DocumentBuilder builder = dbf.newDocumentBuilder()
         Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")))
 

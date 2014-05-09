@@ -1372,6 +1372,8 @@ class BuildSettings extends AbstractBuildSettings {
                 grailsVersion: grailsVersion,
                 userHome: userHome,
                 grailsSettings: this,
+                groovyVersion: "${->coreDependencies?.groovyVersion}",
+                springVersion: "${->coreDependencies?.springVersion}",
                 appName: Metadata.getCurrent().getApplicationName(),
                 appVersion: Metadata.getCurrent().getApplicationVersion())
         return slurper

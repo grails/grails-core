@@ -50,6 +50,8 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
         // runtime 'mysql:mysql-connector-java:5.1.29'
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
+
+        compile "org.springframework:spring-orm:$springVersion"
     }
 
     plugins {
@@ -62,7 +64,7 @@ grails.project.dependency.resolution = {
         compile ":asset-pipeline:1.8.7"
 
         // plugins needed at runtime but not for compilation
-        runtime ":hibernate4:4.3.5.1" // or ":hibernate:3.6.10.13"
+        runtime ":hibernate4:4.3.5.2" // or ":hibernate:3.6.10.14"
         runtime ":database-migration:1.4.0"
         runtime ":jquery:1.11.1"
 

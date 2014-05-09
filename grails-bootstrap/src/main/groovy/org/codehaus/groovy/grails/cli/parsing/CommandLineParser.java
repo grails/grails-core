@@ -125,6 +125,9 @@ public class CommandLineParser {
             if (arg == null) continue;
             String trimmed = arg.trim();
             if (trimmed != null && trimmed.length()>0) {
+                if (trimmed.charAt(0) == '"' && trimmed.charAt(trimmed.length() - 1) == '"') {
+                    trimmed = trimmed.substring(1, trimmed.length() - 1);
+                }
                 if (trimmed.charAt(0) == '-') {
                     processOption(cl, trimmed);
                 }

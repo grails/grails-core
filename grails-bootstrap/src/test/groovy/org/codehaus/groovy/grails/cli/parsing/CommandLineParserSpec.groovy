@@ -145,6 +145,33 @@ class CommandLineParserSpec extends Specification {
             cl.optionValue('host') == "localhost"
     }
 
+    void "Test parse command with environment, sys props with whitespaces, arguments and undeclared options with values"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parse("prod", "run-app", "\"-DmyProp=value with whitespace\"", "foo", "bar", "--host=localhost")
+
+       then:
+            cl.commandName == 'run-app'
+            cl.environment == 'production'
+            cl.systemProperties.size() == 1
+            cl.systemProperties['myProp'] == 'value with whitespace'
+            cl.remainingArgs.size() == 2
+            cl.remainingArgs == ['foo', 'bar']
+            cl.hasOption('host')
+            cl.optionValue('host') == "localhost"
+    }
+
+    void "Test parse command with sys props with whitespaces in different order"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parse("\"-DmyProp=value with whitespace\"", "clean")
+
+        then:
+            cl.commandName == 'clean'
+            cl.systemProperties.size() == 1
+            cl.systemProperties['myProp'] == 'value with whitespace'
+    }
+
     @Ignore
     void "Test help message with declared options"() {
         when:
@@ -242,6 +269,33 @@ class CommandLineParserSpec extends Specification {
             cl.hasOption('host')
             cl.optionValue('host') == "localhost"
 
+    }
+    
+    void "Test parse string command with environment, sys props with whitespaces, arguments and undeclared options with values"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString("prod run-app \"-DmyProp=value with whitespace\" foo bar --host=localhost")
+
+       then:
+            cl.commandName == 'run-app'
+            cl.environment == 'production'
+            cl.systemProperties.size() == 1
+            cl.systemProperties['myProp'] == 'value with whitespace'
+            cl.remainingArgs.size() == 2
+            cl.remainingArgs == ['foo', 'bar']
+            cl.hasOption('host')
+            cl.optionValue('host') == "localhost"
+    }
+
+    void "Test parse string command with sys props with whitespaces in different order"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString("\"-DmyProp=value with whitespace\" clean")
+
+        then:
+            cl.commandName == 'clean'
+            cl.systemProperties.size() == 1
+            cl.systemProperties['myProp'] == 'value with whitespace'
     }
 
     void "Test that parseString handles quoted arguments with double quotes"() {

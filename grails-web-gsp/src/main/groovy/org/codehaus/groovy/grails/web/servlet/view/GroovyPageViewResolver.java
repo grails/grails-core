@@ -118,16 +118,16 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
                 return CacheEntry.getValue(viewCache, viewCacheKey, cacheTimeout, updater);
             }
             catch (CacheEntry.UpdateException e) {
-                e.rethrow();
+                e.rethrowCause();
                 // make compiler happy
                 return null;
             }
         }
 
         try {
-            view = entry.getValue(cacheTimeout, updater);
+            view = entry.getValue(cacheTimeout, updater, true, null);
         } catch (WrappedInitializationException e) {
-            e.rethrow();
+            e.rethrowCause();
         }
 
         return view;
@@ -139,7 +139,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
             super(cause);
         }
 
-        public void rethrow() throws Exception {
+        public void rethrowCause() throws Exception {
             if (getCause() instanceof Exception) {
                 throw (Exception)getCause();
             }
@@ -153,7 +153,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
 
         GroovyObject controller = null;
         
-        GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if(webRequest != null) {
             HttpServletRequest request = webRequest.getCurrentRequest();
             controller = webRequest.getAttributes().getController(request);

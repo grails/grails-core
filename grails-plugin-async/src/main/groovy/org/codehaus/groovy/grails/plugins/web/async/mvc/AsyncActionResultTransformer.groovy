@@ -78,7 +78,11 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
                     if (!response.isCommitted()) {
                         GrailsExceptionResolver exceptionResolver = createExceptionResolver(webRequest)
                         request.setAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE, t)
-                        exceptionResolver.resolveException(request, response, this, (Exception) t)
+                        def modelAndView = exceptionResolver.resolveException(request, response, this, (Exception) t)
+                        asyncContext.getRequest().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView);
+                        asyncContext.dispatch()
+                    }
+                    else {
                         asyncContext.complete()
                     }
                 }

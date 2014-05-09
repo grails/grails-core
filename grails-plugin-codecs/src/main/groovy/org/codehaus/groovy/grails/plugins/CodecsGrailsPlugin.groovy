@@ -22,7 +22,9 @@ import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.HTMLJSCodec
 import org.codehaus.groovy.grails.plugins.codecs.HexCodec
+import org.codehaus.groovy.grails.plugins.codecs.JSONCodec
 import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
 import org.codehaus.groovy.grails.plugins.codecs.MD5BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
@@ -33,7 +35,6 @@ import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
 import org.codehaus.groovy.grails.plugins.codecs.XMLCodec
-import org.codehaus.groovy.grails.plugins.codecs.JSONCodec
 
 /**
  * Configures pluggable codecs.
@@ -51,6 +52,7 @@ class CodecsGrailsPlugin {
         XMLCodec,
         JSONCodec,
         JavaScriptCodec,
+        HTMLJSCodec,
         URLCodec,
         Base64Codec,
         MD5Codec,

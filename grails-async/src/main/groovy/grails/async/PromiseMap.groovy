@@ -220,12 +220,13 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
         def promises = promises.values().toList()
         Promises.onComplete(promises) { List values ->
             Map<K,V> newMap = [:]
-            values.eachWithIndex { V value, int i ->
+            int i = 0
+            for(value in values) {
                 def p = promises[i]
                 K key = promisesKeys.get(p)
-                newMap.put(key, value)
+                newMap.put((K)key, (V)value)
+                i++
             }
-
             callable.call(newMap)
         }
         return this
@@ -240,10 +241,12 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
         def promises = promises.values().toList()
         Promises.onComplete(promises, { List values -> values}).then { List values ->
             Map<K,V> newMap = [:]
-            values.eachWithIndex { V value, int i ->
+            int i = 0
+            for(value in values) {
                 def p = promises[i]
                 K key = promisesKeys.get(p)
-                newMap.put(key, value)
+                newMap.put((K)key, (V)value)
+                i++
             }
             callable.call(newMap)
         }
