@@ -105,6 +105,21 @@
             <version>\${grails.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>0.7-groovy-2.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <% if (!pluginProject) { %>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -145,6 +160,13 @@
             <% } %>
         </dependency>
         <% } %>
+        <dependency>
+            <groupId>org.grails.plugins</groupId>
+            <artifactId>webxml</artifactId>
+            <version>1.4.1</version>
+            <type>zip</type>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
