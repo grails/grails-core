@@ -97,8 +97,10 @@ target(launderIDESupportFiles: "Updates the IDE support files (Eclipse, TextMate
 target(init: "main init target") {
     depends(createStructure, updateAppProperties)
 
-    grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
-    grailsUnpack(dest: basedir, src: "grails-app-files.jar")
+    def ow = argsMap.overwrite ? true : false
+
+    grailsUnpack(dest: basedir, src: "grails-shared-files.jar", overwrite: ow)
+    grailsUnpack(dest: basedir, src: "grails-app-files.jar", overwrite: ow)
 
     classpath()
 
