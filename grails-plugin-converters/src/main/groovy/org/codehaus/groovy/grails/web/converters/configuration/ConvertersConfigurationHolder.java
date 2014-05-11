@@ -85,6 +85,7 @@ public class ConvertersConfigurationHolder {
         if (cfg == null) {
             cfg = new DefaultConverterConfiguration();
         }
+        setThreadLocalConverterConfiguration(converterClass, cfg);
         return cfg;
     }
 
@@ -97,7 +98,7 @@ public class ConvertersConfigurationHolder {
         return getThreadLocalForConverter(converterClass, true).get();
     }
 
-    public static <C extends Converter> void setTheadLocalConverterConfiguration(Class<C> converterClass, ConverterConfiguration<C> cfg) throws ConverterException {
+    public static <C extends Converter> void setThreadLocalConverterConfiguration(Class<C> converterClass, ConverterConfiguration<C> cfg) throws ConverterException {
         getThreadLocalForConverter(converterClass, true).set(cfg);
     }
 
