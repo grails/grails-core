@@ -376,21 +376,21 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
     public static Object use(String configName, Closure<?> callable) throws ConverterException {
         ConverterConfiguration<XML> old = ConvertersConfigurationHolder.getThreadLocalConverterConfiguration(XML.class);
         ConverterConfiguration<XML> cfg = getNamedConfig(configName);
-        ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, cfg);
+        ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(XML.class, cfg);
         try {
             return callable.call();
         }
         finally {
-            ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, old);
+            ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(XML.class, old);
         }
     }
 
     public static void use(String cfgName) throws ConverterException {
         if (cfgName == null || "default".equals(cfgName)) {
-            ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, null);
+            ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(XML.class, null);
         }
         else {
-            ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, getNamedConfig(cfgName));
+            ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(XML.class, getNamedConfig(cfgName));
         }
     }
 
