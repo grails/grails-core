@@ -1,6 +1,0 @@
-language: groovy
-jdk:
-- oraclejdk7
-env:
-   - TERM=dumb GRADLE_OPTS="-Xmx2048m -Xms256m -XX:MaxPermSize=768m -XX:+CMSClassUnloadingEnabled -XX:+HeapDumpOnOutOfMemoryError" 
-script: ./gradlew test
