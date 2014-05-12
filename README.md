@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/grails/grails-core.svg)](https://travis-ci.org/grails/grails-core)
-
 Grails
 ===
 
