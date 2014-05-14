@@ -39,6 +39,22 @@ class GrailsWebDataBinderBindingXmlSpec extends Specification {
         writer.books[0].publisher == 'Publisher One'
     }
     
+    @Issue('GRAILS-11175')
+    void 'Test binding a single XML child element to a Set of non domain objects'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def book = new Book()
+        
+        when:
+        def xml = new XmlSlurper().parseText("""
+<stuff><reviewerNames><reviewer>Jeff</reviewer></reviewerNames></stuff>
+""")
+        binder.bind book, xml
+        
+        then:
+        book.reviewerNames == ['Jeff'] as Set
+    }
+    
     @Issue('GRAILS-10868')
     void 'Test adding an existing element to a List by id'() {
         given:
@@ -140,4 +156,5 @@ class Writer {
 class Book {
     String publisher
     String title
+    Set<String> reviewerNames
 }
