@@ -50,31 +50,23 @@ Plugins must be declared in the grails-app/conf/BuildConfig.groovy file.
 """
 
         def pluginXml
-        if (dependencyManager instanceof IvyDependencyManager) {
-            pluginXml = resolvePluginMetadata(pluginName, version)
+        String pluginUrl = "http://grails.org/api/v1.0/plugin/$pluginName"
+        if (version) {
+            pluginUrl += "/$version"
+        }
+        try {
+            final String text = new URL("$pluginUrl?format=xml").getText(connectTimeout: 500, readTimeout: 3000, "UTF-8")
+            pluginXml = IOUtils.createXmlSlurper().parseText(text)
             if (!version) {
-                version = pluginXml.@version.text()
+                version = pluginXml.version.text()
             }
         }
-        else {
-            String url = "http://grails.org/api/v1.0/plugin/$pluginName"
-            if (version) {
-                url += "/$version"
-            }
-            try {
-                final String text = new URL("$url?format=xml").getText(connectTimeout: 500, readTimeout: 3000, "UTF-8")
-                pluginXml = IOUtils.createXmlSlurper().parseText(text)
-                if (!version) {
-                    version = pluginXml.version.text()
-                }
-            }
-            catch (FileNotFoundException ignored) {}
-        }
+        catch (FileNotFoundException e) {}
 
         if (!pluginXml) {
             if (version) {
                 writer << """
-ERROR: Plugin '$pluginName' not found with version '$pluginVersion'
+ERROR: Plugin '$pluginName' not found with version '$version'
 """
             }
             else {

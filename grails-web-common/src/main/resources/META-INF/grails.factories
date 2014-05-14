@@ -1,3 +1,2 @@
-org.codehaus.groovy.grails.commons.ArtefactHandler=org.codehaus.groovy.grails.commons.BootstrapArtefactHandler
 org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes=org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
 

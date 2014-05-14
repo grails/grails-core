@@ -63,6 +63,14 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             // ignore exception
         }
         registerTemplateNamespace();
+
+        registerNamespaceDispatchers();
+    }
+
+    private void registerNamespaceDispatchers() {
+        for( String namespace : tagNamespaces.keySet()) {
+            namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
+        }
     }
 
     protected void registerTagLibraries() {
@@ -86,7 +94,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      */
     public void registerTagLib(GrailsTagLibClass taglib) {
         String namespace = taglib.getNamespace();
-        namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
+
         Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
         if (tagsThatReturnObject == null) {
             tagsThatReturnObject = new HashSet<String>();

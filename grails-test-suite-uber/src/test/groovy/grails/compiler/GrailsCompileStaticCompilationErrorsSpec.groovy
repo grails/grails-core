@@ -36,6 +36,53 @@ class SomeClass {
         c
     }
 
+    @Issue('GRAILS-9996')
+    void 'Test compiling where query call'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic invokes a where query'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+class SomeOtherNewClass {
+   def someMethod() {
+      Person.where {
+           name == 'Guido'
+      }
+   }
+
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
+
+    @Issue('GRAILS-9996')
+    void 'Test compiling where query call which refers to an inalid property'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic invokes a where query which refers to an invalid property'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+class SomeOtherNewClass {
+   def someMethod() {
+      Person.where {
+           town == 'Brooklyn'
+      }
+   }
+
+}
+''')
+        then: 'an error is thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot query on property "town"'
+    }
+
     @Ignore
     @Issue(['GRAILS-11056', 'GRAILS-11057'])
     void 'Test comping a dynmaic finder call with the wrong number of arguments'() {
