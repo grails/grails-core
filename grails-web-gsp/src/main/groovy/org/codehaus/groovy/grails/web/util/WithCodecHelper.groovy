@@ -55,15 +55,15 @@ class WithCodecHelper {
      * When it's a single String value, "out", "expression" and "taglib" get set with the given codec
      * When it's a java.util.Map, these keys get used:
      * <ul>
-     * <li>out - escapes output from scriptlets to output (the codec attached to "out" writer instance in GSP scriptlets)</li>
+     * <li>scriptlet - escapes output from scriptlets to output (the codec attached to "out" writer instance in GSP scriptlets)</li>
      * <li>taglib - escapes output from taglibs to output (the codec attached to "out" writer instance in taglibs)</li>
      * <li>expression - escapes values inside ${} to output</li>
      * <li>static - escapes the static html parts coming from the GSP file to output</li>
      * </ul>
      * These keys set several codecs at once:
      * <ul>
-     * <li>all - sets out, taglib, expression and static</li>
-     * <li>name - sets out, taglib and expression</li>
+     * <li>all - sets scriptlet, taglib, expression and static</li>
+     * <li>name - sets scriptlet, taglib and expression</li>
      * </ul>
      * In addition there is
      * <ul>
