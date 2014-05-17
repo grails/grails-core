@@ -64,9 +64,19 @@ if "x%GRAILS_AGENT_CACHE_DIR%" == "x" set GRAILS_AGENT_CACHE_DIR=%SHORTHOME%/.gr
 set SPRINGLOADED_PARAMS="profile=grails;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
 
+if "%GRAILS_NO_PERMGEN%" == "" (
+	type %JAVA_HOME%\include\classfile_constants.h 2>nul | findstr /R /C:"#define JVM_CLASSFILE_MAJOR_VERSION 5[23]" >nul
+	if not errorlevel 1 set GRAILS_NO_PERMGEN=1
+)
+
 set AGENT_STRING=@windows.agent.string@
 set DISABLE_RELOADING=
-if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms64M -XX:PermSize=32m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
+if "%GRAILS_OPTS%" == "" (
+	set GRAILS_OPTS=-server -Xmx768M -Xms64M -Dfile.encoding=UTF-8
+	if not "%GRAILS_NO_PERMGEN%" == "1" (
+		set GRAILS_OPTS=%GRAILS_OPTS% -XX:PermSize=32m -XX:MaxPermSize=256m
+	)
+)
 
 @rem Get command-line arguments, handling Windows variants
 if "%@eval[2+2]" == "4" goto 4NT_args

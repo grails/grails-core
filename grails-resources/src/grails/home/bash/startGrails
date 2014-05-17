@@ -79,6 +79,15 @@ if $cygwin ; then
         CP=`cygpath --path --unix "$CP"`
 fi
 
+# quick detection of JDK version without JVM startup overhead
+CLASSFILE_HEADER_FILE="${JAVA_HOME}/include/classfile_constants.h"
+if [ -z "$GRAILS_NO_PERMGEN" -a -f "${CLASSFILE_HEADER_FILE}" ]; then
+  CLASSFILE_VERSION=`cat "${CLASSFILE_HEADER_FILE}" | grep "#define JVM_CLASSFILE_MAJOR_VERSION" | awk '{ print $3 }' 2> /dev/null`
+  if [ "$CLASSFILE_VERSION" -ge 52 ]; then
+    GRAILS_NO_PERMGEN=1
+  fi 
+fi
+
 # Remove possible trailing slash (after possible cygwin correction)
 GRAILS_HOME=`echo $GRAILS_HOME | sed -e 's|/$||g'`
 
@@ -316,7 +325,10 @@ startGrails() {
      then
  	GRAILS_OPTS="$GRAILS_OPTS"
      else
-	GRAILS_OPTS="-server -Xmx768M -Xms64M -XX:PermSize=32m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8"
+	GRAILS_OPTS="-server -Xmx768M -Xms64M -Dfile.encoding=UTF-8"
+	if [[ "$GRAILS_NO_PERMGEN" -ne 1 ]]; then
+	   GRAILS_OPTS="$GRAILS_OPTS -XX:PermSize=32m -XX:MaxPermSize=256m"
+	fi
   fi
   JAVA_OPTS="$GRAILS_OPTS $JAVA_OPTS $AGENT"
   # Start the Profiler or the JVM
