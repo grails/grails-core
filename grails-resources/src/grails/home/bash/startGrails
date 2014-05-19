@@ -326,7 +326,7 @@ startGrails() {
  	GRAILS_OPTS="$GRAILS_OPTS"
      else
 	GRAILS_OPTS="-server -Xmx768M -Xms64M -Dfile.encoding=UTF-8"
-	if [[ "$GRAILS_NO_PERMGEN" -ne 1 ]]; then
+	if [ "$GRAILS_NO_PERMGEN" != "1" ]; then
 	   GRAILS_OPTS="$GRAILS_OPTS -XX:PermSize=32m -XX:MaxPermSize=256m"
 	fi
   fi
