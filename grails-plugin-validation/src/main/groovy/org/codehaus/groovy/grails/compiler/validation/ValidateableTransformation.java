@@ -57,7 +57,6 @@ public class ValidateableTransformation implements ASTTransformation{
         boolean defaultNullable = false;
         Expression nullable = node.getMember("nullable");
         if (nullable != null) {
-            System.out.println("default nullable "+nullable.getText());
             defaultNullable = Boolean.parseBoolean(nullable.getText());
         }
 
