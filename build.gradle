@@ -18,7 +18,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
-    grailsVersion = '2.4.0.BUILD-SNAPSHOT'
+    grailsVersion = '2.4.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
@@ -109,6 +109,12 @@ allprojects {
             }
         }
 
+    }
+
+    if (JavaVersion.current().isJava8Compatible()) {
+        tasks.withType(Javadoc) {
+            options.addStringOption('Xdoclint:none', '-quiet')
+        }
     }
 }
 
@@ -202,11 +208,20 @@ subprojects { project ->
         }
     }
 
+    def debugArguments = ['-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
+                          '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
+
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
         if(System.getProperty("debug.tests")) {
-            jvmArgs '-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
-                    '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+            jvmArgs debugArguments
+        }
+    }
+
+    task singleTest(type: Test) {
+        // task for running a single test with -DsingleTest.single=TestName singleTest
+        if(System.getProperty("debug.tests")) {
+            jvmArgs debugArguments
         }
     }
 

@@ -1285,6 +1285,19 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         holder.album.title == 'Some Album'
     }
+    
+    @Issue('GRAILS-11402')
+    void 'Test binding when the binding source contains the key "_"'() {
+        given:
+        def publisher = new Publisher()
+        
+        when:
+        binder.bind publisher, [_: '', name: 'Some Publisher'] as SimpleMapDataBindingSource
+        
+        then:
+        !publisher.hasErrors()
+        publisher.name == 'Some Publisher'
+    }
 }
 
 @Entity

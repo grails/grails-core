@@ -69,14 +69,18 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
 
     private void registerNamespaceDispatchers() {
         for( String namespace : tagNamespaces.keySet()) {
-            namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
+            registerNamespaceDispatcher(namespace);
         }
+    }
+
+    private void registerNamespaceDispatcher(String namespace) {
+        namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
     }
 
     protected void registerTagLibraries() {
         GrailsClass[] taglibs =  grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE);
         for (GrailsClass grailsClass : taglibs) {
-            registerTagLib((GrailsTagLibClass)grailsClass);
+            registerTagLib((GrailsTagLibClass)grailsClass, true);
         }
     }
 
@@ -93,8 +97,15 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      * @param taglib The taglib descriptor class.
      */
     public void registerTagLib(GrailsTagLibClass taglib) {
+        registerTagLib(taglib, false);
+    }
+
+    private void registerTagLib(GrailsTagLibClass taglib, boolean isInitialization) {
         String namespace = taglib.getNamespace();
 
+        if(!isInitialization) {
+            registerNamespaceDispatcher(namespace);
+        }
         Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
         if (tagsThatReturnObject == null) {
             tagsThatReturnObject = new HashSet<String>();

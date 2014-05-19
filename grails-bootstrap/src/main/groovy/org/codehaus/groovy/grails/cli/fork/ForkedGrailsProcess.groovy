@@ -499,8 +499,11 @@ abstract class ForkedGrailsProcess {
             cmd.addAll(jvmArgs)
         }
 
-        cmd.addAll(["-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
-            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
+        cmd.addAll(["-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString()])
+        if(!(System.getProperty("java.version") =~ /1.[89]./)) {
+            cmd.add("-XX:MaxPermSize=${maxPerm}m".toString())
+        } 
+        cmd.addAll(["-Dgrails.fork.active=true",
             "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
 
         if (isDebugForkEnabled() && !isReserve) {
