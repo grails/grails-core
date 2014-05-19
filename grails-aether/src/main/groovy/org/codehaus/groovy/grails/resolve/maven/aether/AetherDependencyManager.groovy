@@ -352,7 +352,7 @@ class AetherDependencyManager implements DependencyManager {
                         attachmentRequests << new ArtifactRequest(new DefaultArtifact(
                             artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
                     }
-                    if (includeJavadoc) {
+                    if (includeSource) {
                         attachmentRequests << new ArtifactRequest(new DefaultArtifact(
                             artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
                     }
