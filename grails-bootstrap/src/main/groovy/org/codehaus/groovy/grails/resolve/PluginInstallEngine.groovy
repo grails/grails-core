@@ -58,7 +58,7 @@ class PluginInstallEngine {
      */
     List installedPlugins = []
     def pluginDirVariableStore = [:]
-    boolean isInteractive = true
+    boolean isInteractive = GrailsConsole.getInstance().isInteractiveEnabled()
 
     protected Metadata metadata
     protected PluginBuildSettings pluginSettings
