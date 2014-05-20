@@ -27,70 +27,11 @@
     <dependencies>
         <dependency>
             <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-async</artifactId>
+            <artifactId>grails-dependencies</artifactId>
             <version>\${grails.version}</version>
+            <type>pom</type>
         </dependency>
 
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-rest</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-services</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-i18n</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-databinding</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-filters</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-gsp</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-log4j</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-servlets</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-url-mappings</artifactId>
-            <version>\${grails.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-resources</artifactId>
-            <version>\${grails.version}</version>
-            <scope>runtime</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
@@ -213,7 +154,7 @@
             <plugin>
                 <groupId>org.grails</groupId>
                 <artifactId>grails-maven-plugin</artifactId>
-                <version>\${grails.version}</version>
+                <version>2.4.0</version>
                 <configuration>
                     <!-- Whether for Fork a JVM to run Grails commands -->
                     <fork>true</fork>
