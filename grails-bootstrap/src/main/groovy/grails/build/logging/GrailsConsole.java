@@ -179,7 +179,7 @@ public class GrailsConsole {
         this.out = out;
     }
 
-    private boolean isInteractiveEnabled() {
+    public boolean isInteractiveEnabled() {
         return readPropOrTrue(ENABLE_INTERACTIVE);
     }
 
