@@ -687,7 +687,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                             doesModulePathIncludeSubstring(commandObjectModule,
                                     "grails-app" + File.separator + "controllers" + File.separator)) {
                         final ASTValidateableHelper h = new DefaultASTValidateableHelper();
-                        h.injectValidateableCode(commandObjectNode);
+                        h.injectValidateableCode(commandObjectNode, false);
                         argumentIsValidateable = true;
                     } else if (doesModulePathIncludeSubstring(commandObjectModule,
                             "grails-app" + File.separator + "domain" + File.separator)) {
