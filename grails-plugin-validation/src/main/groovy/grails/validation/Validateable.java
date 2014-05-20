@@ -26,4 +26,5 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 @Target(ElementType.TYPE)
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.validation.ValidateableTransformation")
 public @interface Validateable {
+    boolean nullable() default false;
 }

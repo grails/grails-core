@@ -130,6 +130,32 @@ class ValidateableSpec extends Specification {
         constraints.age.hasAppliedConstraint 'range'
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
+
+        and:
+        !constraints.town.nullable
+    }
+
+    void 'Test that constraints are nullable by default if overridden'() {
+        when:
+        def constraints = MyNullableValidateable.constraints
+
+        then:
+        constraints.size() == 3
+        constraints.containsKey 'name'
+        constraints.containsKey 'town'
+        constraints.containsKey 'age'
+
+        and:
+        constraints.name.appliedConstraints.size() == 1
+        constraints.age.appliedConstraints.size() == 1
+        constraints.town.appliedConstraints.size() == 1
+
+        and: "name and age are nullable by default"
+        constraints.name.nullable
+        constraints.age.nullable
+
+        and:
+        !constraints.town.nullable
     }
 }
 
@@ -142,5 +168,16 @@ class MyValidateable {
     static constraints = {
         name matches: /[A-Z].*/
         age range: 1..99
+    }
+}
+
+@Validateable(nullable = true)
+class MyNullableValidateable {
+    String name
+    Integer age
+    String town
+
+    static constraints = {
+        town nullable: false
     }
 }
