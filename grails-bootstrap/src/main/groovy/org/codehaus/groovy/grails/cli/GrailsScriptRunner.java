@@ -84,7 +84,7 @@ public class GrailsScriptRunner {
 
     private PrintStream out = System.out;
     private GrailsConsole console = GrailsConsole.getInstance();
-    private boolean isInteractive = console.isInteractiveEnabled();
+    private boolean isInteractive = System.getProperty(GrailsConsole.ENABLE_INTERACTIVE) != null ? Boolean.getBoolean(GrailsConsole.ENABLE_INTERACTIVE) : true;
     private URLClassLoader classLoader;
 
     private File scriptCacheDir;
