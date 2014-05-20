@@ -176,10 +176,6 @@ task installResources(type: Copy) {
         filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
     }
 
-    into(homeDslSupportDir.name) {
-        from 'grails-resources/src/grails/home/dsl-support'
-    }
-
     into ("$homeSrcDir.name/war/WEB-INF") {
         from "grails-resources/src/war/WEB-INF"
     }
@@ -243,9 +239,6 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
             into "src/grails"
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
             filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        }
-        from('grails-resources/src/grails/home/dsl-support') {
-            into "dsl-support"
         }
     }
 }

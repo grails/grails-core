@@ -57,7 +57,6 @@ ext {
     homeDistDir = file("dist")
     homeBinDir = file("bin")
     homeConfDir = file("conf")
-    homeDslSupportDir = file("dsl-support")
     homeLibDir = file("lib")
     homeSrcDir = file("src")
 }
@@ -376,7 +375,6 @@ task clean(type: Delete) {
            homeBinDir,
            homeConfDir,
            homeDistDir,
-           homeDslSupportDir,
            homeLibDir,
            homeSrcDir
 }

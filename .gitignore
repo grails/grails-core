@@ -4,7 +4,6 @@
 /bin
 /*/bin
 /conf
-/dsl-support
 *.ipr
 *.iml
 *.iws
