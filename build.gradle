@@ -40,7 +40,7 @@ ext {
     spockVersion = '0.7-groovy-2.0'
     springLoadedVersion = "1.2.0.RELEASE"
     springLoadedCommonOptions = "-noverify -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.0.4.RELEASE"
+    springVersion = "4.0.5.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.11"
     concurrentlinkedhashmapVersion = "1.4"
@@ -57,7 +57,6 @@ ext {
     homeDistDir = file("dist")
     homeBinDir = file("bin")
     homeConfDir = file("conf")
-    homeDslSupportDir = file("dsl-support")
     homeLibDir = file("lib")
     homeSrcDir = file("src")
 }
@@ -376,7 +375,6 @@ task clean(type: Delete) {
            homeBinDir,
            homeConfDir,
            homeDistDir,
-           homeDslSupportDir,
            homeLibDir,
            homeSrcDir
 }

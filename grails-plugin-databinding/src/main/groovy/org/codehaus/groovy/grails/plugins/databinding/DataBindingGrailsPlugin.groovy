@@ -17,15 +17,16 @@ package org.codehaus.groovy.grails.plugins.databinding
 
 import grails.util.GrailsUtil
 
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.binding.BindEventListenerAdapter
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
-import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.TimeZoneConverter
 import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter
@@ -43,6 +44,12 @@ class DataBindingGrailsPlugin {
         def databindingConfig
 
         databindingConfig = application?.config?.grails?.databinding
+
+        if(Boolean.TRUE.equals(databindingConfig?.useSpringBinder)) {
+            def msg = 'The grails.databinding.useSpringBinder config property is set to true.  The Spring data binder has been deprecated and will be removed in a future release of Grails.'
+            def log = LogFactory.getLog(DataBindingGrailsPlugin)
+            log.warn msg
+        }
 
         def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
 

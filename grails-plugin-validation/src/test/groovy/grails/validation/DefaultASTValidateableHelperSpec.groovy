@@ -38,7 +38,7 @@ class DefaultASTValidateableHelperSpec extends Specification {
             }
 
             void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-                new DefaultASTValidateableHelper().injectValidateableCode(classNode)
+                new DefaultASTValidateableHelper().injectValidateableCode(classNode, false)
             }
             boolean shouldInject(URL url) { true }
         }

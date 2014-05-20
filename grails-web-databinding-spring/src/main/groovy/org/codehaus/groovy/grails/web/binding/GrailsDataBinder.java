@@ -99,8 +99,10 @@ import org.springframework.web.servlet.support.RequestContextUtils;
  * This would set the property "myDate" of type java.util.Date with the specified values.
  *
  * @author Graeme Rocher
+ * @deprecated
  */
 @SuppressWarnings("rawtypes")
+@Deprecated
 public class GrailsDataBinder extends ServletRequestDataBinder implements SpringWebDataBinder {
 
     private static final String BIND_EVENT_LISTENERS = "org.codehaus.groovy.grails.BIND_EVENT_LISTENERS";

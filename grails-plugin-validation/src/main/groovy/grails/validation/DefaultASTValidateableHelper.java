@@ -62,12 +62,12 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
     private static final String CONSTRAINED_PROPERTIES_PROPERTY_NAME = "$constraints";
     private static final String VALIDATE_METHOD_NAME = "validate";
 
-    public void injectValidateableCode(ClassNode classNode) {
+    public void injectValidateableCode(ClassNode classNode, boolean defaultNullable) {
         ASTErrorsHelper errorsHelper = new ASTValidationErrorsHelper();
         errorsHelper.injectErrorsCode(classNode);
         addConstraintsField(classNode);
         addStaticInitializer(classNode);
-        addGetConstraintsMethod(classNode);
+        addGetConstraintsMethod(classNode, defaultNullable);
         addValidateMethod(classNode);
     }
 
@@ -89,7 +89,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
         classNode.addStaticInitializerStatements(statements, true);
     }
 
-    protected void addGetConstraintsMethod(final ClassNode classNode) {
+    protected void addGetConstraintsMethod(final ClassNode classNode, boolean defaultNullable) {
         final String getConstraintsMethodName = "getConstraints";
         MethodNode getConstraintsMethod = classNode.getMethod(getConstraintsMethodName, ZERO_PARAMETERS);
         if (getConstraintsMethod == null || !getConstraintsMethod.getDeclaringClass().equals(classNode)) {
@@ -118,9 +118,11 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
                         new VariableExpression(cpName, ClassHelper.OBJECT_TYPE),
                         Token.newSymbol(Types.EQUALS, 0, 0),
                         constrainedPropertyCtorCallExpression);
+
                 final ArgumentListExpression applyConstraintMethodArgumentList = new ArgumentListExpression();
                 applyConstraintMethodArgumentList.addExpression(new ConstantExpression(ConstrainedProperty.NULLABLE_CONSTRAINT));
-                applyConstraintMethodArgumentList.addExpression(new ConstantExpression(false));
+                applyConstraintMethodArgumentList.addExpression(new ConstantExpression(defaultNullable));
+
                 final Expression applyNullableConstraintMethodCallExpression = new MethodCallExpression(
                         new VariableExpression(cpName), "applyConstraint", applyConstraintMethodArgumentList);
                 final ArgumentListExpression putMethodArgumentList = new ArgumentListExpression();

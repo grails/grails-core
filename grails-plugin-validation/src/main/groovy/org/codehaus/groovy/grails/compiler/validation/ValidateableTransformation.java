@@ -21,6 +21,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
@@ -52,6 +53,13 @@ public class ValidateableTransformation implements ASTTransformation{
             throw new RuntimeException("Error processing interface '" + cName + "'.  @Validateable not allowed for interfaces.");
         }
 
-        new DefaultASTValidateableHelper().injectValidateableCode(cNode);
+        // GRAILS-11416 - Allow override of default nullability
+        boolean defaultNullable = false;
+        Expression nullable = node.getMember("nullable");
+        if (nullable != null) {
+            defaultNullable = Boolean.parseBoolean(nullable.getText());
+        }
+
+        new DefaultASTValidateableHelper().injectValidateableCode(cNode, defaultNullable);
     }
 }
