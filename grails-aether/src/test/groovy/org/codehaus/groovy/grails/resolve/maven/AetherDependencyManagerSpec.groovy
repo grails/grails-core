@@ -28,6 +28,7 @@ import org.eclipse.aether.resolution.DependencyResult
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * @author Graeme Rocher
@@ -290,11 +291,10 @@ class AetherDependencyManagerSpec extends Specification {
             files.size() == 1
     }
 
+    @Unroll
     void "Test resolve with source and javadocs"() {
         given: "A dependency manager instance"
             def dependencyManager = new AetherDependencyManager()
-            dependencyManager.includeJavadoc = true
-            dependencyManager.includeSource = true
             dependencyManager.parseDependencies {
                 repositories {
                     mavenCentral()
@@ -306,17 +306,25 @@ class AetherDependencyManagerSpec extends Specification {
             }
 
         when: "A dependency is resolved"
+            dependencyManager.includeJavadoc = includeJavadoc
+            dependencyManager.includeSource = includeSource
             def report = dependencyManager.resolve("compile")
-            println report.files.size()
-            println report.files
+            
         then: "The dependencies are resolved"
-
-            report.files.find { it.name.contains('grails-bootstrap-2.2.0')}
-            report.files.find { it.name.contains('grails-bootstrap-2.2.0-sources')}
-            report.files.find { it.name.contains('grails-bootstrap-2.2.0-javadoc')}
-            report.files.find { it.name.contains('jline-1.0')}
-            report.files.find { it.name.contains('jline-1.0-sources')}
-            report.files.find { it.name.contains('jline-1.0-javadoc')}
+            dependencyResolved == report.files.any { it.name.contains('grails-bootstrap-2.2.0')}
+            sourceResolved ==     report.files.any { it.name.contains('grails-bootstrap-2.2.0-sources')}
+            javadocResolved ==    report.files.any { it.name.contains('grails-bootstrap-2.2.0-javadoc')}
+            dependencyResolved == report.files.any { it.name.contains('jline-1.0')}
+            sourceResolved ==     report.files.any { it.name.contains('jline-1.0-sources')}
+            javadocResolved ==    report.files.any { it.name.contains('jline-1.0-javadoc')}
+            
+        where:
+            includeJavadoc | includeSource | dependencyResolved | javadocResolved | sourceResolved
+            false          | false         | true               | false           | false
+            true           | false         | true               | true            | false
+            false          | true          | true               | false           | true
+            true           | true          | true               | true            | true
+        
     }
 
     void "Test simple dependency resolve"() {
