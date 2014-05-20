@@ -83,7 +83,7 @@ fi
 CLASSFILE_HEADER_FILE="${JAVA_HOME}/include/classfile_constants.h"
 if [ -z "$GRAILS_NO_PERMGEN" -a -f "${CLASSFILE_HEADER_FILE}" ]; then
   CLASSFILE_VERSION=`cat "${CLASSFILE_HEADER_FILE}" | grep "#define JVM_CLASSFILE_MAJOR_VERSION" | awk '{ print $3 }' 2> /dev/null`
-  if [ "$CLASSFILE_VERSION" -ge 52 ]; then
+  if [ 0$CLASSFILE_VERSION -ge 52 ]; then
     GRAILS_NO_PERMGEN=1
   fi 
 fi

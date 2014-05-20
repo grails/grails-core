@@ -23,6 +23,8 @@ class FilterExecutionTests extends AbstractGrailsControllerTests {
 import junit.framework.Assert
 
 class Filters {
+    def dependsOn = [Group1Filters]
+
     // Test property on the filters definition.
     def myName = "John Doe"
 

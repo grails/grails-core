@@ -79,7 +79,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
         ctx = new MockApplicationContext()
         onSetUp()
-        ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
+        ga = new DefaultGrailsApplication(gcl.getLoadedClasses().findAll { clazz -> !Closure.isAssignableFrom(clazz) } as Class[], gcl)
 
         def binder = new GrailsWebDataBinder(ga)
         binder.registerConverter new DateConversionHelper()
@@ -89,18 +89,22 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ga.metadata[Metadata.APPLICATION_NAME] = getClass().name
         mockManager = new MockGrailsPluginManager(ga)
         ctx.registerMockBean("manager", mockManager)
-        def dependantPluginClasses = []
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
+        def dependantPluginClasses = [
+            "org.codehaus.groovy.grails.plugins.CoreGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin",
+            "org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin",
+            "org.grails.plugins.web.rest.plugin.RestResponderGrailsPlugin"
+        ].collect { className ->
+            gcl.loadClass(className)
+        }
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
 
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
