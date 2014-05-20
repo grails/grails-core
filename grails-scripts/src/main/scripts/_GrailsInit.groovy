@@ -68,7 +68,7 @@ target(checkVersion: "Stops build if app expects different Grails version") {
     if (metadataFile.exists()) {
         if (appGrailsVersion != grailsVersion) {
             event("StatusFinal", ["Application expects grails version [$appGrailsVersion], but GRAILS_HOME is version " +
-                                  "[$grailsVersion] - use the correct Grails version or run 'grails upgrade' if this Grails " +
+                                  "[$grailsVersion] - use the correct Grails version or run 'grails set-grails-version' if this Grails " +
                                   "version is newer than the version your application expects."])
             exit(1)
         }
