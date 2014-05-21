@@ -1,26 +1,36 @@
-
 import org.gradle.api.internal.project.IsolatedAntBuilder
+
+apply plugin: 'signing'
 
 configurations {
     mavenAntTasks
+    pomGen
 }
 dependencies {
     mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
+
+    pomGen project(":grails-bootstrap")
 }
 
 
-task assemble << {
-    println "TODO"
+task generatePom(type:JavaExec) {
+    main = "org.codehaus.groovy.grails.resolve.GrailsCoreDependenciesPomGenerator"
+    classpath = configurations.pomGen
+    args grailsVersion, "$buildDir/pom.xml"
+    outputs.files "$buildDir/pom.xml"
 }
+
+assemble.dependsOn(dependsOn:[generatePom])
+
 
 task install << {
     def antBuilder = services.get(IsolatedAntBuilder)
     antBuilder.withClasspath(configurations.mavenAntTasks).execute {
         taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
         
-        pom(file:"${projectDir}/pom.xml", id:"pom")
+        pom(file:"${buildDir}/pom.xml", id:"pom")
 
-        install(file:"${projectDir}/pom.xml") {
+        install(file:"${buildDir}/pom.xml") {
             pom refid:"pom"
         }
 
@@ -32,10 +42,10 @@ task uploadPublished << {
     antBuilder.withClasspath(configurations.mavenAntTasks).execute {
         taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
         
-        pom(file:"${projectDir}/pom.xml", id:"pom")
+        pom(file:"${buildDir}/pom.xml", id:"pom")
 
         def isSnapshot = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-        deploy(file:"${projectDir}/pom.xml") {
+        deploy(file:"${buildDir}/pom.xml") {
             def repo = isSnapshot ? "http://repo.grails.org/grails/libs-snapshots-local" 
                                   : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 

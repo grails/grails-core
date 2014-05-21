@@ -27,6 +27,8 @@ class GrailsCoreDependenciesPomGenerator {
      * Generates the POM file for the requested Grails version and dependency scope.
      */
     void buildPom() {
+        println "Generating POM for $grailsVersion to $targetFile"
+        targetFile.getParentFile().mkdirs()
         GrailsCoreDependencies coreDependencies = new GrailsCoreDependencies(grailsVersion)
 
         def writer = new FileWriter(targetFile)
@@ -43,10 +45,31 @@ class GrailsCoreDependenciesPomGenerator {
                 name { mkp.yield 'Grails Dependencies' }
                 description { mkp.yield "POM file containing Grails dependencies." }
                 url { mkp.yield 'http://grails.org' }
+
+                licenses {
+                    license {
+                        name { mkp.yield( "The Apache Software License, Version 2.0") }
+                        url { mkp.yield( "http://www.apache.org/licenses/LICENSE-2.0.txt") }
+                        distribution { mkp.yield( "repo") }
+                    }
+                }
+                scm {
+                    url { mkp.yield( "http://github.com/grails/grails-core") }
+                    developerConnection { mkp.yield( "git@github.com:grails/grails-core.git") }
+                    connection { mkp.yield( "scm:git:git@github.com:grails/grails-core.git") }
+                }
+
+                parent {
+                    groupId { mkp.yield( "org.sonatype.oss") }
+                    artifactId { mkp.yield( "oss-parent") }
+                    version { mkp.yield( "7") }
+                }
+
                 dependencies {
                     buildDependencies((MarkupBuilder)delegate, "compile", coreDependencies.compileDependencies)
                     buildDependencies((MarkupBuilder)delegate, "runtime", coreDependencies.runtimeDependencies)
                     buildDependencies((MarkupBuilder)delegate, "provided", coreDependencies.providedDependencies)
+                    buildDependencies((MarkupBuilder)delegate, "test", coreDependencies.testDependencies)
                 }
             }
 

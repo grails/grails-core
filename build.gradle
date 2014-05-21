@@ -120,6 +120,9 @@ allprojects {
 apply from: "gradle/idea.gradle"
 
 subprojects { project ->
+    version = grailsVersion
+    group = "org.grails"
+
     if(project.name == 'grails-dependencies') return
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     apply plugin: 'groovy'
@@ -134,8 +137,6 @@ subprojects { project ->
     sourceCompatibility = "1.6"
     targetCompatibility = "1.6"
 //    archivesBaseName = 'grails'
-    version = grailsVersion
-    group = "org.grails"
 
     ext.isCiBuild = project.hasProperty("isCiBuild")
 
