@@ -20,7 +20,11 @@ task generatePom(type:JavaExec) {
     outputs.files "$buildDir/pom.xml"
 }
 
-assemble.dependsOn(dependsOn:[generatePom])
+task signPom(type:Sign, dependsOn:generatePom) {
+    sign generatePom.outputs.files.singleFile
+}
+
+assemble.dependsOn(dependsOn:[signPom])
 
 
 task install << {
