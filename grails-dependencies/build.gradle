@@ -1,0 +1,53 @@
+
+import org.gradle.api.internal.project.IsolatedAntBuilder
+
+configurations {
+    mavenAntTasks
+}
+dependencies {
+    mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
+}
+
+
+task assemble << {
+    println "TODO"
+}
+
+task install << {
+    def antBuilder = services.get(IsolatedAntBuilder)
+    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
+        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
+        
+        pom(file:"${projectDir}/pom.xml", id:"pom")
+
+        install(file:"${projectDir}/pom.xml") {
+            pom refid:"pom"
+        }
+
+    }
+}
+
+task uploadPublished << {
+    def antBuilder = services.get(IsolatedAntBuilder)
+    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
+        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
+        
+        pom(file:"${projectDir}/pom.xml", id:"pom")
+
+        def isSnapshot = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        deploy(file:"${projectDir}/pom.xml") {
+            def repo = isSnapshot ? "http://repo.grails.org/grails/libs-snapshots-local" 
+                                  : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+            remoteRepository(url:repo) {
+                def user = isSnapshot ? (project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : "") 
+                                      : (project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : "")
+                def pass = isSnapshot ? (project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishUsername : "") 
+                                      : (project.hasProperty("sonatypePassword") ? project.sonatypeUsername : "")                                      
+                authentication username:user, password:pass
+            }
+            pom refid:"pom"
+        }
+
+    }
+}

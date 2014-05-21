@@ -120,6 +120,7 @@ allprojects {
 apply from: "gradle/idea.gradle"
 
 subprojects { project ->
+    if(project.name == 'grails-dependencies') return
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     apply plugin: 'groovy'
     apply plugin: 'maven'
