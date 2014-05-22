@@ -34,6 +34,7 @@ class AnsiConsoleUrlMappingsRendererSpec extends Specification{
  |   GET    | /books/${bookId}/authors                                   | Action: index            |
  |   GET    | /books/${bookId}/authors/${id}/edit                        | Action: edit             |
  |  DELETE  | /books/${bookId}/authors/${id}                             | Action: delete           |
+ |  PATCH   | /books/${bookId}/authors/${id}                             | Action: patch            |
  |   PUT    | /books/${bookId}/authors/${id}                             | Action: update           |
  |   GET    | /books/${bookId}/authors/${id}                             | Action: show             |
 
@@ -43,6 +44,7 @@ Controller: book
  |   GET    | /books                                                     | Action: index            |
  |   GET    | /books/${id}/edit                                          | Action: edit             |
  |  DELETE  | /books/${id}                                               | Action: delete           |
+ |  PATCH   | /books/${id}                                               | Action: patch            |
  |   PUT    | /books/${id}                                               | Action: update           |
  |   GET    | /books/${id}                                               | Action: show             |
 
@@ -50,6 +52,7 @@ Controller: publisher
  |   GET    | /books/${bookId}/authors/${authorId}/publisher/edit        | Action: edit             |
  |   GET    | /books/${bookId}/authors/${authorId}/publisher/create      | Action: create           |
  |  DELETE  | /books/${bookId}/authors/${authorId}/publisher             | Action: delete           |
+ |  PATCH   | /books/${bookId}/authors/${authorId}/publisher             | Action: patch            |
  |   PUT    | /books/${bookId}/authors/${authorId}/publisher             | Action: update           |
  |   GET    | /books/${bookId}/authors/${authorId}/publisher             | Action: show             |
  |   POST   | /books/${bookId}/authors/${authorId}/publisher             | Action: save             |
@@ -89,6 +92,7 @@ Controller: foo
  |   GET    | /foo                                              | Action: index            |
  |   GET    | /foo/${id}/edit                                   | Action: edit             |
  |  DELETE  | /foo/${id}                                        | Action: delete           |
+ |  PATCH   | /foo/${id}                                        | Action: patch            |
  |   PUT    | /foo/${id}                                        | Action: update           |
  |   GET    | /foo/${id}                                        | Action: show             |
 

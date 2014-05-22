@@ -73,10 +73,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     public static final String ACTION_SHOW = "show";
     public static final String ACTION_EDIT = "edit";
     public static final String ACTION_UPDATE = "update";
+    public static final String ACTION_PATCH = "patch";
     public static final String ACTION_DELETE = "delete";
     public static final String ACTION_SAVE = "save";
-    public static final List<String> DEFAULT_RESOURCES_INCLUDES = Arrays.asList(ACTION_INDEX, ACTION_CREATE, ACTION_SAVE,ACTION_SHOW,ACTION_EDIT, ACTION_UPDATE, ACTION_DELETE);
-    public static final List<String> DEFAULT_RESOURCE_INCLUDES = Arrays.asList(ACTION_CREATE,ACTION_SAVE,ACTION_SHOW, ACTION_EDIT, ACTION_UPDATE, ACTION_DELETE);
+    public static final List<String> DEFAULT_RESOURCES_INCLUDES = Arrays.asList(ACTION_INDEX, ACTION_CREATE, ACTION_SAVE,ACTION_SHOW,ACTION_EDIT, ACTION_UPDATE, ACTION_PATCH, ACTION_DELETE);
+    public static final List<String> DEFAULT_RESOURCE_INCLUDES = Arrays.asList(ACTION_CREATE,ACTION_SAVE,ACTION_SHOW, ACTION_EDIT, ACTION_UPDATE, ACTION_PATCH, ACTION_DELETE);
     private static final Log LOG = LogFactory.getLog(UrlMappingBuilder.class);
     private GroovyClassLoader classLoader = new GroovyClassLoader();
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
@@ -628,6 +629,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 configureUrlMapping(updateUrlMapping);
             }
 
+            if (includes.contains(ACTION_PATCH)) {
+                // PATCH /$controller/$id -> action:'patch'
+                UrlMapping patchUrlMapping = createPatchActionResourcesRestfulMapping(controllerName, pluginName, namespace,version,urlData, constrainedList);
+                configureUrlMapping(patchUrlMapping);
+            }
+
             if (includes.contains(ACTION_DELETE)) {
                 // DELETE /$controller/$id -> action:'delete'
                 UrlMapping deleteUrlMapping = createDeleteActionResourcesRestfulMapping(controllerName, pluginName, namespace,version,urlData, constrainedList);
@@ -647,6 +654,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             List<ConstrainedProperty> updateUrlMappingConstraints = createConstraintsWithIdAndFormat(constrainedList);
 
             return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE,  namespace, pluginName, null, HttpMethod.PUT.toString(),version,updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+        }
+
+        protected UrlMapping createPatchActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
+            UrlMappingData patchUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
+            List<ConstrainedProperty> patchUrlMappingConstraints = createConstraintsWithIdAndFormat(constrainedList);
+
+            return new RegexUrlMapping(patchUrlMappingData,controllerName, ACTION_PATCH,  namespace, pluginName, null, HttpMethod.PATCH.toString(),version,patchUrlMappingConstraints.toArray(new ConstrainedProperty[patchUrlMappingConstraints.size()]) , servletContext);
         }
 
         protected UrlMapping createEditActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
@@ -752,6 +766,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 configureUrlMapping(updateUrlMapping);
             }
 
+            if (includes.contains(ACTION_PATCH)) {
+                // PATCH /$controller -> action:'patch'
+                UrlMapping patchUrlMapping = createPatchActionResourceRestfulMapping(controllerName, pluginName, namespace,version,urlData, constrainedList);
+                configureUrlMapping(patchUrlMapping);
+            }
+
             if (includes.contains(ACTION_DELETE)) {
                 // DELETE /$controller -> action:'delete'
                 UrlMapping deleteUrlMapping = createDeleteActionResourceRestfulMapping(controllerName, pluginName, namespace,version,urlData, constrainedList);
@@ -771,6 +791,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             List<ConstrainedProperty> updateUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
             return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, namespace, pluginName, null, HttpMethod.PUT.toString(),version, updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+        }
+
+        protected UrlMapping createPatchActionResourceRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
+            UrlMappingData patchUrlMappingData = createFormatOnlyUrlMappingData(urlData);
+            List<ConstrainedProperty> patchUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
+
+            return new RegexUrlMapping(patchUrlMappingData,controllerName, ACTION_PATCH, namespace, pluginName, null, HttpMethod.PATCH.toString(),version, patchUrlMappingConstraints.toArray(new ConstrainedProperty[patchUrlMappingConstraints.size()]) , servletContext);
         }
 
         protected UrlMapping createEditActionResourceRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {

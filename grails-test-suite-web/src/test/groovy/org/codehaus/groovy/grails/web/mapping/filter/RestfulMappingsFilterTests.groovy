@@ -24,7 +24,7 @@ class RestfulMappingsFilterTests extends AbstractGrailsMappingTests {
 mappings {
   "/books" {
       controller = "book"
-      action = [GET:"list", DELETE:"delete", POST:"update", PUT:"save"]
+      action = [GET:"list", DELETE:"delete", POST:"update", PATCH:"patch", PUT:"save"]
   }
 }
 '''
@@ -35,6 +35,7 @@ class BookController {
   def list = {}
   def delete = {}
   def update = {}
+  def patch = {}
   def save = {}
 }
 '''
@@ -82,5 +83,9 @@ class BookController {
         request.method = "PUT"
         filter.doFilterInternal(request, response, null)
         assertEquals "/grails/book/save.dispatch", response.forwardedUrl
+
+        request.method = "PATCH"
+        filter.doFilterInternal(request, response, null)
+        assertEquals "/grails/book/patch.dispatch", response.forwardedUrl
     }
 }
