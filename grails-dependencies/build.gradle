@@ -48,19 +48,16 @@ task uploadPublished << {
         
         pom(file:"${buildDir}/pom.xml", id:"pom")
 
-        def isSnapshot = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-        deploy(file:"${buildDir}/pom.xml") {
-            def repo = isSnapshot ? "http://repo.grails.org/grails/libs-snapshots-local" 
-                                  : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-
-            remoteRepository(url:repo) {
-                def user = isSnapshot ? (project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : "") 
-                                      : (project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : "")
-                def pass = isSnapshot ? (project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishUsername : "") 
-                                      : (project.hasProperty("sonatypePassword") ? project.sonatypeUsername : "")                                      
-                authentication username:user, password:pass
-            }
-            pom refid:"pom"
+        def isSnapshot = version.endsWith("-SNAPSHOT")
+        def url = isSnapshot ? "https://oss.sonatype.org/content/repositories/snapshots/" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        def repoId = isSnapshot ? "sonatype-nexus-snapshots" : "sonatype-nexus-staging"
+        mvn {
+            arg value:"org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file"
+            arg value:"-Durl=${url}"
+            arg value:"-DrepositoryId=${repoId}"
+            arg value:"-DpomFile=${buildDir}/pom.xml"
+            arg value:"-Dfile=${buildDir}/pom.xml"
+            arg value:"-Pgpg"
         }
 
     }
