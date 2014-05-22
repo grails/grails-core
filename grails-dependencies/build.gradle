@@ -23,7 +23,7 @@ task generatePom(type:JavaExec) {
 assemble.dependsOn(dependsOn:[generatePom])
 
 
-task install << {
+task install(dependsOn:assemble) << {
     def antBuilder = services.get(IsolatedAntBuilder)
     antBuilder.withClasspath(configurations.mavenAntTasks).execute {
         taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
@@ -37,7 +37,7 @@ task install << {
     }
 }
 
-task uploadPublished << {
+task uploadPublished(dependsOn:install) << {
     def antBuilder = services.get(IsolatedAntBuilder)
     antBuilder.withClasspath(configurations.mavenAntTasks).execute {
         taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
