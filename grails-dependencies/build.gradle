@@ -1,6 +1,6 @@
 import org.gradle.api.internal.project.IsolatedAntBuilder
 
-//apply plugin: 'signing'
+apply plugin: 'signing'
 
 configurations {
     mavenAntTasks
