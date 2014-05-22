@@ -43,11 +43,12 @@ task docs {
 }
 
 task javadoc(type:Javadoc) {
-    classpath = files(subprojects.configurations.compile)
+    def subs = subprojects.findAll { it.name != 'grails-dependencies' }
+    classpath = files(subs.configurations.compile)
     dependsOn stubs
     maxMemory = '256M'
     destinationDir = file("$docs.destinationDir/javadoc")
-    source subprojects.sourceSets.main.groovy.srcDirs + stubs.destinationDir
+    source subs.sourceSets.main.groovy.srcDirs + stubs.destinationDir
     include "org/codehaus/groovy/grails/**", "grails/**"
     exclude "**/**.groovy"
     project.configure(options) {
@@ -66,12 +67,13 @@ task javadoc(type:Javadoc) {
 }
 
 task groovydoc(type:Groovydoc) {
-    classpath = files(subprojects.configurations.compile)
-    groovyClasspath = files(subprojects.configurations.compile)
+    def subs = subprojects.findAll { it.name != 'grails-dependencies' }
+    classpath = files(subs.configurations.compile)
+    groovyClasspath = files(subs.configurations.compile)
     destinationDir = file("$docs.destinationDir/api")
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
-    source subprojects.sourceSets.main.groovy.srcDirs
+    source subs.sourceSets.main.groovy.srcDirs
     use = true
 // Can't make these link methods to work
 //    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")

@@ -1,0 +1,64 @@
+import org.gradle.api.internal.project.IsolatedAntBuilder
+
+//apply plugin: 'signing'
+
+configurations {
+    mavenAntTasks
+    pomGen
+}
+dependencies {
+    mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
+
+    pomGen project(":grails-bootstrap")
+}
+
+
+task generatePom(type:JavaExec) {
+    main = "org.codehaus.groovy.grails.resolve.GrailsCoreDependenciesPomGenerator"
+    classpath = configurations.pomGen
+    args grailsVersion, "$buildDir/pom.xml"
+    outputs.files "$buildDir/pom.xml"
+}
+
+assemble.dependsOn(dependsOn:[generatePom])
+
+
+task install << {
+    def antBuilder = services.get(IsolatedAntBuilder)
+    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
+        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
+        
+        pom(file:"${buildDir}/pom.xml", id:"pom")
+
+        install(file:"${buildDir}/pom.xml") {
+            pom refid:"pom"
+        }
+
+    }
+}
+
+task uploadPublished << {
+    def antBuilder = services.get(IsolatedAntBuilder)
+    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
+        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
+        
+        pom(file:"${buildDir}/pom.xml", id:"pom")
+
+        def isSnapshot = version.endsWith("-SNAPSHOT")
+        def url = isSnapshot ? "https://oss.sonatype.org/content/repositories/snapshots/" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        def repoId = isSnapshot ? "sonatype-nexus-snapshots" : "sonatype-nexus-staging"
+        mvn {
+            arg value:"org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file"
+            arg value:"-Durl=${url}"
+            arg value:"-DrepositoryId=${repoId}"
+            arg value:"-DpomFile=${buildDir}/pom.xml"
+            arg value:"-Dfile=${buildDir}/pom.xml"
+            arg value:"-Pgpg"
+        }
+
+    }
+}
+
+//task signPom(type:Sign, dependsOn:generatePom) {
+//    sign generatePom.outputs.files.singleFile
+//}
