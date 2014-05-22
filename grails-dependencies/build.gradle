@@ -1,6 +1,6 @@
 import org.gradle.api.internal.project.IsolatedAntBuilder
 
-apply plugin: 'signing'
+//apply plugin: 'signing'
 
 configurations {
     mavenAntTasks
@@ -20,11 +20,7 @@ task generatePom(type:JavaExec) {
     outputs.files "$buildDir/pom.xml"
 }
 
-task signPom(type:Sign, dependsOn:generatePom) {
-    sign generatePom.outputs.files.singleFile
-}
-
-assemble.dependsOn(dependsOn:[signPom])
+assemble.dependsOn(dependsOn:[generatePom])
 
 
 task install << {
@@ -62,3 +58,7 @@ task uploadPublished << {
 
     }
 }
+
+//task signPom(type:Sign, dependsOn:generatePom) {
+//    sign generatePom.outputs.files.singleFile
+//}
