@@ -75,7 +75,7 @@ public class SimpleGrailsControllerTests extends TestCase {
             "}");
 
         Class<?> restrictedControllerClass = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class RestrictedController {\n"+
-                "static allowedMethods=[action1:'POST', action3:['PUT', 'DELETE'], action4: 'pOsT', action5: ['pUt', 'DeLeTe']]\n" +
+                "static allowedMethods=[action1:'POST', action3:['PUT', 'PATCH', 'DELETE'], action4: 'pOsT', action5: ['pUt', 'pAtCh', 'DeLeTe']]\n" +
                 "def action1 = {}\n" +
                 "def action2 = {}\n" +
                 "def action3 = {}\n" +
@@ -162,26 +162,31 @@ public class SimpleGrailsControllerTests extends TestCase {
         assertNotNull(controllerClass);
         assertResponseStatusCode("restricted","action1","/restricted/action1", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action1","/restricted/action1", "PUT", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        assertResponseStatusCode("restricted","action1","/restricted/action1", "PATCH", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action1","/restricted/action1", "POST", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action1","/restricted/action1", "DELETE", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 
         assertResponseStatusCode("restricted","action2","/restricted/action2", "GET", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action2","/restricted/action2", "PUT", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action2","/restricted/action2", "PATCH", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action2","/restricted/action2", "POST", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action2","/restricted/action2", "DELETE", HttpServletResponse.SC_OK);
 
         assertResponseStatusCode("restricted","action3","/restricted/action3", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action3","/restricted/action3", "PUT", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action3","/restricted/action3", "PATCH", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action3","/restricted/action3", "POST", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action3","/restricted/action3", "DELETE", HttpServletResponse.SC_OK);
 
         assertResponseStatusCode("restricted","action4","/restricted/action4", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action4","/restricted/action4", "PUT", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        assertResponseStatusCode("restricted","action4","/restricted/action4", "PATCH", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action4","/restricted/action4", "POST", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action4","/restricted/action4", "DELETE", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 
         assertResponseStatusCode("restricted","action5","/restricted/action5", "GET", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action5","/restricted/action5", "PUT", HttpServletResponse.SC_OK);
+        assertResponseStatusCode("restricted","action5","/restricted/action5", "PATCH", HttpServletResponse.SC_OK);
         assertResponseStatusCode("restricted","action5","/restricted/action5", "POST", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         assertResponseStatusCode("restricted","action5","/restricted/action5", "DELETE", HttpServletResponse.SC_OK);
     }
