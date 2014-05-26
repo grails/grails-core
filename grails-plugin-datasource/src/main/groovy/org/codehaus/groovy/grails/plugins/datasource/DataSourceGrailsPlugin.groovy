@@ -243,38 +243,6 @@ class DataSourceGrailsPlugin {
         }
     }
 
-    def doWithWebDescriptor = { xml ->
-
-        // only configure if explicitly enabled or in dev mode if not disabled
-        def enabled = application.config.grails.dbconsole.enabled
-        if (!(enabled instanceof Boolean)) {
-            enabled = Environment.current == Environment.DEVELOPMENT
-        }
-        if (!enabled) {
-            return
-        }
-
-        String urlPattern = (application.config.grails.dbconsole.urlRoot ?: '/dbconsole') + '/*'
-
-        def listeners = xml.'listener'
-
-        listeners[listeners.size() - 1] + {
-            'servlet' {
-                'servlet-name'('H2Console')
-                'servlet-class'('org.h2.server.web.WebServlet')
-                'init-param' {
-                    'param-name'('-webAllowOthers')
-                    'param-value'('true')
-                }
-                'load-on-startup'('2')
-            }
-
-            'servlet-mapping' {
-                'servlet-name'('H2Console')
-                'url-pattern'(urlPattern)
-            }
-        }
-    }
 
     def onChange = { event ->
         if (!event.source) {

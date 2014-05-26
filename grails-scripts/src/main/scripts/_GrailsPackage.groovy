@@ -54,9 +54,6 @@ target(packageApp : "Implementation of package target") {
 
     configureServerContextPath()
 
-    loadPlugins()
-    generateWebXml()
-
     event("PackagingEnd",[])
 }
 
@@ -71,7 +68,6 @@ target(startLogging:"Bootstraps logging") {
 
 target(generateWebXml : "Generates the web.xml file") {
     depends(classpath)
-    projectPackager.generateWebXml(pluginManager)
 }
 
 target(packageTlds:"packages tld definitions for the correct servlet version") {

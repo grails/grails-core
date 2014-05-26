@@ -93,6 +93,12 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         initializePluginManager();
     }
 
+    public GrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent, GrailsPluginManager pluginManager) {
+        this.application = application;
+        this.parent = parent;
+        this.pluginManager = pluginManager;
+    }
+
     protected void initializePluginManager() {
         try {
             pluginManager = parent == null ? null : parent.getBean(GrailsPluginManager.class);
@@ -148,9 +154,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             }
 
             pluginManager.registerProvidedArtefacts(application);
-
-            registerParentBeanFactoryPostProcessors(webSpringConfig);
-
             pluginManager.doRuntimeConfiguration(webSpringConfig);
 
             LOG.debug("[RuntimeConfiguration] Processing additional external configurations");
@@ -190,7 +193,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
     protected WebRuntimeSpringConfiguration createWebRuntimeSpringConfiguration(GrailsApplication app,
             ApplicationContext parentCtx, ClassLoader classLoader) {
-        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parentCtx, classLoader);
+        WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parentCtx, classLoader, app);
         springConfig.setBeanFactory(new OptimizedAutowireCapableBeanFactory());
         return springConfig;
     }

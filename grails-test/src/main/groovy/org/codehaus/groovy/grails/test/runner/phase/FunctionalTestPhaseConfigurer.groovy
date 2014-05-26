@@ -69,15 +69,6 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         final packager = projectRunner.projectPackager
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()
-        if (!isServerRunning)  {
-            def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader,
-                packager.buildSettings, projectRunner.buildEventListener)
-            final pluginManager = grailsProjectPluginLoader.loadPlugins()
-            testExecutionContext.setVariable('pluginManager', pluginManager)
-            packager.buildEventListener.binding.setVariable('pluginManager', pluginManager)
-            packager.generateWebXml(pluginManager)
-        }
-
         registryCleaner = MetaClassRegistryCleaner.createAndRegister()
 
         if (!isServerRunning) {

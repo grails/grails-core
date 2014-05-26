@@ -35,10 +35,8 @@ import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.compiler.PackagingException
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
-import org.springframework.core.io.FileSystemResource
 import org.springframework.util.ClassUtils
 
 /**
@@ -125,62 +123,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
            ant = new GrailsConsoleAntBuilder()
        }
        ant
-    }
-
-    /**
-     * Generates the web.xml file used by Grails to startup
-     */
-    void generateWebXml(GrailsPluginManager pluginManager) {
-        // don't duplicate work
-        if (webXmlFile.exists() && webXmlGenerated) return
-
-        File projectWorkDir = buildSettings.projectWorkDir
-        ConfigObject buildConfig = buildSettings.config
-        def webXml = new FileSystemResource("$basedir/src/templates/war/web.xml")
-        String tmpWebXml = "$projectWorkDir/web.xml.tmp"
-
-        final baseWebXml = getBaseWebXml(buildConfig)
-        if (baseWebXml) {
-            def customWebXml = resolveResources(baseWebXml.toString())
-            def customWebXmlFile = customWebXml[0].file
-            if (customWebXmlFile.exists()) {
-                ant.copy(file:customWebXmlFile, tofile:tmpWebXml, overwrite:true)
-            }
-            else {
-                grailsConsole.error("Custom web.xml defined in config [${baseWebXml}] could not be found." )
-                exit(1)
-            }
-        } else {
-            if (webXml.exists()) {
-                ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
-            }
-            else {
-                copyGrailsResource(tmpWebXml, grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"))
-            }
-        }
-        webXml = new FileSystemResource(tmpWebXml)
-        ant.replace(file:tmpWebXml, encoding:'UTF-8', token:"@grails.project.key@",
-                    value:"${grailsAppName}-${buildSettings.grailsEnv}-${grailsAppVersion}")
-
-        def sw = new StringWriter()
-
-        try {
-            profile("generating web.xml from $webXml") {
-                buildEventListener.triggerEvent("WebXmlStart", webXml.filename)
-                pluginManager.doWebDescriptor(webXml, sw)
-                webXmlFile.withWriter('UTF-8') { it << sw.toString() }
-                webXmlGenerated = true
-                buildEventListener.triggerEvent("WebXmlEnd", webXml.filename)
-            }
-        }
-        catch (Exception e) {
-            grailsConsole.error("Error generating web.xml file", e)
-            exit(1)
-        }
-    }
-
-    private getBaseWebXml(ConfigObject buildConfig) {
-        buildConfig.grails.config.base.webXml
     }
 
     /**

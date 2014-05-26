@@ -85,6 +85,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected MultipartResolver multipartResolver;
     protected ViewResolver layoutViewResolver;
 
+
+    public GrailsDispatcherServlet(WebApplicationContext webApplicationContext) {
+        super(webApplicationContext);
+    }
+
     /**
      * Constructor.
      */

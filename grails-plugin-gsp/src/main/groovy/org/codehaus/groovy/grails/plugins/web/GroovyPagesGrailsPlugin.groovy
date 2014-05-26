@@ -21,7 +21,12 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
+import org.springframework.boot.context.embedded.ServletContextInitializer
 
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
 import java.lang.reflect.Modifier
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
@@ -70,7 +75,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver
  * @author Graeme Rocher
  * @since 1.1
  */
-class GroovyPagesGrailsPlugin {
+class GroovyPagesGrailsPlugin implements ServletContextInitializer{
 
     def watchedResources = ["file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
                             "file:./grails-app/taglib/**/*TagLib.groovy"]
@@ -266,24 +271,6 @@ class GroovyPagesGrailsPlugin {
         return location
     }
 
-    /**
-     * Modifies the web.xml when in development mode to allow viewing of sources
-     */
-    def doWithWebDescriptor = { webXml ->
-        if (Environment.current != Environment.DEVELOPMENT) {
-            return
-        }
-
-        // Find the GSP servlet and allow viewing generated source in development mode
-        def gspServlet = webXml.servlet.find {it.'servlet-name'?.text() == 'gsp' }
-        gspServlet.'servlet-class' + {
-            'init-param' {
-                description "Allows developers to view the intermediate source code, when they pass a showSource argument in the URL."
-                'param-name'('showSource')
-                'param-value'(1)
-            }
-        }
-    }
 
     private void enhanceClasses(List<Class> classes, apiObject) {
         def nonEnhancedClasses = [] as Set
@@ -360,5 +347,15 @@ class GroovyPagesGrailsPlugin {
     def onConfigChange = { event ->
         def ctx = event.ctx ?: application.mainContext
         ctx.filteringCodecsByContentTypeSettings.initialize(application)
+    }
+
+    @Override
+    @CompileStatic
+    void onStartup(ServletContext servletContext) throws ServletException {
+        def gspServlet = servletContext.addServlet("gsp", GroovyPagesServlet)
+        gspServlet.addMapping("*.gsp")
+        if(Environment.isDevelopmentMode()) {
+            gspServlet.setInitParameter("showSource", "1")
+        }
     }
 }

@@ -206,7 +206,7 @@ target(javadoc:"Produces javadoc documentation") {
 }
 
 target(refdocs:"Generates Grails style reference documentation") {
-    depends(parseArguments, createConfig,loadPlugins, setupDoc)
+    depends(parseArguments, createConfig, setupDoc)
 
     if (docsDisabled()) {
         event("DocSkip", ["refdocs"])
@@ -214,41 +214,6 @@ target(refdocs:"Generates Grails style reference documentation") {
     }
 
     def srcDocs = new File("${basedir}/src/docs")
-
-    def context = DocumentationContext.getInstance()
-    if (context?.hasMetadata()) {
-        for (DocumentedMethod m in context.methods) {
-            if (m.artefact && m.artefact != 'Unknown') {
-                String refDir = "${srcDocs}/ref/${GrailsNameUtils.getNaturalName(m.artefact)}"
-                ant.mkdir(dir:refDir)
-                def refFile = new File("${refDir}/${m.name}.gdoc")
-                if (!refFile.exists()) {
-                    grailsConsole.updateStatus "Generating documentation ${refFile}"
-                    refFile.write """
-h1. ${m.name}
-
-h2. Purpose
-
-${m.text ?: ''}
-
-h2. Examples
-
-{code:java}
-foo.${m.name}(${m.arguments?.collect {GrailsNameUtils.getPropertyName(it)}.join(',')})
-{code}
-
-h2. Description
-
-${m.text ?: ''}
-
-Arguments:
-
-${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
-"""
-                }
-            }
-        }
-    }
 
     if (srcDocs.exists()) {
         event("DocStart", ["refdocs"])

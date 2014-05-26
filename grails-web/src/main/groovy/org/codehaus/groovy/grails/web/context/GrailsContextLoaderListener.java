@@ -50,6 +50,13 @@ public class GrailsContextLoaderListener extends ContextLoaderListener {
     public static final Log LOG = LogFactory.getLog(GrailsContextLoaderListener.class);
     GrailsApplication application;
 
+    public GrailsContextLoaderListener() {
+    }
+
+    public GrailsContextLoaderListener(WebApplicationContext context) {
+        super(context);
+    }
+
     @Override
     public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
         // disable annoying ehcache up-to-date check

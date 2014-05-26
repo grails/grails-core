@@ -19,6 +19,9 @@ import grails.util.Metadata
 
 import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
 
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
+
 /**
  * Provides a lazy initialized commons logging log property for all classes.
  *
@@ -52,15 +55,7 @@ class LoggingGrailsPlugin {
         Log4jConfig.initialize(event.source)
     }
 
-    def doWithWebDescriptor = { webXml ->
-
-        def mappingElement = webXml.'filter-mapping'
-        mappingElement = mappingElement[mappingElement.size() - 1]
-
-        mappingElement + {
-            'listener' {
-                'listener-class'(Log4jConfigListener.name)
-            }
-        }
+    void onStartup(ServletContext servletContext) throws ServletException {
+        servletContext.addListener(new Log4jConfigListener())
     }
 }

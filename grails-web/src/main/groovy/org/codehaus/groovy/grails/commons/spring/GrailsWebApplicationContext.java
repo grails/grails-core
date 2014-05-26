@@ -69,12 +69,27 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
         this(new OptimizedAutowireCapableBeanFactory(), parent);
     }
 
+    public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, GrailsApplication grailsApplication) {
+        this(defaultListableBeanFactory);
+        this.grailsApplication = grailsApplication;
+    }
+
+    public GrailsWebApplicationContext(ApplicationContext parent, GrailsApplication grailsApplication) throws BeansException {
+        super(parent);
+        this.grailsApplication = grailsApplication;
+    }
+
     public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
         super(defaultListableBeanFactory);
     }
 
     public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, ApplicationContext parent) {
         super(defaultListableBeanFactory, parent);
+    }
+
+    public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, ApplicationContext parent, GrailsApplication grailsApplication) {
+        super(defaultListableBeanFactory, parent);
+        this.grailsApplication = grailsApplication;
     }
 
     @Override

@@ -81,14 +81,6 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
         checkForChangesExpected = false;
     }
 
-    public void doWebDescriptor(Resource descriptor, Writer target) {
-        // do nothing
-    }
-
-    public void doWebDescriptor(File descriptor, Writer target) {
-        // do nothing
-    }
-
     @Override
     public boolean isInitialised() {
         return true;

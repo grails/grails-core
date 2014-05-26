@@ -17,12 +17,14 @@ package org.codehaus.groovy.grails.plugins.web.mapping
 
 import grails.util.Environment
 import grails.util.GrailsUtil
+import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
-
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
@@ -34,6 +36,9 @@ import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.boot.context.embedded.FilterRegistrationBean
+import org.springframework.boot.context.embedded.ServletContextInitializer
+import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 import org.springframework.web.context.WebApplicationContext
@@ -42,18 +47,22 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.control.CompilePhase
 
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
+
 /**
  * Handles the configuration of URL mappings.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
-class UrlMappingsGrailsPlugin {
+class UrlMappingsGrailsPlugin implements ServletContextInitializer {
 
     def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
+    def loadAfter = ['controllers']
 
     def doWithSpring = {
         String serverURL = application.config?.grails?.serverURL ?: null
@@ -88,99 +97,8 @@ class UrlMappingsGrailsPlugin {
         }
     }
 
-    def doWithWebDescriptor = { webXml ->
-        addUrlMappingsFilterAndMapping(webXml)
 
-        // here we augment web.xml with all the error codes contained within the UrlMapping definitions
-        def servlets = webXml.servlet
-        def lastServlet = servlets[servlets.size()-1]
 
-        lastServlet + {
-            'servlet' {
-                'servlet-name'("grails-errorhandler")
-                'servlet-class'(ErrorHandlingServlet.name)
-            }
-        }
-
-        def servletMappings = webXml.'servlet-mapping'
-        def lastMapping = servletMappings[servletMappings.size()-1]
-        lastMapping + {
-            'servlet-mapping' {
-                'servlet-name'("grails-errorhandler")
-                'url-pattern'("/grails-errorhandler")
-            }
-        }
-
-        def welcomeFileList = webXml.'welcome-file-list'
-        def appliedErrorCodes = []
-        def errorPages = {
-            for (Resource r in watchedResources) {
-                def contents = r.file.getText("UTF-8")
-
-                // Process the UrlMappings to create the syntax tree
-                def ast = new AstBuilder()
-                    .buildFromString(CompilePhase.CONVERSION, false, contents)
-                    .find { it.class == ClassNode.class }
-
-                // Visit the contents in search of the response codes
-                def visitor = new ResponseCodeUrlMappingVisitor()
-                ast.visitContents(visitor)
-
-                def responseCodes = visitor.responseCodes
-                responseCodes.each { errorCode ->
-                    if (!appliedErrorCodes.contains(errorCode)) {
-                        appliedErrorCodes << errorCode
-                        'error-page' {
-                            'error-code'(errorCode)
-                            'location'("/grails-errorhandler")
-                        }
-                    }
-                }
-            }
-        }
-
-        if (welcomeFileList.size() > 0) {
-            welcomeFileList = welcomeFileList[welcomeFileList.size() - 1]
-            welcomeFileList + errorPages
-        }
-        else {
-            lastMapping +  errorPages
-        }
-
-    }
-
-    private addUrlMappingsFilterAndMapping(webXml) {
-        def urlMappingsFilter = {
-            filter {
-                'filter-name'('urlMapping')
-                'filter-class'(UrlMappingsFilter.name)
-            }
-        }
-
-        def urlMappingsFilterMapping = {
-            'filter-mapping' {
-                'filter-name'('urlMapping')
-                'url-pattern'("/*")
-                'dispatcher'("FORWARD")
-                'dispatcher'("REQUEST")
-            }
-        }
-
-        def filters = webXml.filter
-        if(filters?.size()) {
-            def lastFilter = filters[filters.size()-1]
-            lastFilter + urlMappingsFilter
-            def filterMappings = webXml.'filter-mapping'
-            filterMappings[filterMappings.size() - 1] + urlMappingsFilterMapping
-        } else {
-            def firstChild = webXml.children()[0]
-            firstChild.replaceNode { Object[] args ->
-                mkp.yield urlMappingsFilter
-                mkp.yield urlMappingsFilterMapping
-                mkp.yield args
-            }
-        }
-    }
 
     def onChange = { event ->
         if (!application.isUrlMappingsClass(event.source)) {
@@ -206,4 +124,27 @@ class UrlMappingsGrailsPlugin {
         factory.afterPropertiesSet()
         return factory.getObject()
     }
+
+    @Override
+    @CompileStatic
+    void onStartup(ServletContext servletContext) throws ServletException {
+        def urlMappingsFilter = new FilterRegistrationBean(new UrlMappingsFilter())
+        urlMappingsFilter.urlPatterns = ["/*"]
+        urlMappingsFilter.onStartup(servletContext)
+
+
+        GrailsApplication application = GrailsWebUtil.lookupApplication(servletContext)
+
+
+
+        // TODO: read ResponseCodeUrlMappings from URLMappings on startup and register with error handler
+        // Note that Servlet 3.0 does not allow the registration of error pages programmatically, will use Boot APIs to achieve this
+        // See https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/embedded/tomcat/TomcatEmbeddedServletContainerFactory.java#L239
+
+        // def errorHandler = new ServletRegistrationBean(new ErrorHandlingServlet())
+        //  errorHandler.onStartup(servletContext)
+
+    }
+
+
 }

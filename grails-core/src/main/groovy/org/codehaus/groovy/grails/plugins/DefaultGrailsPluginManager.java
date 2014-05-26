@@ -19,37 +19,6 @@ import grails.util.Environment;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-import groovy.xml.DOMBuilder;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -68,10 +37,14 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.util.*;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -702,63 +675,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         plugin.doWithDynamicMethods(applicationContext);
     }
 
-    public void doWebDescriptor(Resource descriptor, Writer target) {
-        try {
-            doWebDescriptor(descriptor.getInputStream(), target);
-        }
-        catch (IOException e) {
-            throw new PluginException("Unable to read web.xml [" + descriptor + "]: " + e.getMessage(), e);
-        }
-    }
 
-    private void doWebDescriptor(InputStream inputStream, Writer target) {
-        checkInitialised();
-        try {
-            Document document = DOMBuilder.parse(new InputStreamReader(inputStream, "UTF-8"));
-            Element documentElement = document.getDocumentElement();
-
-            for (GrailsPlugin plugin : pluginList) {
-                if (plugin.supportsCurrentScopeAndEnvironment()) {
-                    plugin.doWithWebDescriptor(documentElement);
-                }
-            }
-
-            boolean areServlet3JarsPresent = ClassUtils.isPresent("javax.servlet.AsyncContext", Thread.currentThread().getContextClassLoader());
-            String servletVersion = application.getMetadata().getServletVersion();
-            if (areServlet3JarsPresent && GrailsVersionUtils.supportsAtLeastVersion(servletVersion, "3.0")) {
-                new Servlet3AsyncWebXmlProcessor().process(documentElement);
-            }
-            writeWebDescriptorResult(documentElement, target);
-        }
-        catch (ParserConfigurationException e) {
-            throw new PluginException("Unable to configure web.xml due to parser configuration problem: " + e.getMessage(), e);
-        }
-        catch (SAXException e) {
-            throw new PluginException("XML parsing error configuring web.xml: " + e.getMessage(), e);
-        }
-        catch (IOException e) {
-            throw new PluginException("Unable to read web.xml" + e.getMessage(), e);
-        }
-    }
-
-    private void writeWebDescriptorResult(Element result, Writer output) throws IOException {
-        try {
-            TransformerFactory.newInstance().newTransformer().transform(
-                    new DOMSource(result),
-                    new StreamResult(output));
-        } catch (TransformerException e) {
-            throw new IOException("Error transforming web.xml: " + e.getMessage(), e);
-        }
-    }
-
-    public void doWebDescriptor(File descriptor, Writer target) {
-        try {
-            doWebDescriptor(new FileInputStream(descriptor), target);
-        }
-        catch (FileNotFoundException e) {
-            throw new PluginException("Unable to read web.xml [" + descriptor + "]: " + e.getMessage(), e);
-        }
-    }
 
     @Override
     public void setApplication(GrailsApplication application) {

@@ -107,23 +107,6 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     void doPostProcessing(ApplicationContext applicationContext);
 
     /**
-     * Takes the specified web descriptor reference and configures it with all the plugins outputting
-     * the result to the target Writer instance
-     *
-     * @param descriptor The Resource of the descriptor
-     * @param target The Writer to write the result to
-     */
-    void doWebDescriptor(Resource descriptor, Writer target);
-
-    /**
-     * @see #doWebDescriptor(Resource, Writer)
-     *
-     * @param descriptor The File of the descriptor
-     * @param target The target to write the changes to
-     */
-    void doWebDescriptor(File descriptor, Writer target);
-
-    /**
      * Called on all plugins so that they can add new methods/properties/constructors etc.
      */
     void doDynamicMethods();

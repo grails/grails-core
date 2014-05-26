@@ -18,7 +18,8 @@ package org.codehaus.groovy.grails.plugins.web
 import grails.artefact.Enhanced
 import grails.util.Environment
 import grails.util.GrailsUtil
-
+import grails.util.GrailsWebUtil
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -30,16 +31,27 @@ import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
+import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition
+import org.springframework.boot.context.embedded.FilterRegistrationBean
+import org.springframework.boot.context.embedded.ServletContextInitializer
+import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext
+import org.springframework.util.ClassUtils
+import org.springframework.web.filter.CharacterEncodingFilter
+import org.springframework.web.filter.DelegatingFilterProxy
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
+
+import javax.servlet.Servlet
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -47,7 +59,7 @@ import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
  * @author Graeme Rocher
  * @since 0.4
  */
-class ControllersGrailsPlugin {
+class ControllersGrailsPlugin implements ServletContextInitializer{
 
     def watchedResources = [
         "file:./grails-app/controllers/**/*Controller.groovy",
@@ -60,6 +72,9 @@ class ControllersGrailsPlugin {
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
 
+        characterEncodingFilter(CharacterEncodingFilter) {
+            encoding = application.flatConfig.get('grails.filter.encoding') ?: 'utf-8'
+        }
         exceptionHandler(GrailsExceptionResolver) {
             exceptionMappings = ['java.lang.Exception': '/error']
         }
@@ -110,62 +125,6 @@ class ControllersGrailsPlugin {
                     }
                 }
             }
-        }
-    }
-
-    def doWithWebDescriptor = { webXml ->
-
-        def mappingElement = webXml.'servlet-mapping'
-        mappingElement = mappingElement[mappingElement.size() - 1]
-
-        mappingElement + {
-            'servlet-mapping' {
-                'servlet-name'("grails")
-                'url-pattern'("*.dispatch")
-            }
-        }
-
-        def filters = webXml.filter
-        def filterMappings = webXml.'filter-mapping'
-
-        def lastFilter = filters[filters.size() - 1]
-        def lastFilterMapping = filterMappings[filterMappings.size() - 1]
-        def charEncodingFilterMapping = filterMappings.find {it.'filter-name'.text() == 'charEncodingFilter'}
-
-        // add the Grails web request filter
-        lastFilter + {
-            filter {
-                'filter-name'('hiddenHttpMethod')
-                'filter-class'(HiddenHttpMethodFilter.name)
-            }
-
-            filter {
-                'filter-name'('grailsWebRequest')
-                'filter-class'(GrailsWebRequestFilter.name)
-            }
-        }
-
-        def grailsWebRequestFilter = {
-            'filter-mapping' {
-                'filter-name'('hiddenHttpMethod')
-                'url-pattern'("/*")
-                'dispatcher'("FORWARD")
-                'dispatcher'("REQUEST")
-            }
-            'filter-mapping' {
-                'filter-name'('grailsWebRequest')
-                'url-pattern'("/*")
-                'dispatcher'("FORWARD")
-                'dispatcher'("REQUEST")
-                'dispatcher'("ERROR")
-            }
-        }
-
-        if (charEncodingFilterMapping) {
-            charEncodingFilterMapping + grailsWebRequestFilter
-        }
-        else {
-            lastFilterMapping + grailsWebRequestFilter
         }
     }
 
@@ -253,4 +212,52 @@ class ControllersGrailsPlugin {
             controllerClass.initialize()
         }
     }
+
+    @Override
+    @CompileStatic
+    void onStartup(ServletContext servletContext) throws ServletException {
+        def application = GrailsWebUtil.lookupApplication(servletContext)
+        def proxy = new DelegatingFilterProxy("characterEncodingFilter")
+        proxy.targetFilterLifecycle = true
+        FilterRegistrationBean charEncoder = new FilterRegistrationBean(proxy)
+
+        def catchAllMapping = ['/*']
+        charEncoder.urlPatterns = catchAllMapping
+        charEncoder.onStartup(servletContext)
+
+        def hiddenHttpFilter = new FilterRegistrationBean(new HiddenHttpMethodFilter())
+        hiddenHttpFilter.urlPatterns = catchAllMapping
+        hiddenHttpFilter.onStartup(servletContext)
+
+        def webRequestFilter = new FilterRegistrationBean(new GrailsWebRequestFilter())
+
+        // TODO: Add ERROR dispatcher type
+        webRequestFilter.urlPatterns = catchAllMapping
+        webRequestFilter.onStartup(servletContext)
+
+        if(application != null) {
+            def dbConsoleEnabled = application?.flatConfig?.get('grails.dbconsole.enabled')
+
+            if (!(dbConsoleEnabled instanceof Boolean)) {
+                dbConsoleEnabled = Environment.current == Environment.DEVELOPMENT
+            }
+
+            if(!dbConsoleEnabled) return
+
+
+            def classLoader = Thread.currentThread().contextClassLoader
+            if(ClassUtils.isPresent('org.h2.server.web.WebServlet', classLoader)) {
+
+                String urlPattern = (application?.flatConfig?.get('grails.dbconsole.urlRoot') ?: "/dbconsole").toString() + '/*'
+                ServletRegistrationBean dbConsole = new ServletRegistrationBean(classLoader.loadClass('org.h2.server.web.WebServlet').newInstance() as Servlet, urlPattern)
+                dbConsole.loadOnStartup = 2
+                dbConsole.initParameters = ['-webAllowOthers':'true']
+                dbConsole.onStartup(servletContext)
+            }
+
+        }
+
+    }
+
+
 }

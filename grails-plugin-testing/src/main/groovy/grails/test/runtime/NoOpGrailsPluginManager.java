@@ -53,16 +53,6 @@ final class NoOpGrailsPluginManager implements GrailsPluginManager {
     }
 
     @Override
-    public void doWebDescriptor(Resource descriptor, Writer target) {
-        
-    }
-
-    @Override
-    public void doWebDescriptor(File descriptor, Writer target) {
-        
-    }
-
-    @Override
     public void doDynamicMethods() {
         
     }
