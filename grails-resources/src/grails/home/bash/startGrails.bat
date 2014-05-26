@@ -65,7 +65,7 @@ set SPRINGLOADED_PARAMS="profile=grails;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
 
 if "%GRAILS_NO_PERMGEN%" == "" (
-	type %JAVA_HOME%\include\classfile_constants.h 2>nul | findstr /R /C:"#define JVM_CLASSFILE_MAJOR_VERSION 5[23]" >nul
+	type "%JAVA_HOME%\include\classfile_constants.h" 2>nul | findstr /R /C:"#define JVM_CLASSFILE_MAJOR_VERSION 5[23]" >nul
 	if not errorlevel 1 set GRAILS_NO_PERMGEN=1
 )
 
