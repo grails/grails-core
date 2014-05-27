@@ -127,6 +127,50 @@ class ControllerActionTransformerAllowedMethodsSpec extends Specification {
         then: 'the allowedMethods should not be checked by the second method'
         response.status == HttpServletResponse.SC_OK
     }
+    
+    @Issue('GRAILS-11444')
+    void 'Test invoking an unrestrected action method which invokes several other restricted actions'() {
+        when: 'an action invokes several other restricted actions'
+        request.method = 'GET'
+        controller.callSeveralRestrictedActions()
+        
+        then: 'only the first action imposes the allowedMethods check'
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'Success From callSeveralRestrictedActions'
+    }
+    
+    @Issue('GRAILS-11444')
+    void 'Test allowedMethods handling for a unit test which initiates several requests'() {
+        when: 'an action invokes several other restricted actions'
+        request.method = 'GET'
+        controller.callSeveralRestrictedActions()
+        
+        then: 'only the first action imposes the allowedMethods check'
+        response.status == HttpServletResponse.SC_OK
+        
+        when: 'an unrestricted action method invokes a restricted action method'
+        response.reset()
+        controller.callPostMethod()
+        
+        then: 'the allowedMethods should not be checked by the restricted method'
+        response.status == HttpServletResponse.SC_OK
+
+        when: 'an invalid request method is used'
+        response.reset()
+        request.method = 'POST'
+        controller.callPostMethodFromPutMethod()
+        
+        then: 'the method is not allowed'
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+        
+        when: 'a restricted action method invokes another restricted action method'
+        response.reset()
+        request.method = 'PUT'
+        controller.callPostMethodFromPutMethod()
+            
+        then: 'the allowedMethods should not be checked by the second method'
+        response.status == HttpServletResponse.SC_OK
+    }
 }
 
 @Artefact('Controller')
@@ -135,7 +179,9 @@ class SomeAllowedMethodsController {
     static allowedMethods = [callPostMethodFromPutMethod: 'PUT', 
                              onlyPostAllowed: 'POST', 
                              postOrPutAllowed: ['POST', 'PUT'], 
-                             mixedCasePost: 'pOsT']
+                             mixedCasePost: 'pOsT',
+                             postOne: 'POST',
+                             postTwo: 'POST']
     
     def anyMethodAllowed() {
         render 'Success'
@@ -160,4 +206,13 @@ class SomeAllowedMethodsController {
     def callPostMethodFromPutMethod() {
         onlyPostAllowed()
     }
+    
+    def callSeveralRestrictedActions() {
+        postOne()
+        postTwo()
+        render 'Success From callSeveralRestrictedActions'
+    }
+    
+    def postOne() {}
+    def postTwo() {}
 }

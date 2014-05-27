@@ -476,6 +476,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final PropertyExpression requestPropertyExpression = new PropertyExpression(new VariableExpression("this"), "request");
         
         final FieldNode allowedMethodsField = controllerClass.getField(DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
+        
         if(allowedMethodsField != null) {
             final Expression initialAllowedMethodsExpression = allowedMethodsField.getInitialExpression();
             if(initialAllowedMethodsExpression instanceof MapExpression) {
@@ -528,22 +529,28 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     blockToSendError.addStatement(returnStatement);
                     final IfStatement ifIsValidRequestMethodStatement = new IfStatement(isValidRequestMethod, new ExpressionStatement(new EmptyExpression()), blockToSendError);
                   
-                    final Expression getAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "getAttribute", new ArgumentListExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME)));
-                    final Statement ifAttributeHasBeenSetStatement = new IfStatement(new BooleanExpression(getAttributeMethodCall), new ExpressionStatement(new EmptyExpression()), ifIsValidRequestMethodStatement);
-                  
-                    checkAllowedMethodsBlock.addStatement(ifAttributeHasBeenSetStatement);
+                    checkAllowedMethodsBlock.addStatement(ifIsValidRequestMethodStatement);
                 }
             }
         }
         
         final ArgumentListExpression argumentListExpression = new ArgumentListExpression();
         argumentListExpression.addExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME));
-        argumentListExpression.addExpression(new ConstantExpression(Boolean.TRUE));
+        argumentListExpression.addExpression(new ConstantExpression(methodNode.getName()));
         
         final Expression setAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "setAttribute", argumentListExpression);
-        checkAllowedMethodsBlock.addStatement(new ExpressionStatement(setAttributeMethodCall));
+        
+        final BlockStatement codeToExecuteIfAttributeIsNotSet = new BlockStatement();
+        codeToExecuteIfAttributeIsNotSet.addStatement(new ExpressionStatement(setAttributeMethodCall));
+        codeToExecuteIfAttributeIsNotSet.addStatement(checkAllowedMethodsBlock);
 
-        return checkAllowedMethodsBlock;
+        final BooleanExpression attributeIsSetBooleanExpression = new BooleanExpression(new MethodCallExpression(requestPropertyExpression, "getAttribute", new ArgumentListExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME))));
+        final Statement ifAttributeIsAlreadySetStatement = new IfStatement(attributeIsSetBooleanExpression, new EmptyStatement(), codeToExecuteIfAttributeIsNotSet);
+        
+        final BlockStatement code = new BlockStatement();
+        code.addStatement(ifAttributeIsAlreadySetStatement);
+
+        return code;
     }
     /**
      * This will wrap the method body in a try catch block which does something
@@ -605,10 +612,25 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final PropertyExpression requestPropertyExpression = new PropertyExpression(new VariableExpression("this"), "request");
         final Expression removeAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "removeAttribute", argumentListExpression);
         
-        final TryCatchStatement removeAttributeStatement = new TryCatchStatement(new ExpressionStatement(removeAttributeMethodCall), new EmptyStatement());
-        removeAttributeStatement.addCatch(new CatchStatement(new Parameter(ClassHelper.make(Exception.class), "$exceptionRemovingAttribute"), new EmptyStatement()));
-       
-        tryCatchStatement.setFinallyStatement(removeAttributeStatement);
+        final Expression getAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "getAttribute", new ArgumentListExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME)));
+        final VariableExpression attributeValueExpression = new VariableExpression("$allowed_methods_attribute_value", ClassHelper.make(Object.class));
+        final Expression initializeAttributeValue = new DeclarationExpression(
+                attributeValueExpression, Token.newSymbol(Types.EQUALS, 0, 0), getAttributeMethodCall);
+        final Expression attributeValueMatchesMethodNameExpression = new BinaryExpression(new ConstantExpression(methodNode.getName()), 
+                                                  Token.newSymbol(Types.COMPARE_EQUAL, 0, 0), 
+                                                  attributeValueExpression);
+        final Statement ifAttributeValueMatchesMethodName = 
+                new IfStatement(new BooleanExpression(attributeValueMatchesMethodNameExpression), 
+                                new ExpressionStatement(removeAttributeMethodCall), new EmptyStatement());
+
+        final BlockStatement blockToRemoveAttribute = new BlockStatement();
+        blockToRemoveAttribute.addStatement(new ExpressionStatement(initializeAttributeValue));
+        blockToRemoveAttribute.addStatement(ifAttributeValueMatchesMethodName);
+        
+        final TryCatchStatement tryCatchToRemoveAttribute = new TryCatchStatement(blockToRemoveAttribute, new EmptyStatement());
+        tryCatchToRemoveAttribute.addCatch(new CatchStatement(new Parameter(ClassHelper.make(Exception.class), "$exceptionRemovingAttribute"), new EmptyStatement()));
+
+        tryCatchStatement.setFinallyStatement(tryCatchToRemoveAttribute);
 
         methodNode.setCode(tryCatchStatement);
     }
