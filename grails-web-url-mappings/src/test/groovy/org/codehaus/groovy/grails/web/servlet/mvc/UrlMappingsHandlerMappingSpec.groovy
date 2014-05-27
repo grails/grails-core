@@ -21,7 +21,7 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
                 "/foo/bar"(controller:"foo", action:"bar")
             }
 
-            holder = new AbstractGrailsControllerUrlMappings(grailsApplication, holder)
+            holder = new GrailsControllerUrlMappings(grailsApplication, holder)
             def handler = new UrlMappingsHandlerMapping(holder)
 
         when:"A URI is matched"
