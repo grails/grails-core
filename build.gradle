@@ -134,8 +134,8 @@ subprojects { project ->
         apply plugin: 'signing'
     //apply plugin: 'duplicates'
 
-    sourceCompatibility = "1.6"
-    targetCompatibility = "1.6"
+    sourceCompatibility = "1.7"
+    targetCompatibility = "1.7"
 //    archivesBaseName = 'grails'
 
     ext.isCiBuild = project.hasProperty("isCiBuild")

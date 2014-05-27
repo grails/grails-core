@@ -116,8 +116,13 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
     }
 
     protected String evaluateNameForValue(Object value) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        return evaluateNameForValue(value, webRequest);
+        if(value instanceof CharSequence) {
+            return value.toString().trim();
+        }
+        else {
+            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+            return evaluateNameForValue(value, webRequest);
+        }
     }
 
     protected String evaluateNameForValue(Object value, GrailsWebRequest webRequest) {

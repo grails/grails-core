@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -61,6 +62,11 @@ public class GrailsWebUtil {
     public static GrailsApplication lookupApplication(ServletContext servletContext) {
         if (servletContext == null) {
             return null;
+        }
+
+        GrailsApplication grailsApplication = (GrailsApplication)servletContext.getAttribute(ApplicationAttributes.APPLICATION);
+        if(grailsApplication != null) {
+            return grailsApplication;
         }
 
         final WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);

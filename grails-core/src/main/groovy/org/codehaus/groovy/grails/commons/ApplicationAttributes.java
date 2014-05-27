@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationContext;
  * @since 0.4
  */
 public interface ApplicationAttributes {
-
+    String APPLICATION = "org.codehaus.groovy.grails.APPLICATION";
     String APPLICATION_CONTEXT = "org.codehaus.groovy.grails.APPLICATION_CONTEXT";
     String PARENT_APPLICATION_CONTEXT = "org.codehaus.groovy.grails.PARENT_APPLICATION_CONTEXT";
     String REQUEST_SCOPE_ID = "org.codehaus.groovy.grails.GRAILS_APPLICATION_ATTRIBUTES";

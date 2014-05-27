@@ -174,20 +174,9 @@ public class UrlMappingUtils {
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
         webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
         info.configure(webRequest);
-        passControllerForForwardedRequest(webRequest, info);
+        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
         dispatcher.forward(request, response);
         return forwardUrl;
-    }
-
-    protected static void passControllerForForwardedRequest(final GrailsWebRequest webRequest,
-            UrlMappingInfo info) {
-        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-        if (info.getViewName() == null && info.getURI() == null) {
-            GrailsApplication grailsApplicationToUse = webRequest.getAttributes().getGrailsApplication();
-            if(grailsApplicationToUse != null) {
-                passControllerForUrlMappingInfoInRequest(webRequest, info, locateUrlConverter(webRequest), grailsApplicationToUse);
-            }
-        }
     }
 
     private static UrlConverter locateUrlConverter(final GrailsWebRequest webRequest) {
@@ -249,7 +238,6 @@ public class UrlMappingUtils {
                 info.configure(webRequest);
                 webRequest.getParameterMap().putAll(info.getParameters());
                 webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-                passControllerForForwardedRequest(webRequest, info);
             }
             return includeForUrl(includeUrl, request, response, model);
         }
@@ -316,43 +304,8 @@ public class UrlMappingUtils {
         }
     }
 
-    public static GrailsClass passControllerForUrlMappingInfoInRequest(GrailsWebRequest webRequest, UrlMappingInfo info, UrlConverter urlConverterToUse, GrailsApplication grailsApplicationToUse) {
-        if (info.getViewName() == null && info.getURI() == null) {
-            ControllerArtefactHandler.ControllerCacheKey featureId = getFeatureId(urlConverterToUse, info);
-            GrailsClass controller = grailsApplicationToUse.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
-            if (controller != null) {
-                webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
-                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
-                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
-                if(((GrailsControllerClass)controller).getNamespace() != null) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, ((GrailsControllerClass)controller).getNamespace(), WebRequest.SCOPE_REQUEST);
-                }
-            } else {
-                webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-            }
-            return controller;
-        } else {
-            webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-            return null;
-        }
-    }
 
-    public static ControllerArtefactHandler.ControllerCacheKey getFeatureId(UrlConverter urlConverter, UrlMappingInfo info) {
-        final String action = info.getActionName() == null ? "" : info.getActionName();
-        final String controllerName = info.getControllerName();
-        final String pluginName = info.getPluginName();
-        final String namespace = info.getNamespace();
-        final String featureUri = getControllerFeatureURI(urlConverter, controllerName, action);
 
-        return new ControllerArtefactHandler.ControllerCacheKey(featureUri, pluginName, namespace);
-    }
 
-    public static String getControllerFeatureURI(UrlConverter urlConverter, String controller, String action) {
-        return WebUtils.SLASH + urlConverter.toUrlElement(controller) + WebUtils.SLASH + urlConverter.toUrlElement(action);
-    }
 
-    @Deprecated
-    public static GrailsClass getConfiguredControllerForUrlMappingInfo(GrailsWebRequest webRequest, UrlMappingInfo info, UrlConverter urlConverterToUse, GrailsApplication grailsApplicationToUse) {
-        return passControllerForUrlMappingInfoInRequest(webRequest, info, urlConverterToUse, grailsApplicationToUse);
-    }
 }

@@ -34,10 +34,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.codehaus.groovy.grails.commons.events.ArtefactAdditionEvent;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -91,7 +93,16 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     public DefaultGrailsApplication(ClassLoader classLoader) {
         super();
         this.classLoader = classLoader;
-    }    
+    }
+
+    /**
+     * Construct an application for the given classes
+     *
+     * @param classes The classes
+     */
+    public DefaultGrailsApplication(final Class<?>...classes) {
+        this(classes, new GroovyClassLoader(Thread.currentThread().getContextClassLoader()));
+    }
 
     /**
      * Creates a new GrailsApplication instance using the given classes and GroovyClassLoader.
@@ -742,10 +753,16 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
 
             if (isInitialised()) {
                 initializeArtefacts(artefactType);
+                ApplicationContext context = getMainContext();
+                if(context != null) {
+                    context.publishEvent(new ArtefactAdditionEvent(artefactGrailsClass));
+                }
             }
 
             return artefactGrailsClass;
         }
+
+
 
         throw new GrailsConfigurationException("Cannot add " + artefactType + " class [" +
                 artefactClass + "]. It is not a " + artefactType + "!");

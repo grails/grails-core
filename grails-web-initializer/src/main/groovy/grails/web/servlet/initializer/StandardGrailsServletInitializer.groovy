@@ -1,16 +1,30 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package grails.web.servlet.initializer
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
 import org.codehaus.groovy.grails.web.context.GrailsContextLoaderListener
-import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet
-import org.springframework.boot.context.embedded.ServletContextInitializer
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.springframework.util.Assert
 import org.springframework.util.ObjectUtils
 import org.springframework.web.context.WebApplicationContext
@@ -41,7 +55,7 @@ class StandardGrailsServletInitializer extends AbstractDispatcherServletInitiali
 
     @Override
     protected String[] getServletMappings() {
-        ["*.dispatch"] as String[]
+        ["/*"] as String[]
     }
 
     @Override
@@ -60,6 +74,8 @@ class StandardGrailsServletInitializer extends AbstractDispatcherServletInitiali
         this.pluginManager = pluginManagerFactoryBean.getObject()
         this.servletContext = servletContext
         pluginManager.loadPlugins()
+
+        servletContext.setAttribute(ApplicationAttributes.APPLICATION, this.grailsApplication);
 
         for (GrailsPlugin plugin in pluginManager.allPlugins ) {
             def instance = plugin.instance

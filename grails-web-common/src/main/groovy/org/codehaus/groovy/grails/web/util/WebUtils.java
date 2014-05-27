@@ -147,6 +147,20 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
+     * Looks up the GrailsApplication instance
+     *
+     * @return The GrailsApplication instance
+     */
+    public static GrailsApplication findApplication(ServletContext servletContext) {
+        ApplicationContext wac = findApplicationContext(servletContext);
+        if(wac != null) {
+            return (GrailsApplication)wac.getBean(GrailsApplication.APPLICATION_ID);
+        }
+        return null;
+    }
+
+
+    /**
      * Locates the ApplicationContext, returns null if not found
      * @param servletContext The servlet context
      * @return The ApplicationContext

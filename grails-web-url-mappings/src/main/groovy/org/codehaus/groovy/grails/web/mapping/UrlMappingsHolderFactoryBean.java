@@ -23,18 +23,16 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
-import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
+import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.events.ArtefactAdditionEvent;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerUrlMappings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.*;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -111,7 +109,17 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         }
         // call initialize() after settings are in place
         defaultUrlMappingsHolder.initialize();
-        urlMappingsHolder=defaultUrlMappingsHolder;
+        final GrailsControllerUrlMappings grailsControllerUrlMappings = new GrailsControllerUrlMappings(grailsApplication, defaultUrlMappingsHolder);
+        ((ConfigurableApplicationContext)applicationContext).addApplicationListener( new ApplicationListener<ArtefactAdditionEvent>() {
+            @Override
+            public void onApplicationEvent(ArtefactAdditionEvent event) {
+                GrailsClass artefact = event.getArtefact();
+                if(artefact instanceof GrailsControllerClass) {
+                    grailsControllerUrlMappings.registerController((GrailsControllerClass)artefact);
+                }
+            }
+        });
+        urlMappingsHolder= grailsControllerUrlMappings;
     }
 
     // this should possibly be somewhere in utility classes , MapUtils.getInteger doesn't handle GStrings/CharSequence

@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsDispatcherServlet;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
@@ -103,7 +104,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingsHolder urlMappingsHolder = (UrlMappingsHolder)getBean(UrlMappingsHolder.BEAN_ID);
         UrlMappingInfo urlMappingInfo = null;
         if (t != null) {
-            stackFilterer.filter(t, true);
+//            stackFilterer.filter(t, true);
             urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
             if (urlMappingInfo == null) {
                 urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
@@ -142,12 +143,12 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             WrappedResponseHolder.setWrappedResponse(response);
             String viewName = urlMappingInfo.getViewName();
             if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                GrailsClass controller = UrlMappingUtils.passControllerForUrlMappingInfoInRequest(webRequest, urlMappingInfo,
-                        webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
-                        webRequest.getAttributes().getGrailsApplication());
-                if(controller != null) {
-                    UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
-                }
+//                GrailsClass controller = UrlMappingUtils.passControllerForUrlMappingInfoInRequest(webRequest, urlMappingInfo,
+//                        webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
+//                        webRequest.getAttributes().getGrailsApplication());
+//                if(controller != null) {
+//                    UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+//                }
 
             }
             else {
@@ -163,7 +164,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                         v.render(Collections.EMPTY_MAP, request, response);
                     }
                     catch (Throwable e) {
-                        stackFilterer.filter(e);
+//                        stackFilterer.filter(e);
                         renderDefaultResponse(response, statusCode, "Internal Server Error", e.getMessage());
                     }
                 }

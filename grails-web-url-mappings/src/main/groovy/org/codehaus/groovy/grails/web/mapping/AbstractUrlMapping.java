@@ -44,7 +44,6 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Map parameterValues = Collections.EMPTY_MAP;
     protected boolean parseRequest;
     protected String mappingName;
-    protected boolean restful;
     protected String httpMethod = ANY_HTTP_METHOD;
     protected String version = ANY_VERSION;
 
@@ -140,14 +139,6 @@ public abstract class AbstractUrlMapping implements UrlMapping {
 
     public void setMappingName(String name) {
         mappingName = name;
-    }
-
-    public void setRestfulMapping(boolean isREST) {
-        this.restful = isREST;
-    }
-
-    public boolean isRestfulMapping() {
-        return restful;
     }
 
     public boolean hasRuntimeVariable(String name) {

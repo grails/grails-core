@@ -192,16 +192,6 @@ public interface UrlMapping extends Comparable, UrlCreator {
     void setMappingName(String name);
 
     /**
-     * @param isREST Set whether this is a RESTful mapping
-     */
-    void setRestfulMapping(boolean isREST);
-
-    /**
-     * @return Whether this is a RESTful mapping
-     */
-    boolean isRestfulMapping();
-
-    /**
      * Whether the mapping has a runtime variable with the given name such as "/$foo"
      * @param name The name of the variable
      * @return true if the mapping has the variable

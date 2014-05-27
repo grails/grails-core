@@ -301,7 +301,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     public void setControllerNamespace(String controllerNamespace) {
-     getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, controllerNamespace);
+        getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, controllerNamespace);
     }
 
     /**
@@ -367,7 +367,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         if (actionName == null) actionName = controllerClass.getDefaultAction();
         if (actionName == null) return false;
 
-        if (controllerClass.isFlowAction(actionName)) return true;
         return false;
     }
 

@@ -28,14 +28,14 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
+import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
-import org.codehaus.groovy.grails.web.servlet.GrailsDispatcherServlet
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerUrlMappings
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
-import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
-import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
+import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseActionResultTransformer
+import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletContextInitializer
@@ -44,7 +44,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.filter.DelegatingFilterProxy
-import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
@@ -70,7 +69,8 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
     def dependsOn = [core: version, i18n: version, urlMappings: version]
 
     def doWithSpring = {
-        simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
+        tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
+        simpleControllerHandlerAdapter(UrlMappingsInfoHandlerAdapter)
 
         characterEncodingFilter(CharacterEncodingFilter) {
             encoding = application.flatConfig.get('grails.filter.encoding') ?: 'utf-8'
@@ -82,24 +82,12 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         if (!application.config.grails.disableCommonsMultipart) {
             multipartResolver(ContentLengthAwareCommonsMultipartResolver)
         }
-
-        grailsControllerHelper(MixedGrailsControllerHelper) { bean->
-            grailsApplication = ref('grailsApplication')
-        }
-
-        mainSimpleController(SimpleGrailsController) { bean ->
-            grailsControllerHelper = ref('grailsControllerHelper')
-        }
-
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
         def interceptorsClosure = {
             interceptors = handlerInterceptors
         }
         // allow @Controller annotated beans
         annotationHandlerMapping(RequestMappingHandlerMapping, interceptorsClosure)
-        // allow default controller mappings
-        controllerHandlerMappings(GrailsControllerHandlerMapping, interceptorsClosure)
-
         annotationHandlerAdapter(RequestMappingHandlerAdapter)
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
@@ -185,7 +173,7 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         }
 
         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            def context = event.ctx
+            ApplicationContext context = event.ctx
             if (!context) {
                 if (log.isDebugEnabled()) {
                     log.debug("Application context not found. Can't reload")

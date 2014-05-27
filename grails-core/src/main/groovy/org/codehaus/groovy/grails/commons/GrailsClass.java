@@ -148,4 +148,9 @@ public interface GrailsClass extends GrailsApplicationAware {
      * @return  The property value
      */
     <T> T getPropertyValue(String name, Class<T> type);
+
+    /**
+     * @return The plugin where the artefact originates from
+     */
+    String getPluginName();
 }

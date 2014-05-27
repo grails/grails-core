@@ -22,6 +22,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
+import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.Assert;
@@ -83,6 +84,11 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         }
         classPropertyFetcher = ClassPropertyFetcher.forClass(clazz);
         isAbstract = Modifier.isAbstract(clazz.getModifiers());
+    }
+
+    @Override
+    public String getPluginName() {
+        return GrailsVersionUtils.getPluginName(this.clazz);
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

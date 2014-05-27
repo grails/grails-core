@@ -214,19 +214,25 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 }
             }
 
-            ant.copy(file: webXmlFile.absolutePath,
-                     tofile: "${stagingDir}/WEB-INF/web.xml",
-                     overwrite:true, preservelastmodified:true)
+            if(webXmlFile.exists()) {
 
-            def webXML = new File(stagingDir, "WEB-INF/web.xml")
-            def xmlInput = new XmlParser().parse(webXML)
-            webXML.withWriter('UTF-8') { xmlOutput ->
-                def printer = new XmlNodePrinter(new PrintWriter(xmlOutput), '\t')
-                printer.preserveWhitespace = true
-                printer.print(xmlInput)
+                ant.copy(file: webXmlFile.absolutePath,
+                        tofile: "${stagingDir}/WEB-INF/web.xml",
+                        overwrite:true, preservelastmodified:true, failonerror:false)
+
+                def webXML = new File(stagingDir, "WEB-INF/web.xml")
+                if(webXML.exists()) {
+
+                    def xmlInput = new XmlParser().parse(webXML)
+                    webXML.withWriter('UTF-8') { xmlOutput ->
+                        def printer = new XmlNodePrinter(new PrintWriter(xmlOutput), '\t')
+                        printer.preserveWhitespace = true
+                        printer.print(xmlInput)
+                    }
+
+                    ant.delete(file:webXmlFile)
+                }
             }
-
-            ant.delete(file:webXmlFile)
             PluginBuildSettings ps = pluginSettings
             def compileScopePluginInfo = ps.compileScopePluginInfo
             def compileScopePluginInfos = ps.getCompileScopedSupportedPluginInfos()
@@ -304,8 +310,6 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 entry(key:BuildScope.KEY, value:"$buildScope")
                 entry(key:Metadata.SERVLET_VERSION, value:grailsSettings.servletVersion)
             }
-
-            ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml", encoding:'UTF-8', token:"classpath*:", value:"")
 
             if (buildConfig.grails.war.resources instanceof Closure) {
                 Closure callable = buildConfig.grails.war.resources

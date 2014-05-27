@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
-import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.util.WebUtils
 
@@ -76,19 +75,17 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
     def mapURI(String uri) {
         UrlMappingsHolder mappingsHolder = getUrlMappingsHolder()
 
-        if (!UrlMappingsFilter.isUriExcluded(mappingsHolder, uri)) {
-            UrlMappingInfo[] mappingInfos = mappingsHolder.matchAll(uri, request.method)
-            for (UrlMappingInfo info in mappingInfos) {
-                def backupParams = new HashMap(webRequest.params)
-                info.configure(webRequest)
+        UrlMappingInfo[] mappingInfos = mappingsHolder.matchAll(uri, request.method)
+        for (UrlMappingInfo info in mappingInfos) {
+            def backupParams = new HashMap(webRequest.params)
+            info.configure(webRequest)
 
-                webRequest.params.putAll(backupParams)
-                if (info.viewName == null && info.URI == null) {
-                    def controller = grailsApplication.getArtefactForFeature(ControllerArtefactHandler.TYPE,
-                        "${WebUtils.SLASH}${info.controllerName}${WebUtils.SLASH}${info.actionName ?: ''}")
-                    if (controller != null) {
-                        return applicationContext.getBean(controller.fullName)
-                    }
+            webRequest.params.putAll(backupParams)
+            if (info.viewName == null && info.URI == null) {
+                def controller = grailsApplication.getArtefactForFeature(ControllerArtefactHandler.TYPE,
+                    "${WebUtils.SLASH}${info.controllerName}${WebUtils.SLASH}${info.actionName ?: ''}")
+                if (controller != null) {
+                    return applicationContext.getBean(controller.fullName)
                 }
             }
         }

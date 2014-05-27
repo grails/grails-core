@@ -47,6 +47,14 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
+    private static final String CONTROLLER_PREFIX = "controller:";
+    private static final String ACTION_PREFIX = "action:";
+    private static final String PLUGIN_PREFIX = "plugin:";
+    private static final String NAMESPACE_PREFIX = "namespace:";
+    private static final String ID_PREFIX = "id:";
+    private static final String VIEW_PREFIX = "view:";
+    private static final String METHOD_PREFIX = "method:";
+    private static final String VERSION_PREFIX = "version:";
     private Object controllerName;
     private Object actionName;
     private Object pluginName;
@@ -214,7 +222,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         boolean disabled = getMultipartDisabled();
         if (!disabled) {
             MultipartResolver resolver = getResolver();
-            if (resolver.isMultipart(request)) {
+            if (resolver != null && resolver.isMultipart(request)) {
                 MultipartHttpServletRequest resolvedMultipartRequest = getResolvedRequest(request, resolver);
                 paramNames = resolvedMultipartRequest.getParameterNames();
             }
@@ -232,21 +240,27 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     private boolean getMultipartDisabled() {
-        GrailsApplication app = WebUtils.lookupApplication(servletContext);
-        Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
         boolean disabled = false;
-        if (disableMultipart instanceof Boolean) {
-            disabled = (Boolean)disableMultipart;
+        GrailsApplication app = WebUtils.findApplication(servletContext);
+        if(app != null) {
+            Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
+            if (disableMultipart instanceof Boolean) {
+                disabled = (Boolean)disableMultipart;
+            }
+            else if (disableMultipart instanceof String) {
+                disabled = Boolean.valueOf((String)disableMultipart);
+            }
         }
-        else if (disableMultipart instanceof String) {
-            disabled = Boolean.valueOf((String)disableMultipart);
-        }
+
         return disabled;
     }
 
     private MultipartResolver getResolver() {
-        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        return (MultipartResolver)ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
+        ApplicationContext ctx = WebUtils.findApplicationContext(servletContext);
+        if(ctx != null) {
+            return (MultipartResolver)ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
+        }
+        return null;
     }
 
     public String getURI() {
@@ -256,5 +270,42 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     @Override
     public Object getRedirectInfo() {
         return redirectInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DefaultUrlMappingInfo that = (DefaultUrlMappingInfo) o;
+
+        if (actionName != null ? !actionName.equals(that.actionName) : that.actionName != null) return false;
+        if (controllerName != null ? !controllerName.equals(that.controllerName) : that.controllerName != null)
+            return false;
+        if (httpMethod != null ? !httpMethod.equals(that.httpMethod) : that.httpMethod != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false;
+        if (pluginName != null ? !pluginName.equals(that.pluginName) : that.pluginName != null) return false;
+        if (redirectInfo != null ? !redirectInfo.equals(that.redirectInfo) : that.redirectInfo != null) return false;
+        if (uri != null ? !uri.equals(that.uri) : that.uri != null) return false;
+        if (version != null ? !version.equals(that.version) : that.version != null) return false;
+        if (viewName != null ? !viewName.equals(that.viewName) : that.viewName != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = controllerName != null ? (CONTROLLER_PREFIX + controllerName).hashCode() : 0;
+        result = 31 * result + (actionName != null ? (ACTION_PREFIX + actionName).hashCode() : 0);
+        result = 31 * result + (pluginName != null ? (PLUGIN_PREFIX + pluginName).hashCode() : 0);
+        result = 31 * result + (namespace != null ? (NAMESPACE_PREFIX + namespace).hashCode() : 0);
+        result = 31 * result + (redirectInfo != null ? redirectInfo.hashCode() : 0);
+        result = 31 * result + (id != null ? (ID_PREFIX + id).hashCode() : 0);
+        result = 31 * result + (viewName != null ? (VIEW_PREFIX + viewName).hashCode() : 0);
+        result = 31 * result + (uri != null ? uri.hashCode() : 0);
+        result = 31 * result + (httpMethod != null ? (METHOD_PREFIX +httpMethod).hashCode() : 0);
+        result = 31 * result + (version != null ? (VERSION_PREFIX +version).hashCode() : 0);
+        return result;
     }
 }

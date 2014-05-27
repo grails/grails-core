@@ -17,12 +17,16 @@ package org.codehaus.groovy.grails.plugins.web.async.mvc
 
 import grails.async.Promise
 import grails.async.PromiseList
+import grails.async.web.AsyncGrailsWebRequest
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.request.async.AsyncWebRequest
+import org.springframework.web.context.request.async.WebAsyncManager
+import org.springframework.web.context.request.async.WebAsyncUtils
 import org.springframework.web.servlet.ModelAndView
 
 import javax.servlet.AsyncContext
@@ -45,9 +49,14 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
         if (actionResult instanceof Promise) {
 
             final request = webRequest.getCurrentRequest()
+            WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request)
             final response = webRequest.getResponse()
 
-            def asyncContext = request.startAsync(request, response)
+            AsyncWebRequest asyncWebRequest = new AsyncGrailsWebRequest(request, response, webRequest.servletContext)
+            asyncManager.setAsyncWebRequest(asyncWebRequest)
+
+            asyncWebRequest.startAsync()
+            def asyncContext = asyncWebRequest.asyncContext
             request.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
             asyncContext = new GrailsAsyncContext(asyncContext, webRequest)
 

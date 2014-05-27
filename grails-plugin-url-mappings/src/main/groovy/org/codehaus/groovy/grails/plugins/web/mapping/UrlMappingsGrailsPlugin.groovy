@@ -32,8 +32,9 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mapping.ResponseCodeUrlMappingVisitor
-import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet
+import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsHandlerMapping
+import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.boot.context.embedded.FilterRegistrationBean
@@ -56,7 +57,7 @@ import javax.servlet.ServletException
  * @author Graeme Rocher
  * @since 0.4
  */
-class UrlMappingsGrailsPlugin implements ServletContextInitializer {
+class UrlMappingsGrailsPlugin /*implements ServletContextInitializer*/ {
 
     def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
 
@@ -74,6 +75,9 @@ class UrlMappingsGrailsPlugin implements ServletContextInitializer {
         if (!(cacheUrls instanceof Boolean)) {
             cacheUrls = true
         }
+
+        urlMappingsHandlerMapping(UrlMappingsHandlerMapping, ref("grailsUrlMappingsHolder"))
+        urlMappingsInfoHandlerAdapter(UrlMappingsInfoHandlerAdapter)
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
         if (Environment.isDevelopmentMode() || Environment.current.isReloadEnabled()) {
@@ -108,7 +112,7 @@ class UrlMappingsGrailsPlugin implements ServletContextInitializer {
         application.addArtefact(UrlMappingsArtefactHandler.TYPE, event.source)
 
         ApplicationContext ctx = applicationContext
-        UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, ctx, manager)
+        UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(ctx)
 
         HotSwappableTargetSource ts = ctx.getBean("urlMappingsTargetSource", HotSwappableTargetSource)
         ts.swap urlMappingsHolder
@@ -119,32 +123,33 @@ class UrlMappingsGrailsPlugin implements ServletContextInitializer {
         }
     }
 
-    private UrlMappingsHolder createUrlMappingsHolder(GrailsApplication application, WebApplicationContext applicationContext, GrailsPluginManager pluginManager) {
+    @CompileStatic
+    private UrlMappingsHolder createUrlMappingsHolder(WebApplicationContext applicationContext) {
         def factory = new UrlMappingsHolderFactoryBean(applicationContext: applicationContext)
         factory.afterPropertiesSet()
         return factory.getObject()
     }
 
-    @Override
-    @CompileStatic
-    void onStartup(ServletContext servletContext) throws ServletException {
-        def urlMappingsFilter = new FilterRegistrationBean(new UrlMappingsFilter())
-        urlMappingsFilter.urlPatterns = ["/*"]
-        urlMappingsFilter.onStartup(servletContext)
-
-
-        GrailsApplication application = GrailsWebUtil.lookupApplication(servletContext)
-
-
-
-        // TODO: read ResponseCodeUrlMappings from URLMappings on startup and register with error handler
-        // Note that Servlet 3.0 does not allow the registration of error pages programmatically, will use Boot APIs to achieve this
-        // See https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/embedded/tomcat/TomcatEmbeddedServletContainerFactory.java#L239
-
-        // def errorHandler = new ServletRegistrationBean(new ErrorHandlingServlet())
-        //  errorHandler.onStartup(servletContext)
-
-    }
+//    @Override
+//    @CompileStatic
+//    void onStartup(ServletContext servletContext) throws ServletException {
+//        def urlMappingsFilter = new FilterRegistrationBean(new UrlMappingsFilter())
+//        urlMappingsFilter.urlPatterns = ["/*"]
+//        urlMappingsFilter.onStartup(servletContext)
+//
+//
+//        GrailsApplication application = GrailsWebUtil.lookupApplication(servletContext)
+//
+//
+//
+//        // TODO: read ResponseCodeUrlMappings from URLMappings on startup and register with error handler
+//        // Note that Servlet 3.0 does not allow the registration of error pages programmatically, will use Boot APIs to achieve this
+//        // See https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/embedded/tomcat/TomcatEmbeddedServletContainerFactory.java#L239
+//
+//        // def errorHandler = new ServletRegistrationBean(new ErrorHandlingServlet())
+//        //  errorHandler.onStartup(servletContext)
+//
+//    }
 
 
 }
