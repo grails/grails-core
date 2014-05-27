@@ -150,6 +150,7 @@ class TestController{
 @AstTransformer
 public class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector {
 
+    private static final String ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME = "ALLOWED_METHODS_HANDLED";
     private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     public static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(
             new ClassNode(Action.class));
@@ -471,6 +472,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, MethodNode methodNode) {
         GrailsASTUtils.addEnhancedAnnotation(controllerClass, DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
         final BlockStatement checkAllowedMethodsBlock = new BlockStatement();
+        
+        final PropertyExpression requestPropertyExpression = new PropertyExpression(new VariableExpression("this"), "request");
+        
         final FieldNode allowedMethodsField = controllerClass.getField(DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
         if(allowedMethodsField != null) {
             final Expression initialAllowedMethodsExpression = allowedMethodsField.getInitialExpression();
@@ -506,7 +510,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 final int numberOfAllowedMethods = allowedMethodNames.size();
                 if(numberOfAllowedMethods > 0) {
                     final PropertyExpression responsePropertyExpression = new PropertyExpression(new VariableExpression("this"), "response");
-                    final PropertyExpression requestPropertyExpression = new PropertyExpression(new VariableExpression("this"), "request");
                     final PropertyExpression requestMethodExpression = new PropertyExpression(requestPropertyExpression, "method");
                     BooleanExpression isValidRequestMethod = new BooleanExpression(new MethodCallExpression(requestMethodExpression, 
                                                                                                             "equalsIgnoreCase", 
@@ -518,18 +521,28 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                                                                                                                    "equalsIgnoreCase", 
                                                                                                                    new ConstantExpression(allowedMethodNames.get(x)))));
                     }
-                  final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
-                  final ReturnStatement returnStatement = new ReturnStatement(new ConstantExpression(null));
-                  final BlockStatement blockToSendError = new BlockStatement();
-                  blockToSendError.addStatement(new ExpressionStatement(sendErrorMethodCall));
-                  blockToSendError.addStatement(returnStatement);
-                  final IfStatement ifStatement = new IfStatement(isValidRequestMethod, new ExpressionStatement(new EmptyExpression()), blockToSendError);
-                  checkAllowedMethodsBlock.addStatement(ifStatement);
-                    
-                    
+                    final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
+                    final ReturnStatement returnStatement = new ReturnStatement(new ConstantExpression(null));
+                    final BlockStatement blockToSendError = new BlockStatement();
+                    blockToSendError.addStatement(new ExpressionStatement(sendErrorMethodCall));
+                    blockToSendError.addStatement(returnStatement);
+                    final IfStatement ifIsValidRequestMethodStatement = new IfStatement(isValidRequestMethod, new ExpressionStatement(new EmptyExpression()), blockToSendError);
+                  
+                    final Expression getAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "getAttribute", new ArgumentListExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME)));
+                    final Statement ifAttributeHasBeenSetStatement = new IfStatement(new BooleanExpression(getAttributeMethodCall), new ExpressionStatement(new EmptyExpression()), ifIsValidRequestMethodStatement);
+                  
+                    checkAllowedMethodsBlock.addStatement(ifAttributeHasBeenSetStatement);
                 }
             }
         }
+        
+        final ArgumentListExpression argumentListExpression = new ArgumentListExpression();
+        argumentListExpression.addExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME));
+        argumentListExpression.addExpression(new ConstantExpression(Boolean.TRUE));
+        
+        final Expression setAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "setAttribute", argumentListExpression);
+        checkAllowedMethodsBlock.addStatement(new ExpressionStatement(setAttributeMethodCall));
+
         return checkAllowedMethodsBlock;
     }
     /**
@@ -585,6 +598,17 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
         tryCatchStatement.addCatch(catchStatement);
+
+        final ArgumentListExpression argumentListExpression = new ArgumentListExpression();
+        argumentListExpression.addExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME));
+        
+        final PropertyExpression requestPropertyExpression = new PropertyExpression(new VariableExpression("this"), "request");
+        final Expression removeAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "removeAttribute", argumentListExpression);
+        
+        final TryCatchStatement removeAttributeStatement = new TryCatchStatement(new ExpressionStatement(removeAttributeMethodCall), new EmptyStatement());
+        removeAttributeStatement.addCatch(new CatchStatement(new Parameter(ClassHelper.make(Exception.class), "$exceptionRemovingAttribute"), new EmptyStatement()));
+       
+        tryCatchStatement.setFinallyStatement(removeAttributeStatement);
 
         methodNode.setCode(tryCatchStatement);
     }

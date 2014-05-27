@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsWebUtil;
 import grails.web.CamelCaseUrlConverter;
 import grails.web.HyphenatedUrlConverter;
 import grails.web.UrlConverter;
@@ -138,6 +139,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testInterceptors() throws Exception {
+        GrailsWebUtil.bindMockWebRequest();
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                                         "def beforeInterceptor = [action:this.&before,only:'list']\n" +

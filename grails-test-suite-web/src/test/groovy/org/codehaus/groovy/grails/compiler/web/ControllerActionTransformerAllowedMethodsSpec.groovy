@@ -108,12 +108,34 @@ class ControllerActionTransformerAllowedMethodsSpec extends Specification {
         then:
         response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
     }
+    
+    @Issue('GRAILS-11444')
+    void 'Test invoking a restricted action method from an unrestricted action method'() {
+        when: 'an unrestricted action method invokes a restricted action method'
+        controller.callPostMethod()
+        
+        then: 'the allowedMethods should not be checked by the restricted method'
+        response.status == HttpServletResponse.SC_OK
+    }
+    
+    @Issue('GRAILS-11444')
+    void 'Test invoking a restricted action method from another restricted action method'() {
+        when: 'a restricted action method invokes another restricted action method'
+        request.method = 'PUT'
+        controller.callPostMethodFromPutMethod()
+            
+        then: 'the allowedMethods should not be checked by the second method'
+        response.status == HttpServletResponse.SC_OK
+    }
 }
 
 @Artefact('Controller')
 class SomeAllowedMethodsController {
     
-    static allowedMethods = [onlyPostAllowed: 'POST', postOrPutAllowed: ['POST', 'PUT'], mixedCasePost: 'pOsT']
+    static allowedMethods = [callPostMethodFromPutMethod: 'PUT', 
+                             onlyPostAllowed: 'POST', 
+                             postOrPutAllowed: ['POST', 'PUT'], 
+                             mixedCasePost: 'pOsT']
     
     def anyMethodAllowed() {
         render 'Success'
@@ -129,5 +151,13 @@ class SomeAllowedMethodsController {
     
     def mixedCasePost() {
         render 'Success'
+    }
+    
+    def callPostMethod() {
+        onlyPostAllowed()
+    }
+    
+    def callPostMethodFromPutMethod() {
+        onlyPostAllowed()
     }
 }
