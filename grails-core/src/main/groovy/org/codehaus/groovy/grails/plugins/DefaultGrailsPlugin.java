@@ -22,10 +22,7 @@ import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
+import groovy.lang.*;
 import groovy.xml.dom.DOMCategory;
 
 import java.io.File;
@@ -52,13 +49,18 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.codehaus.groovy.grails.plugins.support.WatchPatternParser;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -118,6 +120,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        super.setApplicationContext(applicationContext);
+        if(this.plugin instanceof ApplicationContextAware) {
+            ((ApplicationContextAware)plugin).setApplicationContext(applicationContext);
+        }
+        if(this.plugin instanceof ApplicationListener) {
+            ((ConfigurableApplicationContext)applicationContext).addApplicationListener((ApplicationListener)plugin);
+        }
+    }
+
+    @Override
     public List<WatchPattern> getWatchedResourcePatterns() {
         return watchedResourcePatterns;
     }
@@ -137,6 +150,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private void initialisePlugin(Class<?> clazz) {
         pluginGrailsClass = new GrailsPluginClass(clazz);
         plugin = (GroovyObject)pluginGrailsClass.newInstance();
+        if(plugin instanceof GrailsApplicationAware) {
+            ((GrailsApplicationAware)plugin).setGrailsApplication(this.application);
+        }
         pluginBean = new BeanWrapperImpl(plugin);
 
         // configure plugin
@@ -479,13 +495,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithApplicationContext(ApplicationContext ctx) {
-        if (!pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
-            return;
-        }
+        Object[] args = {ctx};
+        invokePluginHook(DO_WITH_APPLICATION_CONTEXT, args, ctx);
+    }
 
-        Closure c = (Closure)plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
-        c.setDelegate(this);
-        c.call(new Object[]{ctx});
+    private void invokePluginHook(String methodName, Object[] args, ApplicationContext ctx) {
+        if (pluginBean.isReadableProperty(methodName)) {
+            Closure c = (Closure)plugin.getProperty(methodName);
+            c.setDelegate(this);
+            c.call(args);
+        }
+        else {
+            MetaClass pluginMetaClass = pluginGrailsClass.getMetaClass();
+            if(!pluginMetaClass.respondsTo(plugin, methodName, args).isEmpty()) {
+                pluginMetaClass.invokeMethod(plugin, methodName, ctx);
+            }
+        }
     }
 
     public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
@@ -612,24 +637,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return "[" + getName() + ":" + getVersion() + "]";
     }
 
-    @Override
-    public void doWithWebDescriptor(final Element webXml) {
-        if (!pluginBean.isReadableProperty(DO_WITH_WEB_DESCRIPTOR)) {
-            return;
-        }
-
-        final Closure c = (Closure)plugin.getProperty(DO_WITH_WEB_DESCRIPTOR);
-        c.setResolveStrategy(Closure.DELEGATE_FIRST);
-        c.setDelegate(this);
-        DefaultGroovyMethods.use(this, DOMCategory.class, new Closure<Object>(this) {
-            private static final long serialVersionUID = 1;
-            @Override
-            public Object call(Object... args) {
-                return c.call(webXml);
-            }
-        });
-    }
-
     /**
      * Monitors the plugin resources defined in the watchResources property for changes and
      * fires onChange events by calling an onChange closure defined in the plugin (if it exists)
@@ -696,11 +703,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithDynamicMethods(ApplicationContext ctx) {
-        if (pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
-            Closure c = (Closure)plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
-            c.setDelegate(this);
-            c.call(new Object[]{ctx});
-        }
+        Object[] args = {ctx};
+        invokePluginHook(DO_WITH_DYNAMIC_METHODS, args, ctx);
     }
 
     public boolean isEnabled() {

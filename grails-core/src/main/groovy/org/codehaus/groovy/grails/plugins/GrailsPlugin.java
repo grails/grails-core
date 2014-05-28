@@ -188,14 +188,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      */
     void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig);
 
-    /**
-     * Handles processing of web.xml. The method is passed a GPathResult which is parsed by
-     * groovy.util.XmlSlurper. A plug-in can then manipulate the in-memory XML however it chooses
-     * Once all plug-ins have been processed the web.xml is then written to disk based on its in-memory form
-     *
-     * @param webXml The GPathResult representing web.xml
-     */
-    void doWithWebDescriptor(Element webXml);
 
     /**
      * Makes the plugin excluded for a particular BuildScope

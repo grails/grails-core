@@ -22,8 +22,11 @@ import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
@@ -57,7 +60,7 @@ import javax.servlet.ServletException
  * @author Graeme Rocher
  * @since 0.4
  */
-class ControllersGrailsPlugin implements ServletContextInitializer{
+class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplicationAware{
 
     def watchedResources = [
         "file:./grails-app/controllers/**/*Controller.groovy",
@@ -67,7 +70,10 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
     def observe = ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
 
+    GrailsApplication grailsApplication
+
     def doWithSpring = {
+        def application = grailsApplication
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
         simpleControllerHandlerAdapter(UrlMappingsInfoHandlerAdapter)
 
@@ -121,8 +127,9 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         }
     }
 
-    def doWithDynamicMethods = {ApplicationContext ctx ->
-
+    @CompileStatic
+    def doWithDynamicMethods(ApplicationContext ctx) {
+        def application = grailsApplication
         ControllersApi controllerApi = ctx.getBean("instanceControllersApi", ControllersApi)
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding")
 
@@ -141,22 +148,27 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi(controllerApi)
 
-        for (controller in application.controllerClasses) {
+        for (GrailsClass controller in application.getArtefacts(ControllerArtefactHandler.TYPE)) {
             def controllerClass = controller
             def mc = controllerClass.metaClass
-            mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
             if (controllerClass.clazz.getAnnotation(Enhanced)==null) {
                 enhancer.enhance mc
             }
-            controllerClass.initialize()
+            finalizeEnhancement(ctx, controllerClass, mc)
         }
 
-        for (GrailsDomainClass domainClass in application.domainClasses) {
-            enhanceDomainWithBinding(ctx, domainClass, domainClass.metaClass)
+        for (GrailsClass domainClass in application.getArtefacts(DomainClassArtefactHandler.TYPE)) {
+            enhanceDomainWithBinding(domainClass, domainClass.metaClass)
         }
     }
 
-    static void enhanceDomainWithBinding(ApplicationContext ctx, GrailsDomainClass dc, MetaClass mc) {
+    private void finalizeEnhancement(ctx, GrailsClass controllerClass, MetaClass mc) {
+        mc.constructor = { -> ctx.getBean(controllerClass.fullName) }
+        controllerClass.initialize()
+    }
+
+    @CompileStatic
+    static void enhanceDomainWithBinding(GrailsClass dc, MetaClass mc) {
         if (dc.abstract) {
             return
         }
