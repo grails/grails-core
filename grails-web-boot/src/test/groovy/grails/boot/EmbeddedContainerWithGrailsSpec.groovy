@@ -2,12 +2,12 @@ package grails.boot
 
 import grails.artefact.Artefact
 import grails.boot.config.GrailsConfiguration
+import grails.web.Controller
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import spock.lang.Specification
 
 /**
@@ -45,7 +45,7 @@ class EmbeddedContainerWithGrailsSpec extends Specification {
 
 }
 
-@Artefact("Controller")
+@Controller
 class FooController {
     def bar() {
         render "hello world"
