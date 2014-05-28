@@ -69,7 +69,7 @@ class ConvertersGrailsPlugin {
 
     def doWithDynamicMethods = {applicationContext ->
 
-        applicationContext.convertersConfigurationInitializer.initialize(application)
+        applicationContext.getBean("convertersConfigurationInitializer").initialize(application)
 
         ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 

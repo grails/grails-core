@@ -8,7 +8,6 @@ import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletCon
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import spock.lang.Specification
 
 /**
@@ -42,7 +41,6 @@ class EmbeddedContainerWithGrailsSpec extends Specification {
     }
 
     @Configuration
-    @EnableWebMvc
     static class GrailsConfig extends GrailsConfiguration{
         @Override
         Collection<Class> classes() {
