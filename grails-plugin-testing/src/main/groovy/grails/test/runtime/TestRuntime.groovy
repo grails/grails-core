@@ -37,21 +37,23 @@ class TestRuntime {
     private List<TestEventInterceptor> pluginsRegisteredAsInterceptors
     private Map<String, Object> registry = [:]
     private boolean runtimeClosed = false
-    private boolean shared
+    private SharedRuntimeConfigurer sharedRuntimeConfigurer
     private boolean runtimeStarted = false
+    boolean shared
     
-    protected TestRuntime(Set<String> features, List<TestPlugin> plugins, TestEventInterceptor interceptor, boolean shared) {
+    protected TestRuntime(Set<String> features, List<TestPlugin> plugins, SharedRuntimeConfigurer sharedRuntimeConfigurer) {
         this.interceptors=new ArrayList<TestEventInterceptor>()
         interceptors.add(new TestRuntimeEventInterceptor())
-        if(interceptor != null) {
-            interceptors.add(interceptor)
+        if(sharedRuntimeConfigurer instanceof TestEventInterceptor) {
+            interceptors.add((TestEventInterceptor)sharedRuntimeConfigurer)
         }
         changeFeaturesAndPlugins(features, plugins)
-        this.@shared=shared
+        this.@sharedRuntimeConfigurer=sharedRuntimeConfigurer
+        this.@shared=(sharedRuntimeConfigurer != null)
     }
     
-    public boolean isShared() {
-        return this.@shared
+    public SharedRuntimeConfigurer getSharedRuntimeConfigurer() {
+        return sharedRuntimeConfigurer
     }
     
     public void changeFeaturesAndPlugins(Set<String> features, List<TestPlugin> plugins) {
