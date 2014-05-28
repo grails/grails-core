@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseActionResultTransformer
@@ -87,6 +88,12 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         // allow @Controller annotated beans
         annotationHandlerMapping(RequestMappingHandlerMapping, interceptorsClosure)
         annotationHandlerAdapter(RequestMappingHandlerAdapter)
+
+        // add the dispatcher servlet
+        dispatcherServlet(GrailsDispatcherServlet)
+        dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), "/*") {
+            loadOnStartup = 2
+        }
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
             stripLeadingSlash = false

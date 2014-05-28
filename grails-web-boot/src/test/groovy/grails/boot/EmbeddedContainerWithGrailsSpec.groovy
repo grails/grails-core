@@ -1,6 +1,7 @@
 package grails.boot
 
 import grails.artefact.Artefact
+import grails.boot.config.GrailsConfiguration
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
@@ -59,7 +60,7 @@ class EmbeddedContainerWithGrailsSpec extends Specification {
     }
 
     @Configuration
-    @Import([GrailsConfig.class, ApplicationConfig.class])
+    @Import([GrailsConfig.class])
     static class TomcatConfig {
         @Bean
         public EmbeddedServletContainerFactory containerFactory() {
@@ -68,41 +69,13 @@ class EmbeddedContainerWithGrailsSpec extends Specification {
     }
 
     @Configuration
-    static class GrailsConfig implements ImportBeanDefinitionRegistrar{
-
-        @Override
-        void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-            def reader = new GroovyBeanDefinitionReader(registry)
-            reader.beans {
-                grailsApplication(DefaultGrailsApplication, [FooController, UrlMappings] as Class[]) { bean ->
-                    bean.initMethod = 'initialise'
-                }
-                pluginManager(DefaultGrailsPluginManager, ref('grailsApplication')) { bean ->
-                    bean.initMethod = 'loadPlugins'
-                }
-                pluginManagerProcessor(PluginManagerPostProcessor)
-            }
-        }
-    }
-
-    @Configuration
     @EnableWebMvc
-    static class ApplicationConfig {
-        @Bean
-        public GrailsDispatcherServlet dispatcherServlet() {
-            new GrailsDispatcherServlet()
-        }
-
-        @Bean
-        public ServletRegistrationBean dispatcherServletRegistration() {
-            def servletBean = new ServletRegistrationBean(dispatcherServlet())
-            servletBean.loadOnStartup = 2
-
-            return servletBean;
+    static class GrailsConfig extends GrailsConfiguration{
+        @Override
+        Collection<Class> classes() {
+            [FooController, UrlMappings]
         }
     }
-
-
 }
 
 @Artefact("Controller")
@@ -118,23 +91,3 @@ class UrlMappings {
     }
 }
 
-
-class PluginManagerPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
-
-    ApplicationContext applicationContext
-
-    @Override
-    void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager)
-        def springConfig = new DefaultRuntimeSpringConfiguration()
-        springConfig.setBeanFactory((ListableBeanFactory) registry)
-        pluginManager.doRuntimeConfiguration(springConfig)
-        springConfig.registerBeansWithRegistry(registry)
-
-    }
-
-    @Override
-    void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-
-    }
-}
