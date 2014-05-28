@@ -145,6 +145,7 @@ class UrlMappingsGrailsPlugin /*implements ServletContextInitializer*/ {
 //        // TODO: read ResponseCodeUrlMappings from URLMappings on startup and register with error handler
 //        // Note that Servlet 3.0 does not allow the registration of error pages programmatically, will use Boot APIs to achieve this
 //        // See https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/embedded/tomcat/TomcatEmbeddedServletContainerFactory.java#L239
+          // Also see https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/web/ErrorPageFilter.java
 //
 //        // def errorHandler = new ServletRegistrationBean(new ErrorHandlingServlet())
 //        //  errorHandler.onStartup(servletContext)

@@ -149,6 +149,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         setPluginFilter();
     }
 
+    public DefaultGrailsPluginManager(GrailsApplication application) {
+        super(application);
+    }
+
     public GrailsPlugin[] getUserPlugins() {
         return userPlugins.toArray(new GrailsPlugin[userPlugins.size()]);
     }

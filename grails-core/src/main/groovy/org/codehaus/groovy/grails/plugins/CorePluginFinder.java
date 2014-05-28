@@ -73,12 +73,10 @@ public class CorePluginFinder implements ParentApplicationContextAware {
             if (resources.length > 0) {
                 loadCorePluginsFromResources(resources);
             } else {
-                LOG.warn("WARNING: Grails was unable to load core plugins dynamically. This is normally a problem with the container class loader configuration, see troubleshooting and FAQ for more info. ");
-                loadCorePluginsStatically();
+                throw new IllegalStateException("Grails was unable to load plugins dynamically. This is normally a problem with the container class loader configuration, see troubleshooting and FAQ for more info. ");
             }
         } catch (IOException e) {
-            LOG.warn("WARNING: I/O exception loading core plugin dynamically, attempting static load. This is usually due to deployment onto containers with unusual classloading setups. Message: " + e.getMessage());
-            loadCorePluginsStatically();
+            throw new IllegalStateException("WARNING: I/O exception loading core plugin dynamically, attempting static load. This is usually due to deployment onto containers with unusual classloading setups. Message: " + e.getMessage());
         }
         return foundPluginClasses.toArray(new Class[foundPluginClasses.size()]);
     }
@@ -91,28 +89,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         return resolver.getResources(CORE_PLUGIN_PATTERN);
     }
 
-    private void loadCorePluginsStatically() {
 
-        // This is a horrible hard coded hack, but there seems to be no way to
-        // resolve .class files dynamically
-        // on OC4J. If anyones knows how to fix this shout
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.log4j.LoggingGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin");
-    }
 
     @SuppressWarnings("rawtypes")
     private void loadCorePluginsFromResources(Resource[] resources) throws IOException {

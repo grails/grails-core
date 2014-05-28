@@ -28,10 +28,8 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
-import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerUrlMappings
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseActionResultTransformer
@@ -39,7 +37,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletContextInitializer
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
