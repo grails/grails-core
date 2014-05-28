@@ -59,10 +59,13 @@ class ScanningGrailsConfiguration extends GrailsConfiguration implements Resourc
         def classLoader = Thread.currentThread().contextClassLoader
         Collection<Class> classes = []
         for (Resource res in resources) {
-            def reader = readerFactory.getMetadataReader(res)
-            def metadata = reader.annotationMetadata
-            if (metadata.annotationTypes.any() { String annotation -> annotation.startsWith('grails.') }) {
-                classes << classLoader.loadClass(reader.classMetadata.className)
+            // ignore closures / inner classes
+            if(!res.filename.contains('$')) {
+                def reader = readerFactory.getMetadataReader(res)
+                def metadata = reader.annotationMetadata
+                if (metadata.annotationTypes.any() { String annotation -> annotation.startsWith('grails.') }) {
+                    classes << classLoader.loadClass(reader.classMetadata.className)
+                }
             }
         }
         return classes
