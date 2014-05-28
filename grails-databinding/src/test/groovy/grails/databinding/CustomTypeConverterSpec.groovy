@@ -12,8 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package grails.databinding
 
+import grails.databinding.DataBindingSource;
+import grails.databinding.SimpleDataBinder;
+import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.StructuredBindingEditor;
 import spock.lang.Specification
 
 class CustomTypeConverterSpec extends Specification {

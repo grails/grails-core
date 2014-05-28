@@ -19,12 +19,8 @@ package org.grails.databinding;
  * 
  * @since 2.3.4
  * @see StructuredBindingEditor
+ * @deprecated Use {@link grails.databinding.TypedStructuredBindingEditor}
  */
-public interface TypedStructuredBindingEditor<T> extends StructuredBindingEditor<T> {
-
-    /**
-     * 
-     * @return the type that this editor is used for binding to
-     */
-    Class<T> getTargetType();
+@Deprecated
+public interface TypedStructuredBindingEditor<T> extends grails.databinding.TypedStructuredBindingEditor<T> {
 }

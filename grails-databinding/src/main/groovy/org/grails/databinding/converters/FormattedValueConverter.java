@@ -45,19 +45,7 @@ class FormattedStringValueConverter implements FormattedValueConverter {
  * @see BindingFormat
  * @see org.grails.databinding.SimpleDataBinder
  * @see org.grails.databinding.SimpleDataBinder#registerFormattedValueConverter(FormattedValueConverter)
+ * @deprecated Use {@link grails.databinding.converters.FormattedValueConverter}
  */
-public interface FormattedValueConverter {
-    /**
-     * Return a formatted value
-     *
-     * @param value The value to be formatted
-     * @param format The format String
-     * @return the formatted value
-     */
-    Object convert(Object value, String format);
-
-    /**
-     * @return the output type of this converter
-     */
-    Class<?> getTargetType();
+public interface FormattedValueConverter extends grails.databinding.converters.FormattedValueConverter {
 }

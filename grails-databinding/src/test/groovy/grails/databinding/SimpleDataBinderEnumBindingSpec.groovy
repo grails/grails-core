@@ -1,5 +1,7 @@
-package org.grails.databinding
+package grails.databinding
 
+import grails.databinding.SimpleDataBinder;
+import grails.databinding.SimpleMapDataBindingSource;
 import spock.lang.Issue
 import spock.lang.Specification
 

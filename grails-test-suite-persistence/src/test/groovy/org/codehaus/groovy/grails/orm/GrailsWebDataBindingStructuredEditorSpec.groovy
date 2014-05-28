@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.orm
 
-import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
-import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapDataBindingSource
+import grails.databinding.DataBindingSource;
+import grails.databinding.SimpleMapDataBindingSource;
+import grails.web.databinding.GrailsWebDataBinder;
+
 import org.grails.databinding.converters.AbstractStructuredBindingEditor
 
 import spock.lang.Specification

@@ -1,11 +1,12 @@
 package org.codehaus.groovy.grails.web.beans
 
+import grails.databinding.DataBinder;
 import grails.util.Environment
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.web.binding.CompositeEditor
 import org.codehaus.groovy.grails.web.binding.StructuredDateEditor
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.databinding.DataBinder
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.beans.propertyeditors.CustomDateEditor
@@ -14,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 import javax.servlet.ServletContext
+
 import java.text.DateFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat

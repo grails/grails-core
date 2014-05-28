@@ -16,25 +16,13 @@
 package org.grails.databinding;
 
 
+
 /**
- * Classes which implement this interface may participate in the data binding
- * process.  Instances of this interface may be registered with the
- * data binder by applying the {@link BindUsing} annotation to a class.
- *
  * @author Jeff Brown
  * @since 2.3 
  * @see BindUsing
+ * @deprecated Use {@link grails.databinding.BindingHelper}
  */
-public interface BindingHelper<T> {
-
-    /**
-     * The value returned from this method will be bound to
-     * the property specified by propertyName.
-     *
-     * @param obj The object that data binding is being applied to
-     * @param propertyName The name of the property data binding is being applied to
-     * @param source The Map containing all of the values being bound to this object
-     * @return The value which should be bound to propertyName
-     */
-    T getPropertyValue(Object obj, String propertyName, DataBindingSource source);
+@Deprecated
+public interface BindingHelper<T> extends grails.databinding.BindingHelper<T>{
 }

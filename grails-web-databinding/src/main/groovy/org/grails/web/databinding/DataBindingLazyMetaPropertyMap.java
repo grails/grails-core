@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding;
+package org.grails.web.databinding;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 
 /**
  * Extends the default implementation and does data binding.

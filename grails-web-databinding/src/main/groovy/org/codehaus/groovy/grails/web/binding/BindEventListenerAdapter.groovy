@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.binding
 
+import grails.databinding.events.DataBindingListenerAdapter;
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 
-import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 

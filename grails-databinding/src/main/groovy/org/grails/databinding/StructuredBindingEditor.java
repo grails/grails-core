@@ -15,6 +15,8 @@
  */
 package org.grails.databinding;
 
+import grails.databinding.SimpleDataBinder;
+
 /**
  * StructuredBindingEditors convert structured data in a Map
  * into an object.  Typically a structured editor will pull
@@ -62,16 +64,8 @@ assert resident.workAddress.city == null
  * @author Jeff Brown
  * @since 2.3
  * @see SimpleDataBinder#registerStructuredEditor(Class, StructuredBindingEditor)
+ * @deprecated Use {@link grails.databinding.StructuredBindingEditor}
  */
-public interface StructuredBindingEditor<T> extends BindingHelper<T> {
-    /**
-     * The value returned from this method will be bound to
-     * the property specified by propertyName.
-     *
-     * @param obj The object that data binding is being applied to
-     * @param propertyName The name of the property data binding is being applied to
-     * @param source The source containing all of the values being bound to this object
-     * @return The value which should be bound to propertyName
-     */
-    T getPropertyValue(Object obj, String propertyName, DataBindingSource source);
+@Deprecated
+public interface StructuredBindingEditor<T> extends grails.databinding.StructuredBindingEditor<T> {
 }

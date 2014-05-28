@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.grails.web.binding
 
+import org.grails.web.databinding.DataBindingLazyMetaPropertyMap;
+
 class DataBindingLazyMetaPropertyMapTests extends GroovyTestCase {
 
     void testDataBindingWithSubmap() {

@@ -18,9 +18,7 @@ package org.grails.databinding.converters;
 /**
  * @author Jeff Brown
  * @since 2.3
+ * @deprecated Use {@link grails.databinding.converters.ValueConverter}
  */
-public interface ValueConverter {
-    boolean canConvert(Object value);
-    Object convert(Object value);
-    Class<?> getTargetType();
+public interface ValueConverter extends grails.databinding.converters.ValueConverter {
 }

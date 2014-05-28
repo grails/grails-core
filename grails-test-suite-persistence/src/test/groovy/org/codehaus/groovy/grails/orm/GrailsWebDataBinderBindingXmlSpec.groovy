@@ -5,9 +5,7 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.Validateable
-
-import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
-
+import grails.web.databinding.GrailsWebDataBinder;
 import spock.lang.Issue
 import spock.lang.Specification
 

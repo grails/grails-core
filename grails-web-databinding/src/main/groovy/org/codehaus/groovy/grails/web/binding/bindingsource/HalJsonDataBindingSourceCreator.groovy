@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import grails.databinding.DataBindingSource;
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
-import org.grails.databinding.DataBindingSource
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement

@@ -15,6 +15,9 @@
  */
 package org.grails.databinding;
 
+import grails.databinding.BindingHelper;
+import grails.databinding.DataBindingSource;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

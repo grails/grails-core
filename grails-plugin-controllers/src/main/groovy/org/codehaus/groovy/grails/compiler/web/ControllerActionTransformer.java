@@ -86,13 +86,13 @@ import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
-import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.grails.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
+import org.grails.web.databinding.DefaultASTDatabindingHelper;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import grails.databinding.DataBinder;
 import groovy.lang.GroovyObjectSupport;
 
 import java.text.ParseException;
@@ -33,7 +34,6 @@ import java.util.Set;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.util.HashCodeHelper;
-import org.grails.databinding.DataBinder;
 
 /**
  * An category for use with maps that want type conversion capabilities

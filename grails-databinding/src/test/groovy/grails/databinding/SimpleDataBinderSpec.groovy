@@ -12,11 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package grails.databinding
 
+import grails.databinding.SimpleDataBinder;
+import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.errors.BindingError;
+import grails.databinding.events.DataBindingListenerAdapter;
+
+import org.grails.databinding.BindUsing;
+import org.grails.databinding.BindingFormat;
 import org.grails.databinding.converters.DateConversionHelper
-import org.grails.databinding.errors.BindingError
-import org.grails.databinding.events.DataBindingListenerAdapter
 
 import spock.lang.Ignore
 import spock.lang.Issue

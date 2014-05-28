@@ -1,11 +1,14 @@
 package org.codehaus.groovy.grails.web.binding
 
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.web.databinding.DefaultASTDatabindingHelper;
+
 import spock.lang.Specification
 
 import java.lang.reflect.Modifier

@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding
+package org.grails.web.databinding
 
+import grails.databinding.errors.BindingError;
+import grails.databinding.events.DataBindingListenerAdapter;
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
-import org.grails.databinding.errors.BindingError
-import org.grails.databinding.events.DataBindingListenerAdapter
+
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.BindingResult

@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import grails.databinding.DataBindingSource;
+import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
-import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapDataBindingSource
 import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**

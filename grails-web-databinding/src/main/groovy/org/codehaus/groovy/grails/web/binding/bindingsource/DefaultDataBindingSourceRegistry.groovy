@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import grails.databinding.CollectionDataBindingSource;
+import grails.databinding.DataBindingSource;
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 
@@ -22,8 +24,6 @@ import javax.annotation.PostConstruct
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
-import org.grails.databinding.CollectionDataBindingSource
-import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.springframework.beans.factory.annotation.Autowired
 

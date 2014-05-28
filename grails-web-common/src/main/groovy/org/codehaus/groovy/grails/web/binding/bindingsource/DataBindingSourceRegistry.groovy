@@ -15,9 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import grails.databinding.CollectionDataBindingSource;
+import grails.databinding.DataBindingSource;
+
 import org.codehaus.groovy.grails.web.mime.MimeType
-import org.grails.databinding.CollectionDataBindingSource
-import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 
 /**

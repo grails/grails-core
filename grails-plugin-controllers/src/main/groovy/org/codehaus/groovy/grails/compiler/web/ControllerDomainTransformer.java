@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTrans
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi;
-import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
+import org.grails.web.databinding.DefaultASTDatabindingHelper;
 
 /**
  * Adds binding methods to domain classes.

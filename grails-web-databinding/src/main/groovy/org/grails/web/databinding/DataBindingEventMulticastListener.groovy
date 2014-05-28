@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding
+package org.grails.web.databinding
 
+import grails.databinding.errors.BindingError;
+import grails.databinding.events.DataBindingListener;
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
-import org.grails.databinding.errors.BindingError
-import org.grails.databinding.events.DataBindingListener
 
 /**
  * @author Jeff Brown

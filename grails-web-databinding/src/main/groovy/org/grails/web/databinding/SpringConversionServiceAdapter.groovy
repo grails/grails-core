@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding
+package org.grails.web.databinding
 
 import org.grails.databinding.converters.ConversionService
 import org.springframework.core.convert.support.DefaultConversionService

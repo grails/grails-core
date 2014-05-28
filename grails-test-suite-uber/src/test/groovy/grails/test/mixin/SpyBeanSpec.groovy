@@ -1,12 +1,12 @@
 package grails.test.mixin
 
+import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.converters.ValueConverter;
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.runtime.FreshRuntime
 
 import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.converters.ValueConverter
 import org.junit.ClassRule
 
 import spock.lang.Shared

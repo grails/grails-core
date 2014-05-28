@@ -12,10 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package grails.databinding
 
-import org.grails.databinding.events.DataBindingListenerAdapter
+import org.grails.databinding.BindingFormat;
 
+import grails.databinding.SimpleDataBinder;
+import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.events.DataBindingListenerAdapter;
 import spock.lang.Specification
 
 class BindingListenerSpec extends Specification {

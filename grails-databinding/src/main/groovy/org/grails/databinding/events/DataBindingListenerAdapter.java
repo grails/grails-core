@@ -15,33 +15,15 @@
  */
 package org.grails.databinding.events;
 
-import org.grails.databinding.errors.BindingError;
+import grails.databinding.events.DataBindingListener;
 
 /**
  * @author Jeff Brown
  * @since 2.3
  * @see DataBindingListener
+ * @deprecated Use {@link grails.databinding.events.DataBindingListenerAdapter}
  */
-public class DataBindingListenerAdapter implements DataBindingListener {
+@Deprecated
+public class DataBindingListenerAdapter extends grails.databinding.events.DataBindingListenerAdapter {
 
-    public boolean supports(Class<?> clazz) {
-        return true;
-    }
-
-    public Boolean beforeBinding(Object target, Object errors) {
-        return true;
-    }
-
-    public Boolean beforeBinding(Object obj, String propertyName, Object value, Object errors) {
-        return true;
-    }
-
-    public void afterBinding(Object obj, String propertyName, Object errors) {
-    }
-
-    public void afterBinding(Object target, Object errors) {
-    }
-
-    public void bindingError(BindingError error, Object errors) {
-    }
 }

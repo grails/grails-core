@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding;
+package org.grails.web.databinding;
 
 import grails.util.CollectionUtils;
 import grails.util.GrailsNameUtils;

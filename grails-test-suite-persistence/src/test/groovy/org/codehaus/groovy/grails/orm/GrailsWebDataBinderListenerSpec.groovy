@@ -14,11 +14,10 @@
  */
 package org.codehaus.groovy.grails.orm
 
-import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
-import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.events.DataBindingListener
-import org.grails.databinding.events.DataBindingListenerAdapter
-
+import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.events.DataBindingListener;
+import grails.databinding.events.DataBindingListenerAdapter;
+import grails.web.databinding.GrailsWebDataBinder;
 import spock.lang.Specification
 
 class GrailsWebDataBinderListenerSpec extends Specification {

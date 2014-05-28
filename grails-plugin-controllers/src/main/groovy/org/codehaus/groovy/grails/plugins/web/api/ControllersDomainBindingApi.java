@@ -22,9 +22,9 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.databinding.DataBindingLazyMetaPropertyMap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindingResult;
 

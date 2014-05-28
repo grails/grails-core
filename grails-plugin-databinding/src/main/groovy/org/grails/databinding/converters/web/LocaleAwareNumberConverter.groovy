@@ -15,6 +15,7 @@
  */
 package org.grails.databinding.converters.web
 
+import grails.databinding.converters.ValueConverter;
 import groovy.transform.CompileStatic
 
 import java.text.NumberFormat
@@ -23,7 +24,6 @@ import java.text.ParsePosition
 import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.databinding.converters.ValueConverter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.servlet.LocaleResolver
 

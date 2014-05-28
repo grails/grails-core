@@ -15,6 +15,8 @@
  */
 package org.grails.databinding.errors;
 
+import grails.databinding.errors.BindingError;
+
 /**
  * @author Jeff Brown
  * @since 2.3

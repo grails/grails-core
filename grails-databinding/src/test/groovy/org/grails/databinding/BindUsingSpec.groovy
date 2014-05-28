@@ -14,6 +14,10 @@
  */
 package org.grails.databinding
 
+import grails.databinding.BindingHelper;
+import grails.databinding.DataBindingSource;
+import grails.databinding.SimpleDataBinder;
+import grails.databinding.SimpleMapDataBindingSource;
 import spock.lang.Issue
 import spock.lang.Specification
 

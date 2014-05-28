@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 SpringSource
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding;
-
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
+package grails.databinding.converters;
 
 /**
  * @author Jeff Brown
+ * @since 3.0
  */
-public interface ASTDatabindingHelper {
-    void injectDatabindingCode(SourceUnit source, GeneratorContext context, ClassNode classNode);
+public interface ValueConverter {
+    boolean canConvert(Object value);
+    Object convert(Object value);
+    Class<?> getTargetType();
 }

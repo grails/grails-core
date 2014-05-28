@@ -1,10 +1,8 @@
 package org.codehaus.groovy.grails.orm
 
+import grails.databinding.SimpleMapDataBindingSource;
 import grails.test.mixin.Mock
-
-import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
-import org.grails.databinding.SimpleMapDataBindingSource
-
+import grails.web.databinding.GrailsWebDataBinder;
 import spock.lang.Specification
 
 

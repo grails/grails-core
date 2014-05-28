@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.binding.converters
 
+import grails.databinding.converters.ValueConverter;
 import groovy.transform.CompileStatic
-
-import org.grails.databinding.converters.ValueConverter
 
 import org.springframework.web.multipart.MultipartFile
 

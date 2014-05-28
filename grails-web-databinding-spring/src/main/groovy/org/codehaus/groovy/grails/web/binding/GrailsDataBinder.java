@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import grails.databinding.DataBinder;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.validation.DeferredBindingActions;
@@ -50,7 +51,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
+
 import grails.validation.Constrained;
+
 import org.codehaus.groovy.grails.web.beans.PropertyEditorRegistryUtils;
 import org.codehaus.groovy.grails.web.binding.spring.SpringWebDataBinder;
 import org.codehaus.groovy.grails.web.json.JSONObject;
@@ -60,7 +63,6 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
-import org.grails.databinding.DataBinder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;

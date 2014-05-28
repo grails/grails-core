@@ -15,7 +15,8 @@
  */
 package org.grails.databinding.events;
 
-import org.grails.databinding.errors.BindingError;
+import grails.databinding.events.DataBindingListenerAdapter;
+
 
 /**
  * A listener which will be notified of events generated during data binding.
@@ -23,56 +24,8 @@ import org.grails.databinding.errors.BindingError;
  * @author Jeff Brown
  * @since 2.3
  * @see DataBindingListenerAdapter
+ * @deprecated Use {@link grails.databinding.events.DataBindingListener}
  */
-public interface DataBindingListener {
-
-    /**
-     * @return true if the listener is interested in events for the specified type.
-     */
-    boolean supports(Class<?> clazz);
-
-    /**
-     * Called when data binding is about to start.
-     * 
-     * @param target The object data binding is being imposed upon
-     * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
-     * @return true if data binding should continue
-     */
-    Boolean beforeBinding(Object target, Object errors);
-
-    /**
-     * Called when data binding is about to imposed on a property
-     *
-     * @param target The object data binding is being imposed upon
-     * @param propertyName The name of the property being bound to
-     * @param value The value of the property being bound
-     * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
-     * @return true if data binding should continue, otherwise return false
-     */
-    Boolean beforeBinding(Object target, String propertyName, Object value, Object errors);
-
-    /**
-     * Called after data binding has been imposed on a property
-     *
-     * @param target The object data binding is being imposed upon
-     * @param propertyName The name of the property that was bound to
-     * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
-     */
-    void afterBinding(Object target, String propertyName, Object errors);
-
-    /**
-     * Called after data binding has finished.
-     *  
-     * @param target The object data binding is being imposed upon
-     * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
-     */
-    void afterBinding(Object target, Object errors);
-
-    /**
-     * Called when an error occurs binding to a property
-     * @param error encapsulates information about the binding error
-     * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
-     * @see BindingError
-     */
-    void bindingError(BindingError error, Object errors);
+@Deprecated
+public interface DataBindingListener extends grails.databinding.events.DataBindingListener {
 }

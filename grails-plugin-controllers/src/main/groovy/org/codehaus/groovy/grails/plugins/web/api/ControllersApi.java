@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
+import grails.databinding.CollectionDataBindingSource;
+import grails.databinding.DataBindingSource;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
@@ -54,8 +56,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.grails.databinding.CollectionDataBindingSource;
-import org.grails.databinding.DataBindingSource;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;

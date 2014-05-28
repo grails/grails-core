@@ -15,10 +15,11 @@
  */
 package org.grails.databinding.bindingsource
 
+import grails.databinding.CollectionDataBindingSource;
+import grails.databinding.DataBindingSource;
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
-import org.grails.databinding.CollectionDataBindingSource
-import org.grails.databinding.DataBindingSource
 
 /**
  * A factory for DataBindingSource instances

@@ -15,12 +15,13 @@
  */
 package org.grails.databinding;
 
-import java.util.List;
+import grails.databinding.DataBindingSource;
 
 /**
  * @see DataBindingSource
  * @since 2.3
+ * @deprecated Use {@link grails.databinding.CollectionDataBindingSource}
  */
-public interface CollectionDataBindingSource {
-    List<DataBindingSource> getDataBindingSources();
+@Deprecated
+public interface CollectionDataBindingSource extends grails.databinding.CollectionDataBindingSource {
 }

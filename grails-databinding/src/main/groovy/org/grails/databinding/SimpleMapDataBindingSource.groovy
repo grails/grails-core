@@ -15,43 +15,12 @@
  */
 package org.grails.databinding
 
-import groovy.transform.CompileStatic
 
-@CompileStatic
-class SimpleMapDataBindingSource implements DataBindingSource {
-
-    protected Map map
-    boolean dataSourceAware = true
-
-    SimpleMapDataBindingSource(Map map) {
-        this.map = map
-    }
-
-    Set<String> getPropertyNames() {
-        map.keySet()
-    }
-
-    Object getPropertyValue(String propertyName) {
-        map.get propertyName
-    }
-
-    Object getAt(String propertyName) {
-        getPropertyValue propertyName
-    }
-
-    boolean containsProperty(String propertyName) {
-        map.containsKey propertyName
-    }
-
-    boolean hasIdentifier() {
-        map.containsKey('id')
-    }
-
-    def getIdentifierValue() {
-        map['id']
-    }
-
-    int size() {
-        map.size()
-    }
+/**
+ * 
+ * @deprecated Use {@link grails.databinding.SimpleMapDataBindingSource}
+ *
+ */
+@Deprecated
+class SimpleMapDataBindingSource extends grails.databinding.SimpleMapDataBindingSource {
 }
