@@ -1,10 +1,11 @@
 package grails.boot
 
-import grails.artefact.Artefact
 import grails.boot.config.GrailsConfiguration
-import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext
+import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
@@ -13,52 +14,34 @@ import spock.lang.Specification
 /**
  * Created by graemerocher on 28/05/14.
  */
-class EmbeddedContainerWithGrailsSpec extends Specification {
+class GrailsSpringApplicationSpec extends Specification{
 
-    AnnotationConfigEmbeddedWebApplicationContext context
+    ConfigurableApplicationContext context
 
     void cleanup() {
         context.close()
     }
 
-    void "Test that you can load Grails in an embedded server config"() {
-        when:"An embedded server config is created"
-            this.context = new AnnotationConfigEmbeddedWebApplicationContext(Application)
+    void "Test run Grails via SpringApplication"() {
+        when:"SpringApplication is used to run a Grails app"
+            context = SpringApplication.run(Application)
 
-        then:"The context is valid"
+        then:"The application runs"
             context != null
             new URL("http://localhost:${context.embeddedServletContainer.port}/foo/bar").text == 'hello world'
-            new URL("http://localhost:${context.embeddedServletContainer.port}/foos").text == 'all foos'
     }
+
 
     @Configuration
     static class Application extends GrailsConfiguration {
         @Override
         Collection<Class> classes() {
-            [FooController, UrlMappings]
+            [FooController]
         }
+
         @Bean
         public EmbeddedServletContainerFactory containerFactory() {
             return new TomcatEmbeddedServletContainerFactory(0);
         }
     }
-
 }
-
-@Artefact("Controller")
-class FooController {
-    def bar() {
-        render "hello world"
-    }
-    def list() {
-        render "all foos"
-    }
-}
-
-class UrlMappings {
-    static mappings = {
-        "/$controller/$action?/$id?(.$format)?"()
-        "/foos"(controller:'foo', action:"list")
-    }
-}
-
