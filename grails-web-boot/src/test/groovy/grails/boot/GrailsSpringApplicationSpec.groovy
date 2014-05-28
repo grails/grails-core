@@ -1,6 +1,7 @@
 package grails.boot
 
 import grails.boot.config.GrailsConfiguration
+import grails.boot.config.ScanningGrailsConfiguration
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory
@@ -33,12 +34,7 @@ class GrailsSpringApplicationSpec extends Specification{
 
 
     @Configuration
-    static class Application extends GrailsConfiguration {
-        @Override
-        Collection<Class> classes() {
-            [FooController]
-        }
-
+    static class Application extends ScanningGrailsConfiguration {
         @Bean
         public EmbeddedServletContainerFactory containerFactory() {
             return new TomcatEmbeddedServletContainerFactory(0);
