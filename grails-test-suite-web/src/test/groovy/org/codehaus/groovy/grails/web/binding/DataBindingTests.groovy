@@ -265,7 +265,6 @@ class AuthorBean {
         def errors = myBean.errors
         def fieldError = errors.getFieldError('someFloatProperty')
 
-        // these fail with GrailsDataBinder and pass with GrailsWebDataBinder
         assert myBean.someFloatProperty == null
         assert fieldError.rejectedValue == '21.12Rush'
     }
@@ -287,7 +286,6 @@ class AuthorBean {
 
         assert 'Some New Book' == bookReview.book.title
 
-        // this fails with GrailsDataBinder and passes with GrailsWebDataBinder
         assert 1 == bookClass.clazz.instanceCount
     }
 
