@@ -2,7 +2,6 @@ package grails.boot
 
 import grails.artefact.Artefact
 import grails.boot.config.GrailsConfiguration
-import grails.boot.config.ScanningGrailsConfiguration
 import grails.web.Controller
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
@@ -33,7 +32,7 @@ class EmbeddedContainerWithGrailsSpec extends Specification {
     }
 
     @Configuration
-    static class Application extends ScanningGrailsConfiguration {
+    static class Application extends GrailsConfiguration {
         @Bean
         public EmbeddedServletContainerFactory containerFactory() {
             return new TomcatEmbeddedServletContainerFactory(0);
@@ -50,6 +49,8 @@ class FooController {
     def list() {
         render "all foos"
     }
+
+    def closure = {}
 }
 
 @Artefact('UrlMappings')
