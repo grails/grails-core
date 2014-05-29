@@ -7,7 +7,7 @@ dependencies {
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compile("org.springframework.boot:spring-boot:1.0.2.RELEASE")
+    compile("org.springframework.boot:spring-boot:1.1.0.M2")
     compile("org.springframework:spring-core:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
@@ -26,8 +26,8 @@ dependencies {
     }
 
     // Used by Spring AOP
-    runtime 'aopalliance:aopalliance:1.0',
-            "org.aspectj:aspectjrt:$aspectjVersion"
+    optional 'aopalliance:aopalliance:1.0',
+             "org.aspectj:aspectjrt:$aspectjVersion"
 
     runtime ( 'xalan:serializer:2.7.1' ) {
         exclude group: 'xml-apis', module:'xml-apis'
