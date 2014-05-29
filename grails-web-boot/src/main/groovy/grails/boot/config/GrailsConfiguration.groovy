@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import org.grails.boot.support.GrailsApplicationPostProcessor
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -22,6 +23,7 @@ import org.springframework.util.ClassUtils
  * @since 3.0
  */
 @CompileStatic
+@Configuration
 class GrailsConfiguration implements ResourceLoaderAware {
 
     public static final String CLASS_RESOURCE_PATTERN = "/**/*.class"
@@ -44,6 +46,7 @@ class GrailsConfiguration implements ResourceLoaderAware {
         def packages = packages()
         Collection<Class> classes = []
         for (pkg in packages) {
+            if(pkg == null) continue
             String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
                     ClassUtils.convertClassNameToResourcePath(pkg.name) + CLASS_RESOURCE_PATTERN;
 
