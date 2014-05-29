@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.springframework.beans.BeansException
@@ -15,6 +16,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.event.ApplicationContextEvent
+import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
 
 /**
@@ -24,10 +27,10 @@ import org.springframework.context.event.ContextRefreshedEvent
  * @since 3.0
  */
 @CompileStatic
-class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
+class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
 
-    GrailsApplication grailsApplication
-    GrailsPluginManager pluginManager
+    final GrailsApplication grailsApplication
+    final GrailsPluginManager pluginManager
 
     GrailsApplicationPostProcessor(Class...classes) {
         grailsApplication = new DefaultGrailsApplication( classes as Class[] )
@@ -59,11 +62,17 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     @Override
-    void onApplicationEvent(ContextRefreshedEvent event) {
+    void onApplicationEvent(ApplicationContextEvent event) {
         def context = event.applicationContext
-        pluginManager.setApplicationContext(context)
-        pluginManager.doDynamicMethods()
-        pluginManager.doPostProcessing(context)
+        if(event instanceof ContextRefreshedEvent) {
+            pluginManager.setApplicationContext(context)
+            pluginManager.doDynamicMethods()
+            pluginManager.doPostProcessing(context)
+        }
+        else if(event instanceof ContextClosedEvent) {
+            pluginManager.shutdown()
+            ShutdownOperations.runOperations()
+        }
     }
 
 }
