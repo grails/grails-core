@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.config.Settings;
 import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
@@ -96,8 +97,8 @@ import org.springframework.web.context.support.ServletContextResource;
  */
 public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent>, BeanClassLoaderAware {
 
-    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
-    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
+    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = Settings.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES;
+    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = Settings.CONFIG_PROPERTY_GSP_ENABLE_RELOAD;
     public static final String BEAN_ID = ResourceAwareTemplateEngine.BEAN_ID;
 
     private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";

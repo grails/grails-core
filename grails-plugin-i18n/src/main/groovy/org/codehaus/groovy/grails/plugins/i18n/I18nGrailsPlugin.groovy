@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.i18n
 
+import grails.config.Settings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
@@ -22,9 +23,11 @@ import groovy.transform.CompileStatic
 
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -42,15 +45,17 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver
  * @author Graeme Rocher
  * @since 0.4
  */
-class I18nGrailsPlugin {
+class I18nGrailsPlugin implements GrailsApplicationAware{
 
     private static LOG = LogFactory.getLog(this)
 
     String baseDir = "grails-app/i18n"
     String version = GrailsUtil.getGrailsVersion()
     String watchedResources = "file:./${baseDir}/**/*.properties".toString()
+    GrailsApplication grailsApplication
 
     def doWithSpring = {
+        def application = grailsApplication
         // find i18n resource bundles and resolve basenames
         Set baseNames = []
 
@@ -74,7 +79,7 @@ class I18nGrailsPlugin {
             basenames = baseNames.toArray()
             fallbackToSystemLocale = false
             pluginManager = manager
-            if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
+            if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, Settings.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
                 def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
                 cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
                 def fileCacheSecondsSetting = application?.flatConfig?.get('grails.i18n.filecache.seconds')
