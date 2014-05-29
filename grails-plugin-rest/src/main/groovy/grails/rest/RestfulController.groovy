@@ -32,7 +32,7 @@ import org.springframework.http.HttpStatus
 @Artefact("Controller")
 @Transactional(readOnly = true)
 class RestfulController<T> {
-    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+    static allowedMethods = [save: "POST", update: "PUT", patch: "PATCH", delete: "DELETE"]
 
     Class<T> resource
     String resourceName
@@ -118,6 +118,15 @@ class RestfulController<T> {
             return
         }
         respond queryForResource(params.id)
+    }
+
+    /**
+     * Updates a resource for the given id
+     * @param id
+     */
+    @Transactional
+    def patch() {
+        update()
     }
 
     /**

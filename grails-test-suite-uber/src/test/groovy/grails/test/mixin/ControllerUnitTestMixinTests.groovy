@@ -264,6 +264,12 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.contentAsString == 'action 1'
 
         response.reset()
+        request.method = "PATCH"
+        controller.action1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 1'
+
+        response.reset()
         request.method = "DELETE"
         controller.action1()
         assert response.status == HttpServletResponse.SC_OK
@@ -286,6 +292,11 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
         response.reset()
+        request.method = 'PATCH'
+        controller.action2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
         request.method = 'DELETE'
         controller.action2()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
@@ -298,6 +309,12 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         response.reset()
         request.method = 'PUT'
+        controller.action3()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 3'
+
+        response.reset()
+        request.method = 'PATCH'
         controller.action3()
         assert response.status == HttpServletResponse.SC_OK
         assert response.contentAsString == 'action 3'
@@ -331,6 +348,12 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.contentAsString == 'method 1'
 
         response.reset()
+        request.method = "PATCH"
+        controller.method1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 1'
+
+        response.reset()
         request.method = "DELETE"
         controller.method1()
         assert response.status == HttpServletResponse.SC_OK
@@ -353,6 +376,11 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
         response.reset()
+        request.method = 'PATCH'
+        controller.method2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
         request.method = 'DELETE'
         controller.method2()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
@@ -365,6 +393,12 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         response.reset()
         request.method = 'PUT'
+        controller.method3()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 3'
+
+        response.reset()
+        request.method = 'PATCH'
         controller.method3()
         assert response.status == HttpServletResponse.SC_OK
         assert response.contentAsString == 'method 3'
@@ -421,7 +455,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 @Artefact("Controller")
 class TestController {
 
-    static allowedMethods = [action2: 'POST', action3: ['POST', 'PUT'], method2: 'POST', method3: ['POST', 'PUT']]
+    static allowedMethods = [action2: 'POST', action3: ['POST', 'PUT', 'PATCH'], method2: 'POST', method3: ['POST', 'PUT', 'PATCH']]
 
     def action1 = {
         render 'action 1'
