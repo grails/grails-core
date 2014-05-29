@@ -1,5 +1,6 @@
 package org.grails.boot.support
 
+import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -7,6 +8,7 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -19,6 +21,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.web.context.WebApplicationContext
 
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
@@ -68,10 +71,17 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
             pluginManager.doPostProcessing(context)
+            if(context instanceof WebApplicationContext) {
+                def servletContext = ((WebApplicationContext) context).servletContext
+                Holders.setServletContext(servletContext);
+                Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+            }
+
         }
         else if(event instanceof ContextClosedEvent) {
             pluginManager.shutdown()
             ShutdownOperations.runOperations()
+            Holders.clear()
         }
     }
 

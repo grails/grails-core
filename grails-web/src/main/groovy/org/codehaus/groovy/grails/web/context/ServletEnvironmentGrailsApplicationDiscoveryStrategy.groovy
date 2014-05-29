@@ -18,7 +18,9 @@ package org.codehaus.groovy.grails.web.context
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
+import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 import javax.servlet.ServletContext
@@ -38,11 +40,27 @@ class ServletEnvironmentGrailsApplicationDiscoveryStrategy implements GrailsAppl
     }
     @Override
     public GrailsApplication findGrailsApplication() {
-        return findApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        def context = findApplicationContext()
+        if(context) {
+            return context.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+        }
+        else {
+            def webReq = GrailsWebRequest.lookup()
+            if(webReq) {
+                webReq.applicationContext?.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+            }
+        }
     }
 
     @Override
     public ApplicationContext findApplicationContext() {
-        return WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        if(servletContext == null) {
+            return ContextLoader.currentWebApplicationContext
+        }
+        def context = WebApplicationContextUtils.getWebApplicationContext(servletContext)
+        if(context) {
+            return context
+        }
+        return GrailsWebRequest.lookup()?.applicationContext
     }
 }

@@ -110,8 +110,11 @@ public class Holders {
         }
         return null;
     }
-
-    public static GrailsApplication getGrailsApplication() {
+    /**
+     *
+     * @return The ApplicationContext or null if it doesn't exist
+     */
+    public static GrailsApplication findApplication() {
         for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
             GrailsApplication grailsApplication = strategy.findGrailsApplication();
             if(grailsApplication != null) {
@@ -119,6 +122,12 @@ public class Holders {
             }
         }
         return applicationSingleton;
+    }
+
+    public static GrailsApplication getGrailsApplication() {
+        GrailsApplication grailsApplication = findApplication();
+        Assert.notNull(grailsApplication, "GrailsApplication not found");
+        return grailsApplication;
     }
 
     public static void setGrailsApplication(GrailsApplication application) {

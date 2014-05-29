@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.Environment;
+import grails.util.Holders;
 import grails.validation.ValidationErrors;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -42,6 +43,7 @@ import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.mime.MimeTypeUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.DataBindingSource;
@@ -201,7 +203,7 @@ public class DataBindingUtils {
         if (include == null && exclude == null) {
             include = getBindingIncludeList(object);
         }
-        GrailsApplication application = GrailsWebRequest.lookupApplication();
+        GrailsApplication application = Holders.findApplication();
         GrailsDomainClass domain = null;
         if (application != null) {
             domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,object.getClass().getName());

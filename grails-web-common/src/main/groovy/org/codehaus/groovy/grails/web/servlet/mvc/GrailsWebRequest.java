@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.util.Holders;
 import grails.validation.DeferredBindingActions;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
@@ -425,13 +427,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * Looks up the GrailsApplication from the current request.
 
      * @return The GrailsWebRequest
+     * @deprecated Use {@link grails.util.Holders#findApplication()} instead
      */
+    @Deprecated
     public static GrailsApplication lookupApplication() {
-        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes instanceof GrailsWebRequest) {
-            return ((GrailsWebRequest) requestAttributes).getAttributes().getGrailsApplication();
-        }
-        return null;
+        return Holders.findApplication();
     }
 
     /**
