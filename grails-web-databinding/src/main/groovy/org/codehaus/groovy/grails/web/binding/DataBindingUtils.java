@@ -235,7 +235,7 @@ public class DataBindingUtils {
             grailsApplication = domain.getGrailsApplication();
         }
         if (grailsApplication == null) {
-            grailsApplication = GrailsWebRequest.lookupApplication();
+            grailsApplication = Holders.findApplication();
         }
         if (grailsApplication != null) {
             if (Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useSpringBinder"))) {

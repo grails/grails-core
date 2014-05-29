@@ -36,10 +36,17 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     final GrailsPluginManager pluginManager
 
     GrailsApplicationPostProcessor(Class...classes) {
-        grailsApplication = new DefaultGrailsApplication( classes as Class[] )
-        grailsApplication.initialise()
+        grailsApplication = new DefaultGrailsApplication(classes as Class[])
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
+
+        performGrailsInitializationSequence()
+    }
+
+    protected void performGrailsInitializationSequence() {
         pluginManager.loadPlugins()
+        pluginManager.doArtefactConfiguration()
+        grailsApplication.initialise()
+        pluginManager.registerProvidedArtefacts(grailsApplication)
     }
 
     @Override
@@ -71,6 +78,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
             pluginManager.doPostProcessing(context)
+            Holders.pluginManager = pluginManager
             if(context instanceof WebApplicationContext) {
                 def servletContext = ((WebApplicationContext) context).servletContext
                 Holders.setServletContext(servletContext);

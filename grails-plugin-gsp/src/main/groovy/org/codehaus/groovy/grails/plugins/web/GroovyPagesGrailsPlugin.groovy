@@ -15,47 +15,25 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
-import grails.artefact.Enhanced
 import grails.gsp.PageRenderer
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
-import org.springframework.boot.context.embedded.ServletContextInitializer
-
-import javax.servlet.ServletContext
-import javax.servlet.ServletException
-import java.lang.reflect.Modifier
-
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.PluginManagerAware
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
-import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.CountryTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.FormatTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.PluginTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.SitemeshTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.UrlMappingTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryHandlerInterceptor
-import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
-import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings
-import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
+import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
@@ -65,9 +43,13 @@ import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.codehaus.groovy.grails.web.util.StreamCharBufferMetaUtils
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.config.PropertiesFactoryBean
+import org.springframework.boot.context.embedded.ServletContextInitializer
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
+
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
 
 /**
  * Sets up and configures the GSP and GSP tag library support in Grails.
@@ -75,7 +57,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver
  * @author Graeme Rocher
  * @since 1.1
  */
-class GroovyPagesGrailsPlugin implements ServletContextInitializer{
+class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplicationAware, PluginManagerAware{
 
     def watchedResources = ["file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
                             "file:./grails-app/taglib/**/*TagLib.groovy"]
@@ -98,19 +80,23 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer{
         SitemeshTagLib
     ]
 
+    GrailsApplication grailsApplication
+    GrailsPluginManager pluginManager
+
     /**
      * Clear the page cache with the ApplicationContext is loaded
      */
-    def doWithApplicationContext = { ApplicationContext ctx ->
-        ctx.groovyPagesTemplateEngine.clearPageCache()
-
-        ctx.filterInterceptor?.addHandler ctx.javascriptLibraryHandlerInterceptor
+    @CompileStatic
+    def doWithApplicationContext(ApplicationContext ctx) {
+        ctx.getBean("groovyPagesTemplateEngine", GroovyPagesTemplateEngine).clearPageCache()
     }
 
     /**
      * Configures the various Spring beans required by GSP
      */
     def doWithSpring = {
+        RuntimeSpringConfiguration spring = springConfig
+        def application = grailsApplication
         // resolves JSP tag libraries
         jspTagLibraryResolver(TagLibraryResolverImpl)
         // resolves GSP tag libraries
@@ -197,6 +183,8 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer{
             cacheResources = enableCacheResources
         }
 
+        spring.addAlias('groovyTemplateEngine', 'groovyPagesTemplateEngine')
+
         groovyPageRenderer(PageRenderer, ref("groovyPagesTemplateEngine")) { bean ->
             bean.lazyInit = true
             groovyPageLocator = groovyPageLocator
@@ -205,6 +193,8 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer{
         groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
             bean.autowire = true
         }
+
+
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
             gspReloadEnabled = enableReload
@@ -272,44 +262,17 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer{
     }
 
 
-    private void enhanceClasses(List<Class> classes, apiObject) {
-        def nonEnhancedClasses = [] as Set
-        for (Class clazz in classes) {
-            if (!clazz.getAnnotation(Enhanced)) {
-                nonEnhancedClasses << clazz
-            }
-            Class superClass = clazz.superclass
-            while (superClass != Object) {
-                if (Modifier.isAbstract(superClass.getModifiers()) && !superClass.getAnnotation(Enhanced)) {
-                    nonEnhancedClasses << superClass
-                }
-                superClass = superClass.superclass
-            }
-        }
-
-        if (nonEnhancedClasses) {
-            def enhancer = new MetaClassEnhancer()
-            enhancer.addApi apiObject
-            nonEnhancedClasses.each { enhancer.enhance it.getMetaClass() }
-        }
-    }
-
     /**
      * Sets up dynamic methods required by the GSP implementation including dynamic tag method dispatch
      */
-    def doWithDynamicMethods = { ApplicationContext ctx ->
+    @CompileStatic
+    def doWithDynamicMethods(ApplicationContext ctx) {
         StreamCharBufferMetaUtils.registerStreamCharBufferMetaClass()
 
-        TagLibraryLookup gspTagLibraryLookup = ctx.gspTagLibraryLookup
-        GrailsPluginManager pluginManager = getManager()
+        TagLibraryLookup gspTagLibraryLookup = ctx.getBean('gspTagLibraryLookup',TagLibraryLookup)
 
-        if (manager?.hasGrailsPlugin("controllers")) {
-            enhanceClasses(application.controllerClasses*.clazz, ctx.instanceControllerTagLibraryApi)
-        }
-
-        enhanceClasses(application.tagLibClasses*.clazz, ctx.instanceTagLibraryApi)
-        application.tagLibClasses.each { taglibClass ->
-            TagLibraryMetaUtils.enhanceTagLibMetaClass(taglibClass, gspTagLibraryLookup)
+        for(GrailsClass cls in grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE)) {
+            TagLibraryMetaUtils.enhanceTagLibMetaClass((GrailsTagLibClass)cls, gspTagLibraryLookup)
         }
     }
 

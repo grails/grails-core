@@ -40,8 +40,6 @@ import org.springframework.util.Assert;
 public class Holders {
 
     private static final Log LOG = LogFactory.getLog(Holders.class);
-    private static final String APPLICATION_BEAN_NAME = GrailsApplication.APPLICATION_ID;
-
     private static Holder<GrailsPluginManager> pluginManagers = new Holder<GrailsPluginManager>("PluginManager");
     private static Holder<Boolean> pluginManagersInCreation = new Holder<Boolean>("PluginManagers in creation");
     private static Holder<ConfigObject> configs = new Holder<ConfigObject>("config");

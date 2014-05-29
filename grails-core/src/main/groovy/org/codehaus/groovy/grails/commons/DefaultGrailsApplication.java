@@ -23,11 +23,7 @@ import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,7 +70,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected Class<?>[] allClasses = new Class[0];
     protected static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
 
-    protected List<Class<?>> loadedClasses = new ArrayList<Class<?>>();
+    protected Set<Class<?>> loadedClasses = new HashSet<Class<?>>();
     protected ArtefactHandler[] artefactHandlers;
     protected Map<String, ArtefactHandler> artefactHandlersByName = new HashMap<String, ArtefactHandler>();
     protected List<Class<?>> allArtefactClasses = new ArrayList<Class<?>>();
