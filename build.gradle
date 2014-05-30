@@ -21,7 +21,7 @@ ext {
     grailsVersion = '3.0.0.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
-    antVersion = "1.8.4"
+    antVersion = "1.9.3"
     aspectjVersion = "1.8.0"
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
@@ -75,7 +75,7 @@ if (jointBuildGroovyJarProperty) {
         throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
     }
 } else {
-    groovyDependency = dependencies.create("org.codehaus.groovy:groovy-all:${groovyVersion}") {
+    groovyDependency = dependencies.create("org.codehaus.groovy:groovy:${groovyVersion}") {
         exclude module:"commons-cli"
         exclude module:"ant"
     }
@@ -191,6 +191,8 @@ subprojects { project ->
             groovy groovyDependency
         }
 
+        testCompile("org.codehaus.groovy:groovy-test:${groovyVersion}")
+
         if (project.name != "grails-docs") {
             // Logging
             compile "org.slf4j:slf4j-api:$slf4jVersion"
@@ -198,6 +200,7 @@ subprojects { project ->
 
             // Testing
             testCompile "junit:junit:${junitVersion}"
+
             testCompile("org.spockframework:spock-core:${spockVersion}") {
                 transitive = false
                 exclude group:'junit', module: 'junit-dep'

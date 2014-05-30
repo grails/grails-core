@@ -1,10 +1,10 @@
 dependencies {
     compile project(":grails-web-common")
 
+    testCompile project(":grails-plugin-controllers")
+
     testRuntime "org.apache.tomcat.embed:tomcat-embed-core:7.0.53"
     testRuntime "org.apache.tomcat.embed:tomcat-embed-logging-juli:7.0.53"
-
-    testRuntime project(":grails-plugin-controllers")
     testRuntime project(":grails-plugin-i18n")
     testRuntime project(":grails-plugin-url-mappings")
 }

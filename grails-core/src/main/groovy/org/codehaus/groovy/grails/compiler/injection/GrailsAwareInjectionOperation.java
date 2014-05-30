@@ -32,10 +32,7 @@ import org.springframework.util.ClassUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * A Groovy compiler injection operation that uses a specified array of
@@ -102,6 +99,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 resources = resolver.getResources(pattern);
             }
             List<ClassInjector> injectors = new ArrayList<>();
+            Set<Class> injectorClasses = new HashSet<>();
             CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(classLoader);
             for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
                 try {
@@ -110,8 +108,12 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                     if(metadataReader.getAnnotationMetadata().hasAnnotation(AstTransformer.class.getName())) {
                         String className = metadataReader.getClassMetadata().getClassName();
                         Class<?> injectorClass = classLoader.loadClass(className);
-                        if (ClassInjector.class.isAssignableFrom(injectorClass))
+                        if(injectorClasses.contains(injectorClass)) continue;
+                        if (ClassInjector.class.isAssignableFrom(injectorClass)) {
+
+                            injectorClasses.add(injectorClass);
                             injectors.add((ClassInjector) injectorClass.newInstance());
+                        }
                     }
                 } catch (ClassNotFoundException e) {
                     // ignore

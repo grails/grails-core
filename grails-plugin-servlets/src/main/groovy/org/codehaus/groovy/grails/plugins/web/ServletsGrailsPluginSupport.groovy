@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -68,16 +70,17 @@ class ServletsGrailsPluginSupport {
         // enables setting of session attributes with session["foo"] = "bar" syntax
         HttpSession.metaClass.putAt = setAttributeSubScript
         // enables access to request attributes with request["foo"] syntax
-        HttpServletRequest.metaClass.getAt = { String key ->
+        def requestMetaClass = GrailsMetaClassUtils.getExpandoMetaClass(HttpServletRequest)
+        requestMetaClass.getAt = { String key ->
             delegate.getAttribute(key)
         }
         // enables setting of request attributes with request["foo"] = "bar" syntax
-        HttpServletRequest.metaClass.putAt = { String key, Object val ->
+        requestMetaClass.putAt = { String key, Object val ->
             delegate.setAttribute(key, val)
         }
         // enables access to request attributes using property syntax
-        HttpServletRequest.metaClass.getProperty = getAttributeClosure
-        HttpServletRequest.metaClass.setProperty = setAttributeClosure
+        requestMetaClass.getProperty = getAttributeClosure
+        requestMetaClass.setProperty = setAttributeClosure
 
         final servletRequestApi = new ServletRequestApi()
         final xhrIdentifier = config?.grails?.web?.xhr?.identifier
@@ -86,7 +89,7 @@ class ServletsGrailsPluginSupport {
         }
         def requestEnhancer = new MetaClassEnhancer()
         requestEnhancer.addApi servletRequestApi
-        requestEnhancer.enhance HttpServletRequest.metaClass
+        requestEnhancer.enhance requestMetaClass
 
         // allows the syntax response << "foo"
         HttpServletResponse.metaClass.leftShift = { Object o ->

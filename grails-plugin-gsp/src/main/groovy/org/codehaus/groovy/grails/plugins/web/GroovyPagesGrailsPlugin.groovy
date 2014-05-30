@@ -277,6 +277,7 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
     }
 
     def onChange = { event ->
+        def application = grailsApplication
         def ctx = event.ctx ?: application.mainContext
 
         if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
@@ -296,13 +297,9 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
                 def lookup = event.ctx.gspTagLibraryLookup
                 lookup.registerTagLib(taglibClass)
 
-                enhanceClasses([taglibClass.clazz], ctx.instanceTagLibraryApi)
                 TagLibraryMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.gspTagLibraryLookup)
             }
-        } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            enhanceClasses([event.source], ctx.instanceControllerTagLibraryApi)
         }
-
         // clear uri cache after changes
         ctx.groovyPagesUriService.clear()
     }

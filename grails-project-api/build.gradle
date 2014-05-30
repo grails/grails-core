@@ -1,7 +1,9 @@
 dependencies {
     compile project(':grails-core')
     compile project(':grails-web')
-    compile "org.apache.ant:ant:${antVersion}"
+    compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    compile "org.codehaus.groovy:groovy-console:$groovyVersion"
+
     compile "jline:jline:$jlineVersion"
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {

@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import groovy.mock.interceptor.MockProxyMetaClass;
 import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
 
 /**
@@ -102,7 +101,7 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     }
 
     private void updateMetaClassOfClass(MetaClass oldMetaClass, Class classToUpdate) {
-        if (oldMetaClass != null && !(oldMetaClass instanceof MockProxyMetaClass)) {
+        if (oldMetaClass != null && !(oldMetaClass.getClass().getName().equals("groovy.mock.interceptor.MockProxyMetaClass"))) {
             Object current = alteredClasses.get(classToUpdate);
             if (current == null ) {
                 alteredClasses.put(classToUpdate, oldMetaClass);

@@ -54,7 +54,6 @@ class MimeTypesGrailsPlugin {
         "${MimeTypeResolver.BEAN_NAME}"(DefaultMimeTypeResolver)
     }
 
-    @CompileStatic
     def doWithDynamicMethods(ApplicationContext ctx) {
         MetaClassEnhancer requestEnhancer = new MetaClassEnhancer()
         requestEnhancer.addApi ctx.getBean("requestMimeTypesApi", RequestMimeTypesApi)

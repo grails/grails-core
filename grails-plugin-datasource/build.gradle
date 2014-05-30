@@ -1,8 +1,10 @@
-def tomcatVersion = '7.0.50'
+def tomcatVersion = '7.0.53'
 dependencies {
     compile("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
+
+    compile "org.codehaus.groovy:groovy-sql:$groovyVersion"
     
     compile("org.springframework:spring-context:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'

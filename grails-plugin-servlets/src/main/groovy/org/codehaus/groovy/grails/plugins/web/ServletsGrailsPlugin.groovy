@@ -16,6 +16,10 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import org.springframework.context.ApplicationContext
 
 /**
  * Adds methods to the Servlet API interfaces to make them more Grailsy. For example all classes
@@ -25,12 +29,15 @@ import grails.util.GrailsUtil
  * @author Graeme Rocher
  * @since 0.5.5
  */
-class ServletsGrailsPlugin {
+class ServletsGrailsPlugin implements GrailsApplicationAware {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
 
-    def doWithDynamicMethods = { ctx ->
-        ServletsGrailsPluginSupport.enhanceServletApi(application.config)
+    GrailsApplication grailsApplication
+
+    @CompileStatic
+    def doWithDynamicMethods(ApplicationContext ctx) {
+        ServletsGrailsPluginSupport.enhanceServletApi(grailsApplication.config)
     }
 }

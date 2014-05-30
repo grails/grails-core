@@ -1,3 +1,4 @@
 dependencies {
+    compile "org.codehaus.groovy:groovy-xml:$groovyVersion"
 }
 

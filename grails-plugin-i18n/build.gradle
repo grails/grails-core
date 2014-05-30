@@ -1,4 +1,20 @@
+configurations {
+    optional
+}
 dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile project(":grails-web")
+
+    optional "org.codehaus.groovy:groovy-ant:$groovyVersion"
 }
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
+}
+javadoc.classpath += files(configurations.optional)
