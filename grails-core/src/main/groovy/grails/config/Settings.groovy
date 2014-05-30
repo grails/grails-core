@@ -9,4 +9,5 @@ package grails.config
 interface Settings {
     String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
     String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
+    static final String CLASS_RESOURCE_PATTERN = "/**/*.class"
 }

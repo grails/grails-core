@@ -15,26 +15,27 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.codehaus.groovy.grails.core.io.GrailsResource;
+import org.codehaus.groovy.grails.io.support.FileSystemResource;
+import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
+import org.codehaus.groovy.grails.io.support.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.util.ClassUtils;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * A Groovy compiler injection operation that uses a specified array of
@@ -86,49 +87,58 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
             return;
         }
 
-        BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry, false);
-        scanner.setIncludeAnnotationConfig(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
 
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
-        scanner.scan(INJECTOR_SCAN_PACKAGE);
+        String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+                ClassUtils.convertClassNameToResourcePath(INJECTOR_SCAN_PACKAGE) + "/**/*.class";
 
-        // fallback to current classloader for special cases (e.g. gradle classloader isolation with useAnt=false)
-        if (registry.getBeanDefinitionCount() == 0) {
-            classLoader = GrailsAwareInjectionOperation.class.getClassLoader();
-            scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
-            scanner.scan(INJECTOR_SCAN_PACKAGE);
-        }
-
-        List<ClassInjector> injectors = new ArrayList<ClassInjector>();
-
-        for (String beanName : registry.getBeanDefinitionNames()) {
-            try {
-                Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
-                if (ClassInjector.class.isAssignableFrom(injectorClass))
-                    injectors.add((ClassInjector) injectorClass.newInstance());
-            } catch (ClassNotFoundException e) {
-                // ignore
-            } catch (InstantiationException e) {
-                // ignore
-            } catch (IllegalAccessException e) {
-                // ignore
+        ClassLoader classLoader = GrailsAwareInjectionOperation.class.getClassLoader();
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(classLoader);
+        Resource[] resources;
+        try {
+            resources = resolver.getResources(pattern);
+            if(resources.length == 0) {
+                classLoader = Thread.currentThread().getContextClassLoader();
+                resolver = new PathMatchingResourcePatternResolver(classLoader);
+                resources = resolver.getResources(pattern);
             }
-        }
+            List<ClassInjector> injectors = new ArrayList<>();
+            CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(classLoader);
+            for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
+                try {
 
-        Collections.sort(injectors, new Comparator<ClassInjector>() {
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
-                if (classInjectorA instanceof Comparable) {
-                    return ((Comparable)classInjectorA).compareTo(classInjectorB);
+                    MetadataReader metadataReader = readerFactory.getMetadataReader(new GrailsResource(resource));
+                    if(metadataReader.getAnnotationMetadata().hasAnnotation(AstTransformer.class.getName())) {
+                        String className = metadataReader.getClassMetadata().getClassName();
+                        Class<?> injectorClass = classLoader.loadClass(className);
+                        if (ClassInjector.class.isAssignableFrom(injectorClass))
+                            injectors.add((ClassInjector) injectorClass.newInstance());
+                    }
+                } catch (ClassNotFoundException e) {
+                    // ignore
+                } catch (InstantiationException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
+                    // ignore
+                } catch (IOException e) {
+                    // ignore
                 }
-                return 0;
-            }
-        });
 
-        classInjectors = injectors.toArray(new ClassInjector[injectors.size()]);
+            }
+            Collections.sort(injectors, new Comparator<ClassInjector>() {
+                @SuppressWarnings({ "unchecked", "rawtypes" })
+                public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
+                    if (classInjectorA instanceof Comparable) {
+                        return ((Comparable)classInjectorA).compareTo(classInjectorB);
+                    }
+                    return 0;
+                }
+            });
+            classInjectors = injectors.toArray(new ClassInjector[injectors.size()]);
+        } catch (IOException e) {
+            // ignore
+        }
+
+
     }
 
     @Override
