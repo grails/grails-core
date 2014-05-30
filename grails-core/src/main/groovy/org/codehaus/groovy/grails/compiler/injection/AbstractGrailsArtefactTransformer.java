@@ -19,9 +19,7 @@ import grails.artefact.Artefact;
 import groovy.lang.Mixin;
 
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
@@ -65,6 +63,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 @SuppressWarnings("rawtypes")
 public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector, Comparable {
 
+
+    private static final Set<String> KNOWN_TRANSFORMED_CLASSES = new HashSet<String>();
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
@@ -113,6 +113,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if(shouldSkipInjection(classNode)) return;
+
+        KNOWN_TRANSFORMED_CLASSES.add(classNode.getName());
 
         Map<String, ClassNode> genericsPlaceholders = resolveGenericsPlaceHolders(classNode);
 
@@ -387,5 +389,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      */
     protected AnnotationNode getMarkerAnnotation() {
         return null;
+    }
+
+    public static Collection<String> getTransformedClassNames() {
+        return Collections.unmodifiableCollection( KNOWN_TRANSFORMED_CLASSES );
     }
 }

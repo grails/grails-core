@@ -2,6 +2,7 @@ package grails.boot.config
 
 import grails.config.Settings
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.boot.support.GrailsApplicationPostProcessor
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory
 import org.springframework.util.ClassUtils
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 /**
  * A Grails configuration that scans for classes using the packages defined by the packages() method and creates the necessary
@@ -25,6 +27,7 @@ import org.springframework.util.ClassUtils
  */
 @CompileStatic
 @Configuration
+@EnableWebMvc
 class GrailsConfiguration implements ResourceLoaderAware {
 
     ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
@@ -43,7 +46,7 @@ class GrailsConfiguration implements ResourceLoaderAware {
     Collection<Class> classes() {
         def readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver)
         def packages = packages()
-        Collection<Class> classes = []
+        Collection<Class> classes = [] as Set
         for (pkg in packages) {
             if(pkg == null) continue
             String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
@@ -56,6 +59,14 @@ class GrailsConfiguration implements ResourceLoaderAware {
         String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
         classes.addAll scanUsingPattern(pattern, readerFactory)
 
+        def classLoader = Thread.currentThread().contextClassLoader
+        for(cls in AbstractGrailsArtefactTransformer.transformedClassNames) {
+            try {
+                classes << classLoader.loadClass(cls)
+            } catch (ClassNotFoundException cnfe) {
+                // ignore
+            }
+        }
 
         return classes
     }
