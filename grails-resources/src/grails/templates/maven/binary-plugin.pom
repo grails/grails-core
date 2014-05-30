@@ -104,8 +104,7 @@
                 <artifactId>grails-maven-plugin</artifactId>
                 <version>2.4.0</version>
                 <configuration>
-                    <!-- Whether for Fork a JVM to run Grails commands -->
-                    <fork>true</fork>
+                    <grailsVersion>\${grails.version}</grailsVersion>
                 </configuration>
                 <extensions>true</extensions>
             </plugin>

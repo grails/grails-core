@@ -37,21 +37,23 @@ class TestRuntime {
     private List<TestEventInterceptor> pluginsRegisteredAsInterceptors
     private Map<String, Object> registry = [:]
     private boolean runtimeClosed = false
-    private boolean shared
+    private SharedRuntimeConfigurer sharedRuntimeConfigurer
     private boolean runtimeStarted = false
+    boolean shared
     
-    protected TestRuntime(Set<String> features, List<TestPlugin> plugins, TestEventInterceptor interceptor, boolean shared) {
+    protected TestRuntime(Set<String> features, List<TestPlugin> plugins, SharedRuntimeConfigurer sharedRuntimeConfigurer) {
         this.interceptors=new ArrayList<TestEventInterceptor>()
         interceptors.add(new TestRuntimeEventInterceptor())
-        if(interceptor != null) {
-            interceptors.add(interceptor)
+        if(sharedRuntimeConfigurer instanceof TestEventInterceptor) {
+            interceptors.add((TestEventInterceptor)sharedRuntimeConfigurer)
         }
         changeFeaturesAndPlugins(features, plugins)
-        this.@shared=shared
+        this.@sharedRuntimeConfigurer=sharedRuntimeConfigurer
+        this.@shared=(sharedRuntimeConfigurer != null)
     }
     
-    public boolean isShared() {
-        return this.@shared
+    public SharedRuntimeConfigurer getSharedRuntimeConfigurer() {
+        return sharedRuntimeConfigurer
     }
     
     public void changeFeaturesAndPlugins(Set<String> features, List<TestPlugin> plugins) {
@@ -122,6 +124,10 @@ class TestRuntime {
         getValueIfExists(name, callerInfo)
     }
     
+    public <T> T getValue(String name, Class<T> requiredType, Map callerInfo = [:]) {
+        return (T)getValue(name, callerInfo)
+    }
+    
     public Object getValueIfExists(String name, Map callerInfo = [:]) {
         Object val = registry.get(name)
         if(val instanceof LazyValue) {
@@ -130,7 +136,11 @@ class TestRuntime {
             return val
         }
     }
-    
+
+    public <T> T getValueIfExists(String name, Class<T> requiredType, Map callerInfo = [:]) {
+        return (T)getValueIfExists(name, callerInfo)
+    }
+        
     public Object getValueOrCreate(String name, Closure valueCreator) {
         if(containsValueFor(name)) {
             return getValue(name)
@@ -141,14 +151,27 @@ class TestRuntime {
         }
     }
     
+    public <T> T getValueOrCreate(String name, Class<T> requiredType, Closure valueCreator) {
+        (T)getValueOrCreate(name, valueCreator)
+    }
+    
+    
     public boolean containsValueFor(String name) {
         registry.containsKey(name)
     }
     
     public Object removeValue(String name) {
-        Object value = registry.remove(name)
-        publishEvent("valueRemoved", [name: name, value: value, lazy: (value instanceof LazyValue)])
-        value
+        if(registry.containsKey(name)) {
+            Object value = registry.remove(name)
+            publishEvent("valueRemoved", [name: name, value: value, lazy: (value instanceof LazyValue)])
+            value
+        } else {
+            null
+        }
+    }
+    
+    public <T> T removeValue(String name, Class<T> requiredType) {
+        (T)removeValue(name)
     }
     
     public void putValue(String name, Object value) {

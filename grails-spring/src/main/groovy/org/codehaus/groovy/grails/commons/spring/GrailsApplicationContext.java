@@ -65,6 +65,17 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
         metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
+    
+    @Override
+    public boolean containsBeanDefinition(String beanName) {
+        if(super.containsBeanDefinition(beanName)) {
+            return true;
+        } else if (getParent() != null && "grailsApplication".equals(beanName)) {
+            return getParent().containsBeanDefinition(beanName);
+        } else {
+            return false;
+        }
+    }
 
     public MetaClass getMetaClass() {
         return metaClass;
