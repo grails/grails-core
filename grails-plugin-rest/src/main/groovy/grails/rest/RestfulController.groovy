@@ -145,7 +145,7 @@ class RestfulController<T> {
             return
         }
 
-        instance.properties = getParametersToBind()
+        instance.properties = request
 
         if (instance.hasErrors()) {
             respond instance.errors, view:'edit' // STATUS CODE 422
