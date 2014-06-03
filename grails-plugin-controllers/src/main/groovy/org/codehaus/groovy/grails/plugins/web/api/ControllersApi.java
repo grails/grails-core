@@ -456,13 +456,14 @@ public class ControllersApi extends CommonWebApi {
                 shouldDoDataBinding = true;
             }
 
+            final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
+            final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
+            autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+
             if(shouldDoDataBinding) {
                 bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
             }
 
-            final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
-            final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
-            autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
         }
         return commandObjectInstance;
     }
