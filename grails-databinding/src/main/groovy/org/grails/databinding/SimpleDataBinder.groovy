@@ -466,7 +466,7 @@ class SimpleDataBinder implements DataBinder {
         def formattedConverter = formattedValueConvertersionHelpers[field.type]
         if (formattedConverter) {
             converter = { SimpleMapDataBindingSource source ->
-                def value = source.getPropertyValue field.name
+                def value = preprocessValue(source.getPropertyValue(field.name))
                 def convertedValue = null
                 if(value != null) {
                     convertedValue = formattedConverter.convert (value, formattingValue)
