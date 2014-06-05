@@ -104,7 +104,7 @@ task pluginsFromRepo {
         hibernate4: "4.3.5.3",
         jquery: "1.11.1",
         'asset-pipeline': "1.8.9",
-        scaffolding: "2.1.0",
+        scaffolding: "2.1.1",
         tomcat: "7.0.53",
         webxml: "1.4.1"
     ]
