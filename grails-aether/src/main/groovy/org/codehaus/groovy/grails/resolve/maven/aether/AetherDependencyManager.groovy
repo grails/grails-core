@@ -121,6 +121,7 @@ class AetherDependencyManager implements DependencyManager {
     String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
     boolean readPom
     boolean defaultDependenciesProvided
+    boolean offline
     boolean java5compatible
 
     Map<String, Closure> inheritedDependencies = [:]
@@ -449,6 +450,7 @@ class AetherDependencyManager implements DependencyManager {
     protected DependencyNode collectDependencies(String scope) {
         SettingsBuildingResult result = settingsBuilder.build(new DefaultSettingsBuildingRequest())
         settings = result.getEffectiveSettings()
+        settings.offline = offline
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
         if (proxyHost && proxyPort) {
