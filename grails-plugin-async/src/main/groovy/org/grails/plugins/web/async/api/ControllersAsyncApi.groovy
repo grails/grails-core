@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.async.api
+package org.grails.plugins.web.async.api
 
 import javax.servlet.AsyncContext
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
+import org.grails.plugins.web.async.GrailsAsyncContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder

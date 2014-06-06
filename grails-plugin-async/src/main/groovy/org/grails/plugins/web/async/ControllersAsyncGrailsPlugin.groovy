@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.async
+package org.grails.plugins.web.async
 
 import grails.async.Promises
 import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.plugins.web.async.mvc.AsyncActionResultTransformer
+import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
+import org.springframework.context.ApplicationContext
 
 import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -38,7 +39,7 @@ class ControllersAsyncGrailsPlugin {
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
     }
 
-    def doWithDynamicMethods = {
+    def doWithDynamicMethods(ApplicationContext appCtx) {
         Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
         def original = HttpServletRequest.metaClass.getMetaMethod("startAsync", null)
         if (original == null) {

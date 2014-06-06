@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.async.mvc
+package org.grails.plugins.web.async.mvc
 
 import grails.async.Promise
 import grails.async.PromiseList
 import grails.async.web.AsyncGrailsWebRequest
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
+import org.grails.plugins.web.async.GrailsAsyncContext
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
