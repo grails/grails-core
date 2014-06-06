@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons.cfg;
 
+import grails.config.Settings;
 import groovy.util.ConfigObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +34,7 @@ import java.util.Map;
  */
 public class GrailsConfig {
 
-    public static final String SPRING_PLACEHOLDER_PREFIX = "grails.spring.placeholder.prefix";
+    public static final String SPRING_PLACEHOLDER_PREFIX = Settings.SPRING_PLACEHOLDER_PREFIX;
     private static final Log LOG = LogFactory.getLog(GrailsConfig.class);
 
     private GrailsApplication grailsApplication;

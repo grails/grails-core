@@ -20,7 +20,6 @@ import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovySystem;
 import groovy.text.Template;
 
 import java.io.File;
@@ -97,8 +96,8 @@ import org.springframework.web.context.support.ServletContextResource;
  */
 public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent>, BeanClassLoaderAware {
 
-    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = Settings.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES;
-    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = Settings.CONFIG_PROPERTY_GSP_ENABLE_RELOAD;
+    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = Settings.GSP_DISABLE_CACHING_RESOURCES;
+    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = Settings.GSP_ENABLE_RELOAD;
     public static final String BEAN_ID = ResourceAwareTemplateEngine.BEAN_ID;
 
     private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.config.Settings
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
@@ -68,9 +69,8 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         addBeanFactoryPostProcessor(placeholderConfigurer)
 
         // replace AutoProxy advisor with Groovy aware one
-        def grailsConfig = application.config.grails
-        def springConfig = grailsConfig.spring
-        if (springConfig.disable.aspectj.autoweaving || !ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader)) {
+        def grailsConfig = application.flatConfig
+        if (grailsConfig.get(Settings.SPRING_DISABLE_ASPECTJ) || !ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader)) {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
         }
         else {
@@ -82,7 +82,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
 
         def packagesToScan = []
 
-        def beanPackages = springConfig.bean.packages
+        def beanPackages = grailsConfig.get(Settings.SPRING_BEAN_PACKAGES)
         if (beanPackages instanceof List) {
             packagesToScan += beanPackages
         }

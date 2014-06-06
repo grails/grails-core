@@ -30,7 +30,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
@@ -79,7 +78,7 @@ class I18nGrailsPlugin implements GrailsApplicationAware{
             basenames = baseNames.toArray()
             fallbackToSystemLocale = false
             pluginManager = manager
-            if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, Settings.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
+            if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, Settings.GSP_ENABLE_RELOAD)) {
                 def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
                 cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
                 def fileCacheSecondsSetting = application?.flatConfig?.get('grails.i18n.filecache.seconds')
