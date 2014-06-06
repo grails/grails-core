@@ -24,7 +24,6 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
@@ -32,12 +31,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
-import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsDispatcherServlet
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
-import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
-import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseActionResultTransformer
-import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsInfoHandlerAdapter
+import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletContextInitializer
@@ -46,10 +40,12 @@ import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.filter.DelegatingFilterProxy
+import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
+import javax.servlet.MultipartConfigElement
 import javax.servlet.Servlet
 import javax.servlet.ServletContext
 import javax.servlet.ServletException
@@ -84,9 +80,9 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
             exceptionMappings = ['java.lang.Exception': '/error']
         }
 
-        if (!application.config.grails.disableCommonsMultipart) {
-            multipartResolver(ContentLengthAwareCommonsMultipartResolver)
-        }
+        multipartResolver(StandardServletMultipartResolver)
+        multipartConfigElement(MultipartConfigElement, System.getProperty("java.io.tmpdir"))
+
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
         def interceptorsClosure = {
             interceptors = handlerInterceptors
