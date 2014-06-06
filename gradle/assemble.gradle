@@ -103,7 +103,7 @@ task pluginsFromRepo {
         'database-migration': "1.4.0",
         hibernate4: "4.3.5.3",
         jquery: "1.11.1",
-        'asset-pipeline': "1.8.9",
+        'asset-pipeline': "1.8.11",
         scaffolding: "2.1.1",
         tomcat: "7.0.53",
         webxml: "1.4.1"
