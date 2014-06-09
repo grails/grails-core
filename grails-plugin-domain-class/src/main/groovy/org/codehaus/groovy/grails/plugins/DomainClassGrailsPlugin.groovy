@@ -27,12 +27,12 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
-import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
+import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
@@ -170,7 +170,7 @@ class DomainClassGrailsPlugin {
         event.application.refreshConstraints()
     }
 
-    static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
+    static  enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
         for (GrailsDomainClass dc in application.domainClasses) {
             def domainClass = dc
             def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null

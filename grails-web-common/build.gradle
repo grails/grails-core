@@ -4,6 +4,7 @@ dependencies {
     }
     compile project(":grails-databinding"), project(":grails-encoder")
 
+    compile "org.codehaus.groovy:groovy-templates:$groovyVersion"
     compile 'javax.servlet:javax.servlet-api:3.0.1', provided
 
     compile "org.springframework:spring-webmvc:${springVersion}"

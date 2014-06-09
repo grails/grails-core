@@ -294,9 +294,6 @@ public class PathMatchingResourcePatternResolver {
                 result.addAll(doFindPathMatchingFileResources(rootDirResource, subPattern));
             }
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Resolved location pattern [" + locationPattern + "] to resources " + result);
-        }
         return result.toArray(new Resource[result.size()]);
     }
 
@@ -399,9 +396,6 @@ public class PathMatchingResourcePatternResolver {
         }
 
         try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Looking for matching resources in jar file [" + jarFileUrl + "]");
-            }
             if (!"".equals(rootEntryPath) && !rootEntryPath.endsWith("/")) {
                 // Root entry path must end with slash to allow for proper matching.
                 // The Sun JRE does not return a slash here, but BEA JRockit does.
@@ -481,9 +475,6 @@ public class PathMatchingResourcePatternResolver {
      * @see #retrieveMatchingFiles
      */
     protected Set<Resource> doFindMatchingFileSystemResources(File rootDir, String subPattern) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Looking for matching resources in directory tree [" + rootDir.getPath() + "]");
-        }
         Set<File> matchingFiles = retrieveMatchingFiles(rootDir, subPattern);
         Set<Resource> result = new LinkedHashSet<Resource>(matchingFiles.size());
         for (File file : matchingFiles) {
@@ -504,9 +495,6 @@ public class PathMatchingResourcePatternResolver {
     protected Set<File> retrieveMatchingFiles(File rootDir, String pattern) throws IOException {
         if (!rootDir.exists()) {
             // Silently skip non-existing directories.
-            if (logger.isDebugEnabled()) {
-                logger.debug("Skipping [" + rootDir.getAbsolutePath() + "] because it does not exist");
-            }
             return Collections.emptySet();
         }
         if (!rootDir.isDirectory()) {
@@ -543,10 +531,6 @@ public class PathMatchingResourcePatternResolver {
      * @throws IOException if directory contents could not be retrieved
      */
     protected void doRetrieveMatchingFiles(String fullPattern, File dir, Set<File> result) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Searching directory [" + dir.getAbsolutePath() +
-                    "] for files matching pattern [" + fullPattern + "]");
-        }
         File[] dirContents = dir.listFiles();
         if (dirContents == null) {
             if (logger.isWarnEnabled()) {
@@ -557,13 +541,7 @@ public class PathMatchingResourcePatternResolver {
         for (File content : dirContents) {
             String currPath = content.getAbsolutePath().replace( File.separator, "/");
             if (content.isDirectory() && getPathMatcher().matchStart(fullPattern, currPath + "/")) {
-                if (!content.canRead()) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Skipping subdirectory [" + dir.getAbsolutePath() +
-                                "] because the application is not allowed to read the directory");
-                    }
-                }
-                else {
+                if (content.canRead()) {
                     doRetrieveMatchingFiles(fullPattern, content, result);
                 }
             }

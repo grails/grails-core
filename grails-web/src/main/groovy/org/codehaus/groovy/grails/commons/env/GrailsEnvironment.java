@@ -20,6 +20,7 @@ import grails.util.Environment;
 import java.util.Set;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.StringUtils;
@@ -39,10 +40,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
         this.grailsApplication = grailsApplication;
         getPropertySources().addFirst(new GrailsConfigPropertySource());
         getPropertySources().addFirst(new PropertiesPropertySource("systemProperties", System.getProperties()));
-
-
     }
-
 
     @Override
     protected Set<String> doGetActiveProfiles() {

@@ -16,17 +16,8 @@
 package org.grails.async.decorator
 
 /**
- * Decorates any function execution potentially wrapping an asynchronous function execution in new functionality.
- *
  * @author Graeme Rocher
- * @since 2.3
+ * @deprecated Use {@link grails.async.decorator.PromiseDecorator} instead
  */
-interface PromiseDecorator {
-    /**
-     * Decorates the given closures, returning the decorated closure
-     *
-     * @param c The closure to decorate
-     * @return The decorated closure
-     */
-    def <D> Closure<D> decorate(Closure<D> c)
+interface PromiseDecorator extends grails.async.decorator.PromiseDecorator{
 }

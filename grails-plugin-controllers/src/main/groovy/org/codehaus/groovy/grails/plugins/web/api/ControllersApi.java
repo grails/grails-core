@@ -60,6 +60,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.validation.Errors;
+import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
@@ -101,9 +102,8 @@ public class ControllersApi extends CommonWebApi {
     public static ApplicationContext getStaticApplicationContext() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if (!(requestAttributes instanceof GrailsWebRequest)) {
-            return null;
+            return ContextLoader.getCurrentWebApplicationContext();
         }
-
         return ((GrailsWebRequest)requestAttributes).getApplicationContext();
     }
 

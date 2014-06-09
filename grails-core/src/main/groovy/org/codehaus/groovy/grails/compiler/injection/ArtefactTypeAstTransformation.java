@@ -86,10 +86,10 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     }
 
     protected void postProcess(SourceUnit sourceUnit, AnnotationNode annotationNode, ClassNode classNode, String artefactType) {
-        if(!MY_TYPE.equals(annotationNode.getClassNode())) {
+        if(!getAnnotationType().equals(annotationNode.getClassNode())) {
             // add @Artefact annotation to resulting class so that "short cut" annotations like @TagLib 
             // also produce an @Artefact annotation in the resulting class file
-            AnnotationNode annotation=new AnnotationNode(MY_TYPE);
+            AnnotationNode annotation=new AnnotationNode(getAnnotationType());
             annotation.addMember("value", new ConstantExpression(artefactType));
             classNode.addAnnotation(annotation);
         }
@@ -112,7 +112,11 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     }
 
     protected ClassNode getAnnotationType() {
-        return MY_TYPE;
+        return new ClassNode(getAnnotationTypeClass());
+    }
+
+    protected Class getAnnotationTypeClass() {
+        return MY_TYPE.getTypeClass();
     }
 
     public void performInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {

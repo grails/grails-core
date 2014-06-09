@@ -16,14 +16,16 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import grails.util.GrailsUtil
-
+import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 
 /**
  * Configures Filters.
@@ -33,7 +35,7 @@ import org.springframework.context.ApplicationContext
  *
  * @since 1.0
  */
-class FiltersGrailsPlugin {
+class FiltersGrailsPlugin implements GrailsApplicationAware, ApplicationContextAware{
 
     private static final String TYPE = FiltersConfigArtefactHandler.TYPE
     private static final Log LOG = LogFactory.getLog(FiltersGrailsPlugin)
@@ -42,6 +44,9 @@ class FiltersGrailsPlugin {
     def dependsOn = [controllers:version]
     def artefacts = [FiltersConfigArtefactHandler]
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
+
+    GrailsApplication grailsApplication
+    ApplicationContext applicationContext
 
     static final BEANS = { GrailsClass filter ->
         "${filter.fullName}Class"(MethodInvokingFactoryBean) {
@@ -65,8 +70,9 @@ class FiltersGrailsPlugin {
         }
     }
 
-    def doWithApplicationContext = { applicationContext ->
-        reloadFilters(application, applicationContext)
+    @CompileStatic
+    def doWithApplicationContext(ApplicationContext ctx) {
+        reloadFilters(grailsApplication, ctx)
     }
 
     def onChange = { event ->
@@ -190,6 +196,6 @@ class FiltersGrailsPlugin {
             }
         }
 
-        applicationContext.filterInterceptor.handlers = handlers
+        applicationContext.getBean('filterInterceptor', CompositeInterceptor).handlers = handlers
     }
 }

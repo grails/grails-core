@@ -15,28 +15,17 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import java.io.Writer;
-import java.util.Map;
-
-import groovy.lang.Closure;
 import groovy.transform.CompileStatic
-
-import javax.servlet.jsp.JspContext
-import javax.servlet.jsp.JspWriter
-import javax.servlet.jsp.tagext.BodyContent
-import javax.servlet.jsp.tagext.BodyTag
-import javax.servlet.jsp.tagext.IterationTag
-import javax.servlet.jsp.tagext.JspFragment
-import javax.servlet.jsp.tagext.SimpleTag
-import javax.servlet.jsp.tagext.Tag
-import javax.servlet.jsp.tagext.TagAdapter
-import javax.servlet.jsp.tagext.TryCatchFinally
-
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTag
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.util.ClassUtils
+
+import javax.servlet.jsp.JspContext
+import javax.servlet.jsp.JspWriter
+import javax.servlet.jsp.tagext.*
 
 /**
  * @author Graeme Rocher
@@ -97,57 +86,59 @@ class JspTagImpl implements JspTag {
         applyAttributes(tag, attributes)
 
         if (tag instanceof SimpleTag) {
-            tag.jspContext = pageContext
-            handleSimpleTag(tag, attributes, pageContext, targetWriter, body)
+            def simpleTag = (SimpleTag) tag
+            simpleTag.jspContext = pageContext
+            handleSimpleTag(simpleTag, attributes, pageContext, targetWriter, body)
         }
         else if (tag instanceof Tag) {
-            tag.pageContext = pageContext
+            Tag theTag = (Tag)tag
+            theTag.pageContext = pageContext
             withJspWriterDelegate pageContext, targetWriter, {
 
                 try {
-                    pageContext.pushTopTag tag
-                    int state = tag.doStartTag()
+                    pageContext.pushTopTag theTag
+                    int state = theTag.doStartTag()
                     BodyContent bodyContent
                     def out = pageContext.getOut()
                     if ((state == Tag.EVAL_BODY_INCLUDE || state == IterationTag.EVAL_BODY_AGAIN) && body) {
                         if (state == BodyTag.EVAL_BODY_BUFFERED && isBody()) {
                             bodyContent = pageContext.pushBody()
                             out = bodyContent
-                            BodyTag bodyTag = (BodyTag)tag
+                            BodyTag bodyTag = (BodyTag)theTag
                             bodyTag.bodyContent = bodyContent
                             bodyTag.doInitBody()
                         }
                         out << body.call()
                         if (isIterationTag()) {
-                            state = ((IterationTag)tag).doAfterBody()
+                            state = ((IterationTag)theTag).doAfterBody()
                             while (state != Tag.SKIP_BODY) {
                                 out << body.call()
-                                state = ((IterationTag)tag).doAfterBody()
+                                state = ((IterationTag)theTag).doAfterBody()
                             }
                         }
                     }
                     if (bodyContent) {
                         pageContext.popBody()
                     }
-                    state = tag.doEndTag()
+                    state = theTag.doEndTag()
                     if (state == Tag.SKIP_PAGE) {
-                        LOG.warn "Tag ${tag.getClass().getName()} returned SKIP_PAGE which is not supported in GSP"
+                        LOG.warn "Tag ${theTag.getClass().getName()} returned SKIP_PAGE which is not supported in GSP"
                     }
                 }
                 catch (Throwable t) {
-                    if (isTryCatchFinally() && tag) {
-                        ((TryCatchFinally)tag).doCatch(t)
+                    if (isTryCatchFinally() && theTag) {
+                        ((TryCatchFinally)theTag).doCatch(t)
                     }
                     else {
                         throw t
                     }
                 }
                 finally {
-                    if (isTryCatchFinally() && tag) {
-                        ((TryCatchFinally)tag).doFinally()
+                    if (isTryCatchFinally() && theTag) {
+                        ((TryCatchFinally)theTag).doFinally()
                     }
                     pageContext.popTopTag()
-                    tag?.release()
+                    theTag?.release()
                 }
             }
         }

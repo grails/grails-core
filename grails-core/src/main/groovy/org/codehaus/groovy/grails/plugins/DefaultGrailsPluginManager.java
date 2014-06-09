@@ -25,6 +25,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -147,6 +148,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         pluginResources = pluginFiles;
         this.application = application;
         setPluginFilter();
+    }
+
+    public DefaultGrailsPluginManager(GrailsApplication application) {
+        super(application);
     }
 
     public GrailsPlugin[] getUserPlugins() {
@@ -700,7 +705,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                     plugin.doWithDynamicMethods(applicationContext);
                 }
                 catch (Throwable t) {
-                    LOG.error("Error configuring dynamic methods for plugin " + plugin + ": " + t.getMessage(), t);
+                    throw new GrailsConfigurationException("Error configuring dynamic methods for plugin " + plugin + ": " + t.getMessage(), t);
                 }
             }
         }

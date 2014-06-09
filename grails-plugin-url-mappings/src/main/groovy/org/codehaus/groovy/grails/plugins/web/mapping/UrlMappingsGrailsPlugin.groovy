@@ -20,10 +20,12 @@ import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
@@ -57,7 +59,7 @@ import javax.servlet.ServletException
  * @author Graeme Rocher
  * @since 0.4
  */
-class UrlMappingsGrailsPlugin /*implements ServletContextInitializer*/ {
+class UrlMappingsGrailsPlugin implements GrailsApplicationAware {
 
     def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
 
@@ -65,13 +67,21 @@ class UrlMappingsGrailsPlugin /*implements ServletContextInitializer*/ {
     def dependsOn = [core:version]
     def loadAfter = ['controllers']
 
-    def doWithSpring = {
-        String serverURL = application.config?.grails?.serverURL ?: null
+    GrailsApplication grailsApplication
 
-        def urlConverterType = application.config?.grails?.web?.url?.converter
+    def doWithSpring = {
+        def application = grailsApplication
+        if(!application.getArtefacts(UrlMappingsArtefactHandler.TYPE)) {
+            application.addArtefact(UrlMappingsArtefactHandler.TYPE, DefaultUrlMappings )
+        }
+
+        def flatConfig = application.flatConfig
+        String serverURL = flatConfig?.get('grails.serverURL') ?: null
+
+        def urlConverterType = flatConfig.get('grails.web.url.converter')
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
-        def cacheUrls = application.config?.grails?.web?.linkGenerator?.useCache
+        def cacheUrls = flatConfig.get('grails.web.linkGenerator.useCache')
         if (!(cacheUrls instanceof Boolean)) {
             cacheUrls = true
         }
@@ -145,6 +155,7 @@ class UrlMappingsGrailsPlugin /*implements ServletContextInitializer*/ {
 //        // TODO: read ResponseCodeUrlMappings from URLMappings on startup and register with error handler
 //        // Note that Servlet 3.0 does not allow the registration of error pages programmatically, will use Boot APIs to achieve this
 //        // See https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/embedded/tomcat/TomcatEmbeddedServletContainerFactory.java#L239
+          // Also see https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/web/ErrorPageFilter.java
 //
 //        // def errorHandler = new ServletRegistrationBean(new ErrorHandlingServlet())
 //        //  errorHandler.onStartup(servletContext)
@@ -152,4 +163,10 @@ class UrlMappingsGrailsPlugin /*implements ServletContextInitializer*/ {
 //    }
 
 
+    @CompileDynamic
+    static class DefaultUrlMappings {
+        static mappings = {
+            "/$controller/$action?/$id?(.$format)?"()
+        }
+    }
 }

@@ -19,6 +19,7 @@ import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBinder;
 import grails.databinding.DataBindingSource;
 import grails.util.Environment;
+import grails.util.Holders;
 import grails.validation.ValidationErrors;
 import grails.web.databinding.GrailsWebDataBinder;
 import groovy.lang.GroovySystem;
@@ -203,7 +204,7 @@ public class DataBindingUtils {
         if (include == null && exclude == null) {
             include = getBindingIncludeList(object);
         }
-        GrailsApplication application = GrailsWebRequest.lookupApplication();
+        GrailsApplication application = Holders.findApplication();
         GrailsDomainClass domain = null;
         if (application != null) {
             domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,object.getClass().getName());
@@ -235,7 +236,7 @@ public class DataBindingUtils {
             grailsApplication = domain.getGrailsApplication();
         }
         if (grailsApplication == null) {
-            grailsApplication = GrailsWebRequest.lookupApplication();
+            grailsApplication = Holders.findApplication();
         }
         if (grailsApplication != null) {
             if (Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useSpringBinder"))) {

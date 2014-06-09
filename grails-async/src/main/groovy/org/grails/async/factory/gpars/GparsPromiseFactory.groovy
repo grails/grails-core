@@ -22,7 +22,7 @@ import groovyx.gpars.GParsConfig
 import groovyx.gpars.dataflow.Dataflow
 import groovyx.gpars.dataflow.DataflowVariable
 
-import org.grails.async.factory.AbstractPromiseFactory
+import grails.async.factory.AbstractPromiseFactory
 
 import java.util.concurrent.TimeUnit
 

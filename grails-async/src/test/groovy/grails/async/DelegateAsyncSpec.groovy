@@ -15,8 +15,8 @@
  */
 package grails.async
 
-import org.grails.async.decorator.PromiseDecorator
-import org.grails.async.decorator.PromiseDecoratorProvider
+import grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecoratorProvider
 import spock.lang.Specification
 
 /**

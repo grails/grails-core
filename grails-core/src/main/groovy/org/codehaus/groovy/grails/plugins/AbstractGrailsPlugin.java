@@ -107,9 +107,6 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         return false;
     }
 
-    public void doWithWebDescriptor(Element webXml) {
-        // do nothing
-    }
 
     public String[] getDependencyNames() {
         return dependencyNames;

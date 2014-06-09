@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.grails.async.decorator.PromiseDecorator;
+import grails.async.decorator.PromiseDecorator;
 import org.grails.async.factory.SynchronousPromiseFactory;
 import org.grails.async.factory.gpars.GparsPromiseFactory;
 

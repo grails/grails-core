@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass
 
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+
 import java.lang.reflect.Method
 
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
@@ -29,8 +31,10 @@ import groovy.transform.CompileStatic
  */
 class MetaClassEnhancer extends BaseApiProvider {
 
-    void enhance(MetaClass metaClass) {
-        def cls = metaClass.theClass
+    void enhance(MetaClass mc) {
+        def cls = mc.theClass
+        def metaClass = GrailsMetaClassUtils.getExpandoMetaClass(cls)
+
         for (c in constructors) {
             def method = c
             def paramTypes = method.parameterTypes.length == 1 ? [] : method.parameterTypes[1..-1] as Class[]

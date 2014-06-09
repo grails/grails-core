@@ -15,7 +15,7 @@
  */
 package grails.async
 
-import org.grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecorator
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit

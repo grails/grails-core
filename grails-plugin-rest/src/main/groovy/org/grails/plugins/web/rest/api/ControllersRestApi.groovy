@@ -56,7 +56,7 @@ class ControllersRestApi {
     @Autowired(required = false)
     ProxyHandler proxyHandler
 
-    @Autowired
+    @Autowired(required = false)
     GroovyPageLocator groovyPageLocator
 
     @Autowired

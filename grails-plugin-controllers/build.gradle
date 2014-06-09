@@ -7,6 +7,8 @@ dependencies {
             project(':grails-plugin-domain-class'),
             project(':grails-plugin-validation')
 
+    runtime project(':grails-plugin-i18n')
+
     testRuntime "jline:jline:$jlineVersion"
     testRuntime "org.fusesource.jansi:jansi:$jansiVersion"
 }

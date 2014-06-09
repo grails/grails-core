@@ -35,6 +35,9 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
@@ -354,14 +357,22 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr mapping The named URL mapping to use to rewrite the link
      * @attr event Webflow _eventId parameter
      */
-    Closure createLink = { attrs ->
-        def urlAttrs = attrs
+    Closure createLink = { Map attrs ->
+       doCreateLink(attrs)
+    }
+
+    @CompileStatic
+    protected String doCreateLink(Map attrs) {
+        Map urlAttrs = attrs
         if (attrs.url instanceof Map) {
-           urlAttrs = attrs.url
+            urlAttrs = (Map)attrs.url
         }
-        def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
-        if (request.flowExecutionKey) {
-            params.execution = request.flowExecutionKey
+        Map params = urlAttrs.params && urlAttrs.params instanceof Map ? (Map)urlAttrs.params : [:]
+        HttpServletRequest req = (HttpServletRequest)getProperty('request')
+        HttpServletResponse res = (HttpServletResponse)getProperty('response')
+        def flowExecutionKey = req.getAttribute('flowExecutionKey')
+        if (flowExecutionKey) {
+            params.execution = flowExecutionKey
             urlAttrs.params = params
             if (attrs.controller == null && attrs.action == null && attrs.url == null && attrs.uri == null) {
                 urlAttrs[LinkGenerator.ATTRIBUTE_ACTION] = GrailsWebRequest.lookup().actionName
@@ -372,10 +383,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             urlAttrs.params = params
         }
 
-        String generatedLink = linkGenerator.link(urlAttrs, request.characterEncoding)
-        generatedLink = processedUrl(generatedLink, request)
+        String generatedLink = linkGenerator.link(urlAttrs, req.getAttribute('characterEncoding')?.toString())
+        generatedLink = processedUrl(generatedLink, req)
 
-        return useJsessionId ? response.encodeURL(generatedLink) : generatedLink
+        return useJsessionId ? res.encodeURL(generatedLink) : generatedLink
     }
 
     /**

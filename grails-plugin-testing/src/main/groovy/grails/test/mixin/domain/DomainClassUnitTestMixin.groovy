@@ -168,7 +168,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
         final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)
 
-        ControllersGrailsPlugin.enhanceDomainWithBinding(applicationContext, domain, mc)
+        ControllersGrailsPlugin.enhanceDomainWithBinding(domain, mc)
         DomainClassGrailsPlugin.registerConstraintsProperty(mc, domain)
         return domain
     }

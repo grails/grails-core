@@ -5,6 +5,8 @@ configurations {
 }
 dependencies {
 
+    compile "org.codehaus.groovy:groovy-xml:$groovyVersion"
+
     // UAA client dependency, optional
     uaa "org.codehaus.groovy:groovy-all:${groovyVersion}", {
         exclude module:"commons-cli"
@@ -27,16 +29,12 @@ dependencies {
             "net.java.dev.jna:jna:$jnaVersion"
 
     // Ant
-    compile "org.apache.ant:ant:${antVersion}",
-            "org.apache.ant:ant-launcher:${antVersion}",
+    compile "org.apache.ant:ant-launcher:${antVersion}",
             "org.apache.ivy:ivy:${ivyVersion}"
+    compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
     compile "org.apache.ant:ant-trax:${antTraxVersion}", {
         exclude group:"org.apache.ant", module:"ant"
-    }
-
-    compile("org.apache.ant:ant-junit:${antVersion}") {
-        exclude group:'junit',module:'junit'
     }
 
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {

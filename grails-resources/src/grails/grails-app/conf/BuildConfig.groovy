@@ -52,9 +52,14 @@ grails.project.dependency.resolution = {
         // runtime 'mysql:mysql-connector-java:5.1.29'
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
 
-        compile "org.springframework:spring-orm:$springVersion"
+        compile "org.springframework:spring-orm:$springVersion", {
+            excludes 'commons-logging'
+        }
 
         runtime "org.grails:grails-web-initializer:$grailsVersion"
+
+        // remove this to disable log4j
+        runtime "org.grails:grails-plugin-log4j:$grailsVersion"
     }
 
     plugins {

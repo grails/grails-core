@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -166,6 +167,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @return The ApplicationContext
      */
     public static ApplicationContext findApplicationContext(ServletContext servletContext) {
+        if(servletContext == null) {
+            return ContextLoader.getCurrentWebApplicationContext();
+        }
         return WebApplicationContextUtils.getWebApplicationContext(servletContext);
     }
 

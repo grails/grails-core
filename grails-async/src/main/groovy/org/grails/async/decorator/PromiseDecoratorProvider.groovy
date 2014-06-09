@@ -16,15 +16,8 @@
 package org.grails.async.decorator
 
 /**
- * Interface for classes that provide promise decorators to implement
- *
  * @author Graeme Rocher
- * @since 2.3
+ * @deprecated Use {@link grails.async.decorator.PromiseDecoratorProvider} instead
  */
-interface PromiseDecoratorProvider {
-
-    /**
-     * @return A list of decorators
-     */
-    List<PromiseDecorator> getDecorators()
+interface PromiseDecoratorProvider extends grails.async.decorator.PromiseDecoratorProvider{
 }

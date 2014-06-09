@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import grails.web.UrlConverter
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.validation.DataBinder
@@ -33,6 +34,7 @@ import org.springframework.context.ApplicationContext
  * @author Graeme Rocher
  * @since 1.1
  */
+@CompileStatic
 class ForwardMethod {
 
     public static final String IN_PROGRESS = "org.codehaus.groovy.grails.FORWARD_IN_PROGRESS"
@@ -56,13 +58,13 @@ class ForwardMethod {
             }
             
             if(controllerName) {
-                def convertedControllerName = convert(webRequest, controllerName)
+                def convertedControllerName = convert(webRequest, controllerName.toString())
                 webRequest.controllerName = convertedControllerName
             }
             urlInfo.controllerName = webRequest.controllerName
             
             if(params.action) {
-                urlInfo.actionName = convert(webRequest, params.action)
+                urlInfo.actionName = convert(webRequest, params.action.toString())
             }
             
             if(params.namespace) {
@@ -76,7 +78,7 @@ class ForwardMethod {
          
         def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
         request.setAttribute(IN_PROGRESS, true)
-        String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
+        String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, (Map)model, true)
         request.setAttribute(CALLED, true)
         return uri
     }

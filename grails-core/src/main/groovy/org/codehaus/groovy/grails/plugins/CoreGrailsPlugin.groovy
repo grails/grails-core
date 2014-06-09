@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.config.Settings
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
@@ -22,6 +23,7 @@ import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
@@ -29,6 +31,7 @@ import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFac
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfigUtilities
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.plugins.support.aware.PluginManagerAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.ClassEditor
@@ -39,6 +42,7 @@ import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.core.io.Resource
+import org.springframework.util.ClassUtils
 
 /**
  * Configures the core shared beans within the Grails application context.
@@ -46,15 +50,17 @@ import org.springframework.core.io.Resource
  * @author Graeme Rocher
  * @since 0.4
  */
-class CoreGrailsPlugin {
+class CoreGrailsPlugin implements GrailsApplicationAware {
 
     def version = GrailsUtil.getGrailsVersion()
     def watchedResources = ["file:./grails-app/conf/spring/resources.xml","file:./grails-app/conf/spring/resources.groovy"]
 
+    GrailsApplication grailsApplication
+
     def doWithSpring = {
         xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
-
+        def application = grailsApplication
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
         final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
@@ -63,9 +69,8 @@ class CoreGrailsPlugin {
         addBeanFactoryPostProcessor(placeholderConfigurer)
 
         // replace AutoProxy advisor with Groovy aware one
-        def grailsConfig = application.config.grails
-        def springConfig = grailsConfig.spring
-        if (springConfig.disable.aspectj.autoweaving) {
+        def grailsConfig = application.flatConfig
+        if (grailsConfig.get(Settings.SPRING_DISABLE_ASPECTJ) || !ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader)) {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
         }
         else {
@@ -77,7 +82,7 @@ class CoreGrailsPlugin {
 
         def packagesToScan = []
 
-        def beanPackages = springConfig.bean.packages
+        def beanPackages = grailsConfig.get(Settings.SPRING_BEAN_PACKAGES)
         if (beanPackages instanceof List) {
             packagesToScan += beanPackages
         }
@@ -102,7 +107,7 @@ class CoreGrailsPlugin {
         // add shutdown hook if not running in war deployed mode
         final warDeployed = Environment.isWarDeployed()
         final devMode = !warDeployed && Environment.currentEnvironment == Environment.DEVELOPMENT
-        if (devMode) {
+        if (devMode && ClassUtils.isPresent('jline.Terminal', application.classLoader)) {
             shutdownHook(DevelopmentShutdownHook)
         }
         abstractGrailsResourceLocator {

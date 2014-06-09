@@ -46,7 +46,9 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
     UrlMappingsHandlerMapping(UrlMappingsHolder urlMappingsHolder) {
         Assert.notNull(urlMappingsHolder, "Argument [urlMappingsHolder] cannot be null")
         this.urlMappingsHolder = urlMappingsHolder
+        setOrder(-5)
     }
+
 
     @Autowired(required = false)
     void setMimeTypeResolver(MimeTypeResolver mimeTypeResolver) {

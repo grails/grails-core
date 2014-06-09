@@ -2,21 +2,23 @@ dependencies {
 
     compile "org.springframework:spring-tx:${springVersion}"
 
-    // Ant
-    compile "org.apache.ant:ant:${antVersion}",{
-        ext.notInPom = true
-    }
-    compile "org.apache.ant:ant-junit:${antVersion}",{
-        ext.notInPom = true
-    }
-
     // Testing
+    compile "org.codehaus.groovy:groovy-test:$groovyVersion"
     compile "junit:junit:${junitVersion}", {
         exclude group:'org.hamcrest', module: 'hamcrest-core'
     }
-    compile project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
+    compile("org.spockframework:spock-core:${spockVersion}") {
+        exclude group:'junit', module: 'junit-dep'
+        exclude group:'org.codehaus.groovy', module: 'groovy-all'
+    }
 
+    // needed for Spock
+    compile 'org.objenesis:objenesis:1.4'
+
+    compile project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
     compile project(":grails-web")
+
+    // command line requirements
     compile project(":grails-project-api")
 
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
@@ -29,11 +31,12 @@ dependencies {
         ext.notInPom = true
     }
 
-    compile("org.spockframework:spock-core:${spockVersion}") {
-        exclude group:'junit', module: 'junit-dep'
-        exclude group:'org.codehaus.groovy', module: 'groovy-all'
+    // Ant
+    compile "org.apache.ant:ant:${antVersion}",{
+        ext.notInPom = true
+    }
+    compile "org.apache.ant:ant-junit:${antVersion}",{
+        ext.notInPom = true
     }
 
-    // needed for Spock
-    compile 'org.objenesis:objenesis:1.4'
 }

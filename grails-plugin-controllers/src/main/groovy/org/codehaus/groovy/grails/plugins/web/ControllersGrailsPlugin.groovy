@@ -22,32 +22,30 @@ import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
-import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
-import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerUrlMappings
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
-import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
-import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseActionResultTransformer
-import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsInfoHandlerAdapter
+import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletContextInitializer
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.filter.DelegatingFilterProxy
+import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
+import javax.servlet.MultipartConfigElement
 import javax.servlet.Servlet
 import javax.servlet.ServletContext
 import javax.servlet.ServletException
@@ -58,7 +56,7 @@ import javax.servlet.ServletException
  * @author Graeme Rocher
  * @since 0.4
  */
-class ControllersGrailsPlugin implements ServletContextInitializer{
+class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplicationAware{
 
     def watchedResources = [
         "file:./grails-app/controllers/**/*Controller.groovy",
@@ -68,7 +66,10 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
     def observe = ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
 
+    GrailsApplication grailsApplication
+
     def doWithSpring = {
+        def application = grailsApplication
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
         simpleControllerHandlerAdapter(UrlMappingsInfoHandlerAdapter)
 
@@ -79,9 +80,9 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
             exceptionMappings = ['java.lang.Exception': '/error']
         }
 
-        if (!application.config.grails.disableCommonsMultipart) {
-            multipartResolver(ContentLengthAwareCommonsMultipartResolver)
-        }
+        multipartResolver(StandardServletMultipartResolver)
+        multipartConfigElement(MultipartConfigElement, System.getProperty("java.io.tmpdir"))
+
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
         def interceptorsClosure = {
             interceptors = handlerInterceptors
@@ -89,6 +90,12 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         // allow @Controller annotated beans
         annotationHandlerMapping(RequestMappingHandlerMapping, interceptorsClosure)
         annotationHandlerAdapter(RequestMappingHandlerAdapter)
+
+        // add the dispatcher servlet
+        dispatcherServlet(GrailsDispatcherServlet)
+        dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), "/*") {
+            loadOnStartup = 2
+        }
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
             stripLeadingSlash = false
@@ -116,8 +123,9 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         }
     }
 
-    def doWithDynamicMethods = {ApplicationContext ctx ->
-
+    @CompileStatic
+    def doWithDynamicMethods(ApplicationContext ctx) {
+        def application = grailsApplication
         ControllersApi controllerApi = ctx.getBean("instanceControllersApi", ControllersApi)
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding")
 
@@ -136,22 +144,27 @@ class ControllersGrailsPlugin implements ServletContextInitializer{
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi(controllerApi)
 
-        for (controller in application.controllerClasses) {
+        for (GrailsClass controller in application.getArtefacts(ControllerArtefactHandler.TYPE)) {
             def controllerClass = controller
             def mc = controllerClass.metaClass
-            mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
             if (controllerClass.clazz.getAnnotation(Enhanced)==null) {
                 enhancer.enhance mc
             }
-            controllerClass.initialize()
+            finalizeEnhancement(ctx, controllerClass, mc)
         }
 
-        for (GrailsDomainClass domainClass in application.domainClasses) {
-            enhanceDomainWithBinding(ctx, domainClass, domainClass.metaClass)
+        for (GrailsClass domainClass in application.getArtefacts(DomainClassArtefactHandler.TYPE)) {
+            enhanceDomainWithBinding(domainClass, domainClass.metaClass)
         }
     }
 
-    static void enhanceDomainWithBinding(ApplicationContext ctx, GrailsDomainClass dc, MetaClass mc) {
+    private void finalizeEnhancement(ctx, GrailsClass controllerClass, MetaClass mc) {
+        mc.constructor = { -> ctx.getBean(controllerClass.fullName) }
+        controllerClass.initialize()
+    }
+
+    @CompileStatic
+    static void enhanceDomainWithBinding(GrailsClass dc, MetaClass mc) {
         if (dc.abstract) {
             return
         }

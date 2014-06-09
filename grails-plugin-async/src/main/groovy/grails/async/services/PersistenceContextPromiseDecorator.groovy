@@ -17,7 +17,7 @@ package grails.async.services
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
-import org.grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecorator
 
 /**
  * A {@link PromiseDecorator} that wraps a promise execution in a persistence context (example Hibernate session)

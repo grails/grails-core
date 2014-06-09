@@ -32,19 +32,6 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 class PageContextFactory {
 
-    static Class pageContextClass
-
-    static {
-        def classLoader = Thread.currentThread().getContextClassLoader()
-
-        if (PC.metaClass.getMetaMethod('getElContext', [] as Class[])) {
-            pageContextClass = classLoader.loadClass('org.codehaus.groovy.grails.web.pages.ext.jsp.GroovyPagesPageContext21')
-        }
-        else {
-            pageContextClass = classLoader.loadClass('org.codehaus.groovy.grails.web.pages.ext.jsp.GroovyPagesPageContext')
-        }
-    }
-
     static GroovyPagesPageContext getCurrent() {
         GrailsWebRequest webRequest = RequestContextHolder.currentRequestAttributes()
 
@@ -65,7 +52,7 @@ class PageContextFactory {
             request.setAttribute(GAA.PAGE_SCOPE, pageScope)
         }
 
-        pageContext = pageContextClass.newInstance(gspServlet, pageScope)
+        pageContext = new GroovyPagesPageContext(gspServlet, pageScope)
         request.setAttribute(PC.PAGECONTEXT, pageContext)
 
         return pageContext

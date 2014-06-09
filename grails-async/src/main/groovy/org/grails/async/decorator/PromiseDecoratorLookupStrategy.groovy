@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2013 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 package org.grails.async.decorator
 
 /**
- * A lookup strategy for PromiseDecorator instances
  *
  * @author Graeme Rocher
- * @since 2.3
+ * @deprecated Use {@link grails.async.decorator.PromiseDecoratorLookupStrategy} instead
  */
-interface PromiseDecoratorLookupStrategy {
-    List<PromiseDecorator> findDecorators()
+public interface PromiseDecoratorLookupStrategy extends grails.async.decorator.PromiseDecoratorLookupStrategy {
+
 }

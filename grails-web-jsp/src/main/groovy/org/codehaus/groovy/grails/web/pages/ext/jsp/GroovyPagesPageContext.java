@@ -23,6 +23,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
 
+import javax.el.ELContext;
 import javax.servlet.GenericServlet;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -33,8 +34,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.jsp.JspWriter;
-import javax.servlet.jsp.PageContext;
+import javax.servlet.jsp.*;
 import javax.servlet.jsp.el.ELException;
 import javax.servlet.jsp.el.ExpressionEvaluator;
 import javax.servlet.jsp.el.VariableResolver;
@@ -430,5 +430,27 @@ public class GroovyPagesPageContext extends PageContext {
                 return ctx.findAttribute(name);
             }
         };
+    }
+
+    static {
+        if (JspFactory.getDefaultFactory() == null) {
+            JspFactory.setDefaultFactory(new GroovyPagesJspFactory());
+        }
+    }
+
+    private ELContext elContext;
+
+    public ELContext getELContext() {
+        if (elContext == null) {
+            JspApplicationContext jspContext = JspFactory.getDefaultFactory().getJspApplicationContext(getServletContext());
+            if  (jspContext instanceof GroovyPagesJspApplicationContext) {
+                elContext = ((GroovyPagesJspApplicationContext)jspContext).createELContext(this);
+                elContext.putContext( JspContext.class, this );
+            }
+            else {
+                throw new IllegalStateException("Unable to create ELContext for a JspApplicationContext. It must be an instance of [org.codehaus.groovy.grails.web.pages.ext.jsp.GroovyPagesJspApplicationContext] do not override JspFactory.setDefaultFactory()!");
+            }
+        }
+        return elContext;
     }
 }
