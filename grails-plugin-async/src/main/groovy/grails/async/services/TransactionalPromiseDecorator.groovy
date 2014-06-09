@@ -16,9 +16,8 @@
 package grails.async.services
 
 import groovy.transform.CompileStatic
-import org.grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecorator
 import org.springframework.beans.annotation.AnnotationBeanUtils
-import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Transactional

@@ -17,6 +17,7 @@ package org.grails.async.factory
 
 import grails.async.Promise
 import grails.async.PromiseList
+import grails.async.factory.AbstractPromiseFactory
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.TimeUnit

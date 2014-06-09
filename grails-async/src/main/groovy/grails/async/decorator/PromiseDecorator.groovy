@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.async.decorator
+package grails.async.decorator
 
 /**
+ * Decorates any function execution potentially wrapping an asynchronous function execution in new functionality.
  *
  * @author Graeme Rocher
- * @deprecated Use {@link grails.async.decorator.PromiseDecoratorLookupStrategy} instead
+ * @since 2.3
  */
-public interface PromiseDecoratorLookupStrategy extends grails.async.decorator.PromiseDecoratorLookupStrategy {
-
+interface PromiseDecorator {
+    /**
+     * Decorates the given closures, returning the decorated closure
+     *
+     * @param c The closure to decorate
+     * @return The decorated closure
+     */
+    def <D> Closure<D> decorate(Closure<D> c)
 }

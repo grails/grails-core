@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.async.decorator
+package grails.async.decorator
 
 /**
+ * Interface for classes that provide promise decorators to implement
  *
  * @author Graeme Rocher
- * @deprecated Use {@link grails.async.decorator.PromiseDecoratorLookupStrategy} instead
+ * @since 2.3
  */
-public interface PromiseDecoratorLookupStrategy extends grails.async.decorator.PromiseDecoratorLookupStrategy {
+interface PromiseDecoratorProvider {
 
+    /**
+     * @return A list of decorators
+     */
+    List<PromiseDecorator> getDecorators()
 }

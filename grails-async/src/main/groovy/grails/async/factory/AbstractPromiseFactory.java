@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.async.factory;
+package grails.async.factory;
 
 import grails.async.Promise;
 import grails.async.PromiseFactory;
@@ -28,8 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.grails.async.decorator.PromiseDecorator;
-import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
+import grails.async.decorator.PromiseDecorator;
+import grails.async.decorator.PromiseDecoratorLookupStrategy;
+import org.grails.async.factory.BoundPromise;
 
 /**
  * Abstract implementation of the {@link grails.async.PromiseFactory} interface, subclasses should extend

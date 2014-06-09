@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
-import org.grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecorator
 
 /**
  * A promise decorated lookup strategy that binds a WebRequest to the promise thread

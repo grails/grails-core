@@ -16,8 +16,8 @@
 package org.grails.async.transform.internal
 
 import groovy.transform.CompileStatic
-import org.grails.async.decorator.PromiseDecorator
-import org.grails.async.decorator.PromiseDecoratorProvider
+import grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecoratorProvider
 
 /**
  * Helps looking up the decorators
@@ -28,7 +28,7 @@ import org.grails.async.decorator.PromiseDecoratorProvider
 @CompileStatic
 class DelegateAsyncUtils {
     /**
-     * Obtains all {@link org.grails.async.decorator.PromiseDecorator} instances for the target and additional decorators supplied
+     * Obtains all {@link PromiseDecorator} instances for the target and additional decorators supplied
      *
      * @param target The target
      * @param additional The additional

@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.async.decorator
+package org.grails.async.factory
 
 /**
- *
  * @author Graeme Rocher
- * @deprecated Use {@link grails.async.decorator.PromiseDecoratorLookupStrategy} instead
+ * @deprecated Use {@link grails.async.factory.AbstractPromiseFactory} instead
  */
-public interface PromiseDecoratorLookupStrategy extends grails.async.decorator.PromiseDecoratorLookupStrategy {
-
+abstract class AbstractPromiseFactory extends grails.async.factory.AbstractPromiseFactory{
 }
