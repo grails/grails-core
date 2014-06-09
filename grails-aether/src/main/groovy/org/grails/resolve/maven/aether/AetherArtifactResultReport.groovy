@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.maven.aether
+package org.grails.resolve.maven.aether
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.resolve.Dependency

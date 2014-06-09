@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.maven.aether.config
+package org.grails.resolve.maven.aether.config
 
 import grails.build.logging.GrailsConsole
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import java.util.regex.Pattern
 
-import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
+import org.grails.resolve.maven.aether.AetherDependencyManager
 import org.eclipse.aether.graph.Dependency
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector

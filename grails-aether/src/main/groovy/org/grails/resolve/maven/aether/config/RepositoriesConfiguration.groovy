@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.maven.aether.config
+package org.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
 import org.eclipse.aether.DefaultRepositorySystemSession
@@ -22,7 +22,7 @@ import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.repository.RemoteRepository
 import grails.util.Environment
 import grails.build.logging.GrailsConsole
-import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
+import org.grails.resolve.maven.aether.AetherDependencyManager
 import org.eclipse.aether.util.repository.AuthenticationBuilder
 
 /**

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve.maven
+package org.grails.resolve.maven
 
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyReport
-import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
-import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
+import org.grails.resolve.maven.aether.AetherDependencyManager
+import org.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.repository.Authentication
 import org.eclipse.aether.repository.RemoteRepository

@@ -53,7 +53,7 @@ class DependencyManagerConfigurer {
 
         configureRepoAuthentication(grailsConfig, aetherDependencyManager)
 
-        final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
+        final coreDeps = classLoader.loadClass("org.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
             .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
         buildSettings.coreDependencies = (GrailsCoreDependencies)coreDeps
         prepareAetherDependencies(aetherDependencyManager, buildSettings, coreDeps)
