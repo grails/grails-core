@@ -406,6 +406,8 @@ abstract class ForkedGrailsProcess {
 
             if (attachListener) {
                 attachOutputListener(p2)
+            } else {
+                ForkedProcessShutdownHooks.add(p2)
             }
         }
     }
@@ -413,15 +415,7 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected Process attachOutputListener(Process process, boolean async = false) {
 
-        if(!isWindows()) {
-            addShutdownHook {
-                process.destroy()
-
-                new ProcessBuilder()
-                    .command('reset')
-                    .start().waitFor()
-            }
-        }
+        ForkedProcessShutdownHooks.add(process)
 
         def is = process.inputStream
         def es = process.errorStream
@@ -432,6 +426,7 @@ abstract class ForkedGrailsProcess {
 
         def callable = {
             int result = process.waitFor()
+            ForkedProcessShutdownHooks.remove(process)
             if (result == 1) {
                 try { t1.join() } catch (InterruptedException ignore) {}
                 try { t2.join() } catch (InterruptedException ignore) {}
