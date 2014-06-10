@@ -111,9 +111,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             def uri = attrs.get(ATTRIBUTE_URI).toString()
             writer << uri
             
-            def paramsAttribute = attrs.get(ATTRIBUTE_PARAMS)
-            Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : null
-            if(params) {
+            def params = attrs.get(ATTRIBUTE_PARAMS)
+
+            if(params instanceof Map) {
                 def charset = GrailsWebUtil.DEFAULT_ENCODING
                 def paramString = params.collect { k, v -> 
                     def encodedKey = URLEncoder.encode(k as String, charset)
@@ -149,7 +149,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 String httpMethod;
                 final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
                 final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
-                Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : [:]
+                Map params = paramsAttribute instanceof Map ? paramsAttribute : [:]
 
                 if (resourceAttribute) {
                     String resource
