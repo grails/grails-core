@@ -12,13 +12,13 @@ class CurrencyConversionSpec extends Specification {
         def binder = new SimpleDataBinder()
         binder.registerConverter new CurrencyValueConverter()
         def bank = new Bank()
-        
+
         when:
         binder.bind bank, [currency: 'USD'] as SimpleMapDataBindingSource
-        
+
         then:
         bank.currency instanceof Currency
-        'US Dollar' == bank.currency.displayName
+        '$' == bank.currency.symbol
     }
 }
 
