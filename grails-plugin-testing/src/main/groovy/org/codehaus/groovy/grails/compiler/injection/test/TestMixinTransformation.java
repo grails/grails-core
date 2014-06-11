@@ -83,9 +83,9 @@ import spock.lang.Shared;
 public class TestMixinTransformation implements ASTTransformation{
     private static final String RULE_FIELD_NAME_BASE = "$testRuntime";
     private static final String JUNIT_ADAPTER_FIELD_NAME = RULE_FIELD_NAME_BASE + "JunitAdapter";
-    private static final String JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY = "JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY";  
+    private static final String JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY = "JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY";
     public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(new ClassNode(MixinMethod.class));
-    private static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
+    static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     public static final String OBJECT_CLASS = "java.lang.Object";
     public static final String SPEC_CLASS = "spock.lang.Specification";
