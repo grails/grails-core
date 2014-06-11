@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.DependencyManagerUtils
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ExcludeResolver
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.grails.resolve.maven.aether.config.AetherDsl
 import org.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
@@ -120,6 +121,7 @@ class AetherDependencyManager implements DependencyManager {
     String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
     boolean readPom
     boolean defaultDependenciesProvided
+    boolean offline
     boolean java5compatible
 
     Map<String, Closure> inheritedDependencies = [:]
@@ -172,6 +174,7 @@ class AetherDependencyManager implements DependencyManager {
 
             session.setProxySelector(new DefaultProxySelector())
             session.setMirrorSelector(new DefaultMirrorSelector())
+            session.setWorkspaceReader(new GrailsHomeWorkspaceReader())
         }
         finally {
             currentThread.setContextClassLoader(contextLoader)
@@ -447,6 +450,7 @@ class AetherDependencyManager implements DependencyManager {
     protected DependencyNode collectDependencies(String scope) {
         SettingsBuildingResult result = settingsBuilder.build(new DefaultSettingsBuildingRequest())
         settings = result.getEffectiveSettings()
+        settings.offline = offline
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
         if (proxyHost && proxyPort) {
@@ -489,6 +493,9 @@ class AetherDependencyManager implements DependencyManager {
         }
 
         def collectRequest = new CollectRequest()
+
+        manageDependencies(collectRequest)
+
         if (scope == 'build') {
             collectRequest.setDependencies(buildDependencies)
         }
@@ -502,6 +509,16 @@ class AetherDependencyManager implements DependencyManager {
         collectRequest.setRepositories(repositories)
 
         return repositorySystem.collectDependencies(session, collectRequest).getRoot()
+    }
+
+    protected void manageDependencies(CollectRequest collectRequest) {
+        // ensure correct version of Spring is used
+        for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
+            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
+        }
+        // ensure correct version of Groovy is used
+        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
+        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
     }
 
     Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {

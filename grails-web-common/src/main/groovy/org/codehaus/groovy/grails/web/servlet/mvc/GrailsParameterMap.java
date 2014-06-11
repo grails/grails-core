@@ -19,6 +19,7 @@ import grails.databinding.DataBinder;
 import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -91,9 +92,12 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             String contentType = request.getContentType();
             if ("application/x-www-form-urlencoded".equals(contentType)) {
                 try {
-                    String contents = GrailsIOUtils.toString(request.getReader());
-                    request.setAttribute(REQUEST_BODY_PARSED, true);
-                    requestMap.putAll(WebUtils.fromQueryString(contents));
+                    Reader reader = request.getReader();
+                    if(reader != null) {
+                        String contents = GrailsIOUtils.toString(reader);
+                        request.setAttribute(REQUEST_BODY_PARSED, true);
+                        requestMap.putAll(WebUtils.fromQueryString(contents));
+                    }
                 } catch (Exception e) {
                     LOG.error("Error processing form encoded " + request.getMethod() + " request", e);
                 }

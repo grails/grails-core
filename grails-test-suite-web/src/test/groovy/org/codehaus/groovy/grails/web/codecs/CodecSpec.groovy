@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.codecs
 
+import grails.converters.XML
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
 import spock.lang.Issue
@@ -52,6 +53,18 @@ class CodecSpec extends Specification {
             1.encodeAsXML() == '1' // convert primitives to string
             true.encodeAsXML() == 'true'
     }
+    
+    @Issue("GRAILS-11493")
+    void "should XML object support encodeAsXML method and return itself"() {
+        given:
+            def xml = [a: 1, b: 2, c: 3].encodeAsXML()
+        expect:
+            xml instanceof XML
+        when:
+            def result = xml.encodeAsXML()
+        then:
+            result == xml
+    }  
 
     void "Test that the raw method works in GSP"() {
         when:"The raw method is called for a GSP expression"

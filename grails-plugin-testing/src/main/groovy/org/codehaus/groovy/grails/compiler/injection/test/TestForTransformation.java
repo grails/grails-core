@@ -176,6 +176,10 @@ public class TestForTransformation extends TestMixinTransformation {
 
         List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
         if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
+
+        annotations = classNode.getAnnotations(TestMixinTransformation.MY_TYPE);
+        if (annotations.size()>0) return; // bail out, another TestMixin transform already defines behavior
+
         // no explicit class specified try by convention
         String fileName = source.getName();
         String className = GrailsResourceUtils.getClassName(new org.codehaus.groovy.grails.io.support.FileSystemResource(fileName));

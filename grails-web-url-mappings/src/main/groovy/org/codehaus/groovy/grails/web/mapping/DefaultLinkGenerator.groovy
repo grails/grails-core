@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.mapping
 
+import java.util.regex.Pattern
+
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
@@ -43,6 +45,8 @@ import org.springframework.http.HttpMethod
  */
 @CompileStatic
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
+
+    private static final Pattern absoluteUrlPattern = Pattern.compile('^[A-Za-z][A-Za-z0-9+\\-.]*:.*$')
 
     private static final Map<String, String> REST_RESOURCE_ACTION_TO_HTTP_METHOD_MAP = [
         create:"GET",
@@ -97,18 +101,19 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         def writer = new StringBuilder()
         // prefer URI attribute
         if (attrs.get(ATTRIBUTE_URI) != null) {
-            final base = handleAbsolute(attrs)
-            if (base != null) {
-                writer << base
-            }
-            else {
-                def cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
-                if (cp == null) cp = getContextPath()
-                if (cp != null) {
-                    writer << cp
+            def uri = attrs.get(ATTRIBUTE_URI).toString()
+            if(!isUriAbsolute(uri)){
+                final base = handleAbsolute(attrs)
+                if (base != null) {
+                    writer << base
+                }
+                else {
+                    def cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
+                    if (cp == null) cp = getContextPath()
+                    if (cp != null)
+                        writer << cp
                 }
             }
-            def uri = attrs.get(ATTRIBUTE_URI).toString()
             writer << uri
             
             def params = attrs.get(ATTRIBUTE_PARAMS)
@@ -364,6 +369,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         }
     }
 
+    private boolean isUriAbsolute(String uri) {
+        // not using new URI(uri).absolute in order to avoid create the URI object, which is slow
+        return absoluteUrlPattern.matcher(uri).matches()
+    }
 
     /**
      * Get the declared URL of the server from config, or guess at localhost for non-production.

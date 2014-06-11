@@ -52,14 +52,11 @@ grails.project.dependency.resolution = {
         // runtime 'mysql:mysql-connector-java:5.1.29'
         // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
 
-        compile "org.springframework:spring-orm:$springVersion", {
-            excludes 'commons-logging'
-        }
-
         runtime "org.grails:grails-web-initializer:$grailsVersion"
 
         // remove this to disable log4j
         runtime "org.grails:grails-plugin-log4j:$grailsVersion"
+        test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
     }
 
     plugins {
@@ -69,10 +66,10 @@ grails.project.dependency.resolution = {
         // plugins for the compile step
         compile ":scaffolding:2.1.1"
         compile ':cache:1.1.6'
-        compile ":asset-pipeline:1.8.9"
+        compile ":asset-pipeline:1.8.11"
 
         // plugins needed at runtime but not for compilation
-        runtime ":hibernate4:4.3.5.3" // or ":hibernate:3.6.10.15"
+        runtime ":hibernate4:4.3.5.4" // or ":hibernate:3.6.10.16"
         runtime ":database-migration:1.4.0"
         runtime ":jquery:1.11.1"
 

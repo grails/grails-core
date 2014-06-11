@@ -150,7 +150,7 @@ class RestfulController<T> {
             return
         }
 
-        instance.properties = request
+        instance.properties = getObjectToBind()
 
         if (instance.hasErrors()) {
             respond instance.errors, view:'edit' // STATUS CODE 422
@@ -214,12 +214,26 @@ class RestfulController<T> {
     }
 
     /**
-     * The parameters that can be bound to a domain instance. Defaults to all, subclasses should override and customize the behavior
+     * This method is no longer used.
      *
+     * @see #getObjectToBind
      * @return The parameters
+     * @deprecated
      */
+    @Deprecated
     protected Map getParametersToBind() {
         params
+    }
+    
+    /**
+     * The object that can be bound to a domain instance.  Defaults to the request.  Subclasses may override this
+     * method to return anything that is a valid second argument to the bindData method in a controller.  This
+     * could be the request, a {@link java.util.Map} or a {@link org.grails.databinding.DataBindingSource}.
+     * 
+     * @return the object to bind to a domain instance
+     */
+    protected getObjectToBind() {
+        request
     }
 
     /**
@@ -252,7 +266,7 @@ class RestfulController<T> {
      */
     protected T createResource() {
         T instance = resource.newInstance()
-        bindData instance, request
+        bindData instance, getObjectToBind()
         instance
     }
 

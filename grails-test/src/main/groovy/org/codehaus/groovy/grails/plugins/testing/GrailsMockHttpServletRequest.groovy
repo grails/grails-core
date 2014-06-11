@@ -133,7 +133,12 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
             setContent(sourceXml.getBytes("UTF-8"))
         }
         else {
-            XML xml = new XML(sourceXml)
+            XML xml
+            if(sourceXml instanceof XML) {
+                xml = (XML)sourceXml
+            } else {
+                xml = new XML(sourceXml)
+            }
             setContent(xml.toString().getBytes("UTF-8"))
         }
 

@@ -29,12 +29,15 @@ import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
  */
 public class GrailsCoreDependencies {
 
+    public static final String DEFAULT_SPRING_VERSION = "4.0.5.RELEASE";
+    public static final String DEFAULT_GROOVY_VERSION = "2.3.3";
+
     public final String grailsVersion;
     public final String servletVersion;
-    protected final String groovyVersion = "2.3.2";
-    protected final String springVersion = "4.0.5.RELEASE";
+    protected final String groovyVersion = DEFAULT_GROOVY_VERSION;
+    protected final String springVersion = DEFAULT_SPRING_VERSION;
     protected final String log4jVersion = "1.2.17";
-    protected final String h2Version = "1.3.173";
+    protected final String h2Version = "1.3.176";
     protected final String jaxbVersion = "2.0";
     protected String servletApiVersion = "3.0.1";
     protected String spockVersion = "0.7-groovy-2.0";
