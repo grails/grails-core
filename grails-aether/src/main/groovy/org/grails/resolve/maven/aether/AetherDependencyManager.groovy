@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.grails.resolve.maven.aether.config.AetherDsl
 import org.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
+import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsHomeWorkspaceReader
 import org.grails.resolve.maven.aether.support.GrailsModelResolver
 import org.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
 import org.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
