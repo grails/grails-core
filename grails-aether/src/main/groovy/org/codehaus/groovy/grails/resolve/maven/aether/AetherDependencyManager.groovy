@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.DependencyManagerUtils
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ExcludeResolver
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
 import org.codehaus.groovy.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
@@ -493,6 +494,10 @@ class AetherDependencyManager implements DependencyManager {
         }
 
         def collectRequest = new CollectRequest()
+        // ensure correct version of Spring is used
+        for(springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms']) {
+            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
+        }
         if (scope == 'build') {
             collectRequest.setDependencies(buildDependencies)
         }
