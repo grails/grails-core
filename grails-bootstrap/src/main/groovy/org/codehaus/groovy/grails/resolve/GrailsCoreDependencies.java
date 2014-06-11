@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 public class GrailsCoreDependencies {
 
     public static final String DEFAULT_SPRING_VERSION = "4.0.5.RELEASE";
-    public static final String DEFAULT_GROOVY_VERSION = "2.3.2";
+    public static final String DEFAULT_GROOVY_VERSION = "2.3.3";
 
     public final String grailsVersion;
     public final String servletVersion;
