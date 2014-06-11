@@ -149,7 +149,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 String httpMethod;
                 final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
                 final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
-                Map params = paramsAttribute instanceof Map ? paramsAttribute : [:]
+                Map params = paramsAttribute instanceof Map ? (Map) paramsAttribute : [:]
 
                 if (resourceAttribute) {
                     String resource
