@@ -16,7 +16,7 @@
 
 package grails.test.runtime;
 
-import groovy.transform.Immutable
+import groovy.transform.CompileStatic
 
 /**
  * Event value object for the TestRuntime/TestPlugin system
@@ -29,6 +29,7 @@ import groovy.transform.Immutable
  * @author lari
  *
  */
+@CompileStatic
 class TestEvent {
     /**
      * reference to {@link TestRuntime} instance
@@ -42,6 +43,11 @@ class TestEvent {
      * named arguments for the event
      */
     Map<String, Object> arguments
+    
+    public <T> T getArgument(String name, Class<T> requiredType) {
+        (T)arguments.get(name)
+    }
+    
     /**
      * this flag can be set in event handling to prevent delivery to other event handlers that 
      * follow the current handler

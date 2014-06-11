@@ -14,51 +14,56 @@ import spock.lang.Specification
 @TestFor(ErrorHandlersController)
 class ControllerExceptionHandlerSpec extends Specification {
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String'() {
         when:
         params.exceptionToThrow = 'java.sql.SQLException'
         controller.testAction()
 
         then:
-        response.contentAsString == 'A SQLException Was Handled'
+        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
     }
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String from command object action'() {
         when:
         params.exceptionToThrow = 'java.sql.SQLException'
         controller.testActionWithCommandObject()
 
         then:
-        response.contentAsString == 'A SQLException Was Handled'
+        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
     }
 
-    @Issue('GRAILS-11095')
+    @Issue(['GRAILS-11095', 'GRAILS-11453'])
     void 'Test passing command object as argument to action'() {
         when:
         controller.testActionWithCommandObject(new MyCommand(exceptionToThrow: 'java.sql.SQLException'))
 
         then:
-        response.contentAsString == 'A SQLException Was Handled'
+        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
     }
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String from command object closure action'() {
         when:
         params.exceptionToThrow = 'java.sql.SQLException'
         controller.testClosureActionWithCommandObject()
 
         then:
-        response.contentAsString == 'A SQLException Was Handled'
+        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
     }
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String from action with typed parameter'() {
         when:
         params.exceptionToThrow = 'java.sql.SQLException'
         controller.testActionWithNonCommandObjectParameter()
 
         then:
-        response.contentAsString == 'A SQLException Was Handled'
+        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
     }
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which issues a redirect'() {
         when:
         params.exceptionToThrow = 'java.sql.BatchUpdateException'
@@ -68,6 +73,7 @@ class ControllerExceptionHandlerSpec extends Specification {
         response.redirectedUrl == '/logging/batchProblem'
     }
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which issues a redirect from a command object action'() {
         when:
         params.exceptionToThrow = 'java.sql.BatchUpdateException'
@@ -77,6 +83,7 @@ class ControllerExceptionHandlerSpec extends Specification {
         response.redirectedUrl == '/logging/batchProblem'
     }
 
+    @Issue('GRAILS-11453')
     void 'Test exception handler which issues a redirect from action with typed parameter'() {
         when:
         params.exceptionToThrow = 'java.sql.BatchUpdateException'
@@ -176,8 +183,19 @@ abstract class SomeAbstractController {
     }
 }
 
+trait DatabaseExceptionHandler {
+    def handleSQLException(SQLException e) {
+        render 'A SQLException Was Handled From DatabaseExceptionHandler'
+    }
+
+    // BatchUpdateException extends SQLException
+    def handleSQLException(BatchUpdateException e) {
+        redirect controller: 'logging', action: 'batchProblem'
+    }
+}
+
 @Artefact('Controller')
-class ErrorHandlersController extends SomeAbstractController {
+class ErrorHandlersController extends SomeAbstractController implements DatabaseExceptionHandler {
 
     def testAction() {
         def exceptionClass = Class.forName(params.exceptionToThrow)
@@ -197,15 +215,6 @@ class ErrorHandlersController extends SomeAbstractController {
     def testActionWithNonCommandObjectParameter(String exceptionToThrow) {
         def exceptionClass = Class.forName(exceptionToThrow)
         throw exceptionClass.newInstance()
-    }
-
-    def handleSQLException(SQLException e) {
-        render 'A SQLException Was Handled'
-    }
-
-    // BatchUpdateException extends SQLException
-    def handleSQLException(BatchUpdateException e) {
-        redirect controller: 'logging', action: 'batchProblem'
     }
 
     def handleNumberFormatException(NumberFormatException nfe) {

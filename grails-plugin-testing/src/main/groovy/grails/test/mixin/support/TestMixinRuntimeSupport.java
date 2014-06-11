@@ -46,6 +46,7 @@ public abstract class TestMixinRuntimeSupport extends GroovyObjectSupport implem
         this.features = Collections.unmodifiableSet(new LinkedHashSet<String>(features));
     }
     
+    @SkipMethod
     public Set<String> getFeatures() {
         return features;
     }
@@ -62,10 +63,12 @@ public abstract class TestMixinRuntimeSupport extends GroovyObjectSupport implem
         return currentRuntime;
     }
     
+    @SkipMethod
     public void setRuntime(TestRuntime runtime) {
         this.currentRuntime = runtime;
     }
     
+    @SkipMethod
     @Override
     public void setTestClass(Class<?> testClass) {
         this.testClass = testClass;

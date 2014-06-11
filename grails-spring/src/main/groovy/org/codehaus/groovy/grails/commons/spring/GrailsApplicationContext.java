@@ -65,6 +65,17 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
         metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
+    
+    @Override
+    public boolean containsBeanDefinition(String beanName) {
+        if(super.containsBeanDefinition(beanName)) {
+            return true;
+        } else if (getParent() != null && "grailsApplication".equals(beanName)) {
+            return getParent().containsBeanDefinition(beanName);
+        } else {
+            return false;
+        }
+    }
 
     public MetaClass getMetaClass() {
         return metaClass;
@@ -168,5 +179,10 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
         // workaround for GRAILS-7851, until Spring allows the environment bean name to be configurable
         ((DefaultListableBeanFactory)beanFactory).destroySingleton(ENVIRONMENT_BEAN_NAME);
         beanFactory.registerSingleton(GRAILS_ENVIRONMENT_BEAN_NAME,getEnvironment());
+    }
+    
+    @Override
+    protected void assertBeanFactoryActive() {
+        // no-op to prevent excessive synchronization caused by SPR-10307 change
     }
 }

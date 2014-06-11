@@ -1298,6 +1298,29 @@ class GrailsWebDataBinderSpec extends Specification {
         !publisher.hasErrors()
         publisher.name == 'Some Publisher'
     }
+    
+    @Issue('GRAILS-11472')
+    void 'test binding an empty string to a Date marked with @BindingFormat'() {
+        given:
+        def book = new DataBindingBook()
+        
+        when: 'a valid date string is bound'
+        binder.bind book, [datePublished: '11151969'] as SimpleMapDataBindingSource
+        
+        then: 'the date is initialized'
+        !book.hasErrors()
+        book.datePublished
+        Calendar.NOVEMBER == book.datePublished.month
+        15 == book.datePublished.date
+        69 == book.datePublished.year
+        
+        when: 'an empty string is bound'
+        binder.bind book, [datePublished: ''] as SimpleMapDataBindingSource
+        
+        then: 'the date is null'
+        book.datePublished == null
+        !book.hasErrors()
+    }
 }
 
 @Entity

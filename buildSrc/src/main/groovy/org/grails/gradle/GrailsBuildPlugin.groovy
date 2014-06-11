@@ -19,6 +19,7 @@ class GrailsBuildPlugin implements Plugin<Project> {
         // of the dependencies in the given configuration(s)
         project.ext {
             sourcesFor = { configurations -> classifiedDependencies(project, configurations, "sources") }
+            pomFor = { configurations -> classifiedDependencies(project, configurations, "pom") }
             javadocFor = { configurations -> classifiedDependencies(project, configurations, "javadoc") }
         }
     }
@@ -53,8 +54,13 @@ class GrailsBuildPlugin implements Plugin<Project> {
             dependency.artifact { artifact ->
                 artifact.name = dependency.name
                 artifact.type = targetClassifier
-                artifact.extension = 'jar'
-                artifact.classifier = targetClassifier
+                if('pom' == targetClassifier) {
+                    artifact.extension = 'pom'
+                }
+                else {
+                    artifact.extension = 'jar'
+                    artifact.classifier = targetClassifier
+                }
             }
             dependency
         }

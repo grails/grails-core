@@ -94,7 +94,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         String contextPath = getStringValue(attrs, "contextPath");
         String pluginName = getStringValue(attrs, "plugin");
 
-        Template t = findAndCacheTemplate(webRequest, pageScope, templateName, contextPath, pluginName, uri);
+        Template t = findAndCacheTemplate(pageScope, templateName, contextPath, pluginName, uri);
         if (t == null) {
             throw new GrailsTagException("Template not found for name [" + templateName + "] and path [" + uri + "]");
         }
@@ -102,7 +102,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         makeTemplate(webRequest, t, attrs, body, out);
     }
 
-    private Template findAndCacheTemplate(final GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
+    private Template findAndCacheTemplate(GroovyPageBinding pageScope, String templateName,
             String contextPath, String pluginName, final String uri) throws IOException {
 
         String templatePath = GrailsStringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
@@ -125,10 +125,11 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                     public CacheEntry<Template> call() {
                         return new CacheEntry<Template>() {
                             boolean allowCaching = cacheEnabled;
+                            boolean neverExpire = false;
 
                             @Override
                             protected boolean hasExpired(long timeout, Object cacheRequestObject) {
-                                return allowCaching ? super.hasExpired(timeout, cacheRequestObject) : true;
+                                return neverExpire ? false : (allowCaching ? super.hasExpired(timeout, cacheRequestObject) : true);
                             }
                             
                             @Override
@@ -151,10 +152,12 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                                     t = groovyPagesTemplateEngine.createTemplate(scriptSource);
                                 }
                                 if (t == null && scaffoldingTemplateGenerator != null) {
-                                    t = generateScaffoldedTemplate(webRequest, uri);
+                                    t = generateScaffoldedTemplate(GrailsWebRequest.lookup(), uri);
                                     // always enable caching for generated
                                     // scaffolded template
                                     allowCaching = true;
+                                    // never expire scaffolded entry since scaffolding plugin flushes the whole cache on any change
+                                    neverExpire = true;
                                 }
                                 return t;
                             }

@@ -18,7 +18,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
-    grailsVersion = '2.4.0'
+    grailsVersion = '2.4.1.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
@@ -30,10 +30,10 @@ ext {
     datastoreVersion = "3.1.0.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.3.1"
+    groovyVersion = "2.3.2"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
-    jlineVersion = "2.11"
+    jlineVersion = "2.12"
     jnaVersion = "4.0.0"
     slf4jVersion = "1.7.5"
 
@@ -120,6 +120,10 @@ allprojects {
 apply from: "gradle/idea.gradle"
 
 subprojects { project ->
+    version = grailsVersion
+    group = "org.grails"
+
+    if(project.name == 'grails-dependencies') return
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     apply plugin: 'groovy'
     apply plugin: 'maven'
@@ -133,8 +137,6 @@ subprojects { project ->
     sourceCompatibility = "1.6"
     targetCompatibility = "1.6"
 //    archivesBaseName = 'grails'
-    version = grailsVersion
-    group = "org.grails"
 
     ext.isCiBuild = project.hasProperty("isCiBuild")
 

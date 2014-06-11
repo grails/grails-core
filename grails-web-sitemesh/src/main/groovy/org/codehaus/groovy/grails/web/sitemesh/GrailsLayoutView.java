@@ -57,7 +57,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
             beforeDecorating(content, model, webRequest, request, response);
             SpringMVCViewDecorator decorator = (SpringMVCViewDecorator)groovyPageLayoutFinder.findLayout(request, content);
             if(decorator != null) {
-                decorator.render(content, model, request, response, request.getServletContext());
+                decorator.render(content, model, request, response, webRequest.getServletContext());
             } else {
                 PrintWriter writer = response.getWriter();
                 content.writeOriginal(writer);

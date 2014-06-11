@@ -20,6 +20,7 @@ import grails.test.mixin.TestMixinTargetAware;
 import grails.test.mixin.TestRuntimeAwareMixin;
 import grails.test.mixin.support.MixinInstance;
 import grails.test.mixin.support.MixinMethod;
+import grails.test.mixin.support.SkipMethod;
 import grails.test.runtime.TestRuntimeJunitAdapter;
 import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
@@ -95,6 +96,7 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final String VOID_TYPE = "void";
     private static final String EMC_STATEMENT_ADDED_KEY = "EMC_STATEMENT_ADDED_KEY";
+    private static final ClassNode SKIP_METHOD_CLASS_NODE = ClassHelper.make(SkipMethod.class);
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -444,8 +446,12 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {
-        return isAddableMethod(declaredMethod) && 
+        return !shouldSkipMethod(declaredMethod) && isAddableMethod(declaredMethod) && 
                 !hasSimilarMethod(declaredMethod, ClassHelper.make(TestRuntimeAwareMixin.class));
+    }
+
+    protected boolean shouldSkipMethod(MethodNode declaredMethod){
+        return declaredMethod.getAnnotations(SKIP_METHOD_CLASS_NODE).size() > 0;
     }
 
     public static boolean isAddableMethod(MethodNode declaredMethod) {

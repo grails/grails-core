@@ -17,9 +17,9 @@
 package grails.test.runtime
 
 import grails.test.mixin.TestRuntimeAwareMixin
+import grails.test.mixin.UseTestPlugin
 import grails.test.mixin.support.MixinInstance
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -52,11 +52,11 @@ class TestRuntimeFactory {
 
     private TestRuntimeFactory() {
     }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
+    
     static TestRuntime getRuntimeForTestClass(Class<?> testClass) {
         Set<TestRuntimeAwareMixin> allInstances = [] as Set
         Set<String> allFeatures = [] as Set
+        Set<TestPluginUsage> allTestPluginUsages = [] as Set
         Class<?> currentClass = testClass
         while(currentClass != Object && currentClass != null) {
             currentClass.getDeclaredFields().each { Field field ->
@@ -64,19 +64,23 @@ class TestRuntimeFactory {
                     ReflectionUtils.makeAccessible(field)
                     def instance = field.get(null)
                     if(instance instanceof TestRuntimeAwareMixin) {
-                        allInstances.add(instance)
-                        allFeatures.addAll(instance.features)
+                        allInstances.add((TestRuntimeAwareMixin)instance)
+                        instance.getFeatures() && allFeatures.addAll(instance.getFeatures() as List)
+                    }
+                    if(instance instanceof TestPluginRegistrar) {
+                        instance.getTestPluginUsages() && allTestPluginUsages.addAll(instance.getTestPluginUsages() as List)
                     }
                 }
             }
             currentClass = currentClass.getSuperclass()
         }
+        TestRuntimeSettings runtimeSettings = new TestRuntimeSettings(requiredFeatures: allFeatures, pluginUsages: allTestPluginUsages as List)
         SharedRuntime sharedRuntimeAnnotation = findSharedRuntimeAnnotation(testClass)
         TestRuntime runtime
         if(sharedRuntimeAnnotation==null) {
-            runtime = INSTANCE.findOrCreateRuntimeForTestClass(testClass, allFeatures)
+            runtime = INSTANCE.findOrCreateRuntimeForTestClass(testClass, runtimeSettings)
         } else {
-            runtime = INSTANCE.findOrCreateSharedRuntime(sharedRuntimeAnnotation.value(), allFeatures)
+            runtime = INSTANCE.findOrCreateSharedRuntime(sharedRuntimeAnnotation.value(), runtimeSettings)
         }
         allInstances.each { testMixinInstance ->
             testMixinInstance.runtime = runtime
@@ -85,43 +89,63 @@ class TestRuntimeFactory {
     }
 
     private static SharedRuntime findSharedRuntimeAnnotation(Class testClass) {
-        SharedRuntime sharedRuntimeAnnotation = testClass.getAnnotation(SharedRuntime)
-        Class<?> currentClass = testClass
-        while(currentClass != Object && currentClass != null && sharedRuntimeAnnotation == null) {
-            sharedRuntimeAnnotation = currentClass.getPackage()?.getAnnotation(SharedRuntime)
-            currentClass = currentClass.getSuperclass()
-        }
-        return sharedRuntimeAnnotation
+        return TestRuntimeUtil.findFirstAnnotation(testClass, SharedRuntime, true)
     }
     
+    /**
+     * 
+     * Registers TestPlugin class to global static plugin registry.
+     * This method can be used in static initialization blocks of a class. However it's 
+     * recommended that the mixin class implements {@link TestPluginRegistrar} to register the
+     * plugins that implement the features required by the mixin class.
+     * 
+     * @param pluginClass
+     */
     static void addPluginClass(Class<? extends TestPlugin> pluginClass) {
         INSTANCE.addTestPluginClass(pluginClass)
     }
 
-    static void removePlugin(Class<? extends TestPlugin> pluginClass) {
+    static void removePluginClass(Class<? extends TestPlugin> pluginClass) {
         INSTANCE.removeTestPluginClass(pluginClass)
     }
     
-    private TestRuntime findOrCreateSharedRuntime(Class<? extends SharedRuntimeConfigurer> sharedRuntimeConfigurer, Set<String> features) {
+    private TestRuntime findOrCreateSharedRuntime(Class<? extends SharedRuntimeConfigurer> sharedRuntimeConfigurer, TestRuntimeSettings runtimeSettings) {
         TestRuntime runtime=sharedRuntimes.get(sharedRuntimeConfigurer)
         if(runtime==null) {
+            runtimeSettings.pluginUsages.addAll(resolveTestRuntimeSettingsForClass(sharedRuntimeConfigurer))
             SharedRuntimeConfigurer configurerInstance=(SharedRuntimeConfigurer)sharedRuntimeConfigurer.newInstance()
-            runtime = createRuntimeForFeatures(configurerInstance.getRequiredFeatures() as Set,
-                    configurerInstance instanceof TestEventInterceptor ? (TestEventInterceptor)configurerInstance : null,
-                    true)
+            if(configurerInstance.getRequiredFeatures() != null) {
+                runtimeSettings.requiredFeatures.addAll(configurerInstance.getRequiredFeatures() as List)
+            }
+            if(configurerInstance instanceof TestPluginRegistrar) {
+                runtimeSettings.pluginUsages.addAll(((TestPluginRegistrar)configurerInstance).testPluginUsages as List)
+            }
+            runtime = createRuntimeForSettings(runtimeSettings, configurerInstance)
             sharedRuntimes.put(sharedRuntimeConfigurer, runtime)
         }
-        checkRuntimeFeatures(runtime, features)
+        checkRuntimeFeatures(runtime, runtimeSettings.requiredFeatures)
         runtime
     }
-
-    private TestRuntime findOrCreateRuntimeForTestClass(Class testClass, Set<String> features) {
+    
+    private List<TestPluginUsage> resolveTestRuntimeSettingsForClass(Class annotatedClazz) {
+        collectUseTestPluginAnnotations(annotatedClazz).collect { UseTestPlugin useTestPlugin -> 
+            new TestPluginUsage(pluginClasses: useTestPlugin.value() as List, exclude: useTestPlugin.exclude(), requestActivation: !useTestPlugin.exclude())
+        }
+    }
+    
+    private static List<UseTestPlugin> collectUseTestPluginAnnotations(Class annotatedClazz) {
+        List<UseTestPlugin> annotations = TestRuntimeUtil.collectAllAnnotations(annotatedClazz, UseTestPlugin, true) as List
+        return annotations.reverse()
+    }
+    
+    private TestRuntime findOrCreateRuntimeForTestClass(Class testClass, TestRuntimeSettings runtimeSettings) {
         TestRuntime runtime=activeRuntimes.get(testClass)
         if(runtime==null) {
-            runtime = createRuntimeForFeatures(features, null, false)
+            runtimeSettings.pluginUsages.addAll(resolveTestRuntimeSettingsForClass(testClass))
+            runtime = createRuntimeForSettings(runtimeSettings, null)
             activeRuntimes.put(testClass, runtime)
         } else {
-            checkRuntimeFeatures(runtime, features)
+            checkRuntimeFeatures(runtime, runtimeSettings.requiredFeatures)
         }
         runtime
     }
@@ -135,24 +159,41 @@ class TestRuntimeFactory {
         }
     }
         
-    private TestRuntime createRuntimeForFeatures(Set features, TestEventInterceptor interceptor, boolean shared) {
+    private TestRuntime createRuntimeForSettings(TestRuntimeSettings runtimeSettings, SharedRuntimeConfigurer sharedRuntimeConfigurer) {
         TestRuntime runtime
-        if(features) {
-            runtime = new TestRuntime(features, resolveFeaturesToPlugins(features), interceptor, shared)
+        if(runtimeSettings.requiredFeatures) {
+            runtime = new TestRuntime(runtimeSettings.requiredFeatures, resolveFeaturesToPlugins(runtimeSettings), sharedRuntimeConfigurer)
         } else {
             // setup runtime with all available plugins
-            Map<String, TestPlugin> featureToPlugin = resolvePlugins()
+            Map<String, TestPlugin> featureToPlugin = resolvePlugins(runtimeSettings)
             Set<String> allFeatures = new LinkedHashSet(featureToPlugin.keySet())
             List<TestPlugin> allPlugins = resolveTransitiveDependencies(allFeatures, featureToPlugin)
-            runtime = new TestRuntime(allFeatures, allPlugins, interceptor, shared)
+            runtime = new TestRuntime(allFeatures, allPlugins, sharedRuntimeConfigurer)
         }
         return runtime
     }
 
-    private List resolveFeaturesToPlugins(Set features) {
-        Map<String, TestPlugin> featureToPlugin = resolvePlugins()
-        List<TestPlugin> requiredPlugins = resolveTransitiveDependencies(features, featureToPlugin)
+    private List resolveFeaturesToPlugins(TestRuntimeSettings runtimeSettings) {
+        Map<String, TestPlugin> featureToPlugin = resolvePlugins(runtimeSettings)
+        List<String> requestActivationForFeatures = resolvePluginFeaturesToActivate(runtimeSettings, featureToPlugin)
+        runtimeSettings.requiredFeatures.addAll(requestActivationForFeatures)
+        List<TestPlugin> requiredPlugins = resolveTransitiveDependencies(runtimeSettings.requiredFeatures, featureToPlugin)
         return requiredPlugins
+    }
+
+    private List resolvePluginFeaturesToActivate(TestRuntimeSettings runtimeSettings, Map<String, TestPlugin> featureToPlugin) {
+        List<String> requestActivationForFeatures = (List<String>)runtimeSettings.pluginUsages.inject([]) { List<String> accumulator, TestPluginUsage testPluginUsage ->
+            if(testPluginUsage.requestActivation && !testPluginUsage.exclude) {
+                testPluginUsage.pluginClasses.each { Class clazz ->
+                    String[] features = featureToPlugin.values().find { TestPlugin instance ->
+                        instance.getClass() == clazz
+                    }?.getProvidedFeatures()
+                    features && accumulator.addAll(features as List)
+                }
+            }
+            accumulator
+        }
+        return requestActivationForFeatures
     }
 
     private List<TestPlugin> resolveTransitiveDependencies(Set<String> features, Map<String, TestPlugin> featureToPlugin) {
@@ -225,9 +266,12 @@ class TestRuntimeFactory {
     }
 
     // maps feature to plugin with lowest ordinal (highest priority)
-    private Map<String, TestPlugin> resolvePlugins() {
+    private Map<String, TestPlugin> resolvePlugins(TestRuntimeSettings runtimeSettings) {
         Map<String, List<TestPlugin>> featureToPlugins = [:]
-        List<TestPlugin> availablePlugins = availablePluginClasses.collect { Class<? extends TestPlugin> clazz -> clazz.newInstance() }
+        
+        Set<Class<? extends TestPlugin>> pluginClassesToUse = resolvePluginClassesToUse(runtimeSettings)
+        
+        List<TestPlugin> availablePlugins = pluginClassesToUse.collect { Class<? extends TestPlugin> clazz -> clazz.newInstance() }
         for(TestPlugin plugin : availablePlugins) {
             for(String feature : plugin.getProvidedFeatures()) {
                 def pluginList = featureToPlugins.get(feature)
@@ -248,6 +292,15 @@ class TestRuntimeFactory {
         }
     }
 
+    private Set<Class<? extends TestPlugin>> resolvePluginClassesToUse(TestRuntimeSettings runtimeSettings) {
+        Set<Class<? extends TestPlugin>> pluginClassesToUse = [] as Set
+        pluginClassesToUse.addAll(availablePluginClasses)
+        runtimeSettings.pluginUsages.each { TestPluginUsage testPluginUsage ->
+            testPluginUsage.exclude ? pluginClassesToUse.removeAll(testPluginUsage.pluginClasses) : pluginClassesToUse.addAll(testPluginUsage.pluginClasses)
+        }
+        return pluginClassesToUse
+    }
+
     private List<TestPlugin> sortByOrdinal(List<TestPlugin> pluginList) {
         // remove duplicates
         def pluginSet = [] as Set
@@ -259,12 +312,10 @@ class TestRuntimeFactory {
         }
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     private void addTestPluginClass(Class<? extends TestPlugin> pluginClass) {
         availablePluginClasses.add(pluginClass)
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     private void removeTestPluginClass(Class<? extends TestPlugin> pluginClass) {
         availablePluginClasses.remove(pluginClass)
     }

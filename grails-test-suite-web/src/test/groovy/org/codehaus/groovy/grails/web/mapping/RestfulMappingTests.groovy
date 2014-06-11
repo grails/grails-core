@@ -10,7 +10,7 @@ class RestfulMappingTests extends AbstractGrailsMappingTests {
 mappings {
   "/books" {
       controller = "book"
-      action = [GET:"list", DELETE:"delete", POST:"update", PUT:"save"]
+      action = [GET:"list", DELETE:"delete", POST:"update", PUT:"save", PATCH:"patch"]
   }
 }
 '''
@@ -57,6 +57,12 @@ mappings {
         assertEquals "book", info.controllerName
         assertEquals "save", info.actionName
 
+        webRequest.currentRequest.method = "PATCH"
+
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "patch", info.actionName
+
     }
 
     void testRestfulMappings() {
@@ -89,6 +95,12 @@ mappings {
         info = holder.match("/books")
         assertEquals "book", info.controllerName
         assertEquals "save", info.actionName
+
+        webRequest.currentRequest.method = "PATCH"
+
+        info = holder.match("/books")
+        assertEquals "book", info.controllerName
+        assertEquals "patch", info.actionName
     }
 
     void testRestfulMappings2() {

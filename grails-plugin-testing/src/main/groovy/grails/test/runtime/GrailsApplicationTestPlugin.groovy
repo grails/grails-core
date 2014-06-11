@@ -102,6 +102,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     protected addGrailsApplicationHolder(DefaultGrailsApplication grailsApplication) {
         Holders.setGrailsApplication(grailsApplication)
+        Holders.config = grailsApplication.config
     }
 
     protected GrailsWebApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final GrailsApplication grailsApplication, final ServletContext servletContext) {
@@ -199,6 +200,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             configClosure(grailsApplication.config)
             // reset flatConfig
             grailsApplication.configChanged() 
+            Holders.config = grailsApplication.config
         }
     }
 
