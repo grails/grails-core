@@ -180,4 +180,9 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
         ((DefaultListableBeanFactory)beanFactory).destroySingleton(ENVIRONMENT_BEAN_NAME);
         beanFactory.registerSingleton(GRAILS_ENVIRONMENT_BEAN_NAME,getEnvironment());
     }
+    
+    @Override
+    protected void assertBeanFactoryActive() {
+        // no-op to prevent excessive synchronization caused by SPR-10307 change
+    }
 }

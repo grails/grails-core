@@ -31,8 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
-import org.codehaus.groovy.grails.support.ParticipatingInterceptor;
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
@@ -132,24 +130,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     public void requestCompleted() {
         super.requestCompleted();
         DeferredBindingActions.clear();
-        
-        destroyPersistenceInterceptor();        
-    }
-
-    protected void destroyPersistenceInterceptor() {
-        if(applicationContext != null) {
-            Map<String, PersistenceContextInterceptor> interceptors = applicationContext.getBeansOfType(PersistenceContextInterceptor.class);
-            if (!interceptors.isEmpty()) {
-                PersistenceContextInterceptor persistenceInterceptor = interceptors.values().iterator().next();
-                if (persistenceInterceptor.isOpen()) {
-                    if (persistenceInterceptor instanceof ParticipatingInterceptor) {
-                        // to ensure that it will close the session in the destroy() call
-                        ((ParticipatingInterceptor)persistenceInterceptor).setParticipate(false);
-                    }
-                    persistenceInterceptor.destroy();
-                }
-            }
-        }
     }
 
     /**
