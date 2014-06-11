@@ -35,10 +35,12 @@ import java.util.Stack;
 
 import jline.Terminal;
 import jline.TerminalFactory;
+import jline.UnixTerminal;
 import jline.console.ConsoleReader;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
 import jline.internal.ShutdownHooks;
+import jline.internal.TerminalLineSettings;
 
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
@@ -273,6 +275,14 @@ public class GrailsConsole {
             terminal.restore();
         } catch (Exception e) {
             // ignore
+        }
+        if(terminal instanceof UnixTerminal) {
+            // workaround for GRAILS-11494
+            try {
+                new TerminalLineSettings().set("sane");
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 
