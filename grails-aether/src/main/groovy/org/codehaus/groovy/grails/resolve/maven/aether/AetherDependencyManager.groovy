@@ -494,10 +494,9 @@ class AetherDependencyManager implements DependencyManager {
         }
 
         def collectRequest = new CollectRequest()
-        // ensure correct version of Spring is used
-        for(springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms']) {
-            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
-        }
+
+        manageDependencies(collectRequest)
+
         if (scope == 'build') {
             collectRequest.setDependencies(buildDependencies)
         }
@@ -511,6 +510,16 @@ class AetherDependencyManager implements DependencyManager {
         collectRequest.setRepositories(repositories)
 
         return repositorySystem.collectDependencies(session, collectRequest).getRoot()
+    }
+
+    protected void manageDependencies(CollectRequest collectRequest) {
+        // ensure correct version of Spring is used
+        for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms']) {
+            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
+        }
+        // ensure correct version of Groovy is used
+        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
+        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
     }
 
     Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
