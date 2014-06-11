@@ -25,6 +25,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     String prettyPrint(Throwable t) {
         if (t == null) return ''
+        if (!t.stackTrace) return 'No stack trace available'
         final sw = new StringWriter()
         def sb = new PrintWriter(sw)
         def mln = Math.max(4, t.stackTrace.lineNumber.max())

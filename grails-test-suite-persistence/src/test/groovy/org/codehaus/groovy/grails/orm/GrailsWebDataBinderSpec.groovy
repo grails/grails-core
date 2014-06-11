@@ -1321,6 +1321,18 @@ class GrailsWebDataBinderSpec extends Specification {
         book.datePublished == null
         !book.hasErrors()
     }
+    
+    void 'Test binding String to currency in a domain class'() {
+        given:
+        def publisher = new Publisher()
+        
+        when:
+        binder.bind publisher, [localCurrency: 'EUR'] as SimpleMapDataBindingSource
+        
+        then:
+        publisher.localCurrency instanceof Currency
+        'Euro' == publisher.localCurrency.displayName
+    }
 }
 
 @Entity
@@ -1343,6 +1355,12 @@ class Publisher {
         result
     })
     List widgets = []
+    
+    Currency localCurrency
+    
+    static constraints = {
+        localCurrency nullable: true
+    }
 }
 
 class SomeNonDomainClass {
