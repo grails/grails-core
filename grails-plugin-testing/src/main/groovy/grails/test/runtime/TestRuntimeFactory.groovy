@@ -82,7 +82,7 @@ class TestRuntimeFactory {
         } else {
             runtime = INSTANCE.findOrCreateSharedRuntime(sharedRuntimeAnnotation.value(), runtimeSettings)
         }
-        allInstances.each { testMixinInstance ->
+        allInstances.each { TestRuntimeAwareMixin testMixinInstance ->
             testMixinInstance.runtime = runtime
         }
         runtime
