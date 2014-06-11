@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins.i18n;
+package org.grails.plugins.i18n;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
@@ -21,7 +21,7 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
         ctx.registerMockResource("WEB-INF/grails-app/i18n/nobundle.txt")
         ctx.registerMockResource("WEB-INF/grails-app/i18n/nobundle.xml")
 
-        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
+        def pluginClass = gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
 
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 
