@@ -514,7 +514,7 @@ class AetherDependencyManager implements DependencyManager {
 
     protected void manageDependencies(CollectRequest collectRequest) {
         // ensure correct version of Spring is used
-        for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms']) {
+        for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
             collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
         }
         // ensure correct version of Groovy is used
