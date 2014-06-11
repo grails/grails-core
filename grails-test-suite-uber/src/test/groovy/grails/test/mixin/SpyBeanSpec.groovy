@@ -6,7 +6,7 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.runtime.FreshRuntime
 
 import org.codehaus.groovy.grails.commons.InstanceFactoryBean
-import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.junit.ClassRule
 
 import spock.lang.Shared
@@ -25,7 +25,7 @@ class SpyBeanSpec extends Specification {
         otherClosure.call()
         myAddressValueConverter(InstanceFactoryBean, myAddressValueConverter, MyAddressValueConverter)
     }
-    
+
     def "it's possible to use Spy instances as beans as well"() {
         given:
         def binder=grailsApplication.mainContext.getBean("grailsWebDataBinder")

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.databinding
+package org.grails.plugins.databinding
 
 import grails.util.GrailsUtil
-import grails.web.databinding.GrailsWebDataBinder;
+import grails.web.databinding.GrailsWebDataBinder
 
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.binding.BindEventListenerAdapter
@@ -68,7 +68,7 @@ class DataBindingGrailsPlugin {
         }
 
         timeZoneConverter(TimeZoneConverter)
-        
+
         defaultDateConverter(DateConversionHelper) {
             if(databindingConfig?.dateFormats instanceof List) {
                 formatStrings = databindingConfig.dateFormats
@@ -96,7 +96,7 @@ class DataBindingGrailsPlugin {
         jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
         halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
-        
+
         if(Boolean.TRUE.equals(databindingConfig?.enableSpringEventAdapter)) {
             grailsBindEventListenerAdapter(BindEventListenerAdapter)
         }

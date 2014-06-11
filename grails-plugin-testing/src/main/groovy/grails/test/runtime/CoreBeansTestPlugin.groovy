@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
@@ -33,9 +33,9 @@ import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
 
 /**
- * a TestPlugin for TestRuntime that adds some generic beans that are 
+ * a TestPlugin for TestRuntime that adds some generic beans that are
  * required in Grails applications
- * 
+ *
  * @author Lari Hotari
  * @since 2.4.0
  *
@@ -45,7 +45,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
     String[] requiredFeatures = ['grailsApplication']
     String[] providedFeatures = ['coreBeans']
     int ordinal = 0
-    
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerParentBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         defineParentBeans(runtime) {
@@ -54,7 +54,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
             conversionService(ConversionServiceFactoryBean)
         }
     }
-    
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         defineBeans(runtime, new DataBindingGrailsPlugin().doWithSpring)
@@ -70,18 +70,18 @@ public class CoreBeansTestPlugin implements TestPlugin {
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
             grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplicationParam)
-            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplicationParam) 
+            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplicationParam)
         }
     }
-    
+
     void defineBeans(TestRuntime runtime, Closure closure) {
         runtime.publishEvent("defineBeans", [closure: closure])
     }
-    
+
     void defineParentBeans(TestRuntime runtime, Closure closure) {
         runtime.publishEvent("defineParentBeans", [closure: closure])
     }
-    
+
     public void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'registerBeans':
@@ -92,8 +92,8 @@ public class CoreBeansTestPlugin implements TestPlugin {
                 break
         }
     }
-    
+
     public void close(TestRuntime runtime) {
-    
+
     }
 }
