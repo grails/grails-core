@@ -293,6 +293,10 @@ abstract class ForkedGrailsProcess {
                     GrailsConsole.instance.updateStatus("Running without daemon...")
                 }
                 String classpathString = getBoostrapClasspath(executionContext)
+                String additionalClasspath = System.getProperty('GRAILS_ADDITIONAL_CLASSPATH')
+                if(additionalClasspath) {
+                    classpathString = classpathString + File.pathSeparator + additionalClasspath
+                }
                 List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
                 def processBuilder = new ProcessBuilder()

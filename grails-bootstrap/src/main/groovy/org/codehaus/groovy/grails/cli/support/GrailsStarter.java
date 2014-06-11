@@ -87,6 +87,7 @@ public class GrailsStarter {
                     exit("classpath parameter needs argument");
                 }
                 lc.addClassPath(args[argsOffset + 1]);
+                System.setProperty("GRAILS_ADDITIONAL_CLASSPATH", args[argsOffset+1]);
                 argsOffset += 2;
             }
             else if (args[argsOffset].equals("--main")) {
