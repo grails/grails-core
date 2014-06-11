@@ -53,6 +53,7 @@ sourceSets {
 
 eclipse {
     classpath {
+        plusConfigurations += configurations.scripts
         file {
             whenMerged { classpath ->
                 // update ../scripts -> scripts
