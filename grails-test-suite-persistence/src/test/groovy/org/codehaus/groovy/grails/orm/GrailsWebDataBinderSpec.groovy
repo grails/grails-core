@@ -1327,11 +1327,11 @@ class GrailsWebDataBinderSpec extends Specification {
         def publisher = new Publisher()
         
         when:
-        binder.bind publisher, [localCurrency: 'EUR'] as SimpleMapDataBindingSource
-        
+        binder.bind publisher, [localCurrency: 'USD'] as SimpleMapDataBindingSource
+
         then:
         publisher.localCurrency instanceof Currency
-        'Euro' == publisher.localCurrency.displayName
+        '$' == publisher.localCurrency.symbol
     }
 }
 
