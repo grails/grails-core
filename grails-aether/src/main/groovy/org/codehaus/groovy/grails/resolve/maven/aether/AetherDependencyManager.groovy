@@ -521,11 +521,6 @@ class AetherDependencyManager implements DependencyManager {
         collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
         collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
 
-        // ensure correct version of g-d-m
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.grails:grails-datastore-core:${GrailsCoreDependencies.DEFAULT_GRAILS_DATA_MAPPING_VERSION}"), null))
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.grails:grails-datastore-gorm:${GrailsCoreDependencies.DEFAULT_GRAILS_DATA_MAPPING_VERSION}"), null))
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.grails:grails-datastore-simple:${GrailsCoreDependencies.DEFAULT_GRAILS_DATA_MAPPING_VERSION}"), null))
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.grails:grails-datastore-test:${GrailsCoreDependencies.DEFAULT_GRAILS_DATA_MAPPING_VERSION}"), null))
     }
 
     Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
