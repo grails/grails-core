@@ -1,5 +1,5 @@
 ext {
-    aetherVersion = "0.9.1.v20140329"
+    aetherVersion = "1.0.0.v20140518"
     aetherProviderVersion = "0.9.0.M2"
     mavenVersion = "3.2.1"
 }
