@@ -93,7 +93,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
             }
             String headAsString = headBuffer.toString();
             // strip out title for sitemesh version of <head>
-            out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
+            out.write(headAsString.replaceFirst("(?is)<title(\\s[^>]*)?>(.*?)</title>",""));
         }
         else {
             headBuffer.writeTo(out);
