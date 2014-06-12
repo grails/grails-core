@@ -137,6 +137,8 @@ class AetherDependencyManager implements DependencyManager {
 
     GrailsConsoleLoggerManager loggerManager
 
+    GrailsCoreDependencies coreDependencies
+
     /**
      * Whether to include the javadoc
      */
@@ -513,13 +515,26 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     protected void manageDependencies(CollectRequest collectRequest) {
-        // ensure correct version of Spring is used
-        for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
-            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
+        if(coreDependencies) {
+
+            // ensure correct version of Spring is used
+            for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
+                collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${coreDependencies.springVersion}"), null))
+            }
+            // ensure correct version of Groovy is used
+            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${coreDependencies.groovyVersion}"), null))
+            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${coreDependencies.groovyVersion}"), null))
+
+            // ensure the correct versions of Grails jars are used
+            for (grailsDep in ['grails-core', 'grails-bootstrap', 'grails-web', 'grails-async', 'grails-test']) {
+                collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.grails:${grailsDep}:${coreDependencies.grailsVersion}"), null))
+            }
+            for(org.codehaus.groovy.grails.resolve.Dependency d in coreDependencies.compileDependencies) {
+                if(d.group == 'org.grails') {
+                    collectRequest.addManagedDependency(new Dependency(new DefaultArtifact(d.pattern), null))
+                }
+            }
         }
-        // ensure correct version of Groovy is used
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
 
     }
 
