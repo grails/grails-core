@@ -94,14 +94,40 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
      * Provides Groovy << left shift operator, but intercepts call to make sure
      * nulls are converted to "" strings
      *
-     * @param value The value
+     * @param obj The value
      * @return Returns this object
      * @throws IOException
      */
-    public GrailsPrintWriter leftShift(Object value) throws IOException {
-        usageFlag = true;
-        if (value != null) {
-            InvokerHelper.write(this, value);
+    public GrailsPrintWriter leftShift(Object obj) throws IOException {
+        if (trouble || obj == null) {
+            usageFlag = true;
+            return this;
+        }
+
+        Class<?> clazz = obj.getClass();
+        if (clazz == String.class) {
+            write((String)obj);
+        }
+        else if (clazz == StreamCharBuffer.class) {
+            write((StreamCharBuffer)obj);
+        }
+        else if (clazz == GStringImpl.class) {
+            write((Writable)obj);
+        }
+        else if (obj instanceof Writable) {
+            write((Writable)obj);
+        }
+        else if (obj instanceof CharSequence) {
+            try {
+                usageFlag = true;
+                getOut().append((CharSequence)obj);
+            }
+            catch (IOException e) {
+                handleIOException(e);
+            }
+        }
+        else {        
+            InvokerHelper.write(this, obj);
         }
         return this;
     }
@@ -517,6 +543,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     }
 
     protected void writeWritable(final Writable writable) {
+        if(writable.getClass() == StreamCharBuffer.class) {
+            write((StreamCharBuffer)writable);
+            return;
+        }
+        
         usageFlag = true;
         if (trouble)
             return;

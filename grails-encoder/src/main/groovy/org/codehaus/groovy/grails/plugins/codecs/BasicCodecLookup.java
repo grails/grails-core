@@ -27,13 +27,14 @@ import org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider;
 import org.codehaus.groovy.grails.support.encoding.CodecLookup;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.beans.factory.InitializingBean;
 
 public class BasicCodecLookup implements CodecLookup, InitializingBean {
     private static final String NONE_CODEC_NAME = "none";
     protected Map<String, Encoder> encoders;
     protected Map<String, Decoder> decoders;
-    public static final Encoder NONE_ENCODER = new NoneEncoder();
+    public static final StreamingEncoder NONE_ENCODER = new NoneEncoder();
 
     public BasicCodecLookup() {
         super();
