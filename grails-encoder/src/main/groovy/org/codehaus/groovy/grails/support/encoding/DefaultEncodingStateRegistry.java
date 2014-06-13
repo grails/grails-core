@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.groovy.grails.plugins.codecs.BasicCodecLookup;
+
 /**
  * default implementation of {@link EncodingStateRegistry}
  *
@@ -29,7 +31,7 @@ import java.util.Set;
  */
 public final class DefaultEncodingStateRegistry implements EncodingStateRegistry {
     private Map<Encoder, Set<Integer>> encodingTagIdentityHashCodes = new HashMap<Encoder, Set<Integer>>();
-    public static Encoder NONE_ENCODER;
+    public static final StreamingEncoder NONE_ENCODER = BasicCodecLookup.NONE_ENCODER;
 
     private Set<Integer> getIdentityHashCodesForEncoder(Encoder encoder) {
         Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoder);
