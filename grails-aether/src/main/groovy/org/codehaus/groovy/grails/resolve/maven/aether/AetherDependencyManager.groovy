@@ -110,6 +110,7 @@ class AetherDependencyManager implements DependencyManager {
     protected Dependency jvmAgent
     protected DependencyReport jvmAgentReport
     protected List<Dependency> dependencies = []
+    protected List<Dependency> managedDependencies = []
     protected Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
     protected List<Dependency> buildDependencies = []
     protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
@@ -309,7 +310,7 @@ class AetherDependencyManager implements DependencyManager {
      *
      * @param callable The DSL definition
      */
-    void parseDependencies(Closure callable) {
+    void parseDependencies(@DelegatesTo(AetherDsl) Closure callable) {
         AetherDsl dsl = new AetherDsl(this)
         dsl.session = session
         callable.delegate = dsl
@@ -515,27 +516,40 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     protected void manageDependencies(CollectRequest collectRequest) {
+        def alreadyManagedArtefacts = managedDependencies.collect { Dependency d -> d.artifact }
+        if(managedDependencies) {
+            collectRequest.setManagedDependencies(managedDependencies)
+        }
         if(coreDependencies) {
 
             // ensure correct version of Spring is used
             for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
-                collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${coreDependencies.springVersion}"), null))
+                String id = "org.springframework:${springDep}:${coreDependencies.springVersion}"
+                registerManagedDependency(collectRequest, id, alreadyManagedArtefacts)
             }
             // ensure correct version of Groovy is used
-            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${coreDependencies.groovyVersion}"), null))
-            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${coreDependencies.groovyVersion}"), null))
+            registerManagedDependency(collectRequest, "org.codehaus.groovy:groovy-all:${coreDependencies.groovyVersion}", alreadyManagedArtefacts)
+            registerManagedDependency(collectRequest, "org.codehaus.groovy:groovy:${coreDependencies.groovyVersion}", alreadyManagedArtefacts)
 
             // ensure the correct versions of Grails jars are used
             for (grailsDep in ['grails-core', 'grails-bootstrap', 'grails-web', 'grails-async', 'grails-test']) {
-                collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.grails:${grailsDep}:${coreDependencies.grailsVersion}"), null))
+                String id = "org.grails:${grailsDep}:${coreDependencies.grailsVersion}"
+                registerManagedDependency(collectRequest, id,alreadyManagedArtefacts)
             }
             for(org.codehaus.groovy.grails.resolve.Dependency d in coreDependencies.compileDependencies) {
                 if(d.group == 'org.grails') {
-                    collectRequest.addManagedDependency(new Dependency(new DefaultArtifact(d.pattern), null))
+                    registerManagedDependency(collectRequest, d.pattern,alreadyManagedArtefacts)
                 }
             }
         }
 
+    }
+
+    private CollectRequest registerManagedDependency(CollectRequest collectRequest, String id, Collection<Artifact> alreadyManagedArtefacts) {
+        def artifact = new DefaultArtifact(id)
+        if(!alreadyManagedArtefacts.contains(artifact)) {
+            collectRequest.addManagedDependency(new Dependency(artifact, null))
+        }
     }
 
     Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
@@ -556,6 +570,16 @@ class AetherDependencyManager implements DependencyManager {
         }
 
         return proxy
+    }
+
+    /**
+     * Adds a dependency to be used for dependency management. See  http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Management
+     *
+     * @param dependency The dependency to add
+     * @param configuration The configuration
+     */
+    void addManagedDependency(Dependency dependency) {
+        managedDependencies << dependency
     }
 
     void addDependency(Dependency dependency, DependencyConfiguration configuration = null) {

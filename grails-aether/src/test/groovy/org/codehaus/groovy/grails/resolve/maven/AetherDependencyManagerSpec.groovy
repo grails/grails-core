@@ -36,6 +36,29 @@ import spock.lang.Unroll
  */
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test that dependency management can be applied to dependencies"() {
+        given:"A dependency manager that applies management to transitive dependencies"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                }
+                management {
+                    dependency "commons-logging:commons-logging:1.1.3"
+                }
+                dependencies {
+                    compile 'org.springframework:spring-core:3.2.0.RELEASE'
+                }
+            }
+
+        when:"The dependencies are resolved"
+            def report = dependencyManager.resolve("compile")
+
+        then:"The correct versions of transitives are resolved"
+            report.jarFiles.any { File f -> f.name.contains('commons-logging-1.1.3')}
+
+    }
+
     @Issue('GRAILS-11055')
     void "Test that a transitive dependency excluded with the map syntax is actually excluded"() {
         given:"A dependency with an exclusion"
