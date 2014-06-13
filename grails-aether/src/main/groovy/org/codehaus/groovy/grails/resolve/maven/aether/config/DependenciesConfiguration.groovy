@@ -50,19 +50,26 @@ class DependenciesConfiguration {
         this.dependencyManager = dependencyManager
     }
 
-    void addDependency(Dependency dependency, Closure customizer = null) {
+    void addDependency(Dependency dependency, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
             final dependencyConfig = customizeDependency(customizer, dependency)
-            dependency = dependencyConfig.dependency
-            dependencyManager.addDependency dependencyConfig.dependency, dependencyConfig
+            addDependencyToManager(dependencyConfig)
         }
     }
 
-    void addBuildDependency(Dependency dependency, Closure customizer = null) {
+    protected addDependencyToManager(DependencyConfiguration dependencyConfig) {
+        dependencyManager.addDependency dependencyConfig.dependency, dependencyConfig
+    }
+
+    void addBuildDependency(Dependency dependency, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
             final dependencyConfig = customizeDependency(customizer, dependency)
-            dependencyManager.addBuildDependency dependencyConfig.dependency, dependencyConfig
+            addBuildDependencyToManager(dependencyConfig)
         }
+    }
+
+    protected addBuildDependencyToManager(DependencyConfiguration dependencyConfig) {
+        dependencyManager.addBuildDependency dependencyConfig.dependency, dependencyConfig
     }
 
     protected void addDependency(Map<String, String> properties, String scope, Closure customizer = null) {
@@ -110,51 +117,51 @@ class DependenciesConfiguration {
         dependencyManager.setJvmAgent(new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE))
     }
 
-    void build(String pattern, Closure customizer = null) {
+    void build(String pattern,@DelegatesTo(DependencyConfiguration)  Closure customizer = null) {
         addBuildDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer
     }
 
-    void build(Map<String, String> properties, Closure customizer = null) {
+    void build(Map<String, String> properties, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addBuildDependency(properties, SCOPE_COMPILE, customizer)
     }
 
-    void compile(String pattern, Closure customizer = null) {
+    void compile(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer
     }
 
-    void compile(Map<String, String> properties, Closure customizer = null) {
+    void compile(Map<String, String> properties, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency(properties, SCOPE_COMPILE, customizer)
     }
 
-    void runtime(String pattern, Closure customizer = null) {
+    void runtime(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency new Dependency(new DefaultArtifact(pattern), SCOPE_RUNTIME), customizer
     }
 
-    void runtime(Map<String, String> properties, Closure customizer = null) {
+    void runtime(Map<String, String> properties, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency properties, SCOPE_RUNTIME, customizer
     }
 
-    void provided(String pattern, Closure customizer = null) {
+    void provided(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency new Dependency(new DefaultArtifact(pattern), SCOPE_PROVIDED), customizer
     }
 
-    void provided(Map<String, String> properties, Closure customizer = null) {
+    void provided(Map<String, String> properties, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency properties, SCOPE_PROVIDED, customizer
     }
 
-    void optional(String pattern, Closure customizer = null) {
+    void optional(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency new Dependency(new DefaultArtifact(pattern), SCOPE_OPTIONAL), customizer
     }
 
-    void optional(Map<String, String> properties, Closure customizer = null) {
+    void optional(Map<String, String> properties, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency properties, SCOPE_OPTIONAL, customizer
     }
 
-    void test(String pattern, Closure customizer = null) {
+    void test(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency new Dependency(new DefaultArtifact(pattern), SCOPE_TEST), customizer
     }
 
-    void test(Map<String, String> properties, Closure customizer = null) {
+    void test(Map<String, String> properties, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         addDependency properties, SCOPE_TEST, customizer
     }
 

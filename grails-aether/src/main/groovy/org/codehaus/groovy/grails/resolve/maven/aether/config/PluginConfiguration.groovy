@@ -32,42 +32,42 @@ class PluginConfiguration extends DependenciesConfiguration {
     }
 
     @Override
-    void addDependency(Dependency dependency, Closure customizer) {
+    void addDependency(Dependency dependency, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.addDependency(dependency, customizer)
     }
 
     @Override
-    void addBuildDependency(Dependency dependency, Closure customizer) {
+    void addBuildDependency(Dependency dependency, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.addBuildDependency(dependency, customizer)
     }
 
     @Override
-    void build(String pattern, Closure customizer) {
+    void build(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.build(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void compile(String pattern, Closure customizer) {
+    void compile(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.compile(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void runtime(String pattern, Closure customizer) {
+    void runtime(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.runtime(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void provided(String pattern, Closure customizer) {
+    void provided(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.provided(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void optional(String pattern, Closure customizer) {
+    void optional(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.optional(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void test(String pattern, Closure customizer) {
+    void test(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
         super.test(extractDependencyProperties(pattern), customizer)
     }
 

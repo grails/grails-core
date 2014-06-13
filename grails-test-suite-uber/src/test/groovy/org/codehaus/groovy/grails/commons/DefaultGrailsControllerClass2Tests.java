@@ -143,7 +143,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                                         "def beforeInterceptor = [action:this.&before,only:'list']\n" +
-                                        "def before() { return 'success' }\n" +
+                                        "private before() { return 'success' }\n" +
                                         "def list = { return 'test' }\n " +
                                         "} ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
@@ -159,7 +159,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
 
         clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class AfterController { \n" +
                 "def afterInterceptor = [action:this.&before,except:'list']\n" +
-                "def after() { return 'success' }\n" +
+                "private after() { return 'success' }\n" +
                 "def list = { return 'test' }\n " +
                 "def save = { return 'test' }\n " +
             "} ");
@@ -175,7 +175,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                                         "def beforeInterceptor = [action:this.&before]\n" +
-                                        "def before() { return 'success' }\n" +
+                                        "private before() { return 'success' }\n" +
                                         "def list = { return 'test' }\n " +
                                         "def show = { return 'test' }\n " +
                                         "} ");
