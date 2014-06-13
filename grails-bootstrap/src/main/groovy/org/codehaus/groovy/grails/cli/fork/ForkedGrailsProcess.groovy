@@ -293,9 +293,7 @@ abstract class ForkedGrailsProcess {
                     GrailsConsole.instance.updateStatus("Running without daemon...")
                 }
 
-                ServerSocket parentAvailabilityServer = new ServerSocket(0)
-                def parentPort = parentAvailabilityServer.localPort
-                System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
+                ServerSocket parentAvailabilityServer = startParentAvailabilityServer()
 
                 try {
                     String classpathString = getBoostrapClasspath(executionContext)
@@ -333,6 +331,13 @@ abstract class ForkedGrailsProcess {
             }
 
         }
+    }
+
+    protected ServerSocket startParentAvailabilityServer() {
+        ServerSocket parentAvailabilityServer = new ServerSocket(0)
+        def parentPort = parentAvailabilityServer.localPort
+        System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
+        parentAvailabilityServer
     }
 
     @CompileStatic
@@ -517,7 +522,11 @@ abstract class ForkedGrailsProcess {
         if(!(System.getProperty("java.version") =~ /1.[89]./)) {
             cmd.add("-XX:MaxPermSize=${maxPerm}m".toString())
         }
-        cmd << "-D${PARENT_PROCESS_PORT}=${System.getProperty(PARENT_PROCESS_PORT)}".toString()
+        def parentPort = System.getProperty(PARENT_PROCESS_PORT)
+        if(parentPort) {
+            cmd << "-D${PARENT_PROCESS_PORT}=${parentPort}".toString()
+        }
+
         cmd.addAll(["-Dgrails.fork.active=true",
             "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
 
