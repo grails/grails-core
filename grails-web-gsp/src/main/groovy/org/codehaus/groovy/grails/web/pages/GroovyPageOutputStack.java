@@ -51,10 +51,11 @@ public final class GroovyPageOutputStack {
     }
 
     public static GroovyPageOutputStack currentStack(GrailsWebRequest request, boolean allowCreate) {
-        if (allowCreate) {
-            return currentStack(request, allowCreate, null, allowCreate, false);
+        GroovyPageOutputStack outputStack = lookupStack(request);
+        if (outputStack == null && allowCreate) {
+            outputStack = currentStack(request, allowCreate, null, allowCreate, false);
         }
-        return lookupStack(request);
+        return outputStack;
     }
 
     public static GroovyPageOutputStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
@@ -75,9 +76,6 @@ public final class GroovyPageOutputStack {
         }
 
         if (attributes.isAllowCreate()) {
-            if (attributes.getTopWriter() == null) {
-                attributes=new GroovyPageOutputStackAttributes.Builder(attributes).topWriter(lookupRequestWriter(attributes.getWebRequest())).build();
-            }
             return createNew(attributes);
         }
 
@@ -85,6 +83,9 @@ public final class GroovyPageOutputStack {
     }
 
     private static final GroovyPageOutputStack createNew(GroovyPageOutputStackAttributes attributes) {
+        if (attributes.getTopWriter() == null) {
+            attributes=new GroovyPageOutputStackAttributes.Builder(attributes).topWriter(lookupRequestWriter(attributes.getWebRequest())).build();
+        }
         GroovyPageOutputStack instance = new GroovyPageOutputStack(attributes);
         attributes.getWebRequest().setAttribute(
                 ATTRIBUTE_NAME_OUTPUT_STACK, instance, RequestAttributes.SCOPE_REQUEST);
