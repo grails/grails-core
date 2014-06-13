@@ -294,45 +294,50 @@ abstract class ForkedGrailsProcess {
                     GrailsConsole.instance.updateStatus("Running without daemon...")
                 }
 
-                ServerSocket parentAvailabilityServer = new ServerSocket(0)
-                def parentPort = parentAvailabilityServer.localPort
-                System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
+                startParentAvailabilityServer()
 
-                try {
-                    String classpathString = getBoostrapClasspath(executionContext)
-                    List<String> cmd = buildProcessCommand(executionContext, classpathString)
+                String classpathString = getBoostrapClasspath(executionContext)
+                List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
 
-                    def processBuilder = new ProcessBuilder()
-                    processBuilder
-                        .directory(executionContext.getBaseDir())
-                        .redirectErrorStream(false)
-                        .command(cmd)
+                def processBuilder = new ProcessBuilder()
+                processBuilder
+                    .directory(executionContext.getBaseDir())
+                    .redirectErrorStream(false)
+                    .command(cmd)
 
-                    def process = processBuilder.start()
+                def process = processBuilder.start()
 
-                    if (isForkingReserveEnabled()) {
-                        List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
-                        forkReserveProcess(reserveCmd, executionContext)
-                    }
-                    else if(shouldRunWithDaemon()) {
-                        GrailsConsole.instance.updateStatus("Starting daemon...")
-                        forkDaemon(executionContext)
-                    }
-
-                    return attachOutputListener(process)
-                } finally {
-                    try {
-                        parentAvailabilityServer?.close()
-                    } catch (e) {
-                        // ignore
-                    }
+                if (isForkingReserveEnabled()) {
+                    List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
+                    forkReserveProcess(reserveCmd, executionContext)
                 }
+                else if(shouldRunWithDaemon()) {
+                    GrailsConsole.instance.updateStatus("Starting daemon...")
+                    forkDaemon(executionContext)
+                }
+
+                return attachOutputListener(process)
             }
             else {
                 return null
             }
 
+        }
+    }
+
+    protected void startParentAvailabilityServer() {
+        if(System.getProperty(PARENT_PROCESS_PORT)) return
+
+        ServerSocket parentAvailabilityServer = new ServerSocket(0)
+        def parentPort = parentAvailabilityServer.localPort
+        System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
+        Runtime.addShutdownHook {
+            try {
+                parentAvailabilityServer?.close()
+            } catch (e) {
+                // ignore
+            }
         }
     }
 
@@ -389,6 +394,8 @@ abstract class ForkedGrailsProcess {
         if (reloading) {
             discoverAndSetAgent(executionContext)
         }
+
+        startParentPortMonitor()
 
         final console = GrailsConsole.instance
         console.updateStatus("Stopping daemon...")
@@ -518,7 +525,11 @@ abstract class ForkedGrailsProcess {
         if(!(System.getProperty("java.version") =~ /1.[89]./)) {
             cmd.add("-XX:MaxPermSize=${maxPerm}m".toString())
         }
-        cmd << "-D${PARENT_PROCESS_PORT}=${System.getProperty(PARENT_PROCESS_PORT)}".toString()
+        def parentPort = System.getProperty(PARENT_PROCESS_PORT)
+        if(parentPort) {
+            cmd << "-D${PARENT_PROCESS_PORT}=${parentPort}".toString()
+        }
+
         cmd.addAll(["-Dgrails.fork.active=true",
             "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
 
