@@ -293,38 +293,30 @@ abstract class ForkedGrailsProcess {
                     GrailsConsole.instance.updateStatus("Running without daemon...")
                 }
 
-                ServerSocket parentAvailabilityServer = startParentAvailabilityServer()
+                startParentAvailabilityServer()
 
-                try {
-                    String classpathString = getBoostrapClasspath(executionContext)
-                    List<String> cmd = buildProcessCommand(executionContext, classpathString)
+                String classpathString = getBoostrapClasspath(executionContext)
+                List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
 
-                    def processBuilder = new ProcessBuilder()
-                    processBuilder
-                        .directory(executionContext.getBaseDir())
-                        .redirectErrorStream(false)
-                        .command(cmd)
+                def processBuilder = new ProcessBuilder()
+                processBuilder
+                    .directory(executionContext.getBaseDir())
+                    .redirectErrorStream(false)
+                    .command(cmd)
 
-                    def process = processBuilder.start()
+                def process = processBuilder.start()
 
-                    if (isForkingReserveEnabled()) {
-                        List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
-                        forkReserveProcess(reserveCmd, executionContext)
-                    }
-                    else if(shouldRunWithDaemon()) {
-                        GrailsConsole.instance.updateStatus("Starting daemon...")
-                        forkDaemon(executionContext)
-                    }
-
-                    return attachOutputListener(process)
-                } finally {
-                    try {
-                        parentAvailabilityServer?.close()
-                    } catch (e) {
-                        // ignore
-                    }
+                if (isForkingReserveEnabled()) {
+                    List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
+                    forkReserveProcess(reserveCmd, executionContext)
                 }
+                else if(shouldRunWithDaemon()) {
+                    GrailsConsole.instance.updateStatus("Starting daemon...")
+                    forkDaemon(executionContext)
+                }
+
+                return attachOutputListener(process)
             }
             else {
                 return null
@@ -333,11 +325,19 @@ abstract class ForkedGrailsProcess {
         }
     }
 
-    protected ServerSocket startParentAvailabilityServer() {
+    protected void startParentAvailabilityServer() {
+        if(System.getProperty(PARENT_PROCESS_PORT)) return
+
         ServerSocket parentAvailabilityServer = new ServerSocket(0)
         def parentPort = parentAvailabilityServer.localPort
         System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
-        parentAvailabilityServer
+        Runtime.addShutdownHook {
+            try {
+                parentAvailabilityServer?.close()
+            } catch (e) {
+                // ignore
+            }
+        }
     }
 
     @CompileStatic
@@ -393,6 +393,8 @@ abstract class ForkedGrailsProcess {
         if (reloading) {
             discoverAndSetAgent(executionContext)
         }
+
+        startParentPortMonitor()
 
         final console = GrailsConsole.instance
         console.updateStatus("Stopping daemon...")
