@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSo
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
+import org.grails.databinding.converters.CurrencyValueConverter
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.TimeZoneConverter
 import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter
@@ -89,6 +90,8 @@ class DataBindingGrailsPlugin {
         jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
         halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
+        
+        defaultCurrencyConverter CurrencyValueConverter
         
         if(Boolean.TRUE.equals(databindingConfig?.enableSpringEventAdapter)) {
             grailsBindEventListenerAdapter(BindEventListenerAdapter)

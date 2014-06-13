@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.resolve.ExcludeResolver
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
 import org.codehaus.groovy.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
+import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsHomeWorkspaceReader
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsModelResolver
 import org.codehaus.groovy.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
 import org.codehaus.groovy.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
@@ -120,6 +121,7 @@ class AetherDependencyManager implements DependencyManager {
     String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
     boolean readPom
     boolean defaultDependenciesProvided
+    boolean offline
     boolean java5compatible
 
     Map<String, Closure> inheritedDependencies = [:]
@@ -172,6 +174,7 @@ class AetherDependencyManager implements DependencyManager {
 
             session.setProxySelector(new DefaultProxySelector())
             session.setMirrorSelector(new DefaultMirrorSelector())
+            session.setWorkspaceReader(new GrailsHomeWorkspaceReader())
         }
         finally {
             currentThread.setContextClassLoader(contextLoader)
@@ -352,7 +355,7 @@ class AetherDependencyManager implements DependencyManager {
                         attachmentRequests << new ArtifactRequest(new DefaultArtifact(
                             artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
                     }
-                    if (includeJavadoc) {
+                    if (includeSource) {
                         attachmentRequests << new ArtifactRequest(new DefaultArtifact(
                             artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
                     }
@@ -447,6 +450,7 @@ class AetherDependencyManager implements DependencyManager {
     protected DependencyNode collectDependencies(String scope) {
         SettingsBuildingResult result = settingsBuilder.build(new DefaultSettingsBuildingRequest())
         settings = result.getEffectiveSettings()
+        settings.offline = offline
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
         if (proxyHost && proxyPort) {

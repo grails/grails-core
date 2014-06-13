@@ -1250,6 +1250,54 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         holder.album.title == 'Some Album'
     }
+    
+    @Issue('GRAILS-11402')
+    void 'Test binding when the binding source contains the key "_"'() {
+        given:
+        def publisher = new Publisher()
+        
+        when:
+        binder.bind publisher, [_: '', name: 'Some Publisher'] as SimpleMapDataBindingSource
+        
+        then:
+        !publisher.hasErrors()
+        publisher.name == 'Some Publisher'
+    }
+    
+    @Issue('GRAILS-11472')
+    void 'test binding an empty string to a Date marked with @BindingFormat'() {
+        given:
+        def book = new DataBindingBook()
+        
+        when: 'a valid date string is bound'
+        binder.bind book, [datePublished: '11151969'] as SimpleMapDataBindingSource
+        
+        then: 'the date is initialized'
+        !book.hasErrors()
+        book.datePublished
+        Calendar.NOVEMBER == book.datePublished.month
+        15 == book.datePublished.date
+        69 == book.datePublished.year
+        
+        when: 'an empty string is bound'
+        binder.bind book, [datePublished: ''] as SimpleMapDataBindingSource
+        
+        then: 'the date is null'
+        book.datePublished == null
+        !book.hasErrors()
+    }
+    
+    void 'Test binding String to currency in a domain class'() {
+        given:
+        def publisher = new Publisher()
+        
+        when:
+        binder.bind publisher, [localCurrency: 'USD'] as SimpleMapDataBindingSource
+
+        then:
+        publisher.localCurrency instanceof Currency
+        'USD' == publisher.localCurrency.currencyCode
+    }
 }
 
 @Entity
@@ -1272,6 +1320,12 @@ class Publisher {
         result
     })
     List widgets = []
+    
+    Currency localCurrency
+    
+    static constraints = {
+        localCurrency nullable: true
+    }
 }
 
 class SomeNonDomainClass {

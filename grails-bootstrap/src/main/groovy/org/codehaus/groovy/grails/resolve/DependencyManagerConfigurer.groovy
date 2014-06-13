@@ -106,6 +106,7 @@ class DependencyManagerConfigurer {
         aetherDependencyManager.includeSource = buildSettings.includeSource
 
         aetherDependencyManager.inheritedDependencies.global = coreDeps.createDeclaration()
+        aetherDependencyManager.offline = buildSettings.offline
 
         def dependencyConfig = buildSettings.config.grails.project.dependency.resolution
 

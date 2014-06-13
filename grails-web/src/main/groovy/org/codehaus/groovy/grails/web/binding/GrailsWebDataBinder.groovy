@@ -288,7 +288,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         def valueInMap = mapValue[mapValue.keySet()[0]]
                         if(valueInMap instanceof List) {
                             listValue = (List)valueInMap
-                        } else if(valueInMap instanceof GPathResultMap) {
+                        } else {
                             listValue = [valueInMap]
                         }
                     }

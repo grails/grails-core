@@ -33,10 +33,11 @@ public class GrailsCoreDependencies {
     public final String servletVersion;
     protected final String groovyVersion = "2.1.9";
     protected final String log4jVersion = "1.2.17";
-    protected final String h2Version = "1.3.173";
+    protected final String h2Version = "1.3.176";
     protected final String jaxbVersion = "2.0";
     protected String servletApiVersion = "3.0.1";
     protected String spockVersion = "0.7-groovy-2.0";
+    protected String junitVersion = "4.11";
 
     public boolean java5compatible;
     protected Collection<Dependency> buildDependencies;
@@ -96,7 +97,8 @@ public class GrailsCoreDependencies {
             String[] spockExcludes = {"org.codehaus.groovy:groovy-all", "junit:junit-dep"};
             testDependencies = Arrays.asList(
                 new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
-                new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes)
+                new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes),
+                new Dependency("junit", "junit", junitVersion, true)
             );
         }
         else {

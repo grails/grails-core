@@ -83,9 +83,9 @@ public class GrailsScriptRunner {
     private BuildSettings settings;
 
     private PrintStream out = System.out;
-    private boolean isInteractive = true;
-    private URLClassLoader classLoader;
     private GrailsConsole console = GrailsConsole.getInstance();
+    private boolean isInteractive = System.getProperty(GrailsConsole.ENABLE_INTERACTIVE) != null ? Boolean.getBoolean(GrailsConsole.ENABLE_INTERACTIVE) : true;
+    private URLClassLoader classLoader;
 
     private File scriptCacheDir;
     private final List<File> scriptsAllowedOutsideOfProject = new ArrayList<File>();
@@ -338,6 +338,7 @@ public class GrailsScriptRunner {
 
         CommandLineParser parser = getCommandLineParser();
         DefaultCommandLine commandLine = (DefaultCommandLine) parser.parseString(scriptName,args);
+        setInteractive(!commandLine.hasOption(CommandLine.NON_INTERACTIVE_ARGUMENT));
         if (env != null) {
             commandLine.setEnvironment(env);
         }

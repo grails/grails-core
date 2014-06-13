@@ -38,8 +38,6 @@ import org.codehaus.groovy.grails.test.support.GrailsTestMode
  * kinds of tests (functional, integration etc.) additional {@link TestPhaseConfigurer} instances need
  * to be registered with the #testFeatureDiscovery property
  *
- * TODO: Verify fitnesse, cucumber, guard, and clover plugins still work
- *
  * @author Graeme Rocher
  * @since 2.3
  */

@@ -241,7 +241,7 @@ class SimpleDataBinder implements DataBinder {
                             def val = source.getPropertyValue key
                             processIndexedProperty obj, metaProperty, descriptor, val, source, listener, errors
                         }
-                    } else if (propName.startsWith('_')) { // boolean special handling
+                    } else if (propName.startsWith('_') && propName.length() > 1) { // boolean special handling
                         def restOfPropertyName = propName[1..-1]
                         if (!source.containsProperty(restOfPropertyName)) {
                             metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
@@ -466,7 +466,7 @@ class SimpleDataBinder implements DataBinder {
         def formattedConverter = formattedValueConvertersionHelpers[field.type]
         if (formattedConverter) {
             converter = { SimpleMapDataBindingSource source ->
-                def value = source.getPropertyValue field.name
+                def value = preprocessValue(source.getPropertyValue(field.name))
                 def convertedValue = null
                 if(value != null) {
                     convertedValue = formattedConverter.convert (value, formattingValue)

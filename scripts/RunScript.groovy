@@ -21,7 +21,7 @@ includeTargets << grailsScript('_GrailsBootstrap')
  */
 
 target(main: 'Execute the specified script(s) after starting up the application environment') {
-    depends checkVersion, configureProxy, bootstrap, runScript
+    depends checkVersion, configureProxy, compile, bootstrap, runScript
 }
 
 target(runScript: 'Main implementation that executes the specified script(s) after starting up the application environment') {

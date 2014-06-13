@@ -20,25 +20,28 @@ import static org.fusesource.jansi.Ansi.Color.DEFAULT;
 import static org.fusesource.jansi.Ansi.Color.RED;
 import static org.fusesource.jansi.Ansi.Color.YELLOW;
 import static org.fusesource.jansi.Ansi.Erase.FORWARD;
+import grails.util.Environment;
 
 import java.io.File;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Stack;
 
-import grails.util.Environment;
 import jline.Terminal;
 import jline.TerminalFactory;
+import jline.UnixTerminal;
 import jline.console.ConsoleReader;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
 import jline.internal.ShutdownHooks;
+import jline.internal.TerminalLineSettings;
+
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
@@ -179,7 +182,7 @@ public class GrailsConsole {
         this.out = out;
     }
 
-    private boolean isInteractiveEnabled() {
+    public boolean isInteractiveEnabled() {
         return readPropOrTrue(ENABLE_INTERACTIVE);
     }
 
@@ -251,11 +254,7 @@ public class GrailsConsole {
                     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                console.terminal.restore();
-                            } catch (Exception e) {
-                                // ignore
-                            }
+                            console.beforeShutdown();
                         }
                     }));
                 }
@@ -264,6 +263,38 @@ public class GrailsConsole {
             }
         }
         return instance;
+    }
+
+    public void beforeShutdown() {
+        persistHistory();
+        restoreTerminal();
+    }
+
+    protected void restoreTerminal() {
+        try {
+            terminal.restore();
+        } catch (Exception e) {
+            // ignore
+        }
+        if(terminal instanceof UnixTerminal) {
+            // workaround for GRAILS-11494
+            try {
+                new TerminalLineSettings().set("sane");
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+    }
+
+    protected void persistHistory() {
+        if(history instanceof Flushable) {
+            try {
+                ((Flushable)history).flush();
+            }
+            catch (IOException e) {
+                // ignore exception
+            }
+        }
     }
 
     public static void setInstance(GrailsConsole newConsole) {

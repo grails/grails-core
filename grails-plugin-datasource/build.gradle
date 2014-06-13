@@ -3,7 +3,7 @@ dependencies {
     compile("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    
+
     compile("org.springframework:spring-context:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
@@ -15,7 +15,7 @@ dependencies {
         ext.notInPom = true
     }
 
-    runtime 'com.h2database:h2:1.3.173', {
+    runtime 'com.h2database:h2:1.3.176', {
         ext.notInPom = true
     }
 

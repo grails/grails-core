@@ -61,8 +61,8 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	 * 
 	 * @param transactionManagers must not be {@literal null} or empty.
 	 */
-	public ChainedTransactionManager(PlatformTransactionManager primaryTransactionManager) {
-		this(SpringTransactionSynchronizationManager.INSTANCE, primaryTransactionManager);
+	public ChainedTransactionManager(PlatformTransactionManager... transactionManagers) {
+		this(SpringTransactionSynchronizationManager.INSTANCE, transactionManagers);
 	}
 
 	/**
