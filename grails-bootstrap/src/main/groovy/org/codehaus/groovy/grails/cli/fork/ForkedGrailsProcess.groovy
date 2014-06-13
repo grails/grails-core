@@ -42,6 +42,7 @@ import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
 abstract class ForkedGrailsProcess {
 
     public static final String DEBUG_FORK = "grails.debug.fork"
+    public static final String PARENT_PROCESS_PORT = "grails.fork.parent.process.port"
     public static final int DEFAULT_DAEMON_PORT = 8091
     public static final String DEFAULT_DEBUG_ARGS = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 
@@ -291,27 +292,41 @@ abstract class ForkedGrailsProcess {
                 if (daemon && !connectedToDaemon) {
                     GrailsConsole.instance.updateStatus("Running without daemon...")
                 }
-                String classpathString = getBoostrapClasspath(executionContext)
-                List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
-                def processBuilder = new ProcessBuilder()
-                processBuilder
-                    .directory(executionContext.getBaseDir())
-                    .redirectErrorStream(false)
-                    .command(cmd)
+                ServerSocket parentAvailabilityServer = new ServerSocket(0)
+                def parentPort = parentAvailabilityServer.localPort
+                System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
 
-                def process = processBuilder.start()
+                try {
+                    String classpathString = getBoostrapClasspath(executionContext)
+                    List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
-                if (isForkingReserveEnabled()) {
-                    List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
-                    forkReserveProcess(reserveCmd, executionContext)
+
+                    def processBuilder = new ProcessBuilder()
+                    processBuilder
+                        .directory(executionContext.getBaseDir())
+                        .redirectErrorStream(false)
+                        .command(cmd)
+
+                    def process = processBuilder.start()
+
+                    if (isForkingReserveEnabled()) {
+                        List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
+                        forkReserveProcess(reserveCmd, executionContext)
+                    }
+                    else if(shouldRunWithDaemon()) {
+                        GrailsConsole.instance.updateStatus("Starting daemon...")
+                        forkDaemon(executionContext)
+                    }
+
+                    return attachOutputListener(process)
+                } finally {
+                    try {
+                        parentAvailabilityServer?.close()
+                    } catch (e) {
+                        // ignore
+                    }
                 }
-                else if(shouldRunWithDaemon()) {
-                    GrailsConsole.instance.updateStatus("Starting daemon...")
-                    forkDaemon(executionContext)
-                }
-
-                return attachOutputListener(process)
             }
             else {
                 return null
@@ -478,6 +493,11 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected List<String> buildProcessCommand(ExecutionContext executionContext, String classpathString, boolean isReserve = false, boolean isDaemon = false) {
+        String additionalClasspath = System.getProperty('GRAILS_ADDITIONAL_CLASSPATH')
+        if(additionalClasspath) {
+            classpathString = classpathString + File.pathSeparator + additionalClasspath
+        }
+
         File tempFile = storeExecutionContext(executionContext)
         final javaHomeEnv = System.getenv("JAVA_HOME")
 
@@ -498,8 +518,12 @@ abstract class ForkedGrailsProcess {
             cmd.addAll(jvmArgs)
         }
 
-        cmd.addAll(["-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
-            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
+        cmd.addAll(["-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString()])
+        if(!(System.getProperty("java.version") =~ /1.[89]./)) {
+            cmd.add("-XX:MaxPermSize=${maxPerm}m".toString())
+        }
+        cmd << "-D${PARENT_PROCESS_PORT}=${System.getProperty(PARENT_PROCESS_PORT)}".toString()
+        cmd.addAll(["-Dgrails.fork.active=true",
             "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
 
         if (isDebugForkEnabled() && !isReserve) {
@@ -743,9 +767,46 @@ abstract class ForkedGrailsProcess {
 
         BuildSettingsHolder.settings = buildSettings
         configureFork(buildSettings)
+        startParentPortMonitor()
+
         buildSettings
     }
 
+    protected void startParentPortMonitor() {
+        def parentProcessPort = System.getProperty(PARENT_PROCESS_PORT)
+        if (parentProcessPort) {
+            Thread.start {
+                def portInt = parentProcessPort.toInteger()
+                while (true) {
+                    sleep(15000)
+                    if (!isServerRunning(portInt)) {
+                        // parent process killed, so bail out too
+                        GrailsConsole.getInstance().addStatus("Parent process shutdown. Exiting...")
+                        System.exit(1)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @return Whether the server is running
+     */
+    boolean isServerRunning(int port) {
+        Socket socket = null
+        try {
+            socket = new Socket("localhost", port)
+            return socket.isConnected()
+        } catch (e) {
+            return false
+        }
+        finally {
+            try {
+                socket?.close()
+            } catch (Throwable e) {
+            }
+        }
+    }
     protected void configureFork(BuildSettings buildSettings) {
         final runConfig = buildSettings.forkSettings.run
         if (runConfig instanceof Map)
