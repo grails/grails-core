@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -56,7 +55,6 @@ class ContentNegotiationSpec extends Specification {
     }
     
     @Issue("GRAILS-10897")
-    @Ignore
     void "test index json content negotiation"() {
         given:
             def title = "This controller title"

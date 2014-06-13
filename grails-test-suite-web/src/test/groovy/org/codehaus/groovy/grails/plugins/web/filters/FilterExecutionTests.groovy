@@ -284,16 +284,16 @@ class Group3Filters {
         assertNull request.heavy
     }
 
-//    void testFilterOrdering() {
-//        HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
-//
-//        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/dependsOn")
-//        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "test")
-//        request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "index")
-//
-//        filterInterceptor.preHandle(request, response, null)
-//        assertEquals 'filters did not run in the expected order', '12345', request.testString
-//    }
+   void testFilterOrdering() {
+       HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
+
+       request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/dependsOn")
+       request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "test")
+       request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "index")
+
+       filterInterceptor.preHandle(request, response, null)
+       assertEquals 'filters did not run in the expected order', '12345', request.testString
+   }
 
     void testFilterMatching() {
         HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")

@@ -13,7 +13,6 @@ import org.springframework.web.context.request.RequestContextHolder
  * @author Graeme Rocher
  * @since 1.0
  */
- @org.junit.Ignore
 class ContentFormatControllerTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
