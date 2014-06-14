@@ -2623,11 +2623,17 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
     public Writer getWriterForEncoder(Encoder encoder) {
         EncodingStateRegistryLookup encodingStateRegistryLookup = EncodingStateRegistryLookupHolder.getEncodingStateRegistryLookup();
         EncodingStateRegistry encodingStateRegistry = encodingStateRegistryLookup != null ? encodingStateRegistryLookup.lookup() : null;
-        return getWriterForEncoder(encoder, encodingStateRegistry);
+        return getWriterForEncoder(encoder, encodingStateRegistry, false);
     }
 
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
-        return new EncodedAppenderWriter(writer.getEncodedAppender(), encoder, encodingStateRegistry);
+        return getWriterForEncoder(encoder, encodingStateRegistry, false);
+    }
+
+    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry, boolean ignoreEncodingState) {
+        EncodedAppender encodedAppender = writer.getEncodedAppender();
+        encodedAppender.setIgnoreEncodingState(ignoreEncodingState);
+        return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
     }
 
     public boolean isNotifyParentBuffersEnabled() {
