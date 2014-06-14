@@ -24,6 +24,8 @@ import java.io.IOException;
  * @since 2.3
  */
 public abstract class AbstractEncodedAppender implements EncodedAppender {
+    private boolean ignoreEncodingState;
+    
     /**
      * Append a portion of a char array to the buffer and attach the
      * encodingState information to it
@@ -172,9 +174,9 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
      * @return true, if should encode
      */
     protected boolean shouldEncode(Encoder encoderToApply, EncodingState encodingState) {
-        return encoderToApply != null
+        return ignoreEncodingState || (encoderToApply != null
                 && (encodingState == null || DefaultEncodingStateRegistry.shouldEncodeWith(encoderToApply,
-                        encodingState));
+                        encodingState)));
     }
 
     /**
@@ -267,5 +269,13 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
                 throw new StringIndexOutOfBoundsException("srcBegin > srcEnd");
             System.arraycopy(chars, start + srcBegin, dst, dstBegin, srcEnd - srcBegin);
         }
+    }
+
+    public boolean isIgnoreEncodingState() {
+        return ignoreEncodingState;
+    }
+
+    public void setIgnoreEncodingState(boolean ignoreEncodingState) {
+        this.ignoreEncodingState = ignoreEncodingState;
     }
 }

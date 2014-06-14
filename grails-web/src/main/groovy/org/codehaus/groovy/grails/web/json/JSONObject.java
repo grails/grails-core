@@ -1129,7 +1129,7 @@ public class JSONObject implements JSONElement, Map {
                 javascriptEncoderStateless.encodeToWriter((CharSequence)value, writer);
             }
             else {
-                CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null);
+                CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null, true);
                 codecWriter.print(value);
                 codecWriter.flush();
             }

@@ -2621,11 +2621,17 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
     }
 
     public Writer getWriterForEncoder(Encoder encoder) {
-        return getWriterForEncoder(encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null);
+        return getWriterForEncoder(encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null, false);
+    }
+    
+    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+        return getWriterForEncoder(encoder, encodingStateRegistry, false);
     }
 
-    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
-        return new EncodedAppenderWriter(writer.getEncodedAppender(), encoder, encodingStateRegistry);
+    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry, boolean ignoreEncodingState) {
+        EncodedAppender encodedAppender = writer.getEncodedAppender();
+        encodedAppender.setIgnoreEncodingState(ignoreEncodingState);
+        return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
     }
 
     public boolean isNotifyParentBuffersEnabled() {

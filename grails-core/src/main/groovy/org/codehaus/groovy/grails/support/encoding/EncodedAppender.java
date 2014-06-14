@@ -125,4 +125,18 @@ public interface EncodedAppender {
     void flush() throws IOException;
 
     public void close() throws IOException;
+    
+    
+    /**
+     * When enabled, will encode all input regardless of it's current state
+     * disables double-encoding prevention.
+     *  
+     * @param ignoreEncodingState
+     */
+    void setIgnoreEncodingState(boolean ignoreEncodingState);
+    
+    /**
+     * @return current state of ignoreEncodingState setting
+     */
+    public boolean isIgnoreEncodingState();
 }
