@@ -23,7 +23,7 @@ public class StreamingEncoderEncodedAppender extends AbstractEncodedAppender {
 
     @Override
     protected void write(EncodingState encodingState, char[] b, int off, int len) throws IOException {
-        encoder.encodeToStream(encoder, new CharArrayCharSequence(b), off, len, target, encodingState);
+        encoder.encodeToStream(encoder, CharSequences.createCharSequence(b), off, len, target, encodingState);
     }
 
     @Override
@@ -39,6 +39,6 @@ public class StreamingEncoderEncodedAppender extends AbstractEncodedAppender {
     
     @Override
     public void append(Encoder encoderStateEncoder, char character) throws IOException {
-        encoder.encodeToStream(encoder, new CharArrayCharSequence(new char[]{character}), 0, 1, target, encoderStateEncoder != null ? new EncodingStateImpl(Collections.singleton(encoderStateEncoder)) : null);
+        encoder.encodeToStream(encoder, CharSequences.createSingleCharSequence(character), 0, 1, target, encoderStateEncoder != null ? new EncodingStateImpl(Collections.singleton(encoderStateEncoder)) : null);
     }
 }

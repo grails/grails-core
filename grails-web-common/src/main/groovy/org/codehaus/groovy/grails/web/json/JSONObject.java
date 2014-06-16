@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import groovy.lang.Writable;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -33,9 +35,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.StreamingStatelessEncoder;
-import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
+import org.codehaus.groovy.grails.support.encoding.EncodesToWriter;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWritable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -94,13 +97,13 @@ import org.springframework.util.ClassUtils;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class JSONObject implements JSONElement, Map {
-    private static StreamingStatelessEncoder javascriptEncoderStateless;
-    private static Encoder javascriptEncoder;
+    private static EncodesToWriter javascriptEncoderStateless;
+    private static StreamingEncoder javascriptEncoder;
     private static boolean useStreamingJavascriptEncoder=false;
     static {
         try {
-            javascriptEncoder = (Encoder)ClassUtils.forName("org.codehaus.groovy.grails.plugins.codecs.JSONEncoder", JSONObject.class.getClassLoader()).newInstance();
-            javascriptEncoderStateless = (StreamingStatelessEncoder)javascriptEncoder;
+            javascriptEncoder = (StreamingEncoder)ClassUtils.forName("org.codehaus.groovy.grails.plugins.codecs.JSONEncoder", JSONObject.class.getClassLoader()).newInstance();
+            javascriptEncoderStateless = (EncodesToWriter)javascriptEncoder;
             useStreamingJavascriptEncoder = true;
         }
         catch (Exception e) {
@@ -1125,19 +1128,26 @@ public class JSONObject implements JSONElement, Map {
     static void writeQuoted(Writer writer, Object value) throws IOException {
         if (useStreamingJavascriptEncoder) {
             writer.write("\"");
-            if (value instanceof String || value instanceof StringBuilder || value instanceof StringBuffer) {
-                javascriptEncoderStateless.encodeToWriter((CharSequence)value, writer);
+            if (value.getClass() == String.class || value.getClass() == StringBuilder.class || value.getClass() == StringBuffer.class) {
+                encodeToWriter((CharSequence)value, writer);
+            } else if(value instanceof StreamingEncoderWritable) {
+                ((StreamingEncoderWritable)value).encodeTo(writer, javascriptEncoderStateless);
+            } else if (value instanceof Writable) {
+                ((Writable)value).writeTo(new StreamingEncoderWriter(writer, javascriptEncoder, null));
             }
-            else {
-                CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null, true);
-                codecWriter.print(value);
-                codecWriter.flush();
+            else{
+                encodeToWriter(value.toString(), writer);
             }
             writer.write("\"");
         }
         else {
             writer.write(valueToString(value));
         }
+    }
+
+
+    protected static void encodeToWriter(CharSequence str, Writer writer) throws IOException {
+        javascriptEncoderStateless.encodeToWriter(str, 0, str.length(), writer, null);
     }
 
     static void writeDate(Writer writer, Date d) throws IOException {

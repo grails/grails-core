@@ -21,9 +21,11 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.HTMLEncoder
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder
+import org.codehaus.groovy.grails.support.encoding.EncodesToWriterAdapter
 
 import spock.lang.Issue
 import spock.lang.Specification
@@ -238,4 +240,37 @@ class StreamCharBufferSpec extends Specification {
         expect:
             buffer.toCharArray() == [] as char[]
     }
+    
+    @Issue("GRAILS-11507")
+    def "should SCB provide optimal streaming method to target Writer"() {
+        given:
+        def mockWriter = Mock(Writer)
+        when:
+        codecOut << "<Raw codec".encodeAsRaw()
+        codecOut << "<another part"
+        codecOut << "<script>".encodeAsHTML()
+        codecOut << "Hello world & hi".encodeAsHTML()
+        def encodesToWriter = new EncodesToWriterAdapter(htmlCodecClass.encoder)
+        buffer.encodeTo(mockWriter, encodesToWriter) 
+        then:
+        1 * mockWriter.write(_, 0, 10)
+        1 * mockWriter.write(_, 10, 50)
+        0 * _._
+    }
+    
+    @Issue("GRAILS-11507")
+    def "should SCB provide optimal streaming method to target Writer and return correct results"() {
+        given:
+        def stringWriter = new StringWriter()
+        when:
+        codecOut << "<Raw codec".encodeAsRaw()
+        codecOut << "<another part"
+        codecOut << "<script>".encodeAsHTML()
+        codecOut << "Hello world & hi".encodeAsHTML()
+        def encodesToWriter = new EncodesToWriterAdapter(htmlCodecClass.encoder)
+        buffer.encodeTo(stringWriter, encodesToWriter)
+        then:
+        stringWriter.toString() == '<Raw codec&lt;another part&lt;script&gt;Hello world &amp; hi'
+    }
+
 }
