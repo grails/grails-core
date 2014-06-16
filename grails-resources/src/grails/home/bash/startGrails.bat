@@ -59,7 +59,7 @@ if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 
 :init
 
-for %%x in ("%HOMEPATH%") do set SHORTHOME=%%~fsx
+for %%x in ("%USERPROFILE%") do set SHORTHOME=%%~fsx
 if "x%GRAILS_AGENT_CACHE_DIR%" == "x" set GRAILS_AGENT_CACHE_DIR=%SHORTHOME%/.grails/@grails.version@/
 set SPRINGLOADED_PARAMS="profile=grails;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
