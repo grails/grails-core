@@ -21,11 +21,10 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
-import org.codehaus.groovy.grails.plugins.codecs.HTMLEncoder
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
-import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder
 import org.codehaus.groovy.grails.support.encoding.EncodesToWriterAdapter
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder
 
 import spock.lang.Issue
 import spock.lang.Specification
@@ -271,6 +270,45 @@ class StreamCharBufferSpec extends Specification {
         buffer.encodeTo(stringWriter, encodesToWriter)
         then:
         stringWriter.toString() == '<Raw codec&lt;another part&lt;script&gt;Hello world &amp; hi'
+    }
+    
+    @Issue("GRAILS-11505")
+    def "should SCB support preferSubChunkWhenWritingToOtherBuffer feature"() {
+        given:
+            int bufid=1
+            def buffers = [:]
+            def msgs = [:]
+            def createSubBufferClosure = {
+                def subbufid = bufid++
+                def msg = "Hello world <#${subbufid++}>"
+                def subbuf = createSubBuffer { out ->
+                    out << msg
+                }
+                buffers.put(subbufid, subbuf)
+                msgs.put(subbufid, msg)
+                subbuf
+            }
+            20.times(createSubBufferClosure)
+            def expectedMessage = ""
+            def allbuffers = createSubBuffer { out ->
+                buffers.each { k, v ->
+                    out << v
+                    expectedMessage += msgs.get(k)
+                }
+            }   
+            def secondLevelSubBuf = createSubBufferClosure().encode(htmlCodecClass.encoder)
+            secondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
+            new GrailsPrintWriter(buffers.get(10).writer) << secondLevelSubBuf
+        expect:
+            buffers.get(10).preferSubChunkWhenWritingToOtherBuffer == true
+            allbuffers.clone().toString() == expectedMessage
+            
+    }
+    
+    private def createSubBuffer(Closure outputClosure) {
+        StreamCharBuffer scb = new StreamCharBuffer()
+        outputClosure(new GrailsPrintWriter(scb.writer))
+        scb
     }
 
 }
