@@ -2128,11 +2128,12 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
                     try {
                         if(hasOnlyStreamingEncoders()) {
                             encodedBuffer = new StreamCharBuffer(chunkSize, growProcent, maxChunkSize);
-                            encodedBuffer.setAllowSubBuffers(isAllowSubBuffers());
+                            encodedBuffer.setAllowSubBuffers(false);
                             StreamingEncoderEncodedAppender.chainEncode(getSourceBuffer(), encodedBuffer.writer.getEncodedAppender(), encoders);
                         } else {
-                            encodedBuffer = getSourceBuffer().encodeToBuffer(encoders, getSourceBuffer().isNotifyParentBuffersEnabled());                        
+                            encodedBuffer = getSourceBuffer().encodeToBuffer(encoders, false, getSourceBuffer().isNotifyParentBuffersEnabled());                        
                         }
+                        encodedBuffer.setAllowSubBuffers(isAllowSubBuffers());
                     }
                     catch (IOException e) {
                         throw new RuntimeException(e);
@@ -2797,12 +2798,12 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
 
     
     public StreamCharBuffer encodeToBuffer(Encoder encoder) {
-        return encodeToBuffer(encoder, false);
+        return encodeToBuffer(encoder, isAllowSubBuffers(), false);
     }
     
-    public StreamCharBuffer encodeToBuffer(Encoder encoder, boolean notifyParentBuffersEnabled) {
+    public StreamCharBuffer encodeToBuffer(Encoder encoder, boolean allowSubBuffers, boolean notifyParentBuffersEnabled) {
         StreamCharBuffer coded = new StreamCharBuffer(Math.min(Math.max(totalChunkSize, chunkSize) * 12 / 10, maxChunkSize));
-        coded.setAllowSubBuffers(isAllowSubBuffers());
+        coded.setAllowSubBuffers(allowSubBuffers);
         coded.setNotifyParentBuffersEnabled(notifyParentBuffersEnabled);
         EncodedAppender codedWriter = coded.writer.getEncodedAppender();
         try {
@@ -2815,13 +2816,13 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
     }
     
     public StreamCharBuffer encodeToBuffer(List<Encoder> encoders) {
-        return encodeToBuffer(encoders, false);
+        return encodeToBuffer(encoders, isAllowSubBuffers(), false);
     }
     
-    public StreamCharBuffer encodeToBuffer(List<Encoder> encoders, boolean notifyParentBuffersEnabled) {
+    public StreamCharBuffer encodeToBuffer(List<Encoder> encoders, boolean allowSubBuffers, boolean notifyParentBuffersEnabled) {
         StreamCharBuffer currentBuffer=this;
         for(Encoder encoder : encoders) {
-            currentBuffer = currentBuffer.encodeToBuffer(encoder, notifyParentBuffersEnabled);
+            currentBuffer = currentBuffer.encodeToBuffer(encoder, allowSubBuffers, notifyParentBuffersEnabled);
         }
         return currentBuffer;
     }

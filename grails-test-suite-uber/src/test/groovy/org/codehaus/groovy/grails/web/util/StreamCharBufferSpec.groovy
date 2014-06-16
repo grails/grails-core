@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHo
 
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Unroll;
 
 class StreamCharBufferSpec extends Specification {
     StreamCharBuffer buffer
@@ -273,7 +274,8 @@ class StreamCharBufferSpec extends Specification {
     }
     
     @Issue("GRAILS-11505")
-    def "should SCB support preferSubChunkWhenWritingToOtherBuffer feature"() {
+    @Unroll
+    def "should SCB support preferSubChunkWhenWritingToOtherBuffer feature - #resetLastBuffer"(boolean resetLastBuffer) {
         given:
             int bufid=1
             def buffers = [:]
@@ -293,7 +295,7 @@ class StreamCharBufferSpec extends Specification {
             String expectedWithoutExtra = ""
             def secondLevelSubBuf = createSubBuffer { out -> out << '<script>from subbuffer</script>' }
             secondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
-            def encodedSecondLevelSubBuf = secondLevelSubBuf.encodeToBuffer(htmlCodecClass.encoder, false)
+            def encodedSecondLevelSubBuf = secondLevelSubBuf.encodeToBuffer(htmlCodecClass.encoder, true, true)
             assert encodedSecondLevelSubBuf.clone().toString() == '&lt;script&gt;from subbuffer&lt;/script&gt;'
             encodedSecondLevelSubBuf.notifyParentBuffersEnabled = true
             encodedSecondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
@@ -323,7 +325,11 @@ class StreamCharBufferSpec extends Specification {
             }
             allbuffers.size() == expectedMessage.length()
         when:
-            encodedSecondLevelSubBuf.clear()
+            if(resetLastBuffer) {
+                secondLevelSubBuf.clear()
+            } else {
+                encodedSecondLevelSubBuf.clear()
+            }
         then:
             def withoutExtra = allbuffers.clone().toString()
             withoutExtra.trim() == expectedWithoutExtra.trim()
@@ -331,6 +337,8 @@ class StreamCharBufferSpec extends Specification {
             allbuffers.clone().size() == expectedWithoutExtra.length()
             withoutExtra.length() == expectedWithoutExtra.length()
             withoutExtra == expectedWithoutExtra
+        where:
+            resetLastBuffer << [true, false]
     }
     
     private def createSubBuffer(Closure outputClosure) {
