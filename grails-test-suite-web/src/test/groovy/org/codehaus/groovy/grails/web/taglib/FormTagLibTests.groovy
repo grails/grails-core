@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.taglib
 import grails.util.MockRequestDataValueProcessor
 
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
-import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the                                         l
@@ -323,7 +323,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     void testFieldImplDoesNotApplyAttributesFromPreviousInvocation() {
         // GRAILS-8250
         def attrs = [:]
-        def out = new StringWriter()
+        def out = new FastStringWriter()
         attrs.name = 'A'
         attrs.type = 'text'
         attrs.tagName = 'textField'
@@ -332,7 +332,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         tag.fieldImpl out, attrs
         assert '<input type="text" name="A" value="" id="A" />' == out.toString()
 
-        out = new StringWriter()
+        out = new FastStringWriter()
         attrs.name = 'B'
         attrs.type = 'text'
         attrs.tagName = 'textField'

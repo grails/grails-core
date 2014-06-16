@@ -23,8 +23,8 @@ import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
-import org.codehaus.groovy.runtime.InvokerHelper
 
 import com.opensymphony.module.sitemesh.RequestConstants
 
@@ -42,7 +42,7 @@ class SitemeshTagLib implements RequestConstants {
     static namespace = 'sitemesh'
     CodecLookup codecLookup
 
-    def captureTagContent(Writer writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {
+    def captureTagContent(GrailsPrintWriter writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {
         def content = null
         if (body != null) {
             if (body instanceof Closure) {

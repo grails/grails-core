@@ -22,9 +22,12 @@ import java.text.DateFormat
 import java.text.DateFormatSymbols
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
@@ -50,7 +53,9 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
     ConversionService conversionService
-
+    
+    CodecLookup codecLookup
+    
     void afterPropertiesSet() {
         if (applicationContext.containsBean('requestDataValueProcessor')) {
             requestDataValueProcessor = applicationContext.getBean('requestDataValueProcessor', RequestDataValueProcessor)
@@ -133,7 +138,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     }
 
     @CompileStatic
-    def fieldImpl(Writer out, Map attrs) {
+    def fieldImpl(GrailsPrintWriter out, Map attrs) {
         resolveAttributes(attrs)
 
         attrs.value = processFormFieldValueIfNecessary(attrs.name, attrs.value, attrs.type)
@@ -144,10 +149,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     }
 
     @CompileStatic
-    private void outputNameAsIdIfIdDoesNotExist(Map attrs, Writer out) {
+    private void outputNameAsIdIfIdDoesNotExist(Map attrs, GrailsPrintWriter out) {
         if (!attrs.containsKey('id') && attrs.containsKey('name')) {
+            Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
             out << 'id="'
-            out << InvokerHelper.invokeMethod(String.valueOf(attrs.name), "encodeAsHTML", null)
+            out << (htmlEncoder != null ? htmlEncoder.encode(attrs.name) : attrs.name)
             out << '" '
         }
     }
@@ -312,11 +318,15 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      * Dump out attributes in HTML compliant fashion.
      */
     @CompileStatic
-    void outputAttributes(Map attrs, Writer writer, boolean useNameAsIdIfIdDoesNotExist = false) {
+    void outputAttributes(Map attrs, GrailsPrintWriter writer, boolean useNameAsIdIfIdDoesNotExist = false) {
         attrs.remove('tagName') // Just in case one is left
+        Encoder htmlEncoder = codecLookup?.lookupEncoder('HTML')
         attrs.each { k, v ->
             if (v != null) {
-                writer << "$k=\"${InvokerHelper.invokeMethod(v.toString(), "encodeAsHTML", null)}\" "
+                writer << k
+                writer << '="'
+                writer << (htmlEncoder != null ? htmlEncoder.encode(v) : v) 
+                writer << '" '
             }
         }
         if (useNameAsIdIfIdDoesNotExist) {
