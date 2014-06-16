@@ -24,11 +24,15 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.support.encoding.EncodesToWriter;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter.DestinationFactory;
 import org.codehaus.groovy.grails.web.util.GrailsWrappedWriter;
+import org.grails.datastore.mapping.core.StatelessDatastore;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -329,6 +333,8 @@ public final class GroovyPageOutputStack {
         Writer encodingWriter;
         if (out instanceof EncodedAppenderWriterFactory) {
             encodingWriter=((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, encodingStateRegistry);
+        } else if (encoder instanceof StreamingEncoder) {
+            encodingWriter=new StreamingEncoderWriter(out, (StreamingEncoder)encoder, encodingStateRegistry);
         } else {
             encodingWriter=new CodecPrintWriter(out, encoder, encodingStateRegistry);
         }

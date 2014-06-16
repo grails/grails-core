@@ -1,0 +1,68 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.codehaus.groovy.grails.support.encoding;
+
+import java.io.IOException;
+import java.io.Writer;
+
+public class EncodesToWriterAdapter implements EncodesToWriter {
+    private final StreamingEncoder encoder;
+    private boolean ignoreEncodingState;
+    
+    public EncodesToWriterAdapter(StreamingEncoder encoder) {
+        this(encoder, false);
+    }
+    
+    public EncodesToWriterAdapter(StreamingEncoder encoder, boolean ignoreEncodingState) {
+        this.encoder = encoder;
+        this.ignoreEncodingState = ignoreEncodingState;
+    }
+
+    @Override
+    public void encodeToWriter(CharSequence str, int off, int len, Writer writer, EncodingState encodingState) throws IOException {
+        if(shouldEncodeWith(encoder, encodingState)) {
+            encoder.encodeToStream(encoder, str, off, len, new WriterEncodedAppender(writer), encodingState);
+        } else {
+            CharSequences.writeCharSequence(writer, str, off, len);
+        }
+    }
+
+    @Override
+    public void encodeToWriter(char[] buf, int off, int len, Writer writer, EncodingState encodingState) throws IOException {
+        if(shouldEncodeWith(encoder, encodingState)) {
+            encoder.encodeToStream(encoder, CharSequences.createCharSequence(buf, off, len), 0, len, new WriterEncodedAppender(writer), encodingState);
+        } else {
+            writer.write(buf, off, len);
+        }
+    }
+    
+    protected boolean shouldEncodeWith(Encoder encoderToApply, EncodingState encodingState) {
+        return ignoreEncodingState || encodingState == null || DefaultEncodingStateRegistry.shouldEncodeWith(encoderToApply,
+                encodingState);
+    }
+
+    public StreamingEncoder getEncoder() {
+        return encoder;
+    }
+
+    public boolean isIgnoreEncodingState() {
+        return ignoreEncodingState;
+    }
+
+    public void setIgnoreEncodingState(boolean ignoreEncodingState) {
+        this.ignoreEncodingState = ignoreEncodingState;
+    }        
+}

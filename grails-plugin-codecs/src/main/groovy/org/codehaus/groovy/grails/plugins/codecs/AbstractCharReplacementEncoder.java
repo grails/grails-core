@@ -21,10 +21,9 @@ import java.io.Writer;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodesToWriter;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
-import org.codehaus.groovy.grails.support.encoding.StreamingStatelessEncoder;
-import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
 
 /**
  * Abstract base class for implementing encoders that do character replacements
@@ -34,7 +33,7 @@ import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
  * @author Lari Hotari
  * @since 2.3
  */
-public abstract class AbstractCharReplacementEncoder implements Encoder, StreamingEncoder, StreamingStatelessEncoder {
+public abstract class AbstractCharReplacementEncoder implements Encoder, StreamingEncoder, EncodesToWriter {
     protected CodecIdentifier codecIdentifier;
 
     public AbstractCharReplacementEncoder(CodecIdentifier codecIdentifier) {
@@ -126,8 +125,66 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         }
     }
     
-    public void encodeToWriter(CharSequence str, Writer writer) throws IOException {
-        encodeToStream(this, str, 0, str.length(), new WriterEncodedAppender(writer), null);
+    @Override
+    public void encodeToWriter(CharSequence str, int off, int len, Writer writer, EncodingState encodingState) throws IOException {
+        if (str == null || len <= 0) {
+            return;
+        }
+        int n = Math.min(str.length(), off + len);
+        int i;
+        int startPos = -1;
+        char prevChar = (char)0;
+        for (i = off; i < n; i++) {
+            char ch = str.charAt(i);
+            if (startPos == -1) {
+                startPos = i;
+            }
+            String escaped = escapeCharacter(ch, prevChar);
+            if (escaped != null) {
+                if (i - startPos > 0) {
+                    writer.append(str, startPos, i - startPos);
+                }
+                if (escaped.length() > 0) {
+                    writer.write(escaped);
+                }
+                startPos = -1;
+            }
+            prevChar = ch;
+        }
+        if (startPos > -1 && i - startPos > 0) {
+            writer.append(str, startPos, i - startPos);
+        }
+    }
+    
+    @Override
+    public void encodeToWriter(char[] buf, int off, int len, Writer writer, EncodingState encodingState) throws IOException {
+        if (buf == null || len <= 0) {
+            return;
+        }
+        int n = Math.min(buf.length, off + len);
+        int i;
+        int startPos = -1;
+        char prevChar = (char)0;
+        for (i = off; i < n; i++) {
+            char ch = buf[i];
+            if (startPos == -1) {
+                startPos = i;
+            }
+            String escaped = escapeCharacter(ch, prevChar);
+            if (escaped != null) {
+                if (i - startPos > 0) {
+                    writer.write(buf, startPos, i - startPos);
+                }
+                if (escaped.length() > 0) {
+                    writer.write(escaped);
+                }
+                startPos = -1;
+            }
+            prevChar = ch;
+        }
+        if (startPos > -1 && i - startPos > 0) {
+            writer.write(buf, startPos, i - startPos);
+        }
     }
 
     /* (non-Javadoc)

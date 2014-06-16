@@ -24,6 +24,8 @@ import java.io.IOException;
  * @since 2.3
  */
 public abstract class AbstractEncodedAppender implements EncodedAppender {
+    private boolean ignoreEncodingState;
+    
     /**
      * Append a portion of a char array to the buffer and attach the
      * encodingState information to it
@@ -97,9 +99,9 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
             return;
         }
         if (shouldEncode(encoder, encodingState)) {
-            EncodingState newEncoders = appendEncoders(encoder, encodingState);
+            EncodingState newEncoders = createNewEncodingState(encoder, encodingState);
             if (encoder instanceof StreamingEncoder) {
-                ((StreamingEncoder)encoder).encodeToStream(encoder, new CharArrayCharSequence(b, off, len), 0, len, this,
+                ((StreamingEncoder)encoder).encodeToStream(encoder, CharSequences.createCharSequence(b, off, len), 0, len, this,
                         newEncoders);
             }
             else {
@@ -111,7 +113,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
         }
     }
 
-    private EncodingState appendEncoders(Encoder encoder, EncodingState encodingState) {
+    protected EncodingState createNewEncodingState(Encoder encoder, EncodingState encodingState) {
         if (encodingState == null) {
             return new EncodingStateImpl(encoder);
         }
@@ -132,13 +134,13 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
             return;
         }
         if (shouldEncode(encoder, encodingState)) {
-            EncodingState newEncoders = appendEncoders(encoder, encodingState);
+            EncodingState newEncoders = createNewEncodingState(encoder, encodingState);
             if (encoder instanceof StreamingEncoder) {
                 ((StreamingEncoder)encoder).encodeToStream(encoder, str, off, len, this, newEncoders);
             }
             else {
                 CharSequence source;
-                if (off == 0 && len == str.length()) {
+                if (CharSequences.canUseOriginalForSubSequence(str, off, len)) {
                     source = str;
                 }
                 else {
@@ -154,12 +156,12 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
 
     public void appendEncoded(Encoder encoder, EncodingState encodingState, char[] b, int off, int len)
             throws IOException {
-        write(appendEncoders(encoder, encodingState), b, off, len);
+        write(createNewEncodingState(encoder, encodingState), b, off, len);
     }
 
     public void appendEncoded(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
             throws IOException {
-        appendCharSequence(appendEncoders(encoder, encodingState), str, off, off + len);
+        appendCharSequence(createNewEncodingState(encoder, encodingState), str, off, off + len);
     }
 
     /**
@@ -172,9 +174,13 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
      * @return true, if should encode
      */
     protected boolean shouldEncode(Encoder encoderToApply, EncodingState encodingState) {
-        return encoderToApply != null
-                && (encodingState == null || DefaultEncodingStateRegistry.shouldEncodeWith(encoderToApply,
-                        encodingState));
+        return ignoreEncodingState || (encoderToApply != null
+                && (encodingState == null || shouldEncodeWith(encoderToApply, encodingState)));
+    }
+
+    protected boolean shouldEncodeWith(Encoder encoderToApply, EncodingState encodingState) {
+        return DefaultEncodingStateRegistry.shouldEncodeWith(encoderToApply,
+                encodingState);
     }
 
     /**
@@ -217,55 +223,11 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
 
     }
 
-    private static final class CharArrayCharSequence implements CharSequence, CharArrayAccessible {
-        private final char[] chars;
-        private final int count;
-        private final int start;
+    public boolean isIgnoreEncodingState() {
+        return ignoreEncodingState;
+    }
 
-        public CharArrayCharSequence(char[] chars, int start, int count) {
-            if (start + count > chars.length)
-                throw new StringIndexOutOfBoundsException(start);
-            this.chars = chars;
-            this.start = start;
-            this.count = count;
-        }
-
-        public char charAt(int index) {
-            if ((index < 0) || (index + start >= chars.length))
-                throw new StringIndexOutOfBoundsException(index);
-            return chars[index + start];
-        }
-
-        public int length() {
-            return count;
-        }
-
-        public CharSequence subSequence(int start, int end) {
-            if (start < 0)
-                throw new StringIndexOutOfBoundsException(start);
-            if (end > count)
-                throw new StringIndexOutOfBoundsException(end);
-            if (start > end)
-                throw new StringIndexOutOfBoundsException(end - start);
-            if (start == 0 && end == count) {
-                return this;
-            }
-            return new CharArrayCharSequence(chars, this.start + start, end - start);
-        }
-
-        @Override
-        public String toString() {
-            return new String(chars, start, count);
-        }
-
-        public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
-            if (srcBegin < 0)
-                throw new StringIndexOutOfBoundsException(srcBegin);
-            if ((srcEnd < 0) || (srcEnd > start+count))
-                throw new StringIndexOutOfBoundsException(srcEnd);
-            if (srcBegin > srcEnd)
-                throw new StringIndexOutOfBoundsException("srcBegin > srcEnd");
-            System.arraycopy(chars, start + srcBegin, dst, dstBegin, srcEnd - srcBegin);
-        }
+    public void setIgnoreEncodingState(boolean ignoreEncodingState) {
+        this.ignoreEncodingState = ignoreEncodingState;
     }
 }

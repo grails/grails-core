@@ -26,8 +26,13 @@ import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware, EncodedAppenderFactory {
     private final Encoder encoder;
     private final StreamCharBuffer buffer;
+    private boolean ignoreEncodingState;
 
     public CodecPrintWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+        this(out, encoder, encodingStateRegistry, false);
+    }
+    
+    public CodecPrintWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry, boolean ignoreEncodingState) {
         super(null);
         this.encoder = encoder;
         buffer=new StreamCharBuffer();
@@ -38,7 +43,7 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware,
             buffer.setWriteDirectlyToConnectedMinSize(0);
             buffer.setChunkMinSize(0);
         }
-        setOut(buffer.getWriterForEncoder(encoder, encodingStateRegistry));
+        setOut(buffer.getWriterForEncoder(encoder, encodingStateRegistry, ignoreEncodingState));
     }
 
     public Encoder getEncoder() {
@@ -46,11 +51,13 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware,
     }
 
     public EncodedAppender getEncodedAppender() {
-        return ((EncodedAppenderFactory)buffer.getWriter()).getEncodedAppender();
+        EncodedAppender encodedAppender = ((EncodedAppenderFactory)buffer.getWriter()).getEncodedAppender();
+        encodedAppender.setIgnoreEncodingState(ignoreEncodingState);
+        return encodedAppender;
     }
 
     @Override
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
-        return buffer.getWriterForEncoder(encoder, encodingStateRegistry);
+        return buffer.getWriterForEncoder(encoder, encodingStateRegistry, ignoreEncodingState);
     }
 }
