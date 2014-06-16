@@ -13,6 +13,16 @@ class GrailsParameterMapTests extends GroovyTestCase {
     GrailsParameterMap theMap
     MockHttpServletRequest mockRequest = new MockHttpServletRequest()
 
+    void testSubmapViaArraySubscript() {
+        mockRequest.addParameter("name", "Dierk Koenig")
+        mockRequest.addParameter("dob", "01/01/1970")
+        mockRequest.addParameter("address.postCode", "345435")
+        mockRequest.addParameter("address.town", "Swindon")
+        theMap = new GrailsParameterMap(mockRequest)
+
+        assert theMap['name', 'dob'] == [name:"Dierk Koenig", dob:"01/01/1970"]
+    }
+
     void testDateMessageSourceFormat() {
 
         try {
@@ -288,6 +298,8 @@ class GrailsParameterMapTests extends GroovyTestCase {
             String name = (String) o
             params.put(name, theMap.get(name))
         }
+
+
     }
 
     void testMultiDimensionParams() {
