@@ -25,6 +25,7 @@ import java.io.Writer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.CharSequences;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
@@ -122,7 +123,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         else if (obj instanceof CharSequence) {
             try {
                 usageFlag = true;
-                getOut().append((CharSequence)obj);
+                CharSequences.writeCharSequence(getOut(), (CharSequence)obj);
             }
             catch (IOException e) {
                 handleIOException(e);
@@ -224,7 +225,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         else if (obj instanceof CharSequence) {
             try {
                 usageFlag = true;
-                getOut().append((CharSequence)obj);
+                CharSequences.writeCharSequence(getOut(), (CharSequence)obj);
             }
             catch (IOException e) {
                 handleIOException(e);
@@ -439,7 +440,10 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     public GrailsPrintWriter append(final CharSequence csq, final int start, final int end) {
         try {
             usageFlag = true;
-            getOut().append(csq, start, end);
+            if (csq == null)
+                appendNullCharSequence();
+            else
+                CharSequences.writeCharSequence(getOut(), csq, start, end);
         }
         catch (IOException e) {
             handleIOException(e);
@@ -447,11 +451,18 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         return this;
     }
 
+    protected void appendNullCharSequence() throws IOException {
+        getOut().append(null);
+    }
+
     @Override
     public GrailsPrintWriter append(final CharSequence csq) {
         try {
             usageFlag = true;
-            getOut().append(csq);
+            if (csq == null)
+                appendNullCharSequence();
+            else
+                CharSequences.writeCharSequence(getOut(), csq);
         }
         catch (IOException e) {
             handleIOException(e);
