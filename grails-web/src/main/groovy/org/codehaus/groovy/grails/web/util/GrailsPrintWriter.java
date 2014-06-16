@@ -31,6 +31,8 @@ import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.GStringImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -654,7 +656,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
             }
         }
         if (target != null) {
-            return new CodecPrintWriter(target, encoder, encodingStateRegistry);
+            if (encoder instanceof StreamingEncoder) {
+                return new StreamingEncoderWriter(target, (StreamingEncoder)encoder, encodingStateRegistry);
+            } else {
+                return new CodecPrintWriter(target, encoder, encodingStateRegistry);
+            }
         } else {
             return null;
         }

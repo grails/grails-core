@@ -36,6 +36,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -219,6 +221,8 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 Encoder encoder = WithCodecHelper.lookupEncoder(webRequest.getAttributes().getGrailsApplication(), codecForTaglibs);
                 if (out instanceof EncodedAppenderWriterFactory) {
                     out = ((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());
+                } else if (encoder instanceof StreamingEncoder) {
+                    out=new StreamingEncoderWriter(out, (StreamingEncoder)encoder, webRequest.getEncodingStateRegistry());
                 } else {
                     out = new CodecPrintWriter(out, encoder, webRequest.getEncodingStateRegistry());
                 }

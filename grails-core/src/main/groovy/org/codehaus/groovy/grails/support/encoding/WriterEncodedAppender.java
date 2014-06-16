@@ -65,29 +65,7 @@ public class WriterEncodedAppender extends AbstractEncodedAppender {
      */
     @Override
     protected void appendCharSequence(EncodingState encodingState, CharSequence csq, int start, int end) throws IOException {
-        if (csq instanceof String) {
-            target.write((String)csq, start, end - start);
-        }
-        else if (csq instanceof StringBuffer) {
-            char[] buf = new char[end - start];
-            ((StringBuffer)csq).getChars(start, end, buf, 0);
-            target.write(buf);
-        }
-        else if (csq instanceof StringBuilder) {
-            char[] buf = new char[end - start];
-            ((StringBuilder)csq).getChars(start, end, buf, 0);
-            target.write(buf);
-        }
-        else {
-            if (start == 0 && end == csq.length()) {
-                String str = csq.toString();
-                target.write(str, start, end - start);
-            }
-            else {
-                String str = csq.subSequence(start, end).toString();
-                target.write(str, 0, str.length());
-            }
-        }
+        CharSequences.writeCharSequence(target, csq, start, end);
     }
 
     /* (non-Javadoc)
@@ -103,5 +81,10 @@ public class WriterEncodedAppender extends AbstractEncodedAppender {
      */
     public void close() throws IOException {
         target.close();
+    }
+    
+    @Override
+    protected EncodingState createNewEncodingState(Encoder encoder, EncodingState encodingState) {
+        return null;
     }
 }
