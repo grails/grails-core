@@ -291,10 +291,14 @@ class StreamCharBufferSpec extends Specification {
             20.times(createSubBufferClosure)
             String expectedMessage = ""
             String expectedWithoutExtra = ""
-            def secondLevelSubBuf = createSubBuffer { out -> out << '<script>from subbuffer</script>' }.encode(htmlCodecClass.encoder)
+            def secondLevelSubBuf = createSubBuffer { out -> out << '<script>from subbuffer</script>' }
             secondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
-            def secondOut = new GrailsPrintWriter(buffers.get(10).writer) 
-            secondOut << secondLevelSubBuf
+            def encodedSecondLevelSubBuf = secondLevelSubBuf.encodeToBuffer(htmlCodecClass.encoder, false)
+            assert encodedSecondLevelSubBuf.clone().toString() == '&lt;script&gt;from subbuffer&lt;/script&gt;'
+            encodedSecondLevelSubBuf.notifyParentBuffersEnabled = true
+            encodedSecondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
+            def secondOut = new GrailsPrintWriter(buffers.get(10).writer)
+            secondOut << encodedSecondLevelSubBuf
             secondOut.close()
             def allbuffers = createSubBuffer { out ->
                 buffers.each { k, v ->
@@ -309,15 +313,24 @@ class StreamCharBufferSpec extends Specification {
         expect:
             buffers.get(10).preferSubChunkWhenWritingToOtherBuffer == true
             buffers.get(10).clone().toString() == 'Hello world <#10>&lt;script&gt;from subbuffer&lt;/script&gt;'
-            allbuffers.clone().toString() == expectedMessage
+            allbuffers.size() == expectedMessage.length()
+            allbuffers.clone().size() == expectedMessage.length()
+            with(allbuffers.clone()) { obj ->
+                obj.toString() == expectedMessage
+                obj.length() == expectedMessage.length()
+                obj.toString() == expectedMessage
+                obj.length() == expectedMessage.length()
+            }
+            allbuffers.size() == expectedMessage.length()
         when:
             secondLevelSubBuf.clear()
         then:
+            allbuffers.size() == expectedWithoutExtra.length()
+            allbuffers.clone().size() == expectedWithoutExtra.length()
             def withoutExtra = allbuffers.clone().toString()
             withoutExtra.trim() == expectedWithoutExtra.trim()
             withoutExtra.length() == expectedWithoutExtra.length()
             withoutExtra == expectedWithoutExtra
-            
     }
     
     private def createSubBuffer(Closure outputClosure) {
