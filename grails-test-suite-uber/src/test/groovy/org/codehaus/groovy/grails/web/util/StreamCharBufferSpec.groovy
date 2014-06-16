@@ -280,7 +280,7 @@ class StreamCharBufferSpec extends Specification {
             def msgs = [:]
             def createSubBufferClosure = {
                 def subbufid = bufid++
-                def msg = "Hello world <#${subbufid++}>"
+                def msg = "Hello world <#${subbufid}>"
                 def subbuf = createSubBuffer { out ->
                     out << msg
                 }
@@ -289,25 +289,42 @@ class StreamCharBufferSpec extends Specification {
                 subbuf
             }
             20.times(createSubBufferClosure)
-            def expectedMessage = ""
+            String expectedMessage = ""
+            String expectedWithoutExtra = ""
+            def secondLevelSubBuf = createSubBuffer { out -> out << '<script>from subbuffer</script>' }.encode(htmlCodecClass.encoder)
+            secondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
+            def secondOut = new GrailsPrintWriter(buffers.get(10).writer) 
+            secondOut << secondLevelSubBuf
+            secondOut.close()
             def allbuffers = createSubBuffer { out ->
                 buffers.each { k, v ->
                     out << v
                     expectedMessage += msgs.get(k)
+                    expectedWithoutExtra += msgs.get(k)
+                    if(k == 10) {
+                        expectedMessage += '&lt;script&gt;from subbuffer&lt;/script&gt;'
+                    }
                 }
-            }   
-            def secondLevelSubBuf = createSubBufferClosure().encode(htmlCodecClass.encoder)
-            secondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
-            new GrailsPrintWriter(buffers.get(10).writer) << secondLevelSubBuf
+            }
         expect:
             buffers.get(10).preferSubChunkWhenWritingToOtherBuffer == true
+            buffers.get(10).clone().toString() == 'Hello world <#10>&lt;script&gt;from subbuffer&lt;/script&gt;'
             allbuffers.clone().toString() == expectedMessage
+        when:
+            secondLevelSubBuf.clear()
+        then:
+            def withoutExtra = allbuffers.clone().toString()
+            withoutExtra.trim() == expectedWithoutExtra.trim()
+            withoutExtra.length() == expectedWithoutExtra.length()
+            withoutExtra == expectedWithoutExtra
             
     }
     
     private def createSubBuffer(Closure outputClosure) {
         StreamCharBuffer scb = new StreamCharBuffer()
-        outputClosure(new GrailsPrintWriter(scb.writer))
+        def pw = new GrailsPrintWriter(scb.writer)
+        outputClosure(pw)
+        pw.close()
         scb
     }
 
