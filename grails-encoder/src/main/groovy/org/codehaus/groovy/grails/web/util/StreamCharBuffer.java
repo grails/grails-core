@@ -2093,7 +2093,8 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         @Override
         public void encodeTo(EncodedAppender appender, Encoder encodeToEncoder) throws IOException {
             if (appender instanceof StreamCharBufferEncodedAppender
-                    && getSourceBuffer().isPreferSubChunkWhenWritingToOtherBuffer()) {
+                    && getSourceBuffer().isPreferSubChunkWhenWritingToOtherBuffer() 
+                    && ((StreamCharBufferEncodedAppender)appender).getWriter().getBuffer().isAllowSubBuffers() ) {
                 List<Encoder> nextEncoders = StreamingEncoderEncodedAppender.appendEncoder(encoders, encodeToEncoder);
                 ((StreamCharBufferEncodedAppender)appender).getWriter().write(getSourceBuffer(), nextEncoders);
             }
@@ -2129,6 +2130,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
                         if(hasOnlyStreamingEncoders()) {
                             encodedBuffer = new StreamCharBuffer(chunkSize, growProcent, maxChunkSize);
                             encodedBuffer.setAllowSubBuffers(false);
+                            encodedBuffer.setNotifyParentBuffersEnabled(getSourceBuffer().isNotifyParentBuffersEnabled());
                             StreamingEncoderEncodedAppender.chainEncode(getSourceBuffer(), encodedBuffer.writer.getEncodedAppender(), encoders);
                         } else {
                             encodedBuffer = getSourceBuffer().encodeToBuffer(encoders, false, getSourceBuffer().isNotifyParentBuffersEnabled());                        
