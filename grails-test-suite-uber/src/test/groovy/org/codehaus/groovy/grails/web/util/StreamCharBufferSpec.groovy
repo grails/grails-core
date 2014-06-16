@@ -323,12 +323,12 @@ class StreamCharBufferSpec extends Specification {
             }
             allbuffers.size() == expectedMessage.length()
         when:
-            secondLevelSubBuf.clear()
+            encodedSecondLevelSubBuf.clear()
         then:
-            allbuffers.size() == expectedWithoutExtra.length()
-            allbuffers.clone().size() == expectedWithoutExtra.length()
             def withoutExtra = allbuffers.clone().toString()
             withoutExtra.trim() == expectedWithoutExtra.trim()
+            allbuffers.size() == expectedWithoutExtra.length()
+            allbuffers.clone().size() == expectedWithoutExtra.length()
             withoutExtra.length() == expectedWithoutExtra.length()
             withoutExtra == expectedWithoutExtra
     }
