@@ -18,7 +18,7 @@ class CurrencyConversionSpec extends Specification {
 
         then:
         bank.currency instanceof Currency
-        '$' == bank.currency.symbol
+        'USD' == bank.currency.currencyCode
     }
 }
 

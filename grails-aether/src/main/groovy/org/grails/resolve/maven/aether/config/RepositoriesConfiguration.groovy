@@ -92,8 +92,8 @@ class RepositoriesConfiguration {
         aetherDependencyManager.cacheDir = location
     }
 
-    RemoteRepository mavenCentral(Closure configurer = null) {
-        final existing = repositories.find { ArtifactRepository ar -> ar.id == "mavenCentral" }
+    RemoteRepository mavenCentral(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
+        final existing = repositories.find { RemoteRepository ar -> ar.id == "mavenCentral" }
         if (!existing) {
             final repositoryBuilder = new RemoteRepository.Builder("mavenCentral", "default", "http://repo1.maven.org/maven2/")
 
@@ -107,8 +107,8 @@ class RepositoriesConfiguration {
         }
     }
 
-    RemoteRepository jcenter(Closure configurer = null) {
-        final existing = repositories.find { ArtifactRepository ar -> ar.id == "jcenter" }
+    RemoteRepository jcenter(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
+        final existing = repositories.find { RemoteRepository ar -> ar.id == "jcenter" }
         if (!existing) {
             final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "http://jcenter.bintray.com")
 
@@ -147,8 +147,8 @@ class RepositoriesConfiguration {
         }
     }
 
-    RemoteRepository grailsCentral(Closure configurer = null) {
-        final existing = repositories.find { ArtifactRepository ar -> ar.id == "grailsCentral" }
+    RemoteRepository grailsCentral(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
+        final existing = repositories.find { RemoteRepository ar -> ar.id == "grailsCentral" }
         if (!existing) {
             final repositoryBuilder = new RemoteRepository.Builder("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
             configureRepository(repositoryBuilder, configurer)
@@ -162,8 +162,8 @@ class RepositoriesConfiguration {
         }
     }
 
-    RemoteRepository mavenRepo(String url, Closure configurer = null) {
-        final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
+    RemoteRepository mavenRepo(String url, @DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
+        final existing = repositories.find { RemoteRepository ar -> ar.id == url }
         if (!existing) {
             def u = new URL(url)
             def name = "${u.host.replace(".","_")}${u.path.replace("/", "_")}"
@@ -178,12 +178,12 @@ class RepositoriesConfiguration {
         }
     }
 
-    RemoteRepository mavenRepo(Map<String, String> properties, Closure configurer = null) {
+    RemoteRepository mavenRepo(Map<String, String> properties, @DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final url = properties.url
         def id = properties.id ?: properties.name ?: url
 
         if (id && properties.url) {
-            final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
+            final existing = repositories.find { RemoteRepository ar -> ar.id == url }
             if (!existing) {
                 final repositoryBuilder = new RemoteRepository.Builder(id, "default", url)
                 configureRepository(repositoryBuilder, configurer)

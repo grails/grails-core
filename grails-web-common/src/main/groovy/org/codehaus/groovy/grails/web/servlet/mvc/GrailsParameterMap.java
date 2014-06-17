@@ -23,10 +23,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +40,7 @@ import org.codehaus.groovy.grails.web.mime.MimeTypeUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -251,6 +249,9 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                 } else {
                     returnValue = valueArray;
                 }
+            }
+            else if(returnValue == null && (key instanceof Collection)) {
+                return DefaultGroovyMethods.subMap(wrappedMap, (Collection)key);
             }
         }
         if ("date.struct".equals(returnValue)) {

@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -99,7 +100,7 @@ public class TagLibraryApi extends CommonWebApi {
      * @param instance The tag library instance
      * @return The writer to use
      */
-    public Writer getOut(Object instance) {
+    public GrailsPrintWriter getOut(Object instance) {
         return GroovyPageOutputStack.currentStack().getTaglibWriter();
     }
 

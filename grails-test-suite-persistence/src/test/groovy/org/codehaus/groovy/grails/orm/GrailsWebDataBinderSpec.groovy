@@ -1331,7 +1331,7 @@ class GrailsWebDataBinderSpec extends Specification {
 
         then:
         publisher.localCurrency instanceof Currency
-        '$' == publisher.localCurrency.symbol
+        'USD' == publisher.localCurrency.currencyCode
     }
 }
 

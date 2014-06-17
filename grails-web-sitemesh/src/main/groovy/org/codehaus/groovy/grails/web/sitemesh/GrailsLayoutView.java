@@ -105,9 +105,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
             if (oldPage != null) {
                 request.setAttribute(RequestConstants.PAGE, oldPage);
             }
-            if (previousResponse != null) {
-                webRequest.setWrappedResponse(previousResponse);
-            }
+            webRequest.setWrappedResponse(previousResponse);
             WrappedResponseHolder.setWrappedResponse(previousWrappedResponse);
         }
     }

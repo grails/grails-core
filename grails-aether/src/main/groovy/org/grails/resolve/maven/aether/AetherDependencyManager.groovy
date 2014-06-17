@@ -38,7 +38,7 @@ import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.grails.resolve.maven.aether.config.AetherDsl
 import org.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
-import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsHomeWorkspaceReader
+import org.grails.resolve.maven.aether.support.GrailsHomeWorkspaceReader
 import org.grails.resolve.maven.aether.support.GrailsModelResolver
 import org.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
 import org.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
@@ -100,20 +100,25 @@ import org.eclipse.aether.util.repository.DefaultProxySelector
 class AetherDependencyManager implements DependencyManager {
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
-    static final Map<String, List<String>> SCOPE_MAPPINGS = [compile:['compile'],
-                                                             optional:['optional'],
-                                                             runtime:['compile', 'optional','runtime'],
-                                                             test:['compile','provided', 'runtime', 'optional','test'],
-                                                             provided:['provided']]
+    static final Map<String, List<String>> SCOPE_MAPPINGS = [compile: ['compile'],
+                                                             optional: ['optional'],
+                                                             runtime: ['compile', 'optional', 'runtime'],
+                                                             test: ['compile', 'provided', 'runtime', 'optional', 'test'],
+                                                             provided: ['provided']]
 
 
     protected Dependency jvmAgent
     protected DependencyReport jvmAgentReport
     protected List<Dependency> dependencies = []
-    protected Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
+    protected List<Dependency> managedDependencies = []
+    protected Set<org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
     protected List<Dependency> buildDependencies = []
-    protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
-    protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsPluginDependenciesByScope = [:].withDefault { [] }
+    protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault {
+        []
+    }
+    protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsPluginDependenciesByScope = [:].withDefault {
+        []
+    }
     protected List<org.codehaus.groovy.grails.resolve.Dependency> grailsDependencies = []
     protected List<RemoteRepository> repositories = []
     String cacheDir
@@ -127,7 +132,7 @@ class AetherDependencyManager implements DependencyManager {
 
     Map<String, Closure> inheritedDependencies = [:]
 
-    private DefaultRepositorySystemSession session  = (DefaultRepositorySystemSession)MavenRepositorySystemUtils.newSession()
+    private DefaultRepositorySystemSession session = (DefaultRepositorySystemSession) MavenRepositorySystemUtils.newSession()
 
     private RepositorySystem repositorySystem
 
@@ -136,6 +141,8 @@ class AetherDependencyManager implements DependencyManager {
     private ModelBuilder modelBuilder
 
     GrailsConsoleLoggerManager loggerManager
+
+    GrailsCoreDependencies coreDependencies
 
     /**
      * Whether to include the javadoc
@@ -160,18 +167,18 @@ class AetherDependencyManager implements DependencyManager {
             settingsBuilder = container.lookup(SettingsBuilder)
             modelBuilder = container.lookup(ModelBuilder)
             DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator()
-            locator.addService( RepositoryConnectorFactory, BasicRepositoryConnectorFactory )
-            locator.addService( TransporterFactory, FileTransporterFactory )
-            locator.addService( TransporterFactory, HttpTransporterFactory )
+            locator.addService(RepositoryConnectorFactory, BasicRepositoryConnectorFactory)
+            locator.addService(TransporterFactory, FileTransporterFactory)
+            locator.addService(TransporterFactory, HttpTransporterFactory)
 
-            repositorySystem = locator.getService( RepositorySystem )
+            repositorySystem = locator.getService(RepositorySystem)
 
             session.setAuthenticationSelector(new DefaultAuthenticationSelector())
             DependencyGraphTransformer transformer =
-                new ConflictResolver( new ScopeAwareNearestVersionSelector(), new MultipleTopLevelJavaScopeSelector(),
-                    new SimpleOptionalitySelector(), new JavaScopeDeriver() )
+                    new ConflictResolver(new ScopeAwareNearestVersionSelector(), new MultipleTopLevelJavaScopeSelector(),
+                            new SimpleOptionalitySelector(), new JavaScopeDeriver())
 
-            session.setDependencyGraphTransformer( new ChainedDependencyGraphTransformer( transformer, new JavaDependencyContextRefiner() ) )
+            session.setDependencyGraphTransformer(new ChainedDependencyGraphTransformer(transformer, new JavaDependencyContextRefiner()))
 
             session.setProxySelector(new DefaultProxySelector())
             session.setMirrorSelector(new DefaultMirrorSelector())
@@ -194,8 +201,7 @@ class AetherDependencyManager implements DependencyManager {
         final desc = BuildSettings.SCOPE_TO_DESC[scope]
         if (desc) {
             reportOnScope(scope, desc)
-        }
-        else {
+        } else {
             produceReport()
         }
     }
@@ -210,22 +216,22 @@ class AetherDependencyManager implements DependencyManager {
     @Override
     @CompileStatic(TypeCheckingMode.SKIP)
     GPathResult downloadPluginInfo(String pluginName, String pluginVersion) {
-        AetherDependencyManager newDependencyManager = (AetherDependencyManager)createCopy()
+        AetherDependencyManager newDependencyManager = (AetherDependencyManager) createCopy()
 
         newDependencyManager.parseDependencies {
             dependencies {
-                compile group:"org.grails.plugins",
-                        name:pluginName,
-                        version:pluginVersion ?: 'RELEASE',
-                        classifier:"plugin",
-                        extension:'xml'
+                compile group: "org.grails.plugins",
+                        name: pluginName,
+                        version: pluginVersion ?: 'RELEASE',
+                        classifier: "plugin",
+                        extension: 'xml'
 
             }
         }
 
         final report = newDependencyManager.resolve()
-        if(report.allArtifacts) {
-            File pluginXml = report.allArtifacts.find { File f -> f.name.endsWith('-plugin.xml')}
+        if (report.allArtifacts) {
+            File pluginXml = report.allArtifacts.find { File f -> f.name.endsWith('-plugin.xml') }
 
             return IOUtils.createXmlSlurper().parse(pluginXml)
         }
@@ -307,7 +313,7 @@ class AetherDependencyManager implements DependencyManager {
      *
      * @param callable The DSL definition
      */
-    void parseDependencies(Closure callable) {
+    void parseDependencies(@DelegatesTo(AetherDsl) Closure callable) {
         AetherDsl dsl = new AetherDsl(this)
         dsl.session = session
         callable.delegate = dsl
@@ -328,7 +334,7 @@ class AetherDependencyManager implements DependencyManager {
 
     @Override
     DependencyReport resolveAgent() {
-        if(jvmAgent && !jvmAgentReport) {
+        if (jvmAgent && !jvmAgentReport) {
             jvmAgentReport = resolve('agent')
         }
         return jvmAgentReport
@@ -348,17 +354,17 @@ class AetherDependencyManager implements DependencyManager {
             if (includeSource || includeJavadoc) {
 
                 def attachmentRequests = new ArrayList<ArtifactRequest>()
-                for(ArtifactResult ar in results.artifactResults) {
+                for (ArtifactResult ar in results.artifactResults) {
 
                     final artifact = ar.artifact
                     attachmentRequests << new ArtifactRequest(artifact, repositories, null)
                     if (includeJavadoc) {
                         attachmentRequests << new ArtifactRequest(new DefaultArtifact(
-                            artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
+                                artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
                     }
                     if (includeSource) {
                         attachmentRequests << new ArtifactRequest(new DefaultArtifact(
-                            artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
+                                artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
                     }
                 }
 
@@ -385,12 +391,10 @@ class AetherDependencyManager implements DependencyManager {
 
                 if (failWithException) {
                     return new AetherDependencyReport(nlg, scope, e)
-                }
-                else {
+                } else {
                     return new AetherDependencyReport(nlg, scope)
                 }
-            }
-            else {
+            } else {
                 root = e.result.root
                 def nlg = new PreorderNodeListGenerator()
                 root.accept nlg
@@ -485,8 +489,8 @@ class AetherDependencyManager implements DependencyManager {
                 final artifact = new DefaultArtifact(md.groupId, md.artifactId, md.classifier, md.type, md.version)
                 final mavenExclusions = md.getExclusions()
                 Set<Exclusion> exclusions = []
-                for(me in mavenExclusions) {
-                    exclusions << new Exclusion(me.groupId,me.artifactId, DependencyConfiguration.WILD_CARD, DependencyConfiguration.WILD_CARD)
+                for (me in mavenExclusions) {
+                    exclusions << new Exclusion(me.groupId, me.artifactId, DependencyConfiguration.WILD_CARD, DependencyConfiguration.WILD_CARD)
                 }
                 final dependency = new Dependency(artifact, md.scope, md.isOptional(), exclusions)
                 addDependency(dependency)
@@ -499,11 +503,9 @@ class AetherDependencyManager implements DependencyManager {
 
         if (scope == 'build') {
             collectRequest.setDependencies(buildDependencies)
-        }
-        else if(scope == 'agent') {
+        } else if (scope == 'agent') {
             collectRequest.setDependencies([jvmAgent])
-        }
-        else {
+        } else {
             collectRequest.setDependencies(dependencies)
         }
 
@@ -513,18 +515,37 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     protected void manageDependencies(CollectRequest collectRequest) {
-        // ensure correct version of Spring is used
-        for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
-            collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.springframework:${springDep}:${GrailsCoreDependencies.DEFAULT_SPRING_VERSION}"), null))
+        def alreadyManagedArtefacts = managedDependencies.collect { Dependency d -> d.artifact }
+        if(managedDependencies) {
+            collectRequest.setManagedDependencies(managedDependencies)
         }
-        // ensure correct version of Groovy is used
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy-all:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
-        collectRequest.addManagedDependency(new Dependency(new DefaultArtifact("org.codehaus.groovy:groovy:${GrailsCoreDependencies.DEFAULT_GROOVY_VERSION}"), null))
-    }
+        if(coreDependencies) {
 
+            // ensure correct version of Spring is used
+            for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
+                String id = "org.springframework:${springDep}:${coreDependencies.springVersion}"
+                registerManagedDependency(collectRequest, id, alreadyManagedArtefacts)
+            }
+            // ensure correct version of Groovy is used
+            registerManagedDependency(collectRequest, "org.codehaus.groovy:groovy-all:${coreDependencies.groovyVersion}", alreadyManagedArtefacts)
+            registerManagedDependency(collectRequest, "org.codehaus.groovy:groovy:${coreDependencies.groovyVersion}", alreadyManagedArtefacts)
+
+            // ensure the correct versions of Grails jars are used
+            for (grailsDep in ['grails-core', 'grails-bootstrap', 'grails-web', 'grails-async', 'grails-test']) {
+                String id = "org.grails:${grailsDep}:${coreDependencies.grailsVersion}"
+                registerManagedDependency(collectRequest, id,alreadyManagedArtefacts)
+            }
+            for(org.codehaus.groovy.grails.resolve.Dependency d in coreDependencies.compileDependencies) {
+                if(d.group == 'org.grails') {
+                    registerManagedDependency(collectRequest, d.pattern,alreadyManagedArtefacts)
+                }
+            }
+        }
+
+    }
     Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
         Proxy proxy
-        if (proxyHost && proxyPort ) {
+        if (proxyHost && proxyPort) {
             if (proxyUser && proxyPass) {
                 proxy = new Proxy("http", proxyHost, proxyPort.toInteger(), new AuthenticationBuilder().addUsername(proxyUser).addPassword(proxyPass).build())
             } else {
@@ -542,6 +563,22 @@ class AetherDependencyManager implements DependencyManager {
         return proxy
     }
 
+    /**
+     * Adds a dependency to be used for dependency management. See  http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Management
+     *
+     * @param dependency The dependency to add
+     * @param configuration The configuration
+     */
+    void addManagedDependency(Dependency dependency) {
+        managedDependencies << dependency
+    }
+
+    /**
+     * Adds a dependency
+     *
+     * @param dependency The dependency to add
+     * @param configuration The depdency configuration
+     */
     void addDependency(Dependency dependency, DependencyConfiguration configuration = null) {
         org.codehaus.groovy.grails.resolve.Dependency grailsDependency = createGrailsDependency(dependency, configuration)
         grailsDependencies << grailsDependency
@@ -562,7 +599,7 @@ class AetherDependencyManager implements DependencyManager {
             grailsDependency.transitive = configuration.transitive
             grailsDependency.exported = configuration.exported
         }
-        for(Exclusion e in dependency.exclusions) {
+        for (Exclusion e in dependency.exclusions) {
             grailsDependency.exclude(e.groupId, e.artifactId)
         }
         return grailsDependency
@@ -582,7 +619,7 @@ class AetherDependencyManager implements DependencyManager {
 
     void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, ExclusionDependencySelector exclusionDependencySelector = null) {
         Collection<Exclusion> exclusions = new ArrayList<>()
-        for( exc in dependency.excludes) {
+        for (exc in dependency.excludes) {
             exclusions << new Exclusion(exc.group, exc.name, "*", "*")
         }
 
@@ -600,7 +637,7 @@ class AetherDependencyManager implements DependencyManager {
 
     void addBuildDependency(Dependency dependency, DependencyConfiguration configuration = null) {
 
-        final grailsDependency = createGrailsDependency(dependency,configuration)
+        final grailsDependency = createGrailsDependency(dependency, configuration)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope["build"] << grailsDependency
         buildDependencies << dependency
@@ -612,7 +649,7 @@ class AetherDependencyManager implements DependencyManager {
 
     void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope, ExclusionDependencySelector exclusionDependencySelector = null) {
         Collection<Exclusion> exclusions = new ArrayList<>()
-        for( exc in dependency.excludes) {
+        for (exc in dependency.excludes) {
             exclusions << new Exclusion(exc.group, exc.name, "*", "*")
         }
         final mavenDependency = new Dependency(new DefaultArtifact(dependency.pattern), scope, false, exclusions)
@@ -642,7 +679,7 @@ class AetherDependencyManager implements DependencyManager {
     @Override
     @CompileStatic(TypeCheckingMode.SKIP)
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getApplicationDependencies() {
-        return grailsDependencies.findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited && !isGrailsPlugin(d)}.asImmutable()
+        return grailsDependencies.findAll { org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited && !isGrailsPlugin(d) }.asImmutable()
     }
 
     @Override
@@ -653,11 +690,11 @@ class AetherDependencyManager implements DependencyManager {
     @Override
     @CompileStatic(TypeCheckingMode.SKIP)
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getApplicationDependencies(String scope) {
-        return grailsDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited && !isGrailsPlugin(d) }.asImmutable()
+        return grailsDependenciesByScope[scope].findAll { org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited && !isGrailsPlugin(d) }.asImmutable()
     }
 
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getPluginDependencies(String scope) {
-        return grailsPluginDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
+        return grailsPluginDependenciesByScope[scope].findAll { org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
     }
 
     @Override
@@ -668,5 +705,12 @@ class AetherDependencyManager implements DependencyManager {
     @Override
     ExcludeResolver getExcludeResolver() {
         return new AetherExcludeResolver(this)
+    }
+
+    private CollectRequest registerManagedDependency(CollectRequest collectRequest, String id, Collection<Artifact> alreadyManagedArtefacts) {
+        def artifact = new DefaultArtifact(id)
+        if(!alreadyManagedArtefacts.contains(artifact)) {
+            collectRequest.addManagedDependency(new Dependency(artifact, null))
+        }
     }
 }

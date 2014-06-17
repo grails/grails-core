@@ -24,6 +24,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.support.encoding.EncodesToWriter;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter;
@@ -51,10 +54,11 @@ public final class GroovyPageOutputStack {
     }
 
     public static GroovyPageOutputStack currentStack(GrailsWebRequest request, boolean allowCreate) {
-        if (allowCreate) {
-            return currentStack(request, allowCreate, null, allowCreate, false);
+        GroovyPageOutputStack outputStack = lookupStack(request);
+        if (outputStack == null && allowCreate) {
+            outputStack = currentStack(request, allowCreate, null, allowCreate, false);
         }
-        return lookupStack(request);
+        return outputStack;
     }
 
     public static GroovyPageOutputStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
@@ -75,9 +79,6 @@ public final class GroovyPageOutputStack {
         }
 
         if (attributes.isAllowCreate()) {
-            if (attributes.getTopWriter() == null) {
-                attributes=new GroovyPageOutputStackAttributes.Builder(attributes).topWriter(lookupRequestWriter(attributes.getWebRequest())).build();
-            }
             return createNew(attributes);
         }
 
@@ -85,6 +86,9 @@ public final class GroovyPageOutputStack {
     }
 
     private static final GroovyPageOutputStack createNew(GroovyPageOutputStackAttributes attributes) {
+        if (attributes.getTopWriter() == null) {
+            attributes=new GroovyPageOutputStackAttributes.Builder(attributes).topWriter(lookupRequestWriter(attributes.getWebRequest())).build();
+        }
         GroovyPageOutputStack instance = new GroovyPageOutputStack(attributes);
         attributes.getWebRequest().setAttribute(
                 ATTRIBUTE_NAME_OUTPUT_STACK, instance, RequestAttributes.SCOPE_REQUEST);
@@ -328,6 +332,8 @@ public final class GroovyPageOutputStack {
         Writer encodingWriter;
         if (out instanceof EncodedAppenderWriterFactory) {
             encodingWriter=((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, encodingStateRegistry);
+        } else if (encoder instanceof StreamingEncoder) {
+            encodingWriter=new StreamingEncoderWriter(out, (StreamingEncoder)encoder, encodingStateRegistry);
         } else {
             encodingWriter=new CodecPrintWriter(out, encoder, encodingStateRegistry);
         }

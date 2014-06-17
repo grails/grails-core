@@ -1,8 +1,12 @@
 package org.codehaus.groovy.grails.web.codecs
 
 import grails.converters.XML
+import grails.converters.JSON
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
+
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -93,6 +97,18 @@ class CodecSpec extends Specification {
         public boolean equals(Object obj) {
             throw new RuntimeException("equals shouldn't be called")
         }
+        }
+    
+    @Issue("GRAILS-11361")
+    void "JSON converter should not use encoding state"() {
+        given:
+            def buffer=new StreamCharBuffer()
+            buffer.writer.write('"Hello world"')
+            def content=buffer.encodeAsRaw()
+        when:
+            def json = [content: content] as JSON
+        then:
+            json.toString() == '{"content":"\\"Hello world\\""}'
     } 
 
     void "output should be safe at the end"() {

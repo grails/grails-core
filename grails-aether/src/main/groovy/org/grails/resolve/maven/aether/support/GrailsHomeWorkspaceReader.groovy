@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.resolve.maven.aether.support
+package org.grails.resolve.maven.aether.support
 
 import groovy.transform.CompileStatic
 import org.eclipse.aether.artifact.Artifact

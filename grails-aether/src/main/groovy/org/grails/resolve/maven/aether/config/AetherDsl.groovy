@@ -111,6 +111,11 @@ class AetherDsl {
     void useOrigin(boolean b) {
         GrailsConsole.getInstance().warn("BuildConfig: Method [useOrigin] not supported by Aether dependency manager")
     }
+    /**
+     * Configures the checksum policy to either fail or ignore
+     *
+     * @param enable If enabled fail if checksums are invalid
+     */
     void checksums(boolean enable) {
         if (enable) {
             aetherDependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_FAIL
@@ -119,10 +124,21 @@ class AetherDsl {
             aetherDependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
         }
     }
-    void checksums(String checksumConfig) {
-        aetherDependencyManager.checksumPolicy = checksumConfig
+    /**
+     * Uses an explicit checksum policy.
+     *
+     * @param checksumPolicy The checksum policy
+     * @see RepositoryPolicy
+     */
+    void checksums(String checksumPolicy) {
+        aetherDependencyManager.checksumPolicy = checksumPolicy
     }
 
+    /**
+     * Configures the log level to use for Aether
+     *
+     * @param level The level, either "warn", "error", "info", "debug" or "verbose"
+     */
     void log(String level) {
         switch(level) {
             case "warn":
@@ -138,7 +154,13 @@ class AetherDsl {
         }
     }
 
-    void inherits(String name, Closure customizer = null) {
+    /**
+     * Whether to inherit dependenices from the framework or not
+     *
+     * @param name The named dependencies to inherit
+     * @param customizer The customizer to use if excluding dependencies from the framework
+     */
+    void inherits(String name, @DelegatesTo(DependencyConfiguration) Closure customizer = null) {
         final callable = aetherDependencyManager.inheritedDependencies[name]
 
         if (callable) {
@@ -163,7 +185,12 @@ class AetherDsl {
         }
     }
 
-    void repositories(Closure callable) {
+    /**
+     * The repositories to configure
+     *
+     * @param callable A closure that defines the repositories
+     */
+    void repositories(@DelegatesTo(RepositoriesConfiguration) Closure callable) {
         def rc = new RepositoriesConfiguration(aetherDependencyManager, session)
         callable.delegate = rc
         callable.call()
@@ -171,14 +198,36 @@ class AetherDsl {
         this.aetherDependencyManager.repositories.addAll(rc.repositories)
     }
 
-    void dependencies(Closure callable) {
+    /**
+     * Defines the dependencies of the project
+     *
+     * @param callable A closure that delegate to {@link DependenciesConfiguration}
+     */
+    void dependencies(@DelegatesTo(DependenciesConfiguration) Closure callable) {
         def dc = new DependenciesConfiguration(aetherDependencyManager)
         dc.exclusionDependencySelector = exclusionDependencySelector
         callable.delegate = dc
         callable.call()
     }
 
-    void plugins(Closure callable) {
+    /**
+     * Defines the managed dependencies of the project. See http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Management
+     *
+     * @param callable A closure that delegate to {@link DependenciesConfiguration}
+     */
+    void management(@DelegatesTo(DependencyManagementConfiguration) Closure callable) {
+        def dc = new DependencyManagementConfiguration(aetherDependencyManager)
+        dc.exclusionDependencySelector = exclusionDependencySelector
+        callable.delegate = dc
+        callable.call()
+    }
+
+    /**
+     * Defines the plugin dependencies of the project
+     *
+     * @param callable A closure that delegate to {@link PluginConfiguration}
+     */
+    void plugins(@DelegatesTo(PluginConfiguration) Closure callable) {
         def dc = new PluginConfiguration(aetherDependencyManager)
         callable.delegate = dc
         callable.call()

@@ -58,7 +58,7 @@ class PublishGuide extends DefaultTask {
         publisher.style = project.file("${resourcesDir}/style")
         publisher.version = props."grails.version"
         publisher.logo = '<a href="http://grails.org" target="_blank"><img alt="Grails Logo" title="The Grails Framework" src="${path}/img/grails.png" border="0"/></a>'
-        publisher.sponsorLogo = '<a href="http://springsource.com" target="_blank"><img alt="SpringSource Logo" title="SpringSource - Weapons for the War on Java Complexity" src="${path}/img/springsource-logo.png" border="0"/></a>'
+        publisher.sponsorLogo = '<a href="http://gopivotal.com/oss" target="_blank"><img alt="Pivotal" src="${path}/img/pivotal-logo.png" border="0"/></a>'
 
         // Override doc.properties properties with their language-specific counterparts (if
         // those are defined). You just need to add entries like es.title or pt_PT.subtitle.
