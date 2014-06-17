@@ -1,16 +1,50 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.support.encoding;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 
 public class ChainedEncoder implements Encoder, StreamingEncoder {
     private final StreamingEncoder[] encoders;
     private final CodecIdentifier combinedCodecIdentifier;
+    private EncodedAppender lastAppenderForCached;
+    private EncodedAppender cachedChainedAppender;
+    
+    public ChainedEncoder(List<StreamingEncoder> encoders) {
+        this(encoders.toArray(new StreamingEncoder[encoders.size()]));
+    }
     
     public ChainedEncoder(StreamingEncoder[] encoders) {
         this.encoders = Arrays.copyOf(encoders, encoders.length);
         this.combinedCodecIdentifier = createCodecIdentifier(encoders);
+    }
+    
+    public static StreamingEncoder createFor(List<StreamingEncoder> encoders) {
+        if(encoders==null) {
+            return null;
+        } else if(encoders.size()==0) {
+            return DefaultEncodingStateRegistry.NONE_ENCODER;
+        } else if(encoders.size()==1) {
+            return encoders.get(0);
+        } else {
+            return new ChainedEncoder(encoders);
+        }
     }
 
     protected CombinedCodecIdentifier createCodecIdentifier(StreamingEncoder[] encoders) {
@@ -25,13 +59,23 @@ public class ChainedEncoder implements Encoder, StreamingEncoder {
     @Override
     public void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len,
             EncodedAppender appender, EncodingState encodingState) throws IOException {
+        EncodedAppender target = chainEncoders(appender);
+        StreamingEncoder encoder=encoders[0];
+        encoder.encodeToStream(encoder, source, offset, len, target, encodingState);
+    }
+
+    private EncodedAppender chainEncoders(final EncodedAppender appender) {
+        if(lastAppenderForCached == appender) {
+            return cachedChainedAppender;
+        }
         EncodedAppender target=appender;
         for(int i=encoders.length-1;i >= 1;i--) {
             StreamingEncoder encoder=encoders[i];
             target=new StreamingEncoderEncodedAppender(encoder, target);
         }
-        StreamingEncoder encoder=encoders[0];
-        encoder.encodeToStream(encoder, source, offset, len, target, encodingState);
+        lastAppenderForCached = appender;
+        cachedChainedAppender = target;
+        return target;
     }
 
     @Override

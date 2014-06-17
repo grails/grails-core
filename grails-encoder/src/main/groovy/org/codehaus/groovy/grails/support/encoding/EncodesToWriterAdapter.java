@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.support.encoding;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EncodesToWriterAdapter implements EncodesToWriter {
     private final StreamingEncoder encoder;
@@ -54,7 +56,7 @@ public class EncodesToWriterAdapter implements EncodesToWriter {
                 encodingState);
     }
 
-    public StreamingEncoder getEncoder() {
+    public StreamingEncoder getStreamingEncoder() {
         return encoder;
     }
 
@@ -64,5 +66,29 @@ public class EncodesToWriterAdapter implements EncodesToWriter {
 
     public void setIgnoreEncodingState(boolean ignoreEncodingState) {
         this.ignoreEncodingState = ignoreEncodingState;
+    }
+
+    @Override
+    public EncodesToWriter createChainingEncodesToWriter(List<StreamingEncoder> additionalEncoders, boolean applyAdditionalFirst) {
+        EncodesToWriterAdapter chained = createChainingEncodesToWriter(getStreamingEncoder(), additionalEncoders, applyAdditionalFirst);
+        chained.setIgnoreEncodingState(isIgnoreEncodingState());
+        return chained;
+    }
+
+    public static EncodesToWriterAdapter createChainingEncodesToWriter(StreamingEncoder baseEncoder, List<StreamingEncoder> additionalEncoders, boolean applyAdditionalFirst) {
+        boolean baseEncoderShouldBeApplied = ChainedEncoders.shouldApplyEncoder(baseEncoder);
+        List<StreamingEncoder> allEncoders=new ArrayList<StreamingEncoder>(additionalEncoders.size()+1);
+        if(!applyAdditionalFirst && baseEncoderShouldBeApplied) {
+            allEncoders.add(baseEncoder);
+        }
+        for(StreamingEncoder additional : additionalEncoders) {
+            if(ChainedEncoders.shouldApplyEncoder(additional)) {
+                allEncoders.add(additional);
+            }
+        }
+        if(applyAdditionalFirst && baseEncoderShouldBeApplied) {
+            allEncoders.add(baseEncoder);
+        }
+        return new EncodesToWriterAdapter(new ChainedEncoder(allEncoders));
     }        
 }

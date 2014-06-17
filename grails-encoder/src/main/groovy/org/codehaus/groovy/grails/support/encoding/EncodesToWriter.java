@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.support.encoding;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
 /**
  * Marks a class capable of encoding to target Writer
@@ -28,4 +29,5 @@ import java.io.Writer;
 public interface EncodesToWriter {
     public void encodeToWriter(CharSequence str, int off, int len, Writer writer, EncodingState encodingState) throws IOException;
     public void encodeToWriter(char[] buf, int off, int len, Writer writer, EncodingState encodingState) throws IOException;
+    public EncodesToWriter createChainingEncodesToWriter(List<StreamingEncoder> additionalEncoders, boolean applyAdditionalFirst);
 }
