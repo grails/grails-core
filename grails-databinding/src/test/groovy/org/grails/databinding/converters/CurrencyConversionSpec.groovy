@@ -1,7 +1,8 @@
 package org.grails.databinding.converters
 
+import grails.databinding.SimpleMapDataBindingSource
+
 import org.grails.databinding.SimpleDataBinder
-import org.grails.databinding.SimpleMapDataBindingSource
 
 import spock.lang.Specification
 
