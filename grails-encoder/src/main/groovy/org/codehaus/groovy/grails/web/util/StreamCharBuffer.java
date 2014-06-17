@@ -2030,6 +2030,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         private StreamCharBuffer encodedBuffer;
         int cachedSize;
         int encodedSourceChangesCounter = -1;
+        boolean encodedBufferCalled = false;
 
         public StreamCharBufferSubChunk(StreamCharBuffer sourceBuffer, List<Encoder> encoders) {
             this.sourceBuffer = sourceBuffer;
@@ -2121,6 +2122,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         }
 
         public StreamCharBuffer getEncodedBuffer() {
+            encodedBufferCalled = true;
             if (!hasEncodedBufferAvailable()) {
                 if (encoders == null || sourceBuffer.isEmpty()) {
                     encodedBuffer = sourceBuffer;
@@ -2150,9 +2152,11 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             return encodedBuffer != null && encodedSourceChangesCounter == sourceBuffer.getBufferChangesCounter();
         }
 
-        public boolean resetSize() {
-            if (cachedSize != -1) {
+        public boolean resetSubBuffer() {
+            if (cachedSize != -1 || encodedBufferCalled) {
                 cachedSize = -1;
+                encodedSourceChangesCounter = -1;
+                encodedBufferCalled = false;
                 return true;
             }
             return false;
@@ -2631,7 +2635,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             return false;
         }
         // reset cached size;
-        if (subChunk.resetSize()) {
+        if (subChunk.resetSubBuffer()) {
             totalCharsInDynamicChunks=-1;
             sizeAtLeast=-1;
             // notify parents too

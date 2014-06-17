@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec;
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
 import org.codehaus.groovy.grails.support.encoding.EncodesToWriterAdapter
@@ -35,6 +36,8 @@ class StreamCharBufferSpec extends Specification {
     GrailsPrintWriter codecOut
     GrailsPrintWriter out
     GrailsCodecClass htmlCodecClass
+    GrailsCodecClass rawCodecClass
+    GrailsCodecClass jsCodecClass
 
     def setup() {
         def grailsApplication = Mock(GrailsApplication)
@@ -42,9 +45,11 @@ class StreamCharBufferSpec extends Specification {
         grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { htmlCodecClass }
         GrailsCodecClass html4CodecClass = new DefaultGrailsCodecClass(HTML4Codec)
         grailsApplication.getArtefact("Codec", HTML4Codec.name) >> { html4CodecClass }
-        GrailsCodecClass rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
+        rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
         grailsApplication.getArtefact("Codec", RawCodec.name) >> { rawCodecClass }
-        def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass]
+        jsCodecClass = new DefaultGrailsCodecClass(JavaScriptCodec) 
+        grailsApplication.getArtefact("Codec", JavaScriptCodec.name) >> { jsCodecClass }
+        def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass, jsCodecClass]
         grailsApplication.getCodecClasses() >> { codecClasses }
         GrailsWebUtil.bindMockWebRequest()
 
@@ -347,6 +352,26 @@ class StreamCharBufferSpec extends Specification {
         outputClosure(pw)
         pw.close()
         scb
+    }
+    
+    @Issue("GRAILS-11505")
+    def "should support multiple levels of encoded subbuffers"() {
+        given:
+            def scb = createSubBuffer { out ->
+                out << "<1> - Hello;"
+            }
+            scb.preferSubChunkWhenWritingToOtherBuffer = true
+        when:
+            def scb2 = jsCodecClass.encoder.encode(scb)
+        then:
+            scb2.size() == 27
+            //scb2.clone().toString() == '\\u003c1\\u003e - Hello\\u003b'
+        when:
+            scb.writer.write '(1)'
+        then:
+            scb2.size() > 27
+            scb2.toString() == '\\u003c1\\u003e - Hello\\u003b\\u00281\\u0029'
+        
     }
 
 }
