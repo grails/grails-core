@@ -361,14 +361,19 @@ class StreamCharBufferSpec extends Specification {
                 out << "<1> - Hello;"
             }
             scb.preferSubChunkWhenWritingToOtherBuffer = true
+        expect:
+            scb.toString() == '<1> - Hello;'
         when:
             def scb2 = jsCodecClass.encoder.encode(scb)
-        then:
-            scb2.size() == 27
+        //then:
+            
+          //  scb2.size() == 27
             //scb2.clone().toString() == '\\u003c1\\u003e - Hello\\u003b'
-        when:
+        //when:
             scb.writer.write '(1)'
+            scb.writer.flush()
         then:
+            scb.toString() == '<1> - Hello;(1)'
             scb2.size() > 27
             scb2.toString() == '\\u003c1\\u003e - Hello\\u003b\\u00281\\u0029'
         
