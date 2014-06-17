@@ -23,4 +23,7 @@ package org.grails.databinding
  */
 @Deprecated
 class SimpleMapDataBindingSource extends grails.databinding.SimpleMapDataBindingSource {
+    SimpleMapDataBindingSource(Map map) {
+        super(map)
+    }
 }
