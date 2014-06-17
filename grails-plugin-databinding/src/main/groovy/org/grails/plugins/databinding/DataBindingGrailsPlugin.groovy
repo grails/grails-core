@@ -46,12 +46,6 @@ class DataBindingGrailsPlugin {
 
         databindingConfig = application?.config?.grails?.databinding
 
-        if(Boolean.TRUE.equals(databindingConfig?.useSpringBinder)) {
-            def msg = 'The grails.databinding.useSpringBinder config property is set to true.  The Spring data binder has been deprecated and will be removed in a future release of Grails.'
-            def log = LogFactory.getLog(DataBindingGrailsPlugin)
-            log.warn msg
-        }
-
         def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
 
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, ref('grailsApplication')) {

@@ -1,4 +1,0 @@
-dependencies {
-    compile project(":grails-web-databinding")
-    compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
-}
