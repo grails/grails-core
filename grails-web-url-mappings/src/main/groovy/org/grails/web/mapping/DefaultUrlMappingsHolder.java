@@ -18,6 +18,7 @@ package org.grails.web.mapping;
 import grails.util.CollectionUtils;
 import grails.util.Holders;
 import grails.web.mapping.*;
+import grails.web.mapping.UrlMappings;
 import groovy.lang.Closure;
 
 import java.io.PrintWriter;
@@ -39,6 +40,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.web.mapping.*;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.context.WebApplicationContext;
@@ -57,7 +59,7 @@ import com.googlecode.concurrentlinkedhashmap.Weigher;
  * @since 0.4
  */
 @SuppressWarnings("rawtypes")
-public class DefaultUrlMappingsHolder implements UrlMappings {
+public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groovy.grails.web.mapping.UrlMappings {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
