@@ -52,4 +52,7 @@ include 'grails-aether',
         'grails-test-suite-base',
         'grails-test-suite-persistence',
         'grails-test-suite-uber',
-        'grails-test-suite-web'
+        'grails-test-suite-web',
+
+        // Deprecated Compatibility Classes
+        'grails-compatibility'
