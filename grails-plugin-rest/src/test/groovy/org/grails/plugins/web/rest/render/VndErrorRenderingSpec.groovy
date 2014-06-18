@@ -8,11 +8,11 @@ import grails.web.CamelCaseUrlConverter
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext

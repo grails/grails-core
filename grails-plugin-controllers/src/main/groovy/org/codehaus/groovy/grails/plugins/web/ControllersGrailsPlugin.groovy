@@ -19,6 +19,7 @@ import grails.artefact.Enhanced
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
+import grails.web.mapping.mvc.RedirectEventListener
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -32,6 +33,7 @@ import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.servlet.mvc.*
+import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletContextInitializer

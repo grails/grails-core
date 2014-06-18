@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder;
 import org.springframework.core.io.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 

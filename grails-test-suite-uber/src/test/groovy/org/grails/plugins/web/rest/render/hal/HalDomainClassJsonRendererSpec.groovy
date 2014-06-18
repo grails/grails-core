@@ -6,11 +6,11 @@ import grails.rest.Resource
 import grails.rest.render.hal.HalJsonRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.rest.render.ServletRenderContext

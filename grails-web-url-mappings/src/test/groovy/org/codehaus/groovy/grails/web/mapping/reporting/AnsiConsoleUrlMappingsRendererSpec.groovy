@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.web.mapping.reporting
 
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
+import grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.reporting.AnsiConsoleUrlMappingsRenderer
 import org.springframework.mock.web.MockServletContext
 import spock.lang.Specification
 

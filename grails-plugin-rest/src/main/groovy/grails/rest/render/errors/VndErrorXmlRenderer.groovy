@@ -15,19 +15,13 @@
  */
 package grails.rest.render.errors
 
-import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-import groovy.xml.MarkupBuilder
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
 import org.codehaus.groovy.grails.web.xml.XMLStreamWriter
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.MessageSource
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError

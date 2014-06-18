@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.springframework.context.support.GenericApplicationContext
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
 import spock.lang.Specification
 import org.springframework.mock.web.MockServletContext

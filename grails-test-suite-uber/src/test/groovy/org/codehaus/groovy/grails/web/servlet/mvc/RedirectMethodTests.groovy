@@ -1,12 +1,12 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.MockRequestDataValueProcessor
-
+import grails.web.mapping.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
+import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 

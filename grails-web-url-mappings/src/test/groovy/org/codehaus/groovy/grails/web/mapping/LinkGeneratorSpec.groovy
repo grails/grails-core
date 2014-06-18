@@ -2,10 +2,13 @@ package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-
+import grails.web.mapping.UrlCreator
+import grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.grails.web.mapping.CachingLinkGenerator
+import org.grails.web.mapping.DefaultLinkGenerator
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -13,7 +16,7 @@ import spock.lang.Issue
 import spock.lang.Specification
 
  /**
- * Tests for the {@link DefaultLinkGenerator} class
+ * Tests for the {@link org.grails.web.mapping.DefaultLinkGenerator} class
  */
 class LinkGeneratorSpec extends Specification {
 

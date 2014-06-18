@@ -1,6 +1,11 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.CamelCaseUrlConverter
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.mock.web.MockServletContext
 import spock.lang.Specification
 

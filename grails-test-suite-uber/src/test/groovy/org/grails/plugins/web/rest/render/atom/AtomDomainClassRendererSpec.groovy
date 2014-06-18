@@ -3,12 +3,16 @@ package org.grails.plugins.web.rest.render.atom
 import grails.rest.render.atom.AtomRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-import org.codehaus.groovy.grails.web.mapping.*
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.hal.Author
 import org.grails.plugins.web.rest.render.hal.Book
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder

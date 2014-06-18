@@ -1,5 +1,9 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.mapping.UrlMappingInfo
+import grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.core.io.ByteArrayResource
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 

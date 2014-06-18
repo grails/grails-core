@@ -21,8 +21,8 @@ import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.web.mapping.UrlCreator
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import grails.web.mapping.UrlCreator
+import grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestDataValueProcessor

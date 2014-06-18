@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.mapping.UrlMappings
+
 /**
  * @author Graeme Rocher
  */

@@ -17,41 +17,25 @@ package org.codehaus.groovy.grails.plugins.web.mapping
 
 import grails.util.Environment
 import grails.util.GrailsUtil
-import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
-import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
-import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
-import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.codehaus.groovy.grails.web.mapping.UrlMappings
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
-import org.codehaus.groovy.grails.web.mapping.ResponseCodeUrlMappingVisitor
-import org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet
-import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsHandlerMapping
-import org.codehaus.groovy.grails.web.servlet.mvc.UrlMappingsInfoHandlerAdapter
+import org.grails.web.mapping.CachingLinkGenerator
+import org.grails.web.mapping.DefaultLinkGenerator
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappings
+import grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.UrlMappingsHolderFactoryBean
+import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
+import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
-import org.springframework.boot.context.embedded.FilterRegistrationBean
-import org.springframework.boot.context.embedded.ServletContextInitializer
-import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
-import org.springframework.core.io.Resource
 import org.springframework.web.context.WebApplicationContext
-
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.builder.AstBuilder
-import org.codehaus.groovy.control.CompilePhase
-
-import javax.servlet.ServletContext
-import javax.servlet.ServletException
 
 /**
  * Handles the configuration of URL mappings.

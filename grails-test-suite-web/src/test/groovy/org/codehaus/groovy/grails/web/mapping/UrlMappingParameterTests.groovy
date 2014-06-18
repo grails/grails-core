@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 
 /**
  * @author Graeme Rocher

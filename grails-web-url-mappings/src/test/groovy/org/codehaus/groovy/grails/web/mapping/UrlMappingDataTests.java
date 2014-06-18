@@ -14,7 +14,11 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import grails.web.mapping.UrlMappingData;
+import grails.web.mapping.UrlMappingParser;
 import junit.framework.TestCase;
+import org.grails.web.mapping.DefaultUrlMappingData;
+import org.grails.web.mapping.DefaultUrlMappingParser;
 
 /**
  * Tests for the UrlMappingData class

@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.springframework.core.io.*
 
 class UrlMappingEvaluatorTests extends AbstractGrailsControllerTests {

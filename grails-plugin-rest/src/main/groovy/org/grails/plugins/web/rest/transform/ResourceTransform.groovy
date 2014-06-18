@@ -17,8 +17,7 @@ package org.grails.plugins.web.rest.transform
 
 import static java.lang.reflect.Modifier.*
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
-import static org.codehaus.groovy.grails.web.mapping.ControllerActionConventions.*
-import static org.springframework.http.HttpMethod.*
+
 import grails.artefact.Artefact
 import grails.rest.Resource
 import grails.rest.RestfulController
@@ -62,13 +61,12 @@ import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.compiler.injection.ArtefactTypeAstTransformation
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.transaction.transform.TransactionalTransform
-import org.codehaus.groovy.grails.web.mapping.UrlMappings
+import grails.web.mapping.UrlMappings
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation

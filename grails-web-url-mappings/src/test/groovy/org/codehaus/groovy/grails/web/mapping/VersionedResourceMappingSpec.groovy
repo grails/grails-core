@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.mapping.UrlMapping
 import org.springframework.http.HttpMethod
 
 /**

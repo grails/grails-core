@@ -4,9 +4,9 @@ import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
-import org.codehaus.groovy.grails.web.mapping.UrlMapping
-import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils
+import org.grails.web.mapping.ForwardUrlMappingInfo
+import grails.web.mapping.UrlMapping
+import org.grails.web.mapping.UrlMappingUtils
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup

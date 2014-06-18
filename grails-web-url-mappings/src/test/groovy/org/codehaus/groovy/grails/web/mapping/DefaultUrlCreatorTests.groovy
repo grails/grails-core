@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.GrailsWebUtil
-
+import org.grails.web.mapping.DefaultUrlCreator
 import org.springframework.web.context.request.*
 
 class DefaultUrlCreatorTests extends GroovyTestCase {

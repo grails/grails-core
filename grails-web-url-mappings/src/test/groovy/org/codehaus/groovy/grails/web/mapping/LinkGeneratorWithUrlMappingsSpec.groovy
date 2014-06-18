@@ -1,11 +1,14 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.CamelCaseUrlConverter
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.mock.web.MockServletContext
 import spock.lang.Specification
 
 /**
- * More tests for {@link LinkGenerator }. See Also LinkGeneratorSpec.
+ * More tests for {@link grails.web.mapping.LinkGenerator }. See Also LinkGeneratorSpec.
  *
  * These test focus on testing integration with the URL mappings to ensure they are respected.
  */

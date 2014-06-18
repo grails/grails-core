@@ -1,7 +1,9 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultUrlCreator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.mock.web.MockServletContext
 
 /**
  * @author mike

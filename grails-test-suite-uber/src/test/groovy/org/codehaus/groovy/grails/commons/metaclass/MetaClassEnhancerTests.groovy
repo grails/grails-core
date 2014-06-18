@@ -7,7 +7,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.web.context.request.RequestContextHolder
 
 class MetaClassEnhancerTests extends GroovyTestCase {

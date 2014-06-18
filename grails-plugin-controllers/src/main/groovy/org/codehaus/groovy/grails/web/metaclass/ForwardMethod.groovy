@@ -17,14 +17,14 @@ package org.codehaus.groovy.grails.web.metaclass
 
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils
+import org.grails.web.mapping.UrlMappingUtils
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.validation.DataBinder
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 

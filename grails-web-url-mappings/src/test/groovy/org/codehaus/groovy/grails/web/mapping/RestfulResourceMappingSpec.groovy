@@ -1,5 +1,11 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
+
 import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
 

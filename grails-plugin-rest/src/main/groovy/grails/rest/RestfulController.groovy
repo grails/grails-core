@@ -15,7 +15,7 @@
  */
 package grails.rest
 
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import grails.web.mapping.LinkGenerator
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.springframework.http.HttpStatus.*

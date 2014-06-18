@@ -5,6 +5,9 @@ import grails.util.GrailsWebUtil
 import grails.web.Action
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.mapping.AbstractUrlMappingsSpec
+import org.grails.web.mapping.mvc.GrailsControllerUrlMappings
+import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
+import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
