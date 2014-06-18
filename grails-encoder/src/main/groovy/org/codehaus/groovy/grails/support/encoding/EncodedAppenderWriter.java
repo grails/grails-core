@@ -21,6 +21,8 @@ import java.io.Writer;
 /**
  * A java.io.Writer implementation that writes to a {@link EncodedAppender} with
  * a certain encoder
+ * 
+ * This class isn't thread-safe.
  *
  * @author Lari Hotari
  * @since 2.3
@@ -29,6 +31,7 @@ public class EncodedAppenderWriter extends Writer implements EncodedAppenderWrit
     protected EncodedAppender encodedAppender;
     protected Encoder encoder;
     protected EncodingStateRegistry encodingStateRegistry;
+    private char[] singleCharBuffer=new char[1];
 
     /**
      * Default constructor
@@ -81,7 +84,7 @@ public class EncodedAppenderWriter extends Writer implements EncodedAppenderWrit
      */
     @Override
     public void write(int c) throws IOException {
-        encodedAppender.append(encoder, (char)c);
+        append((char)c);
     }
 
     /*
@@ -124,7 +127,8 @@ public class EncodedAppenderWriter extends Writer implements EncodedAppenderWrit
      */
     @Override
     public Writer append(char c) throws IOException {
-        encodedAppender.append(encoder, c);
+        singleCharBuffer[0]=(char)c;
+        encodedAppender.append(encoder, null, singleCharBuffer, 0, 1);
         return this;
     }
 

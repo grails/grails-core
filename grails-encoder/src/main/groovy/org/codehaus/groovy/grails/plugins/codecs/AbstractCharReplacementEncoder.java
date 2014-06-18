@@ -17,11 +17,13 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodesToWriter;
+import org.codehaus.groovy.grails.support.encoding.EncodesToWriterAdapter;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 
@@ -185,6 +187,11 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         if (startPos > -1 && i - startPos > 0) {
             writer.write(buf, startPos, i - startPos);
         }
+    }
+    
+    @Override
+    public EncodesToWriter createChainingEncodesToWriter(List<StreamingEncoder> encoders, boolean applyAdditionalFirst) {
+        return EncodesToWriterAdapter.createChainingEncodesToWriter(this, encoders, applyAdditionalFirst);
     }
 
     /* (non-Javadoc)
