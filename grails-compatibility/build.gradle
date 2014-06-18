@@ -1,3 +1,4 @@
 dependencies {
-    compile project(':grails-databinding')
+    compile project(':grails-databinding'),
+            project(':grails-web-databinding')
 }
