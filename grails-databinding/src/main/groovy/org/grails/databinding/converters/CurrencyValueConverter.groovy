@@ -14,6 +14,7 @@
  */
 package org.grails.databinding.converters
 
+import grails.databinding.converters.ValueConverter
 import groovy.transform.CompileStatic
 
 /**
