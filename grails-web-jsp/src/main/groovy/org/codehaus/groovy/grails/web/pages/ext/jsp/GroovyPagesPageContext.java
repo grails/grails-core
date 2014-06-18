@@ -41,7 +41,7 @@ import javax.servlet.jsp.el.VariableResolver;
 import javax.servlet.jsp.tagext.BodyContent;
 
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 

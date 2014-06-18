@@ -15,16 +15,13 @@
  */
 package org.codehaus.groovy.grails.web.taglib
 
-import java.util.Map;
-
 import grails.util.Environment
-import groovy.lang.ExpandoMetaClass;
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 @CompileStatic
 class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {

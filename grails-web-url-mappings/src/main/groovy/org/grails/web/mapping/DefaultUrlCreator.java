@@ -29,10 +29,10 @@ import grails.web.mapping.UrlCreator;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy;
+import org.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**

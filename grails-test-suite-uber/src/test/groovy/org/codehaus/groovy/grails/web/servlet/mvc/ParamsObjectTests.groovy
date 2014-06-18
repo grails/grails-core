@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.mock.web.MockHttpServletRequest
 
 /**

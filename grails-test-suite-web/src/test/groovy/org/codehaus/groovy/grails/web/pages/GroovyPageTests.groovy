@@ -1,11 +1,10 @@
 package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.grails.web.servlet.DefaultGrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
+import grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.springframework.context.ApplicationContext
 

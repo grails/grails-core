@@ -23,7 +23,7 @@ import grails.artefact.Artefact
 import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
 
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
+import grails.web.http.HttpHeaders
 import org.springframework.http.HttpStatus
 
 /**

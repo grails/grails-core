@@ -7,7 +7,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse

@@ -41,7 +41,7 @@ import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTag;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTagLib;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;

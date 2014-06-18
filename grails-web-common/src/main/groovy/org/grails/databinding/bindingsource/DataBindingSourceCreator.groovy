@@ -28,7 +28,7 @@ import grails.web.mime.MimeTypeProvider
  * @see DataBindingSourceRegistry
  * @see DataBindingSource
  */
-interface DataBindingSourceCreator extends MimeTypeProvider {
+interface DataBindingSourceCreator extends MimeTypeProvider, org.codehaus.groovy.grails.web.mime.MimeTypeProvider {
 
     /**
      * @return The target type of this creator

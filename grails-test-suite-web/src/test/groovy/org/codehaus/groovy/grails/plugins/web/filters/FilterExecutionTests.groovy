@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.web.util.WebUtils
 import org.springframework.web.servlet.HandlerInterceptor

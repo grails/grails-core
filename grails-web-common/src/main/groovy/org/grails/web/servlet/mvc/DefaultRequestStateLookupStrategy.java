@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc;
+package org.grails.web.servlet.mvc;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;

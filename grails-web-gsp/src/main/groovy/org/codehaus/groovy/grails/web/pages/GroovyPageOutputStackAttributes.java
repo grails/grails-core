@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.pages;
 import java.io.Writer;
 
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 public class GroovyPageOutputStackAttributes {
     private final Writer topWriter;

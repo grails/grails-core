@@ -9,7 +9,7 @@ import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigu
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.html.Book
 import org.springframework.mock.web.MockHttpServletRequest

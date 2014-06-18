@@ -29,8 +29,8 @@ import grails.web.mime.MimeTypeResolver;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import grails.web.pages.GroovyPagesUriService;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

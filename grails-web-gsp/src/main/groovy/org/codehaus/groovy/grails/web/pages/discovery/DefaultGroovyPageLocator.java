@@ -39,7 +39,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import grails.web.util.GrailsApplicationAttributes;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

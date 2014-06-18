@@ -32,8 +32,8 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsHTMLPageParser
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView

@@ -23,9 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;
+import grails.web.mvc.FlashScope;
 import org.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.i18n.LocaleContextHolder;

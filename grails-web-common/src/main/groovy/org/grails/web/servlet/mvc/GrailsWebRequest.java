@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc;
+package org.grails.web.servlet.mvc;
 
 import grails.util.Holders;
 import grails.validation.DeferredBindingActions;
@@ -29,6 +29,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.web.servlet.mvc.GrailsHttpSession;
+import grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
@@ -40,9 +42,9 @@ import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder;
 import org.grails.web.beans.PropertyEditorRegistryUtils;
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings;
-import org.codehaus.groovy.grails.web.servlet.FlashScope;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import grails.web.mvc.FlashScope;
+import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
@@ -61,9 +63,9 @@ import org.springframework.web.util.UrlPathHelper;
  * def webRequest = RequestContextHolder.currentRequestAttributes()
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 3.0
  */
-public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
+public class GrailsWebRequest extends DispatcherServletWebRequest  {
     private static final Class<? extends GrailsApplicationAttributes> grailsApplicationAttributesClass = GrailsFactoriesLoader.loadFactoryClasses(GrailsApplicationAttributes.class, GrailsWebRequest.class.getClassLoader()).get(0);
     private static final Constructor<? extends GrailsApplicationAttributes> grailsApplicationAttributesConstructor = ClassUtils.getConstructorIfAvailable(grailsApplicationAttributesClass, ServletContext.class);
     private GrailsApplicationAttributes attributes;

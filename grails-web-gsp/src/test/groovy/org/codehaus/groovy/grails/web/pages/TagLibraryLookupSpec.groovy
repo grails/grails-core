@@ -3,9 +3,8 @@ package org.codehaus.groovy.grails.web.pages
 import grails.gsp.TagLib
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher
-import org.springframework.context.support.GenericApplicationContext
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext

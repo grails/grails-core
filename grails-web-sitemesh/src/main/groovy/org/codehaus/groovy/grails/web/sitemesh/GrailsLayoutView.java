@@ -23,9 +23,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.view.AbstractGrailsView;
+import org.grails.web.servlet.WrappedResponseHolder;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.view.AbstractGrailsView;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 

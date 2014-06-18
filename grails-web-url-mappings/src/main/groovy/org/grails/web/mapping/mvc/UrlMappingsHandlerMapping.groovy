@@ -21,8 +21,8 @@ import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeResolver
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.http.HttpHeaders
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.Assert
 import org.springframework.web.servlet.handler.AbstractHandlerMapping

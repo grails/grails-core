@@ -21,8 +21,8 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestContextHolder
 
 import org.springframework.context.ApplicationContext

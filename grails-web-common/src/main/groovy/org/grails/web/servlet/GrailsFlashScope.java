@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet;
+package org.grails.web.servlet;
 
+import grails.web.mvc.FlashScope;
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
@@ -28,16 +30,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
- * Grails implementation of Flash scope (@see org.codehaus.groovy.grails.web.servlet.FlashScope).
+ * Grails implementation of Flash scope (@see grails.web.mvc.FlashScope).
  *
  * @author Graeme Rocher
  */
 @SuppressWarnings({"unchecked","rawtypes"})
-public class GrailsFlashScope implements FlashScope {
+public class GrailsFlashScope implements FlashScope, org.codehaus.groovy.grails.web.servlet.FlashScope {
 
     private static final long serialVersionUID = 1457772347769500476L;
     private Map current = new ConcurrentHashMap();

@@ -20,7 +20,7 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * Additional API extensions provided to controllers via the converters plugin.

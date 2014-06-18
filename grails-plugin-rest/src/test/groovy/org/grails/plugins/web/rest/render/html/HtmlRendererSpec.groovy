@@ -3,8 +3,8 @@ package org.grails.plugins.web.rest.render.html
 import grails.persistence.Entity
 import grails.validation.ValidationErrors
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse

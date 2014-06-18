@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc;
+package grails.web.servlet.mvc;
 
 import java.util.Enumeration;
 
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
  * An adapter class that takes a regular HttpSession and allows you to access it like a Groovy map.
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 3.0
  */
 public class GrailsHttpSession implements HttpSession {
 

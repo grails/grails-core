@@ -32,8 +32,8 @@ import javax.servlet.http.Part
 
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod

@@ -21,9 +21,9 @@ import grails.async.web.AsyncGrailsWebRequest
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.async.GrailsAsyncContext
 import org.grails.web.errors.GrailsExceptionResolver
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.ActionResultTransformer
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.async.AsyncWebRequest
 import org.springframework.web.context.request.async.WebAsyncManager
 import org.springframework.web.context.request.async.WebAsyncUtils

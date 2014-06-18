@@ -25,8 +25,8 @@ import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.servlet.mvc.GrailsParameterMap
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 
 @CompileStatic

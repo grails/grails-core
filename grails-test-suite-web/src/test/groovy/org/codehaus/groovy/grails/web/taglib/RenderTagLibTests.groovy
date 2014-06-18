@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper

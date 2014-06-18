@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.servlet.View;
 
 import com.opensymphony.sitemesh.ContentProcessor;

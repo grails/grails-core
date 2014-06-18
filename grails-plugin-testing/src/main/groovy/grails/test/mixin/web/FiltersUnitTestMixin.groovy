@@ -20,9 +20,7 @@ package grails.test.mixin.web
 import org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.junit.After
-import org.junit.runner.Description
+import grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.web.servlet.ModelAndView
 

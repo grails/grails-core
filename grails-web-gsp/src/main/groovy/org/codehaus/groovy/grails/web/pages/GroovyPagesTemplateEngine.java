@@ -56,8 +56,8 @@ import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageResourceScriptSo
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;

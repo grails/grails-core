@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;

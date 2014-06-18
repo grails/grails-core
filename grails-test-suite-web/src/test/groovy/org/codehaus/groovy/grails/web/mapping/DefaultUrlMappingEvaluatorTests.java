@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.mapping.DefaultUrlMappingEvaluator;
 import org.springframework.mock.web.MockServletContext;
 

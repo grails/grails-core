@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.GroovyObject;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.pages.GroovyPagesUriSupport;
 import org.springframework.web.context.request.RequestContextHolder;
 

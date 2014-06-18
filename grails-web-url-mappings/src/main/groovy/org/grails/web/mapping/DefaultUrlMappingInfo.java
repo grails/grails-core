@@ -30,7 +30,7 @@ import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;

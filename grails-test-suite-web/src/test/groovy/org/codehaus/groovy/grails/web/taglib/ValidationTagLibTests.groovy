@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.i18n.LocaleContextHolder

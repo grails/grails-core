@@ -9,7 +9,7 @@ import javax.servlet.http.Cookie
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.grails.web.util.WebUtils
 

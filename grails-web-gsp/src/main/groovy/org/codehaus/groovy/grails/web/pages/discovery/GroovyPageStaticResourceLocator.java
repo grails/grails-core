@@ -19,8 +19,8 @@ import org.codehaus.groovy.grails.core.io.DefaultResourceLocator;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestAttributes;
 

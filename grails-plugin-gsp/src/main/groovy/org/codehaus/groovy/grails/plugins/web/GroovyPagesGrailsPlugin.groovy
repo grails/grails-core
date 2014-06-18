@@ -37,7 +37,7 @@ import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageViewResolver
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.codehaus.groovy.grails.web.util.StreamCharBufferMetaUtils

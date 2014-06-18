@@ -25,13 +25,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.errors.GrailsExceptionResolver;
 import org.grails.web.errors.GrailsWrappedRuntimeException;
 import grails.web.mapping.UrlMappingInfo;
 import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
+import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
@@ -133,7 +135,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         }
 
         // don't reuse cached controller attribute 
-        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);        
+        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
         
         HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
 

@@ -10,7 +10,7 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 

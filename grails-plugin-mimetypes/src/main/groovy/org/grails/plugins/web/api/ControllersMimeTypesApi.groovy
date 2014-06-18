@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * Api extensions to controllers for the MimeTypes plugin.

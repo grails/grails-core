@@ -17,7 +17,7 @@ package grails.web.mapping;
 
 import java.util.Map;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * Defines that data that was produced when matching a URI with a UrlMapping instance.

@@ -22,8 +22,8 @@ import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.grails.web.mime.DefaultAcceptHeaderParser
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
+import grails.web.util.GrailsApplicationAttributes
+import grails.web.http.HttpHeaders
 
 /**
  * Methods added to the {@link javax.servlet.http.HttpServletRequest} instance for request format handling.

@@ -27,7 +27,7 @@ import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappings
 import grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.http.HttpMethod
 
 import java.util.concurrent.ConcurrentHashMap

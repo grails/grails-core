@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.web.codecs
 
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.*
 import org.springframework.mock.web.*
 import org.springframework.web.context.request.*
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
-import org.codehaus.groovy.grails.web.servlet.mvc.*
 
 class URLCodecTests extends GroovyTestCase {
 

@@ -19,8 +19,8 @@ import javax.servlet.AsyncContext
 import javax.servlet.http.HttpServletRequest
 
 import org.grails.plugins.web.async.GrailsAsyncContext
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 /**

@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncoderAware;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.grails.web.util.BoundedCharsAsEncodedBytesCounter;

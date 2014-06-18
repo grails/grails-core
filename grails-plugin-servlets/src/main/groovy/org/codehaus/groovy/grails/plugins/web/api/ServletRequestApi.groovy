@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.api
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 
 /**

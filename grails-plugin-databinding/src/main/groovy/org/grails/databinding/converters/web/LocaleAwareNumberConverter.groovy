@@ -23,7 +23,7 @@ import java.text.ParsePosition
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.servlet.LocaleResolver
 

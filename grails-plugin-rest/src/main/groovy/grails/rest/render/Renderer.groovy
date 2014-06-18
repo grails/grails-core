@@ -23,7 +23,7 @@ import grails.web.mime.MimeTypeProvider
  * @author Graeme Rocher
  * @since 2.3
  */
-interface Renderer<T> extends MimeTypeProvider{
+interface Renderer<T> extends MimeTypeProvider, org.codehaus.groovy.grails.web.mime.MimeTypeProvider{
 
     /**
      * @return The target type

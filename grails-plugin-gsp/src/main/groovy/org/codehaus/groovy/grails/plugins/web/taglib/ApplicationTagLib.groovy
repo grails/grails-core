@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired

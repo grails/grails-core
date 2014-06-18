@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import org.grails.web.servlet.mvc.AbstractTokenResponseHandler
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.grails.web.servlet.mvc.TokenResponseHandler
 

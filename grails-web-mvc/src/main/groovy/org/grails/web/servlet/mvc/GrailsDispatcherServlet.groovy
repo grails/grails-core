@@ -16,7 +16,6 @@
 package org.grails.web.servlet.mvc
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -44,7 +43,9 @@ class GrailsDispatcherServlet extends DispatcherServlet{
     @Override
     protected ServletRequestAttributes buildRequestAttributes(HttpServletRequest request, HttpServletResponse response, RequestAttributes previousAttributes) {
         if (previousAttributes == null || !(previousAttributes instanceof GrailsWebRequest)) {
-            return new GrailsWebRequest(request, response, request.getServletContext());
+            def webRequest = new GrailsWebRequest(request, response, request.getServletContext())
+            webRequest.informParameterCreationListeners();
+            return webRequest;
         }
         else {
             return (GrailsWebRequest) previousAttributes;

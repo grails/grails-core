@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins.converters.api;
 
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

@@ -26,7 +26,7 @@ import java.text.NumberFormat
 import org.apache.commons.lang.time.FastDateFormat
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.util.StringUtils

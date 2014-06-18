@@ -16,7 +16,7 @@
 package org.grails.plugins.web.async
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import grails.async.decorator.PromiseDecorator
 import grails.async.decorator.PromiseDecoratorLookupStrategy
 

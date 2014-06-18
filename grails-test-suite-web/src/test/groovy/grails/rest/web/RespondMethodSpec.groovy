@@ -24,7 +24,7 @@ import grails.test.mixin.TestFor
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 
 import spock.lang.Specification

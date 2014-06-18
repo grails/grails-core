@@ -4,7 +4,7 @@ import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder

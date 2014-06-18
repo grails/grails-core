@@ -20,7 +20,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
 
 import com.opensymphony.module.sitemesh.PageParser;

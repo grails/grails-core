@@ -20,7 +20,7 @@ import grails.web.mime.MimeTypeResolver
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 2.3
  */
 @CompileStatic
-class DefaultMimeTypeResolver implements MimeTypeResolver{
+class DefaultMimeTypeResolver implements MimeTypeResolver, org.codehaus.groovy.grails.web.mime.MimeTypeResolver {
 
     @Autowired ResponseMimeTypesApi responseMimeTypesApi
     @Autowired RequestMimeTypesApi requestMimeTypesApi

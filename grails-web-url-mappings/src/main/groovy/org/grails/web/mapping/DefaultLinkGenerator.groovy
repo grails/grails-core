@@ -32,9 +32,9 @@ import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
-import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
+import org.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity

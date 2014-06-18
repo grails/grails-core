@@ -11,7 +11,7 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.web.context.request.RequestContextHolder

@@ -5,7 +5,8 @@ import grails.util.MockHttpServletResponse
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.*
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.validation.BindException
 import org.springframework.web.context.request.RequestContextHolder

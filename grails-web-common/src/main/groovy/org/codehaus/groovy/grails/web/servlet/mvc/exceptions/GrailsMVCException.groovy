@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc;
+package org.codehaus.groovy.grails.web.servlet.mvc.exceptions
 
 /**
- * A callback interface that is fired when the params object is created
+ * Thrown when an unrecoverable error occured in the Grails MVC framework.
  *
- * @author Graeme Rocher
- * @since 1.0
- *        <p/>
- *        Created: Nov 27, 2007
+ * @author Steven Devijver
+ * @deprecated Use {@link org.grails.web.servlet.mvc.exceptions.GrailsMVCException} instead
  */
-public interface ParameterCreationListener {
-
-    /**
-     * Fired when the params object is created
-     *
-     * @param params The params object
-     */
-    void paramsCreated(GrailsParameterMap params);
+@Deprecated
+class GrailsMVCException extends org.grails.web.servlet.mvc.exceptions.GrailsMVCException{
 }

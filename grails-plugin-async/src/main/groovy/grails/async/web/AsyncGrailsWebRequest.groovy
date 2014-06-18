@@ -1,8 +1,8 @@
 package grails.async.web
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.util.Assert
 import org.springframework.web.context.request.async.AsyncWebRequest

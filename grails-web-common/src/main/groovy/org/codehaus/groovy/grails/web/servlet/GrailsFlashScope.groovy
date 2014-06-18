@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.view;
+package org.codehaus.groovy.grails.web.servlet
 
-import org.springframework.web.servlet.ViewResolver;
-
-public interface LayoutViewResolver extends GrailsViewResolver {
-    public ViewResolver getInnerViewResolver();
+/**
+ * @deprecated Use {@link org.grails.web.servlet.GrailsFlashScope} instead
+ * @author Graeme Rocher
+ */
+@Deprecated
+class GrailsFlashScope extends org.grails.web.servlet.GrailsFlashScope{
 }

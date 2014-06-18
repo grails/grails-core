@@ -1,13 +1,12 @@
 package org.codehaus.groovy.grails.web.util
 
-import grails.artefact.Enhanced
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.reflection.CachedMethod
 import org.codehaus.groovy.runtime.metaclass.MethodSelectionException
 import org.springframework.context.ApplicationContext

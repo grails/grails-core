@@ -50,7 +50,7 @@ import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**

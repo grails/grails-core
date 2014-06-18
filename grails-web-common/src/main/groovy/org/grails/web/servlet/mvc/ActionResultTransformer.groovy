@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc
+package org.grails.web.servlet.mvc
 
 /**
  * Interface for classes which transform the result of an action. These can be registered with the Spring context and are loaded and applied to action responses

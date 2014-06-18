@@ -21,8 +21,8 @@ import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
 import org.springframework.context.ApplicationContext
 
 import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
 
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled

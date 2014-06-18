@@ -34,10 +34,10 @@ import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-import org.codehaus.groovy.grails.web.servlet.FlashScope
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.mvc.FlashScope
+import grails.web.util.GrailsApplicationAttributes
+import grails.web.servlet.mvc.GrailsParameterMap
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext

@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletResponse
 
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.json.JSONElement
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.util.ReflectionUtils
 import org.codehaus.groovy.grails.io.support.IOUtils

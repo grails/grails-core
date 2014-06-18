@@ -41,7 +41,7 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSo
 import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;
 import grails.web.mime.MimeTypeUtils;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.bindingsource.InvalidRequestBodyException;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 import org.springframework.context.ApplicationContext;

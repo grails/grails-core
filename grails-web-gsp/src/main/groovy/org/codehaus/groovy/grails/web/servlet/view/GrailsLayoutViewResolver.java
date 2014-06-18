@@ -21,6 +21,7 @@ import javax.servlet.ServletContext;
 
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
+import org.grails.web.servlet.view.LayoutViewResolver;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

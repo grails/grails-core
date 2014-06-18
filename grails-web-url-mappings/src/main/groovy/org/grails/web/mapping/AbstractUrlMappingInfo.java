@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -77,7 +77,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
      * Populates request parameters for the given UrlMappingInfo instance using the GrailsWebRequest
      *
      * @param webRequest The Map instance
-     * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+     * @see org.grails.web.servlet.mvc.GrailsWebRequest
      */
     protected void populateParamsForMapping(GrailsWebRequest webRequest) {
         Map dispatchParams = webRequest.getParams();

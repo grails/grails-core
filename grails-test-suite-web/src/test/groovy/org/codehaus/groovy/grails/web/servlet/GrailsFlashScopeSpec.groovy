@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.servlet
 
+import org.grails.web.servlet.GrailsFlashScope
 import spock.lang.Specification
 
 class GrailsFlashScopeSpec extends Specification {

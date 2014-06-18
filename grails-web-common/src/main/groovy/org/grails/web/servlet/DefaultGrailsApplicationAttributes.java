@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet;
+package org.grails.web.servlet;
 
+import grails.web.mvc.FlashScope;
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyObject;
 
 import java.io.Writer;
@@ -47,12 +49,12 @@ import org.springframework.web.util.UrlPathHelper;
  * Holds knowledge about how to obtain certain attributes from either the ServletContext
  * or the HttpServletRequest instance.
  *
- * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+ * @see org.grails.web.servlet.mvc.GrailsWebRequest
  *
  * @author Graeme Rocher
  * @since 0.3
  */
-public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
+public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes, org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes {
     protected static final String DEFAULT_NAMESPACE = "g";
     
     private static Log LOG = LogFactory.getLog(DefaultGrailsApplicationAttributes.class);
@@ -143,7 +145,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     /**
-     * @deprecated Use {@link org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest#getContextPath() instead}
+     * @deprecated Use {@link org.grails.web.servlet.mvc.GrailsWebRequest#getContextPath() instead}
      * @param request The Servlet Reqest
      * @return The Application URI
      */

@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.servlet
 
+import grails.web.http.HttpHeaders
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
+import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 
 /**
  * Tests for the render method.

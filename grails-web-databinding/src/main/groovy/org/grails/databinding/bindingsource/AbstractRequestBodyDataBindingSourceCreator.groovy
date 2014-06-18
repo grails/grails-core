@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceCreator
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import grails.web.servlet.mvc.GrailsParameterMap
 
 @CompileStatic
 abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBindingSourceCreator {

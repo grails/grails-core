@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.servlet
 import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.springframework.mock.web.MockHttpServletRequest
+import org.grails.web.servlet.GrailsFlashScope
 
 /**
 *  @author Graeme Rocher

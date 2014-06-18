@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.converters
 
-import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener
+import org.grails.web.servlet.mvc.ParameterCreationListener
 
 /**
 * Abstract base class for parameter creation listeners that parse incoming data such as JSON and XML.

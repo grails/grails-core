@@ -25,8 +25,8 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * Script binding to be used as the top-level binding in GSP evaluation.

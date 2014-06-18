@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
 
 import org.grails.web.binding.CompositeEditor
 import org.grails.web.binding.StructuredDateEditor
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.beans.propertyeditors.CustomDateEditor

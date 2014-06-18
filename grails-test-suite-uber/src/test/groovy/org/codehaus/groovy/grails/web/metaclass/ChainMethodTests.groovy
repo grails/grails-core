@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.metaclass
 import grails.util.MockRequestDataValueProcessor
 
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.servlet.GrailsFlashScope
+import org.grails.web.servlet.GrailsFlashScope
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 

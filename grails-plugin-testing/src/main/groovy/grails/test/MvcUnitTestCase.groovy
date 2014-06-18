@@ -21,8 +21,8 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import grails.web.pages.GroovyPagesUriService
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.web.context.request.RequestContextHolder

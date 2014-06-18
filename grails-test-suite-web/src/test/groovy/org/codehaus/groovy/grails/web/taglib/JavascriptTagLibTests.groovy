@@ -7,7 +7,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptProvider
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.util.WebUtils
 

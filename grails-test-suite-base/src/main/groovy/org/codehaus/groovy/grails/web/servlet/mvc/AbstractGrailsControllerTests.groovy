@@ -22,9 +22,10 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import grails.web.pages.GroovyPagesUriService
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource

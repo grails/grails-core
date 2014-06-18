@@ -52,7 +52,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.springframework.context.ApplicationContext

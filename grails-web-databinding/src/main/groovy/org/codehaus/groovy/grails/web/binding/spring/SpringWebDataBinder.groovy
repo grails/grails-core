@@ -15,10 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.binding.spring
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.beans.PropertyValues
 import org.springframework.validation.BindingResult
-import org.springframework.web.bind.WebDataBinder
 
 import javax.servlet.ServletRequest
 

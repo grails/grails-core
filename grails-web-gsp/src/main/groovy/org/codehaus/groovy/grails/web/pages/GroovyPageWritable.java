@@ -37,9 +37,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.servlet.WrappedResponseHolder;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**

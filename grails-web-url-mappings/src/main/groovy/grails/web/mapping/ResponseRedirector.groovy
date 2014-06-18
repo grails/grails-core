@@ -15,12 +15,11 @@
  */
 package grails.web.mapping
 
-import grails.web.mapping.LinkGenerator
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import grails.web.http.HttpHeaders
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.codehaus.groovy.runtime.DefaultGroovyMethods

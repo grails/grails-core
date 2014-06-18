@@ -17,12 +17,10 @@
 package grails.test.runtime
 
 import groovy.transform.CompileStatic
-
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * a TestPlugin for TestRuntime for supporting GSP tests

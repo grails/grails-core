@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc;
+package org.codehaus.groovy.grails.web.servlet
 
 /**
- * @author Graeme Rocher
- * @since 1.0
+ * @deprecated Use {@link grails.web.util.GrailsApplicationAttributes} instead
  */
-public interface ParameterInitializationCallback {
+public interface GrailsApplicationAttributes extends grails.web.util.GrailsApplicationAttributes {
 
-    /**
-     * Adds a listener that will be called when the parameters are created.
-     *
-     * @param creationListener the listener
-     */
-    void addParameterListener(ParameterCreationListener creationListener);
 }

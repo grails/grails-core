@@ -40,7 +40,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;

@@ -15,7 +15,7 @@
  */
 package grails.web.mapping.mvc.exceptions;
 
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 
 /**
  * Thrown when the request cannot be redirected.

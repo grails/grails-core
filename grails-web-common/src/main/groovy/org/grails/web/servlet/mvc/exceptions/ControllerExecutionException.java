@@ -13,32 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
-
-import org.codehaus.groovy.grails.exceptions.GrailsException;
+package org.grails.web.servlet.mvc.exceptions;
 
 /**
- * Thrown when an unrecoverable error occured in the Grails MVC framework.
+ * Throw when an exception occurs during controller execution
  *
- * @author Steven Devijver
+ * @author Graeme Rocher
+ * @since 0.2
  */
-public abstract class GrailsMVCException extends GrailsException {
+public class ControllerExecutionException extends GrailsMVCException {
 
-    private static final long serialVersionUID = 8489513412930525030L;
+    private static final long serialVersionUID = 4625710641559921836L;
 
-    public GrailsMVCException() {
+    public ControllerExecutionException() {
         super();
     }
 
-    public GrailsMVCException(String message) {
-        super(message);
-    }
-
-    public GrailsMVCException(String message, Throwable cause) {
+    public ControllerExecutionException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public GrailsMVCException(Throwable cause) {
+    public ControllerExecutionException(String message) {
+        super(message);
+    }
+
+    public ControllerExecutionException(Throwable cause) {
         super(cause);
     }
 }

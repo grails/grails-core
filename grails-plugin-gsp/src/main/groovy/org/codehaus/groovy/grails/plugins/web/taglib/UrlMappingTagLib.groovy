@@ -10,7 +10,7 @@ import org.grails.web.mapping.UrlMappingUtils
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import grails.web.util.TypeConvertingMap
 import org.springframework.web.servlet.support.RequestContextUtils
 

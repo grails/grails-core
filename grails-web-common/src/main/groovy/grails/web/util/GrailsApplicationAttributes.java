@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet;
+package grails.web.util;
 
+import grails.web.mvc.FlashScope;
 import groovy.lang.GroovyObject;
 
 import java.io.Writer;

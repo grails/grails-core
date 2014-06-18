@@ -16,7 +16,7 @@
 
 package grails.web.mime
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  *

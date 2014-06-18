@@ -19,7 +19,7 @@ import grails.test.mixin.web.ControllerUnitTestMixin
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.junit.Assert
 
 /**

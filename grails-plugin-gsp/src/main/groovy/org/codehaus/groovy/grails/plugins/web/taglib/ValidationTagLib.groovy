@@ -26,7 +26,7 @@ import java.text.DecimalFormatSymbols
 import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSource
@@ -34,7 +34,6 @@ import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.support.DefaultMessageSourceResolvable
 import org.springframework.validation.Errors
-import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Tags to handle validation and errors.

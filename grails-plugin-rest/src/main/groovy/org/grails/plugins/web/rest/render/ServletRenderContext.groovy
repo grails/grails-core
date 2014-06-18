@@ -19,8 +19,8 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus

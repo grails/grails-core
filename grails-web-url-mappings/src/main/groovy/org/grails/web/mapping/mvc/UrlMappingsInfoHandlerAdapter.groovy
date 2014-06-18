@@ -3,9 +3,9 @@ package org.grails.web.mapping.mvc
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import grails.web.mapping.UrlMappingInfo
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.ActionResultTransformer
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.web.servlet.HandlerAdapter

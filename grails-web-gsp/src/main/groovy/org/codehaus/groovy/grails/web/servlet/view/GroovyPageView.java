@@ -29,8 +29,9 @@ import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
+import org.grails.web.servlet.view.AbstractGrailsView;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.ScriptSource;
 

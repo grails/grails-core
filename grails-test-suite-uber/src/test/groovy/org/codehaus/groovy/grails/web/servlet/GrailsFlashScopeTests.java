@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsWebUtil;
+import grails.web.mvc.FlashScope;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.grails.web.servlet.GrailsFlashScope;
 
 /**
  * @author Graeme Rocher

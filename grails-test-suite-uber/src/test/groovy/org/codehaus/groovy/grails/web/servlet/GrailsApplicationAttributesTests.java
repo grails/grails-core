@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.servlet;
 
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
@@ -11,6 +12,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -18,7 +20,7 @@ import org.springframework.mock.web.MockServletContext;
 public class GrailsApplicationAttributesTests extends TestCase {
 
     /*
-     * Test method for 'org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes.getTemplateUri(String, ServletRequest)'
+     * Test method for 'org.grails.web.servlet.DefaultGrailsApplicationAttributes.getTemplateUri(String, ServletRequest)'
      */
     public void testGetTemplateUri() {
          GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(new MockServletContext());
@@ -28,7 +30,7 @@ public class GrailsApplicationAttributesTests extends TestCase {
     }
 
     /*
-     * Test method for 'org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes.getViewUri(String, ServletRequest)'
+     * Test method for 'org.grails.web.servlet.DefaultGrailsApplicationAttributes.getViewUri(String, ServletRequest)'
      */
     public void testGetViewUri() throws Exception {
         GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(new MockServletContext());

@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.servlet
 
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsHttpSession
+import grails.web.servlet.mvc.GrailsHttpSession
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpSession
 

@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet
 
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.springframework.mock.web.MockHttpServletRequest
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer

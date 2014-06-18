@@ -21,7 +21,7 @@ import groovy.lang.GroovyObject;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * Methods to establish template names, paths and so on.

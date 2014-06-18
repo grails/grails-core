@@ -31,7 +31,7 @@ import org.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.web.util.GrailsApplicationAttributes
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.beans.factory.annotation.Autowired

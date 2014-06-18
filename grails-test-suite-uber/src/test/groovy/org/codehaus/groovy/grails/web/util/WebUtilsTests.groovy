@@ -5,8 +5,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse

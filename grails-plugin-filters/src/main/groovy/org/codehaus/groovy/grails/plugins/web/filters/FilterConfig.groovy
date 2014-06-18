@@ -23,10 +23,10 @@ import javax.servlet.http.HttpSession
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.web.servlet.FlashScope
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.web.mvc.FlashScope
+import grails.web.util.GrailsApplicationAttributes
+import grails.web.servlet.mvc.GrailsParameterMap
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
 import org.springframework.web.servlet.ModelAndView

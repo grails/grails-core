@@ -19,7 +19,7 @@ import java.util.Map;
 
 import grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
