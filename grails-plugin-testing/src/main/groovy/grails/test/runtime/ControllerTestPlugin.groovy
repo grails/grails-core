@@ -46,8 +46,8 @@ import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings
+import grails.web.mime.MimeType
+import org.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator

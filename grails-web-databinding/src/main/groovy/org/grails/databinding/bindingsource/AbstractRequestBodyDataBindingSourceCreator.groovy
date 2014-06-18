@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
 import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 @CompileStatic

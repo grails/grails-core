@@ -2,7 +2,7 @@ package org.grails.plugins.web.rest.render.html
 
 import grails.persistence.Entity
 import grails.validation.ValidationErrors
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext

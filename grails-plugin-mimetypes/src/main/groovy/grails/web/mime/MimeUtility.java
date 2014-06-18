@@ -15,7 +15,7 @@
  */
 package grails.web.mime;
 
-import org.codehaus.groovy.grails.web.mime.MimeType;
+import grails.web.mime.MimeType;
 
 import java.util.List;
 

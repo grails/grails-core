@@ -11,7 +11,7 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.util.TypeConvertingMap
+import grails.web.util.TypeConvertingMap
 import org.springframework.web.servlet.support.RequestContextUtils
 
 /**

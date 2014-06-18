@@ -20,10 +20,10 @@ import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
-import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
-import org.codehaus.groovy.grails.web.xml.XMLStreamWriter
+import grails.web.mime.MimeType
+import org.grails.web.xml.PrettyPrintXMLStreamWriter
+import org.grails.web.xml.StreamingMarkupWriter
+import org.grails.web.xml.XMLStreamWriter
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.beans.PropertyAccessorFactory

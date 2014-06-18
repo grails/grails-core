@@ -19,16 +19,17 @@ import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
 
 import javax.annotation.PostConstruct
 
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
+import grails.web.mime.MimeType
+import org.grails.web.util.ClassAndMimeTypeRegistry
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
-class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry {
+class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry, org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry {
 
     @Autowired(required = false)
     void setDataBindingSourceCreators(DataBindingSourceCreator[] dataBindingSourceCreators) {

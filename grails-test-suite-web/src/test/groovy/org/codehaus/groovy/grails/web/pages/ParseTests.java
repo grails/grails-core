@@ -18,6 +18,8 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
+import org.grails.web.pages.DefaultGroovyPagesUriService;
+import grails.web.pages.GroovyPagesUriService;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 

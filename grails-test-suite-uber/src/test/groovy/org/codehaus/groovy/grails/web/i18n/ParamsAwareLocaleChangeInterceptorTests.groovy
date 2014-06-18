@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.i18n
 
 import grails.util.GrailsWebUtil
-
+import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.SessionLocaleResolver

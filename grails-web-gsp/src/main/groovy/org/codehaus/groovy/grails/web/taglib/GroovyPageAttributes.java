@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.taglib;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
+import grails.web.util.TypeConvertingMap;
 
 /**
  * Defines attributes passed to a GSP tag. Mixes in TypeConvertingMap for ease of type conversion.

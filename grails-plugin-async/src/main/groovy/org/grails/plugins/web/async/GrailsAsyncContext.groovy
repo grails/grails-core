@@ -15,8 +15,6 @@
  */
 package org.grails.plugins.web.async
 
-import groovy.transform.CompileStatic
-
 import javax.servlet.AsyncContext
 import javax.servlet.AsyncListener
 
@@ -24,7 +22,7 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext
 

@@ -20,8 +20,8 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
-import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.grails.web.pages.DefaultGroovyPagesUriService
+import grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext

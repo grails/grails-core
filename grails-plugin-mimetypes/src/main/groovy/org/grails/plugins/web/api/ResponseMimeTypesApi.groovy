@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.grails.web.mime.DefaultAcceptHeaderParser
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest

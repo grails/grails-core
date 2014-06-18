@@ -31,10 +31,10 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Part
 
 import org.grails.plugins.web.api.RequestMimeTypesApi
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockHttpServletRequest

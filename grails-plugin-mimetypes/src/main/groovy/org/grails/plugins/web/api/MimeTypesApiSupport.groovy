@@ -17,7 +17,7 @@ package org.grails.plugins.web.api
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 
 import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest

@@ -21,7 +21,7 @@ import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 import org.grails.databinding.bindingsource.InvalidRequestBodyException

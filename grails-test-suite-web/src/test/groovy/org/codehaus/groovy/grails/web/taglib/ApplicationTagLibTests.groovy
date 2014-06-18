@@ -8,12 +8,10 @@ import javax.servlet.http.Cookie
 
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
-import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.codehaus.groovy.grails.web.util.WebUtils
-import org.springframework.mock.web.MockHttpServletResponse
+import org.grails.web.util.WebUtils
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 

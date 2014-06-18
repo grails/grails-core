@@ -22,7 +22,7 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView

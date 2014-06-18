@@ -20,7 +20,7 @@ import com.google.gson.stream.JsonWriter
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.validation.BeanPropertyBindingResult

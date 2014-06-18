@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.util;
 
 import junit.framework.TestCase;
+import org.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 
 public class BoundedCharsAsEncodedBytesCounterTest extends TestCase {
 

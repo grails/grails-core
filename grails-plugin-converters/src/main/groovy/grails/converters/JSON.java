@@ -50,8 +50,7 @@ import org.codehaus.groovy.grails.web.json.JSONTokener;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
-import org.codehaus.groovy.grails.web.mime.MimeType;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
+import grails.web.mime.MimeType;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.

@@ -26,7 +26,7 @@ import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 
  /**
  * A mixin for testing URL mappings in Grails.

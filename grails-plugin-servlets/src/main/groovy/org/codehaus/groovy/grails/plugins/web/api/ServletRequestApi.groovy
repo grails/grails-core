@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.web.api
 import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 
 /**
  * Additional methods added to the HttpServletRequest API.

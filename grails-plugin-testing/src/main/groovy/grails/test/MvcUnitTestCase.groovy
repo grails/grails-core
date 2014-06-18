@@ -15,14 +15,12 @@
  */
 package grails.test
 
-import grails.util.GrailsNameUtils
-
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.grails.web.pages.DefaultGroovyPagesUriService
+import grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 

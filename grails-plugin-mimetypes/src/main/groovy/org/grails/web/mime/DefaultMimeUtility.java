@@ -16,7 +16,7 @@
 package org.grails.web.mime;
 
 import grails.web.mime.MimeUtility;
-import org.codehaus.groovy.grails.web.mime.MimeType;
+import grails.web.mime.MimeType;
 
 import java.util.Arrays;
 import java.util.HashMap;

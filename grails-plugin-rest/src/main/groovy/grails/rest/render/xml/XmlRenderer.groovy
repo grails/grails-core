@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.GroovyBeanMarshaller
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
 

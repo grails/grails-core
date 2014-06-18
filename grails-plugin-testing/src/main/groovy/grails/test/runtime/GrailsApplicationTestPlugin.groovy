@@ -29,7 +29,6 @@ import java.lang.reflect.Modifier
 
 import javax.servlet.ServletContext
 
-import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -44,14 +43,13 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
-import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.WebApplicationContext
 
 /**
  * A TestPlugin for TestRuntime that builds the GrailsApplication instance for tests

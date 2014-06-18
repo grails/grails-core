@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
+import org.grails.web.api.CommonWebApi;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

@@ -18,10 +18,10 @@ package grails.rest.render.errors
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
-import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
-import org.codehaus.groovy.grails.web.xml.XMLStreamWriter
+import grails.web.mime.MimeType
+import org.grails.web.xml.PrettyPrintXMLStreamWriter
+import org.grails.web.xml.StreamingMarkupWriter
+import org.grails.web.xml.XMLStreamWriter
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError

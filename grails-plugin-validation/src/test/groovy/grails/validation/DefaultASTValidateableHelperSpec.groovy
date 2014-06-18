@@ -1,11 +1,8 @@
 package grails.validation
 
 import grails.util.Holders
-import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.web.context.support.GenericWebApplicationContext
-
-import static org.junit.Assert.*
-
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit

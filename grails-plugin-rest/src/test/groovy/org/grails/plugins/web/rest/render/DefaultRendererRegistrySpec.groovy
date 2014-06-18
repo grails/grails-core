@@ -19,7 +19,7 @@ package org.grails.plugins.web.rest.render
 import grails.rest.render.AbstractRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.hal.HalJsonCollectionRenderer
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import spock.lang.Specification

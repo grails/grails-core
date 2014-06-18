@@ -13,7 +13,7 @@ import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.validation.BeanPropertyBindingResult

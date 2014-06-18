@@ -19,8 +19,8 @@ import groovy.transform.CompileStatic
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.mime.MimeTypeResolver
+import grails.web.mime.MimeType
+import grails.web.mime.MimeTypeResolver
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired

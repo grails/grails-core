@@ -19,14 +19,12 @@ import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
-
-import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
 import org.codehaus.groovy.grails.commons.utils.LazyBeanMap
 
 import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.databinding.bindingsource.DataBindingSourceCreator

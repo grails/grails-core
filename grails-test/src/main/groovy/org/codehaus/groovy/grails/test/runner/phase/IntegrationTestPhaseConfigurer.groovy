@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 /**
  * Test phase configurer for the integration test phase

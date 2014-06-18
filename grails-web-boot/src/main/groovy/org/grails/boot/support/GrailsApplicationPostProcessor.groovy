@@ -8,7 +8,7 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory

@@ -17,10 +17,8 @@ package org.grails.plugins.databinding
 
 import grails.util.GrailsUtil
 import grails.web.databinding.GrailsWebDataBinder
-
-import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.binding.BindEventListenerAdapter
-import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
+import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSourceCreator

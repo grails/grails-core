@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 import grails.databinding.DataBindingSource;
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement

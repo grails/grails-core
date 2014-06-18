@@ -21,7 +21,7 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors

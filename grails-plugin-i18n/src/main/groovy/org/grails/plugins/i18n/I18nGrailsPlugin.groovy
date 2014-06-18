@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessa
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
+import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource

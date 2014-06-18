@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.web.servlet.FlashScope
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 
 /**
  * An {@link ActionResultTransformer} that adds support for the "Synchronizer Token Pattern"

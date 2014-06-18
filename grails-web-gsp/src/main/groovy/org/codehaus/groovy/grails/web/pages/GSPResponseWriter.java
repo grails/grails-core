@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
-import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
+import org.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.LazyInitializingWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;

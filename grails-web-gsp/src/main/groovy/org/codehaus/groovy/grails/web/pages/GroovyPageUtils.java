@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.GroovyObject;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.pages.GroovyPagesUriSupport;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
@@ -28,7 +29,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @author Graeme Rocher
  * @since 1.1.1
  * @deprecated
- * @see DefaultGroovyPagesUriService
+ * @see org.grails.web.pages.DefaultGroovyPagesUriService
  * @see GroovyPagesUriSupport
  */
 @Deprecated

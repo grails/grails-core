@@ -15,16 +15,16 @@
  */
 package org.grails.web.mime
 
+import grails.web.mime.MimeType
+import grails.web.mime.MimeTypeResolver
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.mime.MimeTypeResolver
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 
 /**
- * Resolves the {@link MimeType} instance for a request
+ * Resolves the {@link grails.web.mime.MimeType} instance for a request
  *
  * @author Graeme Rocher
  * @since 2.3
@@ -36,10 +36,10 @@ class DefaultMimeTypeResolver implements MimeTypeResolver{
     @Autowired RequestMimeTypesApi requestMimeTypesApi
 
     /**
-     * Resolve the {@link org.codehaus.groovy.grails.web.mime.MimeType} to be used for the response, typically established from the ACCEPT header
+     * Resolve the {@link grails.web.mime.MimeType} to be used for the response, typically established from the ACCEPT header
      *
      * @since 2.3
-     * @return the {@link org.codehaus.groovy.grails.web.mime.MimeType}
+     * @return the {@link grails.web.mime.MimeType}
      */
     @Override
     MimeType resolveResponseMimeType(GrailsWebRequest webRequest= GrailsWebRequest.lookup()) {

@@ -23,8 +23,8 @@ import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
-import org.codehaus.groovy.grails.web.errors.ExceptionUtils
+import org.grails.web.errors.ErrorsViewStackTracePrinter
+import org.grails.web.errors.ExceptionUtils
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
@@ -33,8 +33,8 @@ import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.codehaus.groovy.grails.web.sitemesh.SpringMVCViewDecorator
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
-import org.codehaus.groovy.grails.web.util.TypeConvertingMap
-import org.codehaus.groovy.grails.web.util.WebUtils
+import grails.web.util.TypeConvertingMap
+import org.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
 

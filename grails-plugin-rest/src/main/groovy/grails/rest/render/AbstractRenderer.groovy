@@ -15,9 +15,8 @@
  */
 package grails.rest.render
 
-import grails.rest.render.Renderer
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 
 /**
  * Abstract implementation of the {@link Renderer} interface

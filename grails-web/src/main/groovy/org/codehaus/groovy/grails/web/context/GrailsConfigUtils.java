@@ -29,15 +29,14 @@ import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * A common class where shared configurational methods can reside.

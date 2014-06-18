@@ -35,7 +35,7 @@ import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.beans.factory.annotation.Autowired

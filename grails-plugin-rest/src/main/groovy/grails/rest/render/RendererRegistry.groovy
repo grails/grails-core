@@ -16,7 +16,7 @@
 
 package grails.rest.render
 
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 
 /**
  *

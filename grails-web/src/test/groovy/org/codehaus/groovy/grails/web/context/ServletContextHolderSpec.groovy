@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.context
 
 import grails.util.GrailsWebUtil
-
+import grails.web.context.ServletContextHolder
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 

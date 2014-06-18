@@ -16,10 +16,10 @@
 package org.grails.web.mime
 
 import grails.web.mime.AcceptHeaderParser
+import grails.web.mime.MimeType
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.web.mime.MimeType
 
 /**
  * Parsed the HTTP accept header into a a list of MimeType instances in the order of priority.

@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.mime
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
+import grails.web.mime.MimeType
 import spock.lang.Issue
 import spock.lang.Specification
 

@@ -21,7 +21,7 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.springframework.beans.factory.annotation.Autowired

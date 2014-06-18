@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.util
 
+import grails.web.util.TypeConvertingMap
+
 /**
  * @author Luke Daley
  */

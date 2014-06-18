@@ -20,7 +20,7 @@ import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 
 /**
  * A JSON renderer for a collection of objects

@@ -18,8 +18,8 @@ package org.grails.databinding.bindingsource
 import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
 
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
+import grails.web.mime.MimeType
+import grails.web.mime.MimeTypeProvider
 
 /**
  * A factory for DataBindingSource instances

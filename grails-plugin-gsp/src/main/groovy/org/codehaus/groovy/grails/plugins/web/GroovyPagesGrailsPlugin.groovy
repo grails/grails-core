@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
+import org.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryHandlerInterceptor
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
@@ -42,6 +42,8 @@ import org.codehaus.groovy.grails.web.servlet.view.GroovyPageViewResolver
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.codehaus.groovy.grails.web.util.StreamCharBufferMetaUtils
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
+import org.grails.web.pages.DefaultGroovyPagesUriService
+import org.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.boot.context.embedded.ServletContextInitializer
 import org.springframework.context.ApplicationContext

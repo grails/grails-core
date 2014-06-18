@@ -19,7 +19,7 @@ import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import grails.util.GrailsNameUtils
 
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 
 import com.google.gson.stream.JsonWriter
 

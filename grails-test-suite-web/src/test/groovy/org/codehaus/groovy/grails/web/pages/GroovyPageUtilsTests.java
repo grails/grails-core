@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
+import org.grails.web.pages.GroovyPagesUriSupport;
 
 /**
  * @author Graeme Rocher

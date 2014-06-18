@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry

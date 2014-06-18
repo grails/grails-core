@@ -3,7 +3,7 @@ package org.grails.plugins.web.async
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 import grails.async.decorator.PromiseDecorator
 
 /**

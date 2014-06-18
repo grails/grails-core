@@ -56,6 +56,7 @@ import grails.web.mapping.mvc.RedirectEventListener;
 import grails.web.mapping.mvc.exceptions.CannotRedirectException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.grails.web.api.CommonWebApi;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;

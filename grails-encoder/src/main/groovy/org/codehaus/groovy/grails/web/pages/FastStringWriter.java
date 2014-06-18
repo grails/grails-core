@@ -44,13 +44,13 @@ public class FastStringWriter extends GrailsPrintWriter {
         initOut();
     }
 
-    protected void initOut() {
-        setOut(streamBuffer.getWriter());
-    }
-
-    protected FastStringWriter(Object o) {
+    public FastStringWriter(Object o) {
         this();
         print(o);
+    }
+
+    protected void initOut() {
+        setOut(streamBuffer.getWriter());
     }
 
     public StreamCharBuffer getBuffer() {

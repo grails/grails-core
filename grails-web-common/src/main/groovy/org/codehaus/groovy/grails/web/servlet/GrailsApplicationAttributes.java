@@ -25,8 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
+import org.grails.web.support.ResourceAwareTemplateEngine;
+import grails.web.pages.GroovyPagesUriService;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 

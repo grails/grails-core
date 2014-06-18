@@ -17,7 +17,7 @@ package org.grails.plugins.web.mime
 
 import grails.util.GrailsUtil
 import org.grails.web.mime.DefaultMimeTypeResolver
-import org.codehaus.groovy.grails.web.mime.MimeTypeResolver
+import grails.web.mime.MimeTypeResolver
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.mime.DefaultMimeUtility
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.springframework.context.ApplicationContext
 
 /**

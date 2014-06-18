@@ -27,9 +27,9 @@ import javax.annotation.PostConstruct
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
+import org.grails.web.util.ClassAndMimeTypeRegistry
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer

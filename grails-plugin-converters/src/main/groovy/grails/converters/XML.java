@@ -35,11 +35,11 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.mime.MimeType;
+import grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter;
-import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter;
-import org.codehaus.groovy.grails.web.xml.XMLStreamWriter;
+import org.grails.web.xml.PrettyPrintXMLStreamWriter;
+import org.grails.web.xml.StreamingMarkupWriter;
+import org.grails.web.xml.XMLStreamWriter;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;

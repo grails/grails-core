@@ -21,9 +21,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 /**
  * Holds constants that refer to the names of dynamic methods and properties within controllers
  *
+ * TODO: Get rid of references to this class
+ *
  * @author Graeme Rocher
  * @since Oct 24, 2005
+ *
+ *
+ * @deprecated
  */
+@Deprecated
 class ControllerDynamicMethods{
 
     public static final String REQUEST_PROPERTY = "request";

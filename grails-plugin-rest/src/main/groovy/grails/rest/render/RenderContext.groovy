@@ -15,7 +15,7 @@
  */
 package grails.rest.render
 
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 

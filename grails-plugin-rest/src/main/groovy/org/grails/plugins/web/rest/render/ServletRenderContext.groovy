@@ -18,10 +18,10 @@ package org.grails.plugins.web.rest.render
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.web.mime.MimeType
+import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
