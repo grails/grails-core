@@ -21,6 +21,7 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
 import org.codehaus.groovy.grails.core.io.GrailsResource;
 import org.codehaus.groovy.grails.io.support.FileSystemResource;
 import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
@@ -43,7 +44,8 @@ import java.util.*;
  */
 public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation {
 
-    private static final String INJECTOR_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
+    private static final String INJECTOR_SCAN_PACKAGE = "org.grails.compiler";
+    private static final String INJECTOR_CODEHAUS_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
     private static ClassInjector[] classInjectors;
     private ClassInjector[] localClassInjectors;
@@ -86,20 +88,23 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
 
         String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+                ClassUtils.convertClassNameToResourcePath(INJECTOR_CODEHAUS_SCAN_PACKAGE) + "/**/*.class";
+
+        String pattern2 = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
                 ClassUtils.convertClassNameToResourcePath(INJECTOR_SCAN_PACKAGE) + "/**/*.class";
 
         ClassLoader classLoader = GrailsAwareInjectionOperation.class.getClassLoader();
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(classLoader);
         Resource[] resources;
         try {
-            resources = resolver.getResources(pattern);
+            resources = scanForPatterns(resolver, pattern2, pattern);
             if(resources.length == 0) {
                 classLoader = Thread.currentThread().getContextClassLoader();
                 resolver = new PathMatchingResourcePatternResolver(classLoader);
-                resources = resolver.getResources(pattern);
+                resources = scanForPatterns(resolver, pattern2, pattern);
             }
-            List<ClassInjector> injectors = new ArrayList<>();
-            Set<Class> injectorClasses = new HashSet<>();
+            List<ClassInjector> injectors = new ArrayList<ClassInjector>();
+            Set<Class> injectorClasses = new HashSet<Class>();
             CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(classLoader);
             for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
                 try {
@@ -141,6 +146,14 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
         }
 
 
+    }
+
+    private static Resource[] scanForPatterns(PathMatchingResourcePatternResolver resolver, String...patterns) throws IOException {
+        List<Resource> results = new ArrayList<Resource>();
+        for(String pattern : patterns) {
+            results.addAll( Arrays.asList(resolver.getResources(pattern)) );
+        }
+        return results.toArray(new Resource[results.size()]);
     }
 
     @Override
