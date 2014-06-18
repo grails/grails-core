@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
+import org.grails.web.errors.GrailsExceptionResolver
 
 /**
  * @author Graeme Rocher

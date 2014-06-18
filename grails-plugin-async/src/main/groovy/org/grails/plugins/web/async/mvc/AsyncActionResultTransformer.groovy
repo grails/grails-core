@@ -20,7 +20,7 @@ import grails.async.PromiseList
 import grails.async.web.AsyncGrailsWebRequest
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.async.GrailsAsyncContext
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
+import org.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest

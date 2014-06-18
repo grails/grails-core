@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import grails.web.mapping.UrlMappingsHolder
@@ -24,7 +25,7 @@ import org.springframework.web.servlet.ViewResolver
 import org.springframework.web.servlet.view.InternalResourceView
 
 /**
- * Test case for {@link GrailsExceptionResolver}.
+ * Test case for {@link org.grails.web.errors.GrailsExceptionResolver}.
  */
 class GrailsExceptionResolverTests extends GroovyTestCase {
 

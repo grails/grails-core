@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext

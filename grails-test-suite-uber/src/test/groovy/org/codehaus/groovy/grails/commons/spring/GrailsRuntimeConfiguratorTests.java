@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
+import org.grails.web.errors.GrailsExceptionResolver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;

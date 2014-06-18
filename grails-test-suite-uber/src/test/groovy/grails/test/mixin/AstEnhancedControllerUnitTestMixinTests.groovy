@@ -7,7 +7,7 @@ import grails.test.mixin.web.ControllerUnitTestMixin
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeUtility
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile

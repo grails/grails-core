@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
 import org.codehaus.groovy.grails.web.context.GrailsContextLoaderListener
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsDispatcherServlet
+import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.springframework.util.Assert
 import org.springframework.util.ObjectUtils
 import org.springframework.web.context.WebApplicationContext

@@ -29,11 +29,13 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
-import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
+import org.grails.web.errors.GrailsExceptionResolver
+import org.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
-import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
+import org.grails.web.servlet.mvc.GrailsDispatcherServlet
+import org.grails.web.servlet.mvc.GrailsWebRequestFilter
+import org.grails.web.servlet.mvc.TokenResponseActionResultTransformer
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletContextInitializer

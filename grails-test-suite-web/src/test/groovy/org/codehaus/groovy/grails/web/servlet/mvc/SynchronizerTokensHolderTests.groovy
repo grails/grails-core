@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import org.grails.web.servlet.mvc.SynchronizerTokensHolder
+
 class SynchronizerTokensHolderTests extends GroovyTestCase {
 
     // GRAILS-9923

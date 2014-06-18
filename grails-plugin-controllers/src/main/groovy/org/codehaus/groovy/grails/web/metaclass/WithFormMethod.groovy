@@ -15,11 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.metaclass
 
-import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractTokenResponseHandler
+import org.grails.web.servlet.mvc.AbstractTokenResponseHandler
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseHandler
+import org.grails.web.servlet.mvc.SynchronizerTokensHolder
+import org.grails.web.servlet.mvc.TokenResponseHandler
 
 /**
  * Implementation of the "Synchronizer Token Pattern" for Grails that handles duplicate form submissions

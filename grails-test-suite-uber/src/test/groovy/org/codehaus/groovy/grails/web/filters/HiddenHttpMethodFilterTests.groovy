@@ -1,10 +1,6 @@
 package org.codehaus.groovy.grails.web.filters
 
-import org.springframework.mock.web.MockServletContext;
-
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-
+import org.grails.web.filters.HiddenHttpMethodFilter
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import javax.servlet.FilterChain

@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc
+package org.grails.web.servlet.mvc
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.servlet.FlashScope
+import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.codehaus.groovy.grails.web.util.WebUtils
 

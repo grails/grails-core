@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.errors;
+package org.grails.web.errors;
 
 import grails.util.Environment;
 
@@ -38,6 +38,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import grails.web.mapping.UrlMappingInfo;
+import org.codehaus.groovy.grails.web.errors.ExceptionUtils;
+import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
