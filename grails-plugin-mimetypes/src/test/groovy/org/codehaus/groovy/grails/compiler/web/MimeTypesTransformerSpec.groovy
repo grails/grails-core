@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.GrailsWebUtil
+import org.grails.compiler.web.mime.MimeTypesTransformer
 
 import javax.servlet.http.HttpServletResponse
 
@@ -8,8 +9,8 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.springframework.web.context.request.RequestContextHolder
 
 import spock.lang.Specification

@@ -61,7 +61,7 @@ class FormTagLib {
         pluginsToLoad << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
     }
 
     void testControllersPlugin() {

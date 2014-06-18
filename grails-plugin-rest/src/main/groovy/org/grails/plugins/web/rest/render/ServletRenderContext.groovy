@@ -15,10 +15,9 @@
  */
 package org.grails.plugins.web.rest.render
 
-import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest

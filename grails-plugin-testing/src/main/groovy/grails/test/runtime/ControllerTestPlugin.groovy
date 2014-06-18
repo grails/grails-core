@@ -38,11 +38,11 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
+import org.grails.plugins.web.api.ControllersMimeTypesApi
+import org.grails.plugins.web.api.RequestMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean

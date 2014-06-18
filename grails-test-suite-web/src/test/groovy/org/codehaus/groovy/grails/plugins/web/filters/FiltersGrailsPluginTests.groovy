@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.plugins.web.filters
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
-import org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
+import org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
 
 /**
  * @author Graeme Rocher

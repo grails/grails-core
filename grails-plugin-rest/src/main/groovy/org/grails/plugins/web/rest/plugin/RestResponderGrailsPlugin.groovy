@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.grails.plugins.web.api.ControllersMimeTypesApi
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 

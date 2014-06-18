@@ -17,7 +17,7 @@ class SubclassRequestWithApiDelegateSpec extends Specification {
 
         gcl.parseClass '''
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.grails.plugins.web.api.RequestMimeTypesApi
 import grails.artefact.ApiDelegate
 import javax.servlet.http.HttpServletRequest
 

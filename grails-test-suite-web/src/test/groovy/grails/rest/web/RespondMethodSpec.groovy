@@ -21,7 +21,7 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes

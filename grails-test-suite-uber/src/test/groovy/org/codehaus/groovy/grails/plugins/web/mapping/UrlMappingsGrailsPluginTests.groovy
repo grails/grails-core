@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.plugins.web.mapping
 
 import groovy.xml.StreamingMarkupBuilder
-
+import org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
 import org.springframework.core.io.FileSystemResource
 
 /**

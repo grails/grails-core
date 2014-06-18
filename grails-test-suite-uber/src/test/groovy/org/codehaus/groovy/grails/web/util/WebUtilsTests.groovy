@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.util
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes

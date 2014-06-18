@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.test.support
 import grails.util.Holders
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.api.RequestMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes

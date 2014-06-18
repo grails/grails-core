@@ -20,14 +20,14 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.springframework.util.Assert
 
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator

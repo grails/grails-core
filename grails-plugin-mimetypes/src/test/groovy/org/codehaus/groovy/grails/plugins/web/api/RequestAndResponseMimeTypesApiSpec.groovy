@@ -1,13 +1,15 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
 import grails.util.GrailsWebUtil
+import org.grails.plugins.web.api.RequestMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 
@@ -16,7 +18,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 /**
- * Tests for {@link RequestMimeTypesApi}
+ * Tests for {@link org.grails.plugins.web.api.RequestMimeTypesApi}
  */
 class RequestAndResponseMimeTypesApiSpec extends Specification{
     def requestMimeTypesApiInstance

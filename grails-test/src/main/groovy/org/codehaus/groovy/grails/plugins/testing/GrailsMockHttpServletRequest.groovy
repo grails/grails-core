@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Part
 
-import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest

@@ -17,7 +17,6 @@ package grails.test.mixin.web
 
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
-import grails.test.runtime.TestRuntime
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -31,7 +30,7 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils

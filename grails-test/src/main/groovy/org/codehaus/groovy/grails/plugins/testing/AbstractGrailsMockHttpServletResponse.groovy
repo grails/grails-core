@@ -22,7 +22,7 @@ import groovy.util.slurpersupport.GPathResult
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
