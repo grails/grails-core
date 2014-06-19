@@ -11,7 +11,7 @@ import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 
 import spock.lang.Specification
 import spock.lang.Unroll
