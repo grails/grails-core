@@ -100,6 +100,15 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         def json = [quotedString: "I contain a \"Quote\"!", nonquotedString: "I don't!"] as JSON
         assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
     }
+    
+    // GRAILS-11515
+    void testJsonMultilineSerialization() {
+        String multiLine = "first line \n second line"
+        def object = [ line: multiLine ]
+        def result = object as JSON
+        
+        assertEquals('{"line":"first line \\n second line"}', result.toString())
+    }
 
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
