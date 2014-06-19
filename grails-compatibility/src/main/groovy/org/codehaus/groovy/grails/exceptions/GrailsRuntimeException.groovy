@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2005 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package org.codehaus.groovy.grails.exceptions
+
+import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
+ * @deprecated Use {@link grails.exceptions.GrailsRuntimeException} instead
  */
-public class GrailsConfigurationException extends GrailsException {
+@Deprecated
+@CompileStatic
+class GrailsRuntimeException extends grails.exceptions.GrailsRuntimeException{
 
-    private static final long serialVersionUID = -4535880758562704335L;
-
-    public GrailsConfigurationException() {
-        // default
+    GrailsRuntimeException(String message) {
+        super(message)
     }
 
-    public GrailsConfigurationException(String message) {
-        super(message);
+    GrailsRuntimeException(String message, Throwable cause) {
+        super(message, cause)
     }
 
-    public GrailsConfigurationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public GrailsConfigurationException(Throwable cause) {
-        super(cause);
+    GrailsRuntimeException(Throwable cause) {
+        super(cause)
     }
 }

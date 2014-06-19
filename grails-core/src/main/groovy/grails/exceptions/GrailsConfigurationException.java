@@ -13,31 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package grails.exceptions;
 
 /**
- * Base class for all Grails exceptions that are not recoverable.
- *
- * @author Steven Devijver
- * @since Jul 2, 2005
+ * @author Graeme Rocher
  */
-public abstract class GrailsException extends RuntimeException {
+public class GrailsConfigurationException extends GrailsException {
 
-    private static final long serialVersionUID = 8909019964961528326L;
+    private static final long serialVersionUID = -4535880758562704335L;
 
-    public GrailsException() {
-        super();
+    public GrailsConfigurationException() {
+        // default
     }
 
-    public GrailsException(String message) {
+    public GrailsConfigurationException(String message) {
         super(message);
     }
 
-    public GrailsException(String message, Throwable cause) {
+    public GrailsConfigurationException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public GrailsException(Throwable cause) {
+    public GrailsConfigurationException(Throwable cause) {
         super(cause);
     }
 }

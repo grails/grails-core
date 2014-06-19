@@ -21,7 +21,7 @@ import grails.web.Action;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
-import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
+import grails.exceptions.NewInstanceCreationException;
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;

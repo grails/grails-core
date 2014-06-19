@@ -13,30 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package grails.exceptions;
+
+import grails.exceptions.GrailsException;
 
 /**
- * Thrown when a named property of a specific type is not present in a class.
+ * Occurs when the creation of a new instance fails.
  *
  * @author Steven Devijver
  */
-public class RequiredPropertyMissingException extends GrailsException {
+public class NewInstanceCreationException extends GrailsException {
 
-    private static final long serialVersionUID = 5443226306788035898L;
+    private static final long serialVersionUID = -877948309600522419L;
 
-    public RequiredPropertyMissingException() {
+    public NewInstanceCreationException() {
         super();
     }
 
-    public RequiredPropertyMissingException(String message) {
+    public NewInstanceCreationException(String message) {
         super(message);
     }
 
-    public RequiredPropertyMissingException(String message, Throwable cause) {
+    public NewInstanceCreationException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public RequiredPropertyMissingException(Throwable cause) {
+    public NewInstanceCreationException(Throwable cause) {
         super(cause);
     }
 }

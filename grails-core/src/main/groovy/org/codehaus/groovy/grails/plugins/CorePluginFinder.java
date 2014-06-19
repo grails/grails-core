@@ -32,7 +32,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.context.ApplicationContext;

@@ -15,7 +15,7 @@
  */
 package grails.web.mapping.exceptions;
 
-import org.codehaus.groovy.grails.exceptions.GrailsException;
+import grails.exceptions.GrailsException;
 
 /**
  * Thrown when an error occurs evaluating an URL mapping.

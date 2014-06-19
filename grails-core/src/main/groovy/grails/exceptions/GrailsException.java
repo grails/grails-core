@@ -13,30 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package grails.exceptions;
 
 /**
- * Occurs when the creation of a new instance fails.
+ * Base class for all Grails exceptions that are not recoverable.
  *
  * @author Steven Devijver
+ * @since Jul 2, 2005
  */
-public class NewInstanceCreationException extends GrailsException {
+public abstract class GrailsException extends RuntimeException {
 
-    private static final long serialVersionUID = -877948309600522419L;
+    private static final long serialVersionUID = 8909019964961528326L;
 
-    public NewInstanceCreationException() {
+    public GrailsException() {
         super();
     }
 
-    public NewInstanceCreationException(String message) {
+    public GrailsException(String message) {
         super(message);
     }
 
-    public NewInstanceCreationException(String message, Throwable cause) {
+    public GrailsException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public NewInstanceCreationException(Throwable cause) {
+    public GrailsException(Throwable cause) {
         super(cause);
     }
 }

@@ -85,7 +85,7 @@ public interface GrailsDomainClass extends GrailsClass {
      * Returns the property for the given name
      *
      * @param name The property for the name
-     * @throws org.codehaus.groovy.grails.exceptions.InvalidPropertyException
+     * @throws grails.exceptions.InvalidPropertyException
      * @return The domain class property for the given name
      */
     GrailsDomainClassProperty getPropertyByName(String name);

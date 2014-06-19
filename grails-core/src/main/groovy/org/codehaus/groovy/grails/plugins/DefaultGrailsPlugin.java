@@ -44,7 +44,7 @@ import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.grails.core.io.SpringResource;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.codehaus.groovy.grails.plugins.support.WatchPatternParser;

@@ -13,30 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package grails.exceptions;
+
+import grails.exceptions.GrailsException;
 
 /**
- * Thrown when a missing property on a Grails data source is missing.
+ * Thrown when a property of a Grails class is invalidated.
  *
- * @author Steven Devijver
+ * @author Graeme Rocher
  */
-public class DataSourceRequiredPropertyMissingException extends GrailsDataSourceException {
+public class InvalidPropertyException extends GrailsException {
 
-    private static final long serialVersionUID = -1852968042072007818L;
+    private static final long serialVersionUID = 132133525035378206L;
 
-    public DataSourceRequiredPropertyMissingException() {
+    public InvalidPropertyException() {
         super();
     }
 
-    public DataSourceRequiredPropertyMissingException(String message) {
-        super(message);
-    }
-
-    public DataSourceRequiredPropertyMissingException(String message, Throwable cause) {
+    public InvalidPropertyException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public DataSourceRequiredPropertyMissingException(Throwable cause) {
+    public InvalidPropertyException(String message) {
+        super(message);
+    }
+
+    public InvalidPropertyException(Throwable cause) {
         super(cause);
     }
 }

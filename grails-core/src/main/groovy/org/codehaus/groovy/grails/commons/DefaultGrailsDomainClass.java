@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.grails.core.io.support.GrailsFactoriesLoader;
-import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
-import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import grails.exceptions.GrailsDomainException;
+import grails.exceptions.InvalidPropertyException;
 import grails.validation.ConstraintsEvaluator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;

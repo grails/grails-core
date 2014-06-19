@@ -1,11 +1,10 @@
 package org.codehaus.groovy.grails.plugins
 
 import grails.util.BuildScope
-import grails.util.BuildSettings
 import grails.util.Environment
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
+import grails.exceptions.GrailsConfigurationException
 
 /**
  * @author Graeme Rocher

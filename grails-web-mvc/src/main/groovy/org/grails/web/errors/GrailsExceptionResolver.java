@@ -34,7 +34,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
+import grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import grails.web.mapping.UrlMappingInfo;

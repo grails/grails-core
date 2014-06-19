@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package org.codehaus.groovy.grails.exceptions
+
+import groovy.transform.CompileStatic
 
 /**
- * Base exception for errors related to Grails data sources.
- *
- * @author Steven Devijver
+ * @author Graeme Rocher
+ * @deprecated Use {@link grails.exceptions.GrailsException} instead
  */
-public abstract class GrailsDataSourceException extends GrailsException {
+@CompileStatic
+@Deprecated
+class GrailsException extends grails.exceptions.GrailsException{
 
-    private static final long serialVersionUID = 3587287560396124552L;
-
-    public GrailsDataSourceException() {
-        super();
+    GrailsException() {
     }
 
-    public GrailsDataSourceException(String message) {
-        super(message);
+    GrailsException(String message) {
+        super(message)
     }
 
-    public GrailsDataSourceException(String message, Throwable cause) {
-        super(message, cause);
+    GrailsException(String message, Throwable cause) {
+        super(message, cause)
     }
 
-    public GrailsDataSourceException(Throwable cause) {
-        super(cause);
+    GrailsException(Throwable cause) {
+        super(cause)
     }
 }

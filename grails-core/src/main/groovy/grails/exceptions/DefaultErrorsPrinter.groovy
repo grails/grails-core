@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions
+package grails.exceptions
 
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage
+import org.codehaus.groovy.grails.exceptions.CodeSnippetPrinter
+import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
+import org.codehaus.groovy.grails.exceptions.SourceCodeAware
 import org.grails.core.io.ResourceLocator
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource

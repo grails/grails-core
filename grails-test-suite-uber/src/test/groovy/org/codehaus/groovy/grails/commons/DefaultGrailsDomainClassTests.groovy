@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.commons
 
-import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
+import grails.exceptions.InvalidPropertyException
 
  /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java

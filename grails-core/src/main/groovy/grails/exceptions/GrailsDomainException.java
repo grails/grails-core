@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package grails.exceptions;
 
 /**
- * Thrown when more than one active data source is configured.
+ * Thrown when creation of the Grails domain from the Grails domain classes fails.
  *
- * @author Steven Devijver
+ * @author Graeme Rocher
  */
-public class MoreThanOneActiveDataSourceException extends GrailsDataSourceException {
+public class GrailsDomainException extends GrailsException {
 
-    private static final long serialVersionUID = 2848937428489863779L;
+    private static final long serialVersionUID = -3824320541041888143L;
 
-    public MoreThanOneActiveDataSourceException() {
+    public GrailsDomainException() {
         super();
     }
 
-    public MoreThanOneActiveDataSourceException(String message) {
-        super(message);
-    }
-
-    public MoreThanOneActiveDataSourceException(String message, Throwable cause) {
+    public GrailsDomainException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public MoreThanOneActiveDataSourceException(Throwable cause) {
+    public GrailsDomainException(String message) {
+        super(message);
+    }
+
+    public GrailsDomainException(Throwable cause) {
         super(cause);
     }
 }

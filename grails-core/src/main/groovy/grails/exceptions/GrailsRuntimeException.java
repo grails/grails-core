@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.exceptions;
+package grails.exceptions;
+
+import grails.exceptions.GrailsException;
 
 /**
  * Generic global runtime exception.

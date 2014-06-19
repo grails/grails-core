@@ -46,7 +46,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
-import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter;
+import grails.exceptions.DefaultErrorsPrinter;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.grails.web.errors.ExceptionUtils;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;

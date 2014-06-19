@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.metaclass
 
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException
+import grails.exceptions.GrailsRuntimeException
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.web.context.request.RequestContextHolder
 
