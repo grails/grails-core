@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins
+package org.grails.plugins.validation
 
 import grails.util.GrailsUtil
 
@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
-import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport
+import org.grails.web.plugins.support.ValidationSupport;
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors

@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.plugins
 
+import org.grails.plugins.validation.ValidationGrailsPlugin;
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
 

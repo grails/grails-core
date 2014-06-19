@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.compiler.validation;
+package org.grails.compiler.validation;
 
 import grails.validation.DefaultASTValidateableHelper;
 
@@ -30,8 +30,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class ValidateableTransformation implements ASTTransformation{
 
-    private static final ClassNode ORIGINAL_VALIDATEABLE_CLASS_NODE = new ClassNode(org.codehaus.groovy.grails.validation.Validateable.class);
-    private static final ClassNode NEW_VALIDATEABLE_CLASS_NODE = new ClassNode(grails.validation.Validateable.class);
+    private static final ClassNode VALIDATEABLE_CLASS_NODE = new ClassNode(grails.validation.Validateable.class);
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -43,7 +42,7 @@ public class ValidateableTransformation implements ASTTransformation{
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
         AnnotationNode node = (AnnotationNode) astNodes[0];
-        if ( (!NEW_VALIDATEABLE_CLASS_NODE.equals(node.getClassNode()) && !ORIGINAL_VALIDATEABLE_CLASS_NODE.equals(node.getClassNode())) || !(parent instanceof ClassNode)) {
+        if (!VALIDATEABLE_CLASS_NODE.equals(node.getClassNode())) {
             return;
         }
 

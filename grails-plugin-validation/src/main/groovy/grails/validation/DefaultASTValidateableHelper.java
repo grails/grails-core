@@ -53,9 +53,9 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTValidationErrorsHelper;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.grails.web.plugins.support.ValidationSupport;
 
 public class DefaultASTValidateableHelper implements ASTValidateableHelper{
 

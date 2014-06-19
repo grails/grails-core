@@ -24,7 +24,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.validation.ValidateableTransformation")
+@GroovyASTTransformationClass("org.grails.compiler.validation.ValidateableTransformation")
 public @interface Validateable {
     boolean nullable() default false;
 }
