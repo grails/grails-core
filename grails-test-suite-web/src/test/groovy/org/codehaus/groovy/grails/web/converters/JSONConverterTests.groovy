@@ -94,6 +94,12 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         // of hash key ordering variations
         assertEquals('{"enumType":"Role","name":"HEAD"}', response.contentAsString)
     }
+    
+    // GRAILS-11513
+    void testStringsWithQuotes() {
+        def json = [quotedString: "I contain a \"Quote\"!", nonquotedString: "I don't!"] as JSON
+        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+    }
 
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
