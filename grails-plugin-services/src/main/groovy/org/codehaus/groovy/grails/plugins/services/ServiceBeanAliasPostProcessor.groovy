@@ -19,7 +19,7 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
-import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
+import org.grails.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory

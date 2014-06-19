@@ -22,7 +22,7 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.grails.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.PluginManagerAware

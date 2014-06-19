@@ -22,7 +22,7 @@ import javax.servlet.ServletContext;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import grails.web.servlet.context.support.GrailsEnvironment;
-import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
+import org.grails.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;

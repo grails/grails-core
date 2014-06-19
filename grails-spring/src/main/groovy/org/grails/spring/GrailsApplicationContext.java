@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons.spring;
+package org.grails.spring;
 
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
@@ -65,7 +65,7 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
     public GrailsApplicationContext() throws org.springframework.beans.BeansException {
         metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(getClass());
     }
-    
+
     @Override
     public boolean containsBeanDefinition(String beanName) {
         if(super.containsBeanDefinition(beanName)) {
@@ -180,7 +180,7 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
         ((DefaultListableBeanFactory)beanFactory).destroySingleton(ENVIRONMENT_BEAN_NAME);
         beanFactory.registerSingleton(GRAILS_ENVIRONMENT_BEAN_NAME,getEnvironment());
     }
-    
+
     @Override
     protected void assertBeanFactoryActive() {
         // no-op to prevent excessive synchronization caused by SPR-10307 change

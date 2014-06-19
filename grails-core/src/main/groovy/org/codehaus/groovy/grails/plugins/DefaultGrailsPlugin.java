@@ -43,7 +43,7 @@ import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.grails.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.core.io.SpringResource;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;

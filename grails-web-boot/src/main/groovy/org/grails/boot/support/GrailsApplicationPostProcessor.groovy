@@ -4,7 +4,7 @@ import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
+import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager

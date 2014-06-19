@@ -34,10 +34,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
-import org.codehaus.groovy.grails.commons.spring.DefaultBeanConfiguration;
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.grails.spring.BeanConfiguration;
+import org.grails.spring.DefaultBeanConfiguration;
+import org.grails.spring.DefaultRuntimeSpringConfiguration;
+import org.grails.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
