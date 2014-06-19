@@ -142,7 +142,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
             String escaped = escapeCharacter(ch, prevChar);
             if (escaped != null) {
                 if (i - startPos > 0) {
-                    writer.append(str, startPos, i - startPos);
+                    writer.append(str, startPos, i);
                 }
                 if (escaped.length() > 0) {
                     writer.write(escaped);
@@ -152,7 +152,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
             prevChar = ch;
         }
         if (startPos > -1 && i - startPos > 0) {
-            writer.append(str, startPos, i - startPos);
+            writer.append(str, startPos, i);
         }
     }
     
