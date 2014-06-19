@@ -256,11 +256,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @see org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
      */
     public UrlMappingInfo match(String uri) {
-        Integer slashCount = org.springframework.util.StringUtils.countOccurrencesOf(uri, "/");
         for (Pattern pattern : patterns) {
             Matcher m = pattern.matcher(uri);
             if (m.matches()) {
-                UrlMappingInfo urlInfo = createUrlMappingInfo(uri, m, slashCount);
+                UrlMappingInfo urlInfo = createUrlMappingInfo(uri, m);
                 if (urlInfo != null) {
                     return urlInfo;
                 }
@@ -575,15 +574,16 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     }
 
     @SuppressWarnings("unchecked")
-    private UrlMappingInfo createUrlMappingInfo(String uri, Matcher m, int tokenCount) {
+    private UrlMappingInfo createUrlMappingInfo(String uri, Matcher m) {
         boolean hasOptionalExtension = urlData.hasOptionalExtension();
         Map params = new HashMap();
         Errors errors = new MapBindingResult(params, "urlMapping");
+        int groupCount = m.groupCount();
         String lastGroup = null;
-        for (int i = 0, count = m.groupCount(); i < count; i++) {
+        for (int i = 0; i < groupCount; i++) {
             lastGroup = m.group(i + 1);
             // if null optional.. ignore
-            if (i == tokenCount & hasOptionalExtension) {
+            if (i == groupCount - 1 && hasOptionalExtension) {
                 ConstrainedProperty cp = constraints[constraints.length-1];
                 cp.validate(this, lastGroup, errors);
 
