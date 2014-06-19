@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactHandlerAdapter;
 import grails.core.GrailsUrlMappingsClass;
 
 /**

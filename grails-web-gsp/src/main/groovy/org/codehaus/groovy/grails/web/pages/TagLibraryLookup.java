@@ -28,7 +28,7 @@ import grails.core.GrailsClass;
 import grails.core.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.codehaus.groovy.grails.web.taglib.TemplateNamespacedTagDispatcher;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;

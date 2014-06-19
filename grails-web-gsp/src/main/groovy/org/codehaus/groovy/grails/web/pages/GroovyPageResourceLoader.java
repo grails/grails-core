@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;

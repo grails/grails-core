@@ -29,7 +29,7 @@ import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.grails.core.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy

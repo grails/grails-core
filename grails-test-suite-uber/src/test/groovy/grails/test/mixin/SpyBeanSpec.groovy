@@ -5,11 +5,8 @@ import grails.databinding.converters.ValueConverter;
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.runtime.FreshRuntime
 
-import org.codehaus.groovy.grails.commons.InstanceFactoryBean
+import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.junit.ClassRule
-
-import spock.lang.Shared
 import spock.lang.Specification
 
 /**

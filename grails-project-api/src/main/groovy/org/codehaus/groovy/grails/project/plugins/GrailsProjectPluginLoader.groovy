@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsStringUtils
+import grails.util.GrailsStringUtils
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPlugin

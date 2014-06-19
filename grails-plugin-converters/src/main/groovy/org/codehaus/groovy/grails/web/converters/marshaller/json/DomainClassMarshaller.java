@@ -31,7 +31,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.grails.core.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;

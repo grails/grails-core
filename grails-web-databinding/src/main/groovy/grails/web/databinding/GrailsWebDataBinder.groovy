@@ -34,12 +34,12 @@ import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.grails.core.DomainClassArtefactHandler
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import grails.util.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.grails.web.servlet.mvc.GrailsWebRequest

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons.cfg;
 
+import grails.config.GrailsConfig;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;

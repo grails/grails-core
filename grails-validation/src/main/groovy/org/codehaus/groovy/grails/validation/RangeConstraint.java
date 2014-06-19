@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.Range;
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import grails.util.GrailsClassUtils;
 import org.springframework.validation.Errors;
 
 /**

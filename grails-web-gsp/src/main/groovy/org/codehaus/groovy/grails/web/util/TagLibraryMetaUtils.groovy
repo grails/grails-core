@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.util
 
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 import grails.core.GrailsTagLibClass
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup

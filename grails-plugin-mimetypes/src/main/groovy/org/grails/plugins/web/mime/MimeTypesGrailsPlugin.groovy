@@ -22,7 +22,7 @@ import grails.web.mime.MimeTypeResolver
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.mime.DefaultMimeUtility

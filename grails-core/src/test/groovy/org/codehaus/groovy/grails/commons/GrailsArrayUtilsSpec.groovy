@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.commons
 
+import grails.util.GrailsArrayUtils
 import spock.lang.Specification
 
 /**

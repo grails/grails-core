@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.OrderComparator;
 

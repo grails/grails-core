@@ -31,6 +31,8 @@ import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.*;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.grails.spring.RuntimeSpringConfigUtilities;
+import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;

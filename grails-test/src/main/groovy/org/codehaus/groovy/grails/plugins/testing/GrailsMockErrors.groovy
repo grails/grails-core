@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins.testing
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.validation.BeanPropertyBindingResult
 
 /**

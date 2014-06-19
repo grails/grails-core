@@ -7,6 +7,7 @@ import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.web.context.request.RequestContextHolder
 

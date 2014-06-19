@@ -19,7 +19,7 @@ import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.utils.LazyBeanMap
+import grails.beans.utils.LazyBeanMap
 
 import javax.servlet.http.HttpServletRequest
 

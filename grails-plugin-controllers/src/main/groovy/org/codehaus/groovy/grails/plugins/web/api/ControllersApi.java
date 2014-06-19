@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.grails.core.DomainClassArtefactHandler;
+import grails.util.GrailsClassUtils;
 import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;

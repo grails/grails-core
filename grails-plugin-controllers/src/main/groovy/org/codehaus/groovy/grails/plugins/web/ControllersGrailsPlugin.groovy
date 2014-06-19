@@ -22,11 +22,11 @@ import grails.util.GrailsWebUtil
 import grails.web.mapping.mvc.RedirectEventListener
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.grails.core.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import org.grails.core.metaclass.MetaClassEnhancer
+import grails.core.support.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.grails.web.errors.GrailsExceptionResolver

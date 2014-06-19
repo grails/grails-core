@@ -15,12 +15,12 @@
  */
 package org.grails.web.mapping;
 
+import grails.util.GrailsStringUtils;
 import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappingsHolder;
 import groovy.lang.Binding;
-import org.codehaus.groovy.grails.commons.*;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;

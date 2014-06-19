@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.codehaus.groovy.grails.commons.ArtefactHandlerAdapter
+import grails.core.ArtefactHandlerAdapter
 import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
 /**

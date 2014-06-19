@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletRequest
 
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import grails.util.GrailsMetaClassUtils
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.springframework.context.ApplicationContext

@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet.boostrap;
 
-import org.codehaus.groovy.grails.commons.ArtefactHandlerAdapter;
+import grails.core.ArtefactHandlerAdapter;
 import grails.web.servlet.bootstrap.GrailsBootstrapClass;
 
 /**

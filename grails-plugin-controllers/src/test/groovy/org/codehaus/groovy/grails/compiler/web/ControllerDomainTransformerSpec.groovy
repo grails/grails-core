@@ -4,9 +4,9 @@ import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.grails.core.DomainClassArtefactHandler
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.compiler.injection.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi

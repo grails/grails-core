@@ -3,10 +3,7 @@ package grails.test.mixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.runtime.FreshRuntime
 
-import org.codehaus.groovy.grails.commons.InstanceFactoryBean
-import org.junit.ClassRule
-
-import spock.lang.Shared
+import org.grails.spring.beans.factory.InstanceFactoryBean
 import spock.lang.Specification
 
 /**

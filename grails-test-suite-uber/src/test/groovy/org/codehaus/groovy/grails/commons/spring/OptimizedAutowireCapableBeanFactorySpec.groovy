@@ -1,10 +1,9 @@
 package org.codehaus.groovy.grails.commons.spring
 
+import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import spock.lang.Specification
-
-import org.springframework.util.ClassUtils
 import javassist.util.proxy.*
-import org.springframework.beans.*
+
 import java.beans.PropertyDescriptor
 import org.springframework.beans.factory.support.GenericBeanDefinition
 

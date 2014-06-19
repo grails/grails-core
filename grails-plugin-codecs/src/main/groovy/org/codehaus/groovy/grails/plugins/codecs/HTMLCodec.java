@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;

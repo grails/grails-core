@@ -29,7 +29,7 @@ import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import grails.core.support.GrailsApplicationAware
 import grails.core.GrailsApplication
 
 /**

@@ -21,7 +21,7 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import grails.core.support.GrailsApplicationAware
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext

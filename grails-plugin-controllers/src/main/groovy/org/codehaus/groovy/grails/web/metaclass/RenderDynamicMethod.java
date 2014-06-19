@@ -43,8 +43,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.GrailsStringUtils;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.io.support.IOUtils;

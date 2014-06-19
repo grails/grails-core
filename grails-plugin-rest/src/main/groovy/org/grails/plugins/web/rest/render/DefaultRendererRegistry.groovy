@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import javax.annotation.PostConstruct
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator

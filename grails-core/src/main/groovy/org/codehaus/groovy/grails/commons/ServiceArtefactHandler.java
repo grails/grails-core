@@ -15,7 +15,9 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactHandlerAdapter;
 import grails.core.GrailsServiceClass;
+import org.grails.core.DomainClassArtefactHandler;
 
 /**
  * @author Marc Palmer (marc@anyware.co.uk)

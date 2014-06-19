@@ -24,7 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import grails.web.mvc.FlashScope;

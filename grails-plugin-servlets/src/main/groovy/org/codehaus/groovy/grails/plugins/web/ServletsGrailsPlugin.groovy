@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.web
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import grails.core.support.GrailsApplicationAware
 import org.springframework.context.ApplicationContext
 
 /**

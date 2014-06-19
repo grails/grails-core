@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
+import grails.util.GrailsArrayUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

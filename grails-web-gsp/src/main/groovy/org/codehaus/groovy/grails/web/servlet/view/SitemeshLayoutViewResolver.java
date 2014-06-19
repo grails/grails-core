@@ -22,7 +22,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder;
 import org.codehaus.groovy.grails.web.sitemesh.Grails5535Factory;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;

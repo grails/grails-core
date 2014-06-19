@@ -24,10 +24,10 @@ import groovy.transform.CompileStatic
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsStringUtils
+import grails.util.GrailsStringUtils
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import grails.core.support.GrailsApplicationAware
 import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource

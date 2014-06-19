@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.commons.metaclass
 
+import grails.beans.utils.LazyMetaPropertyMap
+
 /**
  * @author Graeme Rocher
  */

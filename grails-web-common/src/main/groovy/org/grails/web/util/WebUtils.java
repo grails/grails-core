@@ -27,7 +27,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import grails.util.GrailsStringUtils;
 import grails.web.mime.MimeType;
 import grails.web.util.GrailsApplicationAttributes;
 import grails.web.servlet.mvc.GrailsParameterMap;

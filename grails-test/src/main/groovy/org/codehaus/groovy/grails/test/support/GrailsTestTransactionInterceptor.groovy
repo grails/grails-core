@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.test.support
 
 import grails.core.GrailsDomainClassProperty
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus

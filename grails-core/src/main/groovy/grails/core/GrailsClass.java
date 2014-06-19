@@ -17,7 +17,7 @@ package grails.core;
 
 import groovy.lang.MetaClass;
 
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.springframework.beans.BeanWrapper;
 
 /**

@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.commons.metaclass
 
+import org.grails.core.metaclass.MetaClassEnhancer
 import spock.lang.Specification
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 

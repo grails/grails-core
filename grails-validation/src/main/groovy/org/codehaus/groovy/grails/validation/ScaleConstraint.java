@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.validation;
 
 import java.math.BigDecimal;
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import grails.util.GrailsClassUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.validation.Errors;

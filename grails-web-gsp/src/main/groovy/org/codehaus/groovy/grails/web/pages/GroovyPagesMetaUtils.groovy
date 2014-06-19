@@ -19,7 +19,7 @@ import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import grails.util.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 
 @CompileStatic

@@ -23,8 +23,8 @@ import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import grails.util.GrailsMetaClassUtils
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse

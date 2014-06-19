@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import grails.core.ApplicationAttributes;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import grails.util.GrailsStringUtils;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.ParameterCreationListener;

@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.core.support.GrailsDomainConfigurationUtil
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
 import grails.validation.ValidationErrors

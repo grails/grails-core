@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
+import grails.util.GrailsClassUtils;
+import grails.util.GrailsMetaClassUtils;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.web.Action;

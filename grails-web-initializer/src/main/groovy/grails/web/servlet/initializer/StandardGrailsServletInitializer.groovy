@@ -18,7 +18,7 @@ package grails.web.servlet.initializer
 import groovy.transform.CompileStatic
 import grails.core.ApplicationAttributes
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean
+import org.grails.core.support.GrailsApplicationFactoryBean
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager

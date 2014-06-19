@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import grails.util.GrailsStringUtils;
 
 import java.io.PrintWriter;
 import java.io.Writer;

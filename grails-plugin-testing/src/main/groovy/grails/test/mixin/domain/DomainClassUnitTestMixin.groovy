@@ -19,8 +19,8 @@ import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.grails.core.DomainClassArtefactHandler
+import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin

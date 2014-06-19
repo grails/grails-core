@@ -23,7 +23,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import grails.core.support.GrailsApplicationAware
 import org.grails.web.mapping.CachingLinkGenerator
 import org.grails.web.mapping.DefaultLinkGenerator
 import grails.web.mapping.LinkGenerator

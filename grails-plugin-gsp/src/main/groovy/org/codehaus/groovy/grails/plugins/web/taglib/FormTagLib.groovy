@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
 import java.text.DateFormat
 import java.text.DateFormatSymbols
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.grails.core.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import grails.web.mapping.LinkGenerator

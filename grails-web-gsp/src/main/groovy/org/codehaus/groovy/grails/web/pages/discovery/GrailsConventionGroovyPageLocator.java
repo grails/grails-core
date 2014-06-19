@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;
 import org.grails.web.pages.DefaultGroovyPagesUriService;

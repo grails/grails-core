@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import grails.core.*;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
@@ -31,10 +30,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
-import org.codehaus.groovy.grails.commons.events.ArtefactAdditionEvent;
+import grails.core.events.ArtefactAdditionEvent;
+import org.grails.core.DomainClassArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
+import org.grails.plugins.support.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;

@@ -20,7 +20,7 @@ import grails.util.GrailsNameUtils
 import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import grails.util.GrailsClassUtils as GCU
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.servlet.mvc.GrailsWebRequest

@@ -25,11 +25,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.grails.core.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import grails.core.support.GrailsApplicationAware;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;

@@ -15,14 +15,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import grails.util.GrailsMetaClassUtils
 
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
 
 /**

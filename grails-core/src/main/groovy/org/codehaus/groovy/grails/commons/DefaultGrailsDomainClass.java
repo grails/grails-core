@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons;
 import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
+import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 
 import java.beans.PropertyDescriptor;
@@ -31,10 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.grails.core.DomainClassArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import grails.exceptions.GrailsDomainException;
 import grails.exceptions.InvalidPropertyException;
 import grails.validation.ConstraintsEvaluator;
+import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;

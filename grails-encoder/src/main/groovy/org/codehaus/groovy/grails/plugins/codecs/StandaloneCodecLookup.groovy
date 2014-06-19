@@ -16,7 +16,7 @@ package org.codehaus.groovy.grails.plugins.codecs
 
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import grails.util.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.support.encoding.CodecFactory
 import org.codehaus.groovy.grails.support.encoding.CodecMetaClassSupport
 import org.codehaus.groovy.runtime.GStringImpl

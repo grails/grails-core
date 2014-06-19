@@ -21,9 +21,9 @@ import grails.util.Metadata
 import groovy.transform.CompileStatic
 
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsStringUtils
+import grails.util.GrailsStringUtils
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import grails.core.support.GrailsApplicationAware
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingsHolder

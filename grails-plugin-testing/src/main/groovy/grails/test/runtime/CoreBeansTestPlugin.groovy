@@ -20,11 +20,11 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.InstanceFactoryBean
+import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
+import org.grails.plugins.support.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator

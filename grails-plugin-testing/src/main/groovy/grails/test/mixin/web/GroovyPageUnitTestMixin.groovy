@@ -19,10 +19,10 @@ package grails.test.mixin.web
 import grails.artefact.Enhanced
 import groovy.text.Template
 
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import grails.util.GrailsMetaClassUtils
 import grails.core.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.grails.core.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup

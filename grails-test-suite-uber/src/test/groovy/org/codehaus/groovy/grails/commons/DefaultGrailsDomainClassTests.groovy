@@ -3,8 +3,9 @@ package org.codehaus.groovy.grails.commons
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
 import grails.exceptions.InvalidPropertyException
+import org.grails.core.support.GrailsDomainConfigurationUtil
 
- /**
+/**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class DefaultGrailsDomainClassTests extends GroovyTestCase {

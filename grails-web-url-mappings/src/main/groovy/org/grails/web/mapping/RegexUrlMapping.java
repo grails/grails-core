@@ -41,7 +41,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.VersionComparator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import grails.web.mapping.exceptions.UrlMappingException;

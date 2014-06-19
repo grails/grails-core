@@ -17,11 +17,11 @@ package org.codehaus.groovy.grails.plugins.web.api;
 
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.grails.core.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
+import grails.util.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.databinding.DataBindingLazyMetaPropertyMap;

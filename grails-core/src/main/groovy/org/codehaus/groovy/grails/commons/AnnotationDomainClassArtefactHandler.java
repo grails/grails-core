@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.core.GrailsClass;
 import grails.core.GrailsDomainClass;
+import org.grails.core.DomainClassArtefactHandler;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,7 +30,7 @@ import javax.persistence.Entity;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHandler{
+public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHandler {
 
     private static final String JPA_MAPPING_STRATEGY = "JPA";
 

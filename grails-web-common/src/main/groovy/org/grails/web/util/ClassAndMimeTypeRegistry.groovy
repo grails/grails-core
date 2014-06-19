@@ -17,7 +17,7 @@ package org.grails.web.util
 
 import grails.util.Environment
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
