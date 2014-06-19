@@ -1,3 +1,3 @@
 <plugin name='servlets'>
-  <type>org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin</type>
+  <type>org.grails.plugins.web.ServletsGrailsPlugin</type>
 </plugin>

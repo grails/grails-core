@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins.web.api
+package org.grails.plugins.web.api
 
 import org.springframework.mock.web.MockHttpServletRequest
 

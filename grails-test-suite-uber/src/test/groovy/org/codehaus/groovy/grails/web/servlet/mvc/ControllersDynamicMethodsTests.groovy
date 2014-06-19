@@ -36,7 +36,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
             def dependantPluginClasses = []
             dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
             dependantPluginClasses << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
-            dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+            dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
             dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
 
             dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")

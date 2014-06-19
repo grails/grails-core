@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web
+package org.grails.plugins.web
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 
@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
+import org.grails.plugins.web.api.ServletRequestApi;
 
 /**
  * Support class for the Servlets Grails plugin.

@@ -1,10 +1,11 @@
-package org.codehaus.groovy.grails.plugins.web
+package org.grails.plugins.web
 
 import groovy.lang.GroovySystem;
 
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.metaclass.*
 import org.codehaus.groovy.grails.commons.spring.*
+import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests;
 import org.springframework.mock.web.*
 
 import javax.servlet.ServletContext;
@@ -18,7 +19,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
     protected void onSetUp() {
 
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
 
         def remove = GroovySystem.metaClassRegistry.&removeMetaClass
 
