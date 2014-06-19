@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.beans.factory.config.RuntimeBeanReference

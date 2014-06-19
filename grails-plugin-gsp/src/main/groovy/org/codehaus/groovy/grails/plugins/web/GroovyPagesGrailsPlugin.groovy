@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.taglib.*
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
+import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryHandlerInterceptor
 import org.codehaus.groovy.grails.web.pages.*

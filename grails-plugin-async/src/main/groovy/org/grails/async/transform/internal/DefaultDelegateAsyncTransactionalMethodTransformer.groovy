@@ -34,7 +34,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
-import org.codehaus.groovy.grails.compiler.web.async.TransactionalAsyncTransformUtils
+import org.grails.compiler.web.async.TransactionalAsyncTransformUtils
 import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types

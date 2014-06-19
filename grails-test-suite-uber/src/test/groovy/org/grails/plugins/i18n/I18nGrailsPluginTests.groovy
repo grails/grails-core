@@ -1,10 +1,9 @@
 package org.grails.plugins.i18n;
 
 import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
 import org.codehaus.groovy.grails.plugins.*
 import grails.util.Metadata
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 
 class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 

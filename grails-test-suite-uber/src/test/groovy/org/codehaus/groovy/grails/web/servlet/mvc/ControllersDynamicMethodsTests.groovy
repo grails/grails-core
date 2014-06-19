@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.MockHttpServletResponse
 
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.*
 import grails.web.util.GrailsApplicationAttributes

@@ -7,7 +7,7 @@ import groovy.sql.Sql
 import javax.sql.DataSource
 
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy

@@ -21,9 +21,8 @@ import grails.util.Holders
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
-import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
 import grails.build.logging.GrailsConsole
 

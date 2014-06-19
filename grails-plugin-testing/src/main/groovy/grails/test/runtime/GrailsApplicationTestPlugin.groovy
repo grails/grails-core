@@ -35,14 +35,14 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
+import org.grails.web.servlet.context.GrailsConfigUtils;
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.springframework.beans.CachedIntrospectionResults

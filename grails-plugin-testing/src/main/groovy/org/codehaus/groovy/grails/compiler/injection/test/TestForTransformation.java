@@ -66,7 +66,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import grails.web.servlet.context.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.grails.compiler.logging.LoggingTransformer;

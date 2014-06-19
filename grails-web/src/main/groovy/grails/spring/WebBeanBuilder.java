@@ -16,7 +16,7 @@
 package grails.spring;
 
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration;
 import org.springframework.context.ApplicationContext;
 
 /**

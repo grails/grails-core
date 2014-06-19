@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.plugins.services
 
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockHibernateGrailsPlugin

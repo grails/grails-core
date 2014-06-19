@@ -19,14 +19,14 @@ import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
+import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 /**

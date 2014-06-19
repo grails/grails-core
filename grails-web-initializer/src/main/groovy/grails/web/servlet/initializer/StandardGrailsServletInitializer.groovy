@@ -19,11 +19,11 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplicationFactoryBean
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
-import org.codehaus.groovy.grails.web.context.GrailsContextLoaderListener
+import org.grails.web.servlet.context.GrailsContextLoaderListener
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.springframework.util.Assert
 import org.springframework.util.ObjectUtils

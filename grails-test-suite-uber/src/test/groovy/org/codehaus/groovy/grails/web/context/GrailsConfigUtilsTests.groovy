@@ -1,12 +1,14 @@
 package org.codehaus.groovy.grails.web.context
 
+import org.grails.web.servlet.context.GrailsConfigUtils
+
 import javax.servlet.ServletContext
 
 import grails.util.Environment
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockServletContext

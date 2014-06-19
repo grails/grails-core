@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 

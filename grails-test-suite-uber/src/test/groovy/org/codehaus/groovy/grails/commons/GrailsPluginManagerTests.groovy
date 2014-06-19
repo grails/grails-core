@@ -2,10 +2,10 @@ package org.codehaus.groovy.grails.commons
 
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.*
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.beans.propertyeditors.ClassEditor
 import org.springframework.context.ApplicationContext
-import org.springframework.core.io.Resource
 import org.springframework.web.servlet.i18n.CookieLocaleResolver
 
 class GrailsPluginManagerTests extends AbstractGrailsMockTests {
@@ -142,7 +142,7 @@ hibernate {
         def parent = createMockApplicationContext()
         parent.registerMockBean("grailsApplication", ga)
 
-        def springConfig = new org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration(parent)
+        def springConfig = new WebRuntimeSpringConfiguration(parent)
         springConfig.servletContext = createMockServletContext()
         manager.doRuntimeConfiguration(springConfig)
 
@@ -158,7 +158,7 @@ hibernate {
 
         def parent = createMockApplicationContext()
         parent.registerMockBean("grailsApplication", ga)
-        def springConfig = new org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration(parent)
+        def springConfig = new WebRuntimeSpringConfiguration(parent)
         springConfig.servletContext = createMockServletContext()
 
         manager.doRuntimeConfiguration(springConfig)
