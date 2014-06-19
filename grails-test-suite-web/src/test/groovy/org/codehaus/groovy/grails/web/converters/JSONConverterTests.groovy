@@ -7,6 +7,7 @@ import grails.persistence.Entity
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
 import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.core.JdkVersion
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
@@ -104,6 +105,25 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
     }
     
+    void testGStringsWithQuotes() {
+        def json = [quotedString: "I contain a \"${'Quote'}\"!", nonquotedString: "I ${'don'}'t!"] as JSON
+        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+    }
+
+    void testStreamCharBufferWithQuotes() {
+        def quotedBuffer = new StreamCharBuffer()
+        quotedBuffer.writer << "I contain a \"Quote\"!"
+        def nonquotedBuffer = new StreamCharBuffer()
+        nonquotedBuffer.writer << "I don't!"
+        def json = [quotedString: quotedBuffer, nonquotedString: nonquotedBuffer] as JSON
+        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+    }
+    
+    void testObjectWithQuotes() {
+        def json = [quotedString: new CustomCharSequence("I contain a \"Quote\"!"), nonquotedString: new CustomCharSequence("I don't!")] as JSON
+        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+    }
+
     // GRAILS-11515
     void testJsonMultilineSerialization() {
         String multiLine = "first line \n second line"
@@ -159,4 +179,32 @@ class Book {
    Long version
    String title
    String author
+}
+
+class CustomCharSequence implements CharSequence {
+    String source
+    
+    CustomCharSequence(String source) {
+        this.source = source
+    }
+    
+    @Override
+    public int length() {
+        source.length()
+    }
+
+    @Override
+    public char charAt(int index) {
+        source.charAt(index)
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        source.subSequence(start, end)
+    }
+    
+    @Override
+    public String toString() {
+        source
+    }
 }
