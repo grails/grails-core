@@ -23,11 +23,10 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource

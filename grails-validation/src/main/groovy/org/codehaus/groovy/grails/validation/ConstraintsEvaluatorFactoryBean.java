@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.validation;
 
 import java.util.Map;
 
+import grails.validation.ConstraintsEvaluator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;

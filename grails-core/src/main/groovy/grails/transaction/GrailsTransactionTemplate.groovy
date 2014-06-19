@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.orm.support
+package grails.transaction
 
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.transaction.GrailsTransactionAttribute
+import org.grails.transaction.GrailsTransactionAttribute
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionException
@@ -33,6 +33,8 @@ import org.springframework.transaction.support.TransactionTemplate
  * transaction exception handling.
  *
  * @author Kazuki YAMAMOTO
+ * @author Graeme Rocher
+ * @since 2.4
  */
 @CompileStatic
 class GrailsTransactionTemplate {
@@ -124,7 +126,7 @@ class GrailsTransactionTemplate {
      * Internal holder class for a Throwable, used as a return value
      * from a TransactionCallback (to be subsequently unwrapped again).
      */
-    static class ThrowableHolder {
+    private static class ThrowableHolder {
 
         private final Throwable throwable;
 
@@ -141,7 +143,7 @@ class GrailsTransactionTemplate {
      * Internal holder class for a Throwable, used as a RuntimeException to be
      * thrown from a TransactionCallback (and subsequently unwrapped again).
      */
-    static class ThrowableHolderException extends RuntimeException {
+    private static class ThrowableHolderException extends RuntimeException {
 
         ThrowableHolderException(Throwable throwable) {
             super(throwable);

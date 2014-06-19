@@ -4,7 +4,7 @@ import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 import grails.util.ClosureToMapPopulator
 
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 
 import spock.lang.Issue

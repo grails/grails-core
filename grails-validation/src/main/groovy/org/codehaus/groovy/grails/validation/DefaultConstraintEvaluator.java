@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.validation;
 
 import grails.validation.Constrained;
+import grails.validation.ConstraintsEvaluator;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
@@ -41,14 +42,14 @@ import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 
 /**
- * Default implementation of the {@link ConstraintsEvaluator} interface.
+ * Default implementation of the {@link grails.validation.ConstraintsEvaluator} interface.
  *
  * TODO: Subclass this to add hibernate-specific exceptions!
  *
  * @author Graeme Rocher
  * @since 2.0
  */
-public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
+public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.codehaus.groovy.grails.validation.ConstraintsEvaluator {
 
     private static final Log LOG = LogFactory.getLog(DefaultConstraintEvaluator.class);
     private Map<String, Object> defaultConstraints;

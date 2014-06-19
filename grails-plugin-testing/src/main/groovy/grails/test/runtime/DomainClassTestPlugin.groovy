@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.grails.datastore.gorm.events.AutoTimestampEventListener
 import org.grails.datastore.gorm.events.DomainEventListener

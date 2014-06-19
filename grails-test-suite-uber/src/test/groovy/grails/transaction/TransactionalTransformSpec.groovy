@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct
 import javax.sql.DataSource
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
@@ -44,7 +43,7 @@ class TransactionalTransformSpec extends Specification {
         when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
             def bookService = new GroovyShell().evaluate('''
     import grails.transaction.*
-    import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+    import grails.transaction.TransactionManagerAware
     import org.springframework.transaction.PlatformTransactionManager
     import org.springframework.transaction.TransactionStatus
     import org.springframework.transaction.annotation.Isolation
@@ -112,7 +111,7 @@ class TransactionalTransformSpec extends Specification {
         when:"A new instance of a class with a @Transactional method is created"
         def bookService = new GroovyShell().evaluate('''
 import grails.transaction.*
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import grails.transaction.TransactionManagerAware
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.annotation.Isolation
@@ -180,7 +179,7 @@ new BookService()
         when:"A new instance of a class with a @Transactional method is created"
         def bookService = new GroovyShell().evaluate('''
 import grails.transaction.*
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import grails.transaction.TransactionManagerAware
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.annotation.Isolation
@@ -242,7 +241,7 @@ new BookService()
         when:"A new instance of a class with a @Transactional method is created"
             def bookService = new GroovyShell().evaluate('''
 import grails.transaction.*
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import grails.transaction.TransactionManagerAware
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.annotation.Isolation
@@ -306,7 +305,7 @@ new BookService()
         when:"A new instance of a class with a @Transactional method is created"
             def bookService = new GroovyShell().evaluate('''
 import grails.transaction.*
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import grails.transaction.TransactionManagerAware
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.annotation.Isolation
@@ -360,7 +359,7 @@ new BookService()
         when:"A new instance of a class with a @Transactional method is created"
             def bookService = new GroovyShell().evaluate('''
 import grails.transaction.*
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import grails.transaction.TransactionManagerAware
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.annotation.Isolation
@@ -483,7 +482,7 @@ new BookService()
         given:
             def bookService = new GroovyShell().evaluate('''
     import grails.transaction.*
-    import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+    import grails.transaction.TransactionManagerAware
     import org.springframework.transaction.PlatformTransactionManager
     import org.springframework.transaction.TransactionStatus
     import org.springframework.transaction.annotation.Isolation
@@ -516,7 +515,7 @@ new BookService()
         given:
             def bookService = new GroovyShell().evaluate('''
     import grails.transaction.*
-    import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+    import grails.transaction.TransactionManagerAware
     import org.springframework.transaction.PlatformTransactionManager
     import org.springframework.transaction.TransactionStatus
     import org.springframework.transaction.annotation.Isolation

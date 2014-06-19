@@ -35,7 +35,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.grails.compiler.injection.GrailsASTUtils
 import org.grails.compiler.web.async.TransactionalAsyncTransformUtils
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import grails.transaction.TransactionManagerAware
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.springframework.transaction.PlatformTransactionManager

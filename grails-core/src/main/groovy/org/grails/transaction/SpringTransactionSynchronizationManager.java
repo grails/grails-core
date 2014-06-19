@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.transaction;
+package org.grails.transaction;
 
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -30,7 +30,7 @@ enum SpringTransactionSynchronizationManager implements SynchronizationManager {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.transaction.SynchronizationManager#initSynchronization()
+	 * @see org.grails.transaction.SynchronizationManager#initSynchronization()
 	 */
 	public void initSynchronization() {
 		TransactionSynchronizationManager.initSynchronization();
@@ -38,7 +38,7 @@ enum SpringTransactionSynchronizationManager implements SynchronizationManager {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.transaction.SynchronizationManager#isSynchronizationActive()
+	 * @see org.grails.transaction.SynchronizationManager#isSynchronizationActive()
 	 */
 	public boolean isSynchronizationActive() {
 		return TransactionSynchronizationManager.isSynchronizationActive();
@@ -46,7 +46,7 @@ enum SpringTransactionSynchronizationManager implements SynchronizationManager {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.codehaus.groovy.grails.transaction.SynchronizationManager#clearSynchronization()
+	 * @see org.grails.transaction.SynchronizationManager#clearSynchronization()
 	 */
 	public void clearSynchronization() {
 		TransactionSynchronizationManager.clear();

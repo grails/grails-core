@@ -28,8 +28,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import org.grails.validation.ConstraintEvalUtils
+import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext

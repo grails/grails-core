@@ -22,7 +22,7 @@ import grails.validation.ValidationErrors
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.springframework.context.ApplicationContext

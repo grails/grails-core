@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.orm.support
 
 import grails.spring.BeanBuilder
-
+import grails.transaction.TransactionManagerAware
+import org.grails.transaction.TransactionManagerPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.PlatformTransactionManager

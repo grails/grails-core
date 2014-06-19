@@ -41,7 +41,7 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration;
 import org.grails.core.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.grails.validation.ConstraintEvalUtils
 import org.grails.web.servlet.context.GrailsConfigUtils;
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.async.factory.SynchronousPromiseFactory

@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.orm.support;
+package org.grails.transaction;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.transaction.TransactionManagerAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -28,7 +29,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 
 /**
- * Injects the platform transaction manager into beans that implement {@link TransactionManagerAware}.
+ * Injects the platform transaction manager into beans that implement {@link grails.transaction.TransactionManagerAware}.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -54,7 +55,7 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
 
     /**
      * Injects the platform transaction manager into the given bean if
-     * that bean implements the {@link TransactionManagerAware} interface.
+     * that bean implements the {@link grails.transaction.TransactionManagerAware} interface.
      * @param bean The bean to process.
      * @param name The name of the bean.
      * @return The bean after the transaction manager has been injected.

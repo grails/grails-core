@@ -1,9 +1,7 @@
 package grails.async.services
 
 import grails.async.DelegateAsync
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
-import org.grails.datastore.mapping.simple.SimpleMapDatastore
-import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
+import grails.transaction.TransactionManagerAware
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionException

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.transaction.transform
+package org.grails.transaction.transform
 
 import org.codehaus.groovy.ast.stmt.Statement
 
@@ -37,9 +37,9 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.grails.compiler.injection.GrailsASTUtils
 import org.grails.compiler.injection.GrailsArtefactClassInjector
-import org.codehaus.groovy.grails.orm.support.GrailsTransactionTemplate
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
-import org.codehaus.groovy.grails.transaction.GrailsTransactionAttribute
+import grails.transaction.GrailsTransactionTemplate
+import grails.transaction.TransactionManagerAware
+import org.grails.transaction.GrailsTransactionAttribute
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation

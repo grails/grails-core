@@ -65,7 +65,7 @@ import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.io.DefaultResourceLocator
 import org.grails.core.io.ResourceLocator
-import org.codehaus.groovy.grails.transaction.transform.TransactionalTransform
+import org.grails.transaction.transform.TransactionalTransform
 import grails.web.mapping.UrlMappings
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types

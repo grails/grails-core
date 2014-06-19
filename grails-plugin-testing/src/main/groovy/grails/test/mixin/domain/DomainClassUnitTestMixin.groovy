@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.grails.validation.ConstraintEvalUtils
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore

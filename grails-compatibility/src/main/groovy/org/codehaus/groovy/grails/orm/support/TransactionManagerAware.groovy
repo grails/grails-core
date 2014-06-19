@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2013 the original author or authors.
+ * Copyright 2004-2006 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.codehaus.groovy.grails.transaction;
+package org.codehaus.groovy.grails.orm.support
 
 /**
- * Strategy interface to allow providing a dedicated synchronization mechanism.
- * 
- * @author Michael Hunger
- * @author Oliver Gierke
- * @see SpringTransactionSynchronizationManager
- * @since 2.3.6
+ * @author Graeme Rocher
+ * @since 0.4
+ * @deprecated Use {@link grails.transaction.TransactionManagerAware} instead
  */
-interface SynchronizationManager {
+@Deprecated
+public interface TransactionManagerAware extends grails.transaction.TransactionManagerAware {
 
-	void initSynchronization();
-
-	boolean isSynchronizationActive();
-
-	void clearSynchronization();
 }

@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.transaction;
+package org.grails.transaction;
 
 import java.util.List;
 

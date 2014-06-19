@@ -27,8 +27,8 @@ import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
-import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
-import org.codehaus.groovy.grails.transaction.ChainedTransactionManagerPostProcessor
+import org.grails.transaction.TransactionManagerPostProcessor
+import org.grails.transaction.ChainedTransactionManagerPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy

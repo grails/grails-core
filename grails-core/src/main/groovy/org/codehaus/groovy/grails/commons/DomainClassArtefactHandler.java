@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils;
+import org.grails.validation.ConstraintEvalUtils;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.

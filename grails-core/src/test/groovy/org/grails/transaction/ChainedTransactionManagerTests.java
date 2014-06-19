@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.transaction;
+package org.grails.transaction;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.codehaus.groovy.grails.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.*;
-import static org.codehaus.groovy.grails.transaction.ChainedTransactionManagerTests.TransactionManagerMatcher.*;
+import static org.grails.transaction.ChainedTransactionManagerTests.TestPlatformTransactionManager.*;
+import static org.grails.transaction.ChainedTransactionManagerTests.TransactionManagerMatcher.*;
 import static org.springframework.transaction.HeuristicCompletionException.*;
 
 import org.hamcrest.Description;

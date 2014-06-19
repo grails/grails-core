@@ -42,7 +42,7 @@ import java.util.TimeZone;
 
 import grails.validation.Constrained;
 import org.grails.core.io.support.GrailsFactoriesLoader;
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
+import grails.validation.ConstraintsEvaluator;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 
@@ -357,7 +357,7 @@ public class GrailsDomainConfigurationUtil {
      *
      * @return A Map of constraints
      *
-     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
+     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
     public static Map<String, Constrained> evaluateConstraints(Object instance,
@@ -383,7 +383,7 @@ public class GrailsDomainConfigurationUtil {
      *
      * @return A Map of constraints
      *
-     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
+     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
     public static Map<String, Constrained> evaluateConstraints(final Class<?> theClass,
@@ -399,7 +399,7 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
+     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
     public static Map<String, Constrained> evaluateConstraints(Object instance,
@@ -414,7 +414,7 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
+     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
     public static Map<String, Constrained> evaluateConstraints(Object instance) {
@@ -428,7 +428,7 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
+     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
     public static Map<String, Constrained> evaluateConstraints(Class<?> theClass) {
@@ -442,7 +442,7 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
+     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
     public static Map<String, Constrained> evaluateConstraints(Class<?> theClass,

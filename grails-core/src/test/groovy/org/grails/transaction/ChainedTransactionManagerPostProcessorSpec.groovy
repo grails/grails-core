@@ -1,9 +1,6 @@
-package org.codehaus.groovy.grails.transaction
+package org.grails.transaction
 
 import grails.spring.BeanBuilder
-
-import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
-
 import spock.lang.Specification
 
 class ChainedTransactionManagerPostProcessorSpec extends Specification {
