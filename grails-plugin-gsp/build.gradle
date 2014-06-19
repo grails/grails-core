@@ -12,7 +12,8 @@ configurations {
 dependencies {
     compile sourceSets.ast.output,
             project(":grails-plugin-codecs"),
-            project(":grails-logging")
+            project(":grails-logging"),
+            project(":grails-web-gsp-taglib")
 
     astCompile project(":grails-web"),
                project(":grails-plugin-controllers")
