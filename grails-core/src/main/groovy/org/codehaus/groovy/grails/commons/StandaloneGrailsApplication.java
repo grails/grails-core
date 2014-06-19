@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactHandler;
+import grails.core.ArtefactInfo;
+import grails.core.GrailsClass;
 import groovy.util.ConfigObject;
 
 import org.springframework.beans.BeansException;

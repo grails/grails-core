@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.core.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
 import org.grails.validation.ConstraintEvalUtils

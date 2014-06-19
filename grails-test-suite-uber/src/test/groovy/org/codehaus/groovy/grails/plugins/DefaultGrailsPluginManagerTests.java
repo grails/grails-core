@@ -8,7 +8,7 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 
 public class DefaultGrailsPluginManagerTests extends TestCase {

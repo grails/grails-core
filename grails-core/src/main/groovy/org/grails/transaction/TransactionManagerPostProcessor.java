@@ -15,7 +15,7 @@
  */
 package org.grails.transaction;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import grails.transaction.TransactionManagerAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;

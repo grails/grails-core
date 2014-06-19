@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.InjectableGrailsClass;
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 
 /**

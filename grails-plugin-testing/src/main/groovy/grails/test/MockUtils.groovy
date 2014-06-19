@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.core.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest

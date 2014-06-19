@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.util
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-
 import spock.lang.Specification
 
 class WithCodecHelperSpec extends Specification {

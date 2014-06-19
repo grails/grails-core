@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsClass;
+import grails.core.GrailsDomainClass;
+
 import java.util.HashSet;
 import java.util.Set;
 

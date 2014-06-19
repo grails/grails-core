@@ -18,7 +18,7 @@ package org.grails.web.servlet.context.support;
 import javax.servlet.ServletContext;
 
 import grails.web.servlet.context.GrailsWebApplicationContext;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;

@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.commons
 
+import grails.core.GrailsDomainClass
+import grails.core.GrailsDomainClassProperty
 import grails.exceptions.InvalidPropertyException
 
  /**

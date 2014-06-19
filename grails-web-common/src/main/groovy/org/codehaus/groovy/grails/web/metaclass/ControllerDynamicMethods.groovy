@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.metaclass
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**

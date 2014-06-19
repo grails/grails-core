@@ -23,7 +23,7 @@ import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.NullObject;

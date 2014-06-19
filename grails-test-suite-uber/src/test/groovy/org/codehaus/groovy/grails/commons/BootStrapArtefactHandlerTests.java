@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactHandler;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 import org.grails.web.servlet.boostrap.BootstrapArtefactHandler;

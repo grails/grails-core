@@ -21,8 +21,8 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import grails.core.GrailsClass
+import grails.core.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi

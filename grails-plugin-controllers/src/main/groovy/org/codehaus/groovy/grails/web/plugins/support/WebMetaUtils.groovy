@@ -19,7 +19,7 @@ import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 import grails.validation.ValidationErrors
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import grails.validation.ConstraintsEvaluator

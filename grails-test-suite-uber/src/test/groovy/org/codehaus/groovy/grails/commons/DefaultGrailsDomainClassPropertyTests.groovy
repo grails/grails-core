@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.commons
 
-import groovy.util.GroovyTestCase
+import grails.core.GrailsDomainClass
+import grails.core.GrailsDomainClassProperty
 
 class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
     GrailsDomainClass parentClass

@@ -1,6 +1,6 @@
 package sharedruntimetest
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 
 class SharedRuntimeCheck {
     static GrailsApplication previousGrailsApplication

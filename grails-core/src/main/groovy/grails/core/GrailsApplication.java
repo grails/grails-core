@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
+package grails.core;
 
 import grails.util.Environment;
 import grails.util.Metadata;
@@ -30,7 +30,7 @@ import org.springframework.core.io.Resource;
  * main purpose is to provide a mechanism for analysing the conventions within a Grails
  * application as well as providing metadata and information about the execution environment.
  *
- * <p>The GrailsApplication interface interfacts with {@link org.codehaus.groovy.grails.commons.ArtefactHandler} instances
+ * <p>The GrailsApplication interface interfacts with {@link ArtefactHandler} instances
  * which are capable of analysing different artefact types (controllers, domain classes etc.) and introspecting
  * the artefact conventions
  *

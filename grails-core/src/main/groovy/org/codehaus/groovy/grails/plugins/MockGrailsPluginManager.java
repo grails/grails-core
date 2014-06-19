@@ -19,17 +19,14 @@ import grails.util.BuildSettings;
 import grails.util.PluginBuildSettings;
 import groovy.lang.GroovyClassLoader;
 
-import java.io.File;
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
-import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
 /**

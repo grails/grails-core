@@ -33,7 +33,7 @@ import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory;

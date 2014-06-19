@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins
 
 import grails.persistence.Entity
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.core.GrailsDomainClass
 import spock.lang.Specification
 
 class AddToSpec extends Specification {

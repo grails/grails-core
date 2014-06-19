@@ -15,7 +15,7 @@
  */
 package org.grails.web.mapping.mvc
 
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import grails.core.GrailsControllerClass
 import grails.web.mapping.UrlMappingInfo
 
 /**

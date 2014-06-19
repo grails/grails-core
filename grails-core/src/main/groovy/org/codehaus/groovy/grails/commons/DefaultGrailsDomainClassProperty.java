@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ComponentCapableDomainClass;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsNameUtils;
 
 import java.beans.PropertyDescriptor;
@@ -41,7 +44,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
+public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty, org.codehaus.groovy.grails.commons.GrailsDomainClassProperty {
 
     private GrailsDomainClass domainClass;
     private boolean persistent = true; // persistant by default
@@ -256,14 +259,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getDomainClass()
+     * @see grails.core.GrailsDomainClassProperty#getDomainClass()
      */
     public GrailsDomainClass getDomainClass() {
         return domainClass;
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#isManyToMany()
+     * @see grails.core.GrailsDomainClassProperty#isManyToMany()
      */
     public boolean isManyToMany() {
         return manyToMany;
@@ -327,7 +330,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getTypePropertyName()
+     * @see grails.core.GrailsDomainClassProperty#getTypePropertyName()
      */
     public String getTypePropertyName() {
         String shortTypeName = ClassUtils.getShortName(type);
@@ -335,7 +338,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getReferencedPropertyType()
+     * @see grails.core.GrailsDomainClassProperty#getReferencedPropertyType()
      */
     @SuppressWarnings("rawtypes")
     public Class getReferencedPropertyType() {
@@ -352,7 +355,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#isBidirectional()
+     * @see grails.core.GrailsDomainClassProperty#isBidirectional()
      */
     public boolean isBidirectional() {
         return bidirectional;
@@ -366,7 +369,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#isAssociation()
+     * @see grails.core.GrailsDomainClassProperty#isAssociation()
      */
     public GrailsDomainClass getReferencedDomainClass() {
         return referencedDomainClass;
@@ -380,7 +383,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#isAssociation()
+     * @see grails.core.GrailsDomainClassProperty#isAssociation()
      */
     public boolean isAssociation() {
         return isOneToMany() ||
@@ -431,7 +434,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getOtherSide()
+     * @see grails.core.GrailsDomainClassProperty#getOtherSide()
      */
     public GrailsDomainClassProperty getOtherSide() {
         return otherSide;

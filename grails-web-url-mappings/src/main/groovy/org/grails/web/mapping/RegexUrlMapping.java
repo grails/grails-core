@@ -40,7 +40,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import grails.core.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.VersionComparator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;

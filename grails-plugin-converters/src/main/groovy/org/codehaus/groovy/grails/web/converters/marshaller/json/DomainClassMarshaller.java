@@ -32,9 +32,9 @@ import java.util.TreeSet;
 
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsApplication;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;

@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
+package grails.core;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Represents a controller class in Grails.
  *
  * @author Steven Devijver
+ * @author Graeme Rocher
+ *
+ * @since 1.0
  */
 public interface GrailsControllerClass extends InjectableGrailsClass {
 
@@ -85,5 +83,13 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      */
     void initialize();
 
+    /**
+     * Invokes a controller action on the given controller instance
+     *
+     * @param controller The controller instance
+     * @param action The action
+     * @return The result of the action
+     * @throws Throwable Thrown when an error occurs invoking the action
+     */
     Object invoke(Object controller, String action) throws Throwable;
 }

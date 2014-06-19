@@ -12,7 +12,7 @@ import java.io.InputStream;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;

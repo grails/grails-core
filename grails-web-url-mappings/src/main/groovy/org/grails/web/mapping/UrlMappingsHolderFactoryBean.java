@@ -15,6 +15,10 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import grails.core.GrailsControllerClass;
+import grails.core.GrailsUrlMappingsClass;
 import grails.web.mapping.UrlMappings;
 import groovy.lang.Script;
 

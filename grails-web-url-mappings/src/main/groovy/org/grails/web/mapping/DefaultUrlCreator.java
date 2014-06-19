@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import grails.web.mapping.UrlCreator;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import grails.core.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy;

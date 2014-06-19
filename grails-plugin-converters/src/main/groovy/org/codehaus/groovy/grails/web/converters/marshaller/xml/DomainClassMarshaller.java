@@ -19,6 +19,9 @@ import grails.converters.XML;
 
 import java.util.*;
 
+import grails.core.GrailsApplication;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;

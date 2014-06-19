@@ -19,7 +19,7 @@ package grails.test.runtime
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.validation.ConstrainedProperty

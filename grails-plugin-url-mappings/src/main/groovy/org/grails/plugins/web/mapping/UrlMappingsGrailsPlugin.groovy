@@ -21,7 +21,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.grails.web.mapping.CachingLinkGenerator

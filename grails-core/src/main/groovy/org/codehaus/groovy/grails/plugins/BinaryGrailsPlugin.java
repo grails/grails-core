@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.springframework.core.io.Resource;
 
 /**

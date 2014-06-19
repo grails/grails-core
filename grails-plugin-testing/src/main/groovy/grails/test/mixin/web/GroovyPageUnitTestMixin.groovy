@@ -20,7 +20,7 @@ import grails.artefact.Enhanced
 import groovy.text.Template
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
+import grails.core.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi

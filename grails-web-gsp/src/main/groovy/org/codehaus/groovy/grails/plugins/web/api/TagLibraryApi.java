@@ -26,8 +26,8 @@ import groovy.lang.MissingPropertyException;
 import java.io.Writer;
 import java.util.List;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import grails.core.GrailsApplication;
+import grails.core.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;

@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.core.GrailsApplication
+import grails.core.GrailsClass
+import grails.core.GrailsTagLibClass
 import grails.gsp.PageRenderer
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder

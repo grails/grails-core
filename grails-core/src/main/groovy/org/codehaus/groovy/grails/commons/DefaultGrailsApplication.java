@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.*;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
@@ -56,8 +57,8 @@ import org.springframework.util.StringUtils;
  *
  * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager
  * @see org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
- * @see org.codehaus.groovy.grails.commons.ArtefactHandler
- * @see org.codehaus.groovy.grails.commons.ArtefactInfo
+ * @see grails.core.ArtefactHandler
+ * @see grails.core.ArtefactInfo
  * @since 0.1
  */
 public class DefaultGrailsApplication extends AbstractGrailsApplication implements GrailsApplication, BeanClassLoaderAware {
@@ -158,7 +159,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     /**
      * Initialises the default set of ArtefactHandler instances.
      *
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     protected void initArtefactHandlers() {
 
@@ -402,7 +403,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @param artefactType The type of the artefact
      * @param theClazz     The class
      * @return true if it is of the specified artefactType
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     public boolean isArtefactOfType(String artefactType, @SuppressWarnings("rawtypes") Class theClazz) {
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
@@ -420,7 +421,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @param artefactType The type of the artefact
      * @param className    The class name
      * @return true if it is of the specified artefactType
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     public boolean isArtefactOfType(String artefactType, String className) {
         return getArtefact(artefactType, className) != null;
@@ -475,7 +476,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @param artefactClass A Class instance that matches the type defined by the ArtefactHandler
      * @return The GrailsClass if successful or null if it couldn't be added
      * @throws GrailsConfigurationException If the specified Class is not the same as the type defined by the ArtefactHandler
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     public GrailsClass addArtefact(String artefactType, @SuppressWarnings("rawtypes") Class artefactClass) {
         return addArtefact(artefactType, artefactClass, false);
@@ -488,7 +489,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @param artefactGrailsClass A GrailsClass instance that matches the type defined by the ArtefactHandler
      * @return The GrailsClass if successful or null if it couldn't be added
      * @throws GrailsConfigurationException If the specified GrailsClass is not the same as the type defined by the ArtefactHandler
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     public GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass) {
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
@@ -723,7 +724,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @param artefactClass A Class instance that matches the type defined by the ArtefactHandler
      * @return The GrailsClass if successful or null if it couldn't be added
      * @throws GrailsConfigurationException If the specified Class is not the same as the type defined by the ArtefactHandler
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     public GrailsClass addOverridableArtefact(String artefactType, @SuppressWarnings("rawtypes") Class artefactClass) {
         return addArtefact(artefactType, artefactClass, true);

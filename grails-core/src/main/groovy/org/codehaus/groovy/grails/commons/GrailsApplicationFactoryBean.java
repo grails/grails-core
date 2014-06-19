@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsApplication;
 import grails.util.Environment;
 import grails.util.Holders;
 import groovy.util.slurpersupport.GPathResult;

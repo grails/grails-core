@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.*;
 import grails.persistence.Entity;
 import grails.util.Environment;
 import groovy.lang.Closure;

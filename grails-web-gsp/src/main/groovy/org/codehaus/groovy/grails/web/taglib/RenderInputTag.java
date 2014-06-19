@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import grails.core.GrailsDomainClass;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import grails.web.util.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;

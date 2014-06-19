@@ -15,14 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import grails.util.Environment;
-
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
-import org.springframework.context.ApplicationContext;
-
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import grails.core.GrailsClass;
+import grails.core.GrailsControllerClass;
 
 /**
  * Lookup controllers for uris.

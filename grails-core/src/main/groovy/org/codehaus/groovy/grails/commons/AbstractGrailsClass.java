@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.web.Action;
@@ -45,7 +47,7 @@ import java.lang.reflect.Modifier;
  *
  * @since 0.1
  */
-public abstract class AbstractGrailsClass implements GrailsClass {
+public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.groovy.grails.commons.GrailsClass {
 
     private final Class<?> clazz;
     private BeanWrapper reference;
@@ -287,7 +289,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsClass#getPropertyValue(java.lang.String)
+     * @see grails.core.GrailsClass#getPropertyValue(java.lang.String)
      */
     public Object getPropertyValue(String propName) {
         return getPropertyOrStaticPropertyOrFieldValue(propName, Object.class);
@@ -299,7 +301,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     /* (non-Javadoc)
-    * @see org.codehaus.groovy.grails.commons.GrailsClass#hasProperty(java.lang.String)
+    * @see grails.core.GrailsClass#hasProperty(java.lang.String)
     */
     public boolean hasProperty(String propName) {
         return classPropertyFetcher.isReadableProperty(propName);

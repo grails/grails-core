@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertNotNull
 import junit.framework.AssertionFailedError
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import grails.core.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder

@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactHandler;
+import grails.core.GrailsApplication;
 import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyObjectSupport;
@@ -33,7 +35,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ClassUtils;
 
-abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware {
+abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, org.codehaus.groovy.grails.commons.GrailsApplication {
     protected ClassLoader classLoader;
     protected ConfigObject config;
     @SuppressWarnings("rawtypes")

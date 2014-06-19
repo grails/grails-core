@@ -18,6 +18,9 @@ package org.codehaus.groovy.grails.commons;
 import java.util.HashMap;
 import java.util.Map;
 
+import grails.core.ArtefactInfo;
+import grails.core.GrailsClass;
+import grails.core.GrailsTagLibClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

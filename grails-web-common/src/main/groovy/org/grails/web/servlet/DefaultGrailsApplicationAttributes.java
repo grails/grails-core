@@ -29,9 +29,9 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import grails.core.GrailsApplication;
+import grails.core.GrailsControllerClass;
+import grails.core.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.grails.web.support.ResourceAwareTemplateEngine;

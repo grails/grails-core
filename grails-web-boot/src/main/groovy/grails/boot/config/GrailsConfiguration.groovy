@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 /**
  * A Grails configuration that scans for classes using the packages defined by the packages() method and creates the necessary
- * {@link org.codehaus.groovy.grails.commons.GrailsApplication} and {@link org.codehaus.groovy.grails.plugins.GrailsPluginManager} beans
+ * {@link grails.core.GrailsApplication} and {@link org.codehaus.groovy.grails.plugins.GrailsPluginManager} beans
  * that constitute a Grails application.
  *
  * @see GrailsApplicationPostProcessor

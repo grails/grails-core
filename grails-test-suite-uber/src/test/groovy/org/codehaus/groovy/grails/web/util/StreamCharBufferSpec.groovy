@@ -17,11 +17,10 @@ package org.codehaus.groovy.grails.web.util
 import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
-import org.codehaus.groovy.grails.plugins.codecs.HTMLEncoder
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder

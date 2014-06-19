@@ -37,8 +37,8 @@ import javax.servlet.jsp.tagext.BodyContent;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 import javax.servlet.jsp.tagext.DynamicAttributes;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import grails.core.GrailsApplication;
+import grails.core.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;

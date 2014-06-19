@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.commons.events
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsClass
+import grails.core.GrailsClass
 import org.springframework.context.ApplicationEvent
 
 /**

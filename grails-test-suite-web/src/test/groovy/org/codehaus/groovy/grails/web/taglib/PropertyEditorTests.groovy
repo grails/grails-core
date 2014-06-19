@@ -2,13 +2,11 @@ package org.codehaus.groovy.grails.web.taglib
 
 import java.beans.PropertyEditorSupport
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
-import org.springframework.beans.factory.config.ConstructorArgumentValues
-import org.springframework.beans.factory.support.RootBeanDefinition
 
- /**
+/**
  * @author Graeme Rocher
  * @since 1.1.1
  */

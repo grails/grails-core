@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
-import org.codehaus.groovy.grails.commons.GrailsServiceClass
+import grails.core.GrailsServiceClass
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.grails.transaction.GroovyAwareNamedTransactionAttributeSource

@@ -23,14 +23,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
-import org.w3c.dom.Element;
 
 /**
  * <p>Plugin interface that adds Spring {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -343,7 +342,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * Called prior to the initialisation of the GrailsApplication instance to allow the registration
      * of additonal ArtefactHandlers
      *
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      *
      */
     void doArtefactConfiguration();

@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.ApplicationAttributes;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;

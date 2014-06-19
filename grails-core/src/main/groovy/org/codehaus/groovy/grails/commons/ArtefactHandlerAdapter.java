@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactHandler;
+import grails.core.ArtefactInfo;
+import grails.core.GrailsClass;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Constructor;
@@ -25,9 +28,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Adapter for the {@link grails.core.ArtefactHandler} interface
+ *
  * @author Marc Palmer (marc@anyware.co.uk)
+ * @author Graeme Rocher
+ * @since 1.0
  */
-public class ArtefactHandlerAdapter implements ArtefactHandler {
+public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.groovy.grails.commons.ArtefactHandler {
 
     private String type;
     private Class<?> grailsClassType;

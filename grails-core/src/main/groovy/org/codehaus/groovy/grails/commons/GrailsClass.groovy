@@ -13,33 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.commons
 
 /**
- * Represents a Grails class that is to be configured in Spring and as such is injectable.
+ * @author Graeme Rocher
+ * @deprecated Use {@link grails.core.GrailsClass} instead
  *
- * @author Steven Devijver
  */
-public interface InjectableGrailsClass extends GrailsClass {
-
-    /**
-     * If autowiring by name is enabled.
-     *
-     * @return autowiring by name
-     */
-    boolean byName();
-
-    /**
-     * If autowiring by type is enabled.
-     *
-     * @return autowiring by type
-     */
-    boolean byType();
-
-    /**
-     * If class should be configured for dependency injection.
-     *
-     * @return available for dependency injection
-     */
-    boolean getAvailable();
+@Deprecated
+public interface GrailsClass extends grails.core.GrailsClass{
 }

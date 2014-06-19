@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.support
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.context.ApplicationContext
 
 /**

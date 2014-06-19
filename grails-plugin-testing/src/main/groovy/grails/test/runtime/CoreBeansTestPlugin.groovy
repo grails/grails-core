@@ -19,7 +19,7 @@ package grails.test.runtime;
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer

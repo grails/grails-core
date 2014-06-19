@@ -19,7 +19,7 @@ import grails.test.GrailsMock
 import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.springframework.context.MessageSource

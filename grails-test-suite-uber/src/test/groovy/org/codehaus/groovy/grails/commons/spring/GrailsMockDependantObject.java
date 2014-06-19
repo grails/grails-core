@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.commons.spring;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 
 public class GrailsMockDependantObject {
 

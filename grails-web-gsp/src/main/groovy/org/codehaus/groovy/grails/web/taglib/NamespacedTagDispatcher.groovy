@@ -18,8 +18,7 @@ package org.codehaus.groovy.grails.web.taglib
 import grails.util.Environment
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.web.pages.GroovyPage
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPagesMetaUtils
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils

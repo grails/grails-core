@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.test.support
 
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+import grails.core.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.transaction.PlatformTransactionManager

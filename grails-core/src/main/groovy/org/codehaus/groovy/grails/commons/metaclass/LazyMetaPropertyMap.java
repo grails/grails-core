@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.springframework.util.Assert;
 

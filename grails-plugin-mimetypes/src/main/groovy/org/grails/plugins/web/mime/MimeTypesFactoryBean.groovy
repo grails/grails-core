@@ -20,7 +20,7 @@ import groovy.transform.TypeCheckingMode
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeProvider
 import org.springframework.beans.factory.FactoryBean
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
 

@@ -18,8 +18,8 @@ import java.util.Comparator;
 import java.util.Map;
 
 import grails.validation.Constrained;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import org.springframework.util.Assert;
 
 /**

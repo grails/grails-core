@@ -19,11 +19,11 @@ import grails.artefact.Enhanced
 import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
 
-import org.codehaus.groovy.grails.commons.ComponentCapableDomainClass
+import grails.core.ComponentCapableDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.core.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner

@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder;
 import org.codehaus.groovy.grails.web.sitemesh.Grails5535Factory;

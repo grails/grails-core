@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.test.runner.phase
 import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher

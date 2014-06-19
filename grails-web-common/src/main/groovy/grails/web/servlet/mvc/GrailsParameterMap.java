@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.binding.StructuredDateEditor;

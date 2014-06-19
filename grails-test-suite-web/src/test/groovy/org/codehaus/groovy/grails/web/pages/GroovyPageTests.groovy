@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.grails.web.servlet.DefaultGrailsApplicationAttributes
 import grails.web.util.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests

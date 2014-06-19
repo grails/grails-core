@@ -24,7 +24,7 @@ import javax.sql.DataSource
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import grails.exceptions.GrailsConfigurationException
 import org.grails.transaction.TransactionManagerPostProcessor

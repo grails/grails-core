@@ -3,8 +3,8 @@ package org.codehaus.groovy.grails.web.pages
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsClass
+import grails.core.GrailsApplication
+import grails.core.GrailsClass
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource

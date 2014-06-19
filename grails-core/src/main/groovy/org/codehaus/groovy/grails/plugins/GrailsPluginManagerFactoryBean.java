@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;

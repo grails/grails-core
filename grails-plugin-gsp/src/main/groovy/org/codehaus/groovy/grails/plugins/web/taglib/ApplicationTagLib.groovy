@@ -20,7 +20,7 @@ import grails.util.GrailsUtil
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware

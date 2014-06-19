@@ -24,12 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
-import org.w3c.dom.Element;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -152,7 +151,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#setApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
+     * @see org.codehaus.groovy.grails.plugins.GrailsPlugin#setApplication(grails.core.GrailsApplication)
      */
     public void setApplication(GrailsApplication application) {
         this.application = application;

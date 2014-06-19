@@ -1,6 +1,6 @@
 package grails.test.runtime;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.context.ApplicationContext;

@@ -15,6 +15,10 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import grails.util.CollectionUtils;
 import groovy.lang.GroovyObject;
 

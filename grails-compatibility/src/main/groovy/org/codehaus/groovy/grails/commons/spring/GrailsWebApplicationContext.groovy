@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.commons.spring
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.context.ApplicationContext

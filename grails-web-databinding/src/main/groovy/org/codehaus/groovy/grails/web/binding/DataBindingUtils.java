@@ -33,9 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.ServletRequest;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsApplication;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import org.grails.web.binding.bindingsource.DataBindingSourceRegistry;
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry;
 import grails.web.mime.MimeType;
@@ -142,7 +142,7 @@ public class DataBindingUtils {
      * @param object The object to bind to
      * @param source The source object
      *
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass
+     * @see grails.core.GrailsDomainClass
      *
      * @return A BindingResult or null if it wasn't successful
      */
@@ -213,7 +213,7 @@ public class DataBindingUtils {
      * @param exclude The list of properties to exclude
      * @param filter The prefix to filter by
      *
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass
+     * @see grails.core.GrailsDomainClass
      *
      * @return A BindingResult or null if it wasn't successful
      */

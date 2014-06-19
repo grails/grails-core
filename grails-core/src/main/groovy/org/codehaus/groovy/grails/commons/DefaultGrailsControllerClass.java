@@ -15,12 +15,11 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsControllerClass;
 import grails.web.Action;
 import groovy.lang.GroovyObject;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -33,7 +32,7 @@ import java.util.*;
  * @since 0.1
  */
 @SuppressWarnings("rawtypes")
-public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass implements GrailsControllerClass {
+public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass implements GrailsControllerClass, org.codehaus.groovy.grails.commons.GrailsControllerClass {
 
     public static final String CONTROLLER = "Controller";
 

@@ -4,7 +4,7 @@ import grails.util.GrailsWebUtil
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.grails.compiler.injection.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.web.context.request.RequestContextHolder

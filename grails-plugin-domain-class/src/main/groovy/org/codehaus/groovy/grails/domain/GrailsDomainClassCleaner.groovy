@@ -1,12 +1,10 @@
 package org.codehaus.groovy.grails.domain
 
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Commons
 
 import java.lang.reflect.Modifier
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

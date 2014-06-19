@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.support.aware;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.springframework.beans.factory.Aware;
 
 /**

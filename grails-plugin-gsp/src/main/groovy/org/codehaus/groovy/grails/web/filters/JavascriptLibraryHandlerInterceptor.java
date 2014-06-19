@@ -21,7 +21,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

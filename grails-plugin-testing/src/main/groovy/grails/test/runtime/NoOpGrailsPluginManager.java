@@ -1,19 +1,17 @@
 package grails.test.runtime;
 
 import java.io.File;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 
 final class NoOpGrailsPluginManager implements GrailsPluginManager {

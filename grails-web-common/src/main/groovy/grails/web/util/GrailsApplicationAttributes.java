@@ -25,7 +25,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import grails.core.ApplicationAttributes;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import grails.web.pages.GroovyPagesUriService;
 import org.springframework.context.MessageSource;
@@ -36,7 +36,7 @@ import org.springframework.validation.Errors;
  *
  * @author Graeme Rocher
  */
-public interface GrailsApplicationAttributes extends ApplicationAttributes {
+public interface GrailsApplicationAttributes extends ApplicationAttributes, org.codehaus.groovy.grails.commons.ApplicationAttributes {
 
     String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";

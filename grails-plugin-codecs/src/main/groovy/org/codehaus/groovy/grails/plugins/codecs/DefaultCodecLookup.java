@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.context.ApplicationContext;

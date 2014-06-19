@@ -22,8 +22,8 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.core.GrailsApplication
+import grails.core.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi

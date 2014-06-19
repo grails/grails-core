@@ -24,10 +24,9 @@ import java.util.zip.ZipInputStream
 
 import javax.servlet.ServletContext
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.springframework.beans.factory.BeanClassLoaderAware
-import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.FileSystemResource

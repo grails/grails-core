@@ -7,10 +7,9 @@ import javax.management.ObjectName
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.ListableBeanFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jmx.export.MBeanExporter
 import org.springframework.jmx.support.RegistrationPolicy
 

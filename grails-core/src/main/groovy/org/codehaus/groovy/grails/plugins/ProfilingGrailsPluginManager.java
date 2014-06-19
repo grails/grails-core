@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins;
 import grails.build.logging.GrailsConsole;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;

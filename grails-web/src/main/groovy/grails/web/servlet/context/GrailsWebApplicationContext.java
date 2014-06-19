@@ -20,7 +20,7 @@ import grails.spring.BeanBuilder;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import grails.web.servlet.context.support.GrailsEnvironment;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory;

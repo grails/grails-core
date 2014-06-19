@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
+import grails.core.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;

@@ -9,8 +9,8 @@ import grails.web.UrlConverter
 import grails.web.databinding.GrailsWebDataBinder;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.core.GrailsApplication
+import grails.core.GrailsDomainClass
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin

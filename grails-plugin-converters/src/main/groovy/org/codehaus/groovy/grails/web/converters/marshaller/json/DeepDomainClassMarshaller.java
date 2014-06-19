@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 
 /**

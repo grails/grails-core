@@ -15,9 +15,8 @@
  */
 package grails.validation;
 
-import grails.validation.Constrained;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 
 import java.util.Map;
 

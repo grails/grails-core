@@ -24,9 +24,9 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.commons.ApplicationAttributes
+import grails.core.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import grails.web.servlet.context.GrailsWebApplicationContext

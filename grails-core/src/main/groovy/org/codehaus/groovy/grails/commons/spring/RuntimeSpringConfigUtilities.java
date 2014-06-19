@@ -23,7 +23,7 @@ import groovy.lang.Closure;
 import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.ClassUtils;
 

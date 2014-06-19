@@ -6,7 +6,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext
 import spock.lang.Specification
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
 /**

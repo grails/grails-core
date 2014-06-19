@@ -19,9 +19,9 @@ import grails.util.GrailsNameUtils
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import grails.core.GrailsApplication
+import grails.core.GrailsClass
+import grails.core.GrailsControllerClass
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingInfo

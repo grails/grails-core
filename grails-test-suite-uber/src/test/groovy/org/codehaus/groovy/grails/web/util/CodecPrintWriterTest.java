@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.ArtefactInfo;
+import grails.core.ArtefactHandler;
+import grails.core.ArtefactInfo;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest;

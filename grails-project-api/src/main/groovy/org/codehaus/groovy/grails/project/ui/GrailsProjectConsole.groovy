@@ -26,7 +26,7 @@ import java.awt.Window
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader

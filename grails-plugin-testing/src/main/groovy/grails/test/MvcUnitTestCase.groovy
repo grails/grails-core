@@ -15,7 +15,7 @@
  */
 package grails.test
 
-import org.codehaus.groovy.grails.commons.ApplicationAttributes
+import grails.core.ApplicationAttributes
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext

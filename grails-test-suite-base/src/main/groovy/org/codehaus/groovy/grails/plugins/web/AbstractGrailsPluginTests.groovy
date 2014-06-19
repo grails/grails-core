@@ -9,7 +9,7 @@ import grails.web.UrlConverter
 import javax.servlet.ServletContext
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin

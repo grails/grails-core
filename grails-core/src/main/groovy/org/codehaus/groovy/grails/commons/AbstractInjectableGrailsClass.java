@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.InjectableGrailsClass;
+
 /**
  * Configures Grails classe to be autowirable by name, always.
  *

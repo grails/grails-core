@@ -10,7 +10,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import grails.core.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
 

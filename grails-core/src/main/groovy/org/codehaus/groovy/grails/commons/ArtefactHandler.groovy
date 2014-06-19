@@ -13,29 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
-
-import groovy.lang.Closure;
-
-import java.util.List;
+package org.codehaus.groovy.grails.commons
 
 /**
- * Loads the UrlMappings.
+ * @author Graeme Rocher
+ * @deprecated Use {@link grails.core.ArtefactHandler} instead
+ *
  */
-public interface GrailsUrlMappingsClass extends GrailsClass {
+@Deprecated
+public interface ArtefactHandler extends grails.core.ArtefactHandler{
 
-    /**
-     * Returns the mappings closure which is called to evaluate the url mappings.
-     *
-     * @return A Closure instance
-     */
-    @SuppressWarnings("rawtypes")
-    Closure getMappingsClosure();
-
-    /**
-     * Returns a List of URI patterns to exclude.
-     * @return  the patterns (Strings)
-     */
-    @SuppressWarnings("rawtypes")
-    List getExcludePatterns();
 }

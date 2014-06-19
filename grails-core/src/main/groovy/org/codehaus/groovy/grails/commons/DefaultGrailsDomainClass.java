@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ComponentCapableDomainClass;
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsNameUtils;
 
 import java.beans.PropertyDescriptor;
@@ -41,7 +44,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass {
+public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass, org.codehaus.groovy.grails.commons.GrailsDomainClass {
 
     private GrailsDomainClassProperty identifier;
     private GrailsDomainClassProperty version;
@@ -645,7 +648,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /**
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getPersistantProperties()
+     * @see grails.core.GrailsDomainClass#getPersistantProperties()
      */
     @Deprecated
     public GrailsDomainClassProperty[] getPersistantProperties() {
@@ -717,14 +720,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getRelationshipType(java.lang.String)
+     * @see grails.core.GrailsDomainClass#getRelationshipType(java.lang.String)
      */
     public Class<?> getRelatedClassType(String propertyName) {
         return (Class<?>)relationshipMap.get(propertyName);
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getPropertyName()
+     * @see grails.core.GrailsDomainClass#getPropertyName()
      */
     @Override
     public String getPropertyName() {
@@ -732,14 +735,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#isBidirectional()
+     * @see grails.core.GrailsDomainClass#isBidirectional()
      */
     public boolean isBidirectional(String propertyName) {
         return getPropertyByName(propertyName).isBidirectional();
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getConstraints()
+     * @see grails.core.GrailsDomainClass#getConstraints()
      */
     @SuppressWarnings("unchecked")
     public Map getConstrainedProperties() {
@@ -761,21 +764,21 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getValidator()
+     * @see grails.core.GrailsDomainClass#getValidator()
      */
     public Validator getValidator() {
         return validator;
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#setValidator(Validator validator)
+     * @see grails.core.GrailsDomainClass#setValidator(Validator validator)
      */
     public void setValidator(Validator validator) {
         this.validator = validator;
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass#getMappedBy()
+     * @see grails.core.GrailsDomainClass#getMappedBy()
      */
     public String getMappingStrategy() {
         return mappingStrategy;

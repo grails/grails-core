@@ -15,6 +15,10 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.ArtefactInfo;
+import grails.core.GrailsClass;
+import grails.core.InjectableGrailsClass;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -27,7 +31,7 @@ import java.util.Map;
  * @author Marc Palmer (marc@anyware.co.uk)
  * @author Graeme Rocher
  */
-public class DefaultArtefactInfo implements ArtefactInfo {
+public class DefaultArtefactInfo implements ArtefactInfo, org.codehaus.groovy.grails.commons.ArtefactInfo {
 
     private LinkedList<GrailsClass> grailsClasses = new LinkedList<GrailsClass>();
     private Class<?>[] classes;

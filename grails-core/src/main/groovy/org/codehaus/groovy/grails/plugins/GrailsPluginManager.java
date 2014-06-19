@@ -16,17 +16,15 @@
 package org.codehaus.groovy.grails.plugins;
 
 import java.io.File;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
@@ -203,7 +201,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     /**
      * Called prior to the initialisation of the GrailsApplication object to allow registration of additional ArtefactHandler objects
      *
-     * @see org.codehaus.groovy.grails.commons.ArtefactHandler
+     * @see grails.core.ArtefactHandler
      */
     void doArtefactConfiguration();
 

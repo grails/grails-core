@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.binding
 
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 
 /**
  * 

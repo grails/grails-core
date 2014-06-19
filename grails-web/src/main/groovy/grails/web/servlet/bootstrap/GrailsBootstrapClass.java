@@ -18,7 +18,7 @@ package grails.web.servlet.bootstrap;
 import javax.servlet.ServletContext;
 
 import groovy.lang.Closure;
-import org.codehaus.groovy.grails.commons.GrailsClass;
+import grails.core.GrailsClass;
 
 /**
  * Loaded and executed on application load.

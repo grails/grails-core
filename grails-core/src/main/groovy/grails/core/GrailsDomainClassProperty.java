@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
+package grails.core;
 
 /**
  * A property of a GrailsDomainClass instance.
@@ -246,7 +246,7 @@ public interface GrailsDomainClassProperty {
      * If #isEmbedded returns true then this method can be called to obtain a reference to the
      * embedded component, which implements the GrailsDomainClass interface.
      *
-     * @see org.codehaus.groovy.grails.commons.GrailsDomainClass
+     * @see GrailsDomainClass
      * @see GrailsDomainClassProperty#isEmbedded()
      *
      * @return The component or null if it is not an embedded component

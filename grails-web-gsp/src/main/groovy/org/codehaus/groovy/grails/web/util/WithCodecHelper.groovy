@@ -16,10 +16,7 @@
 package org.codehaus.groovy.grails.web.util
 
 import groovy.transform.CompileStatic
-import groovy.transform.TypeChecked
-
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.pages.GroovyPageConfig
@@ -27,8 +24,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import org.springframework.context.ApplicationContext
 
 /**
  * Helper methods for {@link #withCodec} feature.

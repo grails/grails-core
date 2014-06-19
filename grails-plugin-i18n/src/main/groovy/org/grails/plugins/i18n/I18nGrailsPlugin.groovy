@@ -23,7 +23,7 @@ import groovy.transform.CompileStatic
 
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils

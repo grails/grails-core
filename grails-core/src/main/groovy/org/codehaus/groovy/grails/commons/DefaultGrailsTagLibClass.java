@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsTagLibClass;
 import groovy.lang.Closure;
 
 import java.beans.PropertyDescriptor;

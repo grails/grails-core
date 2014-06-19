@@ -22,7 +22,7 @@ import groovy.lang.MissingMethodException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import grails.core.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import grails.web.mapping.LinkGenerator;
 import grails.web.mapping.ResponseRedirector;

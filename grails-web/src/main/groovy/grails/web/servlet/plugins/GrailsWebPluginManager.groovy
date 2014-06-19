@@ -1,7 +1,7 @@
 package grails.web.servlet.plugins
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.springframework.boot.context.embedded.ServletContextInitializer

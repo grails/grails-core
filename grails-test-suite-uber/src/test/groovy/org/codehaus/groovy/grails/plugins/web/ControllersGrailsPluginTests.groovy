@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.web
 
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 

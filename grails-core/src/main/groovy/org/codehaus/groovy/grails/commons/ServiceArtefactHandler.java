@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.GrailsServiceClass;
+
 /**
  * @author Marc Palmer (marc@anyware.co.uk)
  */
