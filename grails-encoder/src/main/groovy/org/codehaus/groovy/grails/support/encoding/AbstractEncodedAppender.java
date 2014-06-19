@@ -82,14 +82,6 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
      * (non-Javadoc)
      * @see
      * org.codehaus.groovy.grails.support.encoding.EncodedAppender#append(org
-     * .codehaus.groovy.grails.support.encoding.Encoder, char)
-     */
-    public abstract void append(Encoder encoder, char character) throws IOException;
-
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.EncodedAppender#append(org
      * .codehaus.groovy.grails.support.encoding.Encoder,
      * org.codehaus.groovy.grails.support.encoding.EncodingState, char[], int,
      * int)
@@ -115,7 +107,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
 
     protected EncodingState createNewEncodingState(Encoder encoder, EncodingState encodingState) {
         if (encodingState == null) {
-            return new EncodingStateImpl(encoder);
+            return new EncodingStateImpl(encoder, null);
         }
         return encodingState.appendEncoder(encoder);
     }
@@ -173,7 +165,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
      *            the current encoding state
      * @return true, if should encode
      */
-    protected boolean shouldEncode(Encoder encoderToApply, EncodingState encodingState) {
+    public boolean shouldEncode(Encoder encoderToApply, EncodingState encodingState) {
         return ignoreEncodingState || (encoderToApply != null
                 && (encodingState == null || shouldEncodeWith(encoderToApply, encodingState)));
     }

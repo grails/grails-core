@@ -16,12 +16,19 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import grails.util.GrailsNameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import org.codehaus.groovy.grails.support.encoding.ChainedDecoder;
+import org.codehaus.groovy.grails.support.encoding.ChainedEncoder;
+import org.codehaus.groovy.grails.support.encoding.ChainedEncoders;
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider;
 import org.codehaus.groovy.grails.support.encoding.CodecLookup;
@@ -32,8 +39,8 @@ import org.springframework.beans.factory.InitializingBean;
 
 public class BasicCodecLookup implements CodecLookup, InitializingBean {
     private static final String NONE_CODEC_NAME = "none";
-    protected Map<String, Encoder> encoders;
-    protected Map<String, Decoder> decoders;
+    protected ConcurrentMap<String, Encoder> encoders;
+    protected ConcurrentMap<String, Decoder> decoders;
     public static final StreamingEncoder NONE_ENCODER = new NoneEncoder();
 
     public BasicCodecLookup() {
@@ -49,20 +56,68 @@ public class BasicCodecLookup implements CodecLookup, InitializingBean {
     }    
 
     @SuppressWarnings("unchecked")
-    protected <T> T lookupCodec(String codecName, Map<String, T> map, Class<T> returnType) {
+    protected <T extends CodecIdentifierProvider> T lookupCodec(String codecName, ConcurrentMap<String, T> map, Class<T> returnType) {
         if (codecName != null && codecName.length() > 0) {
             if (NONE_CODEC_NAME.equalsIgnoreCase(codecName)) {
                 if (returnType == Encoder.class) {
                     return (T)NONE_ENCODER;
                 }
             } else {
-                return map.get(codecName);
+                T resultObject = map.get(codecName);
+                if(resultObject == null) {
+                    resultObject = createCodec(codecName, map, returnType);
+                }
+                return resultObject;
             }
         }
         return null;
     }
+    
+    @SuppressWarnings("unchecked")
+    protected <T extends CodecIdentifierProvider> T createCodec(String codecName, ConcurrentMap<String, T> map, Class<T> returnType) {
+        if(codecName.indexOf(',') > -1) {
+            T createdInstance = createChainedCodecInstance(codecName, map, returnType);
+            if(createdInstance != null) {
+                createdInstance = putChainedCodecInstance(codecName, map, createdInstance);
+            }
+            return createdInstance;
+        }
+        return null;
+    }
 
-    protected <T extends CodecIdentifierProvider> void registerWithNameVaritions(Map<String, T> destinationMap, T target) {
+    protected <T extends CodecIdentifierProvider> T putChainedCodecInstance(String codecName,
+            ConcurrentMap<String, T> map, T createdInstance) {
+        T previousInstance = map.putIfAbsent(codecName, createdInstance);
+        if(previousInstance != null) {
+            return previousInstance;
+        } else { 
+            return createdInstance;
+        }
+    }
+
+    protected <T extends CodecIdentifierProvider> T createChainedCodecInstance(String codecName, ConcurrentMap<String, T> map, Class<T> returnType) {
+        String[] codecs=codecName.split(",");
+        List<T> codecInstances = new ArrayList<T>(codecs.length);
+        for(int i=0;i < codecs.length;i++) {
+            T codecInstance = map.get(codecs[i]);
+            if(codecInstance != null) {
+                codecInstances.add(codecInstance);
+            }
+        }
+        if (returnType == Encoder.class) {
+            List<StreamingEncoder> streamingEncoders = ChainedEncoders.toStreamingEncoders((List<Encoder>)codecInstances);
+            if(streamingEncoders == null) {
+                throw new RuntimeException("ChainedEncoder only supports StreamingEncoder instances. Couldn't build chained encoder for '" + codecName + "'");
+            } else {
+                return (T)ChainedEncoder.createFor(streamingEncoders);
+            }
+        } else {
+            Collections.reverse(codecInstances);
+            return (T)new ChainedDecoder(codecInstances.toArray(new Decoder[codecInstances.size()]));
+        }
+    }
+    
+    protected synchronized <T extends CodecIdentifierProvider> void registerWithNameVaritions(Map<String, T> destinationMap, T target) {
         String name=target.getCodecIdentifier().getCodecName();
         registerVariationsOfName(destinationMap, target, name);
         Set<String> aliases = target.getCodecIdentifier().getCodecAliases();
@@ -109,8 +164,8 @@ public class BasicCodecLookup implements CodecLookup, InitializingBean {
     }
 
     public void reInitialize() {
-        encoders = new HashMap<String, Encoder>();
-        decoders = new HashMap<String, Decoder>();
+        encoders = new ConcurrentHashMap<String, Encoder>();
+        decoders = new ConcurrentHashMap<String, Decoder>();
         registerCodecs();
     }
     

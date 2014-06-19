@@ -108,15 +108,6 @@ public interface EncodedAppender {
     void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException;
 
     /**
-     * Encodes a single char and appends it to the buffer.
-     *
-     * @param encoder the encoder to use
-     * @param ch a char
-     * @throws IOException Signals that an I/O exception has occurred.
-     */
-    void append(Encoder encoder, char ch) throws IOException;
-
-    /**
      * Flush the internal buffer and write the buffered input to a possible
      * destination.
      *
@@ -139,4 +130,15 @@ public interface EncodedAppender {
      * @return current state of ignoreEncodingState setting
      */
     public boolean isIgnoreEncodingState();
+    
+    /**
+     * Check if the encoder should be used to a input with certain encodingState
+     *
+     * @param encoderToApply
+     *            the encoder to apply
+     * @param encodingState
+     *            the current encoding state
+     * @return true, if should encode
+     */
+    public boolean shouldEncode(Encoder encoderToApply, EncodingState encodingState);
 }

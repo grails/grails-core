@@ -67,8 +67,38 @@ mappings {
       controller = 'reporting'
       action = 'view'
   }
+  "/$first-alpha-$second/$third-beta-$fourth-foo(.$format)?" {
+      controller = 'hyphenTests'
+      action = 'view'
+  }
 }
 '''
+    
+    void testHyphenDelimiters() {
+        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
+    
+        def info = holder.match("/one-alpha-two/three-beta-four-foo.json")
+        assertNotNull info
+        assertEquals 'hyphenTests', info.controllerName
+        assertEquals 'view', info.actionName
+        assertEquals 'one', info.params.first
+        assertEquals 'two', info.params.second
+        assertEquals 'three', info.params.third
+        assertEquals 'four', info.params.fourth
+        assertEquals 'json', info.params.format
+
+ 
+        info = holder.match("/one-alpha-two/three-beta-four-foo")
+        assertNotNull info
+        assertEquals 'hyphenTests', info.controllerName
+        assertEquals 'view', info.actionName
+        assertEquals 'one', info.params.first
+        assertEquals 'two', info.params.second
+        assertEquals 'three', info.params.third
+        assertEquals 'four', info.params.fourth
+        assertNull info.params.format
+    }
+
     void testMaptoURI() {
         def res = new ByteArrayResource(mappingScript.bytes)
         def mappings = evaluator.evaluateMappings(res)
@@ -374,7 +404,7 @@ mappings {
         assertEquals 'view', info.actionName
         assertEquals 'my.id', info.params.foo
     }
-
+    
     void testInit() {
         def parser = new DefaultUrlMappingParser()
         def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,[] as ConstrainedProperty[], servletContext)
