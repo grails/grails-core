@@ -34,7 +34,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
 import org.grails.web.support.ResourceAwareTemplateEngine;

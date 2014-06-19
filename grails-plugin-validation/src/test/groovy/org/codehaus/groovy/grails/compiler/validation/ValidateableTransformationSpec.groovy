@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.compiler.validation
 
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.GrailsAwareClassLoader
 
 import spock.lang.Specification
 

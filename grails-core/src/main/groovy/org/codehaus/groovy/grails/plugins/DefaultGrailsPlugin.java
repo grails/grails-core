@@ -23,7 +23,6 @@ import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.*;
-import groovy.xml.dom.DOMCategory;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +43,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.core.io.SpringResource;
+import org.grails.core.io.SpringResource;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
@@ -65,7 +64,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
-import org.w3c.dom.Element;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class

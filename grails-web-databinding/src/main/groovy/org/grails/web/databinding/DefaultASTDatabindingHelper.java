@@ -39,8 +39,8 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.grails.compiler.injection.GrailsASTUtils;
 
 public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     public static final String CONSTRAINTS_FIELD_NAME = "constraints";

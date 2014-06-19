@@ -6,7 +6,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.compiler.injection.ArtefactTypeAstTransformation;
+import org.grails.compiler.injection.ArtefactTypeAstTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)

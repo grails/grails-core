@@ -25,8 +25,8 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.compiler.injection.AllArtefactClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.grails.compiler.injection.AllArtefactClassInjector;
+import org.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 
 import java.lang.reflect.Modifier;

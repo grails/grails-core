@@ -7,8 +7,8 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.ClassInjector
+import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.WebApplicationContext

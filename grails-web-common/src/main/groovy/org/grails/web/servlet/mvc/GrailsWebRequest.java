@@ -33,7 +33,7 @@ import grails.web.servlet.mvc.GrailsHttpSession;
 import grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;

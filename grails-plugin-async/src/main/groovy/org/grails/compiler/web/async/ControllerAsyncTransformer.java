@@ -16,8 +16,8 @@
 package org.grails.compiler.web.async;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.web.ControllerTransformer;
 import org.grails.plugins.web.async.api.ControllersAsyncApi;
 

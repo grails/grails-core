@@ -7,8 +7,8 @@ import grails.web.Action
 import java.lang.reflect.Modifier
 
 import grails.web.servlet.context.GrailsWebApplicationContext
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.ClassInjector
+import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 

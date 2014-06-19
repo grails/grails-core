@@ -24,7 +24,7 @@ import java.util.List;
 import org.codehaus.groovy.ant.Groovyc;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
+import org.grails.compiler.injection.GrailsAwareInjectionOperation;
 
 public class Grailsc extends Groovyc {
 

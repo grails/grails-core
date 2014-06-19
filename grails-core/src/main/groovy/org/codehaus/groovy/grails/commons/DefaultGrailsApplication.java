@@ -31,7 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.events.ArtefactAdditionEvent;
-import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.factory.BeanClassLoaderAware;

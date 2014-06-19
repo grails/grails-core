@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet;
 
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+import org.grails.core.lifecycle.ShutdownOperations;
 
 import javax.servlet.http.HttpServletResponse;
 

@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.compiler.injection
 
 import grails.artefact.Enhanced
+import org.grails.compiler.injection.GrailsASTUtils
 
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy

@@ -5,6 +5,7 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.support.MockFileResource
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.springframework.core.io.Resource
 import grails.util.Metadata
 

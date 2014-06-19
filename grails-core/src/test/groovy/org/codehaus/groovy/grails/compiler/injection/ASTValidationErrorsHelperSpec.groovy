@@ -3,6 +3,9 @@ package org.codehaus.groovy.grails.compiler.injection
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
+import org.grails.compiler.injection.ASTValidationErrorsHelper
+import org.grails.compiler.injection.ClassInjector
+import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.validation.Errors
 
 import spock.lang.Specification

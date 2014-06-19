@@ -9,7 +9,7 @@ import javax.sql.DataSource
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.grails.core.lifecycle.ShutdownOperations
 import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware

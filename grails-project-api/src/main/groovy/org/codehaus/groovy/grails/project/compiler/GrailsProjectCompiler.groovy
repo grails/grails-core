@@ -28,10 +28,10 @@ import org.codehaus.groovy.control.Phases
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.fork.compile.ForkedGrailsCompiler
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
-import org.codehaus.groovy.grails.compiler.DirectoryWatcher
+import org.grails.core.io.watch.DirectoryWatcher
 import org.codehaus.groovy.grails.compiler.Grailsc
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
+import org.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
 import org.codehaus.groovy.control.MultipleCompilationErrorsException

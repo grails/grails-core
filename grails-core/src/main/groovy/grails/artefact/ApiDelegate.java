@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.FIELD})
-@GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.ApiDelegateTransformation")
+@GroovyASTTransformationClass("org.grails.compiler.injection.ApiDelegateTransformation")
 public @interface ApiDelegate {
 
     /**

@@ -15,8 +15,8 @@
  */
 package grails.validation;
 
-import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
-import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
+import static org.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
+import static org.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;
@@ -50,8 +50,8 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
-import org.codehaus.groovy.grails.compiler.injection.ASTValidationErrorsHelper;
+import org.grails.compiler.injection.ASTErrorsHelper;
+import org.grails.compiler.injection.ASTValidationErrorsHelper;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.syntax.Token;

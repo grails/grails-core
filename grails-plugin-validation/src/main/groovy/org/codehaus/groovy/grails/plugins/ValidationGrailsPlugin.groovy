@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.grails.core.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport

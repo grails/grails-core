@@ -9,10 +9,10 @@ import groovy.transform.TypeChecked
  *
  */
 @AnnotationCollector
-@TypeChecked(extensions=['grails.compiler.ValidateableTypeCheckingExtension', 
-                         'grails.compiler.CriteriaTypeCheckingExtension',
-                         'grails.compiler.DynamicFinderTypeCheckingExtension',
-                         'grails.compiler.DomainMappingTypeCheckingExtension'])
+@TypeChecked(extensions=['org.grails.compiler.ValidateableTypeCheckingExtension',
+                         'org.grails.compiler.CriteriaTypeCheckingExtension',
+                         'org.grails.compiler.DynamicFinderTypeCheckingExtension',
+                         'org.grails.compiler.DomainMappingTypeCheckingExtension'])
 @interface GrailsTypeChecked {
 
 }

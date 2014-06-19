@@ -17,7 +17,7 @@ package grails.validation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+import org.grails.core.lifecycle.ShutdownOperations;
 
 import java.util.ArrayList;
 import java.util.List;

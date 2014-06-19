@@ -24,10 +24,10 @@ import groovy.transform.CompileStatic
  *
  */
 @AnnotationCollector
-@CompileStatic(extensions=['grails.compiler.ValidateableTypeCheckingExtension', 
-                           'grails.compiler.CriteriaTypeCheckingExtension',
-                           'grails.compiler.WhereQueryTypeCheckingExtension',
-                           'grails.compiler.DynamicFinderTypeCheckingExtension',
-                           'grails.compiler.DomainMappingTypeCheckingExtension'])
+@CompileStatic(extensions=['org.grails.compiler.ValidateableTypeCheckingExtension',
+                           'org.grails.compiler.CriteriaTypeCheckingExtension',
+                           'org.grails.compiler.WhereQueryTypeCheckingExtension',
+                           'org.grails.compiler.DynamicFinderTypeCheckingExtension',
+                           'org.grails.compiler.DomainMappingTypeCheckingExtension'])
 @interface GrailsCompileStatic {
 }

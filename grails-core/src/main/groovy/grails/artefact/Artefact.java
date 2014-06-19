@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-@GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.ArtefactTypeAstTransformation")
+@GroovyASTTransformationClass("org.grails.compiler.injection.ArtefactTypeAstTransformation")
 public @interface Artefact {
 
     String value();

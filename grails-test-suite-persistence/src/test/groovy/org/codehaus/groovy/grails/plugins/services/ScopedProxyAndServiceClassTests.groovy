@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.plugins.services
 import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.aop.scope.ScopedProxyFactoryBean
 import org.springframework.web.context.request.RequestContextHolder

@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.validation
 
 import grails.util.ClosureToMapPopulator
 
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.grails.core.lifecycle.ShutdownOperations
 
 /**
  * Utility methods for configuring constraints

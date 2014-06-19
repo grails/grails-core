@@ -22,10 +22,16 @@ import java.lang.annotation.Target;
 
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
+
+/**
+ *
+ * @author Graeme Rocher
+ * @since 2.3
+ */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-@GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.MixinTransformation")
+@GroovyASTTransformationClass("org.grails.compiler.injection.MixinTransformation")
 public @interface Mixin {
     Class<?>[] value ();
 }

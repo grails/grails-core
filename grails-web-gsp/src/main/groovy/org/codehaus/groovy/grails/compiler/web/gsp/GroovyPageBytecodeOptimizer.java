@@ -23,8 +23,8 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GroovyPageInjector;
+import org.grails.compiler.injection.AstTransformer;
+import org.grails.compiler.injection.GroovyPageInjector;
 
 @AstTransformer
 public class GroovyPageBytecodeOptimizer implements GroovyPageInjector {

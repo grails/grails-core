@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.ClassInjector
+import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.springframework.web.context.request.RequestContextHolder

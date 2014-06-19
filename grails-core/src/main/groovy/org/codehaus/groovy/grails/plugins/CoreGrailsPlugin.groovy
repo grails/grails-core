@@ -21,8 +21,8 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
-import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.commons.spring.OptimizedAutowireCapableBeanFactory
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfigUtilities
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
-import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
+import org.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.plugins.support.aware.PluginManagerAwareBeanPostProcessor

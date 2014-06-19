@@ -15,8 +15,6 @@
  */
 
 import org.apache.tools.ant.types.Path
-import org.codehaus.groovy.grails.documentation.DocumentationContext
-import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 import grails.util.GrailsNameUtils

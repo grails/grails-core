@@ -21,9 +21,8 @@ import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrors
 
 import grails.converters.JSON
 import grails.converters.XML
-import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.grails.core.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil

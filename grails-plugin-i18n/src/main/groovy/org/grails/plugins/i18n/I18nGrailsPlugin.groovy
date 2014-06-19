@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsStringUtils
-import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
+import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.grails.web.servlet.context.GrailsConfigUtils

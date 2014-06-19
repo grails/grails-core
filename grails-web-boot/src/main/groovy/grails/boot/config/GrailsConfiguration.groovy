@@ -2,7 +2,7 @@ package grails.boot.config
 
 import grails.config.Settings
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.boot.support.GrailsApplicationPostProcessor
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean

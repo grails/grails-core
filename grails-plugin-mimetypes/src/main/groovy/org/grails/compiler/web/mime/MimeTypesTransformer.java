@@ -40,10 +40,10 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
-import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.grails.compiler.injection.AnnotatedClassInjector;
+import org.grails.compiler.injection.AstTransformer;
+import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.api.ControllersMimeTypesApi;
 

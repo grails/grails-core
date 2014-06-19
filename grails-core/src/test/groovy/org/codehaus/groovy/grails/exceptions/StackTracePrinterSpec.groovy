@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.exceptions
 
-import org.codehaus.groovy.grails.core.io.StaticResourceLocator
+import org.grails.core.io.StaticResourceLocator
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import spock.lang.Specification

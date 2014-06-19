@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.transaction.transform
 
 import org.codehaus.groovy.ast.stmt.Statement
 
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
+import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
@@ -35,8 +35,8 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
-import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector
+import org.grails.compiler.injection.GrailsASTUtils
+import org.grails.compiler.injection.GrailsArtefactClassInjector
 import org.codehaus.groovy.grails.orm.support.GrailsTransactionTemplate
 import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
 import org.codehaus.groovy.grails.transaction.GrailsTransactionAttribute

@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.exceptions
 
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage
-import org.codehaus.groovy.grails.core.io.ResourceLocator
+import org.grails.core.io.ResourceLocator
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 

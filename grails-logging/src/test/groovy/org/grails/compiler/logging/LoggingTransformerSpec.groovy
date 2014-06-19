@@ -1,9 +1,8 @@
 package org.grails.compiler.logging
 
 import org.apache.commons.logging.Log
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.grails.compiler.logging.LoggingTransformer
+import org.grails.compiler.injection.ClassInjector
+import org.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
 
 class LoggingTransformerSpec extends Specification {

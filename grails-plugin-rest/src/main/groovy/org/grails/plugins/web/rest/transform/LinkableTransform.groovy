@@ -38,7 +38,7 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
 import static java.lang.reflect.Modifier.*
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
+import static org.grails.compiler.injection.GrailsASTUtils.*
 
 /**
  * Implementation of the {@link Linkable} transform

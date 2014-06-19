@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
+import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
+import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
@@ -82,10 +82,10 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
-import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
-import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.grails.compiler.injection.AnnotatedClassInjector;
+import org.grails.compiler.injection.AstTransformer;
+import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;

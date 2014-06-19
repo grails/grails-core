@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import grails.validation.Constrained;
-import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.util.ClassUtils;

@@ -5,6 +5,9 @@ import grails.persistence.PersistenceMethod
 import grails.util.GrailsUtil
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
+import org.grails.compiler.injection.ClassInjector
+import org.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
 
 class GrailsArtefactTransformerSpec extends Specification {

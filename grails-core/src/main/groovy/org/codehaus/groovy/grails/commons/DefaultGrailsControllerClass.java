@@ -39,7 +39,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
     public static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
-    private Map<String, Method> actions = new HashMap<>();
+    private Map<String, Method> actions = new HashMap<String, Method>();
     private String defaultActionName;
     private String namespace;
 

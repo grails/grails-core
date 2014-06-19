@@ -23,7 +23,6 @@ import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
-import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -32,7 +31,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
-import org.codehaus.groovy.grails.core.io.PluginPathAwareFileSystemResourceLoader
+import org.grails.core.io.PluginPathAwareFileSystemResourceLoader
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
@@ -130,7 +129,6 @@ class GrailsProjectLoader extends BaseSettingsApi{
             applicationContext.resourceLoader = new  CommandLineResourceLoader()
             profile("Performing runtime Spring configuration") {
             def configurer = new GrailsRuntimeConfigurator(grailsApplication, applicationContext)
-            configureJndi(grailsApplication)
             applicationContext = configurer.configure(servletContext)
             servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,applicationContext)
             servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
@@ -138,16 +136,6 @@ class GrailsProjectLoader extends BaseSettingsApi{
         applicationLoaded = true
         buildEventListener.triggerEvent("AppCfgEnd", ["Configuring Grails Application"])
         return applicationContext
-    }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected void configureJndi(GrailsApplication grailsApplication) {
-        def jndiEntries = grailsApplication.config?.grails?.naming?.entries
-
-        if ((jndiEntries instanceof Map) && jndiEntries) {
-            def jndiBindingSupport = new JndiBindingSupport(jndiEntries)
-            jndiBindingSupport.bind()
-        }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
