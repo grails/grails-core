@@ -16,8 +16,6 @@
 
 package org.codehaus.groovy.grails.compiler.injection
 
-import org.grails.compiler.injection.GrailsASTUtils
-
 /**
  * Helper methods for working with Groovy AST trees.
  *
