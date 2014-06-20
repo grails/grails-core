@@ -34,7 +34,12 @@ import org.springframework.context.Lifecycle;
 import org.springframework.util.Assert;
 
 /**
+ * Allows looking up key classes in a static context
+ *
+ *
  * @author Burt Beckwith
+ * @author Graeme Rocher
+ *
  * @since 2.0
  */
 public class Holders {
@@ -209,7 +214,7 @@ public class Holders {
     @SuppressWarnings("unchecked")
     private static void createServletContextsHolder() {
         try {
-            Class<?> clazz = Holders.class.getClassLoader().loadClass("org.codehaus.groovy.grails.web.context.WebRequestServletHolder");
+            Class<?> clazz = Holders.class.getClassLoader().loadClass("grails.web.context.WebRequestServletHolder");
             servletContexts = (Holder)clazz.newInstance();
         }
         catch (ClassNotFoundException e) {
