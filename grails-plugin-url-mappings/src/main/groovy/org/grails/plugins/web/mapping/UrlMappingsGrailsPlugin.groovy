@@ -22,7 +22,7 @@ import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 import grails.core.support.GrailsApplicationAware
 import org.grails.web.mapping.CachingLinkGenerator
 import org.grails.web.mapping.DefaultLinkGenerator

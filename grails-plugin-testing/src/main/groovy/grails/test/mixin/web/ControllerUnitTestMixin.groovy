@@ -20,7 +20,7 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
 import grails.util.GrailsMetaClassUtils

@@ -19,11 +19,11 @@ import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link grails.exceptions.GrailsRuntimeException} instead
+ * @deprecated Use {@link org.grails.core.exceptions.GrailsRuntimeException} instead
  */
 @Deprecated
 @CompileStatic
-class GrailsRuntimeException extends grails.exceptions.GrailsRuntimeException{
+class GrailsRuntimeException extends org.grails.core.exceptions.GrailsRuntimeException{
 
     GrailsRuntimeException(String message) {
         super(message)

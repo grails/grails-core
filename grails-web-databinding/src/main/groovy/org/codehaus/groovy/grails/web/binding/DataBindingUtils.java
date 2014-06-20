@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletRequest;
 
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;

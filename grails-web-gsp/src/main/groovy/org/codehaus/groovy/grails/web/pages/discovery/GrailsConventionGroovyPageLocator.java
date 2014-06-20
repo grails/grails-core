@@ -19,7 +19,7 @@ import grails.util.GrailsNameUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;

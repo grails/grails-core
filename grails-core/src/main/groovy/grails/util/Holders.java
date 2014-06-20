@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy;
+import org.grails.core.support.GrailsApplicationDiscoveryStrategy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.util.Assert;

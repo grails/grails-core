@@ -19,7 +19,7 @@ import grails.converters.XML
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.ProxyHandler

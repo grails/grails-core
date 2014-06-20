@@ -35,7 +35,7 @@ import org.grails.core.io.PluginPathAwareFileSystemResourceLoader
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
-import org.codehaus.groovy.grails.support.CommandLineResourceLoader
+import org.grails.dev.support.CommandLineResourceLoader
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockServletContext

@@ -31,10 +31,10 @@ import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.grails.core.io.DefaultResourceLocator
 import grails.core.support.GrailsApplicationAware
-import org.grails.plugins.support.GrailsApplicationAwareBeanPostProcessor
-import org.grails.plugins.support.PluginManagerAwareBeanPostProcessor
-import org.codehaus.groovy.grails.support.ClassEditor
-import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
+import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
+import org.grails.spring.beans.PluginManagerAwareBeanPostProcessor
+import org.grails.core.support.ClassEditor
+import org.grails.dev.support.DevelopmentShutdownHook
 import org.grails.beans.support.PropertiesEditor
 import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer

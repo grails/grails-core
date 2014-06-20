@@ -24,8 +24,8 @@ import grails.util.Environment
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.util.ClassPropertyFetcher
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.EntityProxyHandler
 import grails.core.support.proxy.ProxyHandler

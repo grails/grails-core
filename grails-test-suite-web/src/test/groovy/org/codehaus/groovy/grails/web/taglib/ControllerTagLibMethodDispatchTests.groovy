@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
+import org.grails.core.artefact.TagLibArtefactHandler
 
 /**
  * @author Graeme Rocher

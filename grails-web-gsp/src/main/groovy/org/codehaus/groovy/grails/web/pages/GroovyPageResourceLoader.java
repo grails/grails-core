@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.support.StaticResourceLoader;
+import org.grails.core.io.StaticResourceLoader;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
  * A StaticResourceLoader that loads GSPs from a local grails-app folder instead of from WEB-INF in
  * development mode.
  *
- * @see org.codehaus.groovy.grails.support.StaticResourceLoader
+ * @see org.grails.core.io.StaticResourceLoader
  *
  * @author Graeme Rocher
  * @since 0.5

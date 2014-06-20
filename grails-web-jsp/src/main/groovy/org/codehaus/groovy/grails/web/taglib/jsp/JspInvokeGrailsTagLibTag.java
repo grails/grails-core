@@ -39,7 +39,7 @@ import javax.servlet.jsp.tagext.DynamicAttributes;
 
 import grails.core.GrailsApplication;
 import grails.core.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.grails.core.artefact.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;

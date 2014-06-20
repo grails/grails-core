@@ -19,7 +19,7 @@ import grails.util.GrailsNameUtils;
 import grails.web.pages.GroovyPagesUriService;
 import groovy.lang.GroovyObject;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 

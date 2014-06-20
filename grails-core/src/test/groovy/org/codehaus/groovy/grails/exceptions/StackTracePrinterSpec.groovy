@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.exceptions
 
-import grails.exceptions.DefaultErrorsPrinter
+import org.grails.core.exceptions.DefaultErrorsPrinter
 import org.grails.core.io.StaticResourceLocator
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource

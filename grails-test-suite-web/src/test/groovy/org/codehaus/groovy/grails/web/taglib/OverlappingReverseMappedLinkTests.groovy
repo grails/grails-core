@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.commons.*
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 
 /**
  * Some more tests for the behaviour of reverse linking from mappings.

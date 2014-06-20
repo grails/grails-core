@@ -28,7 +28,7 @@ import groovy.transform.TypeCheckingMode
 import javax.servlet.ServletContext
 
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup
 import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin

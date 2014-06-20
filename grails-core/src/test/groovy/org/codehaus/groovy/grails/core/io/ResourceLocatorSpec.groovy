@@ -6,7 +6,7 @@ import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.MockBinaryPluginResource
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin
-import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.grails.core.io.MockStringResourceLoader
 import org.grails.core.io.DefaultResourceLocator
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ResourceLoader

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons.cfg
 
+import org.grails.core.cfg.ConfigurationHelper
 import org.springframework.core.io.DefaultResourceLoader
 
 class ConfigurationHelperTests extends GroovyTestCase {

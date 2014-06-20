@@ -15,7 +15,7 @@
  */
 package grails.validation;
 
-import grails.exceptions.GrailsException;
+import org.grails.core.exceptions.GrailsException;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 

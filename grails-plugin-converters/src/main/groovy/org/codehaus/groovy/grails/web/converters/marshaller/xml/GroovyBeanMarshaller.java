@@ -28,7 +28,7 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 
 import grails.core.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
+import org.grails.core.util.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
 import org.springframework.beans.BeanUtils;

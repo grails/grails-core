@@ -4,7 +4,7 @@ import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
 
 import grails.core.DefaultGrailsApplication
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer
 import grails.compiler.ast.ClassInjector

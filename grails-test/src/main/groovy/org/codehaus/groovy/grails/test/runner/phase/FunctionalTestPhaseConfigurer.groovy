@@ -23,7 +23,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
+import grails.persistence.support.PersistenceContextInterceptorExecutor
 import grails.build.logging.GrailsConsole
 
 /**

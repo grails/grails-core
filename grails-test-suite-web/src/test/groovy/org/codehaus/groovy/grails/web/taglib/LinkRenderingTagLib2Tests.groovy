@@ -1,7 +1,6 @@
-package org.codehaus.groovy.grails.web.taglib;
+package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.runtime.InvokerHelper
-import org.codehaus.groovy.grails.commons.*
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 
 class LinkRenderingTagLib2Tests extends AbstractGrailsTagTests {
 

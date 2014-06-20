@@ -17,8 +17,8 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
-import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.grails.core.artefact.UrlMappingsArtefactHandler
+import org.grails.core.io.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import grails.web.util.GrailsApplicationAttributes

@@ -17,7 +17,7 @@ package grails.rest.render
 
 import groovy.transform.CompileStatic
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.support.IncludeExcludeSupport
+import org.grails.core.util.IncludeExcludeSupport
 
 /**
  * Abstract class for implementing renderers that include/exclude certain properties

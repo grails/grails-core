@@ -23,14 +23,14 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
+import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.core.util.IncludeExcludeSupport;
 import grails.core.support.proxy.EntityProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 

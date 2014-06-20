@@ -21,7 +21,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;

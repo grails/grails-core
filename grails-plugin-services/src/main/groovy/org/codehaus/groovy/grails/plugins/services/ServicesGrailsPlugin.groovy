@@ -22,7 +22,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 import grails.core.GrailsServiceClass
-import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
+import org.grails.core.artefact.ServiceArtefactHandler
 import org.grails.transaction.GroovyAwareNamedTransactionAttributeSource
 import org.grails.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean

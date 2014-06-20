@@ -12,10 +12,10 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager

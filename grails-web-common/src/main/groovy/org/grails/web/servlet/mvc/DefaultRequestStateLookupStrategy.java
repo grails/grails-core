@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet.mvc;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -20,8 +20,8 @@ import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import org.grails.plugins.web.api.ControllersMimeTypesApi

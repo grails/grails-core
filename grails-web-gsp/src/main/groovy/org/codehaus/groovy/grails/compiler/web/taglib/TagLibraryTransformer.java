@@ -44,7 +44,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;

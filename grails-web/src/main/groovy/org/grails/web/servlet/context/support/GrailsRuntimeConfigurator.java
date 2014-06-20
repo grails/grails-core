@@ -26,7 +26,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.grails.core.util.ClassPropertyFetcher;
 import grails.core.GrailsApplication;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.GrailsApplicationContext;

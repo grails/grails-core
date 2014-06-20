@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import grails.validation.Constrained;
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import grails.validation.ConstraintsEvaluator;
 import org.springframework.util.StringUtils;

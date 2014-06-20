@@ -45,7 +45,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import grails.core.support.GrailsApplicationAware;
-import org.codehaus.groovy.grails.support.DevelopmentResourceLoader;
+import org.grails.dev.support.DevelopmentResourceLoader;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;

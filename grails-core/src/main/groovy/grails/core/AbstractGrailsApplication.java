@@ -14,8 +14,6 @@
  */
 package grails.core;
 
-import grails.core.ArtefactHandler;
-import grails.core.GrailsApplication;
 import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyObjectSupport;
@@ -25,7 +23,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.grails.core.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;

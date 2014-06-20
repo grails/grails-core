@@ -19,7 +19,7 @@ import grails.util.GrailsUtil
 
 import grails.util.GrailsClassUtils as GCU
 import org.grails.core.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.support.SoftThreadLocalMap
+import org.grails.core.util.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.grails.web.plugins.support.ValidationSupport;
 import org.springframework.context.ApplicationContext

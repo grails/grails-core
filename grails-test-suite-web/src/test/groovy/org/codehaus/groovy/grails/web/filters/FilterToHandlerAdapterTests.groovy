@@ -4,7 +4,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.grails.core.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.codehaus.groovy.grails.support.MockApplicationContext
 

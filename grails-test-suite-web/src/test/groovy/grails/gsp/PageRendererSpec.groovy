@@ -3,9 +3,9 @@ package grails.gsp
 import grails.spring.BeanBuilder
 
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.grails.core.artefact.TagLibArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
-import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
+import org.grails.core.io.SimpleMapResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator

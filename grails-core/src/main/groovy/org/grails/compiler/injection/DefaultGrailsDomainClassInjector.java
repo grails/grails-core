@@ -39,7 +39,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 

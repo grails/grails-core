@@ -21,7 +21,7 @@ import groovy.text.Template
 
 import grails.util.GrailsMetaClassUtils
 import grails.core.GrailsTagLibClass
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.core.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine

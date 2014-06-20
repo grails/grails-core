@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;

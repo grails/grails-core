@@ -30,12 +30,12 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
+import org.grails.core.util.IncludeExcludeSupport;
 import grails.core.support.proxy.DefaultProxyHandler;
 import grails.core.support.proxy.EntityProxyHandler;
 import grails.core.support.proxy.ProxyHandler;

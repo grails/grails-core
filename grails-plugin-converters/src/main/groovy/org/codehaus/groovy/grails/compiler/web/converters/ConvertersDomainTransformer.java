@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.compiler.web.converters;
 
 import java.net.URL;
 
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;

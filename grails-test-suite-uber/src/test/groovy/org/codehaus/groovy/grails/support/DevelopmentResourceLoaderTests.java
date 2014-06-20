@@ -23,6 +23,7 @@ import java.io.File;
 import junit.framework.TestCase;
 
 import grails.core.DefaultGrailsApplication;
+import org.grails.dev.support.DevelopmentResourceLoader;
 
 /**
  * @author Graeme Rocher

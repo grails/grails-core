@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.core.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.grails.core.artefact.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;

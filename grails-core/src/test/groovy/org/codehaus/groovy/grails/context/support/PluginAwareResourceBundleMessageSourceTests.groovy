@@ -3,8 +3,8 @@ package org.codehaus.groovy.grails.context.support
 import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.support.MockFileResource
-import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.grails.core.io.MockFileResource
+import org.grails.core.io.MockStringResourceLoader
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.springframework.core.io.Resource
 import grails.util.Metadata

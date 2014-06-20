@@ -58,7 +58,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.IfStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.compiler.injection.ArtefactTypeAstTransformation
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareInjectionOperation

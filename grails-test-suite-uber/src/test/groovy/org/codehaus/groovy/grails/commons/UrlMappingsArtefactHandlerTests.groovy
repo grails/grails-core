@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.commons
 
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.springframework.core.io.ByteArrayResource
 
 /**

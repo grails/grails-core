@@ -4,7 +4,7 @@ import grails.util.BuildScope
 import grails.util.Environment
 
 import grails.core.DefaultGrailsApplication
-import grails.exceptions.GrailsConfigurationException
+import org.grails.core.exceptions.GrailsConfigurationException
 
 /**
  * @author Graeme Rocher

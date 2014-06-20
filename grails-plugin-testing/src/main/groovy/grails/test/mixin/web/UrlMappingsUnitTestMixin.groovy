@@ -19,9 +19,9 @@ import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNotNull
 import junit.framework.AssertionFailedError
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsControllerClass
-import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean

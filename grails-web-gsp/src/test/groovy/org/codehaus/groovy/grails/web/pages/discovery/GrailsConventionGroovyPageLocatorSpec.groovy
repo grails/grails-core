@@ -9,7 +9,7 @@ import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
-import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
+import org.grails.core.io.SimpleMapResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 import grails.web.util.GrailsApplicationAttributes
 import org.springframework.core.io.ByteArrayResource

@@ -15,7 +15,7 @@
  */
 package org.grails.web.servlet.mvc.exceptions;
 
-import grails.exceptions.GrailsException;
+import org.grails.core.exceptions.GrailsException;
 
 /**
  * Thrown when an unrecoverable error occurred in the Grails MVC framework.

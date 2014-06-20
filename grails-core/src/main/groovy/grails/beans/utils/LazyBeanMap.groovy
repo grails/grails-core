@@ -16,7 +16,7 @@
 package grails.beans.utils
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
+import org.grails.core.util.ClassPropertyFetcher
 
 import java.beans.PropertyDescriptor
 

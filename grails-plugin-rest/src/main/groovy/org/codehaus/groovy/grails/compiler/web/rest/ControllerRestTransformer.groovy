@@ -19,7 +19,7 @@ import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import grails.compiler.ast.AstTransformer
 import org.codehaus.groovy.grails.compiler.web.ControllerTransformer

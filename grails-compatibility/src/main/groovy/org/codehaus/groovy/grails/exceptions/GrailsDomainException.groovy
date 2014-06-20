@@ -4,11 +4,11 @@ import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link grails.exceptions.GrailsDomainException} instead
+ * @deprecated Use {@link org.grails.core.exceptions.GrailsDomainException} instead
  */
 @Deprecated
 @CompileStatic
-class GrailsDomainException extends grails.exceptions.GrailsDomainException{
+class GrailsDomainException extends org.grails.core.exceptions.GrailsDomainException{
 
     GrailsDomainException() {
     }

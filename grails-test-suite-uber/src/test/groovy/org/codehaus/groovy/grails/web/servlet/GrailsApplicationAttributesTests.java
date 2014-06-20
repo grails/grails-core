@@ -5,11 +5,11 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.grails.core.artefact.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.grails.web.servlet.DefaultGrailsApplicationAttributes;

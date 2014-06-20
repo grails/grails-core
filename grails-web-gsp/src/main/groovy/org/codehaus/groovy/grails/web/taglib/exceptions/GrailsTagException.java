@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib.exceptions;
 
-import grails.exceptions.GrailsException;
+import org.grails.core.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
 
 /**

@@ -19,11 +19,11 @@ import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link grails.exceptions.GrailsException} instead
+ * @deprecated Use {@link org.grails.core.exceptions.GrailsException} instead
  */
 @CompileStatic
 @Deprecated
-class GrailsException extends grails.exceptions.GrailsException{
+class GrailsException extends org.grails.core.exceptions.GrailsException{
 
     GrailsException() {
     }

@@ -18,7 +18,7 @@ import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
 import grails.core.DefaultGrailsApplication;
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 

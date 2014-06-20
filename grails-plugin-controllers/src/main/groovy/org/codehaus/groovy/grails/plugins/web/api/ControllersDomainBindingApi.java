@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.api;
 
 import java.util.Map;
 
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;

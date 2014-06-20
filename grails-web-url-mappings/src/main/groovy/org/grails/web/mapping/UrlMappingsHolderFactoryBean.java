@@ -28,11 +28,11 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import org.codehaus.groovy.grails.commons.*;
 import grails.core.events.ArtefactAdditionEvent;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import grails.core.support.GrailsApplicationAware;
+import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;

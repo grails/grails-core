@@ -17,7 +17,7 @@ package org.grails.web.context
 
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy
+import org.grails.core.support.GrailsApplicationDiscoveryStrategy
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.ContextLoader

@@ -30,7 +30,7 @@ import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
+import grails.persistence.support.PersistenceContextInterceptor
 import org.springframework.context.ApplicationContext
 
 /**

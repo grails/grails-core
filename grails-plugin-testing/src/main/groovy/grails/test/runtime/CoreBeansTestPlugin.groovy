@@ -24,7 +24,7 @@ import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.grails.plugins.support.GrailsApplicationAwareBeanPostProcessor
+import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator

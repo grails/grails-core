@@ -22,8 +22,8 @@ import java.beans.Introspector
 import java.beans.PropertyDescriptor
 
 import org.apache.commons.logging.Log
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
 import grails.util.GrailsMetaClassUtils

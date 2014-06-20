@@ -23,7 +23,7 @@ import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
+import grails.persistence.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.grails.web.servlet.context.GrailsConfigUtils

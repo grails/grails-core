@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.core.DomainClassArtefactHandler;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsDomainClass;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import grails.web.util.GrailsApplicationAttributes;

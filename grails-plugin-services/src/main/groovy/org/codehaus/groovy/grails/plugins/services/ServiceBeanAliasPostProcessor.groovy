@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.services
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
+import org.grails.core.artefact.ServiceArtefactHandler
 import org.grails.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor

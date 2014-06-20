@@ -18,7 +18,7 @@ package org.grails.web.mapping.mvc
 import grails.util.GrailsNameUtils
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsControllerClass

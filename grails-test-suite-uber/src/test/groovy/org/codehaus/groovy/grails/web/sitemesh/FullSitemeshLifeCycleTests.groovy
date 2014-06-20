@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.sitemesh
 
-import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.grails.core.io.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 import org.springframework.mock.web.MockServletConfig
 

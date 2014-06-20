@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsTagLibClass;
+import org.grails.core.DefaultGrailsTagLibClass;
 import grails.core.GrailsTagLibClass;
 import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib;
 import org.codehaus.groovy.grails.plugins.web.taglib.SitemeshTagLib;

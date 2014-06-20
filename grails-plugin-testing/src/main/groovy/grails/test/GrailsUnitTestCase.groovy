@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.core.support.GrailsDomainConfigurationUtil
+import org.grails.core.util.ClassPropertyFetcher
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
 import grails.validation.ValidationErrors

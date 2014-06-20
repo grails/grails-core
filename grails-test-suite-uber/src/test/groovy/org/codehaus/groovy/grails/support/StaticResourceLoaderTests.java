@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.support;
 
 import junit.framework.TestCase;
+import org.grails.core.io.StaticResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.Resource;
 

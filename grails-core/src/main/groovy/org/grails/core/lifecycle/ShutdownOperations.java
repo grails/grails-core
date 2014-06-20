@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.core.cfg.ConfigurationHelper;
 
 /**
  * Operations that should be executed on shutdown.

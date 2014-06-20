@@ -24,7 +24,7 @@ import java.util.Map;
 
 import grails.util.GrailsClassUtils;
 import grails.core.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.grails.core.artefact.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;

@@ -33,8 +33,8 @@ import groovy.util.slurpersupport.GPathResult
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass

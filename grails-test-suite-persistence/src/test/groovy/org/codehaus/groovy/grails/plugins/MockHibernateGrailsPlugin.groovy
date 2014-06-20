@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.GrailsUtil
 
 import org.apache.tomcat.jdbc.pool.DataSource
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
+import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 
 class MockHibernateGrailsPlugin {

@@ -25,7 +25,7 @@ import org.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
-import org.codehaus.groovy.grails.support.IncludeExcludeSupport
+import org.grails.core.util.IncludeExcludeSupport
 import grails.rest.render.AbstractRenderContext
 
 /**

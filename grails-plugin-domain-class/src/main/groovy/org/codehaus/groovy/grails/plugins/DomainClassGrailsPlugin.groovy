@@ -20,14 +20,14 @@ import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
 
 import grails.core.ComponentCapableDomainClass
-import org.grails.core.DomainClassArtefactHandler
+import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
 import org.grails.core.support.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
-import org.codehaus.groovy.grails.support.SoftThreadLocalMap
+import org.grails.core.util.SoftThreadLocalMap
 import org.grails.validation.ConstraintEvalUtils
 import grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean

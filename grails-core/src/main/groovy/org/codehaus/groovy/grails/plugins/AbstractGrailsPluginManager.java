@@ -36,7 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;

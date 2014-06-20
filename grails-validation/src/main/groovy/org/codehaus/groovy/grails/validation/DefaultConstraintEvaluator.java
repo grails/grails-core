@@ -38,7 +38,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import grails.util.GrailsClassUtils;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
-import grails.exceptions.GrailsConfigurationException;
+import org.grails.core.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 
 /**

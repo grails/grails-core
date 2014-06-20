@@ -28,7 +28,7 @@ import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.core.io.watch.DirectoryWatcher;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;

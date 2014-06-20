@@ -5,7 +5,7 @@ import grails.util.GrailsWebUtil
 
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
-import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.grails.core.io.MockStringResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
 import org.springframework.mock.web.MockServletContext

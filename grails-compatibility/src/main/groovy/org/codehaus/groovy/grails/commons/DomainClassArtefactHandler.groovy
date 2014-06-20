@@ -17,8 +17,8 @@ package org.codehaus.groovy.grails.commons
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link org.grails.core.DomainClassArtefactHandler} instead
+ * @deprecated Use {@link org.grails.core.artefact.DomainClassArtefactHandler} instead
  */
 @Deprecated
-class DomainClassArtefactHandler extends org.grails.core.DomainClassArtefactHandler {
+class DomainClassArtefactHandler extends org.grails.core.artefact.DomainClassArtefactHandler {
 }

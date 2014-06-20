@@ -39,7 +39,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
