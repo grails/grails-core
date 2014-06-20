@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
+package grails.compiler.ast;
 
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 
 /**
- * Injector applied to annotated (local transform) entities
+ * Interface specific to Grails artefacts that returns the artefact type.
  *
  * @author Graeme Rocher
- * @since 2.2.3
+ * @since 2.0
  */
-public interface AnnotatedClassInjector {
+public interface GrailsArtefactClassInjector extends ClassInjector{
 
-    /**
-     * Performs injection on an annotated entity
-     * @param source The source unit
-     * @param classNode The class node
-     */
-    void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode);
+    ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
 
+    ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
+
+    Parameter[] ZERO_PARAMETERS = new Parameter[0];
+
+    String[] getArtefactTypes();
 }

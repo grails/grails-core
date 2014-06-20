@@ -1,7 +1,7 @@
 package org.grails.compiler.logging
 
 import org.apache.commons.logging.Log
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
 

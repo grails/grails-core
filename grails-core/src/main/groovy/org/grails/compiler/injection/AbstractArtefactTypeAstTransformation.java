@@ -19,6 +19,9 @@ import grails.build.logging.GrailsConsole;
 
 import java.util.List;
 
+import grails.compiler.ast.AllArtefactClassInjector;
+import grails.compiler.ast.AnnotatedClassInjector;
+import grails.compiler.ast.ClassInjector;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;

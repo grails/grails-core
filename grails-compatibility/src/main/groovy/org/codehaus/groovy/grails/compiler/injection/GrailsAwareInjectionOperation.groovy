@@ -32,11 +32,11 @@ class GrailsAwareInjectionOperation extends org.grails.compiler.injection.Grails
     GrailsAwareInjectionOperation() {
     }
 
-    GrailsAwareInjectionOperation(org.grails.compiler.injection.ClassInjector[] classInjectors) {
+    GrailsAwareInjectionOperation(grails.compiler.ast.ClassInjector[] classInjectors) {
         super(classInjectors)
     }
 
-    GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, org.grails.compiler.injection.ClassInjector[] classInjectors) {
+    GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, grails.compiler.ast.ClassInjector[] classInjectors) {
         super(resourceLoader, classInjectors)
     }
 }

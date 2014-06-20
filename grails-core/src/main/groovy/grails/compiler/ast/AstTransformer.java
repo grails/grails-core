@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
+package grails.compiler.ast;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Extended marker interface that indicates this ClassInjector applies to all types of artefacts.
+ * Marker annotation that for classes that transform Grails classes at the AST level.
  *
- * @author Graeme Rocher
  * @since 2.0
+ * @author Graeme Rocher
  */
-public interface AllArtefactClassInjector extends ClassInjector {
-    // marker interface
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface AstTransformer {
 }

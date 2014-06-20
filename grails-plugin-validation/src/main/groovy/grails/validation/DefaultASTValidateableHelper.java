@@ -15,8 +15,8 @@
  */
 package grails.validation;
 
-import static org.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
-import static org.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
+import static grails.compiler.ast.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
+import static grails.compiler.ast.GrailsArtefactClassInjector.ZERO_PARAMETERS;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;

@@ -60,7 +60,7 @@ import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.grails.compiler.injection.ArtefactTypeAstTransformation
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.io.DefaultResourceLocator

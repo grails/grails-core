@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
+package grails.compiler.ast;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
 
 /**
- * Marker annotation that for classes that transform Grails classes at the AST level.
+ * Injector applied to annotated (local transform) entities
  *
- * @since 2.0
  * @author Graeme Rocher
+ * @since 2.2.3
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface AstTransformer {
+public interface AnnotatedClassInjector {
+
+    /**
+     * Performs injection on an annotated entity
+     * @param source The source unit
+     * @param classNode The class node
+     */
+    void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode);
+
 }

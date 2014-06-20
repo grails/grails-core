@@ -20,9 +20,9 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.SourceUnit;
-import org.grails.compiler.injection.ClassInjector;
+import grails.compiler.ast.ClassInjector;
 import org.grails.compiler.injection.GrailsAwareInjectionOperation;
-import org.grails.compiler.injection.GroovyPageInjector;
+import grails.compiler.ast.GroovyPageInjector;
 
 import java.util.ArrayList;
 import java.util.List;

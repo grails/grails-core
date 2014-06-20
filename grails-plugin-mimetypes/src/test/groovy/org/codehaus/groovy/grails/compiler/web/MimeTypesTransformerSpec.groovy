@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse
 
 import grails.core.DefaultGrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean

@@ -25,6 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import grails.compiler.ast.AstTransformer;
+import grails.compiler.ast.GrailsArtefactClassInjector;
+import grails.compiler.ast.GrailsDomainClassInjector;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;

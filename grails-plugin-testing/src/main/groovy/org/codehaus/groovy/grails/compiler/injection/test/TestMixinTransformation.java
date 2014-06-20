@@ -58,7 +58,7 @@ import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.grails.compiler.injection.GrailsASTUtils;
-import org.grails.compiler.injection.GrailsArtefactClassInjector;
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.junit.After;

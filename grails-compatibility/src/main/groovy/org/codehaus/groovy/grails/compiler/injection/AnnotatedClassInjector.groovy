@@ -21,9 +21,9 @@ package org.codehaus.groovy.grails.compiler.injection
  *
  * @author Graeme Rocher
  * @since 2.2.3
- * @deprecated Use {@link org.grails.compiler.injection.AnnotatedClassInjector} instead
+ * @deprecated Use {@link grails.compiler.ast.AnnotatedClassInjector} instead
  */
 @Deprecated
-public interface AnnotatedClassInjector extends org.grails.compiler.injection.AnnotatedClassInjector{
+public interface AnnotatedClassInjector extends grails.compiler.ast.AnnotatedClassInjector{
 
 }

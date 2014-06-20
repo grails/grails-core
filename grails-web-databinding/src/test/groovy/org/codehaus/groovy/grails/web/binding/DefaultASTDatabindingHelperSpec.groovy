@@ -5,7 +5,7 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 

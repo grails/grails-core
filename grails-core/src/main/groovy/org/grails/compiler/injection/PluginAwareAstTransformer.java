@@ -15,6 +15,8 @@
  */
 package org.grails.compiler.injection;
 
+import grails.compiler.ast.AllArtefactClassInjector;
+import grails.compiler.ast.AstTransformer;
 import grails.util.PluginBuildSettings;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;

@@ -23,8 +23,8 @@ package org.codehaus.groovy.grails.compiler.injection
  * @author Graeme Rocher
  *
  * @since 0.2
- * @deprecated Use {@link org.grails.compiler.injection.ClassInjector} instead
+ * @deprecated Use {@link grails.compiler.ast.ClassInjector} instead
  */
-public interface ClassInjector extends org.grails.compiler.injection.ClassInjector{
+public interface ClassInjector extends grails.compiler.ast.ClassInjector{
 
 }

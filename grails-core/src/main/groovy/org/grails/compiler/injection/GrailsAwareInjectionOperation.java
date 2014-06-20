@@ -15,6 +15,8 @@
  */
 package org.grails.compiler.injection;
 
+import grails.compiler.ast.AstTransformer;
+import grails.compiler.ast.ClassInjector;
 import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
@@ -26,6 +28,7 @@ import org.codehaus.groovy.grails.io.support.FileSystemResource;
 import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
 import org.codehaus.groovy.grails.io.support.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.util.ClassUtils;
@@ -109,7 +112,8 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 try {
 
                     MetadataReader metadataReader = readerFactory.getMetadataReader(new GrailsResource(resource));
-                    if(metadataReader.getAnnotationMetadata().hasAnnotation(AstTransformer.class.getName())) {
+                    AnnotationMetadata annotationMetadata = metadataReader.getAnnotationMetadata();
+                    if(annotationMetadata.hasAnnotation(AstTransformer.class.getName()) || annotationMetadata.hasAnnotatedMethods(org.codehaus.groovy.grails.compiler.injection.AstTransformer.class.getName())) {
                         String className = metadataReader.getClassMetadata().getClassName();
                         Class<?> injectorClass = classLoader.loadClass(className);
                         if(injectorClasses.contains(injectorClass)) continue;

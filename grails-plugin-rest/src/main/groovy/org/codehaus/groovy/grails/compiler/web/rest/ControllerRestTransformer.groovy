@@ -21,7 +21,7 @@ import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
-import org.grails.compiler.injection.AstTransformer
+import grails.compiler.ast.AstTransformer
 import org.codehaus.groovy.grails.compiler.web.ControllerTransformer
 import org.grails.plugins.web.rest.api.ControllersRestApi
 

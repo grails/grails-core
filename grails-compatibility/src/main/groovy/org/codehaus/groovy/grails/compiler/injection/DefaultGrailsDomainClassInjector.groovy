@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.compiler.injection
 
-import org.grails.compiler.injection.AstTransformer
+import grails.compiler.ast.AstTransformer
 
 /**
  * Default implementation of domain class injector interface that adds the 'id'

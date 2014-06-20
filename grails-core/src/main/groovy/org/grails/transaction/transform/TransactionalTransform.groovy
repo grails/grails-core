@@ -36,7 +36,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.grails.compiler.injection.GrailsASTUtils
-import org.grails.compiler.injection.GrailsArtefactClassInjector
+import grails.compiler.ast.GrailsArtefactClassInjector
 import grails.transaction.GrailsTransactionTemplate
 import grails.transaction.TransactionManagerAware
 import org.grails.transaction.GrailsTransactionAttribute

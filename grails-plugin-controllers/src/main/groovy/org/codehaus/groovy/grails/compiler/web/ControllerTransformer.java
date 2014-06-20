@@ -27,7 +27,7 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.grails.compiler.injection.AstTransformer;
+import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;

@@ -17,6 +17,7 @@ package org.grails.compiler.injection;
 
 import java.lang.reflect.Modifier;
 
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.validation.ValidationErrors;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassHelper;

@@ -21,8 +21,8 @@ package org.codehaus.groovy.grails.compiler.injection
  *
  * @author Graeme Rocher
  * @since 2.0
- * @deprecated Use {@link org.grails.compiler.injection.AllArtefactClassInjector} instead
+ * @deprecated Use {@link grails.compiler.ast.AllArtefactClassInjector} instead
  */
 @Deprecated
-public interface AllArtefactClassInjector extends org.grails.compiler.injection.AllArtefactClassInjector{
+public interface AllArtefactClassInjector extends grails.compiler.ast.AllArtefactClassInjector{
 }

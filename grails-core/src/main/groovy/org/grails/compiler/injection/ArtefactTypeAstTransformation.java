@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import grails.compiler.ast.AllArtefactClassInjector;
+import grails.compiler.ast.ClassInjector;
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;

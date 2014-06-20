@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
-
-import org.codehaus.groovy.ast.ClassNode;
+package grails.compiler.ast;
 
 /**
- * Mainly just a marker interface for implementations that perform injection on domain classes.
+ * Extended marker interface that indicates this ClassInjector applies to all types of artefacts.
  *
  * @author Graeme Rocher
- *
- * @since 0.2
+ * @since 2.0
  */
-public interface GrailsDomainClassInjector extends ClassInjector {
-
-    /**
-     * Doesn't check with the specified ClassNode is a valid entity and assumes it
-     * is and proceeds with the injection regardless.
-     *
-     * @param classNode The ClassNode
-     * @since 1.1
-     */
-    void performInjectionOnAnnotatedEntity(ClassNode classNode);
+public interface AllArtefactClassInjector extends ClassInjector {
+    // marker interface
 }

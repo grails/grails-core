@@ -20,8 +20,8 @@ package org.codehaus.groovy.grails.compiler.injection
  *
  * @author Graeme Rocher
  * @since 2.0
- * @deprecated Use {@link org.grails.compiler.injection.GrailsArtefactClassInjector} instead
+ * @deprecated Use {@link grails.compiler.ast.GrailsArtefactClassInjector} instead
  */
 @Deprecated
-public interface GrailsArtefactClassInjector extends org.grails.compiler.injection.GrailsArtefactClassInjector {
+public interface GrailsArtefactClassInjector extends grails.compiler.ast.GrailsArtefactClassInjector {
 }

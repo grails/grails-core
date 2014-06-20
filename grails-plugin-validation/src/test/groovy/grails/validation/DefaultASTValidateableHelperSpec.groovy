@@ -6,7 +6,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.springframework.mock.web.MockServletContext

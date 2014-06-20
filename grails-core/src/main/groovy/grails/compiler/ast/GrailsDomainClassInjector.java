@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
+package grails.compiler.ast;
 
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 
 /**
- * Interface specific to Grails artefacts that returns the artefact type.
+ * Mainly just a marker interface for implementations that perform injection on domain classes.
  *
  * @author Graeme Rocher
- * @since 2.0
+ *
+ * @since 0.2
  */
-public interface GrailsArtefactClassInjector extends ClassInjector{
+public interface GrailsDomainClassInjector extends ClassInjector {
 
-    ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
-
-    ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
-
-    Parameter[] ZERO_PARAMETERS = new Parameter[0];
-
-    String[] getArtefactTypes();
+    /**
+     * Doesn't check with the specified ClassNode is a valid entity and assumes it
+     * is and proceeds with the injection regardless.
+     *
+     * @param classNode The ClassNode
+     * @since 1.1
+     */
+    void performInjectionOnAnnotatedEntity(ClassNode classNode);
 }

@@ -25,7 +25,7 @@ import java.util.List;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 
-import org.grails.compiler.injection.ClassInjector;
+import grails.compiler.ast.ClassInjector;
 import org.grails.compiler.injection.GrailsAwareClassLoader;
 
 /**

@@ -16,6 +16,8 @@
 package org.grails.compiler.injection;
 
 import grails.artefact.Artefact;
+import grails.compiler.ast.AnnotatedClassInjector;
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import groovy.lang.Mixin;
 
 import java.lang.reflect.Modifier;

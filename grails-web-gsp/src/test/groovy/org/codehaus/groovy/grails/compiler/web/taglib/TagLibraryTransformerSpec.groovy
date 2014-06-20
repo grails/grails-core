@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.compiler.web.taglib
 
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 
 import spock.lang.Issue

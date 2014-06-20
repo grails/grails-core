@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
+package grails.compiler.ast;
 
 /**
  * Extended marker interface that indicates this ClassInjector applies to GSPs.

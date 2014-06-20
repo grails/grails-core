@@ -7,7 +7,7 @@ import grails.core.DefaultGrailsApplication
 import org.grails.core.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.compiler.injection.ClassInjector
+import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.grails.web.servlet.mvc.GrailsWebRequest

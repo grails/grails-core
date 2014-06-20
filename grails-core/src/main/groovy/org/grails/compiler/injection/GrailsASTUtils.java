@@ -17,6 +17,7 @@ package org.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
 import grails.build.logging.GrailsConsole;
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;

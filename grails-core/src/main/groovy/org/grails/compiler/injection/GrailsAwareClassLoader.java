@@ -15,6 +15,7 @@
  */
 package org.grails.compiler.injection;
 
+import grails.compiler.ast.ClassInjector;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
