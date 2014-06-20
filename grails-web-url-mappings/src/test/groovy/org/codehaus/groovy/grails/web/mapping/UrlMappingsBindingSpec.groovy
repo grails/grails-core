@@ -7,7 +7,7 @@ import spock.lang.Specification
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 
 /**
  * Tests that focus on ensuring the applicationContext, grailsApplication and servletContext objects are available to UrlMappings

@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.compiler.web
 import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.grails.core.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer

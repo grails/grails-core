@@ -15,6 +15,8 @@
  */
 package grails.test
 
+import grails.core.DefaultArtefactInfo
+import grails.core.DefaultGrailsApplication
 import grails.util.Holders
 import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller

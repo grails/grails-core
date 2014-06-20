@@ -50,7 +50,7 @@ public class Log4jConfigListener implements ServletContextListener {
 
     private Object createGrailsApplication(ClassLoader contextClassLoader) {
         try {
-            Class<?> applicationClass = contextClassLoader.loadClass("org.codehaus.groovy.grails.commons.DefaultGrailsApplication");
+            Class<?> applicationClass = contextClassLoader.loadClass("grails.core.DefaultGrailsApplication");
             return applicationClass.newInstance();
         } catch (ClassNotFoundException e) {
             throw new PluginException("Error instantiating GrailsApplication during logging initialization: " + e.getMessage(), e);

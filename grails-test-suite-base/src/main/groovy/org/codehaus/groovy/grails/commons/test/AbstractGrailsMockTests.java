@@ -22,7 +22,7 @@ import groovy.util.GroovyTestCase;
 
 import java.io.IOException;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.context.MessageSource;

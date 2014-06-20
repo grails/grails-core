@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
+import grails.core.support.proxy.EntityProxyHandler;
 
 public class MockHibernateProxyHandler implements EntityProxyHandler {
     public boolean isProxy(Object o) {

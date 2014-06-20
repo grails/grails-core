@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
+import grails.core.support.proxy.ProxyHandler;
 
 /**
  * @author Siegfried Puchbauer

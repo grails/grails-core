@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.support;
+package org.grails.beans.support;
 
 import java.util.Map;
 import java.util.Properties;

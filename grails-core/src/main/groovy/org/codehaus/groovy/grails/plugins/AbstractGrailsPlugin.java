@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
+import grails.core.AbstractGrailsClass;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;

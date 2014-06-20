@@ -22,7 +22,7 @@ import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.util.GrailsStringUtils
 import org.codehaus.groovy.grails.io.support.Resource

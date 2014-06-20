@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 import grails.artefact.Artefact
 import grails.util.GrailsWebUtil
 import grails.web.Action
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.mapping.AbstractUrlMappingsSpec
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping

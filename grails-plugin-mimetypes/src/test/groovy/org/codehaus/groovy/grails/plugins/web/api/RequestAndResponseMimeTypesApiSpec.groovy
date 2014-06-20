@@ -7,7 +7,7 @@ import org.grails.plugins.web.api.ResponseMimeTypesApi
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest

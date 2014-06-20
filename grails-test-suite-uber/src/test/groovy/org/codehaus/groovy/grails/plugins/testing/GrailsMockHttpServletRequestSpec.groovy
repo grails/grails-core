@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.testing
 
 import grails.converters.XML
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 
 import spock.lang.Issue

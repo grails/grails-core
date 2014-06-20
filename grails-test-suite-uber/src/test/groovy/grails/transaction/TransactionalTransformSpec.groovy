@@ -21,7 +21,7 @@ import grails.spring.BeanBuilder
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor

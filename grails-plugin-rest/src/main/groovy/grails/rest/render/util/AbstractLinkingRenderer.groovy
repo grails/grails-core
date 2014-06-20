@@ -26,9 +26,9 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.grails.core.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
-import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler
+import grails.core.support.proxy.DefaultProxyHandler
+import grails.core.support.proxy.EntityProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator

@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.pages
 
 import grails.gsp.TagLib
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher

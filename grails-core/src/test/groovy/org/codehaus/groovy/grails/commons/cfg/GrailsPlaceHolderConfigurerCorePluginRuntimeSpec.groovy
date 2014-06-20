@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import grails.spring.BeanBuilder
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import spock.lang.Issue
 import spock.lang.Specification

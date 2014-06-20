@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 SpringSource
+ * Copyright 2010 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.support;
+package org.codehaus.groovy.grails.support.proxy
 
-public interface ParticipatingInterceptor extends PersistenceContextInterceptor {
+/**
+ * @author Graeme Rocher
+ * @deprecated Use {@link grails.core.support.proxy.EntityProxyHandler} instead
+ */
+@Deprecated
+public interface EntityProxyHandler extends ProxyHandler, grails.core.support.proxy.EntityProxyHandler {
 
-    void setParticipate(boolean participate);
-
-    boolean getParticipate();
 }

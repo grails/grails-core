@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.AbstractGrailsClass;
 import grails.core.GrailsUrlMappingsClass;
 import groovy.lang.Closure;
 

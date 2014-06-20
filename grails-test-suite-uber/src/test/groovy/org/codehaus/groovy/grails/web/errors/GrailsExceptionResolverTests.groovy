@@ -5,7 +5,7 @@ import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse

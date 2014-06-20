@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.beans.factory.FactoryBean;

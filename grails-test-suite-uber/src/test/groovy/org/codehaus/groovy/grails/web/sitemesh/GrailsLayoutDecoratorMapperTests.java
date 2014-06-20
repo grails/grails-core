@@ -15,7 +15,7 @@ import javax.servlet.ServletContext;
 
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup;
 import org.codehaus.groovy.grails.support.MockApplicationContext;

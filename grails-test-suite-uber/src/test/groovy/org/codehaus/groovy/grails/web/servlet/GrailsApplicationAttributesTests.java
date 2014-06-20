@@ -6,7 +6,7 @@ import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;

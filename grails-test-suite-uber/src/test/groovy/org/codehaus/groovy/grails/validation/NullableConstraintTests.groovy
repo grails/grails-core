@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.validation
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 
  /**

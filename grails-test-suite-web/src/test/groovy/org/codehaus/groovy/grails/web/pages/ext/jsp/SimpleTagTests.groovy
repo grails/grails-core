@@ -6,7 +6,7 @@ import javax.servlet.jsp.JspException
 import javax.servlet.jsp.JspWriter
 import javax.servlet.jsp.tagext.SimpleTagSupport
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockServletContext

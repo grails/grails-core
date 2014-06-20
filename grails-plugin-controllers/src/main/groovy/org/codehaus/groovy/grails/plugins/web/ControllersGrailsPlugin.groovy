@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.artefact.Enhanced
+import grails.config.Settings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
@@ -31,7 +32,6 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
-import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.grails.web.servlet.mvc.GrailsWebRequestFilter
@@ -140,7 +140,7 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
         def redirectListeners = ctx.getBeansOfType(RedirectEventListener)
         controllerApi.setRedirectListeners(redirectListeners.values())
 
-        Object o = application.getFlatConfig().get(RedirectDynamicMethod.GRAILS_VIEWS_ENABLE_JSESSIONID)
+        Object o = application.getFlatConfig().get(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID)
         if (o instanceof Boolean) {
             controllerApi.setUseJessionId(o)
         }

@@ -31,7 +31,7 @@ import javax.servlet.ServletContext
 
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper

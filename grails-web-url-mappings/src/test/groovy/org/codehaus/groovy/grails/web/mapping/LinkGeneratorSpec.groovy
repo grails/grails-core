@@ -4,7 +4,7 @@ import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.grails.web.mapping.CachingLinkGenerator

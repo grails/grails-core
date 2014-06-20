@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.filters
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.codehaus.groovy.grails.support.MockApplicationContext

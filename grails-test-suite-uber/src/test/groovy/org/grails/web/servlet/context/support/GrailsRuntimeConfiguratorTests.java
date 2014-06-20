@@ -11,7 +11,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;

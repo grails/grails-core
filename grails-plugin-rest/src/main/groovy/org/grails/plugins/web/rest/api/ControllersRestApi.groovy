@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse
 import grails.core.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.grails.plugins.web.api.ControllersMimeTypesApi
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
 import grails.web.util.GrailsApplicationAttributes

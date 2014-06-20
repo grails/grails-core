@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.AbstractInjectableGrailsClass;
 import groovy.lang.Closure;
 
 import java.io.IOException;

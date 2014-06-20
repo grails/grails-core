@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.tools.RootLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.DefaultResourceLoader

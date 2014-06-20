@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 

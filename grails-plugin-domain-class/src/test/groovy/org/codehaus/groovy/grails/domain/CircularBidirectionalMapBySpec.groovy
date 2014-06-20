@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.domain
 
 import grails.persistence.Entity
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsDomainClass
 import spock.lang.Specification
 

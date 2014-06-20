@@ -2,7 +2,7 @@ package org.grails.boot.support
 
 import grails.util.Holders
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.grails.core.lifecycle.ShutdownOperations

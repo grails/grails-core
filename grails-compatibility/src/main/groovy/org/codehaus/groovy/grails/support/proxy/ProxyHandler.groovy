@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2004-2008 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import grails.util.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.io.support.Resource
+package org.codehaus.groovy.grails.support.proxy
 
 /**
- * Gant script that handles general initialization of a Grails applications
- *
- * @deprecated Use "create-app --inplace" or "upgrade".
  * @author Graeme Rocher
- * @author Peter Ledbrook
- *
- * @since 0.4
+ * @deprecated Use {@link grails.core.support.proxy.ProxyHandler} instead
  */
-
-includeTargets << grailsScript("_GrailsInit")
-
-setDefaultTarget("init")
-
-
+@Deprecated
+interface ProxyHandler extends grails.core.support.proxy.ProxyHandler{
+}

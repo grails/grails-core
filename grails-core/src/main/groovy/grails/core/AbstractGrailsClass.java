@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons;
+package grails.core;
 
-import grails.core.GrailsApplication;
-import grails.core.GrailsClass;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsMetaClassUtils;
 import grails.util.GrailsNameUtils;
@@ -26,6 +24,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import grails.exceptions.NewInstanceCreationException;
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;

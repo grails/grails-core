@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.core.io
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.MockBinaryPluginResource

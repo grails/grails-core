@@ -24,8 +24,8 @@ import grails.util.GrailsUtil
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
-import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
+import org.grails.spring.context.support.GrailsPlaceholderConfigurer
+import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.spring.RuntimeSpringConfigUtilities
@@ -36,8 +36,8 @@ import org.grails.plugins.support.GrailsApplicationAwareBeanPostProcessor
 import org.grails.plugins.support.PluginManagerAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
-import org.codehaus.groovy.grails.support.PropertiesEditor
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
+import org.grails.beans.support.PropertiesEditor
+import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader

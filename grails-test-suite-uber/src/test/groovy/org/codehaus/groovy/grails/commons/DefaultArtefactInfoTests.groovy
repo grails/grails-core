@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.commons
 
+import grails.core.DefaultArtefactInfo
+
 /**
  * @author Graeme Rocher
  * @since 1.0

@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.commons.metaclass
 
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi

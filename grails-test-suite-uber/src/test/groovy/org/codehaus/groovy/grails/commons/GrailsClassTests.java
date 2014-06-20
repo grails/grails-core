@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.AbstractGrailsClass;
 import grails.core.GrailsClass;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;

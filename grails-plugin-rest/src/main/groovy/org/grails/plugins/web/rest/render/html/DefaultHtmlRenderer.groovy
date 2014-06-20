@@ -20,7 +20,7 @@ import grails.rest.render.Renderer
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.BeanPropertyBindingResult

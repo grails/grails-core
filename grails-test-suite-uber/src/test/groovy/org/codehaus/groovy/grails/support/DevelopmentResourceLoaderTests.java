@@ -22,7 +22,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 
 /**
  * @author Graeme Rocher

@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import org.apache.commons.logging.Log
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 
 class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {

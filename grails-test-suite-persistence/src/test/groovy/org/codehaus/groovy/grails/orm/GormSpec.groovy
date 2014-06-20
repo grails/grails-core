@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm
 import grails.util.Holders
 import grails.util.Metadata
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration

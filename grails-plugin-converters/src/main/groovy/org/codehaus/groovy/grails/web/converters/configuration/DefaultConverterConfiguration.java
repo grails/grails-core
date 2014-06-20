@@ -23,8 +23,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
+import grails.core.support.proxy.DefaultProxyHandler;
+import grails.core.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;

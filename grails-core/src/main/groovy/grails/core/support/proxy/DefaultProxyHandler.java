@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.support.proxy;
+package grails.core.support.proxy;
 
 /**
  * Trivial default implementation that always returns true and the object.

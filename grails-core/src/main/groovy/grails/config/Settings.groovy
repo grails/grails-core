@@ -20,6 +20,10 @@ interface Settings {
      */
     String SPRING_PLACEHOLDER_PREFIX = "grails.spring.placeholder.prefix";
 
+    /**
+     * Whether to include the jsessionid in the rendered links
+     **/
+    String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
     String GSP_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
     String GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
     String CLASS_RESOURCE_PATTERN = "/**/*.class"

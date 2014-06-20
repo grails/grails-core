@@ -6,7 +6,7 @@ import javax.servlet.ServletContext
 
 import grails.util.Environment
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.support.MockApplicationContext

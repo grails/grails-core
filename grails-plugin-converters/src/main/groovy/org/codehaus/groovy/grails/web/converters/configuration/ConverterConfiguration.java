@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.converters.configuration;
 
 import java.util.List;
 
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
+import grails.core.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 

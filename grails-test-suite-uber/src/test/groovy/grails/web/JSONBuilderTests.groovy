@@ -1,7 +1,7 @@
 package grails.web
 
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 
 /**
  * @author Graeme Rocher

@@ -21,8 +21,8 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.grails.core.DomainClassArtefactHandler
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
-import org.codehaus.groovy.grails.support.proxy.ProxyHandler
+import grails.core.support.proxy.DefaultProxyHandler
+import grails.core.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.GroovyBeanMarshaller

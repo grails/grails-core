@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;

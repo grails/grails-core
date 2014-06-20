@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.core.AbstractGrailsClass;
 import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
@@ -701,7 +702,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.AbstractGrailsClass#getName()
+     * @see grails.core.AbstractGrailsClass#getName()
      */
     @Override
     public String getName() {

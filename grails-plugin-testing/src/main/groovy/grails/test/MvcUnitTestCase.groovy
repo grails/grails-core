@@ -28,7 +28,7 @@ import org.springframework.mock.web.MockHttpSession
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.WebApplicationContext
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 
 /**
  * Common test case support class for controllers, tag libraries, and

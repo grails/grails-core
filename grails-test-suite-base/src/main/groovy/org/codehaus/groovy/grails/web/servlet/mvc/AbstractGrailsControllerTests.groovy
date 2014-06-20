@@ -8,7 +8,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import grails.web.databinding.GrailsWebDataBinder;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration

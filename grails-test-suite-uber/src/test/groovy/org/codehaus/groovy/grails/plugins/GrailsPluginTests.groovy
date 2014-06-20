@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.BuildScope
 import grails.util.Environment
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import grails.exceptions.GrailsConfigurationException
 
 /**

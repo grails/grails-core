@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.pages.discovery
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin

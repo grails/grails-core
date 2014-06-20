@@ -5,7 +5,7 @@ import org.grails.compiler.web.mime.MimeTypesTransformer
 
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.core.DefaultGrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.compiler.injection.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader

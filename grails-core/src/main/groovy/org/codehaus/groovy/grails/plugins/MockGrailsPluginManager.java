@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.util.Assert;
