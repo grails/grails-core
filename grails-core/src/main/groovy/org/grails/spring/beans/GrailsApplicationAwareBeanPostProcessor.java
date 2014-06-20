@@ -45,6 +45,8 @@ public class GrailsApplicationAwareBeanPostProcessor extends BeanPostProcessorAd
     public static void processAwareInterfaces(GrailsApplication grailsApplication, Object bean) {
         if (bean instanceof GrailsApplicationAware) {
             ((GrailsApplicationAware)bean).setGrailsApplication(grailsApplication);
+        } else if(bean instanceof org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware) {
+            ((org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware)bean).setGrailsApplication((org.codehaus.groovy.grails.commons.GrailsApplication)grailsApplication);
         }
         if (bean instanceof GrailsConfigurationAware) {
             ((GrailsConfigurationAware)bean).setConfiguration(grailsApplication.getConfig());

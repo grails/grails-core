@@ -73,7 +73,7 @@ class DependencyManagerConfigurer {
 
     @CompileStatic
     private static DependencyManager loadAetherDependencyManager(GroovyClassLoader classLoader) {
-        (DependencyManager) classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager").newInstance()
+        (DependencyManager) classLoader.loadClass("org.grails.resolve.maven.aether.AetherDependencyManager").newInstance()
     }
 
     @CompileStatic

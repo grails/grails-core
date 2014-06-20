@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2004-2005 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,9 @@
 package org.codehaus.groovy.grails.web.servlet
 
 /**
- * @deprecated Use {@link org.grails.web.servlet.GrailsFlashScope} instead
  * @author Graeme Rocher
+ * @deprecated Use {@link org.grails.web.servlet.WrappedResponseHolder} instead
  */
 @Deprecated
-class GrailsFlashScope implements FlashScope {
-
-    @Delegate grails.web.mvc.FlashScope flashScope
-
-    GrailsFlashScope(grails.web.mvc.FlashScope flashScope) {
-        this.flashScope = flashScope
-    }
-
-    GrailsFlashScope() {
-        this.flashScope = new org.grails.web.servlet.GrailsFlashScope()
-    }
+class WrappedResponseHolder extends org.grails.web.servlet.WrappedResponseHolder{
 }

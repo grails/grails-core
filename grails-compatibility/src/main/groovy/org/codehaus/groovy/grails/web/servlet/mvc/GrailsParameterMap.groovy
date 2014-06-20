@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpServletRequest
 
 /**
@@ -14,12 +16,20 @@ import javax.servlet.http.HttpServletRequest
  * @deprecated Use {@link grails.web.servlet.mvc.GrailsParameterMap} instead
  */
 @Deprecated
-class GrailsParameterMap extends grails.web.servlet.mvc.GrailsParameterMap{
-    GrailsParameterMap(Map values, HttpServletRequest request) {
-        super(values, request)
+@CompileStatic
+class GrailsParameterMap implements Map {
+
+    @Delegate grails.web.servlet.mvc.GrailsParameterMap delegate
+
+    GrailsParameterMap(grails.web.servlet.mvc.GrailsParameterMap delegate) {
+        this.delegate = delegate
     }
 
-    GrailsParameterMap(HttpServletRequest request) {
-        super(request)
+    GrailsParameterMap(Map values, HttpServletRequest request) {
+        this.delegate = new grails.web.servlet.mvc.GrailsParameterMap(values, request)
+    }
+
+    public GrailsParameterMap(HttpServletRequest request) {
+        this.delegate = new grails.web.servlet.mvc.GrailsParameterMap(request)
     }
 }

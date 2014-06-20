@@ -1,4 +1,3 @@
 dependencies {
-    compile project(':grails-databinding'),
-            project(':grails-web')
+    compile project(':grails-plugin-mimetypes')
 }

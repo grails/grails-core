@@ -20,6 +20,11 @@ package org.codehaus.groovy.grails.plugins
  * @deprecated Use {@link grails.plugins.PluginManagerAware} instead
  */
 @Deprecated
-public interface PluginManagerAware extends grails.plugins.PluginManagerAware {
-
+public interface PluginManagerAware {
+    /**
+     * Sets the plug-in manager on this instance
+     *
+     * @param pluginManager The PluginManager
+     */
+    void setPluginManager(GrailsPluginManager pluginManager);
 }

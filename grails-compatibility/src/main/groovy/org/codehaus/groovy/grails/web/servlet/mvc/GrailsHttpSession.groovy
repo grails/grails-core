@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession
 
 /**
  * An adapter class that takes a regular HttpSession and allows you to access it like a Groovy map.
@@ -10,8 +11,12 @@ import javax.servlet.http.HttpServletRequest
  *
  * @deprecated Use {@link grails.web.servlet.mvc.GrailsHttpSession} instead
  */
-class GrailsHttpSession extends grails.web.servlet.mvc.GrailsHttpSession{
-    GrailsHttpSession(HttpServletRequest request) {
-        super(request)
+@Deprecated
+class GrailsHttpSession implements HttpSession{
+
+    @Delegate grails.web.servlet.mvc.GrailsHttpSession grailsHttpSession
+
+    GrailsHttpSession(grails.web.servlet.mvc.GrailsHttpSession grailsHttpSession) {
+        this.grailsHttpSession = grailsHttpSession
     }
 }

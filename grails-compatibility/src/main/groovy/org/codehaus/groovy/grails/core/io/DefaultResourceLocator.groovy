@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet
+package org.codehaus.groovy.grails.core.io
 
 /**
- * @deprecated Use {@link org.grails.web.servlet.GrailsFlashScope} instead
- * @author Graeme Rocher
+ * @deprecated Use {@link org.grails.core.io.DefaultResourceLocator} instead
  */
 @Deprecated
-class GrailsFlashScope implements FlashScope {
+class DefaultResourceLocator extends org.grails.core.io.DefaultResourceLocator {
 
-    @Delegate grails.web.mvc.FlashScope flashScope
-
-    GrailsFlashScope(grails.web.mvc.FlashScope flashScope) {
-        this.flashScope = flashScope
-    }
-
-    GrailsFlashScope() {
-        this.flashScope = new org.grails.web.servlet.GrailsFlashScope()
+    DefaultResourceLocator() {
     }
 }

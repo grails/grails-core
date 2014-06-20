@@ -47,9 +47,15 @@ public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapte
                 pluginManager = beanFactory.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
             }
         }
-        if (pluginManager != null && bean instanceof PluginManagerAware) {
-            ((PluginManagerAware)bean).setPluginManager(pluginManager);
+        if(pluginManager != null) {
+
+            if (bean instanceof PluginManagerAware) {
+                ((PluginManagerAware)bean).setPluginManager(pluginManager);
+            } else if(bean instanceof org.codehaus.groovy.grails.plugins.PluginManagerAware) {
+                ((org.codehaus.groovy.grails.plugins.PluginManagerAware)bean).setPluginManager((org.codehaus.groovy.grails.plugins.GrailsPluginManager)pluginManager);
+            }
         }
+
         return bean;
     }
 

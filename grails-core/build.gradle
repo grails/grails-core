@@ -68,6 +68,7 @@ dependencies {
     optional "org.fusesource.jansi:jansi:$jansiVersion"
     optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         exclude group:'commons-cli', module:'commons-cli'
+        exclude group:'org.apache.ant', module:'ant'
     }
 
 }
