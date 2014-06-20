@@ -12,13 +12,13 @@ public class HTMLJSCodec implements CodecFactory {
     protected final Decoder[] decoders;
     
     public HTMLJSCodec() {
-        encoders = new StreamingEncoder[]{(StreamingEncoder)new BasicXMLEncoder(), (StreamingEncoder)JavaScriptCodec.getENCODER()};
+        encoders = new StreamingEncoder[]{(StreamingEncoder)new HTMLEncoder(), (StreamingEncoder)JavaScriptCodec.getENCODER()};
         decoders = new Decoder[]{JavaScriptCodec.getDECODER(), new HTML4Decoder()}; 
     }
 
     @Override
     public Encoder getEncoder() {
-        return new ChainedEncoder(encoders);
+        return ChainedEncoder.createFor(encoders);
     }
 
     @Override

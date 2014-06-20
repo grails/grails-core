@@ -20,16 +20,15 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
-
+import org.grails.spring.DefaultRuntimeSpringConfiguration
+import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import grails.core.GrailsApplication
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.spring.RuntimeSpringConfigUtilities
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.grails.core.io.DefaultResourceLocator
 import grails.core.support.GrailsApplicationAware
 import org.grails.plugins.support.GrailsApplicationAwareBeanPostProcessor
@@ -92,7 +91,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         }
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
-        
+
         if (getParentCtx()?.containsBean('pluginManager')) {
             pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager'))
         } else {

@@ -22,8 +22,8 @@ import javax.servlet.ServletContext;
 
 import grails.core.GrailsApplication;
 import grails.web.servlet.context.support.GrailsEnvironment;
-import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory;
+import org.grails.spring.GrailsApplicationContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;

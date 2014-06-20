@@ -2,10 +2,11 @@ package org.grails.web.servlet.context.support;
 
 import grails.util.Holders;
 import grails.util.Metadata;
-import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.grails.spring.BeanConfiguration;
+import org.grails.spring.DefaultRuntimeSpringConfiguration;
+import org.grails.spring.GrailsApplicationContext;
+import org.grails.spring.RuntimeSpringConfiguration;
+import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;

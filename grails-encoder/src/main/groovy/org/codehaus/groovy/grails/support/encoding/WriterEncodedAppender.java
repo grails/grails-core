@@ -69,14 +69,6 @@ public class WriterEncodedAppender extends AbstractEncodedAppender {
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender#append(org.codehaus.groovy.grails.support.encoding.Encoder, char)
-     */
-    @Override
-    public void append(Encoder encoder, char character) throws IOException {
-        target.write(character);
-    }
-
-    /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.encoding.EncodedAppender#close()
      */
     public void close() throws IOException {

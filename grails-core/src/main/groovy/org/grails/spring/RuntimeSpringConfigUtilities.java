@@ -27,6 +27,7 @@ import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.ClassUtils;
+import org.grails.spring.RuntimeSpringConfiguration;
 
 /**
  * @since 2.4

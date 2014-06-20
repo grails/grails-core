@@ -26,8 +26,9 @@ import java.util.Set;
  * @since 2.3
  */
 public class EncodingStateImpl implements EncodingState {
-    public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl((Set<Encoder>)null);
+    public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl((Set<Encoder>)null, null);
     private final Set<Encoder> encoders;
+    private final EncodingState previousEncodingState;
 
     /**
      * Default constructor
@@ -35,12 +36,13 @@ public class EncodingStateImpl implements EncodingState {
      * @param encoders
      *            the encoders
      */
-    public EncodingStateImpl(Set<Encoder> encoders) {
+    public EncodingStateImpl(Set<Encoder> encoders, EncodingState previousEncodingState) {
         this.encoders = encoders;
+        this.previousEncodingState = previousEncodingState;
     }
 
-    public EncodingStateImpl(Encoder encoder) {
-        this.encoders = Collections.singleton(encoder);
+    public EncodingStateImpl(Encoder encoder, EncodingState previousEncodingState) {
+        this(Collections.singleton(encoder), previousEncodingState);
     }
 
     /*
@@ -98,7 +100,7 @@ public class EncodingStateImpl implements EncodingState {
             newEncoders.addAll(encoders);
             newEncoders.add(encoder);
         }
-        return new EncodingStateImpl(newEncoders);
+        return new EncodingStateImpl(newEncoders, this);
     }
 
     @Override
@@ -125,5 +127,10 @@ public class EncodingStateImpl implements EncodingState {
             sb.append("[no encoders]");
         }
         return sb.toString();
+    }
+
+    @Override
+    public EncodingState getPreviousEncodingState() {
+        return previousEncodingState;
     }
 }

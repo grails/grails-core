@@ -19,7 +19,7 @@ import grails.build.logging.GrailsConsole;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.grails.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;

@@ -21,19 +21,23 @@ import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec;
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
-import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder
 import org.codehaus.groovy.grails.support.encoding.EncodesToWriterAdapter
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookupHolder
 
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Unroll;
 
 class StreamCharBufferSpec extends Specification {
     StreamCharBuffer buffer
     GrailsPrintWriter codecOut
     GrailsPrintWriter out
     GrailsCodecClass htmlCodecClass
+    GrailsCodecClass rawCodecClass
+    GrailsCodecClass jsCodecClass
 
     def setup() {
         def grailsApplication = Mock(GrailsApplication)
@@ -41,9 +45,11 @@ class StreamCharBufferSpec extends Specification {
         grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { htmlCodecClass }
         GrailsCodecClass html4CodecClass = new DefaultGrailsCodecClass(HTML4Codec)
         grailsApplication.getArtefact("Codec", HTML4Codec.name) >> { html4CodecClass }
-        GrailsCodecClass rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
+        rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
         grailsApplication.getArtefact("Codec", RawCodec.name) >> { rawCodecClass }
-        def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass]
+        jsCodecClass = new DefaultGrailsCodecClass(JavaScriptCodec) 
+        grailsApplication.getArtefact("Codec", JavaScriptCodec.name) >> { jsCodecClass }
+        def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass, jsCodecClass]
         grailsApplication.getCodecClasses() >> { codecClasses }
         GrailsWebUtil.bindMockWebRequest()
 
@@ -270,6 +276,118 @@ class StreamCharBufferSpec extends Specification {
         buffer.encodeTo(stringWriter, encodesToWriter)
         then:
         stringWriter.toString() == '<Raw codec&lt;another part&lt;script&gt;Hello world &amp; hi'
+    }
+    
+    @Issue("GRAILS-11505")
+    @Unroll
+    def "should SCB support preferSubChunkWhenWritingToOtherBuffer feature - #resetLastBuffer"(boolean resetLastBuffer) {
+        given:
+            int bufid=1
+            def buffers = [:]
+            def msgs = [:]
+            def createSubBufferClosure = {
+                def subbufid = bufid++
+                def msg = "Hello world <#${subbufid}>"
+                def subbuf = createSubBuffer { out ->
+                    out << msg
+                }
+                buffers.put(subbufid, subbuf)
+                msgs.put(subbufid, msg)
+                subbuf
+            }
+            20.times(createSubBufferClosure)
+            String expectedMessage = ""
+            String expectedWithoutExtra = ""
+            def secondLevelSubBuf = createSubBuffer { out -> out << '<script>from subbuffer</script>' }
+            secondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
+            def encodedSecondLevelSubBuf = secondLevelSubBuf.encodeToBuffer(htmlCodecClass.encoder, true, true)
+            assert encodedSecondLevelSubBuf.clone().toString() == '&lt;script&gt;from subbuffer&lt;/script&gt;'
+            encodedSecondLevelSubBuf.notifyParentBuffersEnabled = true
+            encodedSecondLevelSubBuf.preferSubChunkWhenWritingToOtherBuffer = true
+            def secondOut = new GrailsPrintWriter(buffers.get(10).writer)
+            secondOut << encodedSecondLevelSubBuf
+            secondOut.close()
+            def allbuffers = createSubBuffer { out ->
+                buffers.each { k, v ->
+                    out << v
+                    expectedMessage += msgs.get(k)
+                    expectedWithoutExtra += msgs.get(k)
+                    if(k == 10) {
+                        expectedMessage += '&lt;script&gt;from subbuffer&lt;/script&gt;'
+                    }
+                }
+            }
+        expect:
+            buffers.get(10).preferSubChunkWhenWritingToOtherBuffer == true
+            buffers.get(10).clone().toString() == 'Hello world <#10>&lt;script&gt;from subbuffer&lt;/script&gt;'
+            allbuffers.size() == expectedMessage.length()
+            allbuffers.clone().size() == expectedMessage.length()
+            with(allbuffers.clone()) { obj ->
+                obj.toString() == expectedMessage
+                obj.length() == expectedMessage.length()
+                obj.toString() == expectedMessage
+                obj.length() == expectedMessage.length()
+            }
+            allbuffers.size() == expectedMessage.length()
+        when:
+            if(resetLastBuffer) {
+                secondLevelSubBuf.clear()
+            } else {
+                encodedSecondLevelSubBuf.clear()
+            }
+        then:
+            def withoutExtra = allbuffers.clone().toString()
+            withoutExtra.trim() == expectedWithoutExtra.trim()
+            allbuffers.size() == expectedWithoutExtra.length()
+            allbuffers.clone().size() == expectedWithoutExtra.length()
+            withoutExtra.length() == expectedWithoutExtra.length()
+            withoutExtra == expectedWithoutExtra
+        where:
+            resetLastBuffer << [true, false]
+    }
+    
+    private def createSubBuffer(Closure outputClosure) {
+        StreamCharBuffer scb = new StreamCharBuffer()
+        def pw = new GrailsPrintWriter(scb.writer)
+        outputClosure(pw)
+        pw.close()
+        scb
+    }
+    
+    @Unroll
+    @Issue("GRAILS-11505")
+    def "should support multiple levels of encoded subbuffers - #callSize #callFlush"(boolean callSize, boolean callFlush) {
+        given:
+            def scb = createSubBuffer { out ->
+                out << "<1> - Hello;"
+            }
+            scb.preferSubChunkWhenWritingToOtherBuffer = true
+        expect:
+            scb.toString() == '<1> - Hello;'
+        when:
+            def scb2 = jsCodecClass.encoder.encode(scb)
+        then:
+            if(callSize) {
+                // size and clone have side-effects in SCB, so we want to test both paths
+                scb2.size() == 27
+                scb2.clone().toString() == '\\u003c1\\u003e - Hello\\u003b'
+            }
+        when:
+            scb.writer.write '(1)'
+            if(callFlush) {
+                scb.writer.flush()
+            }
+        then:
+            if(callFlush) {
+                scb2.toString() == '\\u003c1\\u003e - Hello\\u003b\\u00281\\u0029'
+                scb2.size() == 40
+            } else {
+                scb2.toString() == '\\u003c1\\u003e - Hello\\u003b'
+                scb2.size() == 27
+            }
+            scb.toString() == '<1> - Hello;(1)'
+        where:
+            [callSize, callFlush] << [[true, false], [true, false]].combinations()*.flatten()
     }
 
 }

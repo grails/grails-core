@@ -17,7 +17,7 @@ package grails.spring
 
 import groovy.xml.StreamingMarkupBuilder
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.spring.BeanConfiguration
+import org.grails.spring.BeanConfiguration
 import org.springframework.beans.factory.config.BeanDefinitionHolder
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException
 import org.springframework.beans.factory.parsing.Location

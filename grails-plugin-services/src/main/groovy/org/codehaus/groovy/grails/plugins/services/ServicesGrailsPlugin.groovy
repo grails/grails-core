@@ -23,8 +23,8 @@ import java.lang.reflect.Modifier
 
 import grails.core.GrailsServiceClass
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
-import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.grails.transaction.GroovyAwareNamedTransactionAttributeSource
+import org.grails.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.transaction.annotation.Transactional

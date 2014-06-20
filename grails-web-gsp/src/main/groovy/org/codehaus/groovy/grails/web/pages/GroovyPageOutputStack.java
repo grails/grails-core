@@ -21,8 +21,11 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
@@ -182,7 +185,7 @@ public final class GroovyPageOutputStack {
         }
     }
 
-    public class GroovyPageProxyWriter extends GrailsLazyProxyPrintWriter {
+    public class GroovyPageProxyWriter extends GrailsLazyProxyPrintWriter implements EncodedAppenderFactory, EncoderAware {
         GroovyPageProxyWriterGroup writerGroup;
 
         GroovyPageProxyWriter(GroovyPageProxyWriterGroup writerGroup, DestinationFactory factory) {
@@ -198,6 +201,27 @@ public final class GroovyPageOutputStack {
         public Writer getOut() {
             writerGroup.activateWriter(this);
             return super.getOut();
+        }
+
+        @Override
+        public EncodedAppender getEncodedAppender() {
+            Writer out = getOut();
+            if(out instanceof EncodedAppenderFactory) {
+                return ((EncodedAppenderFactory)out).getEncodedAppender();
+            } else if(out instanceof EncodedAppender) {
+                return (EncodedAppender)getOut();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public Encoder getEncoder() {
+            Writer out = getOut();
+            if(out instanceof EncoderAware) {
+                return ((EncoderAware)out).getEncoder();
+            }
+            return null;
         }
     }
 
