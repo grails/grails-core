@@ -21,7 +21,7 @@
  *
  * @since 2.3
  */
-import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 
 includeTargets << grailsScript("_GrailsBootstrap")
 

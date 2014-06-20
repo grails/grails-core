@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import org.codehaus.groovy.grails.cli.fork.testing.ForkedGrailsTestRunner
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
+import grails.persistence.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestRunner
 import org.codehaus.groovy.grails.test.runner.phase.FunctionalTestPhaseConfigurer
 import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer

@@ -23,7 +23,7 @@
  */
 
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
+import grails.persistence.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.cli.support.*
 
 includeTargets << grailsScript("_GrailsBootstrap")
