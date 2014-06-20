@@ -45,7 +45,7 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
     private Map<String, GrailsTagLibClass> namespace2tagLibMap = new HashMap<String, GrailsTagLibClass>();
 
     public TagLibArtefactHandler() {
-        super(TYPE, GrailsTagLibClass.class, DefaultGrailsTagLibClass.class, DefaultGrailsTagLibClass.TAG_LIB);
+        super(TYPE, GrailsTagLibClass.class, DefaultGrailsTagLibClass.class, TYPE);
     }
 
     @Override

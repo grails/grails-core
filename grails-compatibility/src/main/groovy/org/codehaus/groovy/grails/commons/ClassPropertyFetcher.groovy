@@ -9,7 +9,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 @Deprecated
 class ClassPropertyFetcher extends org.grails.core.util.ClassPropertyFetcher {
-    ClassPropertyFetcher(Class<?> clazz, ReferenceInstanceCallback callback) {
+    ClassPropertyFetcher(Class<?> clazz, org.grails.core.util.ClassPropertyFetcher.ReferenceInstanceCallback callback) {
         super(clazz, callback)
     }
 }

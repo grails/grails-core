@@ -18,6 +18,7 @@ package org.grails.core;
 import grails.core.AbstractInjectableGrailsClass;
 import grails.core.GrailsTagLibClass;
 import groovy.lang.Closure;
+import org.grails.core.artefact.TagLibArtefactHandler;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass implements GrailsTagLibClass {
 
-    protected static final String TAG_LIB = "TagLib";
+    protected static final String TAG_LIB = TagLibArtefactHandler.TYPE;
 
     private Set<String> tags = new HashSet<String>();
     private String namespace = GrailsTagLibClass.DEFAULT_NAMESPACE;
