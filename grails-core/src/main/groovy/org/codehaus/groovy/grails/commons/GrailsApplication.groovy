@@ -15,11 +15,13 @@
  */
 package org.codehaus.groovy.grails.commons
 
+import groovy.transform.CompileStatic
+
 /**
  * @author Graeme Rocher
  * @deprecated Use {@link grails.core.GrailsApplication} instead
  */
 @Deprecated
+@CompileStatic
 public interface GrailsApplication extends grails.core.GrailsApplication{
-
 }

@@ -1,2 +1,2 @@
-org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes=org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
+grails.web.util.GrailsApplicationAttributes=org.grails.web.servlet.DefaultGrailsApplicationAttributes
 

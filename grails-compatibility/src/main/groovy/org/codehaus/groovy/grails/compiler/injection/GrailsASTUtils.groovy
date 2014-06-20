@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
 
-import org.codehaus.groovy.ast.ClassNode;
+package org.codehaus.groovy.grails.compiler.injection
+
+import org.grails.compiler.injection.GrailsASTUtils
 
 /**
- * Enhances a class to contain an Errors property of type org.springframework.validation.Errors.  Methods added include:
+ * Helper methods for working with Groovy AST trees.
  *
- *  <pre>
- *  public void setErrors(Errors errors)
- *  public Errors getErrors()
- *  public void clearErrors()
- *  public Boolean hasErrors()
- *  </pre>
- *
- *  @author Jeff Brown
+ * @author Graeme Rocher
+ * @since 0.3
+ * @deprecated Use {@link org.grails.compiler.injection.GrailsASTUtils} instead
  */
-public interface ASTErrorsHelper {
-
-    void injectErrorsCode(ClassNode classNode);
+@Deprecated
+class GrailsASTUtils extends org.grails.compiler.injection.GrailsASTUtils{
 }

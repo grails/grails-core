@@ -109,11 +109,13 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
             Set<Class> injectorClasses = new HashSet<Class>();
             CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(classLoader);
             for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
+                // ignore not readable classes and closures
+                if(!resource.isReadable() || resource.getFilename().contains("$_")) continue;
                 try {
 
                     MetadataReader metadataReader = readerFactory.getMetadataReader(new GrailsResource(resource));
                     AnnotationMetadata annotationMetadata = metadataReader.getAnnotationMetadata();
-                    if(annotationMetadata.hasAnnotation(AstTransformer.class.getName()) || annotationMetadata.hasAnnotatedMethods(org.codehaus.groovy.grails.compiler.injection.AstTransformer.class.getName())) {
+                    if(annotationMetadata.hasAnnotation(AstTransformer.class.getName()) || annotationMetadata.hasAnnotation(org.codehaus.groovy.grails.compiler.injection.AstTransformer.class.getName())) {
                         String className = metadataReader.getClassMetadata().getClassName();
                         Class<?> injectorClass = classLoader.loadClass(className);
                         if(injectorClasses.contains(injectorClass)) continue;
@@ -131,7 +133,10 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                     // ignore
                 } catch (IOException e) {
                     // ignore
+                } catch(NoClassDefFoundError e) {
+                    // ignore
                 }
+
 
             }
             Collections.sort(injectors, new Comparator<ClassInjector>() {

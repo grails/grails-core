@@ -36,6 +36,8 @@ dependencies {
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
     }
+
+    testRuntime project(":grails-compatibility")
 }
 
 test {

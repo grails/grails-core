@@ -17,6 +17,8 @@ dependencies {
 
     astCompile project(":grails-web"),
                project(":grails-plugin-controllers")
+
+    testCompile(project(":grails-compatibility"))
 }
 
 test {

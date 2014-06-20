@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 
 package org.codehaus.groovy.grails.compiler.injection
 
-import org.grails.compiler.injection.GrailsASTUtils
-
 /**
- * Helper methods for working with Groovy AST trees.
- *
- * @author Graeme Rocher
- * @since 0.3
- * @deprecated Use {@link GrailsASTUtils} instead
+ * @author Jeff Brown
+ * @deprecated Use {@link org.grails.compiler.injection.ASTValidationErrorsHelper} instead
  */
 @Deprecated
-class GrailsASTUtil extends GrailsASTUtils{
+class ASTValidationErrorsHelper extends org.grails.compiler.injection.ASTValidationErrorsHelper implements ASTErrorsHelper {
 }

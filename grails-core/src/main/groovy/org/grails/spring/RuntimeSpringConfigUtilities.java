@@ -24,7 +24,6 @@ import groovy.lang.Script;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.grails.spring.RuntimeSpringConfiguration;

@@ -39,8 +39,9 @@ import org.springframework.transaction.support.TransactionTemplate
 @CompileStatic
 class GrailsTransactionTemplate {
 
+    TransactionAttribute transactionAttribute
+
     private TransactionTemplate transactionTemplate
-    private TransactionAttribute transactionAttribute
 
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager) {
         this(transactionManager, new DefaultTransactionAttribute())

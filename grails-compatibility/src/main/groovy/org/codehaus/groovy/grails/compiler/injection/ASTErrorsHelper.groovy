@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.injection;
-
-import org.codehaus.groovy.ast.ClassNode;
+package org.codehaus.groovy.grails.compiler.injection
 
 /**
  * Enhances a class to contain an Errors property of type org.springframework.validation.Errors.  Methods added include:
@@ -28,8 +26,9 @@ import org.codehaus.groovy.ast.ClassNode;
  *  </pre>
  *
  *  @author Jeff Brown
+ *  @deprecated Use {@link org.grails.compiler.injection.ASTErrorsHelper} instead
  */
-public interface ASTErrorsHelper {
+@Deprecated
+public interface ASTErrorsHelper extends org.grails.compiler.injection.ASTErrorsHelper{
 
-    void injectErrorsCode(ClassNode classNode);
 }

@@ -44,6 +44,9 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.validation.Errors;
 
+/**
+ * @author Jeff Brown
+ */
 public class ASTValidationErrorsHelper implements ASTErrorsHelper {
     private static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String SET_ERRORS_METHOD_NAME = "setErrors";

@@ -21,9 +21,14 @@ class GrailsPlaceHolderConfigurerCorePluginRuntimeSpec extends Specification{
             def bb = new BeanBuilder(parent.createApplicationContext())
 
             final beanBinding = new Binding()
-            beanBinding.setVariable('application', new DefaultGrailsApplication())
+
+            def app = new DefaultGrailsApplication()
+            beanBinding.setVariable('application', app)
             bb.setBinding(beanBinding)
-            bb.beans new CoreGrailsPlugin().doWithSpring
+
+            def plugin = new CoreGrailsPlugin()
+            plugin.grailsApplication = app
+            bb.beans plugin.doWithSpring
             bb.beans {
                 testBean(ReplacePropertyBean) {
                     foo = '${foo.bar}'
