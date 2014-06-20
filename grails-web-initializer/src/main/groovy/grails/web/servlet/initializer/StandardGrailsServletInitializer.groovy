@@ -18,11 +18,11 @@ package grails.web.servlet.initializer
 import groovy.transform.CompileStatic
 import grails.core.ApplicationAttributes
 import grails.core.GrailsApplication
-import org.grails.core.support.GrailsApplicationFactoryBean
+import org.grails.spring.beans.factory.GrailsApplicationFactoryBean
 import grails.web.servlet.context.GrailsWebApplicationContext
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginManagerFactoryBean
+import grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPluginManager
+import org.grails.spring.beans.factory.GrailsPluginManagerFactoryBean
 import org.grails.web.servlet.context.GrailsContextLoaderListener
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.springframework.util.Assert

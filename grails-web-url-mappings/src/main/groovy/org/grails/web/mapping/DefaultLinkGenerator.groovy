@@ -30,8 +30,8 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerAware
+import grails.plugins.GrailsPluginManager
+import grails.plugins.PluginManagerAware
 import org.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
 import org.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.grails.web.servlet.mvc.GrailsWebRequest

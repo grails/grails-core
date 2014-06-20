@@ -31,11 +31,11 @@ import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.core.io.watch.DirectoryWatcher;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import grails.plugins.DefaultGrailsPluginManager;
+import grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.support.WatchPattern;
+import grails.plugins.GrailsPluginManager;
+import org.grails.plugins.support.WatchPattern;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.ClassUtils;
 

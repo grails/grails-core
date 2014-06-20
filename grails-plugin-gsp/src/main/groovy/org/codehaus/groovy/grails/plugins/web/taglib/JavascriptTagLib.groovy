@@ -19,7 +19,7 @@ import grails.artefact.Artefact
 
 import javax.annotation.PostConstruct
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException

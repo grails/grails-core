@@ -17,7 +17,7 @@ import junit.framework.TestCase;
 
 import org.grails.core.DefaultGrailsDomainClass;
 import grails.core.GrailsDomainClass;
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;

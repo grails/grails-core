@@ -29,8 +29,8 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 
 import grails.core.events.ArtefactAdditionEvent;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerAware;
+import grails.plugins.GrailsPluginManager;
+import grails.plugins.PluginManagerAware;
 import grails.core.support.GrailsApplicationAware;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings;

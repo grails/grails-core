@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.web
 
 import org.apache.commons.logging.Log
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import grails.plugins.DefaultGrailsPluginManager
 
 class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -21,7 +21,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
         @grails.artefact.Artefact('TagLib')
         class TestTagLib {}""")
 
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.log4j.LoggingGrailsPlugin")
     }
 

@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
 import org.codehaus.groovy.grails.support.encoding.Encoder;

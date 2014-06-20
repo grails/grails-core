@@ -29,7 +29,7 @@ import java.util.List;
 import grails.core.GrailsApplication;
 import grails.core.GrailsTagLibClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;

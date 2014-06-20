@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.services
 
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockHibernateGrailsPlugin
 import org.springframework.context.ApplicationContext
 import org.springframework.transaction.NoTransactionException
@@ -86,7 +86,7 @@ class PerMethodTransactionalService {
 
     private ApplicationContext initializeContext() {
 
-        def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        def corePluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
         def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 

@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
 import org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
 

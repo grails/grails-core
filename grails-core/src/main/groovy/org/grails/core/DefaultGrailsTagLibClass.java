@@ -15,7 +15,6 @@
  */
 package org.grails.core;
 
-import grails.core.AbstractInjectableGrailsClass;
 import grails.core.GrailsTagLibClass;
 import groovy.lang.Closure;
 import org.grails.core.artefact.TagLibArtefactHandler;

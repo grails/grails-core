@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 /**
  * A Grails configuration that scans for classes using the packages defined by the packages() method and creates the necessary
- * {@link grails.core.GrailsApplication} and {@link org.codehaus.groovy.grails.plugins.GrailsPluginManager} beans
+ * {@link grails.core.GrailsApplication} and {@link grails.plugins.GrailsPluginManager} beans
  * that constitute a Grails application.
  *
  * @see GrailsApplicationPostProcessor
@@ -33,7 +33,7 @@ class GrailsConfiguration implements ResourceLoaderAware {
     ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
 
     /**
-     * @return A post processor that uses the {@link org.codehaus.groovy.grails.plugins.GrailsPluginManager} to configure the {@link org.springframework.context.ApplicationContext}
+     * @return A post processor that uses the {@link grails.plugins.GrailsPluginManager} to configure the {@link org.springframework.context.ApplicationContext}
      */
     @Bean
     GrailsApplicationPostProcessor grailsApplicationPostProcessor() {

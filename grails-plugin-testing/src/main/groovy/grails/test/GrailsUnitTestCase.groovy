@@ -25,7 +25,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.grails.core.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer

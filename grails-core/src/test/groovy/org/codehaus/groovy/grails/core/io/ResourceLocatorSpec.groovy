@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.core.io
 
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
+import org.grails.plugins.BinaryGrailsPlugin
+import org.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.MockBinaryPluginResource
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.core.io.DefaultResourceLocator

@@ -1,7 +1,9 @@
 package org.codehaus.groovy.grails.commons
 
+import grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
-import org.codehaus.groovy.grails.plugins.*
+import grails.plugins.DefaultGrailsPluginManager
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.beans.propertyeditors.ClassEditor

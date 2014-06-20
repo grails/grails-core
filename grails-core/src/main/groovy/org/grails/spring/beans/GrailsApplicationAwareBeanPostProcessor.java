@@ -17,7 +17,6 @@ package org.grails.spring.beans;
 
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
-import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
 import grails.core.support.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;
 

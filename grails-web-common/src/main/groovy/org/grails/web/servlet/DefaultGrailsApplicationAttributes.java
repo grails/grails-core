@@ -33,7 +33,7 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.core.GrailsTagLibClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.grails.web.pages.DefaultGroovyPagesUriService;

@@ -28,7 +28,7 @@ import grails.core.GrailsApplication;
 import grails.web.servlet.bootstrap.GrailsBootstrapClass;
 import grails.core.GrailsClass;
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import grails.persistence.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy;

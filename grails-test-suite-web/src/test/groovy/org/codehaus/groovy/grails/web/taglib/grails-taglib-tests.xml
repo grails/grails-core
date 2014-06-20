@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-	<bean id="grailsApplication" class="org.grails.core.support.GrailsApplicationFactoryBean">
+	<bean id="grailsApplication" class="org.grails.spring.beans.factory.GrailsApplicationFactoryBean">
 		<description>Grails application factory bean</description>
 		<property name="groovyFiles">
             <list>

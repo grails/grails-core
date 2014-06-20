@@ -15,7 +15,6 @@
  */
 package org.grails.core;
 
-import grails.core.AbstractGrailsClass;
 import grails.core.GrailsUrlMappingsClass;
 import groovy.lang.Closure;
 

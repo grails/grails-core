@@ -1,5 +1,9 @@
 package org.codehaus.groovy.grails.plugins
 
+import grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPluginManager
+import org.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
@@ -10,7 +14,7 @@ import org.springframework.beans.factory.config.RuntimeBeanReference
 class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
     void testComponentScan() {
-        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        def pluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
 
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
         def pluginManager = new MockGrailsPluginManager()
@@ -26,7 +30,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
     }
     void testCorePlugin() {
-        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        def pluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
 
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 
@@ -43,7 +47,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
     }
 
     void testDisableAspectj() {
-        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        def pluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
 
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
 
@@ -98,7 +102,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
             }
         ''')
 
-        def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        def corePluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
         def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
         def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)

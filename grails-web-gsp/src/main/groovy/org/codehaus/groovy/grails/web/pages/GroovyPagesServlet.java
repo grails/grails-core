@@ -28,10 +28,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import grails.util.GrailsStringUtils;
 import org.grails.core.io.support.GrailsFactoriesLoader;
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerAware;
+import org.grails.plugins.BinaryGrailsPlugin;
+import grails.plugins.GrailsPlugin;
+import grails.plugins.GrailsPluginManager;
+import grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import grails.web.util.GrailsApplicationAttributes;

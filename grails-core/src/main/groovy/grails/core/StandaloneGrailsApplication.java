@@ -14,10 +14,7 @@
  */
 package grails.core;
 
-import grails.core.AbstractGrailsApplication;
-import grails.core.ArtefactHandler;
-import grails.core.ArtefactInfo;
-import grails.core.GrailsClass;
+import org.grails.core.AbstractGrailsApplication;
 import groovy.util.ConfigObject;
 
 import org.springframework.beans.BeansException;

@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.plugins;
 
+import grails.plugins.DefaultGrailsPluginManager;
+import grails.plugins.GrailsPlugin;
 import groovy.lang.GroovyClassLoader;
 
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.List;
 
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
+import org.grails.plugins.*;
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.support.MockApplicationContext;

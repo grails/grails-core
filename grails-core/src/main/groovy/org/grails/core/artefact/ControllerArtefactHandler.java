@@ -15,7 +15,7 @@
  */
 package org.grails.core.artefact;
 
-import grails.core.AbstractGrailsClass;
+import org.grails.core.AbstractGrailsClass;
 import grails.core.ArtefactHandlerAdapter;
 import grails.core.GrailsClass;
 import grails.core.GrailsControllerClass;

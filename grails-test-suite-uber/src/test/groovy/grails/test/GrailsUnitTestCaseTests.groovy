@@ -17,8 +17,8 @@ package grails.test
 import grails.converters.JSON
 import grails.converters.XML
 import grails.util.Holders
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import grails.plugins.GrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 
  /**

@@ -26,9 +26,9 @@ import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.spring.RuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.plugins.PluginManagerAware
+import grails.plugins.PluginManagerAware
 import grails.core.support.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi

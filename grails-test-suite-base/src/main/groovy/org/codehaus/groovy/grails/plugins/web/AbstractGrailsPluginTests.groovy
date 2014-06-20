@@ -12,8 +12,8 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.grails.core.io.MockResourceLoader
 import grails.web.util.GrailsApplicationAttributes

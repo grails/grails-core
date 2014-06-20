@@ -17,7 +17,7 @@ package org.grails.web.servlet.boostrap;
 
 import grails.util.Environment;
 import groovy.lang.Closure;
-import grails.core.AbstractGrailsClass;
+import org.grails.core.AbstractGrailsClass;
 import grails.web.servlet.bootstrap.GrailsBootstrapClass;
 
 import javax.servlet.ServletContext;

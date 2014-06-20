@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.plugins.support
 
+import org.grails.plugins.support.WatchPatternParser
 import spock.lang.Specification
 
  /**

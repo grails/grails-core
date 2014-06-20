@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
 
 import grails.core.GrailsApplication
 import grails.util.GrailsStringUtils
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import grails.core.support.GrailsApplicationAware
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMapping

@@ -15,7 +15,6 @@
  */
 package org.grails.core;
 
-import grails.core.AbstractInjectableGrailsClass;
 import grails.core.GrailsServiceClass;
 
 /**

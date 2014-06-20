@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
 import grails.persistence.support.PersistenceContextInterceptor
 import org.springframework.context.ApplicationContext

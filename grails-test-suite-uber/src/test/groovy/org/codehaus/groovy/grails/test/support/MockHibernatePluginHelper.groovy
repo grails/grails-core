@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.test.support
 
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPlugin
 
 /**
  * @author graemerocher

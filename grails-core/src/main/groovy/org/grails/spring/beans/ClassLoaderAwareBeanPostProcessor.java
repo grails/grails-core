@@ -15,7 +15,6 @@
  */
 package org.grails.spring.beans;
 
-import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
 import grails.core.support.ClassLoaderAware;
 import org.springframework.beans.BeansException;
 

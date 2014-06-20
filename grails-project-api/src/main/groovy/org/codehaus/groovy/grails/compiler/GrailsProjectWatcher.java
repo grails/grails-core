@@ -16,8 +16,7 @@
 
 package org.codehaus.groovy.grails.compiler;
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.project.compiler.*;
+import grails.plugins.GrailsPluginManager;
 
 /**
  * Watches a Grails project and re-compiles sources when they change or fires events to the pluginManager.

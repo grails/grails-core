@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 
 /**
  * @deprecated Use {@link org.grails.web.api.CommonWebApi} instead

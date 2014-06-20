@@ -15,6 +15,8 @@
  */
 package grails.core;
 
+import org.grails.core.AbstractGrailsClass;
+
 /**
  * A default implementation for Grails classes that need to be registered and managed by a GrailsApplication,
  * but don't need any special handling.

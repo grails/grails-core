@@ -71,9 +71,9 @@ public class PluginAwareAstTransformer implements AllArtefactClassInjector {
             }
 
             final AnnotationNode annotationNode = new AnnotationNode(annotation);
-            annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.NAME,
+            annotationNode.addMember(grails.plugins.GrailsPlugin.NAME,
                     new ConstantExpression(info.getName()));
-            annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.VERSION,
+            annotationNode.addMember(grails.plugins.GrailsPlugin.VERSION,
                     new ConstantExpression(info.getVersion()));
             annotationNode.setRuntimeRetention(true);
             annotationNode.setClassRetention(true);

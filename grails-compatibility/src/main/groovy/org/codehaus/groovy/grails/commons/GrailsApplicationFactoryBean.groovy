@@ -23,9 +23,9 @@ package org.codehaus.groovy.grails.commons
  * @author Chanwit Kaewkasi
  *
  * @since 0.1
- * @deprecated Use {@link org.grails.core.support.GrailsApplicationFactoryBean} instead
+ * @deprecated Use {@link org.grails.spring.beans.factory.GrailsApplicationFactoryBean} instead
  */
 @Deprecated
-class GrailsApplicationFactoryBean extends org.grails.core.support.GrailsApplicationFactoryBean{
+class GrailsApplicationFactoryBean extends org.grails.spring.beans.factory.GrailsApplicationFactoryBean{
 
 }

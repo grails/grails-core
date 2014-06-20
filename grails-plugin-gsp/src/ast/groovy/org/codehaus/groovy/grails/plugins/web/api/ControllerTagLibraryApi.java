@@ -26,7 +26,7 @@ import groovy.lang.MissingPropertyException;
 import java.util.List;
 
 import grails.util.GrailsMetaClassUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;

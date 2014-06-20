@@ -2,7 +2,7 @@ package grails.test.runtime;
 
 import grails.core.GrailsApplication;
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import org.springframework.context.ApplicationContext;
 
 public class GrailsTestRuntimeConfigurator extends GrailsRuntimeConfigurator {

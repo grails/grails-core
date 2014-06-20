@@ -4,10 +4,10 @@ import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
 
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
-import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.grails.plugins.BinaryGrailsPlugin
+import org.grails.plugins.BinaryGrailsPluginDescriptor
+import org.grails.plugins.CoreGrailsPlugin
+import grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 import org.grails.core.io.SimpleMapResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser

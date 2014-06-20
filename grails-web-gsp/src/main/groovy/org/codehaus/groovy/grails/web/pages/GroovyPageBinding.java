@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import grails.plugins.GrailsPlugin;
 
 /**
  * Script Binding that is used in GSP evaluation.

@@ -17,9 +17,9 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.grails.plugins.DefaultGrailsPlugin
+import grails.plugins.GrailsPluginManager
+import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.grails.web.pages.DefaultGroovyPagesUriService
@@ -242,7 +242,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         onInitMockBeans()
 
         def dependantPluginClasses = []
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")

@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.grails.core.lifecycle.ShutdownOperations;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ConfigurableApplicationContext;

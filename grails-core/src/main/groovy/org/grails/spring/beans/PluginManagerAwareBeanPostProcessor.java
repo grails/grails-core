@@ -15,9 +15,8 @@
  */
 package org.grails.spring.beans;
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerAware;
-import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;
+import grails.plugins.GrailsPluginManager;
+import grails.plugins.PluginManagerAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;

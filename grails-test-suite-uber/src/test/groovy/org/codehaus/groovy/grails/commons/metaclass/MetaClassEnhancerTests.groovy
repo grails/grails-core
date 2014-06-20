@@ -4,7 +4,7 @@ import grails.util.GrailsWebUtil
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.grails.core.metaclass.MetaClassEnhancer

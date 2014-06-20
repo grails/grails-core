@@ -26,11 +26,11 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.util.GrailsStringUtils
 import org.codehaus.groovy.grails.io.support.Resource
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.DefaultGrailsPluginManager
+import grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.plugins.PluginManagerLoader
+import grails.plugins.PluginManagerLoader
 
 /**
  * Loads the PluginManager and sets appropriate state

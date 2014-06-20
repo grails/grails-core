@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.grails.core.AbstractGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import grails.core.events.ArtefactAdditionEvent;
 import org.grails.core.artefact.*;
@@ -55,8 +56,8 @@ import org.springframework.util.StringUtils;
  * @author Steven Devijver
  * @author Graeme Rocher
  *
- * @see org.codehaus.groovy.grails.plugins.GrailsPluginManager
- * @see org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+ * @see grails.plugins.GrailsPluginManager
+ * @see grails.plugins.DefaultGrailsPluginManager
  * @see grails.core.ArtefactHandler
  * @see grails.core.ArtefactInfo
  * @since 0.1

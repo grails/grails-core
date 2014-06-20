@@ -35,7 +35,7 @@ import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.grails.core.io.watch.PackagingException
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
+import org.grails.plugins.publishing.PluginDescriptorGenerator
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.springframework.util.ClassUtils
 

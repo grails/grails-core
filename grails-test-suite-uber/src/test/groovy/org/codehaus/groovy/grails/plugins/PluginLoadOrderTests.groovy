@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.plugins
 
 import grails.core.DefaultGrailsApplication
+import grails.plugins.DefaultGrailsPluginManager
 
 /**
  * @author Graeme Rocher

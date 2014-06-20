@@ -7,8 +7,8 @@ import java.util.Map;
 
 import grails.core.GrailsApplication;
 import org.grails.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsPlugin;
+import grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

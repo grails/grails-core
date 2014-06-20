@@ -32,7 +32,7 @@ import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
 import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.grails.core.io.PluginPathAwareFileSystemResourceLoader
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.grails.dev.support.CommandLineResourceLoader

@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import grails.core.AbstractInjectableGrailsClass
+import org.grails.core.AbstractInjectableGrailsClass
 import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
 /**

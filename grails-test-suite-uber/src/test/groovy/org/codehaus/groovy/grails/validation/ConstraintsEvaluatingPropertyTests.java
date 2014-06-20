@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 
 import org.grails.core.DefaultGrailsDomainClass;
 import grails.core.GrailsDomainClass;
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {

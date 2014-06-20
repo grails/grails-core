@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.MockHttpServletResponse
-
+import org.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
-import org.codehaus.groovy.grails.plugins.*
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
@@ -34,7 +34,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
             ctx.registerMockBean("manager", mockManager)
 
             def dependantPluginClasses = []
-            dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+            dependantPluginClasses << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
             dependantPluginClasses << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
             dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
             dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")

@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.plugins.GrailsPluginManager
 
 /**
  * Tags to inspect available plugins.

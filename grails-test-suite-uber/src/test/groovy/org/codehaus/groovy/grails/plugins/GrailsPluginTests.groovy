@@ -5,6 +5,8 @@ import grails.util.Environment
 
 import grails.core.DefaultGrailsApplication
 import org.grails.core.exceptions.GrailsConfigurationException
+import org.grails.plugins.DefaultGrailsPlugin
+import grails.plugins.DefaultGrailsPluginManager
 
 /**
  * @author Graeme Rocher
