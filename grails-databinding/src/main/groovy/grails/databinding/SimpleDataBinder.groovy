@@ -15,19 +15,20 @@
  */
 package grails.databinding
 
-import grails.databinding.converters.FormattedValueConverter;
-import grails.databinding.converters.ValueConverter;
-import grails.databinding.events.DataBindingListener;
+import grails.databinding.converters.FormattedValueConverter
+import grails.databinding.converters.ValueConverter
+import grails.databinding.events.DataBindingListener
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
+import java.lang.annotation.Annotation
 import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 
 import org.grails.databinding.BindUsing
-import org.grails.databinding.BindingFormat
+import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.converters.ConversionService
@@ -507,7 +508,7 @@ class SimpleDataBinder implements DataBinder {
                         converter = new ClosureValueConverter(converterClosure: closure.curry(obj), targetType: field.type)
                     }
                 } else {
-                    annotation = field.getAnnotation BindingFormat
+                    annotation = field.getAnnotation(BindingFormat) ?: field.getAnnotation(LegacyBindingFormat)
                     if (annotation) {
                         converter = getFormattedConverter field, getFormatString(annotation)
                     }
@@ -518,8 +519,15 @@ class SimpleDataBinder implements DataBinder {
         converter
     }
 
-    protected String getFormatString(BindingFormat annotation) {
-        annotation.value()
+    protected String getFormatString(Annotation annotation) {
+        assert annotation instanceof BindingFormat || annotation instanceof LegacyBindingFormat
+        String formatString
+        if(annotation instanceof BindingFormat) {
+            formatString = ((BindingFormat)annotation).value()
+        } else {
+            formatString = ((LegacyBindingFormat)annotation).value()
+        }
+        formatString
     }
 
     protected ValueConverter getValueConverterForClass(obj, String propName) {

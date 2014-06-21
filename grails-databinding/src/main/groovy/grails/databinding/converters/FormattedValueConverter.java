@@ -15,8 +15,6 @@
  */
 package grails.databinding.converters;
 
-import org.grails.databinding.BindingFormat;
-
 /**
  * Classes which implement this interface may participate
  * in the data binding process as formatted value converters.
@@ -42,7 +40,7 @@ class FormattedStringValueConverter implements FormattedValueConverter {
  *
  * @author Jeff Brown
  * @since 3.0
- * @see BindingFormat
+ * @see grails.databinding.BindingFormat
  * @see org.grails.databinding.SimpleDataBinder
  * @see org.grails.databinding.SimpleDataBinder#registerFormattedValueConverter(FormattedValueConverter)
  */

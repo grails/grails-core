@@ -15,6 +15,11 @@
  */
 package grails.web.databinding
 
+import grails.core.GrailsApplication
+import grails.core.GrailsDomainClass
+import grails.core.GrailsDomainClassProperty
+import grails.databinding.BindingFormat
+import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import grails.databinding.DataBindingSource
 import grails.databinding.SimpleDataBinder
 import grails.databinding.SimpleMapDataBindingSource
@@ -23,6 +28,8 @@ import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
 import grails.databinding.events.DataBindingListener
 import grails.util.Environment
+import grails.util.GrailsClassUtils
+import grails.util.GrailsMetaClassUtils
 import grails.util.GrailsNameUtils
 import grails.validation.DeferredBindingActions
 import grails.validation.ValidationErrors
@@ -30,29 +37,24 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
+import java.lang.annotation.Annotation
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
-import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
-import org.grails.core.artefact.DomainClassArtefactHandler
-import grails.core.GrailsApplication
-import grails.util.GrailsClassUtils
-import grails.core.GrailsDomainClass
-import grails.core.GrailsDomainClassProperty
-import grails.util.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
 import org.codehaus.groovy.grails.web.json.JSONObject
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
-import org.grails.databinding.BindingFormat
+import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.xml.GPathResultMap
-import org.grails.web.databinding.DataBindingEventMulticastListener;
-import org.grails.web.databinding.DefaultASTDatabindingHelper;
-import org.grails.web.databinding.GrailsWebDataBindingListener;
-import org.grails.web.databinding.SpringConversionServiceAdapter;
+import org.grails.web.databinding.DataBindingEventMulticastListener
+import org.grails.web.databinding.DefaultASTDatabindingHelper
+import org.grails.web.databinding.GrailsWebDataBindingListener
+import org.grails.web.databinding.SpringConversionServiceAdapter
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.validation.BeanPropertyBindingResult
@@ -617,9 +619,15 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected String getFormatString(BindingFormat annotation) {
+    protected String getFormatString(Annotation annotation) {
+        assert annotation instanceof BindingFormat || annotation instanceof LegacyBindingFormat
+        def code
+        if(annotation instanceof BindingFormat) {
+            code = ((BindingFormat)annotation).code()
+        } else {
+            code = ((LegacyBindingFormat)annotation).code()
+        }
         def formatString
-        def code = annotation.code()
         if(code) {
             def locale = getLocale()
             formatString = messageSource.getMessage(code, [] as Object[], locale)

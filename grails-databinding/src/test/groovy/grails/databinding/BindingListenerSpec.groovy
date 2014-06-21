@@ -14,11 +14,11 @@
  */
 package grails.databinding
 
-import org.grails.databinding.BindingFormat;
+import grails.databinding.BindingFormat
 
-import grails.databinding.SimpleDataBinder;
-import grails.databinding.SimpleMapDataBindingSource;
-import grails.databinding.events.DataBindingListenerAdapter;
+import grails.databinding.SimpleDataBinder
+import grails.databinding.SimpleMapDataBindingSource
+import grails.databinding.events.DataBindingListenerAdapter
 import spock.lang.Specification
 
 class BindingListenerSpec extends Specification {
