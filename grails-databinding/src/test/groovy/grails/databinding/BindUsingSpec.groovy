@@ -12,12 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package grails.databinding
 
-import grails.databinding.BindingHelper;
-import grails.databinding.DataBindingSource;
-import grails.databinding.SimpleDataBinder;
-import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.BindingHelper
+import grails.databinding.DataBindingSource
+import grails.databinding.SimpleDataBinder
+import grails.databinding.SimpleMapDataBindingSource
+import org.grails.databinding.BindUsing as LegacyBindUsing
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -61,6 +62,45 @@ class BindUsingSpec extends Specification {
         obj.tripleIt == 60
         obj.leaveIt == 30
     }
+
+    void 'Test legacy BindUsing for specific property'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new ClassWithLegacyBindUsingOnProperty()
+
+        when:
+        binder.bind(obj, new SimpleMapDataBindingSource([name: 'Jeff Was Here']))
+
+        then:
+        'JEFF WAS HERE' == obj.name
+    }
+
+    @Issue('GRAILS-11048')
+    void 'Test legacy inheriting a property marked with BindUsing'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new SubclassOfClassWithLegacyBindUsingOnProperty()
+
+        when:
+        binder.bind(obj, new SimpleMapDataBindingSource([name: 'Jeff Was Here']))
+
+        then:
+        'JEFF WAS HERE' == obj.name
+    }
+
+    void 'Test legacy BindUsing on the class'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new ClassWithLegacyBindUsing()
+
+        when:
+        binder.bind(obj, new SimpleMapDataBindingSource([doubleIt: 9, tripleIt: 20, leaveIt: 30]))
+
+        then:
+        obj.doubleIt == 18
+        obj.tripleIt == 60
+        obj.leaveIt == 30
+    }
 }
 
 class ClassWithBindUsingOnProperty {
@@ -94,4 +134,22 @@ class MultiplyingBindingHelper implements BindingHelper<Integer> {
         }
         convertedValue
     }
+}
+
+
+class ClassWithLegacyBindUsingOnProperty {
+    @LegacyBindUsing({
+        obj, source -> source['name']?.toUpperCase()
+    })
+    String name
+}
+
+class SubclassOfClassWithLegacyBindUsingOnProperty extends ClassWithLegacyBindUsingOnProperty {
+}
+
+@LegacyBindUsing(MultiplyingBindingHelper)
+class ClassWithLegacyBindUsing {
+    Integer leaveIt
+    Integer doubleIt
+    Integer tripleIt
 }

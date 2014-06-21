@@ -19,7 +19,7 @@ import grails.databinding.SimpleMapDataBindingSource
 import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
 
-import org.grails.databinding.BindUsing
+import grails.databinding.BindUsing
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import grails.databinding.BindingFormat
 import org.grails.databinding.converters.DateConversionHelper

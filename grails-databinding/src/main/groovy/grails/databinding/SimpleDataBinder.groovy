@@ -27,7 +27,8 @@ import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 
-import org.grails.databinding.BindUsing
+import grails.databinding.BindUsing
+import org.grails.databinding.BindUsing as LegacyBindUsing
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
@@ -500,9 +501,9 @@ class SimpleDataBinder implements DataBinder {
         try {
             def field = getField(obj.getClass(), propName)
             if (field) {
-                def annotation = field.getAnnotation BindUsing
+                def annotation = field.getAnnotation(BindUsing) ?: field.getAnnotation(LegacyBindUsing)
                 if (annotation) {
-                    def valueClass = annotation.value()
+                    def valueClass = getValueOfBindUsing(annotation)
                     if (Closure.isAssignableFrom(valueClass)) {
                         Closure closure = (Closure)valueClass.newInstance(null, null)
                         converter = new ClosureValueConverter(converterClosure: closure.curry(obj), targetType: field.type)
@@ -518,7 +519,26 @@ class SimpleDataBinder implements DataBinder {
         }
         converter
     }
-
+    
+    /**
+     * @param annotation An instance of grails.databinding.BindingUsing or org.grails.databinding.BindingUsing
+     * @return the value Class of the annotation
+     */
+    protected Class getValueOfBindUsing(Annotation annotation) {
+        assert annotation instanceof BindUsing || annotation instanceof LegacyBindUsing
+        def value
+        if(annotation instanceof BindUsing) {
+            value = ((BindUsing)annotation).value()
+        } else {
+            value = ((LegacyBindUsing)annotation).value()
+        }
+        value
+    }
+    
+    /**
+     * @param annotation An instance of grails.databinding.BindingFormat or org.grails.databinding.BindingFormat
+     * @return the value String of the annotation
+     */
     protected String getFormatString(Annotation annotation) {
         assert annotation instanceof BindingFormat || annotation instanceof LegacyBindingFormat
         String formatString
@@ -532,9 +552,10 @@ class SimpleDataBinder implements DataBinder {
 
     protected ValueConverter getValueConverterForClass(obj, String propName) {
         def converter
-        def annotation = obj.getClass().getAnnotation BindUsing
+        def objClass = obj.getClass()
+        def annotation = objClass.getAnnotation(BindUsing) ?: objClass.getAnnotation(LegacyBindUsing)
         if (annotation) {
-            def valueClass = annotation.value()
+            def valueClass = getValueOfBindUsing(annotation)
             if (BindingHelper.isAssignableFrom(valueClass)) {
                 BindingHelper dataConverter = (BindingHelper)valueClass.newInstance()
                 converter = new ClosureValueConverter(converterClosure: { DataBindingSource it -> dataConverter.getPropertyValue(obj, propName, it) })
