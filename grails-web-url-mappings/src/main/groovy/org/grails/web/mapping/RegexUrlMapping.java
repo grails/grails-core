@@ -230,7 +230,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                                     .replaceAll("([^\\*])\\*$", "$1[^/]+")
                                     .replaceAll("\\*\\*", ".*");
 
-            pattern += urlEnd
+            if("/(*)(\\.(*))".equals(urlEnd)) {
+                // shortcut this common special case which will
+                // happen any time a URL mapping ends with a pattern like
+                // /$someVariable(.$someExtension)
+                pattern += "/([^/]+)\\.([^/.]+)?";
+            } else {
+                pattern += urlEnd
                                 .replace("(\\.(*))", "\\.?([^/]+)?")
                                 .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
                                 .replaceAll("([^\\*])\\*$", "$1[^/]+")
@@ -238,7 +244,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                                 .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
                                 .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
                                 ;
-
+            }
             pattern += "/??$";
             regex = Pattern.compile(pattern);
         }

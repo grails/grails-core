@@ -46,6 +46,7 @@ import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -249,7 +250,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 }
                 FastStringWriter sw = new FastStringWriter();
                 ReflectionUtils.invokeMethod(generateViewMethod, scaffoldingTemplateGenerator, domainClass, scaffoldedtemplateName, sw);
-                t = groovyPagesTemplateEngine.createTemplate(sw.toString(), uri);
+                t = groovyPagesTemplateEngine.createTemplate(new ByteArrayResource(sw.toString().getBytes("UTF-8"), uri), false);
             }
         }
         return t;

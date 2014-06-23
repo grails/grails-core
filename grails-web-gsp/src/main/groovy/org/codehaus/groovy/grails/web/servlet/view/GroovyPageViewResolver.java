@@ -217,6 +217,12 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         this.cacheTimeout = cacheTimeout;
     }
 
+    @Override
+    public void clearCache() {
+        super.clearCache();
+        viewCache.clear();
+    }
+
     public boolean isAllowGrailsViewCaching() {
         return allowGrailsViewCaching;
     }
