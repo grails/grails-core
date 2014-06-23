@@ -741,7 +741,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<script src="/js/main.js" type="text/javascript"></script>\r\n', template
 
         template = '<g:external uri="/css/style.css"/>'
-        assertOutputEquals '<link href="/css/style.css" type="text/css" rel="stylesheet" media="screen, projector"/>\r\n', template
+        assertOutputEquals '<link href="/css/style.css" type="text/css" rel="stylesheet" media="screen, projection"/>\r\n', template
 
         template = '<g:external uri="/css/print.css" media="print"/>'
         assertOutputEquals '<link href="/css/print.css" type="text/css" rel="stylesheet" media="print"/>\r\n', template
@@ -755,7 +755,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<script src="/js/main.js?requestDataValueProcessorParamName=paramValue" type="text/javascript"></script>\r\n', template
 
         template = '<g:external uri="/css/style.css"/>'
-        assertOutputEquals '<link href="/css/style.css?requestDataValueProcessorParamName=paramValue" type="text/css" rel="stylesheet" media="screen, projector"/>\r\n', template
+        assertOutputEquals '<link href="/css/style.css?requestDataValueProcessorParamName=paramValue" type="text/css" rel="stylesheet" media="screen, projection"/>\r\n', template
 
         template = '<g:external uri="/css/print.css" media="print"/>'
         assertOutputEquals '<link href="/css/print.css?requestDataValueProcessorParamName=paramValue" type="text/css" rel="stylesheet" media="print"/>\r\n', template
