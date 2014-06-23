@@ -396,7 +396,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         Assert.hasLength(txt, "Argument [txt] cannot be null or blank");
         Assert.hasLength(pageName, "Argument [pageName] cannot be null or blank");
 
-        return createTemplate(new ByteArrayResource(txt.getBytes("UTF-8"), pageName), pageName, true);
+        return createTemplate(new ByteArrayResource(txt.getBytes("UTF-8"), pageName), pageName, pageName != null);
     }
 
     /**
