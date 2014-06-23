@@ -69,8 +69,25 @@ mappings {
       controller = 'hyphenTests'
       action = 'view'
   }
+  "/plugins/grails-$plugin/tags/RELEASE_$version/$fullName(.$type)" {
+      controller = 'website'
+      action = 'displayPlugin'
+  }
 }
 '''
+    
+    void testExtensionPrecededByTokenWhichMayContainDots() {
+        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
+
+        def info = holder.match("/plugins/grails-csv/tags/RELEASE_0.3.1/csv-0.3.1.pom")
+        assertNotNull info
+        assertEquals 'website', info.controllerName
+        assertEquals 'displayPlugin', info.actionName
+        assertEquals '0.3.1', info.params.version
+        assertEquals 'csv', info.params.plugin
+        assertEquals 'csv-0.3.1', info.params.fullName
+        assertEquals 'pom', info.params.type
+    }
     
     void testHyphenDelimiters() {
         def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
