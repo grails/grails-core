@@ -217,4 +217,10 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     public void setCacheTimeout(long cacheTimeout) {
         this.cacheTimeout = cacheTimeout;
     }
+    
+    @Override
+    public void clearCache() {
+        super.clearCache();
+        VIEW_CACHE.clear();
+    }
 }
