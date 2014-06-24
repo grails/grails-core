@@ -138,6 +138,12 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         def str = 'Hi, this is my "test"'
         def json = new grails.converters.JSON([a:str])
         assertEquals('{"a":"Hi, this is my \\"test\\""}', json.toString())
+        
+    }
+
+    // GRAILS-11517
+    void testMoreStringsWithQuotes2() {
+        assertEquals('{"key":"<a href=\\"#\\" class=\\"link\\">link<\\u002fa>"}',(['key': '<a href="#" class="link">link</a>'] as JSON).toString())
     }
 
     void onSetUp() {
