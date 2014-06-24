@@ -15,6 +15,11 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
 import java.util.regex.Pattern
 
 import javax.servlet.http.HttpServletRequest
@@ -38,22 +43,24 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
  * @author mike
  * @author Graeme Rocher
  */
+@CompileStatic
 class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, GrailsApplicationAware {
-    def filterConfig
+    FilterConfig filterConfig
     def configClass
 
-    def controllerRegex
-    def controllerExcludeRegex
-    def actionRegex
-    def actionExcludeRegex
-    def uriPattern
-    def uriExcludePattern
-    def urlPathHelper = new UrlPathHelper()
-    def pathMatcher = new AntPathMatcher()
+    Pattern controllerRegex
+    Pattern controllerExcludeRegex
+    Pattern actionRegex
+    Pattern actionExcludeRegex
+    String uriPattern
+    String uriExcludePattern
+    UrlPathHelper urlPathHelper = new UrlPathHelper()
+    AntPathMatcher pathMatcher = new AntPathMatcher()
     def useRegex  // standard regex
     def invertRule // invert rule
     def useRegexFind // use find instead of match
     def dependsOn = [] // any filters that need to be processed before this one
+
     GrailsApplication grailsApplication
 
     void afterPropertiesSet() {
@@ -64,25 +71,25 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         useRegexFind = scope.find
 
         if (scope.controller) {
-            controllerRegex = Pattern.compile((useRegex)?scope.controller:scope.controller.replaceAll("\\*", ".*"))
+            controllerRegex = Pattern.compile( useRegex ? scope.controller.toString() : scope.controller.toString().replaceAll("\\*", ".*") )
         }
         else {
             controllerRegex = Pattern.compile(".*")
         }
 
         if (scope.controllerExclude) {
-            controllerExcludeRegex = Pattern.compile((useRegex)?scope.controllerExclude:scope.controllerExclude.replaceAll("\\*", ".*"))
+            controllerExcludeRegex = Pattern.compile( useRegex ? scope.controllerExclude.toString() : scope.controllerExclude.toString().replaceAll("\\*", ".*") )
         }
 
         if (scope.action) {
-            actionRegex = Pattern.compile((useRegex)?scope.action:scope.action.replaceAll("\\*", ".*"))
+            actionRegex = Pattern.compile( useRegex ? scope.action.toString() : scope.action.toString().replaceAll("\\*", ".*") )
         }
         else {
             actionRegex = Pattern.compile(".*")
         }
 
         if (scope.actionExclude) {
-            actionExcludeRegex = Pattern.compile((useRegex)?scope.actionExclude:scope.actionExclude.replaceAll("\\*", ".*"))
+            actionExcludeRegex = Pattern.compile(useRegex ? scope.actionExclude.toString() : scope.actionExclude.toString().replaceAll("\\*", ".*") )
         }
 
         if (scope.uri) {
@@ -96,19 +103,19 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
     /**
      * Returns the name of the controller targeted by the given request.
      */
-    String controllerName(request) {
+    String controllerName(HttpServletRequest request) {
         return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE)?.toString()
     }
 
     /**
      * Returns the name of the action targeted by the given request.
      */
-    String actionName(request) {
+    String actionName(HttpServletRequest request) {
         return request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE)?.toString()
     }
 
     String uri(HttpServletRequest request) {
-        def uri = request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE)
+        String uri = request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE)?.toString()
         if (!uri) uri = request.getRequestURI()
         return uri.substring(request.getContextPath().length())
     }
@@ -122,7 +129,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
             if (!accept(controllerName, actionName, uri)) return true
 
-            def callable = filterConfig.before.clone()
+            def callable = (Closure)filterConfig.before.clone()
             def result = callable.call()
             if (result instanceof Boolean) {
                 if (!result && filterConfig.modelAndView) {
@@ -146,7 +153,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
         if (!accept(controllerName, actionName, uri)) return
 
-        def callable = filterConfig.after.clone()
+        def callable = (Closure)filterConfig.after.clone()
         def currentModel = modelAndView?.model
         if (currentModel == null) {
             final templateModel = request.getAttribute(GrailsApplicationAttributes.TEMPLATE_MODEL)
@@ -173,8 +180,10 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         }
     }
 
-    private renderModelAndView(delegate, request, response, controllerName) {
-        def viewResolver = WebUtils.lookupViewResolver(delegate.servletContext)
+    @CompileDynamic
+    private renderModelAndView(delegate,  HttpServletRequest request, HttpServletResponse response, String controllerName) {
+        def webRequest = GrailsWebRequest.lookup(request)
+        def viewResolver = WebUtils.lookupViewResolver(webRequest.servletContext)
         def view
         ModelAndView modelAndView = delegate.modelAndView
         if (modelAndView.viewName) {
@@ -197,13 +206,14 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
         if (!accept(controllerName, actionName, uri)) return
 
-        def callable = filterConfig.afterView.clone()
+        def callable = (Closure)filterConfig.afterView.clone()
         callable.call(e)
     }
 
     boolean accept(String controllerName, String actionName, String uri) {
         boolean matched=true
 
+        uri = uri.replace(';', '')
         if (uriPattern) {
             matched = pathMatcher.match(uriPattern, uri)
             if (matched && uriExcludePattern) {
@@ -225,7 +235,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
             }
             if (matched && filterConfig.scope.action) {
                 if (!actionName && controllerName) {
-                    def controllerClass = grailsApplication?.getArtefactByLogicalPropertyName(
+                    def controllerClass = (GrailsControllerClass)grailsApplication?.getArtefactByLogicalPropertyName(
                        DefaultGrailsControllerClass.CONTROLLER, controllerName)
                     actionName = controllerClass?.getDefaultAction()
                 }
