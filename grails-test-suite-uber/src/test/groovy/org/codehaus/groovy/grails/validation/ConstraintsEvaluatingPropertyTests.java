@@ -1,7 +1,9 @@
 package org.codehaus.groovy.grails.validation;
 
+import grails.core.GrailsDomainClass;
 import grails.util.Holders;
 import grails.validation.Constrained;
+import grails.validation.ConstrainedProperty;
 import groovy.lang.GroovyClassLoader;
 
 import java.util.Collection;
@@ -9,10 +11,9 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.grails.core.DefaultGrailsDomainClass;
-import grails.core.GrailsDomainClass;
-import org.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
+import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.plugins.MockGrailsPluginManager;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
 

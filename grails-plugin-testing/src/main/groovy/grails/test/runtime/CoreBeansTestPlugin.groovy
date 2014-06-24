@@ -18,16 +18,18 @@ package grails.test.runtime;
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
 import grails.core.GrailsApplication
+
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
+import org.grails.validation.DefaultConstraintEvaluator;
+
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
+
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
 

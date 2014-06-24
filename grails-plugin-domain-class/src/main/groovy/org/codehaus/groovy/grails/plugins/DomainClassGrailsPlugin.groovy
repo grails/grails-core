@@ -18,20 +18,24 @@ package org.codehaus.groovy.grails.plugins
 import grails.artefact.Enhanced
 import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
-
 import grails.core.ComponentCapableDomainClass
+
 import org.grails.core.artefact.DomainClassArtefactHandler
+
 import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
+
 import org.grails.core.support.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.grails.core.util.SoftThreadLocalMap
 import org.grails.validation.ConstraintEvalUtils
+import org.grails.validation.ConstraintsEvaluatorFactoryBean;
+import org.grails.validation.GrailsDomainClassValidator;
+
 import grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
+
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher

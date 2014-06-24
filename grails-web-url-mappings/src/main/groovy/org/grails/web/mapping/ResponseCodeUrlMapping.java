@@ -15,14 +15,15 @@
  */
 package org.grails.web.mapping;
 
+import grails.validation.ConstrainedProperty;
+import grails.web.mapping.UrlMappingData;
+import grails.web.mapping.UrlMappingInfo;
+
 import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import grails.web.mapping.UrlMappingData;
-import grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.util.Assert;
 
 /**

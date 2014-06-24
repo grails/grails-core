@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.GrailsWebUtil
+import grails.validation.ConstrainedProperty
 import grails.web.mapping.UrlMapping
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import grails.web.mapping.exceptions.UrlMappingException
+
 import org.grails.web.mapping.DefaultUrlMappingParser
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.mapping.RegexUrlMapping

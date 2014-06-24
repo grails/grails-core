@@ -16,7 +16,7 @@
 package grails.test.mixin.domain
 
 import org.grails.datastore.gorm.validation.CascadingValidator
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
+import org.grails.validation.GrailsDomainClassValidator;
 
 /**
  * Integrates Grails cascading validation with datastore API
