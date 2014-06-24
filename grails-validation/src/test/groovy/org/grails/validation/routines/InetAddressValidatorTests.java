@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.validation.routines;
+package org.grails.validation.routines;
 
 import junit.framework.TestCase;
 

@@ -15,6 +15,7 @@
  */
 package grails.validation;
 
+import grails.validation.exceptions.ConstraintException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
 
@@ -29,7 +30,6 @@ import java.util.ResourceBundle;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
 import org.grails.validation.BlankConstraint;
 import org.grails.validation.CreditCardConstraint;
 import org.grails.validation.EmailConstraint;

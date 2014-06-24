@@ -13,17 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package org.codehaus.groovy.grails.validation.exceptions
 
 
 /**
- * Extends the default Spring Validator interface and provides an additional method that specifies whether
- * validation should cascade into associations.
+ * Thrown when an error occurs applying a constraint to a property.
  *
  * @author Graeme Rocher
- * @since 0.5
- * @deprecated Use {@link grails.validation.CascadingValidator}
+ * @deprecated Use {@link grails.validation.exceptions.ConstraintException}
  */
 @Deprecated
-interface CascadingValidator extends grails.validation.CascadingValidator {
+public class ConstraintException extends grails.validation.exceptions.ConstraintException {
+
+    public ConstraintException() {
+        super()
+    }
+
+    public ConstraintException(String message, Throwable cause) {
+        super(message, cause)
+    }
+
+    public ConstraintException(String message) {
+        super(message)
+    }
+
+    public ConstraintException(Throwable cause) {
+        super(cause)
+    }
 }

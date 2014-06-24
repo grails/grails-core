@@ -20,8 +20,8 @@ import grails.validation.ConstrainedProperty;
 
 import java.util.List;
 
-import org.codehaus.groovy.grails.validation.routines.RegexValidator;
-import org.codehaus.groovy.grails.validation.routines.UrlValidator;
+import org.grails.validation.routines.RegexValidator;
+import org.grails.validation.routines.UrlValidator;
 import org.springframework.validation.Errors;
 
 /**
