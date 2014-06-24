@@ -1508,7 +1508,7 @@ class BuildSettings extends AbstractBuildSettings {
         String syspropDebugArgs = System.getProperty("grails.project.fork.run.debugArgs")
         boolean debugFork = Boolean.getBoolean(ForkedGrailsProcess.DEBUG_FORK)
         if (syspropDebugArgs || debugFork) {
-            if (result.run instanceof Boolean) {
+            if (!(result.run instanceof Map)) {
                 result.run = [:]
             }
             result.run.debug = true
@@ -1518,7 +1518,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs")
         if (syspropDebugArgs || debugFork) {
-            if (result.test instanceof Boolean) {
+            if (!(result.test instanceof Map)) {
                 result.test = [:]
             }
             result.test.debug = true
