@@ -15,10 +15,11 @@
  */
 package org.grails.validation;
 
+import grails.validation.AbstractConstraint;
+import grails.validation.ConstrainedProperty;
+
 import java.util.List;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraint;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.routines.RegexValidator;
 import org.codehaus.groovy.grails.validation.routines.UrlValidator;
 import org.springframework.validation.Errors;

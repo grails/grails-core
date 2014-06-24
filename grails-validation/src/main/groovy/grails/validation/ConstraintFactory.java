@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2004-2005 Graeme Rocher
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.mapping
-
-import grails.validation.ConstrainedProperty
-
+package grails.validation;
 
 /**
- * Meta data describing a url mapping
- * 
- * @since 2.3.5
+ * A factory for creating constraint instances.
  *
+ * @author Graeme Rocher
+ * @since 0.4
  */
-class MetaMappingInfo {
-    def namespace
-    def controller
-    def action
-    def plugin
-    def view
-    def uri
-    def redirectInfo
-    String httpMethod
-    List<ConstrainedProperty> constraints = []
+public interface ConstraintFactory {
+    Constraint newInstance();
 }

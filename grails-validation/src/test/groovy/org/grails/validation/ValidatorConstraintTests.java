@@ -1,10 +1,9 @@
 package org.grails.validation;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.Constraint;
-import org.codehaus.groovy.grails.validation.TestClass;
-
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.Constraint;
+import grails.validation.TestClass;
 import groovy.lang.GroovyShell;
 
 /**

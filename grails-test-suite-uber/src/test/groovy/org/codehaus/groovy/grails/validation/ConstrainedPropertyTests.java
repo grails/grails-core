@@ -1,6 +1,10 @@
 package org.codehaus.groovy.grails.validation;
 
+import grails.core.GrailsDomainClass;
 import grails.util.Holders;
+import grails.validation.ConstrainedProperty;
+import grails.validation.Constraint;
+import grails.validation.TestClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.IntRange;
@@ -15,10 +19,9 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.grails.core.DefaultGrailsDomainClass;
-import grails.core.GrailsDomainClass;
-import org.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
+import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.plugins.MockGrailsPluginManager;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 

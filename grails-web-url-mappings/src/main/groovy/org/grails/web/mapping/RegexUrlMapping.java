@@ -15,9 +15,13 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsControllerClass;
+import grails.util.GrailsStringUtils;
+import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingInfo;
+import grails.web.mapping.exceptions.UrlMappingException;
 import groovy.lang.Closure;
 
 import java.io.UnsupportedEncodingException;
@@ -40,11 +44,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsControllerClass;
-import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.VersionComparator;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import grails.web.mapping.exceptions.UrlMappingException;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.util.Assert;

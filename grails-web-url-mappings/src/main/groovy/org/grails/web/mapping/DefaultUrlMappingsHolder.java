@@ -15,10 +15,16 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsControllerClass;
 import grails.util.CollectionUtils;
 import grails.util.Holders;
-import grails.web.mapping.*;
+import grails.validation.ConstrainedProperty;
+import grails.web.mapping.UrlCreator;
+import grails.web.mapping.UrlMapping;
+import grails.web.mapping.UrlMappingEvaluator;
+import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappings;
+import grails.web.mapping.UrlMappingsHolder;
 import groovy.lang.Closure;
 
 import java.io.PrintWriter;
@@ -38,8 +44,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsControllerClass;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.context.WebApplicationContext;

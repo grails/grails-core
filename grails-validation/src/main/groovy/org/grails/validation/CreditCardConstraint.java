@@ -15,9 +15,10 @@
  */
 package org.grails.validation;
 
+import grails.validation.AbstractConstraint;
+import grails.validation.ConstrainedProperty;
+
 import org.apache.commons.validator.routines.CreditCardValidator;
-import org.codehaus.groovy.grails.validation.AbstractConstraint;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.validation.Errors;
 
 /**

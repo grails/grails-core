@@ -16,11 +16,11 @@
 package org.grails.web.plugins.support
 
 import grails.util.Holders
+import grails.validation.ConstrainedProperty
+import grails.validation.ConstraintsEvaluator
 import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import grails.validation.ConstraintsEvaluator
 import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.validation.FieldError

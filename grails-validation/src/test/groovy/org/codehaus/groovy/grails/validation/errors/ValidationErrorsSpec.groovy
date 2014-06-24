@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.validation.errors
 
-import spock.lang.Specification
-import org.springframework.validation.FieldError
 import grails.validation.ValidationErrors
+
+import org.springframework.validation.FieldError
+
+import spock.lang.Specification
 
 /**
  * Tests for the ValidationErrors class

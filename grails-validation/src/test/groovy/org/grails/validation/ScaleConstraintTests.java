@@ -1,15 +1,16 @@
 package org.grails.validation;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.Constraint;
-import org.codehaus.groovy.grails.validation.TestClass;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.validation.Errors;
-import org.springframework.validation.BindException;
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.Constraint;
+import grails.validation.TestClass;
 
 import java.math.BigDecimal;
+
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 
 /**
  * Test cases for 'scale' constraint.

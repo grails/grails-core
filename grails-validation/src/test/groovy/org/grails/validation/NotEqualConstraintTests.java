@@ -1,11 +1,11 @@
 package org.grails.validation;
 
-import java.util.Date;
-import java.math.BigDecimal;
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.TestClass;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.TestClass;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Test cases for 'notEqual' constraint.

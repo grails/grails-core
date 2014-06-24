@@ -14,12 +14,13 @@
  */
 package org.grails.validation;
 
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
+import grails.validation.Constrained;
+
 import java.util.Comparator;
 import java.util.Map;
 
-import grails.validation.Constrained;
-import grails.core.GrailsDomainClass;
-import grails.core.GrailsDomainClassProperty;
 import org.springframework.util.Assert;
 
 /**

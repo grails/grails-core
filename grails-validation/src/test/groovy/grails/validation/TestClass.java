@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.validation;
+package grails.validation;
 
 import java.math.BigDecimal;
 import java.util.Collection;

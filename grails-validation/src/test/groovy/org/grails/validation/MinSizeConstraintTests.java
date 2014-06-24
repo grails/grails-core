@@ -1,13 +1,13 @@
 package org.grails.validation;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Collection;
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.TestClass;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.TestClass;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test cases for 'minSize' constraint.

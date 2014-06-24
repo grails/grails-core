@@ -15,9 +15,9 @@
  */
 package org.grails.validation;
 
-import java.util.Map;
-
 import grails.validation.ConstraintsEvaluator;
+
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.FactoryBean;

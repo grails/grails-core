@@ -16,10 +16,10 @@
 package org.grails.validation;
 
 import grails.util.GrailsStringUtils;
+import grails.validation.AbstractConstraint;
+import grails.validation.ConstrainedProperty;
 
 import org.apache.commons.validator.routines.EmailValidator;
-import org.codehaus.groovy.grails.validation.AbstractConstraint;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.validation.Errors;
 
 /**

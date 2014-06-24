@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 Graeme Rocher
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,17 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
+
 /**
- * A factory for creating constraint instances.
+ * Extends the default Spring Validator interface and provides an additional method that specifies whether
+ * validation should cascade into associations.
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 0.5
+ * @deprecated Use {@link grails.validation.CascadingValidator}
  */
-public interface ConstraintFactory {
-    Constraint newInstance();
+@Deprecated
+interface CascadingValidator extends grails.validation.CascadingValidator {
 }

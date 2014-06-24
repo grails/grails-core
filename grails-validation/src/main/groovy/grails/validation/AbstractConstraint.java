@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package grails.validation;
 
 import grails.util.GrailsNameUtils;
+import grails.util.GrailsStringUtils;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import grails.util.GrailsStringUtils;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -46,7 +46,7 @@ public abstract class AbstractConstraint implements Constraint {
     protected MessageSource messageSource;
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.validation.Constraint#setMessageSource(org.springframework.context.MessageSource)
+     * @see grails.validation.Constraint#setMessageSource(org.springframework.context.MessageSource)
      */
     public void setMessageSource(MessageSource source) {
         messageSource = source;
@@ -58,7 +58,7 @@ public abstract class AbstractConstraint implements Constraint {
 
     /**
      * {@inheritDoc}
-     * @see org.codehaus.groovy.grails.validation.Constraint#setOwningClass(java.lang.Class)
+     * @see grails.validation.Constraint#setOwningClass(java.lang.Class)
      */
     @SuppressWarnings("rawtypes")
     public void setOwningClass(Class constraintOwningClass) {

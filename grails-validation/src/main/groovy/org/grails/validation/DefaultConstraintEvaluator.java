@@ -15,7 +15,11 @@
  */
 package org.grails.validation;
 
+import grails.core.GrailsDomainClass;
+import grails.core.GrailsDomainClassProperty;
+import grails.util.GrailsClassUtils;
 import grails.validation.Constrained;
+import grails.validation.ConstrainedProperty;
 import grails.validation.ConstraintsEvaluator;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
@@ -35,14 +39,8 @@ import javax.persistence.Entity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-
-import grails.util.GrailsClassUtils;
-import grails.core.GrailsDomainClass;
-import grails.core.GrailsDomainClassProperty;
-
-import org.grails.core.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.grails.core.exceptions.GrailsConfigurationException;
 
 /**
  * Default implementation of the {@link grails.validation.ConstraintsEvaluator} interface.

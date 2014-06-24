@@ -1,11 +1,11 @@
 package org.grails.validation;
 
-import java.util.List;
-import java.util.ArrayList;
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.TestClass;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.TestClass;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test cases for 'inList' constraint.

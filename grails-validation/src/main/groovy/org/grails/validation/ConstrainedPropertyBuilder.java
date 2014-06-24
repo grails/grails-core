@@ -17,6 +17,8 @@ package org.grails.validation;
 
 import grails.util.GrailsUtil;
 import grails.validation.Constrained;
+import grails.validation.ConstrainedProperty;
+import grails.validation.Constraint;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
@@ -31,8 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.Constraint;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.springframework.beans.InvalidPropertyException;
 

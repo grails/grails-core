@@ -1,11 +1,11 @@
 package org.grails.validation;
 
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.TestClass;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.TestClass;
 
 /**
  * Test cases for 'url' constraint.

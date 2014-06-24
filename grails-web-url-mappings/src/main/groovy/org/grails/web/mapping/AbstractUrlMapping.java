@@ -15,14 +15,14 @@
  */
 package org.grails.web.mapping;
 
+import grails.validation.ConstrainedProperty;
+import grails.web.mapping.UrlMapping;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
-
-import grails.web.mapping.UrlMapping;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 /**
  * Abstract UrlMapping implementation that provides common basic functionality.

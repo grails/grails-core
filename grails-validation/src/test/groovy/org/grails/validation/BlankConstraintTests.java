@@ -1,8 +1,8 @@
 package org.grails.validation;
 
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.TestClass;
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.TestClass;
 
 /**
  * Tests for 'blank' constraint.

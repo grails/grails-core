@@ -1,14 +1,13 @@
 package org.grails.validation;
 
+import grails.validation.AbstractConstraintTests;
+import grails.validation.ConstrainedProperty;
+import grails.validation.TestClass;
 import groovy.lang.IntRange;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.codehaus.groovy.grails.validation.AbstractConstraintTests;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.TestClass;
 
 /**
  * Test cases for 'size' constraint.

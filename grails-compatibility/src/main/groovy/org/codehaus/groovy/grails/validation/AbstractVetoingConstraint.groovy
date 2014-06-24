@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2009 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package org.codehaus.groovy.grails.validation
 
-import org.springframework.validation.Errors;
 
 /**
- * Marker interface for vetoing constraint.
- * <p/>
- * Vetoing constraints are those which might return 'true' from validateWithVetoing method to prevent any additional
- * validation of the property. These constraints are proceeded before any other constraints, and validation continues
- * only if no one of vetoing constraint hadn't vetoed.
+ * TODO: write javadoc
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
+ * @deprecated Use {@link grails.validation.AbstractVetoingConstraint}
  */
-public interface VetoingConstraint extends Constraint {
-    boolean validateWithVetoing(Object target, Object propertyValue, Errors errors);
+@Deprecated
+public abstract class AbstractVetoingConstraint extends grails.validation.AbstractVetoingConstraint {
 }

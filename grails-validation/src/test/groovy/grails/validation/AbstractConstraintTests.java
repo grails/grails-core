@@ -1,10 +1,11 @@
-package org.codehaus.groovy.grails.validation;
+package grails.validation;
 
 import junit.framework.TestCase;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.validation.Errors;
 import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
 /**

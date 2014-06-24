@@ -16,9 +16,9 @@
 package org.grails.validation;
 
 import grails.util.GrailsStringUtils;
+import grails.validation.AbstractVetoingConstraint;
+import grails.validation.ConstrainedProperty;
 
-import org.codehaus.groovy.grails.validation.AbstractVetoingConstraint;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.validation.Errors;
 
 /**

@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package grails.validation;
 
-import grails.validation.Constrained;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
 
@@ -96,7 +95,7 @@ public class ConstrainedProperty implements Constrained {
     public static final String DEFAULT_DOESNT_MATCH_MESSAGE_CODE = "default.doesnt.match.message";
     public static final String DEFAULT_BLANK_MESSAGE_CODE = "default.blank.message";
 
-    protected static final ResourceBundle bundle = ResourceBundle.getBundle("org.codehaus.groovy.grails.validation.DefaultErrorMessages");
+    protected static final ResourceBundle bundle = ResourceBundle.getBundle("grails.validation.DefaultErrorMessages");
 
     private static final String DEFAULT_BLANK_MESSAGE = bundle.getString(DEFAULT_BLANK_MESSAGE_CODE);
     private static final String DEFAULT_DOESNT_MATCH_MESSAGE = bundle.getString(DEFAULT_DOESNT_MATCH_MESSAGE_CODE);
