@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.validation
 
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.grails.validation.GrailsDomainClassValidator;
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package org.grails.validation;
 
 import groovy.lang.GString;
 
@@ -25,11 +25,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.codehaus.groovy.grails.validation.CascadingValidator;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.grails.core.artefact.DomainClassArtefactHandler;
+
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.core.support.GrailsApplicationAware;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;

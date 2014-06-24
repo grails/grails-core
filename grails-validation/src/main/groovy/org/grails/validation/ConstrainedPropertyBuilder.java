@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package org.grails.validation;
 
 import grails.util.GrailsUtil;
 import grails.validation.Constrained;
@@ -31,6 +31,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.Constraint;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.springframework.beans.InvalidPropertyException;
 

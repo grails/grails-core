@@ -3,9 +3,9 @@ package org.codehaus.groovy.grails.web.commandobjects
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 import grails.util.ClosureToMapPopulator
-
 import grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
+
+import org.grails.validation.ConstraintsEvaluatorFactoryBean;
 
 import spock.lang.Issue
 import spock.lang.Specification

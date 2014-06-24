@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package org.grails.validation;
 
 import grails.validation.Constrained;
 import grails.validation.ConstraintsEvaluator;
@@ -35,11 +35,14 @@ import javax.persistence.Entity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
+
 import grails.util.GrailsClassUtils;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
+
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 
 /**
  * Default implementation of the {@link grails.validation.ConstraintsEvaluator} interface.

@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.validation;
+package org.grails.validation;
 
 import java.util.Map;
 
 import grails.validation.ConstraintsEvaluator;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
