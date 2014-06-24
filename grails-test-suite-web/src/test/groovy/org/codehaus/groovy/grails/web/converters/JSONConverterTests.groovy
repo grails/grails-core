@@ -132,6 +132,13 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         
         assertEquals('{"line":"first line \\n second line"}', result.toString())
     }
+    
+    // GRAILS-11530
+    void testMoreStringsWithQuotes() {
+        def str = 'Hi, this is my "test"'
+        def json = new grails.converters.JSON([a:str])
+        assertEquals('{"a":"Hi, this is my \\"test\\""}', json.toString())
+    }
 
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
