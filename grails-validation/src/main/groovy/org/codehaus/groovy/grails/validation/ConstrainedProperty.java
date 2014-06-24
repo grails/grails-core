@@ -31,6 +31,22 @@ import java.util.ResourceBundle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
+import org.grails.validation.BlankConstraint;
+import org.grails.validation.CreditCardConstraint;
+import org.grails.validation.EmailConstraint;
+import org.grails.validation.InListConstraint;
+import org.grails.validation.MatchesConstraint;
+import org.grails.validation.MaxConstraint;
+import org.grails.validation.MaxSizeConstraint;
+import org.grails.validation.MinConstraint;
+import org.grails.validation.MinSizeConstraint;
+import org.grails.validation.NotEqualConstraint;
+import org.grails.validation.NullableConstraint;
+import org.grails.validation.RangeConstraint;
+import org.grails.validation.ScaleConstraint;
+import org.grails.validation.SizeConstraint;
+import org.grails.validation.UrlConstraint;
+import org.grails.validation.ValidatorConstraint;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
@@ -64,21 +80,21 @@ import org.springframework.validation.Errors;
 @SuppressWarnings("serial")
 public class ConstrainedProperty implements Constrained {
 
-    static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
-    static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE = "default.invalid.min.size.message";
-    static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE = "default.invalid.max.size.message";
-    static final String DEFAULT_NOT_EQUAL_MESSAGE_CODE = "default.not.equal.message";
-    static final String DEFAULT_INVALID_MIN_MESSAGE_CODE = "default.invalid.min.message";
-    static final String DEFAULT_INVALID_MAX_MESSAGE_CODE = "default.invalid.max.message";
-    static final String DEFAULT_INVALID_SIZE_MESSAGE_CODE = "default.invalid.size.message";
-    static final String DEFAULT_NOT_INLIST_MESSAGE_CODE = "default.not.inlist.message";
-    static final String DEFAULT_INVALID_RANGE_MESSAGE_CODE = "default.invalid.range.message";
-    static final String DEFAULT_INVALID_EMAIL_MESSAGE_CODE = "default.invalid.email.message";
-    static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE = "default.invalid.creditCard.message";
-    static final String DEFAULT_INVALID_URL_MESSAGE_CODE = "default.invalid.url.message";
-    static final String DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE = "default.invalid.validator.message";
-    static final String DEFAULT_DOESNT_MATCH_MESSAGE_CODE = "default.doesnt.match.message";
-    static final String DEFAULT_BLANK_MESSAGE_CODE = "default.blank.message";
+    public static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
+    public static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE = "default.invalid.min.size.message";
+    public static final String DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE = "default.invalid.max.size.message";
+    public static final String DEFAULT_NOT_EQUAL_MESSAGE_CODE = "default.not.equal.message";
+    public static final String DEFAULT_INVALID_MIN_MESSAGE_CODE = "default.invalid.min.message";
+    public static final String DEFAULT_INVALID_MAX_MESSAGE_CODE = "default.invalid.max.message";
+    public static final String DEFAULT_INVALID_SIZE_MESSAGE_CODE = "default.invalid.size.message";
+    public static final String DEFAULT_NOT_INLIST_MESSAGE_CODE = "default.not.inlist.message";
+    public static final String DEFAULT_INVALID_RANGE_MESSAGE_CODE = "default.invalid.range.message";
+    public static final String DEFAULT_INVALID_EMAIL_MESSAGE_CODE = "default.invalid.email.message";
+    public static final String DEFAULT_INVALID_CREDIT_CARD_MESSAGE_CODE = "default.invalid.creditCard.message";
+    public static final String DEFAULT_INVALID_URL_MESSAGE_CODE = "default.invalid.url.message";
+    public static final String DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE = "default.invalid.validator.message";
+    public static final String DEFAULT_DOESNT_MATCH_MESSAGE_CODE = "default.doesnt.match.message";
+    public static final String DEFAULT_BLANK_MESSAGE_CODE = "default.blank.message";
 
     protected static final ResourceBundle bundle = ResourceBundle.getBundle("org.codehaus.groovy.grails.validation.DefaultErrorMessages");
 
@@ -115,14 +131,14 @@ public class ConstrainedProperty implements Constrained {
     public static final String NULLABLE_CONSTRAINT = "nullable";
     public static final String VALIDATOR_CONSTRAINT = "validator";
 
-    protected static final String INVALID_SUFFIX = ".invalid";
-    protected static final String EXCEEDED_SUFFIX = ".exceeded";
-    protected static final String NOTMET_SUFFIX = ".notmet";
-    protected static final String NOT_PREFIX = "not.";
-    protected static final String TOOBIG_SUFFIX = ".toobig";
-    protected static final String TOOLONG_SUFFIX = ".toolong";
-    protected static final String TOOSMALL_SUFFIX = ".toosmall";
-    protected static final String TOOSHORT_SUFFIX = ".tooshort";
+    public static final String INVALID_SUFFIX = ".invalid";
+    public static final String EXCEEDED_SUFFIX = ".exceeded";
+    public static final String NOTMET_SUFFIX = ".notmet";
+    public static final String NOT_PREFIX = "not.";
+    public static final String TOOBIG_SUFFIX = ".toobig";
+    public static final String TOOLONG_SUFFIX = ".toolong";
+    public static final String TOOSMALL_SUFFIX = ".toosmall";
+    public static final String TOOSHORT_SUFFIX = ".tooshort";
 
     protected static Map<String, List<Object>> constraints = new HashMap<String, List<Object>>();
     protected static final Map<String, String> DEFAULT_MESSAGES = new HashMap<String, String>();
