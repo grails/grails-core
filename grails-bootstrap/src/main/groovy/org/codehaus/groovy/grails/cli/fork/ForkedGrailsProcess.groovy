@@ -331,6 +331,18 @@ abstract class ForkedGrailsProcess {
         ServerSocket parentAvailabilityServer = new ServerSocket(0)
         def parentPort = parentAvailabilityServer.localPort
         System.setProperty(PARENT_PROCESS_PORT, String.valueOf(parentPort))
+
+
+        Thread.start {
+            while(!parentAvailabilityServer.isClosed()) {
+                try {
+                    // simply accept and close the socket
+                    parentAvailabilityServer.accept().close()
+                } catch (e) {
+                    // ignore
+                }
+            }
+        }
         Runtime.addShutdownHook {
             try {
                 parentAvailabilityServer?.close()
