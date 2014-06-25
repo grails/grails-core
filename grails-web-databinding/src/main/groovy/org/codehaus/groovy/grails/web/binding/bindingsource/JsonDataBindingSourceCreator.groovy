@@ -112,7 +112,15 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
      * @return The map
      */
     protected Map createJsonObjectMap(JsonElement jsonElement) {
-        jsonElement instanceof JsonObject ? new JsonObjectMap(jsonElement, gson) : [:]
+        Map newMap = [:]
+        if(jsonElement instanceof JsonObject) {
+            def jom = new JsonObjectMap(jsonElement, gson)
+            jom.each { k, v ->
+                def newValue = v instanceof JsonElement ? getValueForJsonElement((JsonElement)v, gson) : v
+                newMap[k] = newValue
+            }   
+        }
+        newMap
     }
 
     Object getValueForJsonElement(JsonElement value, Gson gson) {

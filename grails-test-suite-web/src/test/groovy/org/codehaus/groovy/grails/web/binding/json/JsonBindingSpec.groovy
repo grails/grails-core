@@ -2,6 +2,9 @@ package org.codehaus.groovy.grails.web.binding.json
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
+
+import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator.JsonObjectMap
+
 import spock.lang.Specification
 
 @TestFor(BindingController)
@@ -87,6 +90,22 @@ class JsonBindingSpec extends Specification {
             model.person instanceof Person
             model.person.name == 'Hello öäåÖÄÅ'
     }
+    
+    void 'Test binding JSON to a Map'() {
+        given:
+        request.contentType = JSON_CONTENT_TYPE
+        request.method = 'POST'
+        request.JSON = '{"mapData": {"name":"Jeff", "country":"USA"}}'
+        
+        when:
+        def model = controller.createFamily()
+        
+        then:
+        model.family.mapData instanceof Map
+        !(model.family.mapData instanceof JsonObjectMap)
+        model.family.mapData.name == 'Jeff'
+        model.family.mapData.country == 'USA'
+    }
 }
 
 @Artefact('Controller')
@@ -114,4 +133,5 @@ class Person {
 class Family {
     String lastName
     List<Person> familyMembers
+    Map mapData
 }
