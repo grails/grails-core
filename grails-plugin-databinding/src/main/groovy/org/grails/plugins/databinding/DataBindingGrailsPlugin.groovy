@@ -16,15 +16,14 @@
 package org.grails.plugins.databinding
 
 import grails.util.GrailsUtil
+import grails.web.databinding.BindEventListenerAdapter
 import grails.web.databinding.GrailsWebDataBinder
-import org.codehaus.groovy.grails.web.binding.BindEventListenerAdapter
 import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.grails.databinding.converters.CurrencyValueConverter
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.TimeZoneConverter

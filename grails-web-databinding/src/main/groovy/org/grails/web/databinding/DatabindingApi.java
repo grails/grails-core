@@ -15,9 +15,10 @@
  */
 package org.grails.web.databinding;
 
+import grails.web.databinding.DataBindingUtils;
+
 import java.util.Map;
 
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.springframework.validation.BindingResult;
 
 public class DatabindingApi {

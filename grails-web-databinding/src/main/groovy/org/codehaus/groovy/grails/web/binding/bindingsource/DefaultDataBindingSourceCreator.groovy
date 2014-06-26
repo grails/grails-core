@@ -20,10 +20,10 @@ import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
 import grails.beans.utils.LazyBeanMap
+import grails.databinding.DataBindingSource
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import grails.web.mime.MimeType
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.web.servlet.mvc.GrailsWebRequest

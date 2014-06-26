@@ -61,7 +61,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer;
 import grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
+import grails.web.databinding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.controllers.ControllerExceptionHandlerMetaData;
 import grails.web.mapping.LinkGenerator;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;

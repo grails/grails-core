@@ -27,7 +27,6 @@ import grails.validation.Validateable
 import grails.web.databinding.GrailsWebDataBinder;
 
 import org.apache.commons.lang.builder.CompareToBuilder
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import grails.databinding.BindUsing
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import grails.databinding.BindingFormat

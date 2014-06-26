@@ -20,6 +20,7 @@ import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.validation.ConstrainedProperty
 import grails.validation.ValidationException
+import grails.web.databinding.DataBindingUtils
 import groovy.xml.StreamingMarkupBuilder
 
 import java.beans.Introspector
@@ -29,7 +30,6 @@ import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
