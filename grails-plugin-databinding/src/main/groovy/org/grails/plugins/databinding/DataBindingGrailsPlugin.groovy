@@ -16,7 +16,6 @@
 package org.grails.plugins.databinding
 
 import grails.util.GrailsUtil
-import grails.web.databinding.BindEventListenerAdapter
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
@@ -91,9 +90,5 @@ class DataBindingGrailsPlugin {
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
 
         defaultCurrencyConverter CurrencyValueConverter
-
-        if(Boolean.TRUE.equals(databindingConfig?.enableSpringEventAdapter)) {
-            grailsBindEventListenerAdapter(BindEventListenerAdapter)
-        }
     }
 }
