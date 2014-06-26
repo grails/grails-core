@@ -17,6 +17,7 @@ package org.grails.plugins.databinding
 
 import grails.util.GrailsUtil
 import grails.web.databinding.BindEventListenerAdapter
+import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
