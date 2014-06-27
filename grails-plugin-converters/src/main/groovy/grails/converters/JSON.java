@@ -32,16 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.grails.web.converters.AbstractConverter;
-import org.codehaus.groovy.grails.web.converters.Converter;
-import org.codehaus.groovy.grails.web.converters.ConverterUtil;
-import org.codehaus.groovy.grails.web.converters.IncludeExcludeConverter;
-import org.codehaus.groovy.grails.web.converters.configuration.ConverterConfiguration;
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder;
-import org.codehaus.groovy.grails.web.converters.configuration.DefaultConverterConfiguration;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONArray;
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.json.JSONException;
@@ -50,6 +40,17 @@ import org.codehaus.groovy.grails.web.json.JSONTokener;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
+import org.grails.web.converters.AbstractConverter;
+import org.grails.web.converters.Converter;
+import org.grails.web.converters.ConverterUtil;
+import org.grails.web.converters.IncludeExcludeConverter;
+import org.grails.web.converters.configuration.ConverterConfiguration;
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
+import org.grails.web.converters.configuration.DefaultConverterConfiguration;
+import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.marshaller.ClosureObjectMarshaller;
+import org.grails.web.converters.marshaller.ObjectMarshaller;
+
 import grails.web.mime.MimeType;
 
 /**
@@ -124,7 +125,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * Directs the JSON Writer to the given Writer
      *
      * @param out the Writer
-     * @throws org.codehaus.groovy.grails.web.converters.exceptions.ConverterException
+     * @throws org.grails.web.converters.exceptions.ConverterException
      *
      */
     public void render(Writer out) throws ConverterException {
@@ -333,7 +334,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * Sets the Object which is later converted to JSON
      *
      * @param target the Object
-     * @see org.codehaus.groovy.grails.web.converters.Converter
+     * @see org.grails.web.converters.Converter
      */
     @Override
     public void setTarget(Object target) {

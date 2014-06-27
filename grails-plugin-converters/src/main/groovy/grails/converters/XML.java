@@ -19,24 +19,27 @@ import grails.util.GrailsNameUtils;
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.io.support.IOUtils;
+
 import grails.core.support.proxy.EntityProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
-import org.codehaus.groovy.grails.web.converters.AbstractConverter;
-import org.codehaus.groovy.grails.web.converters.Converter;
-import org.codehaus.groovy.grails.web.converters.ConverterUtil;
-import org.codehaus.groovy.grails.web.converters.IncludeExcludeConverter;
-import org.codehaus.groovy.grails.web.converters.configuration.ConverterConfiguration;
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder;
-import org.codehaus.groovy.grails.web.converters.configuration.DefaultConverterConfiguration;
-import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import grails.web.mime.MimeType;
+
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.grails.web.converters.AbstractConverter;
+import org.grails.web.converters.Converter;
+import org.grails.web.converters.ConverterUtil;
+import org.grails.web.converters.IncludeExcludeConverter;
+import org.grails.web.converters.configuration.ConverterConfiguration;
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder;
+import org.grails.web.converters.configuration.DefaultConverterConfiguration;
+import org.grails.web.converters.exceptions.ConverterException;
+import org.grails.web.converters.marshaller.ClosureObjectMarshaller;
+import org.grails.web.converters.marshaller.NameAwareMarshaller;
+import org.grails.web.converters.marshaller.ObjectMarshaller;
 import org.grails.web.xml.PrettyPrintXMLStreamWriter;
 import org.grails.web.xml.StreamingMarkupWriter;
 import org.grails.web.xml.XMLStreamWriter;
@@ -44,6 +47,7 @@ import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

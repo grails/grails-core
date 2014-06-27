@@ -31,8 +31,8 @@ import grails.core.GrailsApplication
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup
-import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
-import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
+import org.grails.plugins.converters.ConvertersGrailsPlugin
+import org.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
@@ -43,7 +43,7 @@ import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
 import grails.web.mime.MimeType

@@ -4,7 +4,7 @@ import grails.artefact.Artefact
 import grails.converters.XML
 import grails.persistence.Entity
 
-import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
+import org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
 import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer

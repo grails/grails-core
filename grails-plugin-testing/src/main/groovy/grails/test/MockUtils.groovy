@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.web.converters.Converter
+import org.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
@@ -994,7 +994,7 @@ class MockUtils {
         }
 
         def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
-        
+
         // Attach the instantiated constraints to the domain/command
         // object.
         emc.getConstraints = {->

@@ -4,8 +4,8 @@ import grails.rest.render.hal.HalXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder

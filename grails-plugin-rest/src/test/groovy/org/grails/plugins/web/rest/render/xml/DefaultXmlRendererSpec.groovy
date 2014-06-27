@@ -4,10 +4,10 @@ import grails.converters.XML
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.web.converters.ConverterUtil
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
+import org.grails.web.converters.ConverterUtil
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
 import grails.web.mime.MimeType
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext

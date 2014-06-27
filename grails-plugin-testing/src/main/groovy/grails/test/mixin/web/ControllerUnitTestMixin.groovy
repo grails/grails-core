@@ -25,7 +25,7 @@ import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
 import grails.util.GrailsMetaClassUtils
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
+import org.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi

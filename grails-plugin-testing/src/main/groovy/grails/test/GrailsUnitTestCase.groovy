@@ -18,8 +18,8 @@ package grails.test
 import grails.core.DefaultArtefactInfo
 import grails.core.DefaultGrailsApplication
 import grails.util.Holders
-import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
-import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
+import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
+import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -27,8 +27,8 @@ import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.grails.core.lifecycle.ShutdownOperations
 import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.converters.ConverterUtil
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.ConverterUtil
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.core.support.GrailsDomainConfigurationUtil
 import org.grails.core.util.ClassPropertyFetcher
 import org.springframework.validation.Errors

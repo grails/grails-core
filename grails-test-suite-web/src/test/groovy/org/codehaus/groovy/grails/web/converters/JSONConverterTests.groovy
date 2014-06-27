@@ -8,6 +8,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
 import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.grails.web.converters.ConverterUtil;
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
