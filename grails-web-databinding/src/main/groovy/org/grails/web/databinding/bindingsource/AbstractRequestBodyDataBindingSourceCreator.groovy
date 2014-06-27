@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding.bindingsource
+package org.grails.web.databinding.bindingsource
 
 import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
@@ -21,7 +21,8 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
-import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceCreator
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
+
 import grails.web.mime.MimeType
 import grails.web.servlet.mvc.GrailsParameterMap
 

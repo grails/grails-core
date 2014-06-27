@@ -50,7 +50,7 @@ import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
-import org.grails.databinding.converters.ByteArrayMultipartFileValueConverter;
+import org.grails.web.databinding.converters.ByteArrayMultipartFileValueConverter;
 import org.grails.databinding.xml.GPathResultMap
 import org.grails.web.databinding.DataBindingEventMulticastListener
 import org.grails.web.databinding.DefaultASTDatabindingHelper

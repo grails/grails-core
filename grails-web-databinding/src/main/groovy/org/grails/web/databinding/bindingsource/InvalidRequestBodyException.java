@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding.bindingsource;
+package org.grails.web.databinding.bindingsource;
+
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
 
 /** 
  * Represents an error creation a data binding source because the request

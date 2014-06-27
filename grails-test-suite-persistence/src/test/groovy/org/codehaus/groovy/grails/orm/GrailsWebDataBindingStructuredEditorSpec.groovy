@@ -4,7 +4,7 @@ import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;
 import grails.web.databinding.GrailsWebDataBinder;
 
-import org.grails.databinding.converters.AbstractStructuredBindingEditor
+import org.grails.web.databinding.converters.AbstractStructuredBindingEditor
 
 import spock.lang.Specification
 
