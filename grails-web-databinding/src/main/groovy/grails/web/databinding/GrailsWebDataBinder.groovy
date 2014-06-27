@@ -19,7 +19,9 @@ import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
 import grails.databinding.BindingFormat
+
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
+
 import grails.databinding.DataBindingSource
 import grails.databinding.SimpleDataBinder
 import grails.databinding.SimpleMapDataBindingSource
@@ -41,7 +43,6 @@ import java.lang.annotation.Annotation
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
-import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
@@ -49,6 +50,7 @@ import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
+import org.grails.databinding.converters.ByteArrayMultipartFileValueConverter;
 import org.grails.databinding.xml.GPathResultMap
 import org.grails.web.databinding.DataBindingEventMulticastListener
 import org.grails.web.databinding.DefaultASTDatabindingHelper
