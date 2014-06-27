@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.binding
+package org.grails.web.databinding
 
 import grails.util.GrailsWebUtil
 

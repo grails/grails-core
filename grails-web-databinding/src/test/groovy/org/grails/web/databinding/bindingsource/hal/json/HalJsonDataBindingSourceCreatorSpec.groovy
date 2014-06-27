@@ -1,6 +1,6 @@
-package org.codehaus.groovy.grails.web.binding.bindingsource.hal.json
+package org.grails.web.databinding.bindingsource.hal.json
 
-import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 
 import spock.lang.Specification
 

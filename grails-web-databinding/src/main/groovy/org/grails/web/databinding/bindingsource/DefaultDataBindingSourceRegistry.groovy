@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.binding.bindingsource
+package org.grails.web.databinding.bindingsource
 
-import grails.databinding.CollectionDataBindingSource;
-import grails.databinding.DataBindingSource;
+import grails.databinding.CollectionDataBindingSource
+import grails.databinding.DataBindingSource
+import grails.web.mime.MimeType
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
-import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
 
 import javax.annotation.PostConstruct
 
-import grails.web.mime.MimeType
-import org.grails.web.util.ClassAndMimeTypeRegistry
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
+import org.grails.web.util.ClassAndMimeTypeRegistry
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
-class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry, org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry {
+class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry {
 
     @Autowired(required = false)
     void setDataBindingSourceCreators(DataBindingSourceCreator[] dataBindingSourceCreators) {

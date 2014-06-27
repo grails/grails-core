@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceCreator
 import grails.web.mime.MimeType
 import grails.web.servlet.mvc.GrailsParameterMap
 

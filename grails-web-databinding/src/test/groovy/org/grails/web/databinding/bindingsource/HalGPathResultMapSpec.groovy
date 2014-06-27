@@ -1,6 +1,7 @@
-package org.codehaus.groovy.grails.web.binding.bindingsource
+package org.grails.web.databinding.bindingsource
 
 import org.grails.databinding.xml.GPathResultMap
+import org.grails.web.databinding.bindingsource.HalGPathResultMap;
 
 import spock.lang.Specification
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.binding.bindingsource
+package org.grails.web.databinding.bindingsource
 
 import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
