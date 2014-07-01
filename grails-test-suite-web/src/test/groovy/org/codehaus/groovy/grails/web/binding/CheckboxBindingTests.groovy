@@ -1,15 +1,55 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import grails.artefact.Artefact
+import grails.persistence.Entity
+import grails.test.mixin.TestFor
+
+import org.junit.Test
+import static org.junit.Assert.*
 
 /**
  * @author Rob Fletcher
  * @since 1.3.0
  */
-class CheckboxBindingTests extends AbstractGrailsControllerTests {
-    protected void onSetUp() {
-        gcl.parseClass """
-import grails.persistence.*
+@TestFor(CheckboxBindingController)
+class CheckboxBindingTests {
+
+    @Test
+    void testBindingCheckedValuesToObject() {
+        params.name = "Capricciosa"
+        params."_delivery" = ""
+        params."delivery" = "on"
+        params."options._extraAnchovies" = ""
+        params."options.extraAnchovies" = "on"
+        params."options._stuffedCrust" = ""
+        params."options.stuffedCrust" = "on"
+
+        def model = controller.save()
+
+        assertEquals "Capricciosa", model.pizza.name
+        assertTrue "checked value 'delivery' failed to bind", model.pizza.delivery
+        assertTrue "nested checked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
+        assertTrue "nested checked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
+
+    }
+
+    @Test
+    void testBindingUncheckedValuesToObject() {
+        params.name = "Capricciosa"
+        params."_delivery" = ""
+        params.options = [_extraAnchovies: '', _stuffedCrust: '']
+
+        def model = controller.save()
+
+        assertEquals "Capricciosa", model.pizza.name
+        assertFalse "unchecked value 'delivery' failed to bind", model.pizza.delivery
+        assertFalse "nested unchecked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
+        assertFalse "nested unchecked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
+
+    }
+
+}
+
 
 @Entity
 class Pizza {
@@ -24,50 +64,10 @@ class Options {
     boolean stuffedCrust = true
 }
 
+@Artefact('Controller')
 class CheckboxBindingController {
     def save = {
         def p = new Pizza(params)
         [pizza: p]
     }
-}
-
-"""
-    }
-
-    void testBindingCheckedValuesToObject() {
-        def controller = ga.getControllerClass("CheckboxBindingController").newInstance()
-
-        controller.params.name = "Capricciosa"
-        controller.params."_delivery" = ""
-        controller.params."delivery" = "on"
-        controller.params."options._extraAnchovies" = ""
-        controller.params."options.extraAnchovies" = "on"
-        controller.params."options._stuffedCrust" = ""
-        controller.params."options.stuffedCrust" = "on"
-
-        def model = controller.save()
-
-        assertEquals "Capricciosa", model.pizza.name
-        assertTrue "checked value 'delivery' failed to bind", model.pizza.delivery
-        assertTrue "nested checked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
-        assertTrue "nested checked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
-    }
-
-    void testBindingUncheckedValuesToObject() {
-        def controller = ga.getControllerClass("CheckboxBindingController").newInstance()
-
-        controller.params.name = "Capricciosa"
-        controller.params."_delivery" = ""
-        controller.params.options = [_extraAnchovies: '', _stuffedCrust: '']
-
-        def model = controller.save()
-
-        assertEquals "Capricciosa", model.pizza.name
-        assertFalse "unchecked value 'delivery' failed to bind", model.pizza.delivery
-        assertFalse "nested unchecked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
-        assertFalse "nested unchecked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
-    }
-
 }

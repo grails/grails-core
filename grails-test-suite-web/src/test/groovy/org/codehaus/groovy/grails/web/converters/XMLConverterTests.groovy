@@ -3,11 +3,14 @@ package org.codehaus.groovy.grails.web.converters
 import grails.artefact.Artefact
 import grails.converters.XML
 import grails.persistence.Entity
+import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
 import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
+import org.junit.Test
+import static org.junit.Assert.*
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -17,38 +20,30 @@ import org.springframework.validation.Errors
  * @author Graeme Rocher
  * @since 0.6
  */
-class XMLConverterTests extends AbstractGrailsControllerTests {
+@TestFor(RestController)
+@Mock([XmlConverterTestBook, XmlConverterTestPublisher, XmlConverterTestBookData])
+class XMLConverterTests {
 
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [RestController]
-    }
-
-    @Override
-    protected Collection<Class> getDomainClasses() {
-        [XmlConverterTestBook, XmlConverterTestPublisher, XmlConverterTestBookData]
-    }
-
+    @Test
     void testXMLConverter() {
-        def c = new RestController()
-        c.test()
+        controller.test()
 
         // @todo this test is fragile and depends on runtime environment because of hash key ordering variations
         assertEquals '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString
     }
 
+    @Test
     void testXMLConverterWithByteArray() {
-        def c = new RestController()
-        c.testByteArray()
+        controller.testByteArray()
 
         assertEquals '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBookData><data encoding="BASE-64">''' +
                 'It was the best of times, it was the worst...'.getBytes('UTF-8').encodeBase64() +
                 '''</data></xmlConverterTestBookData>''', response.contentAsString
     }
 
+    @Test
     void testConvertErrors() {
-        def c = new RestController()
-        c.testErrors()
+        controller.testErrors()
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
@@ -58,22 +53,22 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         def xml = new XmlSlurper().parseText(response.contentAsString)
 
         def titleError = xml.error.find { it.@field == 'title' }
-        assertEquals "Property [title] of class [class ${XmlConverterTestBook.name}] cannot be null", titleError.message.text()
+        assertEquals "Property [title] of class [class ${XmlConverterTestBook.name}] cannot be null".toString(), titleError.message.text()
         def authorError = xml.error.find { it.@field == 'author' }
-        assertEquals "Property [author] of class [class ${XmlConverterTestBook.name}] cannot be null", authorError.message.text()
+        assertEquals "Property [author] of class [class ${XmlConverterTestBook.name}] cannot be null".toString(), authorError.message.text()
     }
 
+    @Test
     void testProxiedDomainClassWithXMLConverter() {
         def obj = new XmlConverterTestBook()
         obj.title = "The Stand"
         obj.author = "Stephen King"
-        def c = new RestController()
 
         def hibernateInitializer = [getImplementation:{obj}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
-        c.params.b = proxy
+        params.b = proxy
 
-        c.testProxy()
+        controller.testProxy()
 
         def pum = new ProxyUnwrappingMarshaller()
 
@@ -83,6 +78,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         assertEquals('''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
     }
 
+    @Test
     void testMarshalProxiedAssociations() {
 
         def obj = new XmlConverterTestPublisher()
@@ -94,16 +90,10 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         book.author = "Stephen King"
         book.publisher = obj
 
-        def c = new RestController()
-        c.params.b = book
-        c.testProxyAssociations()
+        params.b = book
+        controller.testProxyAssociations()
 
         assertEquals('''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher id="1" /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
-    }
-
-    void onSetUp() {
-        GroovySystem.metaClassRegistry.removeMetaClass Errors
-        GroovySystem.metaClassRegistry.removeMetaClass BeanPropertyBindingResult
     }
 }
 
