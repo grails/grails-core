@@ -1,35 +1,34 @@
 package org.codehaus.groovy.grails.web.servlet
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import static org.junit.Assert.assertEquals
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+
+import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests {
+@TestFor(MultipleRenderController)
+class MultipleRenderCallsContentTypeTests {
 
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [MultipleRenderController]
-    }
-
+    @Test
     void testLastContentTypeWins() {
-        def controller = new MultipleRenderController()
-
         controller.test()
 
         assertEquals "application/json;charset=utf-8", response.contentType
     }
 
+    @Test
     void testPriorSetContentTypeWins() {
-        def controller = new MultipleRenderController()
-
         controller.test2()
 
         assertEquals "text/xml", response.contentType
     }
 }
 
+@Artefact('Controller')
 class MultipleRenderController {
 
     def test = {

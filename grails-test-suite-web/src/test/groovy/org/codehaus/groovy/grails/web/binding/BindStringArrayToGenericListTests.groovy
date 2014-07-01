@@ -1,30 +1,25 @@
 package org.codehaus.groovy.grails.web.binding
 
+import grails.artefact.Artefact
 import grails.persistence.Entity
+import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.junit.Test
+import static org.junit.Assert.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
+@TestFor(MenuController)
+@Mock(Menu)
+class BindStringArrayToGenericListTests  {
 
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [MenuController]
-    }
-
-    @Override
-    protected Collection<Class> getDomainClasses() {
-        [Menu]
-    }
-
+    @Test
     void testBindStringArrayToGenericList() {
-        def controller = new MenuController()
-
-        controller.params.name = "day"
-        controller.params.items = ['rice', 'soup']as String[]
+        params.name = "day"
+        params.items = ['rice', 'soup']as String[]
 
         def model = controller.save()
 
@@ -32,6 +27,7 @@ class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
     }
 }
 
+@Artefact('Controller')
 class MenuController {
 
     def save = {

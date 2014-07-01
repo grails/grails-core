@@ -1,10 +1,20 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-class ControllerInheritanceTests extends AbstractGrailsControllerTests {
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
 
-    @Override
-    protected void onSetUp() {
-        gcl.parseClass '''
+import org.junit.Test
+
+@TestFor(ControllerInheritanceFooController)
+class ControllerInheritanceTests  {
+    // test for GRAILS-6247
+    @Test
+    void testCallSuperMethod() {
+        controller.bar()
+    }
+}
+
+@Artefact('Controller')
 class ControllerInheritanceFooBaseController {
 
     void bar() {
@@ -12,13 +22,6 @@ class ControllerInheritanceFooBaseController {
     }
 }
 
+@Artefact('Controller')
 class ControllerInheritanceFooController extends ControllerInheritanceFooBaseController {}
-        '''
-    }
 
-    // test for GRAILS-6247
-    void testCallSuperMethod() {
-        def controller = ga.getControllerClass("ControllerInheritanceFooController").newInstance()
-        controller.bar()
-    }
-}

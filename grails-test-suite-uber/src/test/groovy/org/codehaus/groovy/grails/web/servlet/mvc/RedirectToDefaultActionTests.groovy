@@ -1,43 +1,34 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import static org.junit.Assert.assertEquals
+import grails.artefact.Artefact
+import grails.test.mixin.Mock
+
+import org.junit.Test
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class RedirectToDefaultActionTests extends AbstractGrailsControllerTests {
+@Mock([PortalController, RepositoryController])
+class RedirectToDefaultActionTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-class UrlMappings {
-    static mappings = {
-        "/$controller/$action?/$id?"{
-            constraints {
-                // apply constraints here
-            }
-        }
+    @Test
+    void testRedirect() {
+        def c = new PortalController()
+        c.content()
+        assertEquals "/repository/index", response.redirectedUrl
+    }
+
+    @Test
+    void testRedirectToExplicitDefaultAction() {
+        def c = new RepositoryController()
+        c.toPortal()
+        assertEquals "/portal/content", response.redirectedUrl
     }
 }
 
-''')
-    }
-
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [PortalController, RepositoryController]
-    }
-
-     void testRedirect() {
-         def c = ga.getControllerClass(PortalController.name).newInstance()
-         c.content()
-         assertEquals "/repository/index", response.redirectedUrl
-     }
-
-     void testRedirectToExplicitDefaultAction() {
-         def c = ga.getControllerClass(RepositoryController.name).newInstance()
-         c.toPortal()
-         assertEquals "/portal/content", response.redirectedUrl
-     }
-}
+@Artefact('Controller')
 class PortalController {
 
     static defaultAction = 'content'
@@ -45,6 +36,7 @@ class PortalController {
     def content = { redirect(controller:'repository') }
 }
 
+@Artefact('Controller')
 class RepositoryController {
     def index = { render "hello world" }
 

@@ -1,6 +1,7 @@
 package org.grails.web.databinding.bindingsource.json
 
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator.JsonObjectMap
 
 import spock.lang.Specification
 
@@ -27,17 +28,21 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource.containsProperty 'name'
         bindingSource['name'] == 'MacBook'
         bindingSource['category'] instanceof Map
+        !(bindingSource['category'] instanceof JsonObjectMap)
         bindingSource['category'].size() == 5
         bindingSource['category']['name'] == 'laptop'
         bindingSource['category']['shouldBeTrue'] == true
         bindingSource['category']['shouldBeFalse'] == false
         bindingSource['category']['someNumber'].intValue() == 42
         bindingSource['category']['shouldBeNull'] == null
-        bindingSource['languages[0]'] instanceof Map
-        bindingSource['languages[1]'] instanceof Map
-        bindingSource['languages[0]']['name'] == 'Groovy'
-        bindingSource['languages[0]']['company'] == 'GoPivotal'
-        bindingSource['languages[1]']['name'] == 'Java'
-        bindingSource['languages[1]']['company'] == 'Oracle'
+        bindingSource['languages'] instanceof List
+        bindingSource['languages'][0] instanceof Map
+        !(bindingSource['languages'][0] instanceof JsonObjectMap)
+        bindingSource['languages'][1] instanceof Map
+        !(bindingSource['languages'][1] instanceof JsonObjectMap)
+        bindingSource['languages'][0]['name'] == 'Groovy'
+        bindingSource['languages'][0]['company'] == 'GoPivotal'
+        bindingSource['languages'][1]['name'] == 'Java'
+        bindingSource['languages'][1]['company'] == 'Oracle'
     }
 }

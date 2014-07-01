@@ -1,28 +1,22 @@
 package org.codehaus.groovy.grails.web.binding
 
+import static org.junit.Assert.assertEquals
+import grails.artefact.Artefact
 import grails.persistence.Entity
+import grails.test.mixin.TestFor
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class EnumBindingTests extends AbstractGrailsControllerTests {
+@TestFor(StatusController)
+class EnumBindingTests  {
 
-    @Override
-    protected Collection<Class> getDomainClasses() {
-        [StatusTransition]
-    }
-
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [StatusController]
-    }
-
+    @Test
     void testBindEnumInConstructor() {
-        def ctrl = new StatusController()
-        def model = ctrl.bindMe()
+        def model = controller.bindMe()
 
         assertEquals "blah", model.statusTransition.title
         assertEquals "OPEN", model.statusTransition.status.toString()
@@ -37,6 +31,7 @@ enum Status {
     OPEN, IN_PROGRESS, ON_HOLD, DONE
 }
 
+@Artefact('Controller')
 class StatusController {
     def bindMe = {
         [statusTransition:new StatusTransition(title:"blah", status:Status.OPEN)]
