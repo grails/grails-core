@@ -15,215 +15,184 @@
  */
 package org.codehaus.groovy.grails.web.servlet
 
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
+import org.junit.Test
+import static org.junit.Assert.*
 
 /**
  * Tests for the render method.
  *
  * @author Graeme Rocher
  */
-class RenderMethodTests extends AbstractGrailsControllerTests {
+@TestFor(RenderController)
+class RenderMethodTests {
 
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [RenderController]
-    }
-
+    @Test
     void testRenderFile() {
-        def mockController = new RenderController()
-        mockController.render file:"hello".bytes, contentType:"text/plain"
+        controller.render file:"hello".bytes, contentType:"text/plain"
 
         assert "hello" == response.contentAsString
 
         response.reset()
 
         shouldFail(ControllerExecutionException) {
-            mockController.render file:"hello".bytes
+            controller.render file:"hello".bytes
         }
 
         response.reset()
 
-        mockController.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain"
+        controller.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain"
 
         assert "hello" == response.contentAsString
         assert null == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
 
         response.reset()
 
-        mockController.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain", fileName:"hello.txt"
+        controller.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain", fileName:"hello.txt"
         assert "hello" == response.contentAsString
         assert "attachment;filename=hello.txt" == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
-
     }
 
+    @Test
     void testRenderMethodWithStatus() {
-        def mockController = new RenderController()
-        mockController.renderMessageWithStatus()
+        controller.renderMessageWithStatus()
 
-        def response = mockController.response
+        def response = controller.response
         assertEquals "test", response.contentAsString
         assertEquals 500, response.status
     }
 
     // bug GRAILS-3393
+    @Test
     void testMissingNamedArgumentKey() {
 
-        def mockController = new RenderController()
-        shouldFail(MissingMethodException) {
-            mockController.renderBug()
-        }
+        shouldFail(MissingMethodException) { controller.renderBug() }
     }
 
+    @Test
     void testRenderObject() {
-        def mockController = new RenderController()
-        mockController.renderObject()
+        controller.renderObject()
 
-        def response = mockController.response
+        def response = controller.response
         assertEquals "bar", response.contentAsString
     }
 
+    @Test
     void testRenderList() {
-        def mockController = new RenderController()
-        mockController.renderList()
+        controller.renderList()
 
-        def response = mockController.response
+        def response = controller.response
         assertEquals "[1, 2, 3]", response.contentAsString
     }
 
+    @Test
     void testRenderMap() {
-        def mockController = new RenderController()
-        mockController.renderMap()
+        controller.renderMap()
 
-        def response = mockController.response
+        def response = controller.response
         assertEquals "['a':1, 'b':2]", response.contentAsString
     }
 
+    @Test
     void testRenderGString() {
-        runTest {
-            def mockController = new RenderController()
-            mockController.renderGString()
+        controller.renderGString()
 
-            def request = mockController.request
-            assert request != null
-            def response = mockController.response
+        def request = controller.request
+        assert request != null
+        def response = controller.response
 
-            assert response != null
+        assert response != null
 
-            assertEquals "test render", response.contentAsString
-        }
+        assertEquals "test render", response.contentAsString
     }
 
+    @Test
     void testRenderText() {
-        runTest {
-            def mockController = new RenderController()
-            mockController.renderText()
+        controller.renderText()
 
-            def request = mockController.request
-            assert request != null
-            def response = mockController.response
+        def request = controller.request
+        assert request != null
+        def response = controller.response
 
-            assert response != null
+        assert response != null
 
-            assertEquals "test render", response.contentAsString
-        }
+        assertEquals "test render", response.contentAsString
     }
 
+    @Test
     void testRenderXml() {
-        runTest {
-            def mockController = new RenderController()
+        controller.renderXML()
 
-            mockController.renderXML()
+        def request = controller.request
+        assert request != null
+        def response = controller.response
 
-            def request = mockController.request
-            assert request != null
-            def response = mockController.response
+        assert response != null
 
-            assert response != null
-
-            assertEquals "<hello>world</hello>", response.contentAsString
-            assertEquals "text/xml;charset=utf-8", response.contentType
-        }
+        assertEquals "<hello>world</hello>", response.contentAsString
+        assertEquals "text/xml;charset=utf-8", response.contentType
     }
 
+    @Test
     void testRenderView() {
-        def mockController = new RenderController()
+        controller.renderView()
 
-        mockController.renderView()
+        assert controller.modelAndView
 
-        assert mockController.modelAndView
-
-        assertEquals '/render/testView', mockController.modelAndView.viewName
+        assertEquals '/render/testView', controller.modelAndView.viewName
     }
 
+    @Test
     void testRenderViewWithContentType() {
-        def mockController = new RenderController()
+        controller.renderXmlView.call()
 
-        mockController.renderXmlView.call()
+        assert controller.modelAndView
 
-        assert mockController.modelAndView
-
-        assertEquals '/render/xmlView', mockController.modelAndView.viewName
+        assertEquals '/render/xmlView', controller.modelAndView.viewName
         assertEquals 'text/xml;charset=utf-8', response.contentType
     }
 
+    @Test
     void testRenderTemplate() {
-        def mockController = new RenderController()
+        views["/render/_testTemplate.gsp"] = 'hello ${hello}!'
 
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
-        def resourceLoader = new MockStringResourceLoader()
-        resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
-
-        appCtx.groovyPageLocator.addResourceLoader resourceLoader
-        webRequest.controllerName = "render"
-        mockController.renderTemplate.call()
+        controller.renderTemplate()
 
         assertEquals "text/html;charset=UTF-8", response.contentType
         assertEquals "hello world!", response.contentAsString
     }
 
+    @Test
     void testRenderTemplateWithCollectionUsingImplicitITVariable() {
-        def mockController = new RenderController()
-
-        request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
-        def resourceLoader = new MockStringResourceLoader()
-        resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${it.firstName} ${it.middleName}<br/>'
-        appCtx.groovyPageLocator.addResourceLoader resourceLoader
-        webRequest.controllerName = 'render'
-        mockController.renderTemplateWithCollection()
+        views['/render/_peopleTemplate.gsp'] = '${it.firstName} ${it.middleName}<br/>'
+        controller.renderTemplateWithCollection()
 
         assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
     }
 
+    @Test
     void testRenderTemplateWithCollectionUsingExplicitVariableName() {
-        def mockController = new RenderController()
-
-        request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
-        def resourceLoader = new MockStringResourceLoader()
-        resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${person.firstName} ${person.middleName}<br/>'
-        appCtx.groovyPageLocator.addResourceLoader resourceLoader
-        webRequest.controllerName = 'render'
-        mockController.renderTemplateWithCollectionAndExplicitVarName()
+        views['/render/_peopleTemplate.gsp'] = '${person.firstName} ${person.middleName}<br/>'
+        controller.renderTemplateWithCollectionAndExplicitVarName()
 
         assertEquals 'Jacob Ray<br/>Zachary Scott<br/>', response.contentAsString
     }
 
+    @Test
     void testRenderTemplateWithContentType() {
-        def mockController = new RenderController()
-
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
-        def resourceLoader = new MockStringResourceLoader()
-        resourceLoader.registerMockResource "/render/_xmlTemplate.gsp", '<hello>world</hello>'
-        appCtx.groovyPageLocator.addResourceLoader resourceLoader
-        webRequest.controllerName = "render"
-        mockController.renderXmlTemplate()
+        views["/render/_xmlTemplate.gsp"] = '<hello>world</hello>'
+        controller.renderXmlTemplate()
 
         assertEquals "<hello>world</hello>", response.contentAsString
         assertEquals "text/xml;charset=utf-8", response.contentType
     }
 }
 
+@Artefact('Controller')
 class RenderController {
 
     def renderBug = {
