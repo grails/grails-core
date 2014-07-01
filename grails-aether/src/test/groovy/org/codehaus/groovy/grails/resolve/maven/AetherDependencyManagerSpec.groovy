@@ -59,6 +59,27 @@ class AetherDependencyManagerSpec extends Specification {
 
     }
 
+    @Issue('GPRELEASE-59')
+    void "Test that an excluded dependency that isn't available is excluded"() {
+        given:"A dependency with an exclusion of an unavailable artifact"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                }
+                dependencies {
+                    compile('com.octo.captcha:jcaptcha:1.0') {
+                        excludes 'javax.servlet:servlet-api', 'com.jhlabs:imaging'
+                    }
+                }
+            }
+
+        when:"The dependency is resolved"
+            def compileFiles = dependencyManager.resolve('compile').allArtifacts
+        then:"The transitive dependency is excluded"
+            !compileFiles.any { File f -> f.name.contains('imaging')}
+    }
+
     @Issue('GRAILS-11055')
     void "Test that a transitive dependency excluded with the map syntax is actually excluded"() {
         given:"A dependency with an exclusion"
