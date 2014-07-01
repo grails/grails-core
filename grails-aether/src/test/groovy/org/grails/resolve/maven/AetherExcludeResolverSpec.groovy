@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.resolve.Dependency
 import org.grails.resolve.maven.aether.AetherDependencyManager
 import org.grails.resolve.maven.aether.AetherExcludeResolver
 import spock.lang.Specification
+import spock.lang.Issue
 
 /**
  * @author Graeme Rocher
@@ -48,5 +49,32 @@ class AetherExcludeResolverSpec extends Specification{
         validatorExcludes.size() == 3
         validatorExcludes.find { Dependency d -> d.name == 'commons-beanutils'}
 
+    }
+
+    @Issue('GPRELEASE-59')
+    void "Test that an excluded dependency that isn't available is excluded"() {
+        given:"A dependency with an exclusion of an unavailable artifact"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                }
+                dependencies {
+                    compile('com.octo.captcha:jcaptcha:1.0') {
+                        excludes 'javax.servlet:servlet-api', 'com.jhlabs:imaging'
+                    }
+                }
+            }
+        def excludeResolver = new AetherExcludeResolver(dependencyManager)
+
+        when:"The excludes are resolved"
+        final excludes = excludeResolver.resolveExcludes()
+        def validatorExcludes = !excludes.isEmpty() ? excludes.values().iterator().next() : null
+
+        then:"They are valid"
+        !excludes.isEmpty()
+        validatorExcludes.size() == 2
+        validatorExcludes.find { Dependency d -> d.name == 'imaging'}
+        validatorExcludes.find { Dependency d -> d.name == 'servlet-api'}
     }
 }
