@@ -1,69 +1,60 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import org.codehaus.groovy.grails.commons.test.*
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*
+import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.plugins.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.codehaus.groovy.grails.web.servlet.*
+import org.junit.Test
+import static org.junit.Assert.*
 import org.springframework.mock.web.*
 import org.springframework.validation.*
+import org.springframework.web.context.request.*
 import org.springframework.web.servlet.*
 
-@SuppressWarnings("unused")
-class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
+@TestFor(TestTagLib)
+class TagLibDynamicMethodsTests {
 
-    void onSetUp() {
-        gcl.parseClass """
-        class TestTagLib {
-           def myTag = {attrs, body -> body() }
-        }
-        """
-    }
-
+    @Test
     void testFlashObject() {
-        runTest {
-            def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
-            testTagLib.flash.test = "hello"
+        tagLib.flash.test = "hello"
 
-            assertEquals "hello", testTagLib.flash.test
-        }
+        assertEquals "hello", tagLib.flash.test
     }
 
+    @Test
     void testParamsObject() {
-        runTest {
-            def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
-            testTagLib.params.test = "hello"
+        tagLib.params.test = "hello"
 
-            assertEquals "hello", testTagLib.params.test
-        }
+        assertEquals "hello", tagLib.params.test
     }
 
+    @Test
     void testSessionObject() {
-        runTest {
-            def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
-            testTagLib.session.test = "hello"
+        tagLib.session.test = "hello"
 
-            assertEquals "hello", testTagLib.session.test
-        }
+        assertEquals "hello", tagLib.session.test
     }
 
+    @Test
     void testGrailsAttributesObject() {
-        runTest {
-            def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
-             assertNotNull(testTagLib.grailsAttributes)
-        }
+        assertNotNull(tagLib.grailsAttributes)
     }
 
+    @Test
     void testRequestObjects() {
-        runTest {
-            def testTagLib = ga.getTagLibClass("TestTagLib").newInstance()
+        assertNotNull(tagLib.request)
 
-            assertNotNull(testTagLib.request)
-
-            assertNotNull(testTagLib.response)
-            assertNotNull(testTagLib.servletContext)
-        }
+        assertNotNull(tagLib.response)
+        assertNotNull(tagLib.servletContext)
     }
 }
+
+@Artefact("TagLibrary")
+class TestTagLib {
+    def myTag = {attrs, body -> body() }
+ }
+

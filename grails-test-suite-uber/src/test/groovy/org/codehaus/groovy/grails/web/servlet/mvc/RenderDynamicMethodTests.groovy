@@ -1,100 +1,103 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import grails.test.mixin.TestFor
+
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper
+import org.junit.Test
+import static org.junit.Assert.assertEquals
 
-class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
+@TestFor(RenderDynamicMethodTestController)
+class RenderDynamicMethodTests  {
 
-    private testCtrl
-
-    protected void onSetUp() {
-        gcl.parseClass("grails.json.legacy.builder=false", "Config")
-    }
-
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [RenderDynamicMethodTestController]
-    }
-
-    protected void setUp() {
-        super.setUp()
-        testCtrl = ga.getControllerClass(RenderDynamicMethodTestController.name).newInstance()
-    }
-
+    @Test
     void testRenderTextWithLayout() {
-        testCtrl.renderTextWithLayout()
+        controller.renderTextWithLayout()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "foo", response.contentAsString
         assert "bar" == request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE)
     }
+    
+    @Test
     void testRenderView() {
-        testCtrl.renderView()
+        controller.renderView()
 
-        assertEquals '/renderDynamicMethodTest/foo', testCtrl.modelAndView.viewName
+        assertEquals '/renderDynamicMethodTest/foo', controller.modelAndView.viewName
         assertEquals 'text/html;charset=utf-8', response.contentType
     }
 
+    @Test
     void testRenderText() {
-        testCtrl.renderText()
+        controller.renderText()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "text", response.contentAsString
     }
 
+    @Test
     void testRenderStreamCharBuffer() {
-        testCtrl.renderStreamCharBuffer()
+        controller.renderStreamCharBuffer()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "text", response.contentAsString
     }
 
+    @Test
     void testRenderGString() {
-        testCtrl.renderGString()
+        controller.renderGString()
         assertEquals "text/html;charset=utf-8", response.contentType
         assertEquals "text", response.contentAsString
     }
 
+    @Test
     void testRenderTextWithContentType() {
-        testCtrl.renderTextWithContentType()
+        controller.renderTextWithContentType()
         assertEquals "text/xml;charset=utf-16", response.contentType
         assertEquals "<foo>bar</foo>", response.contentAsString
     }
 
+    @Test
     void testRenderTextWithContentTypeAndCharset() {
-        testCtrl.renderTextWithContentTypeAndCharset()
+        controller.renderTextWithContentTypeAndCharset()
         assertEquals "text/xml;charset=utf-16", response.contentType
         assertEquals "<foo>bar</foo>", response.contentAsString
     }
 
+    @Test
     void testRenderXml() {
-        testCtrl.renderXml()
+        controller.renderXml()
         assertEquals "text/xml;charset=utf-8", response.contentType
         assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
     }
 
+    @Test
     void testRenderNonAsciiXml() {
-        testCtrl.renderNonAsciiXml()
+        controller.renderNonAsciiXml()
         assertEquals "text/xml;charset=utf-8", response.contentType
         assertEquals "<foo><bar>hello öäåÖÄÅ</bar></foo>", response.contentAsString
     }
 
+    @Test
     void testRenderJSON() {
-        testCtrl.renderJSON()
+        controller.renderJSON()
         assertEquals "application/json;charset=UTF-8", response.contentType
         assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
     }
 
+    @Test
     void testStatusAndText() {
-        testCtrl.renderStatusAndText()
+        controller.renderStatusAndText()
         assertEquals 'five oh three', response.contentAsString
         assertEquals 503, response.status
     }
 
+    @Test
     void testStatusOnly() {
-        testCtrl.renderStatusOnly()
+        controller.renderStatusOnly()
         assertEquals '', response.contentAsString
         assertEquals 404, response.status
     }
     
+    @Test
     void testRenderFile() {
-        testCtrl.renderFile()
+        controller.renderFile()
         assertEquals 'foo', response.contentAsString
         assertEquals 'text/plain;charset=utf-8', response.contentType
     }
