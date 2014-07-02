@@ -1,6 +1,6 @@
 package grails.web
 
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import grails.core.DefaultGrailsApplication
 
 /**

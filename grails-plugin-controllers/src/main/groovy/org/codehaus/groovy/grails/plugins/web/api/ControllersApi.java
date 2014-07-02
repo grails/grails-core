@@ -44,12 +44,14 @@ import javax.servlet.http.HttpServletResponse;
 import groovy.text.Template;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
+
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.io.support.IOUtils;
+
 import grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.web.converters.Converter;
+
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.metaclass.*;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
@@ -58,21 +60,32 @@ import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
 import org.grails.core.artefact.DomainClassArtefactHandler;
+
 import grails.core.GrailsDomainClassProperty;
+
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer;
+
 import grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
+import grails.web.databinding.DataBindingUtils;
+
 import org.codehaus.groovy.grails.web.controllers.ControllerExceptionHandlerMetaData;
+
 import grails.web.mapping.LinkGenerator;
+
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+
 import grails.web.util.GrailsApplicationAttributes;
+
 import org.grails.web.servlet.mvc.ActionResultTransformer;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
+
 import grails.web.mapping.mvc.RedirectEventListener;
 import grails.web.mapping.mvc.exceptions.CannotRedirectException;
+
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.web.api.CommonWebApi;
+import org.grails.web.converters.Converter;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -86,6 +99,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.support.RequestDataValueProcessor;
+
 import static org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod.*;
 /**
  * API for each controller in a Grails application.

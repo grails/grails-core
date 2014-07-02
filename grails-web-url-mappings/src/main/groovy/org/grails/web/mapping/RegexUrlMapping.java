@@ -15,9 +15,13 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsControllerClass;
+import grails.util.GrailsStringUtils;
+import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingInfo;
+import grails.web.mapping.exceptions.UrlMappingException;
 import groovy.lang.Closure;
 
 import java.io.UnsupportedEncodingException;
@@ -40,11 +44,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsControllerClass;
-import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.VersionComparator;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import grails.web.mapping.exceptions.UrlMappingException;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.util.Assert;
@@ -230,7 +230,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                                     .replaceAll("([^\\*])\\*$", "$1[^/]+")
                                     .replaceAll("\\*\\*", ".*");
 
-            pattern += urlEnd
+            if("/(*)(\\.(*))".equals(urlEnd)) {
+                // shortcut this common special case which will
+                // happen any time a URL mapping ends with a pattern like
+                // /$someVariable(.$someExtension)
+                pattern += "/([^/]+)\\.([^/.]+)?";
+            } else {
+                pattern += urlEnd
                                 .replace("(\\.(*))", "\\.?([^/]+)?")
                                 .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
                                 .replaceAll("([^\\*])\\*$", "$1[^/]+")
@@ -238,7 +244,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                                 .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
                                 .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
                                 ;
-
+            }
             pattern += "/??$";
             regex = Pattern.compile(pattern);
         }

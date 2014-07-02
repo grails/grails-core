@@ -7,7 +7,7 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.plugins.web.rest.render.ServletRenderContext
 
 import spock.lang.Issue

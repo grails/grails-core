@@ -15,9 +15,6 @@
  */
 package grails.databinding;
 
-import org.grails.databinding.BindUsing;
-
-
 /**
  * Classes which implement this interface may participate in the data binding
  * process.  Instances of this interface may be registered with the

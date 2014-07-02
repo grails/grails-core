@@ -15,19 +15,20 @@
  */
 package org.codehaus.groovy.grails.test.runner.phase
 
-import grails.util.Holders
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import grails.core.GrailsApplication
-import grails.web.servlet.context.GrailsWebApplicationContext
+import grails.persistence.support.PersistenceContextInterceptorExecutor
 import grails.plugins.GrailsPluginManager
+import grails.util.Holders
+import grails.validation.ConstrainedProperty
+import grails.web.servlet.context.GrailsWebApplicationContext
+import groovy.transform.CompileStatic
+
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
-import grails.persistence.support.PersistenceContextInterceptorExecutor
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.servlet.context.GrailsConfigUtils
 
 /**
  * Test phase configurer for the integration test phase

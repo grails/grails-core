@@ -50,11 +50,10 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.grails.compiler.injection.ASTErrorsHelper;
-import org.grails.compiler.injection.ASTValidationErrorsHelper;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.grails.compiler.injection.ASTErrorsHelper;
+import org.grails.compiler.injection.ASTValidationErrorsHelper;
 import org.grails.web.plugins.support.ValidationSupport;
 
 public class DefaultASTValidateableHelper implements ASTValidateableHelper{

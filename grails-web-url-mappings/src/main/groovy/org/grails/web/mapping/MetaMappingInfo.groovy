@@ -15,8 +15,8 @@
  */
 package org.grails.web.mapping
 
-import grails.validation.Constrained
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import grails.validation.ConstrainedProperty
+
 
 /**
  * Meta data describing a url mapping

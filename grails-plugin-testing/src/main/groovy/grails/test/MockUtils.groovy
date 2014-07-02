@@ -15,32 +15,32 @@
  */
 package grails.test
 
+import grails.core.GrailsDomainClass
+import grails.util.GrailsClassUtils
+import grails.util.GrailsMetaClassUtils
+import grails.validation.ConstrainedProperty
 import grails.validation.ValidationException
+import grails.web.databinding.DataBindingUtils
 import groovy.xml.StreamingMarkupBuilder
 
 import java.beans.Introspector
 import java.beans.PropertyDescriptor
 
 import org.apache.commons.logging.Log
-import org.grails.core.DefaultGrailsDomainClass
-import org.grails.core.artefact.DomainClassArtefactHandler
-import grails.util.GrailsClassUtils
-import grails.core.GrailsDomainClass
-import grails.util.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.plugins.web.mime.FormatInterceptor
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
-import org.codehaus.groovy.grails.web.converters.Converter
+import org.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.grails.web.databinding.DataBindingLazyMetaPropertyMap;
+import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.plugins.web.mime.FormatInterceptor
+import org.grails.validation.ConstrainedPropertyBuilder
+import org.grails.validation.DefaultConstraintEvaluator
+import org.grails.validation.GrailsDomainClassValidator
+import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
@@ -994,7 +994,7 @@ class MockUtils {
         }
 
         def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
-        
+
         // Attach the instantiated constraints to the domain/command
         // object.
         emc.getConstraints = {->

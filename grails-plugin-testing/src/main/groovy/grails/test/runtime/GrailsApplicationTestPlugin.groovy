@@ -40,7 +40,7 @@ import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory;
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration;
 import org.grails.core.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
+import org.grails.plugins.converters.ConvertersPluginSupport
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.web.servlet.context.GrailsConfigUtils;
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy

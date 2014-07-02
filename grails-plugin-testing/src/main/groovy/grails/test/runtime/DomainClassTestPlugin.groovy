@@ -16,15 +16,14 @@
 
 package grails.test.runtime
 
+import grails.core.GrailsApplication
+import grails.validation.ConstrainedProperty
+import grails.validation.ConstraintsEvaluator
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import grails.core.GrailsApplication
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.grails.datastore.gorm.events.AutoTimestampEventListener
 import org.grails.datastore.gorm.events.DomainEventListener
 import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
@@ -34,6 +33,7 @@ import org.grails.datastore.mapping.model.AbstractMappingContext
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
+import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.springframework.web.context.ConfigurableWebApplicationContext
 
 /**

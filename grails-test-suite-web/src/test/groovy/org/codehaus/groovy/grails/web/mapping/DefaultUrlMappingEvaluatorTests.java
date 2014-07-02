@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsWebUtil;
+import grails.validation.ConstrainedProperty;
+import grails.validation.Constraint;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingInfo;
 import groovy.lang.Binding;
@@ -11,10 +13,8 @@ import groovy.lang.Script;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.Constraint;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.mapping.DefaultUrlMappingEvaluator;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.mock.web.MockServletContext;
 
 @SuppressWarnings("rawtypes")

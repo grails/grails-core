@@ -2,6 +2,9 @@ package org.codehaus.groovy.grails.web.binding.json
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
+
+import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator.JsonObjectMap
+
 import spock.lang.Specification
 
 @TestFor(BindingController)
@@ -75,7 +78,7 @@ class JsonBindingSpec extends Specification {
         'invalidRequestBody' in person.errors.allErrors[0].codes
         'org.codehaus.groovy.grails.web.binding.json.Person.invalidRequestBody' in person.errors.allErrors[0].codes
     }
-    
+
     void 'Test parsing JSON with other than UTF-8 content type'() {
         given:
             String jsonString = '{"name":"Hello öäåÖÄÅ"}'
@@ -86,6 +89,22 @@ class JsonBindingSpec extends Specification {
         then:
             model.person instanceof Person
             model.person.name == 'Hello öäåÖÄÅ'
+    }
+
+    void 'Test binding JSON to a Map'() {
+        given:
+        request.contentType = JSON_CONTENT_TYPE
+        request.method = 'POST'
+        request.JSON = '{"mapData": {"name":"Jeff", "country":"USA"}}'
+
+        when:
+        def model = controller.createFamily()
+
+        then:
+        model.family.mapData instanceof Map
+        !(model.family.mapData instanceof JsonObjectMap)
+        model.family.mapData.name == 'Jeff'
+        model.family.mapData.country == 'USA'
     }
 }
 
@@ -114,4 +133,5 @@ class Person {
 class Family {
     String lastName
     List<Person> familyMembers
+    Map mapData
 }

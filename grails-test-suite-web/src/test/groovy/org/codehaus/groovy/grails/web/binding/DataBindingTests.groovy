@@ -39,7 +39,7 @@ class BookReview {
 
 @Entity
 class MyBean {
-  @org.grails.databinding.BindingFormat('MMddyyyy')
+  @grails.databinding.BindingFormat('MMddyyyy')
   Date formattedDate
   Integer someIntProperty
   Integer someOtherIntProperty

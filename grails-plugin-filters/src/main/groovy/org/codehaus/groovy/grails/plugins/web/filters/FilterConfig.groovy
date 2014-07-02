@@ -37,7 +37,7 @@ import org.springframework.web.servlet.ModelAndView
  */
 class FilterConfig extends ControllersApi {
     String name
-    Map scope
+    Map scope = [:]
     Closure before
     Closure after
     Closure afterView

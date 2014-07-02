@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.validation
 
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import grails.web.databinding.DataBindingUtils
 
  /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java

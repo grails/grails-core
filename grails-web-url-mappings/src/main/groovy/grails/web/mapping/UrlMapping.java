@@ -15,9 +15,9 @@
  */
 package grails.web.mapping;
 
-import java.util.Map;
+import grails.validation.ConstrainedProperty;
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import java.util.Map;
 
 /**
  * <p>Defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and

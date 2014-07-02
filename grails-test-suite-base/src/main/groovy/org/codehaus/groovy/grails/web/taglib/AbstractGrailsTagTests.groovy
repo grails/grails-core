@@ -1,10 +1,14 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
+import grails.plugins.GrailsPluginManager
 import grails.test.MockUtils
 import grails.util.GrailsWebUtil
 import grails.util.Holders
 import grails.util.Metadata
-import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import grails.web.pages.GroovyPagesUriService
+import grails.web.util.GrailsApplicationAttributes
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -12,17 +16,8 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-import org.grails.core.artefact.ControllerArtefactHandler
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
-import org.grails.core.artefact.TagLibArtefactHandler
-import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
-import org.grails.plugins.DefaultGrailsPlugin
-import grails.plugins.GrailsPluginManager
-import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -30,14 +25,19 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
-import grails.web.util.GrailsApplicationAttributes
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsHTMLPageParser
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView
 import org.codehaus.groovy.grails.web.util.WithCodecHelper
+import org.grails.core.artefact.ControllerArtefactHandler
+import org.grails.core.artefact.TagLibArtefactHandler
+import org.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.pages.DefaultGroovyPagesUriService
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource

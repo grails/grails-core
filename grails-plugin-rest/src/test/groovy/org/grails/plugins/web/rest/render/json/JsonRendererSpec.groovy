@@ -3,9 +3,9 @@ package org.grails.plugins.web.rest.render.json
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebUtil
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.web.converters.ConverterUtil
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.grails.web.converters.ConverterUtil
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import spock.lang.Specification
 

@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.validation
 
-import junit.framework.TestCase
-import org.springframework.validation.Errors
+import grails.validation.AbstractConstraint
+import grails.validation.Constraint
+
 import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 
 class ConstraintMessageTests extends GroovyTestCase {
 

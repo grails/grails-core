@@ -1,28 +1,45 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import grails.artefact.Artefact
+import grails.persistence.Entity
+import grails.test.mixin.TestFor
+
+import org.junit.Test
+import static org.junit.Assert.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-class BindToObjectWithEmbeddableTests extends AbstractGrailsControllerTests {
+@TestFor(EmbeddedAddressController)
+class BindToObjectWithEmbeddableTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-import grails.persistence.*
+    @Test
+    void testBindToObjectWithEmbedded() {
+        params.name = "Joe"
+        params.age= "45"
+        params.address = [city: 'Brighton']
+
+        def model = controller.save()
+
+        assertEquals "Joe", model.person.name
+        assertEquals 45, model.person.age
+        assertEquals "Brighton", model.person.address.city
+    }
+}
+
 
 @Entity
-class Person {
+class EmbeddedAddressPerson {
 
     static embedded = ['address']
 
     String name
     int age
-    Address address = new Address()
+    EmbeddedAddress address = new EmbeddedAddress()
 }
 
-class Address {
+class EmbeddedAddress {
     String street
     String street2
     String city
@@ -34,27 +51,11 @@ class Address {
     }
 }
 
-class PersonController {
+@Artefact('Controller')
+class EmbeddedAddressController {
 
     def save = {
-        def p = new Person(params)
+        def p = new EmbeddedAddressPerson(params)
         [person:p]
-    }
-}
-''')
-    }
-
-    void testBindToObjectWithEmbedded() {
-        def controller = ga.getControllerClass("PersonController").newInstance()
-
-        controller.params.name = "Joe"
-        controller.params.age= "45"
-        controller.params.address = [city: 'Brighton']
-
-        def model = controller.save()
-
-        assertEquals "Joe", model.person.name
-        assertEquals 45, model.person.age
-        assertEquals "Brighton", model.person.address.city
     }
 }

@@ -15,41 +15,45 @@
 
 package org.codehaus.groovy.grails.web.servlet
 
+import grails.persistence.Entity
+import grails.test.mixin.TestFor
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.web.servlet.GrailsFlashScope
+import org.junit.Test
 
 /**
 *  @author Graeme Rocher
 */
-class FlashScopeWithErrorsTests extends AbstractGrailsControllerTests {
+@TestFor(Book)
+class FlashScopeWithErrorsTests  {
 
-    @Override
-    protected Collection<Class> getDomainClasses() {
-        [Book]
-    }
-
+    @Test
     void testFlashScopeWithErrors() {
+        GrailsWebUtil.bindMockWebRequest()
+
         def b = new Book()
 
         b.validate()
+        assert b.hasErrors()
+
         def flash = new GrailsFlashScope()
 
         flash.book = b
-        assert b.hasErrors()
 
-        GrailsWebUtil.bindMockWebRequest()
         flash.next()
 
         assert flash.book
         assert flash.book.hasErrors()
+
+        flash.next()
+
+        assert !flash.book
     }
 }
 
+@Entity
 class Book {
-    Long id
-    Long version
     String title
     URL site
 }

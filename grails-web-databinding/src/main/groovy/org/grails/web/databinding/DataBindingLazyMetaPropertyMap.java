@@ -15,13 +15,13 @@
  */
 package org.grails.web.databinding;
 
+import grails.web.databinding.DataBindingUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import grails.beans.utils.LazyMetaPropertyMap;
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 
 /**
  * Extends the default implementation and does data binding.

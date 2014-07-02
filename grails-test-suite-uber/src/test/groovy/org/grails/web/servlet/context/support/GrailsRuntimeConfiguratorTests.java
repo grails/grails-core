@@ -2,21 +2,23 @@ package org.grails.web.servlet.context.support;
 
 import grails.util.Holders;
 import grails.util.Metadata;
+
 import org.grails.spring.BeanConfiguration;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.GrailsApplicationContext;
 import org.grails.spring.RuntimeSpringConfiguration;
+
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
-
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.plugins.DefaultGrailsPluginManager;
+
 import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
+import org.grails.validation.GrailsDomainClassValidator;
 import org.grails.web.errors.GrailsExceptionResolver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;

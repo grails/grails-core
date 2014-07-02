@@ -16,15 +16,14 @@
 package org.grails.plugins.databinding
 
 import grails.util.GrailsUtil
+import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
-import org.codehaus.groovy.grails.web.binding.BindEventListenerAdapter
-import org.grails.web.binding.bindingsource.DataBindingSourceRegistry
-import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
-import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
+import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
+import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.HalXmlDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.databinding.converters.CurrencyValueConverter
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.TimeZoneConverter
@@ -91,9 +90,5 @@ class DataBindingGrailsPlugin {
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
 
         defaultCurrencyConverter CurrencyValueConverter
-
-        if(Boolean.TRUE.equals(databindingConfig?.enableSpringEventAdapter)) {
-            grailsBindEventListenerAdapter(BindEventListenerAdapter)
-        }
     }
 }

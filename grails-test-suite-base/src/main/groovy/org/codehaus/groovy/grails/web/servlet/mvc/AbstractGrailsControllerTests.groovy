@@ -6,7 +6,8 @@ import grails.util.Holders
 import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
-import grails.web.databinding.GrailsWebDataBinder;
+import grails.web.databinding.DataBindingUtils
+import grails.web.databinding.GrailsWebDataBinder
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
@@ -19,7 +20,6 @@ import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes

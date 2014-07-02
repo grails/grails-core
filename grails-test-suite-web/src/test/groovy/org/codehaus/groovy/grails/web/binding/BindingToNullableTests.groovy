@@ -1,47 +1,21 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.springframework.web.context.request.RequestContextHolder
+import static org.junit.Assert.*
+import grails.artefact.Artefact
+import grails.persistence.Entity
+import grails.test.mixin.TestFor
+
+import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class BindingToNullableTests extends AbstractGrailsControllerTests {
+@TestFor(NullBindingPersonController)
+class BindingToNullableTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
-
-@Entity
-class Person {
-    String name
-    Date dateOfBirth
-
-    static constraints = {
-        dateOfBirth nullable: true
-    }
-}
-
-class PersonController {
-
-    def update = {
-        def p = new Person()
-        p.properties = params
-        if (p.hasErrors()) {
-            [personInstance:p]
-        }
-        else {
-            redirect action:"foo"
-        }
-    }
-}
-'''
-    }
-
+    @Test
     void testDataBindingBlankStringToNull() {
-        def controller = ga.getControllerClass("PersonController").newInstance()
-        currentController = controller
         controller.params.name = "fred"
         controller.params.dateOfBirth = ''
 
@@ -50,9 +24,8 @@ class PersonController {
         assertNotNull "should have redirected with no validation error",controller.response.redirectedUrl
     }
 
+    @Test
     void testDataBindingToNull() {
-        def controller = ga.getControllerClass("PersonController").newInstance()
-        currentController = controller
         controller.params.name = "fred"
         controller.params.dateOfBirth = 'invalid'
 
@@ -68,3 +41,29 @@ class PersonController {
         assertEquals("typeMismatch", person.errors.getFieldError("dateOfBirth").code)
     }
 }
+
+@Entity
+class NullBindingPerson {
+    String name
+    Date dateOfBirth
+
+    static constraints = {
+        dateOfBirth nullable: true
+    }
+}
+
+@Artefact('Controller')
+class NullBindingPersonController {
+
+    def update = {
+        def p = new NullBindingPerson()
+        p.properties = params
+        if (p.hasErrors()) {
+            [personInstance:p]
+        }
+        else {
+            redirect action:"foo"
+        }
+    }
+}
+
