@@ -2,37 +2,44 @@ package org.codehaus.groovy.grails.web.converters
 
 import grails.converters.JSON
 import grails.converters.XML
+import grails.persistence.Entity
+import grails.test.mixin.Mock
+import grails.test.mixin.TestMixin
+import grails.test.mixin.web.ControllerUnitTestMixin
 
+import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.json.DomainClassMarshaller as JsonClassMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller as XmlClassMarshaller
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller
+import org.junit.Test
+import static org.junit.Assert.assertEquals
 
 /**
  * Tests for the customizable Converter Configuration.
  *
  * @author Siegfried Puchbauer
  */
-class ConverterConfigurationTests extends AbstractGrailsControllerTests {
+@TestMixin(ControllerUnitTestMixin)
+@Mock(ConverterBook)
+class ConverterConfigurationTests {
 
+    @Test
     void testCustomClosureMarshallerRegistration() {
 
-        def bookClass = ga.getDomainClass("Book").clazz
-
-        JSON.registerObjectMarshaller(bookClass) {
+        JSON.registerObjectMarshaller(ConverterBook) {
             [id: it.id,
              title: it.title,
              foo: 'bar'
             ]
         }
 
-        def book = bookClass.newInstance()
+        def book = new ConverterBook()
         book.id = 4711
         book.title = "The Definitive Guide to Grails"
 
         assertEquals((book as JSON).toString(), """{"id":4711,"title":"The Definitive Guide to Grails","foo":"bar"}""")
     }
 
+    @Test
     void testDefaultConverterConfigurationObjectMarshallerRegistration() {
 
         JSON.registerObjectMarshaller(java.sql.Date) { it.toString() }
@@ -42,10 +49,11 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
         def objA = new java.sql.Date(System.currentTimeMillis())
         def objB = new java.sql.Time(System.currentTimeMillis())
 
-        assertEquals(([a:objA] as JSON).toString(), """{"a":"${objA}"}""")
-        assertEquals(([b:objB] as JSON).toString(), """{"b":"${objB}"}""")
+        assertEquals(([a:objA] as JSON).toString(), """{"a":"${objA}"}""".toString())
+        assertEquals(([b:objB] as JSON).toString(), """{"b":"${objB}"}""".toString())
     }
 
+    @Test
     void testMarshallerRegistrationOrder() {
 
         JSON.registerObjectMarshaller(Date) { "FAIL" }
@@ -55,17 +63,19 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
         assertEquals(([d: new Date()] as JSON).toString(), """{"d":"SUCCESS"}""")
     }
 
+    @Test
     void testMarshallerPriority() {
 
-        def om1 = new ClosureObjectMarshaller(Date, { "SUCCESS" })
-        def om2 = new ClosureObjectMarshaller(Date, { "FAIL" })
+        def om1 = new ClosureObjectMarshaller(ConverterWidget, { "SUCCESS" })
+        def om2 = new ClosureObjectMarshaller(ConverterWidget, { "FAIL" })
 
         JSON.registerObjectMarshaller(om1, 5)
         JSON.registerObjectMarshaller(om2, 3)
 
-        assertEquals(([d: new Date()] as JSON).toString(), """{"d":"SUCCESS"}""")
+        assertEquals(([d: new ConverterWidget()] as JSON).toString(), """{"d":"SUCCESS"}""")
     }
 
+    @Test
     void testNamedConfigurations() {
 
         JSON.registerObjectMarshaller(Date) { "DEFAULT" }
@@ -84,35 +94,37 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
         assertEquals((obj as JSON).toString(), """{"d":"DEFAULT"}""")
     }
 
+    @Test
     void testDomainWithVersionConfiguration() {
 
         JSON.createNamedConfig("with-version") {
-            it.registerObjectMarshaller(new JsonClassMarshaller(true, ga))
+            it.registerObjectMarshaller(new JsonClassMarshaller(true, grailsApplication))
         }
 
         XML.createNamedConfig("with-version") {
-            it.registerObjectMarshaller(new XmlClassMarshaller(true, ga))
+            it.registerObjectMarshaller(new XmlClassMarshaller(true, grailsApplication))
         }
 
         JSON.use("with-version") {
             assertEquals(
-                """{"class":"Book","id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
+                """{"class":"org.codehaus.groovy.grails.web.converters.ConverterBook","id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
                 (createBook() as JSON).toString())
         }
         XML.use("with-version") {
             assertEquals(
-                """<?xml version="1.0" encoding="UTF-8"?><book id="4711" version="0"><author>Graeme Rocher</author><title>The Definitive Guide to Grails</title></book>""",
+                """<?xml version="1.0" encoding="UTF-8"?><converterBook id="4711" version="0"><author>Graeme Rocher</author><title>The Definitive Guide to Grails</title></converterBook>""",
                 (createBook() as XML).toString())
         }
     }
 
+    @Test
     void testPrettyPrintConfiguration() {
 
         JSON.createNamedConfig("pretty-print") { cfg -> cfg.prettyPrint = true }
         XML.createNamedConfig("pretty-print") { cfg -> cfg.prettyPrint = true }
 
 def prettyJSON = """{
-  "class": "Book",
+  "class": "org.codehaus.groovy.grails.web.converters.ConverterBook",
   "id": 4711,
   "author": "Graeme Rocher",
   "title": "The Definitive Guide to Grails"
@@ -123,38 +135,33 @@ def prettyJSON = """{
         }
 
         def prettyXML = """<?xml version="1.0" encoding="UTF-8"?>
-<book id="4711">
+<converterBook id="4711">
   <author>
     Graeme Rocher
   </author>
   <title>
     The Definitive Guide to Grails
   </title>
-</book>"""
+</converterBook>"""
         XML.use("pretty-print") {
             assertEquals(prettyXML.replaceAll('[\r\n]', ''), (createBook() as XML).toString().replaceAll('[\r\n]', '').trim())
         }
     }
 
     protected createBook() {
-        def book = ga.getDomainClass("Book").clazz.newInstance()
+        def book = new ConverterBook()
         book.id = 4711
         book.version = 0
         book.title = "The Definitive Guide to Grails"
         book.author = "Graeme Rocher"
         book
     }
-
-    protected void onSetUp() {
-        gcl.parseClass """
-            @grails.persistence.Entity
-            class Book {
-               Long id
-               Long version
-               String title
-               String author
-
-            }
-        """
-    }
 }
+
+@Entity
+class ConverterBook {
+    String title
+    String author
+}
+
+class ConverterWidget{}

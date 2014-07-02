@@ -1,9 +1,14 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import grails.test.mixin.TestMixin
+import grails.test.mixin.web.ControllerUnitTestMixin
+
+import org.junit.Test
+import static org.junit.Assert.assertEquals
 import org.springframework.core.io.*
 
-class UrlMappingEvaluatorTests extends AbstractGrailsControllerTests {
+@TestMixin(ControllerUnitTestMixin)
+class UrlMappingEvaluatorTests  {
 
     def mappingScript = '''
 mappings {
@@ -41,6 +46,7 @@ mappings {
 }
 '''
 
+    @Test
     void testEvaluateMappings() {
         def res = new ByteArrayResource(mappingScript.bytes)
 

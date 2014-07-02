@@ -1,21 +1,30 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.junit.Ignore
+import grails.persistence.Entity
+import grails.test.mixin.Mock
+
+import org.junit.Test
+import static org.junit.Assert.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@Ignore
-class BindToPropertyThatIsNotReadableTests extends AbstractGrailsControllerTests {
+@Mock(PropertyNotReadableBook)
+class BindToPropertyThatIsNotReadableTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
+    @Test
+    void testBindToPropertyThatIsNotReadable() {
+        def b = new PropertyNotReadableBook()
+
+        b.properties = [calculatedField:[1,2,3], title:"blah"]
+
+        assertEquals 6, b.sum()
+    }
+}
 
 @Entity
-class Book {
+class PropertyNotReadableBook {
 
     String title
 
@@ -28,16 +37,4 @@ class Book {
     }
 
     int sum() { calculateField.sum() }
-}
-'''
-    }
-
-    void testBindToPropertyThatIsNotReadable() {
-        def Book = ga.getDomainClass("Book").clazz
-        def b = Book.newInstance()
-
-        b.properties = [calculatedField:[1,2,3], title:"blah"]
-
-        assertEquals 6, b.sum()
-    }
 }

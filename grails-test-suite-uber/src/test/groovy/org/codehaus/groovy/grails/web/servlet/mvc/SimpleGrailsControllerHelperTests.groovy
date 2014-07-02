@@ -1,114 +1,113 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.web.Action
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException
 import grails.artefact.Artefact
+import grails.test.mixin.Mock
+import grails.web.Action
 
-class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException
+import org.junit.Test
+import org.springframework.web.context.request.RequestContextHolder
 
-    @Override
-    protected Collection<Class> getControllerClasses() {
-        [Test1Controller, Test2Controller, Test3Controller, Test4Controller]
-    }
 
+@Mock([Test1Controller, Test2Controller, Test3Controller, Test4Controller])
+class SimpleGrailsControllerHelperTests  {
+
+    @Test
     void testConstructHelper() {
-        runTest {
-            def webRequest = RequestContextHolder.currentRequestAttributes()
-            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-        }
+        def webRequest = RequestContextHolder.currentRequestAttributes()
+        def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
     }
 
+    @Test
     void testAmbiguousGetterNameForAction() {
-            runTest {
-                def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-                def mv = helper.handleURI("/test3/list", webRequest)
-                assert !mv.getModel()["someAmbiguousActionName"]
-            }
-        }
+        def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
+        def mv = helper.handleURI("/test3/list", webRequest)
+        assert !mv.getModel()["someAmbiguousActionName"]
+    }
 
+    @Test
     void testCallsAfterInterceptorWithModel() {
-        runTest {
-            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-            def mv = helper.handleURI("/test1/list", webRequest)
-            assert mv.getModel()["after"] == "value"
-        }
+        def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
+        def mv = helper.handleURI("/test1/list", webRequest)
+        assert mv.getModel()["after"] == "value"
     }
 
+    @Test
     void testCallsAfterInterceptorWithModelAndExplicitParam() {
-        runTest {
-            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-            def mv = helper.handleURI("/test2/list", webRequest)
-            assert mv.getModel()["after"] == "value"
-        }
+        def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
+        def mv = helper.handleURI("/test2/list", webRequest)
+        assert mv.getModel()["after"] == "value"
     }
 
+    @Test
     void testCallsAfterInterceptorWithModelAndViewExplicitParams() {
-        runTest {
-            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-            def mv = helper.handleURI("/test3/list", webRequest)
-            assert mv.getModel()["after"] == "/test3/list"
-        }
+        def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
+        def mv = helper.handleURI("/test3/list", webRequest)
+        assert mv.getModel()["after"] == "/test3/list"
     }
 
+    @Test
     void testReturnsNullIfAfterInterceptorReturnsFalse() {
-        runTest {
-            def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-            def mv = helper.handleURI("/test4/list", webRequest)
-            assert mv == null
-        }
+        def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
+        def mv = helper.handleURI("/test4/list", webRequest)
+        assert mv == null
     }
 
+    @Test
     void testDontHandleFlowAction() {
-        runTest {
-            shouldFail(UnknownControllerException) {
-                def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-                def mv = helper.handleURI("/test1/testFlow", webRequest)
-            }
+        shouldFail(UnknownControllerException) {
+            def helper = new MixedGrailsControllerHelper(application:grailsApplication, applicationContext: mainContext, servletContext: servletContext)
+            def mv = helper.handleURI("/test1/testFlow", webRequest)
         }
     }
 }
 
 @Artefact("Controller")
 class Test1Controller {
-    @Action def list() {}
+    @Action def list() {
+
+    }
 
     def afterInterceptor = {
-         it.put("after", "value")
+        it.put("after", "value")
     }
 
     def testFlow = {
-         startFlow {
-             on "foo" to "bar"
-         }
+        startFlow { on "foo" to "bar" }
     }
 }
 
 @Artefact("Controller")
 class Test2Controller {
-    @Action def list() {}
+    @Action def list() {
+
+    }
 
     def afterInterceptor = { model ->
-         model.put("after", "value")
-         return "not a boolean"
+        model.put("after", "value")
+        return "not a boolean"
     }
 }
 
 @Artefact("Controller")
 class Test3Controller {
-    @Action def list() {}
-    @Action def getSomeAmbiguousActionName() {[a:true]}
+    @Action def list() {
+
+    }
+    @Action def getSomeAmbiguousActionName() {
+        [a:true]
+    }
     def afterInterceptor = { model, modelAndView ->
-         model.put("after", modelAndView.getViewName())
-         return true
+        model.put("after", modelAndView.getViewName())
+        return true
     }
 }
 
 @Artefact("Controller")
 class Test4Controller {
-    @Action def list() {}
+    @Action def list() {
 
-    def afterInterceptor = { model, modelAndView ->
-         return false
     }
+
+    def afterInterceptor = { model, modelAndView -> return false }
 }

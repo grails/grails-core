@@ -1,13 +1,17 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.test.mixin.TestMixin
+import grails.test.mixin.web.ControllerUnitTestMixin
+
+import org.junit.Test
 import org.springframework.core.io.ByteArrayResource
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class UrlMappingWithCustomValidatorTests extends AbstractGrailsControllerTests {
+@TestMixin(ControllerUnitTestMixin)
+class UrlMappingWithCustomValidatorTests {
 
     def topLevelMapping = '''
 mappings {
@@ -20,8 +24,7 @@ mappings {
 '''
     def UrlMappingsHolder holder
 
-    protected void setUp() {
-        super.setUp()
+    void setUp() {
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator(servletContext)
@@ -30,6 +33,7 @@ mappings {
         holder = new DefaultUrlMappingsHolder(mappings)
     }
 
+    @Test
     void testMatchWithCustomValidator() {
         def info = holder.match("/help/foo.html")
         assert info
