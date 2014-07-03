@@ -24,6 +24,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.springframework.web.multipart.support.StandardServletMultipartResolver
 
 import javax.servlet.ServletContext
 
@@ -58,7 +59,6 @@ import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 /**
  * Controller TestPlugin for TestRuntime
@@ -99,7 +99,7 @@ class ControllerTestPlugin implements TestPlugin {
             if (ClassUtils.isPresent("UrlMappings", classLoader)) {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass("UrlMappings"))
             }
-            multipartResolver(CommonsMultipartResolver)
+            multipartResolver(StandardServletMultipartResolver)
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = grailsApplication
             }
