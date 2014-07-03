@@ -62,7 +62,7 @@ import org.springframework.util.StringUtils;
  * @see grails.core.ArtefactInfo
  * @since 0.1
  */
-public class DefaultGrailsApplication extends AbstractGrailsApplication implements org.codehaus.groovy.grails.commons.GrailsApplication, BeanClassLoaderAware {
+public class DefaultGrailsApplication extends AbstractGrailsApplication implements BeanClassLoaderAware {
 
     protected static final Pattern GETCLASSESPROP_PATTERN = Pattern.compile("(\\w+)(Classes)");
     protected static final Pattern GETCLASSESMETH_PATTERN = Pattern.compile("(get)(\\w+)(Classes)");

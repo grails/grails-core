@@ -35,7 +35,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ClassUtils;
 
-public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, org.codehaus.groovy.grails.commons.GrailsApplication {
+public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware {
     protected ClassLoader classLoader;
     protected ConfigObject config;
     @SuppressWarnings("rawtypes")
@@ -137,7 +137,6 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
         mainContext.getBean("pluginManager", GrailsPluginManager.class).setApplicationContext(context);
     }
 
-    @Override
     public ApplicationContext getParentContext() {
         return parentContext;
     }

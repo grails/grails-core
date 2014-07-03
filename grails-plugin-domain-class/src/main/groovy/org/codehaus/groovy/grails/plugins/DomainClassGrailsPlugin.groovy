@@ -16,10 +16,11 @@
 package org.codehaus.groovy.grails.plugins
 
 import grails.artefact.Enhanced
+import grails.core.support.GrailsApplicationAware
 import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
 import grails.core.ComponentCapableDomainClass
-
+import org.grails.core.LegacyGrailsApplication
 import org.grails.core.artefact.DomainClassArtefactHandler
 
 import grails.core.GrailsApplication
@@ -55,7 +56,7 @@ import org.springframework.validation.Validator
  * @author Graeme Rocher
  * @since 0.4
  */
-class DomainClassGrailsPlugin {
+class DomainClassGrailsPlugin implements GrailsApplicationAware{
 
     def watchedResources = ["file:./grails-app/domain/**/*.groovy",
                             "file:./plugins/*/grails-app/domain/**/*.groovy"]
@@ -64,8 +65,11 @@ class DomainClassGrailsPlugin {
     def dependsOn = [i18n:version]
     def loadAfter = ['controllers', 'dataSource']
 
+    GrailsApplication grailsApplication
+
     def doWithSpring = {
 
+        def application = grailsApplication
         def config = application.config
         def defaultConstraintsMap = getDefaultConstraints(config)
 
@@ -73,7 +77,7 @@ class DomainClassGrailsPlugin {
              defaultConstraints = defaultConstraintsMap
         }
 
-        grailsDomainClassMappingContext(GrailsDomainClassMappingContext, application)
+        grailsDomainClassMappingContext(GrailsDomainClassMappingContext, new LegacyGrailsApplication(application))
         
         grailsDomainClassCleaner(GrailsDomainClassCleaner, application)
 

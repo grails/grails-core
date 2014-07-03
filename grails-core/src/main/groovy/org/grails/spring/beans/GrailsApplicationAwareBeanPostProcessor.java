@@ -18,6 +18,7 @@ package org.grails.spring.beans;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
 import grails.core.support.GrailsConfigurationAware;
+import org.grails.core.LegacyGrailsApplication;
 import org.springframework.beans.BeansException;
 
 /**
@@ -46,7 +47,7 @@ public class GrailsApplicationAwareBeanPostProcessor extends BeanPostProcessorAd
         if (bean instanceof GrailsApplicationAware) {
             ((GrailsApplicationAware)bean).setGrailsApplication(grailsApplication);
         } else if(bean instanceof org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware) {
-            ((org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware)bean).setGrailsApplication((org.codehaus.groovy.grails.commons.GrailsApplication)grailsApplication);
+            ((org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware)bean).setGrailsApplication(new LegacyGrailsApplication(grailsApplication));
         }
         if (bean instanceof GrailsConfigurationAware) {
             ((GrailsConfigurationAware)bean).setConfiguration(grailsApplication.getConfig());
