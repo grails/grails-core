@@ -9,9 +9,13 @@ class GroovyPageMethodDispatchWithNamespaceTests extends AbstractGrailsControlle
         gcl.parseClass(
 """
 import org.codehaus.groovy.grails.web.taglib.*
+import grails.gsp.*
+
 class TestController {
     def index = {}
 }
+
+@TagLib
 class Test1TagLib {
     static namespace = "t1"
     Closure tag = { attrs, body ->
@@ -26,6 +30,8 @@ class Test1TagLib {
         out << result
     }
 }
+
+@TagLib
 class Test2TagLib {
     Closure tag2 = { attrs, body -> out << attrs.test }
 }

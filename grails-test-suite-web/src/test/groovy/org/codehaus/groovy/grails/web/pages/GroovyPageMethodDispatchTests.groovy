@@ -11,10 +11,12 @@ class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
 """
 import org.codehaus.groovy.grails.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
+import grails.gsp.*
 
 class TestController {
     def index = {}
 }
+@TagLib
 class Test1TagLib {
     Closure tag1 = { attrs, body ->
 
@@ -28,6 +30,7 @@ class Test1TagLib {
         out << result
     }
 }
+@TagLib
 class Test2TagLib {
     Closure tag2 = { attrs, body -> out << attrs.test }
     Closure tag3 = { attrs, body ->

@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
+import org.grails.core.LegacyGrailsApplication
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
@@ -66,6 +67,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         final placeholderConfigurer = new GrailsPlaceholderConfigurer(application)
         placeholderConfigurer.environment = springEnvironment
         addBeanFactoryPostProcessor(placeholderConfigurer)
+        legacyGrailsApplication(LegacyGrailsApplication, application)
 
         // replace AutoProxy advisor with Groovy aware one
         def grailsConfig = application.flatConfig

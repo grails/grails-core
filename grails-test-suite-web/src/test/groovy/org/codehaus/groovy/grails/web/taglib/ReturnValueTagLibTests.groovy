@@ -4,6 +4,9 @@ class ReturnValueTagLibTests extends AbstractGrailsTagTests {
 
     void onSetUp() {
         gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class ReturnValueTagLib {
         static returnObjectForTags = ['numberretval']
 

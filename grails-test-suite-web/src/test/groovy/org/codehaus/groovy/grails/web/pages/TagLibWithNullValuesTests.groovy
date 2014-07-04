@@ -10,6 +10,9 @@ class TagLibWithNullValuesTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class MyTagLib {
   static namespace = 'my'
 

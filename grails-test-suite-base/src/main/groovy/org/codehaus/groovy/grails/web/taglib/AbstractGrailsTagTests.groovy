@@ -260,7 +260,11 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         webRequest = GrailsWebUtil.bindMockWebRequest(ctx)
         onInit()
-        JstlUtils.exposeLocalizationContext webRequest.getRequest(), null
+        try {
+            JstlUtils.exposeLocalizationContext webRequest.getRequest(), null
+        } catch (Throwable e) {
+            // ignore
+        }
 
         servletContext = webRequest.servletContext
         Holders.servletContext = servletContext

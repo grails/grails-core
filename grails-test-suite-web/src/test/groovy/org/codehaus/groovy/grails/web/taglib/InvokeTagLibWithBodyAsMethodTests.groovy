@@ -8,6 +8,9 @@ class InvokeTagLibWithBodyAsMethodTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class TestTagLib {
     Closure testInvokeWithBodyClosure = { attrs, body ->
         out << eachItem(items:[1,2,3]) { bodyAttrs ->

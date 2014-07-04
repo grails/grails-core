@@ -21,15 +21,17 @@ import org.springframework.context.ApplicationContext
 class GroovyPageTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        String taglibCode = "import org.codehaus.groovy.grails.web.taglib.*\n"+
-        "\n"+
-        "class MyTagLib {\n"+
-        "Closure isaid = { attrs, body ->\n"+
-        "out.print('I said, \"')\n"+
-        "out << body()\n" +
-        "out.print('\"')\n"+
-        "}\n"+
-        "}"
+        String taglibCode = """import org.codehaus.groovy.grails.web.taglib.*
+        import grails.gsp.*
+
+        @TagLib
+        class MyTagLib {
+            Closure isaid = { attrs, body ->
+                out.print('I said, \"')
+                out << body()
+                out.print('\"')
+            }
+        }"""
 
         gcl.parseClass(taglibCode)
     }

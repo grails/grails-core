@@ -59,6 +59,9 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
 
     protected void onInit() {
         def tagClass = gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class MyTagLib {
     static namespace = "my"
     Closure test1 = { attrs, body ->
@@ -71,6 +74,9 @@ class MyTagLib {
 }
 ''')
        def tagClass2 = gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class SecondTagLib {
    static namespace = "two"
 
@@ -86,6 +92,9 @@ class SecondTagLib {
 }
        ''')
        def tagClass3 = gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class HasErrorTagLib {
     Closure tag = { attr, body ->
         out << hasErrors('bean': attr.bean, field: 'bar', 'errors')
@@ -97,6 +106,9 @@ class HasErrorTagLib {
 }
        ''')
        def tagClass4 = gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class AlternateTagLib {
     static namespace = "alt"
 

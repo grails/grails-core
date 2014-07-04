@@ -25,6 +25,9 @@ class TagLibNamespaceTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+import grails.gsp.*
+
+@TagLib
 class TestTagLib {
     static namespace = "t1"
 

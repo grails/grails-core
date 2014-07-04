@@ -25,7 +25,7 @@ class CodecsGrailsPluginTests extends AbstractGrailsPluginTests {
                 }
                 """
 
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
 
         def registry = GroovySystem.metaClassRegistry

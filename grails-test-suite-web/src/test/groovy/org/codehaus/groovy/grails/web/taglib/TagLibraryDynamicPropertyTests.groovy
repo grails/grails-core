@@ -8,6 +8,9 @@ class TagLibraryDynamicPropertyTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.gsp.*
+
+@TagLib
 class FooTagLib {
     Closure showAction = { attrs, body ->
         out << "action: ${actionName}"

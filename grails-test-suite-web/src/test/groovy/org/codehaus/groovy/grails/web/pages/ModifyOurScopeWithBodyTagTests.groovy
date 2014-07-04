@@ -9,6 +9,9 @@ class ModifyOurScopeWithBodyTagTests extends AbstractGrailsTagTests {
     @Override
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.gsp.*
+
+@TagLib
 class OutScopeTagLib {
   Closure threeTimes = { attrs, body ->
     3.times {

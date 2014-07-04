@@ -357,8 +357,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr mapping The named URL mapping to use to rewrite the link
      * @attr event Webflow _eventId parameter
      */
-    Closure createLink = { Map attrs ->
-       doCreateLink(attrs)
+    Closure createLink = { attrs ->
+       return doCreateLink(attrs instanceof  Map ? (Map) attrs : Collections.emptyMap())
     }
 
     @CompileStatic
