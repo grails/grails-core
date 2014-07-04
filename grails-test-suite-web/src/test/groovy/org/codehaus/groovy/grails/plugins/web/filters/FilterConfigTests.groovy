@@ -15,14 +15,13 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
  * Test case for {@link FilterConfig}.
  *
  * @author pledbrook
  */
-class FilterConfigTests extends AbstractGrailsControllerTests {
+class FilterConfigTests extends GroovyTestCase {
     private static final int INT_PROP_VALUE = 1000
     private static final String STRING_PROP_VALUE = 'Test property'
 
