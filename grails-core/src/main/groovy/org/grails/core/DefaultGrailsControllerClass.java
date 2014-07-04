@@ -87,6 +87,28 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         }
     }
 
+    @Override
+    public boolean mapsToURI(String uri) {
+        if(uri.startsWith("/")) {
+            String[] tokens = uri.substring(1).split("\\/");
+            if(tokens.length>0) {
+                String controllerName = tokens[0];
+                if(getLogicalPropertyName().equals(controllerName)) {
+                    if(tokens.length>1) {
+                        String actionName = tokens[1];
+                        if(actions.containsKey(actionName) || defaultActionName.equals(actionName)) {
+                            return true;
+                        }
+                    }
+                    else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Invokes the controller action for the given name on the given controller instance
      *

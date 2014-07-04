@@ -20,6 +20,7 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.View
 import org.springframework.web.servlet.ViewResolver
 import org.springframework.web.servlet.view.InternalResourceView
@@ -102,7 +103,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
         mockCtx.registerMockBean GrailsApplication.APPLICATION_ID, application
-        mockCtx.registerMockBean "multipartResolver", new CommonsMultipartResolver()
+        mockCtx.registerMockBean "multipartResolver", new StandardServletMultipartResolver()
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext
@@ -132,7 +133,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
         mockCtx.registerMockBean GrailsApplication.APPLICATION_ID, application
-        mockCtx.registerMockBean "multipartResolver", new CommonsMultipartResolver()
+        mockCtx.registerMockBean "multipartResolver", new StandardServletMultipartResolver()
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext

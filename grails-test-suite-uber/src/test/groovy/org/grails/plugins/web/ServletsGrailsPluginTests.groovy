@@ -18,7 +18,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
     protected void onSetUp() {
 
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
 
         def remove = GroovySystem.metaClassRegistry.&removeMetaClass

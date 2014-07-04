@@ -24,4 +24,6 @@ package org.codehaus.groovy.grails.validation
  */
 @Deprecated
 interface ConstraintFactory extends grails.validation.ConstraintFactory {
+    @Override
+    Constraint newInstance()
 }

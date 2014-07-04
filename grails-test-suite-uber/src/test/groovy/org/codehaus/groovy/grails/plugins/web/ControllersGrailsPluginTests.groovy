@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.core.DefaultGrailsApplication
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
 import grails.core.GrailsApplication
@@ -57,7 +58,7 @@ class FormTagLib {
 }
 """
 
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
@@ -96,35 +97,20 @@ class FormTagLib {
         assertNull(bean.address)
     }
 
-    void testCommonsMultipartCanBeDisabled() {
-        tearDown()
-
-        gcl = new GroovyClassLoader()
-        gcl.parseClass("grails.disableCommonsMultipart=true", 'Config')
-        setUp()
-
-        assertTrue ga.config.grails.disableCommonsMultipart
-        shouldFail(NoSuchBeanDefinitionException) {
-            appCtx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN)
-        }
-
-        tearDown()
-        gcl = new GroovyClassLoader()
-        setUp()
-
-        assertTrue ga.config.grails.disableCommonsMultipart.size() == 0
-
-        assertTrue appCtx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver
-    }
-
     void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
         try {
             System.setProperty("grails.env", "development")
-            def mock = [application: [flatConfig: new ConfigObject(), config: new ConfigObject(), warDeployed: false], manager:mockManager]
             def plugin = new GroovyPagesGrailsPlugin()
+            plugin.grailsApplication = new DefaultGrailsApplication() {
+                @Override
+                boolean isWarDeployed() {
+                    false
+                }
+            }
+            plugin.grailsApplication.initialise()
             def beans = plugin.doWithSpring
             def bb = new BeanBuilder()
-            bb.setBinding(new Binding(mock))
+            bb.setBinding(new Binding(manager:mockManager))
             bb.beans(beans)
             def beanDef = bb.getBeanDefinition('groovyPageResourceLoader')
             assertEquals "org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader", beanDef.beanClassName
@@ -144,11 +130,17 @@ class FormTagLib {
     void testBeansWhenWarDeployedAndDevelopmentEnv() {
         try {
             System.setProperty("grails.env", "development")
-            def mock = [application: [config: new ConfigObject(), warDeployed: true],manager:mockManager]
             def plugin = new ControllersGrailsPlugin()
+            plugin.grailsApplication = new DefaultGrailsApplication() {
+                @Override
+                boolean isWarDeployed() {
+                    return super.isWarDeployed()
+                }
+            }
+            plugin.grailsApplication.initialise()
             def beans = plugin.doWithSpring
             def bb = new BeanBuilder()
-            bb.setBinding(new Binding(mock))
+            bb.setBinding(new Binding(manager:mockManager))
             bb.beans(beans)
             assertNull bb.getBeanDefinition('groovyPageResourceLoader')
         }
@@ -173,7 +165,7 @@ class FormTagLib {
           </form>
         </body>
       </html>''', response.contentAsString) */
-        assertEquals("<html>  <head>    <title>Log in</title>  </head>  <body>    <h1>Hello</h1>  </body></html>".trim(),
+        assertEquals("<html>  <head>    <title>Log in</title>  </head>  <body>    <h1>Hello</h1>    <form />  </body></html>".trim(),
                      webRequest.currentResponse.contentAsString.replaceAll('[\r\n]', '').trim())
     }
 

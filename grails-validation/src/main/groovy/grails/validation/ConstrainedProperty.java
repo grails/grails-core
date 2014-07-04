@@ -1020,7 +1020,7 @@ public class ConstrainedProperty implements Constrained {
             LOG.error("Exception thrown instantiating constraint [" + constraintName +
                     "] to class [" + owningClass + "]", e);
             throw new ConstraintException("Exception thrown instantiating  constraint [" + constraintName +
-                    "] to class [" + owningClass + "]");
+                    "] to class [" + owningClass + "]", e);
         }
     }
 
@@ -1075,7 +1075,10 @@ public class ConstrainedProperty implements Constrained {
         for (Object constraintFactory : candidateConstraints) {
 
             Constraint c;
-            if (constraintFactory instanceof ConstraintFactory) {
+            if(constraintFactory instanceof org.codehaus.groovy.grails.validation.ConstraintFactory) {
+                c = ((org.codehaus.groovy.grails.validation.ConstraintFactory)constraintFactory).newInstance();
+            }
+            else if (constraintFactory instanceof ConstraintFactory) {
                 c = ((ConstraintFactory)constraintFactory).newInstance();
             }
             else {

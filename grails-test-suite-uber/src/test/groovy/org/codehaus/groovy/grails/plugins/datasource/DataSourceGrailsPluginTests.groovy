@@ -459,7 +459,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
     private createAppCtx(config) {
 
         ga.config = config
-        gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 
         configurator = new GrailsRuntimeConfigurator(ga, ctx)

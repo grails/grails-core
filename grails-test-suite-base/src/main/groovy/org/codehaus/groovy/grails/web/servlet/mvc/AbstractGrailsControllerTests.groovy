@@ -12,6 +12,7 @@ import grails.web.databinding.GrailsWebDataBinder
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
+import org.grails.core.LegacyGrailsApplication
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.plugins.DefaultGrailsPlugin
@@ -101,7 +102,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
             "org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin",
             "org.grails.plugins.web.mime.MimeTypesGrailsPlugin",
             "org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin",
-            "org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin",
+            "org.grails.plugins.converters.ConvertersGrailsPlugin",
             "org.grails.plugins.web.rest.plugin.RestResponderGrailsPlugin"
         ].collect { className ->
             gcl.loadClass(className)
@@ -130,7 +131,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
-        ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(ga))
+        ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(new LegacyGrailsApplication(ga)))
         ga.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
         

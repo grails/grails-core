@@ -819,7 +819,8 @@ public class GrailsClassUtils {
         Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(name), (Class[])null);
         try {
             if (getter != null) {
-                return getter.invoke(null);
+                ReflectionUtils.makeAccessible(getter);
+                return getter.invoke(clazz);
             }
             return getStaticFieldValue(clazz, name);
         }

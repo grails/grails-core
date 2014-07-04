@@ -48,7 +48,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass, org.codehaus.groovy.grails.commons.GrailsDomainClass {
+public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass{
 
     private GrailsDomainClassProperty identifier;
     private GrailsDomainClassProperty version;

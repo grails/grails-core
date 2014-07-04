@@ -54,6 +54,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
         springConfig.servletContext = createMockServletContext()
         ga.config.grails.spring.disable.aspectj.autoweaving=true
+        ga.configChanged()
         plugin.doWithRuntimeConfiguration(springConfig)
 
         def appCtx = springConfig.getApplicationContext()

@@ -23,5 +23,5 @@ package org.codehaus.groovy.grails.validation
  * @deprecated Use {@link grails.validation.AbstractConstraint}
  */
 @Deprecated
-public abstract class AbstractConstraint extends grails.validation.AbstractConstraint {
+public abstract class AbstractConstraint extends grails.validation.AbstractConstraint implements Constraint {
 }

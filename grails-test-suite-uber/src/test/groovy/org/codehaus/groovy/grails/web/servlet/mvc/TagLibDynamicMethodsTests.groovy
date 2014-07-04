@@ -16,6 +16,9 @@ class TagLibDynamicMethodsTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
         gcl.parseClass """
+        import grails.gsp.*
+
+        @TagLib
         class TestTagLib {
            def myTag = {attrs, body -> body() }
         }

@@ -319,6 +319,7 @@ public class ControllersApi extends CommonWebApi {
         redirector.setRedirectListeners(redirectListeners);
         redirector.setRequestDataValueProcessor(initRequestDataValueProcessor());
         redirector.setUseJessionId(useJessionId);
+        redirector.redirect(webRequest.getRequest(), webRequest.getResponse(), argMap);
         return null;
     }
 

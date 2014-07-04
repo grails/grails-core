@@ -82,7 +82,12 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * Initialize the controller class
      */
     void initialize();
-
+    /**
+     * Tests if a controller maps to a given URI.
+     *
+     * @return true if controller maps to URI
+     */
+    boolean mapsToURI(String uri);
     /**
      * Invokes a controller action on the given controller instance
      *

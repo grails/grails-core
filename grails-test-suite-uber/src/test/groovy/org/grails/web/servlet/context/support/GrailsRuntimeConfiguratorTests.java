@@ -26,6 +26,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 public class GrailsRuntimeConfiguratorTests extends TestCase {
@@ -89,7 +90,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertEquals("/error",mv.getViewName());
 
         // test multipart support
-        assertTrue(ctx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver);
+        assertTrue(ctx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN) instanceof StandardServletMultipartResolver);
 
         // test message source
         MessageSource ms = getBean(ctx, GrailsApplication.MESSAGE_SOURCE_BEAN);

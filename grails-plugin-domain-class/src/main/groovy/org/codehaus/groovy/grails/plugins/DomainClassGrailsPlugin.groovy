@@ -92,7 +92,7 @@ class DomainClassGrailsPlugin implements GrailsApplicationAware{
                 bean.autowire = "byName"
             }
             "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
-                targetObject = ref("grailsApplication", true)
+                targetObject = application
                 targetMethod = "getArtefact"
                 bean.lazyInit = true
                 arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
@@ -106,7 +106,7 @@ class DomainClassGrailsPlugin implements GrailsApplicationAware{
                 messageSource = ref("messageSource")
                 bean.lazyInit = true
                 domainClass = ref("${dc.fullName}DomainClass")
-                grailsApplication = ref("grailsApplication", true)
+                delegate.grailsApplication = application
             }
         }
     }

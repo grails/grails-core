@@ -15,6 +15,8 @@
  */
 package grails.test.mixin.web
 
+import org.grails.web.mapping.mvc.GrailsControllerUrlMappingInfo
+
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNotNull
 import junit.framework.AssertionFailedError
@@ -82,10 +84,11 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
 
             webRequest.params.putAll(backupParams)
             if (info.viewName == null && info.URI == null) {
-                def controller = grailsApplication.getArtefactForFeature(ControllerArtefactHandler.TYPE,
-                    "${WebUtils.SLASH}${info.controllerName}${WebUtils.SLASH}${info.actionName ?: ''}")
-                if (controller != null) {
-                    return applicationContext.getBean(controller.fullName)
+                if(info instanceof GrailsControllerUrlMappingInfo) {
+                    def controller = info.controllerClass
+                    if (controller != null) {
+                        return applicationContext.getBean(controller.fullName)
+                    }
                 }
             }
         }
@@ -233,7 +236,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
                 paramAssertions.resolveStrategy = Closure.DELEGATE_ONLY
                 paramAssertions.call()
                 params.each {name, value ->
-                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value, mapping.params[name])
+                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value, mapping.parameters[name])
                 }
             }
             return true

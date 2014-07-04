@@ -1,11 +1,13 @@
 package org.grails.core
 
+import grails.core.GrailsDomainClass
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ArtefactHandler
 import org.codehaus.groovy.grails.commons.ArtefactInfo
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 
@@ -106,7 +108,8 @@ class LegacyGrailsApplication implements GrailsApplication {
 
     @Override
     GrailsClass getArtefact(String artefactType, String name) {
-        return (GrailsClass)grailsApplication.getArtefact(artefactType, name)
+        def grailsClass = (GrailsClass) grailsApplication.getArtefact(artefactType, name)
+        return coerceToLegacyType(grailsClass)
     }
 
     @Override
@@ -121,22 +124,27 @@ class LegacyGrailsApplication implements GrailsApplication {
 
     @Override
     GrailsClass[] getArtefacts(String artefactType) {
+        if(DomainClassArtefactHandler.TYPE.equals(artefactType)) {
+            return grailsApplication.getArtefacts(artefactType).collect() { GrailsClass grailsClass ->
+                new LegacyGrailsDomainClass((GrailsDomainClass)grailsClass)
+            } as GrailsClass[]
+        }
         return grailsApplication.getArtefacts(artefactType) as GrailsClass[]
     }
 
     @Override
     GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
-        return (GrailsClass)grailsApplication.getArtefactForFeature(artefactType, featureID)
+        return coerceToLegacyType( (GrailsClass)grailsApplication.getArtefactForFeature(artefactType, featureID) )
     }
 
     @Override
     GrailsClass addArtefact(String artefactType, Class artefactClass) {
-        return (GrailsClass)grailsApplication.addArtefact(artefactType, artefactClass)
+        return coerceToLegacyType((GrailsClass)grailsApplication.addArtefact(artefactType, artefactClass))
     }
 
     @Override
     GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass) {
-        return (GrailsClass)grailsApplication.addArtefact(artefactType, artefactGrailsClass)
+        return coerceToLegacyType((GrailsClass)grailsApplication.addArtefact(artefactType, artefactGrailsClass))
     }
 
     @Override
@@ -197,5 +205,12 @@ class LegacyGrailsApplication implements GrailsApplication {
     @Override
     ArtefactHandler getArtefactHandler(String type) {
         return (ArtefactHandler)grailsApplication.getArtefactHandler(type)
+    }
+
+    private GrailsClass coerceToLegacyType(GrailsClass grailsClass) {
+        if (grailsClass instanceof GrailsDomainClass) {
+            return new LegacyGrailsDomainClass(grailsClass)
+        }
+        return grailsClass
     }
 }

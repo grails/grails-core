@@ -69,11 +69,11 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
 
         // replace AutoProxy advisor with Groovy aware one
         def grailsConfig = application.flatConfig
-        if (grailsConfig.get(Settings.SPRING_DISABLE_ASPECTJ) || !ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader)) {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+        if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !grailsConfig.get(Settings.SPRING_DISABLE_ASPECTJ)) {
+            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
         }
         else {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
+            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
         }
 
         // Allow the use of Spring annotated components
