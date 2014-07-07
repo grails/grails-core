@@ -17,7 +17,7 @@ dependencies {
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services'),
                 project(':grails-web'),
-                project(':grails-compatibility')
+                project(':grails-compat')
 
     testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'

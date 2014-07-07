@@ -7,5 +7,5 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.4'
 
     testCompile project(":grails-plugin-url-mappings")
-    testCompile project(":grails-compatibility")
+    testCompile project(":grails-compat")
 }

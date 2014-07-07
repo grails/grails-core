@@ -44,5 +44,5 @@ dependencies {
         exclude group: 'org.grails', module:'grails-datastore-core'
     }
 
-    testCompile(project(":grails-compatibility"))
+    testCompile(project(":grails-compat"))
 }

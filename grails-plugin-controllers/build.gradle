@@ -12,5 +12,5 @@ dependencies {
     testRuntime "jline:jline:$jlineVersion"
     testRuntime "org.fusesource.jansi:jansi:$jansiVersion"
 
-    testRuntime project(":grails-compatibility")
+    testRuntime project(":grails-compat")
 }

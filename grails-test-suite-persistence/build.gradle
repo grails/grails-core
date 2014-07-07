@@ -37,7 +37,7 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-    testRuntime project(":grails-compatibility")
+    testRuntime project(":grails-compat")
 }
 
 test {
