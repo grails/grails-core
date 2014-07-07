@@ -40,7 +40,6 @@ import com.google.gson.internal.LazilyParsedNumber
 
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
-@Ignore
 class GrailsWebDataBinderSpec extends Specification {
     private static Locale defaultLocale = Locale.getDefault()
 
@@ -1042,6 +1041,7 @@ class GrailsWebDataBinderSpec extends Specification {
     }
     
     @Issue('GRAILS-10899')
+    @Ignore
     void 'Test binding to a property that has a getter and setter with declared type java.util.Collection'() {
         when:
         def f = new Foo(airports: ['STL', 'LHR', 'MIA'])
@@ -1060,6 +1060,7 @@ class GrailsWebDataBinderSpec extends Specification {
     }
     
     @Issue('GRAILS-10728')
+    @Ignore
     void 'Test binding to a Set property that has a getter which returns an unmodifiable Set'() {
         when:
         def f = new Foo(names: ['Lemmy', 'Phil', 'Mikkey'] as Set)
@@ -1069,6 +1070,7 @@ class GrailsWebDataBinderSpec extends Specification {
     }
     
     @Issue('GRAILS-10728')
+    @Ignore
     void 'Test binding to a collection property that has a setter and no getter'() {
         when:
         def f = new Foo(workdays: [Calendar.MONDAY, Calendar.TUESDAY])
@@ -1078,6 +1080,7 @@ class GrailsWebDataBinderSpec extends Specification {
     }
 
     @Issue('GRAILS-10717')
+    @Ignore
     void 'Test binding to a property that does not correspond to a field'() {
         when:
         def f = new Foo(activeDays:['mon'])
