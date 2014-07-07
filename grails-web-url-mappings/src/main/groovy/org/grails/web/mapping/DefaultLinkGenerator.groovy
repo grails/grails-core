@@ -125,9 +125,9 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
 
             if(params instanceof Map) {
                 def charset = GrailsWebUtil.DEFAULT_ENCODING
-                def paramString = params.collect { k, v -> 
-                    def encodedKey = URLEncoder.encode(k as String, charset)
-                    def encodedValue = URLEncoder.encode(v as String, charset)
+                def paramString = params.collect { Map.Entry entry ->
+                    def encodedKey = URLEncoder.encode(entry.key as String, charset)
+                    def encodedValue = URLEncoder.encode(entry.value as String, charset)
                     "$encodedKey=$encodedValue"
                 }.join('&')
                 writer << (uri.indexOf('?') >= 0 ? '&' : '?')
