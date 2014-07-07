@@ -21,7 +21,9 @@ class FilterExecutionTests extends AbstractGrailsControllerTests {
 
         gcl.parseClass '''
 import junit.framework.Assert
+import grails.artefact.*
 
+@Artefact("Filters")
 class Filters {
     def dependsOn = [Group1Filters]
 
@@ -165,6 +167,7 @@ class Filters {
     }
 }
 
+@Artefact("Filters")
 class Group1Filters {
     def dependsOn = [Group3Filters]
 
@@ -183,6 +186,7 @@ class Group1Filters {
     }
 }
 
+@Artefact("Filters")
 class Group2Filters {
 
     // these filters should run first since they have no dependencies
@@ -201,6 +205,7 @@ class Group2Filters {
     }
 }
 
+@Artefact("Filters")
 class Group3Filters {
 
     // these filters should run after Group2Filters and before Group1Filters
