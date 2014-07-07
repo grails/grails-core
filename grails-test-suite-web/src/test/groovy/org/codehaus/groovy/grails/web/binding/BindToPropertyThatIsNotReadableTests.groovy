@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.binding
 
 import grails.persistence.Entity
 import grails.test.mixin.Mock
-
+import groovy.transform.NotYetImplemented
 import org.junit.Test
 import static org.junit.Assert.assertEquals
 
@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals
 class BindToPropertyThatIsNotReadableTests {
 
     @Test
+    @NotYetImplemented
     void testBindToPropertyThatIsNotReadable() {
         def b = new PropertyNotReadableBook()
 

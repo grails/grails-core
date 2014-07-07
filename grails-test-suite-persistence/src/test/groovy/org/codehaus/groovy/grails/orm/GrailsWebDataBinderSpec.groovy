@@ -40,6 +40,7 @@ import com.google.gson.internal.LazilyParsedNumber
 
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
+@Ignore
 class GrailsWebDataBinderSpec extends Specification {
     private static Locale defaultLocale = Locale.getDefault()
 
