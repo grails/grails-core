@@ -98,7 +98,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
             "org.grails.plugins.i18n.I18nGrailsPlugin",
             "org.grails.plugins.web.ServletsGrailsPlugin",
             "org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin",
-            "org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin",
+            "org.grails.plugins.web.controllers.ControllersGrailsPlugin",
             "org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin",
             "org.grails.plugins.web.mime.MimeTypesGrailsPlugin",
             "org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin",

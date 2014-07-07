@@ -26,7 +26,7 @@ import org.springframework.util.Assert
 import javax.servlet.http.HttpServletResponse
 
 import grails.core.GrailsDomainClassProperty
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.core.support.proxy.ProxyHandler
 import grails.web.mime.MimeType

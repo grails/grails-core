@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.GrailsWebUtil
+import org.grails.compiler.web.ControllerTransformer
 
 import javax.servlet.http.HttpServletRequest
 

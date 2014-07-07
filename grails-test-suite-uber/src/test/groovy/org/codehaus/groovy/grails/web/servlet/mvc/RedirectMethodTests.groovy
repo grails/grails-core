@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.MockRequestDataValueProcessor
 import grails.web.mapping.mvc.RedirectEventListener
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.grails.plugins.web.controllers.api.ControllersApi
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import grails.web.util.GrailsApplicationAttributes
 import grails.web.http.HttpHeaders

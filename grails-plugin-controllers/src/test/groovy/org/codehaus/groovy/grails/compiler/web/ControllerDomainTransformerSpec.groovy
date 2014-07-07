@@ -4,12 +4,13 @@ import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
 
 import grails.core.DefaultGrailsApplication
+import org.grails.compiler.web.ControllerDomainTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import org.grails.core.metaclass.MetaClassEnhancer
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
+import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder

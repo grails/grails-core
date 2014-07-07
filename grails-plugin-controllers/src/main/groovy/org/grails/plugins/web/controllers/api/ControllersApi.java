@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.api;
+package org.grails.plugins.web.controllers.api;
 
 import grails.async.Promise;
 import grails.converters.JSON;
@@ -63,19 +63,23 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 
 import grails.core.GrailsDomainClassProperty;
 
-import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer;
+import org.grails.compiler.web.ControllerActionTransformer;
 
 import grails.plugins.GrailsPluginManager;
 import grails.web.databinding.DataBindingUtils;
 
-import org.codehaus.groovy.grails.web.controllers.ControllerExceptionHandlerMetaData;
+import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData;
 
 import grails.web.mapping.LinkGenerator;
 
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+import org.grails.plugins.support.WebMetaUtils;
 
 import grails.web.util.GrailsApplicationAttributes;
 
+import org.grails.plugins.web.controllers.metaclass.ChainMethod;
+import org.grails.plugins.web.controllers.metaclass.ForwardMethod;
+import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod;
+import org.grails.plugins.web.controllers.metaclass.WithFormMethod;
 import org.grails.web.servlet.mvc.ActionResultTransformer;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 
@@ -100,7 +104,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.support.RequestDataValueProcessor;
 
-import static org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod.*;
+import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*;
 /**
  * API for each controller in a Grails application.
  *

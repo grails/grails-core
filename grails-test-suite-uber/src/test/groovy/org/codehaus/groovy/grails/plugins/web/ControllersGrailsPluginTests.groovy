@@ -3,9 +3,7 @@ package org.codehaus.groovy.grails.plugins.web
 import grails.core.DefaultGrailsApplication
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
-import grails.core.GrailsApplication
-import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -60,7 +58,7 @@ class FormTagLib {
 
         pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.web.controllers.ControllersGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
     }

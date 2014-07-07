@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.metaclass
- 
+
+import org.grails.plugins.web.controllers.metaclass.ForwardMethod
+
 import javax.servlet.RequestDispatcher
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest

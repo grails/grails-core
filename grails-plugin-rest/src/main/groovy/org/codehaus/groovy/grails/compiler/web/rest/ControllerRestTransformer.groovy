@@ -22,7 +22,7 @@ import org.codehaus.groovy.ast.ClassNode
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import grails.compiler.ast.AstTransformer
-import org.codehaus.groovy.grails.compiler.web.ControllerTransformer
+import org.grails.compiler.web.ControllerTransformer
 import org.grails.plugins.web.rest.api.ControllersRestApi
 
 /**

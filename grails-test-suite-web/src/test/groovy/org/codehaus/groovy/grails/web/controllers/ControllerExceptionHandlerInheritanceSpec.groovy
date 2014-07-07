@@ -6,7 +6,7 @@ import grails.test.mixin.TestFor
 import java.sql.BatchUpdateException
 import java.sql.SQLException
 
-import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerActionTransformer
 
 import spock.lang.Specification
 

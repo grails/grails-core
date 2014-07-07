@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.metaclass;
+package org.grails.plugins.web.controllers.metaclass;
 
 /**
  * Allows rendering of text, views, and templates to the response

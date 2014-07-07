@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.compiler.web;
+package org.grails.compiler.web;
 
 import java.net.URL;
 
@@ -25,7 +25,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi;
+import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 
 /**

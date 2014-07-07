@@ -22,7 +22,7 @@ import javax.servlet.http.HttpSession
 
 import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.grails.plugins.web.controllers.api.ControllersApi
 import grails.web.mvc.FlashScope
 import grails.web.util.GrailsApplicationAttributes
 import grails.web.servlet.mvc.GrailsParameterMap

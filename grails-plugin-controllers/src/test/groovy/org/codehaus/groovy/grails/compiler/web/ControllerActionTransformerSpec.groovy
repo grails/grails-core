@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.compiler.web
 import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
 import grails.web.Action
+import org.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerTransformer
 
 import java.lang.reflect.Modifier
 

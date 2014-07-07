@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.compiler.web;
+package org.grails.compiler.web;
 
 import static org.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
@@ -86,7 +86,7 @@ import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
 import grails.compiler.ast.GrailsArtefactClassInjector;
-import org.codehaus.groovy.grails.web.controllers.DefaultControllerExceptionHandlerMetaData;
+import org.grails.plugins.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;

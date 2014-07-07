@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.plugins.support
+package org.grails.plugins.support
 
 import grails.databinding.DataBindingSource;
 import grails.databinding.SimpleMapDataBindingSource;

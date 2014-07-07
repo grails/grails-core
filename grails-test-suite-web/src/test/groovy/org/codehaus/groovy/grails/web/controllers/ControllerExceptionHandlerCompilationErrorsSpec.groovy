@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.controllers
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerActionTransformer
 
 import spock.lang.Specification
 

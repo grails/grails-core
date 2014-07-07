@@ -23,7 +23,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
-import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
+import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.mapping.model.PersistentEntity

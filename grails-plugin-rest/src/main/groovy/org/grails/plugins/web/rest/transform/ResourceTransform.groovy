@@ -62,7 +62,7 @@ import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.compiler.injection.ArtefactTypeAstTransformation
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
-import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.io.DefaultResourceLocator
 import org.grails.core.io.ResourceLocator
 import org.grails.transaction.transform.TransactionalTransform

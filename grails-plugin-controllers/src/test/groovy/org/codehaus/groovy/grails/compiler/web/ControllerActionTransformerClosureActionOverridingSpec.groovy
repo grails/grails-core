@@ -4,7 +4,9 @@ import grails.util.GrailsWebUtil
 
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.grails.plugins.web.controllers.api.ControllersApi
+import org.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerTransformer
 import org.springframework.web.context.request.RequestContextHolder
 
 import spock.lang.Specification

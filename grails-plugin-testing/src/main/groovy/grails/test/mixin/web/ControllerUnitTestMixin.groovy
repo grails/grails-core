@@ -29,11 +29,11 @@ import org.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.grails.plugins.support.WebMetaUtils
 import grails.web.mvc.FlashScope
 import grails.web.util.GrailsApplicationAttributes
 import grails.web.servlet.mvc.GrailsParameterMap

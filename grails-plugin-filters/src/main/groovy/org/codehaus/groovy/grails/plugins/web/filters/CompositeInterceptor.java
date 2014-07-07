@@ -22,7 +22,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
+import org.grails.plugins.web.controllers.metaclass.ForwardMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;

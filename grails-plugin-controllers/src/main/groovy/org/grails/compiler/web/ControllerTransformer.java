@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.compiler.web;
+package org.grails.compiler.web;
 
 import java.net.URL;
 import java.util.List;
@@ -30,7 +30,7 @@ import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
+import org.grails.plugins.web.controllers.api.ControllersApi;
 
 /**
  * Enhances controller classes with the appropriate API at compile time.

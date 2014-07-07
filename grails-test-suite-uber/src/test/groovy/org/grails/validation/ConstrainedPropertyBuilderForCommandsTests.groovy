@@ -1,7 +1,7 @@
 package org.grails.validation
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.grails.plugins.support.WebMetaUtils
 
 /**
  * Tests constraints building specific for command objects

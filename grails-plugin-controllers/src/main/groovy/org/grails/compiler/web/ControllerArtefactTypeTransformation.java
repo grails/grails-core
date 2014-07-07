@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.compiler.web;
+package org.grails.compiler.web;
 
 import grails.web.Controller;
 import org.codehaus.groovy.ast.AnnotationNode;

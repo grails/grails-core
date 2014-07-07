@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.metaclass
+package org.grails.plugins.web.controllers.metaclass
 
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic

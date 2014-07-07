@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web
+package org.grails.plugins.web.controllers
 
 import grails.artefact.Enhanced
 import grails.config.Settings
@@ -28,8 +28,8 @@ import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import org.grails.core.metaclass.MetaClassEnhancer
 import grails.core.support.GrailsApplicationAware
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
+import org.grails.plugins.web.controllers.api.ControllersApi
+import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
 import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
