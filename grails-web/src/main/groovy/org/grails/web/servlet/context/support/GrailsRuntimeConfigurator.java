@@ -325,6 +325,22 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
 
 
+    public void setLoadExternalPersistenceConfig(boolean b) {
+        // do nothing
+    }
+
+    public void setPluginManager(GrailsPluginManager manager) {
+        pluginManager = manager;
+    }
+
+    public GrailsPluginManager getPluginManager() {
+        return pluginManager;
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        parent = applicationContext;
+    }
+
     /**
      * Loads any external Spring configuration into the given RuntimeSpringConfiguration object.
      * @param config The config instance
@@ -342,24 +358,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     }
 
     public static void loadSpringGroovyResourcesIntoContext(RuntimeSpringConfiguration config, GrailsApplication application,
-            GenericApplicationContext context) {
+                                                            GenericApplicationContext context) {
         RuntimeSpringConfigUtilities.loadSpringGroovyResourcesIntoContext(config, application, context);
-    }
-
-    public void setLoadExternalPersistenceConfig(boolean b) {
-        // do nothing
-    }
-
-    public void setPluginManager(GrailsPluginManager manager) {
-        pluginManager = manager;
-    }
-
-    public GrailsPluginManager getPluginManager() {
-        return pluginManager;
-    }
-
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        parent = applicationContext;
     }
 
     /**

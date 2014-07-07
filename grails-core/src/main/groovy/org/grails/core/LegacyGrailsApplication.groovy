@@ -1,6 +1,7 @@
 package org.grails.core
 
 import grails.core.GrailsDomainClass
+import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.ArtefactHandler
@@ -11,6 +12,9 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 /**
  * Legacy bridge for older GrailsApplication API
  *
@@ -18,12 +22,33 @@ import org.springframework.core.io.Resource
  * @since 3.0
  */
 @CompileStatic
-class LegacyGrailsApplication implements GrailsApplication {
+class LegacyGrailsApplication extends GroovyObjectSupport  implements GrailsApplication {
+
+    protected static final Pattern GETCLASSESPROP_PATTERN = Pattern.compile(/(\w+)(Classes)/);
+    protected static final Pattern GETCLASSESMETH_PATTERN = Pattern.compile(/(get)(\w+)(Classes)/);
+    protected static final Pattern ISCLASS_PATTERN = Pattern.compile(/(is)(\w+)(Class)/);
+    protected static final Pattern GETCLASS_PATTERN = Pattern.compile(/(get)(\w+)Class/);
+
 
     grails.core.GrailsApplication grailsApplication
 
     LegacyGrailsApplication(grails.core.GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
+    }
+
+    @Override
+    Object getProperty(String property) {
+        // look for getXXXXClasses
+        final Matcher match = GETCLASSESPROP_PATTERN.matcher(property)
+        // find match
+        match.find()
+        if (match.matches()) {
+            def artefactName = GrailsNameUtils.getClassNameRepresentation(match.group(1))
+            if (getArtefactHandler(artefactName)) {
+                return getArtefacts(artefactName)
+            }
+        }
+        return super.getProperty(property)
     }
 
     @Override

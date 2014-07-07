@@ -127,6 +127,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         }
 
         context = createApplicationContext(parent);
+
         if (parent != null && classLoader == null) {
             trySettingClassLoaderOnContextIfFoundInParent(parent);
         }

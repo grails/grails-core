@@ -20,6 +20,7 @@ import grails.core.support.GrailsApplicationAware
 import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
 import grails.core.ComponentCapableDomainClass
+import groovy.transform.CompileStatic
 import org.grails.core.LegacyGrailsApplication
 import org.grails.core.artefact.DomainClassArtefactHandler
 
@@ -118,7 +119,7 @@ class DomainClassGrailsPlugin implements GrailsApplicationAware{
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx->
-        enhanceDomainClasses(application, ctx)
+        enhanceDomainClasses(grailsApplication, ctx)
     }
 
     def onChange = { event ->
@@ -176,6 +177,12 @@ class DomainClassGrailsPlugin implements GrailsApplicationAware{
         }
         beans.registerBeans(event.ctx)
         event.application.refreshConstraints()
+    }
+
+
+    @CompileStatic
+    static void enhanceDomainClasses(org.codehaus.groovy.grails.commons.GrailsApplication application, ApplicationContext ctx) {
+        enhanceDomainClasses(((LegacyGrailsApplication)application).grailsApplication, ctx)
     }
 
     static  enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {

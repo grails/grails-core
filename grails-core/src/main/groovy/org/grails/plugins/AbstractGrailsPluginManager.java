@@ -39,14 +39,21 @@ import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.core.LegacyGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.ConverterRegistry;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
@@ -120,6 +127,28 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
      * @param springConfig The RuntimeSpringConfiguration instance
      */
     public void doRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
+        ApplicationContext context = springConfig.getUnrefreshedApplicationContext();
+        AutowireCapableBeanFactory autowireCapableBeanFactory = context.getAutowireCapableBeanFactory();
+        if(autowireCapableBeanFactory instanceof ConfigurableListableBeanFactory) {
+            ConfigurableListableBeanFactory beanFactory = (ConfigurableListableBeanFactory)autowireCapableBeanFactory;
+            ConversionService existingConversionService = beanFactory.getConversionService();
+            ConverterRegistry converterRegistry;
+            if(existingConversionService == null) {
+                GenericConversionService conversionService = new GenericConversionService();
+                converterRegistry = conversionService;
+                beanFactory.setConversionService(conversionService);
+            }
+            else {
+                converterRegistry = (ConverterRegistry)existingConversionService;
+            }
+
+            converterRegistry.addConverter(new Converter<GrailsApplication, org.codehaus.groovy.grails.commons.GrailsApplication>() {
+                @Override
+                public org.codehaus.groovy.grails.commons.GrailsApplication convert(GrailsApplication source) {
+                    return new LegacyGrailsApplication(source);
+                }
+            });
+        }
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {

@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.rest.plugin
 
+import grails.core.support.GrailsApplicationAware
 import grails.rest.Resource
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
@@ -32,14 +33,16 @@ import org.grails.plugins.web.rest.render.DefaultRendererRegistry
  * @since 2.3
  * @author Graeme Rocher
  */
-class RestResponderGrailsPlugin {
+class RestResponderGrailsPlugin implements GrailsApplicationAware{
     private static final Log LOG = LogFactory.getLog(RestResponderGrailsPlugin)
     def version = GrailsUtil.getGrailsVersion()
     def loadBefore = ['controllers']
     def observe = ['domainClass']
 
+    GrailsApplication grailsApplication
+
     def doWithSpring = {
-        RestResponderGrailsPlugin.registryResourceControllers(application)
+        RestResponderGrailsPlugin.registryResourceControllers(grailsApplication)
 
         rendererRegistry(DefaultRendererRegistry) { bean ->
             modelSuffix = application.flatConfig.get('grails.scaffolding.templates.domainSuffix') ?: ''
@@ -48,7 +51,7 @@ class RestResponderGrailsPlugin {
     }
 
     def onChange = { event ->
-        RestResponderGrailsPlugin.registryResourceControllers(event.application)
+        RestResponderGrailsPlugin.registryResourceControllers(grailsApplication)
     }
 
     @CompileStatic

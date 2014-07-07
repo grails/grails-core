@@ -126,8 +126,8 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         }
 
         customEditors(CustomEditorConfigurer) {
-            customEditors = [(Class.name): ClassEditor.name,
-                             (Properties.name): PropertiesEditor.name]
+            customEditors = [(Class): ClassEditor,
+                             (Properties): PropertiesEditor]
         }
 
         proxyHandler(DefaultProxyHandler)

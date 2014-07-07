@@ -44,6 +44,7 @@ import grails.core.GrailsApplication;
 import grails.util.GrailsArrayUtils;
 import grails.util.GrailsClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.core.LegacyGrailsApplication;
 import org.grails.core.io.SpringResource;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.spring.RuntimeSpringConfiguration;
@@ -151,7 +152,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         pluginGrailsClass = new GrailsPluginClass(clazz);
         plugin = (GroovyObject)pluginGrailsClass.newInstance();
         if(plugin instanceof GrailsApplicationAware) {
-            ((GrailsApplicationAware)plugin).setGrailsApplication(this.application);
+            ((GrailsApplicationAware)plugin).setGrailsApplication(((LegacyGrailsApplication)this.application).getGrailsApplication());
         }
         pluginBean = new BeanWrapperImpl(plugin);
 
@@ -527,6 +528,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
         Binding b = new Binding();
         b.setVariable("application", application);
+        b.setVariable(GrailsApplication.APPLICATION_ID, application);
         b.setVariable("manager", getManager());
         b.setVariable("plugin", this);
         b.setVariable("parentCtx", getParentCtx());
@@ -798,7 +800,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 Class artefactClass = (Class) artefact;
                 if (ArtefactHandler.class.isAssignableFrom(artefactClass)) {
                     try {
-                        application.registerArtefactHandler((ArtefactHandler) artefactClass.newInstance());
+                        ((LegacyGrailsApplication)application).getGrailsApplication().registerArtefactHandler((ArtefactHandler) artefactClass.newInstance());
                     }
                     catch (InstantiationException e) {
                         LOG.error("Cannot instantiate an Artefact Handler:" + e.getMessage(), e);
@@ -812,7 +814,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 }
             }
             else if (artefact instanceof ArtefactHandler) {
-                application.registerArtefactHandler((ArtefactHandler) artefact);
+                ((LegacyGrailsApplication)application).getGrailsApplication().registerArtefactHandler((ArtefactHandler) artefact);
             }
             else {
                 LOG.error("This object is not an ArtefactHandler:" + artefact + "[" + artefact.getClass().getName() + "]");

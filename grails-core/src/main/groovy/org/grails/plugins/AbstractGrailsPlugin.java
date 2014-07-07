@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.grails.core.AbstractGrailsClass;
 import grails.core.GrailsApplication;
+import org.grails.core.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -46,7 +47,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         // do nothing
     }
 
-    protected GrailsApplication application;
+    protected org.codehaus.groovy.grails.commons.GrailsApplication application;
     protected boolean isBase = false;
     protected String version = "1.0";
     protected Map<String, Object> dependencies = new HashMap<String, Object>();
@@ -72,7 +73,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         Assert.isTrue(pluginClass.getName().endsWith(TRAILING_NAME),
                 "Argument [pluginClass] with value [" + pluginClass +
                 "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
-        this.application = application;
+        this.application = new LegacyGrailsApplication(application);
         this.pluginClass = pluginClass;
     }
 
@@ -156,7 +157,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
      * @see grails.plugins.GrailsPlugin#setApplication(grails.core.GrailsApplication)
      */
     public void setApplication(GrailsApplication application) {
-        this.application = application;
+        this.application = new LegacyGrailsApplication(application);
     }
 
     public String[] getEvictionNames() {

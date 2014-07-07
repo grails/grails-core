@@ -17,6 +17,8 @@ package org.grails.plugins.converters
 
 import grails.converters.JSON
 import grails.converters.XML
+import grails.core.GrailsApplication
+import grails.core.support.GrailsApplicationAware
 import grails.util.GrailsUtil
 
 import org.grails.plugins.converters.api.ConvertersControllersApi
@@ -33,7 +35,7 @@ import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as Xm
  *
  * @since 0.6
  */
-class ConvertersGrailsPlugin {
+class ConvertersGrailsPlugin implements GrailsApplicationAware {
 
     def version = GrailsUtil.getGrailsVersion()
 
@@ -46,6 +48,8 @@ class ConvertersGrailsPlugin {
     def observe = ["controllers"]
 
     def dependsOn = [controllers: version, domainClass: version]
+
+    GrailsApplication grailsApplication
 
     def doWithSpring = {
         jsonErrorsMarshaller(JsonErrorsMarshaller)
@@ -68,7 +72,7 @@ class ConvertersGrailsPlugin {
     }
 
     def doWithDynamicMethods = {applicationContext ->
-
+        def application = grailsApplication
         applicationContext.getBean("convertersConfigurationInitializer").initialize(application)
 
         ConvertersPluginSupport.enhanceApplication(application, applicationContext)
