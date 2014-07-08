@@ -16,7 +16,7 @@ import org.grails.core.LegacyGrailsApplication
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
+import org.grails.plugins.domain.DomainClassGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
@@ -94,7 +94,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         def dependantPluginClasses = [
             "org.grails.plugins.CoreGrailsPlugin",
             "org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin",
-            "org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin",
+            "org.grails.plugins.domain.DomainClassGrailsPlugin",
             "org.grails.plugins.i18n.I18nGrailsPlugin",
             "org.grails.plugins.web.ServletsGrailsPlugin",
             "org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin",

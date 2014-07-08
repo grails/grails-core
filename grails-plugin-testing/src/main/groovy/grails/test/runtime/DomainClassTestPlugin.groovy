@@ -22,8 +22,8 @@ import grails.validation.ConstraintsEvaluator
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
-import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
+import org.grails.plugins.domain.support.GrailsDomainClassCleaner
+import org.grails.plugins.domain.DomainClassGrailsPlugin
 import org.grails.datastore.gorm.events.AutoTimestampEventListener
 import org.grails.datastore.gorm.events.DomainEventListener
 import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory

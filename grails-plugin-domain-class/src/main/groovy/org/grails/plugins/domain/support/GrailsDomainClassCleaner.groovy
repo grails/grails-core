@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.domain
+package org.grails.plugins.domain.support
 
 import groovy.util.logging.Commons
 

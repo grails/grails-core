@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins
+package org.grails.plugins.domain
 
 import grails.artefact.Enhanced
 import grails.core.support.GrailsApplicationAware
@@ -29,8 +29,8 @@ import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
 
 import org.grails.core.support.GrailsDomainConfigurationUtil
-import org.codehaus.groovy.grails.domain.GormApiSupport
-import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
+import org.grails.plugins.domain.support.GormApiSupport
+import org.grails.plugins.domain.support.GrailsDomainClassCleaner
 import org.grails.core.util.SoftThreadLocalMap
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.validation.ConstraintsEvaluatorFactoryBean;

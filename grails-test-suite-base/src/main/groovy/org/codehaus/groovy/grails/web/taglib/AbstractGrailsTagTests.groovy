@@ -244,7 +244,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.domain.DomainClassGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")

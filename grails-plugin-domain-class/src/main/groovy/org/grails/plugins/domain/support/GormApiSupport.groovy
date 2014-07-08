@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.domain
+package org.grails.plugins.domain.support
 
 import org.grails.datastore.gorm.GormValidationApi
 import org.grails.datastore.mapping.core.Datastore

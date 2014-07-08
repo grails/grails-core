@@ -21,7 +21,7 @@ import grails.validation.ValidationErrors
 import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils
 
-import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
+import org.grails.plugins.domain.DomainClassPluginSupport
 
 import grails.validation.ConstraintsEvaluator
 

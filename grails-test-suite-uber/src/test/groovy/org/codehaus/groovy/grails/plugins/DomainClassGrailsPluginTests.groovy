@@ -45,7 +45,7 @@ class Parent2 {
 
 } """, "myapp${fs}grails-app${fs}domain${fs}Child3.groovy")
 
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.domain.DomainClassGrailsPlugin")
     }
 
     private GrailsAwareClassLoader initClassLoader() {
