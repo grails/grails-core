@@ -1,4 +1,5 @@
 dependencies {
     compile project(':grails-plugin-mimetypes'),
+            project(':grails-plugin-controllers'),
             project(':grails-validation')
 }
