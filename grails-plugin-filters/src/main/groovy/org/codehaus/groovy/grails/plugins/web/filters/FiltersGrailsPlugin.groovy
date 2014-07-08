@@ -82,7 +82,7 @@ class FiltersGrailsPlugin implements GrailsApplicationAware, ApplicationContextA
         // Get the new or modified filter and (re-)register the associated beans
         def newFilter = event.application.addArtefact(TYPE, event.source)
         beans(BEANS.curry(newFilter)).registerBeans(event.ctx)
-        reloadFilters(event.application, event.ctx)
+        FiltersGrailsPlugin.reloadFilters(grailsApplication, event.ctx)
     }
 
     static void reloadFilters(GrailsApplication application, ApplicationContext applicationContext) {
