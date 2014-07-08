@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import org.grails.plugins.web.filters.CompositeInterceptor
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 

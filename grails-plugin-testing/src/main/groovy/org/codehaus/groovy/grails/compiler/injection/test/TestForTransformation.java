@@ -73,7 +73,7 @@ import org.grails.compiler.logging.LoggingTransformer;
 import org.grails.core.io.DefaultResourceLocator;
 import org.grails.core.io.ResourceLocator;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler;
+import org.grails.plugins.web.filters.FiltersConfigArtefactHandler;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.junit.After;

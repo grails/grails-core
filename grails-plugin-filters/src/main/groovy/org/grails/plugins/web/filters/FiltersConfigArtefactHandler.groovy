@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.filters
+package org.grails.plugins.web.filters
 
 import grails.core.ArtefactHandlerAdapter
-import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
 /**
  * Detects artefact types that end with *Filter.

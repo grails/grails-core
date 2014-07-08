@@ -155,7 +155,7 @@ abstract class GormSpec extends Specification {
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.controllers.ControllersGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.mime.MimeTypesGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.filters.FiltersGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
         dependantPluginClasses << MockHibernateGrailsPlugin

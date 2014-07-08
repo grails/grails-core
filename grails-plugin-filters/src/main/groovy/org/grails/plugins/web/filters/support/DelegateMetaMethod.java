@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.filters;
+package org.grails.plugins.web.filters.support;
 
 import groovy.lang.MetaMethod;
 
@@ -32,7 +32,7 @@ import org.codehaus.groovy.reflection.CachedClass;
  * @author Lari Hotari
  */
 @SuppressWarnings("rawtypes")
-class DelegateMetaMethod extends MetaMethod {
+public class DelegateMetaMethod extends MetaMethod {
     static interface DelegateMetaMethodTargetStrategy {
         public Object getTargetInstance(Object instance);
     }

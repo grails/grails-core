@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor
+import org.grails.plugins.web.filters.CompositeInterceptor
 
 /**
  * a TestPlugin for TestRuntime for supporting {@link FiltersUnitTestMixin}

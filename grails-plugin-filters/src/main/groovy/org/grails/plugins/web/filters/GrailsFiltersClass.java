@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.filters;
+package org.grails.plugins.web.filters;
 
 import grails.core.InjectableGrailsClass;
-import org.codehaus.groovy.grails.plugins.web.filters.FilterConfig;
+import org.grails.plugins.web.filters.FilterConfig;
 
 import java.util.List;
 

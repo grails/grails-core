@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.filters
+package org.grails.plugins.web.filters
 
 import org.grails.core.AbstractInjectableGrailsClass
-import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
 
 /**
  * Loads filter definitions into a set of FilterConfig instances.
@@ -35,7 +34,7 @@ class DefaultGrailsFiltersClass extends AbstractInjectableGrailsClass implements
 
         if (!filters) return []
 
-        def loader = new Loader(filters)
+        def loader = new FilterLoader(filters)
         def filtersClosure = filters.filters
         filtersClosure.delegate = loader
         filtersClosure.call()
@@ -49,38 +48,3 @@ class DefaultGrailsFiltersClass extends AbstractInjectableGrailsClass implements
     }
 }
 
-class Loader {
-    def filtersDefinition
-    def filters = []
-
-    Loader(filtersDefinition) {
-        this.filtersDefinition = filtersDefinition
-    }
-
-    def methodMissing(String methodName, args) {
-        if (!args) {
-            return
-        }
-
-        def fc = new FilterConfig(name: methodName, filtersDefinition: filtersDefinition)
-        filters << fc
-
-        if (args[0] instanceof Closure) {
-            fc.scope = [ uri: '/**' ]
-            def closure = args[0]
-            closure.delegate = fc
-            closure.resolveStrategy = Closure.DELEGATE_FIRST
-            closure.call()
-        }
-        else if (args[0] instanceof Map) {
-            fc.scope = args[0]
-            if (args.size() > 1 && args[1] instanceof Closure) {
-                def closure = args[1]
-                closure.delegate = fc
-                closure.resolveStrategy = Closure.DELEGATE_FIRST
-                closure.call()
-            }
-        }
-        fc.initialised = true
-    }
-}

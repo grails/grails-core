@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.filters;
+package org.grails.plugins.web.filters.support;
 
-import org.codehaus.groovy.grails.plugins.web.filters.DelegateMetaMethod.DelegateMetaMethodTargetStrategy;
+import org.grails.plugins.web.filters.support.DelegateMetaMethod.DelegateMetaMethodTargetStrategy;
+import org.grails.plugins.web.filters.FilterConfig;
 
 public class FilterConfigDelegateMetaMethodTargetStrategy implements DelegateMetaMethodTargetStrategy {
     public static final FilterConfigDelegateMetaMethodTargetStrategy instance =

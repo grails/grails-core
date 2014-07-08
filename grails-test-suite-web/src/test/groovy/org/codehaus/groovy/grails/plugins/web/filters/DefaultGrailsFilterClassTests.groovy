@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.grails.plugins.web.filters.DefaultGrailsFiltersClass
 
 /**
  * @author Graeme Rocher

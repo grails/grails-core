@@ -30,7 +30,7 @@ class Filters {
 }"""
         pluginsToLoad << gcl.loadClass(UrlMappingsGrailsPlugin.name)
         pluginsToLoad << gcl.loadClass(ControllersGrailsPlugin.name)
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.web.filters.FiltersGrailsPlugin")
     }
 
     void testSpringConfig() {

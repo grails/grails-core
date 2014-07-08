@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import org.grails.plugins.web.filters.FilterConfig
+
 
 /**
- * Test case for {@link FilterConfig}.
+ * Test case for {@link org.grails.plugins.web.filters.FilterConfig}.
  *
  * @author pledbrook
  */

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.filters
+package org.grails.plugins.web.filters
+
+import org.grails.plugins.web.filters.support.DelegateMetaMethod
+import org.grails.plugins.web.filters.support.FilterConfigDelegateMetaMethodTargetStrategy
 
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest

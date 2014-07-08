@@ -5,10 +5,10 @@ import grails.web.UrlConverter
 
 import grails.core.DefaultGrailsApplication
 import org.grails.core.DefaultGrailsControllerClass
-import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
+import org.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.springframework.context.support.GenericApplicationContext
 
-import org.codehaus.groovy.grails.plugins.web.filters.FilterConfig
+import org.grails.plugins.web.filters.FilterConfig
 
 /**
  * @author Graeme Rocher
