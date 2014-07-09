@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import grails.core.support.GrailsApplicationAware;
 import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;

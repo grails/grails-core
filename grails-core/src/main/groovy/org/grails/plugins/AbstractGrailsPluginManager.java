@@ -42,7 +42,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;

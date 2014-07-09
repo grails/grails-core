@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.exceptions
 
 import org.grails.core.exceptions.DefaultErrorsPrinter
 import org.grails.core.io.StaticResourceLocator
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import spock.lang.Specification

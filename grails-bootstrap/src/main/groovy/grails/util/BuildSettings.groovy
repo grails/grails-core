@@ -15,8 +15,6 @@
  */
 package grails.util
 
-import org.codehaus.groovy.grails.io.support.IOUtils
-
 import grails.build.logging.GrailsConsole
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 
@@ -28,14 +26,13 @@ import java.util.regex.Pattern
 
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
-import org.codehaus.groovy.grails.io.support.IOUtils
-import org.codehaus.groovy.grails.resolve.DependencyManager
-import org.codehaus.groovy.grails.resolve.DependencyManagerConfigurer
-import org.codehaus.groovy.grails.resolve.DependencyReport
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
-import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-import org.codehaus.groovy.runtime.StackTraceUtils
+import org.grails.io.support.SpringIOUtils
+import org.grails.dependency.resolution.DependencyManager
+import org.grails.dependency.resolution.DependencyManagerConfigurer
+import org.grails.dependency.resolution.DependencyReport
+import org.grails.dependency.resolution.ivy.EnhancedDefaultDependencyDescriptor
+import org.grails.dependency.resolution.GrailsCoreDependencies
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 
 /**
  * <p>Represents the project paths and other build settings
@@ -1135,8 +1132,8 @@ class BuildSettings extends AbstractBuildSettings {
         if (!modified && !useMavenDependencyResolver) {
 
             if (configFile?.exists() && metadataFile?.exists()) {
-                resolveChecksum = IOUtils.computeChecksum(configFile, "md5") +
-                    IOUtils.computeChecksum(metadataFile, "md5")
+                resolveChecksum = SpringIOUtils.computeChecksum(configFile, "md5") +
+                    SpringIOUtils.computeChecksum(metadataFile, "md5")
             }
 
             def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
@@ -1670,7 +1667,7 @@ class BuildSettings extends AbstractBuildSettings {
             final isFile = !f.isDirectory()
             final isHidden = f.isHidden()
             if (isFile && !isHidden && !f.name.endsWith('.groovy')) {
-                IOUtils.copy(f, new File(targetPath, f.name))
+                SpringIOUtils.copy(f, new File(targetPath, f.name))
             }
             else if (!isFile && !isHidden) {
                 final fileName = f.name

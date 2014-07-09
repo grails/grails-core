@@ -26,9 +26,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 
+import grails.io.IOUtils;
 import junit.framework.TestCase;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 
 /**
@@ -143,15 +142,15 @@ public class StreamCharBufferTests extends TestCase {
         writer.write("ABCDE");
         writer.write("67890".toCharArray());
         writer.close();
-        assertEquals("ABCDE12345!>OOOOO<1234567ABCDE67890", GrailsIOUtils.toString(charBuffer.getReader()));
-        assertEquals("ABCDE12345!>OOOOO<1234567ABCDE67890", GrailsIOUtils.toString(charBuffer.getReader()));
+        assertEquals("ABCDE12345!>OOOOO<1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+        assertEquals("ABCDE12345!>OOOOO<1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
         assertEquals(35, charBuffer.size());
         writer2.write("-----");
         assertEquals(35, charBuffer.size());
         writer2.flush();
         assertEquals(40, charBuffer.size());
         assertEquals("ABCDE12345!>OOOOO<-----1234567ABCDE67890", charBuffer.toString());
-        assertEquals("ABCDE12345!>OOOOO<-----1234567ABCDE67890", GrailsIOUtils.toString(charBuffer.getReader()));
+        assertEquals("ABCDE12345!>OOOOO<-----1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
     }
 
     public void testReaderWithStringArrays() throws IOException {
@@ -165,8 +164,8 @@ public class StreamCharBufferTests extends TestCase {
         writer.write("ABCDE");
         writer.write("67890".toCharArray());
         writer.close();
-        assertEquals("ABCDE12345!1234567ABCDE67890", GrailsIOUtils.toString(charBuffer.getReader()));
-        assertEquals("ABCDE12345!1234567ABCDE67890", GrailsIOUtils.toString(charBuffer.getReader()));
+        assertEquals("ABCDE12345!1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
+        assertEquals("ABCDE12345!1234567ABCDE67890", IOUtils.toString(charBuffer.getReader()));
         assertEquals(28, charBuffer.size());
     }
 
@@ -332,12 +331,12 @@ public class StreamCharBufferTests extends TestCase {
         reader.read(b);
         assertEquals("12345", new String(b));
         StringWriter sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("", sw.toString());
         writer.write("12345");
         writer.write("12345");
         sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("1234512345", sw.toString());
     }
 
@@ -350,12 +349,12 @@ public class StreamCharBufferTests extends TestCase {
         reader.read(b);
         assertEquals("12345", new String(b));
         StringWriter sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("", sw.toString());
         writer.write("12345");
         writer.write("12345");
         sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("1234512345", sw.toString());
     }
 
@@ -368,12 +367,12 @@ public class StreamCharBufferTests extends TestCase {
         reader.read(b);
         assertEquals("12345", new String(b));
         StringWriter sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("", sw.toString());
         writer.write("12345");
         writer.write("12345");
         sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("1234512345", sw.toString());
     }
 
@@ -386,7 +385,7 @@ public class StreamCharBufferTests extends TestCase {
         reader.read(b);
         assertEquals("12345", new String(b));
         StringWriter sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("", sw.toString());
         writer.write("12345");
         writer.write("12345");
@@ -426,7 +425,7 @@ public class StreamCharBufferTests extends TestCase {
         reader.read(b);
         assertEquals("12345", new String(b));
         StringWriter sw=new StringWriter();
-        GrailsIOUtils.copy(reader, sw);
+        IOUtils.copy(reader, sw);
         assertEquals("", sw.toString());
         writer.write("12345");
         writer.write("12345");

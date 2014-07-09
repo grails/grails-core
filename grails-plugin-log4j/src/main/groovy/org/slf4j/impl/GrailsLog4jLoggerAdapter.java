@@ -23,7 +23,7 @@ import static org.apache.log4j.Level.WARN;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;

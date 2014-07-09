@@ -15,6 +15,7 @@
  */
 package grails.converters;
 
+import grails.io.IOUtils;
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
@@ -31,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.web.json.JSONArray;
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.json.JSONException;
@@ -254,7 +254,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(Reader reader) throws ConverterException {
-        return parse(GrailsIOUtils.toString(reader));
+        return parse(IOUtils.toString(reader));
     }
 
     /**
@@ -288,7 +288,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(InputStream is, String encoding) throws ConverterException {
-          return parse(GrailsIOUtils.toString(is, encoding));
+          return parse(IOUtils.toString(is, encoding));
     }
 
     /**

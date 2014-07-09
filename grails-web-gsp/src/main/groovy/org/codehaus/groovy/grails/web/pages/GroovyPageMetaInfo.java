@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.io.IOUtils;
 import grails.util.CacheEntry;
 import groovy.lang.GroovySystem;
 
@@ -34,7 +35,6 @@ import java.util.concurrent.Callable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsApplicationAware;
@@ -184,7 +184,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
             }
         }
         finally {
-            GrailsIOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
     }
 
@@ -206,7 +206,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
             }
         }
         finally {
-            GrailsIOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
     }
 

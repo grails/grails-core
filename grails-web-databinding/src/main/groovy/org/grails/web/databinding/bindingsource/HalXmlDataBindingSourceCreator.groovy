@@ -20,7 +20,7 @@ import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
 
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.grails.io.support.SpringIOUtils
 
 /**
  * @author Jeff Brown
@@ -36,7 +36,7 @@ class HalXmlDataBindingSourceCreator extends XmlDataBindingSourceCreator {
 
     @Override
     protected DataBindingSource createBindingSource(Reader reader) {
-        def gpath = IOUtils.createXmlSlurper().parse(reader)
+        def gpath = SpringIOUtils.createXmlSlurper().parse(reader)
         def gpathMap = new HalGPathResultMap(gpath)
         return new SimpleMapDataBindingSource(gpathMap)
     }

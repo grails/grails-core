@@ -15,7 +15,7 @@
  */
 package org.grails.core.io;
 
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 
 import java.io.File;
 import java.io.IOException;

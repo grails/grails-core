@@ -21,8 +21,8 @@ import groovy.lang.Writable;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
+import org.grails.exceptions.reporting.StackTraceFilterer;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 

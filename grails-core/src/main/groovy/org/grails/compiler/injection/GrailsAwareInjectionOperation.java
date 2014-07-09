@@ -24,9 +24,9 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.io.GrailsResource;
-import org.codehaus.groovy.grails.io.support.FileSystemResource;
-import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.FileSystemResource;
+import org.grails.io.support.PathMatchingResourcePatternResolver;
+import org.grails.io.support.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
@@ -108,7 +108,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
             List<ClassInjector> injectors = new ArrayList<ClassInjector>();
             Set<Class> injectorClasses = new HashSet<Class>();
             CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(classLoader);
-            for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
+            for (Resource resource : resources) {
                 // ignore not readable classes and closures
                 if(!resource.isReadable() || resource.getFilename().contains("$_")) continue;
                 try {

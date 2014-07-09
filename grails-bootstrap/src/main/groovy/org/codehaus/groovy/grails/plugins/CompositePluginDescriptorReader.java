@@ -20,7 +20,7 @@ import grails.util.PluginBuildSettings;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 
 /**
  * Combines different implementation into one.

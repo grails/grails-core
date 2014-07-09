@@ -24,7 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;

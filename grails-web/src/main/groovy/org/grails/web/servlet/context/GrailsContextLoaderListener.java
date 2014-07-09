@@ -31,7 +31,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
 import org.grails.core.lifecycle.ShutdownOperations;
 import grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeansException;

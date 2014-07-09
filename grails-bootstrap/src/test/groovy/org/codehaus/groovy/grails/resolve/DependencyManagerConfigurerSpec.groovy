@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
+import org.grails.dependency.resolution.DependencyManagerConfigurer
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 import spock.lang.Specification
 
 /**

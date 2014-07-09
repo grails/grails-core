@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins
 
 import groovy.util.slurpersupport.GPathResult
 import grails.util.PluginBuildSettings
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.Resource
 
 /**
  * @author Graeme Rocher

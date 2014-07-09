@@ -16,7 +16,9 @@
 
 package org.codehaus.groovy.grails.resolve
 
-import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
+import org.grails.dependency.resolution.ivy.IvyExcludeResolver
+import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 import spock.lang.Specification
 
 /**

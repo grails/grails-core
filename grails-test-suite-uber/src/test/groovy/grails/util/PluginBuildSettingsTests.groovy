@@ -2,7 +2,7 @@ package grails.util
 
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.Resource
 
 /**
  * @author Graeme Rocher

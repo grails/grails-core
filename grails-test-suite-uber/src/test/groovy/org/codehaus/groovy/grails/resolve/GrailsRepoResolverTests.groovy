@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.resolve
 
 import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.grails.dependency.resolution.ivy.GrailsRepoResolver
 
 /**
  * @author Graeme Rocher

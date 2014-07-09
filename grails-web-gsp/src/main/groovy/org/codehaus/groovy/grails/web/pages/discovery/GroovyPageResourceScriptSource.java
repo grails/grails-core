@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.pages.discovery;
 import java.io.IOException;
 import java.net.URL;
 
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.support.ResourceScriptSource;
 

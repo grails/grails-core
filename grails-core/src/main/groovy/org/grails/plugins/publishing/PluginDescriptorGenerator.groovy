@@ -18,7 +18,7 @@ package org.grails.plugins.publishing
 import grails.util.BuildSettings
 import grails.util.GrailsUtil
 import groovy.xml.MarkupBuilder
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.Resource
 import org.springframework.util.AntPathMatcher
 
 /**

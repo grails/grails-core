@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins;
 
 import java.util.Map;
 
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 
 /**
  * Base interface that just contains information about a particular plugin.

@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
 
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 
 /**

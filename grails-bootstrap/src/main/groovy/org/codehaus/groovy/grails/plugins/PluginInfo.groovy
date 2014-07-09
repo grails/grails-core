@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.PluginBuildSettings
 
 import groovy.util.slurpersupport.GPathResult
-import org.codehaus.groovy.grails.io.support.Resource
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.grails.io.support.Resource
+import org.grails.io.support.SpringIOUtils
 
 /**
  * Used mainly by the build system that encapsulates access to information
@@ -55,7 +55,7 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
         InputStream input
         try {
             input = pluginXml.getInputStream()
-            return IOUtils.createXmlSlurper().parse(input)
+            return SpringIOUtils.createXmlSlurper().parse(input)
         }
         finally { input?.close() }
     }

@@ -27,7 +27,7 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.AstTransformer;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;

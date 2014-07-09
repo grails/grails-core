@@ -15,9 +15,9 @@
  */
 package org.grails.resolve.maven
 
-import org.codehaus.groovy.grails.resolve.Dependency
-import org.grails.resolve.maven.aether.AetherDependencyManager
-import org.grails.resolve.maven.aether.AetherExcludeResolver
+import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.maven.aether.AetherDependencyManager
+import org.grails.dependency.resolution.maven.aether.AetherExcludeResolver
 import spock.lang.Specification
 
 /**

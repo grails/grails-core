@@ -1,5 +1,6 @@
 package grails.build.interactive.completors
 
+import org.grails.build.interactive.completors.RegexCompletor
 import spock.lang.*
 
 class RegexCompletorSpec extends Specification {

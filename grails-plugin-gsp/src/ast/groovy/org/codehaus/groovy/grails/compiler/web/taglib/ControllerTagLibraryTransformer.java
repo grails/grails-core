@@ -25,7 +25,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi;
 
 /**

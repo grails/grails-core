@@ -28,7 +28,7 @@ import org.grails.plugins.*;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.core.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import grails.core.support.ParentApplicationContextAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;

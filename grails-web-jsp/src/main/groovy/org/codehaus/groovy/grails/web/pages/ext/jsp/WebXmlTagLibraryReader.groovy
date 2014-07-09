@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.grails.io.support.SpringIOUtils
 
 /**
  * reads the tag library definitions from a web.xml file
@@ -40,7 +40,7 @@ class WebXmlTagLibraryReader {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     private init(InputStream inputStream) {
-        def rootNode = IOUtils.createXmlSlurper().parse(inputStream)
+        def rootNode = SpringIOUtils.createXmlSlurper().parse(inputStream)
         rootNode.taglib.each { taglib ->
             String uri = taglib.'taglib-uri'.text()
             String location =  taglib.'taglib-location'.text()

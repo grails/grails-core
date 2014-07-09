@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.build.scopes
 
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**

@@ -27,7 +27,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.io.support.IOUtils;
+import org.grails.io.support.SpringIOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -62,7 +62,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
 
                 // Get all the resource nodes in the descriptor.
                 // Xpath: /grails/resources/resource, where root is /grails
-                GPathResult root = IOUtils.createXmlSlurper().parse(inputStream);
+                GPathResult root = SpringIOUtils.createXmlSlurper().parse(inputStream);
                 GPathResult resources = (GPathResult) root.getProperty("resources");
                 GPathResult grailsClasses = (GPathResult) resources.getProperty("resource");
 
@@ -89,12 +89,12 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
             grailsApplication = new DefaultGrailsApplication(loadedClasses, classLoader);
         }
         else if (!Environment.isWarDeployed()) {
-            org.codehaus.groovy.grails.io.support.Resource[] buildResources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResourcesForCurrentEnvironment();
+            org.grails.io.support.Resource[] buildResources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResourcesForCurrentEnvironment();
 
             Resource[] resources = new Resource[buildResources.length];
 
             for (int i = 0; i < buildResources.length; i++) {
-                org.codehaus.groovy.grails.io.support.Resource buildResource = buildResources[i];
+                org.grails.io.support.Resource buildResource = buildResources[i];
                 resources[i] = new FileSystemResource(buildResource.getFile());
             }
 

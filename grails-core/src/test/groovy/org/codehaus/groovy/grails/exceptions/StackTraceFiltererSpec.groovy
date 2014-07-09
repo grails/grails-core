@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.exceptions
 
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer
 import spock.lang.Specification
 
 class StackTraceFiltererSpec extends Specification {

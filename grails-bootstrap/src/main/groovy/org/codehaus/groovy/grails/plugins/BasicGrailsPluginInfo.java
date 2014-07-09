@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 
 /**
  * Simple Javabean implementation of the GrailsPluginInfo interface.

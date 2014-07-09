@@ -37,7 +37,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 

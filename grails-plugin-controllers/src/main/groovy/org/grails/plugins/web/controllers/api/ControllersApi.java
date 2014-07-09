@@ -20,6 +20,7 @@ import grails.converters.JSON;
 import grails.core.GrailsControllerClass;
 import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
+import grails.io.IOUtils;
 import grails.util.*;
 import grails.web.JSONBuilder;
 import grails.web.http.HttpHeaders;
@@ -46,9 +47,8 @@ import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
 
 import org.grails.core.artefact.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.io.support.IOUtils;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.SpringIOUtils;
 
 import grails.plugins.GrailsPlugin;
 
@@ -503,7 +503,7 @@ public class ControllersApi extends CommonWebApi {
                         try {
                             if (o instanceof File) {
                                 File f = (File) o;
-                                input = GrailsIOUtils.openStream(f);
+                                input = IOUtils.openStream(f);
                             }
                             else if (o instanceof InputStream) {
                                 input = (InputStream) o;
@@ -512,9 +512,9 @@ public class ControllersApi extends CommonWebApi {
                                 input = new ByteArrayInputStream((byte[])o);
                             }
                             else {
-                                input = GrailsIOUtils.openStream(new File(o.toString()));
+                                input = IOUtils.openStream(new File(o.toString()));
                             }
-                            IOUtils.copy(input, response.getOutputStream());
+                            SpringIOUtils.copy(input, response.getOutputStream());
                         } catch (IOException e) {
                             throw new ControllerExecutionException(
                                     "I/O error copying file to response: " + e.getMessage(), e);

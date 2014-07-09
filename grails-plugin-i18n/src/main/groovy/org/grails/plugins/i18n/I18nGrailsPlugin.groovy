@@ -113,7 +113,7 @@ class I18nGrailsPlugin implements GrailsApplicationAware{
                     parentDir = new File(resource.file.getParent().minus("${separatorChar}grails-app${separatorChar}i18n".toString()))
                     final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
                     if (buildSettings && pluginBuildSettings) {
-                        if (pluginBuildSettings.isInlinePluginLocation(new org.codehaus.groovy.grails.io.support.FileSystemResource(parentDir))) {
+                        if (pluginBuildSettings.isInlinePluginLocation(new org.grails.io.support.FileSystemResource(parentDir))) {
                             isInlinePluginResource = true
                         }
                         else if (!parentDir.equals(buildSettings.baseDir) && pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {

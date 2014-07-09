@@ -20,14 +20,14 @@ import grails.util.Metadata
 import groovy.text.SimpleTemplateEngine
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
-import org.codehaus.groovy.grails.io.support.FileSystemResource
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.grails.io.support.FileSystemResource
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.resolve.Dependency
-import org.codehaus.groovy.grails.resolve.DependencyManager
-import org.codehaus.groovy.grails.resolve.DependencyReport
-import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
+import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.DependencyManager
+import org.grails.dependency.resolution.DependencyReport
+import org.grails.dependency.resolution.ResolvedArtifactReport
+import org.grails.io.support.SpringIOUtils
 
 /**
  * Generates a POM for a Grails application.
@@ -205,7 +205,7 @@ class MavenPomGenerator extends BaseSettingsApi {
     }
 
     protected Map getParentModel(File pomFile) {
-        def xml = IOUtils.createXmlSlurper().parse(pomFile)
+        def xml = SpringIOUtils.createXmlSlurper().parse(pomFile)
         return [parent: [group: xml.groupId.text(), name: xml.artifactId.text(), version: xml.version.text()]]
     }
 

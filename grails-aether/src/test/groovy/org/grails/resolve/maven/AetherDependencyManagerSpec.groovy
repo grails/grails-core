@@ -15,10 +15,10 @@
  */
 package org.grails.resolve.maven
 
-import org.codehaus.groovy.grails.resolve.Dependency
-import org.codehaus.groovy.grails.resolve.DependencyReport
-import org.grails.resolve.maven.aether.AetherDependencyManager
-import org.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
+import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.DependencyReport
+import org.grails.dependency.resolution.maven.aether.AetherDependencyManager
+import org.grails.dependency.resolution.maven.aether.config.GrailsAetherCoreDependencies
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.repository.Authentication
 import org.eclipse.aether.repository.RemoteRepository
@@ -591,7 +591,7 @@ class AetherDependencyManagerSpec extends Specification {
                 resolveDependencies(_,_) >> { new DependencyResult(new DependencyRequest()) }
             }
         when: "A dependency is provided"
-            org.codehaus.groovy.grails.resolve.Dependency dependency = new org.codehaus.groovy.grails.resolve.Dependency('org.slf4j', 'slf4j-api', '1.7.2')
+            Dependency dependency = new Dependency('org.slf4j', 'slf4j-api', '1.7.2')
             DependencyReport report = dependencyManager.resolveDependency(dependency)
         then: "The dependency is resolved"
             report != null

@@ -4,7 +4,7 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.Resource
 
 /**
  * @author Graeme Rocher

@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.grails.cli.interactive
 
-import grails.build.interactive.completors.StringsCompleter
+import org.grails.build.interactive.completors.StringsCompleter
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
-import grails.build.interactive.completors.EscapingFileNameCompletor
-import grails.build.interactive.completors.RegexCompletor
+import org.grails.build.interactive.completors.EscapingFileNameCompletor
+import org.grails.build.interactive.completors.RegexCompletor
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
 

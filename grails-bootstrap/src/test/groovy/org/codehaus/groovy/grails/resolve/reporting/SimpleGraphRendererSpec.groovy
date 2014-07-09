@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.resolve.reporting
 
-import org.codehaus.groovy.grails.resolve.Dependency
+import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.reporting.GraphNode
+import org.grails.dependency.resolution.reporting.SimpleGraphRenderer
 import spock.lang.Specification
 
 /**

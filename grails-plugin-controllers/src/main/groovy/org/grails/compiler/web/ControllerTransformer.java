@@ -29,7 +29,7 @@ import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.controllers.api.ControllersApi;
 
 /**

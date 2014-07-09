@@ -72,7 +72,8 @@ import grails.compiler.ast.GrailsArtefactClassInjector;
 import org.grails.compiler.logging.LoggingTransformer;
 import org.grails.core.io.DefaultResourceLocator;
 import org.grails.core.io.ResourceLocator;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.FileSystemResource;
 import org.grails.plugins.web.filters.FiltersConfigArtefactHandler;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
@@ -182,7 +183,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
         // no explicit class specified try by convention
         String fileName = source.getName();
-        String className = GrailsResourceUtils.getClassName(new org.codehaus.groovy.grails.io.support.FileSystemResource(fileName));
+        String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
         if (className == null) {
             return;
         }

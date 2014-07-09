@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.BinaryGrailsPlugin;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;

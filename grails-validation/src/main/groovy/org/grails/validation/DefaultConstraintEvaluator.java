@@ -17,6 +17,7 @@ package org.grails.validation;
 
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
+import grails.io.IOUtils;
 import grails.util.GrailsClassUtils;
 import grails.validation.Constrained;
 import grails.validation.ConstrainedProperty;
@@ -39,7 +40,6 @@ import javax.persistence.Entity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.grails.core.exceptions.GrailsConfigurationException;
 
 /**
@@ -202,7 +202,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
         if (stream != null) {
             GroovyClassLoader gcl = new GroovyClassLoader();
             try {
-                Class<?> scriptClass = gcl.parseClass(GrailsIOUtils.toString(stream, "UTF-8"));
+                Class<?> scriptClass = gcl.parseClass(IOUtils.toString(stream, "UTF-8"));
                 Script script = (Script)scriptClass.newInstance();
                 script.run();
                 Binding binding = script.getBinding();

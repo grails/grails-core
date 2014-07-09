@@ -17,7 +17,7 @@ package org.grails.web.errors
 
 import org.grails.core.io.ResourceLocator
 import org.grails.core.exceptions.DefaultErrorsPrinter
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
+import org.grails.io.support.GrailsResourceUtils
 import org.springframework.core.io.Resource
 
 /**

@@ -15,8 +15,11 @@ import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.apache.ivy.util.url.CredentialsStore
+import org.grails.dependency.resolution.ivy.EnhancedDefaultDependencyDescriptor
+import org.grails.dependency.resolution.ivy.GrailsIvyDependencies
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 
- /**
+/**
  * @author Graeme Rocher
  * @since 1.1
  */

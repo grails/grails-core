@@ -30,11 +30,12 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.core.io.watch.DirectoryWatcher;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import grails.plugins.DefaultGrailsPluginManager;
 import grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import grails.plugins.GrailsPluginManager;
+import org.grails.io.support.Resource;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.ClassUtils;
@@ -114,8 +115,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         for (String directory : compiler.getSrcDirectories()) {
             addWatchDirectory(new File(directory), compilerExtensions);
         }
-        org.codehaus.groovy.grails.io.support.Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
-        for (org.codehaus.groovy.grails.io.support.Resource pluginSourceFile : pluginSourceFiles) {
+        Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
+        for (Resource pluginSourceFile : pluginSourceFiles) {
             try {
                 if (pluginSourceFile.getFile().isDirectory()) {
                     addWatchDirectory(pluginSourceFile.getFile(), compilerExtensions);
@@ -170,7 +171,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
             if (info != null && info.getDescriptor() != null) {
                 try {
-                    org.codehaus.groovy.grails.io.support.Resource descriptor = info.getDescriptor();
+                    Resource descriptor = info.getDescriptor();
                     plugin.setDescriptor(new FileSystemResource(descriptor.getFile()));
                     File pluginFile = descriptor.getFile();
                     descriptorToPluginMap.put(pluginFile, plugin);

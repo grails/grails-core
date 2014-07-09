@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.resolve.DependencyReport;
+import org.grails.dependency.resolution.DependencyReport;
 
 /**
  * Support class that configures the Grails classpath when executing command line scripts.

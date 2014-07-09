@@ -353,7 +353,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 return;
             }
 
-            final org.codehaus.groovy.grails.io.support.Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
+            final org.grails.io.support.Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
             final Environment env = Environment.getCurrent();
             final String baseLocation = env.getReloadLocation();
 
@@ -363,7 +363,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                     addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
                 }
                 else {
-                    for (org.codehaus.groovy.grails.io.support.Resource pluginDir : pluginDirs) {
+                    for (org.grails.io.support.Resource pluginDir : pluginDirs) {
                         if (pluginDir == null) continue;
 
                         String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
@@ -686,7 +686,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     @Override
     public void refresh() {
         // do nothing
-        org.codehaus.groovy.grails.io.support.Resource descriptor = getDescriptor();
+        org.grails.io.support.Resource descriptor = getDescriptor();
         if (application == null || descriptor == null) {
             return;
         }
@@ -838,7 +838,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return getName() + '-' + getVersion();
     }
 
-    public org.codehaus.groovy.grails.io.support.Resource getDescriptor() {
+    public org.grails.io.support.Resource getDescriptor() {
         return new SpringResource(pluginDescriptor);
     }
 
@@ -846,7 +846,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         pluginDescriptor = descriptor;
     }
 
-    public org.codehaus.groovy.grails.io.support.Resource getPluginDir() {
+    public org.grails.io.support.Resource getPluginDir() {
         try {
             return new SpringResource(pluginDescriptor.createRelative("."));
         }

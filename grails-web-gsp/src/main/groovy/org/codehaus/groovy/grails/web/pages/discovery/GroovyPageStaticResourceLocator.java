@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.pages.discovery;
 
 import org.grails.core.io.DefaultResourceLocator;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import grails.web.util.GrailsApplicationAttributes;

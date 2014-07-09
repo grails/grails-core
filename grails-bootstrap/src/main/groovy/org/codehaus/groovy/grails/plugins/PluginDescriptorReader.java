@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 
 /**
  * Reads information about a plugin.

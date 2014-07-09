@@ -7,10 +7,10 @@ import groovy.util.slurpersupport.GPathResult
 import org.apache.ivy.core.cache.ResolutionCacheManager
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.plugins.resolver.ChainResolver
-import org.codehaus.groovy.grails.resolve.Dependency
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-import org.codehaus.groovy.grails.resolve.IvyDependencyReport
-import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
+import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
+import org.grails.dependency.resolution.ivy.IvyDependencyReport
+import org.grails.dependency.resolution.ResolvedArtifactReport
 
 import spock.lang.Shared
 import spock.lang.Specification

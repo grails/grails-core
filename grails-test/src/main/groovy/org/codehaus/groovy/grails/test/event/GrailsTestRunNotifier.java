@@ -20,8 +20,8 @@ import grails.build.logging.GrailsConsole;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
+import org.grails.exceptions.reporting.StackTraceFilterer;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;

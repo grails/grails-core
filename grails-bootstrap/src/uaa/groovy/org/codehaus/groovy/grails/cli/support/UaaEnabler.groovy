@@ -23,9 +23,9 @@ import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.resolve.DependencyManager
+import org.grails.dependency.resolution.DependencyManager
 import org.codehaus.groovy.tools.LoaderConfiguration
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.grails.io.support.SpringIOUtils
 
 /**
  * Integrates UAA usage tracking with Grails.
@@ -123,7 +123,7 @@ Enter Y or N:"""
 
                         try {
                             input = centralURL.openStream()
-                            final GPathResult pluginList = IOUtils.createXmlSlurper().parse(input)
+                            final GPathResult pluginList = SpringIOUtils.createXmlSlurper().parse(input)
 
                             final GrailsPluginInfo[] pluginInfos = pluginBuildSettings.getPluginInfos(pluginBuildSettings.getPluginDirPath())
                             for (GrailsPluginInfo pluginInfo : pluginInfos) {

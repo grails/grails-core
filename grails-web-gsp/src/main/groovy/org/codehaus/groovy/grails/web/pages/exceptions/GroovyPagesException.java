@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.pages.exceptions;
 
 import org.grails.core.exceptions.GrailsException;
-import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
+import org.grails.exceptions.reporting.SourceCodeAware;
 
 /**
  * Thrown when processing GSP pages.

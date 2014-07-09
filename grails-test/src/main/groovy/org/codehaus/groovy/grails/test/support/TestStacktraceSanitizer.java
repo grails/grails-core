@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.test.support;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
+import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
 
 public class TestStacktraceSanitizer {
 

@@ -27,6 +27,7 @@ import junit.textui.TestRunner;
 
 import grails.compiler.ast.ClassInjector;
 import org.grails.compiler.injection.GrailsAwareClassLoader;
+import org.grails.io.support.Resource;
 
 /**
  *
@@ -78,7 +79,7 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
         // do nothing by default
     }
 
-    protected void customizeGrailsResources(List<org.codehaus.groovy.grails.io.support.Resource> grailsResources) {
+    protected void customizeGrailsResources(List<Resource> grailsResources) {
         // do nothing by default
     }
 

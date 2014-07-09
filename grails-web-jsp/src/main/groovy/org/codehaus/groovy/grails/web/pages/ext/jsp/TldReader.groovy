@@ -20,7 +20,7 @@ import groovy.transform.TypeCheckingMode
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.io.support.IOUtils
+import org.grails.io.support.SpringIOUtils
 
 /**
  * A SAX parser implementation that reads the contents of a tag library definition (TLD) into two properties
@@ -41,7 +41,7 @@ class TldReader {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     private init(InputStream inputStream) {
-        def rootNode = IOUtils.createXmlSlurper().parse(inputStream)
+        def rootNode = SpringIOUtils.createXmlSlurper().parse(inputStream)
         uri = rootNode.uri.text()
         rootNode.tag.each { tag ->
             String tagName = tag.name.text()

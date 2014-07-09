@@ -25,7 +25,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils
+import grails.io.IOUtils
 
 import java.lang.reflect.Method
 
@@ -675,7 +675,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected File findJarFile(Class targetClass) {
-        GrailsIOUtils.findJarFile(targetClass)
+        IOUtils.findJarFile(targetClass)
     }
 
     @CompileStatic

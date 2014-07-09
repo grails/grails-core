@@ -15,6 +15,7 @@
  */
 package org.grails.web.support;
 
+import grails.io.IOUtils;
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
 
@@ -29,7 +30,6 @@ import java.io.Reader;
 import java.net.URL;
 
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.springframework.core.io.Resource;
@@ -71,7 +71,7 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
     @Override
     public final Template createTemplate(Reader reader) throws IOException {
         StreamByteBuffer buf=new StreamByteBuffer();
-        GrailsIOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GROOVY_SOURCE_CHAR_ENCODING));
+        IOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GROOVY_SOURCE_CHAR_ENCODING));
         return createTemplate(buf.getInputStream());
     }
 

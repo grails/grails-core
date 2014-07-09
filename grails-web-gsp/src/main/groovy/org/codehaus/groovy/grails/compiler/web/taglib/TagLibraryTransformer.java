@@ -47,7 +47,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.grails.web.servlet.mvc.GrailsWebRequest;

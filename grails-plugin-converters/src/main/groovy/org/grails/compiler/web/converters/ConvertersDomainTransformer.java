@@ -23,7 +23,7 @@ import org.grails.plugins.converters.api.ConvertersApi;
 
 import grails.compiler.ast.AstTransformer;
 
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 
 /**
  * Adds the asType method to domain classes.

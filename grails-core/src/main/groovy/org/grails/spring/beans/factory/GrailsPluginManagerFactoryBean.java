@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.io.support.IOUtils;
+import org.grails.io.support.SpringIOUtils;
 import grails.plugins.DefaultGrailsPluginManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -87,7 +87,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
                     inputStream = descriptor.getInputStream();
 
                     // Xpath: /grails/plugins/plugin, where root is /grails
-                    GPathResult root = IOUtils.createXmlSlurper().parse(inputStream);
+                    GPathResult root = SpringIOUtils.createXmlSlurper().parse(inputStream);
                     GPathResult plugins = (GPathResult) root.getProperty("plugins");
                     GPathResult nodes = (GPathResult) plugins.getProperty("plugin");
 

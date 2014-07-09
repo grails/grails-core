@@ -36,7 +36,7 @@ import org.grails.core.artefact.ServiceArtefactHandler;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.core.exceptions.GrailsException;
-import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
+import org.grails.exceptions.reporting.SourceCodeAware;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
 import grails.web.util.GrailsApplicationAttributes;

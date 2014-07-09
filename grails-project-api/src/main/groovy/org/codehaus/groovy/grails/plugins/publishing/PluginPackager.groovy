@@ -19,8 +19,8 @@ import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.io.support.FileSystemResource
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.FileSystemResource
+import org.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.grails.plugins.publishing.PluginDescriptorGenerator

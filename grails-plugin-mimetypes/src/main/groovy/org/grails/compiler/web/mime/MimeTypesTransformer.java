@@ -44,7 +44,7 @@ import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
 import grails.compiler.ast.GrailsArtefactClassInjector;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.api.ControllersMimeTypesApi;
 
 /**

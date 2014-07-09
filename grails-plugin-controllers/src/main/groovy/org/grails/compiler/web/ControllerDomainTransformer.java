@@ -24,7 +24,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import grails.compiler.ast.AstTransformer;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 

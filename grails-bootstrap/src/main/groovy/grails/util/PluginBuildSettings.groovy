@@ -22,11 +22,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-import org.codehaus.groovy.grails.io.support.AntPathMatcher
-import org.codehaus.groovy.grails.io.support.FileSystemResource
-import org.codehaus.groovy.grails.io.support.IOUtils
-import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver
-import org.codehaus.groovy.grails.io.support.Resource
+import org.grails.io.support.AntPathMatcher
+import org.grails.io.support.FileSystemResource
+import org.grails.io.support.SpringIOUtils
+import org.grails.io.support.PathMatchingResourcePatternResolver
+import org.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
@@ -346,7 +346,7 @@ class PluginBuildSettings {
      */
     GPathResult getMetadataForPlugin(Resource pluginDir) {
         try {
-            return IOUtils.createXmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
+            return SpringIOUtils.createXmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
         }
         catch (e) {
             return null
@@ -417,8 +417,8 @@ class PluginBuildSettings {
             sourceFiles = new Resource[0]
             sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, true) { pluginDir ->
                 Resource[] pluginSourceFiles = resourceResolver("file:${pluginDir}/grails-app/*")
-                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles, resourceResolver("file:${pluginDir}/src/java"))
-                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles, resourceResolver("file:${pluginDir}/src/groovy"))
+                pluginSourceFiles = (Resource[])SpringIOUtils.addAll(pluginSourceFiles, resourceResolver("file:${pluginDir}/src/java"))
+                pluginSourceFiles = (Resource[])SpringIOUtils.addAll(pluginSourceFiles, resourceResolver("file:${pluginDir}/src/groovy"))
                 cache['sourceFilesPerPlugin'][pluginDir] = pluginSourceFiles
                 return pluginSourceFiles
             }
@@ -550,7 +550,7 @@ class PluginBuildSettings {
             }
 
             // now build of application resources so that these can override plugin resources
-            resources = IOUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
+            resources = SpringIOUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
 
             allArtefactResources = resources
             cache.allArtefactResources = resources
@@ -753,7 +753,7 @@ class PluginBuildSettings {
             zipFile = new ZipFile(zipLocation)
             ZipEntry entry = zipFile.entries().find {ZipEntry entry -> entry.name == 'plugin.xml'}
             if (entry) {
-                def pluginXml = IOUtils.createXmlSlurper().parse(zipFile.getInputStream(entry))
+                def pluginXml = SpringIOUtils.createXmlSlurper().parse(zipFile.getInputStream(entry))
                 def name = pluginXml.'@name'.text()
                 def release = pluginXml.'@version'.text()
                 return [name, release, pluginXml]
@@ -865,7 +865,7 @@ class PluginBuildSettings {
                         }
                     }
                 }
-                originalResources = (Resource[])IOUtils.addAll(originalResources, newResources as Resource[])
+                originalResources = (Resource[])SpringIOUtils.addAll(originalResources, newResources as Resource[])
             }
         }
         return originalResources

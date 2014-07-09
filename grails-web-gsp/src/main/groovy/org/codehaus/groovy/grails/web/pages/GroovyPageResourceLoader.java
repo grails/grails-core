@@ -134,7 +134,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
 
     protected boolean isInlinePlugin(GrailsPluginInfo pluginInfo) throws IOException {
         // unfortunately pluginSettings.isInlinePluginLocation() does not work, paths are compare incorrectly
-        for (org.codehaus.groovy.grails.io.support.Resource pluginDirResource: pluginSettings.getInlinePluginDirectories()) {
+        for (org.grails.io.support.Resource pluginDirResource: pluginSettings.getInlinePluginDirectories()) {
             if (compareFilePaths(pluginDirResource.getFile(), pluginInfo.getPluginDir().getFile())) {
                 return true;
             }

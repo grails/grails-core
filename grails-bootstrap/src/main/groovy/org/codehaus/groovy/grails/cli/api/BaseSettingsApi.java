@@ -47,11 +47,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
-import org.codehaus.groovy.grails.io.support.ClassPathResource;
-import org.codehaus.groovy.grails.io.support.FileSystemResource;
-import org.codehaus.groovy.grails.io.support.IOUtils;
-import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.*;
+import org.grails.io.support.SpringIOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.xml.sax.SAXException;
@@ -236,7 +233,7 @@ public class BaseSettingsApi {
     public void copyGrailsResource(Object targetFile, Resource resource, boolean overwrite) throws FileNotFoundException, IOException {
         File file = new File(targetFile.toString());
         if (overwrite || !file.exists()) {
-            IOUtils.copy(resource.getInputStream(), new FileOutputStream(file));
+            SpringIOUtils.copy(resource.getInputStream(), new FileOutputStream(file));
         }
     }
 
@@ -318,7 +315,7 @@ public class BaseSettingsApi {
     }
 
     public XmlSlurper createXmlSlurper() throws ParserConfigurationException, SAXException {
-        return IOUtils.createXmlSlurper();
+        return SpringIOUtils.createXmlSlurper();
     }
     /**
      * Times the execution of a closure, which can include a target. For

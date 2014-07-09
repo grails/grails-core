@@ -12,9 +12,9 @@ import org.springframework.core.io.Resource
 @CompileStatic
 class GrailsResource implements Resource{
 
-    org.codehaus.groovy.grails.io.support.Resource resource
+    org.grails.io.support.Resource resource
 
-    GrailsResource(org.codehaus.groovy.grails.io.support.Resource resource) {
+    GrailsResource(org.grails.io.support.Resource resource) {
         this.resource = resource
     }
 

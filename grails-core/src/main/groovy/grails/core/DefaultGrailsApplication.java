@@ -35,6 +35,7 @@ import grails.core.events.ArtefactAdditionEvent;
 import org.grails.core.artefact.*;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -127,7 +128,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
 
             Class<?> aClass;
             try {
-                aClass = classLoader.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
+                aClass = classLoader.loadClass(GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
             } catch (ClassNotFoundException e) {
                 throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
             } catch (IOException e) {
@@ -141,13 +142,13 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * Loads a GrailsApplication using the given ResourceLocator instance which will search for appropriate class names
      *
      */
-    public DefaultGrailsApplication(org.codehaus.groovy.grails.io.support.Resource[] resources) {
+    public DefaultGrailsApplication(org.grails.io.support.Resource[] resources) {
         this();
-        for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
+        for (org.grails.io.support.Resource resource : resources) {
 
             Class<?> aClass;
             try {
-                aClass = classLoader.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
+                aClass = classLoader.loadClass(GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
             } catch (ClassNotFoundException e) {
                 throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
             } catch (IOException e) {

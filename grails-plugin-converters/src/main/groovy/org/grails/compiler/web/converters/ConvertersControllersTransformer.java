@@ -28,7 +28,7 @@ import org.grails.plugins.converters.api.ConvertersControllersApi;
 
 import grails.compiler.ast.AstTransformer;
 
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 
 /**
  * Enhances controller classes with additional render methods specific to converters.

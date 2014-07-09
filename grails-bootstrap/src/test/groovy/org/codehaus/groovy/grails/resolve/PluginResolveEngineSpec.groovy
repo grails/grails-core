@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
-import spock.lang.Ignore
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
+import org.grails.dependency.resolution.PluginResolveEngine
 import spock.lang.Specification
 
 class PluginResolveEngineSpec extends Specification {

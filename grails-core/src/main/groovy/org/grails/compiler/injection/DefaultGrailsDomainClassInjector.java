@@ -41,7 +41,7 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 
 /**
  * Default implementation of domain class injector interface that adds the 'id'

@@ -18,6 +18,7 @@ package org.grails.web.mapping;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.core.support.ClassLoaderAware;
+import grails.io.IOUtils;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.util.GrailsMetaClassUtils;
@@ -51,7 +52,6 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.validation.ConstrainedPropertyBuilder;
@@ -136,7 +136,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             throw new UrlMappingException("Unable to read mapping file [" + resource.getFilename() + "]: " + e.getMessage(), e);
         }
         finally {
-            GrailsIOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(inputStream);
         }
     }
 

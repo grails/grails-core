@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import grails.util.GrailsStringUtils;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
@@ -115,7 +115,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
             String pluginPath = GrailsStringUtils.substringAfter(noWebInf, SLASH);
             String pluginName = GrailsStringUtils.substringBefore(pluginPath, SLASH);
             String remainingPath = GrailsStringUtils.substringAfter(pluginPath, SLASH);
-            org.codehaus.groovy.grails.io.support.Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
+            org.grails.io.support.Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
             if (r != null) {
                 try {
                     return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;

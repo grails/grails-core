@@ -53,8 +53,8 @@ import org.codehaus.groovy.grails.cli.parsing.ParseException;
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer;
 import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport;
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer;
-import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.PathMatchingResourcePatternResolver;
+import org.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 

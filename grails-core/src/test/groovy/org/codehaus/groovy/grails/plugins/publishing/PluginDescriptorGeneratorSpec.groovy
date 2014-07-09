@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.publishing
 
 import grails.util.BuildSettings
 
-import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.grails.io.support.FileSystemResource
 import org.grails.plugins.publishing.PluginDescriptorGenerator
 import spock.lang.Specification
 

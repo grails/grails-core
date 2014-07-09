@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.PluginBuildSettings;
-import org.codehaus.groovy.grails.io.support.Resource;
+import org.grails.io.support.Resource;
 
 /**
  * Reads plugin information from the plugin.xml descriptor.

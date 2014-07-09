@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.io.IOUtils;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.Holders;
@@ -43,8 +44,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsStringUtils;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.grails.io.support.IOUtils;
+import org.grails.io.support.SpringIOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
@@ -372,7 +372,7 @@ public class GroovyPageParser implements Tokens {
             return byteOutputBuffer.getInputStream();
         }
         finally {
-            IOUtils.closeQuietly(keepGeneratedWriter);
+            SpringIOUtils.closeQuietly(keepGeneratedWriter);
         }
     }
 
@@ -419,7 +419,7 @@ public class GroovyPageParser implements Tokens {
             }
         }
         finally {
-            IOUtils.closeQuietly(dataOut);
+            SpringIOUtils.closeQuietly(dataOut);
         }
     }
 
@@ -436,7 +436,7 @@ public class GroovyPageParser implements Tokens {
             }
         }
         finally {
-            IOUtils.closeQuietly(dataOut);
+            SpringIOUtils.closeQuietly(dataOut);
         }
     }
 
@@ -1265,7 +1265,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     private String readStream(InputStream in) throws IOException {
-        return GrailsIOUtils.toString(in, gspEncoding != null ? gspEncoding : "UTF-8");
+        return IOUtils.toString(in, gspEncoding != null ? gspEncoding : "UTF-8");
     }
 
     private void script(boolean gsp) {

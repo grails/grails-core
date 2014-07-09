@@ -26,10 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import grails.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.binding.StructuredDateEditor;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -87,7 +87,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                 try {
                     Reader reader = request.getReader();
                     if(reader != null) {
-                        String contents = GrailsIOUtils.toString(reader);
+                        String contents = IOUtils.toString(reader);
                         request.setAttribute(REQUEST_BODY_PARSED, true);
                         requestMap.putAll(WebUtils.fromQueryString(contents));
                     }
