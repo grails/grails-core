@@ -43,6 +43,4 @@ dependencies {
     compile("org.grails:grails-datastore-simple:$datastoreVersion") {
         exclude group: 'org.grails', module:'grails-datastore-core'
     }
-
-    testCompile(project(":grails-compat"))
 }
