@@ -27,7 +27,7 @@ import org.apache.log4j.Logger
 import org.apache.log4j.SimpleLayout
 import org.apache.log4j.WriterAppender
 import org.apache.log4j.xml.XMLLayout
-import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig
+import org.grails.plugins.logging.log4j.Log4jConfig
 
 class   Log4jDslTests extends GroovyTestCase {
 

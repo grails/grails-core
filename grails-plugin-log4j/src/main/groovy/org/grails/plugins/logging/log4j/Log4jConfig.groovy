@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.log4j
+package org.grails.plugins.logging.log4j
 
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
@@ -37,7 +37,7 @@ import org.apache.log4j.helpers.LogLog
 import org.apache.log4j.jdbc.JDBCAppender
 import org.apache.log4j.varia.NullAppender
 import org.apache.log4j.xml.XMLLayout
-import org.codehaus.groovy.grails.plugins.log4j.appenders.GrailsConsoleAppender
+import org.grails.plugins.logging.log4j.appenders.GrailsConsoleAppender
 
 /**
  * Encapsulates the configuration of Log4j.

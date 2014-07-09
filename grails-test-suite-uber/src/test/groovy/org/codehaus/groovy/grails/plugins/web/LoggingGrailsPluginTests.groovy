@@ -22,7 +22,7 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
         class TestTagLib {}""")
 
         pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.log4j.LoggingGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.logging.log4j.LoggingGrailsPlugin")
     }
 
     void testLoggingPluginBeforeCore() {

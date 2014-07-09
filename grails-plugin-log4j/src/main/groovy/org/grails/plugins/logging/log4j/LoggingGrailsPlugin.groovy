@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.log4j
+package org.grails.plugins.logging.log4j
 
 import grails.util.Metadata
 
-import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
+import org.grails.plugins.logging.log4j.web.util.Log4jConfigListener
 
 import javax.servlet.ServletContext
 import javax.servlet.ServletException
