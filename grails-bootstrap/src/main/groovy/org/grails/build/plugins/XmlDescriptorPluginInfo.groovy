@@ -29,7 +29,7 @@ import org.grails.io.support.SpringIOUtils
  * @author Graeme Rocher
  * @since 1.1
  */
-class XmlDescriptorPluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
+class XmlDescriptorPluginInfo extends GroovyObjectSupport implements GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPluginInfo {
 
     Resource pluginDir
     PluginBuildSettings pluginBuildSettings

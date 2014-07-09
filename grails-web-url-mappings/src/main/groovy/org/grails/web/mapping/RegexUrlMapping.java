@@ -108,7 +108,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param version     The version
      * @param constraints    A list of ConstrainedProperty instances that relate to tokens in the URL
      * @param servletContext
-     * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
+     * @see grails.validation.ConstrainedProperty
      */
     public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);

@@ -48,7 +48,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  */
 @SuppressWarnings("rawtypes")
-public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPlugin, org.codehaus.groovy.grails.plugins.GrailsPluginInfo {
+public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPlugin {
 
     int EVENT_ON_CHANGE = 0;
     int EVENT_ON_CONFIG_CHANGE = 1;
