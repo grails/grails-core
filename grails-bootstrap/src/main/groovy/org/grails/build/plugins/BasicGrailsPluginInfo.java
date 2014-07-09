@@ -31,7 +31,7 @@ import org.grails.io.support.Resource;
  * @author Graeme Rocher
  * @since 1.3
  */
-public class BasicGrailsPluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
+public class BasicGrailsPluginInfo extends GroovyObjectSupport implements GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPluginInfo {
 
     private String name;
     private String version;

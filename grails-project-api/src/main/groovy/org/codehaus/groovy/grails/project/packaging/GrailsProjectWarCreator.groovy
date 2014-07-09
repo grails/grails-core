@@ -121,7 +121,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 eventListener.triggerEvent("StatusError", "GSP Compilation error in file $e.cause.fileName at line $e.cause.lineNumber: $e.cause.message")
             }
             else {
-                eventListener.triggerEvent("StatusError", "WAR packaging error: ${e.cause?.message ?: e.message}")
+                GrailsConsole.instance.error("WAR packaging error: ${e.cause?.message ?: e.message}", e)
             }
             exit(1)
         }
