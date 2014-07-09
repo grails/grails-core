@@ -39,6 +39,8 @@ import org.springframework.web.servlet.ModelAndView
  * @author Graeme Rocher
  */
 class FilterConfig extends ControllersApi {
+    private static final long serialVersionUID = 4420245320722210200L;
+
     String name
     Map scope = [:]
     Closure before

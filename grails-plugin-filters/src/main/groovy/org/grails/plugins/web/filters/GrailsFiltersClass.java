@@ -30,5 +30,5 @@ public interface GrailsFiltersClass extends InjectableGrailsClass {
     /**
      * @return  the FilterConfig instances
      */
-    List<FilterConfig> getConfigs(Object filterInstance);
+    List<? extends FilterConfig> getConfigs(Object filterInstance);
 }
