@@ -38,12 +38,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -374,8 +374,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public GrailsPlugin getPluginForClass(Class<?> theClass) {
         if (theClass != null) {
-            org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin ann =
-                theClass.getAnnotation(org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin.class);
+            grails.plugins.metadata.GrailsPlugin ann =
+                theClass.getAnnotation(grails.plugins.metadata.GrailsPlugin.class);
             if (ann != null) {
                 return getGrailsPlugin(ann.name());
             }
@@ -462,8 +462,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public String getPluginPathForClass(Class<?> theClass) {
         if (theClass != null) {
-            org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin ann =
-                theClass.getAnnotation(org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin.class);
+            grails.plugins.metadata.GrailsPlugin ann =
+                theClass.getAnnotation(grails.plugins.metadata.GrailsPlugin.class);
             if (ann != null) {
                 return getPluginPath(ann.name());
             }

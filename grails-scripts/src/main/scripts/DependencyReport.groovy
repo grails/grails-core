@@ -16,7 +16,7 @@
 
 import groovy.xml.NamespaceBuilder
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 
 /**
  * Generates an Ivy dependency report for the current Grails application

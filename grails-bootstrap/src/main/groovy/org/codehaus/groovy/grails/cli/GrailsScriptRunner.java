@@ -55,7 +55,7 @@ import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport;
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer;
 import org.grails.io.support.PathMatchingResourcePatternResolver;
 import org.grails.io.support.Resource;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.build.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**

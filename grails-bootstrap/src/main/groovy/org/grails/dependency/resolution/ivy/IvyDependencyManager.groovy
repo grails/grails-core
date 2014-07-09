@@ -21,6 +21,8 @@ import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import org.grails.dependency.resolution.Dependency
+import org.grails.dependency.resolution.DependencyDefinitionParser
+import org.grails.dependency.resolution.DependencyManager
 import org.grails.dependency.resolution.DependencyManagerUtils
 import org.grails.dependency.resolution.DependencyReport
 import org.grails.dependency.resolution.DependencyResolver
@@ -47,7 +49,7 @@ import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.grails.io.support.SpringIOUtils
-import org.codehaus.groovy.grails.plugins.VersionComparator
+import grails.plugins.VersionComparator
 import org.grails.dependency.resolution.reporting.SimpleGraphRenderer
 
 /**
@@ -56,7 +58,7 @@ import org.grails.dependency.resolution.reporting.SimpleGraphRenderer
  * @author Graeme Rocher
  * @since 1.2
  */
-class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser, DependencyManager{
+class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser, DependencyManager {
 
     Collection repositoryData = new ConcurrentLinkedQueue()
     Collection moduleExcludes = new ConcurrentLinkedQueue()

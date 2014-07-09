@@ -33,7 +33,7 @@ import org.grails.core.io.watch.DirectoryWatcher;
 import org.grails.io.support.GrailsResourceUtils;
 import grails.plugins.DefaultGrailsPluginManager;
 import grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import grails.plugins.GrailsPluginInfo;
 import grails.plugins.GrailsPluginManager;
 import org.grails.io.support.Resource;
 import org.grails.plugins.support.WatchPattern;

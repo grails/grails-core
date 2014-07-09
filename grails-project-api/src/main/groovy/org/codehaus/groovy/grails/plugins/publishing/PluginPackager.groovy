@@ -21,8 +21,8 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
-import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.grails.build.plugins.AstPluginDescriptorReader
+import grails.plugins.GrailsPluginInfo
 import org.grails.plugins.publishing.PluginDescriptorGenerator
 import org.springframework.util.AntPathMatcher
 

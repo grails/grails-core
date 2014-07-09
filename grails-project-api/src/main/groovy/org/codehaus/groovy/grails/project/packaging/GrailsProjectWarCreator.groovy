@@ -26,7 +26,7 @@ import groovy.xml.MarkupBuilder
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import grails.plugins.GrailsPluginInfo
 
 /**
  * Creates a WAR file from a Grails project.

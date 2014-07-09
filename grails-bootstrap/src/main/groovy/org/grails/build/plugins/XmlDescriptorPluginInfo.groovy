@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins
+package org.grails.build.plugins
 
+import grails.plugins.GrailsPluginInfo
 import grails.util.PluginBuildSettings
 
 import groovy.util.slurpersupport.GPathResult
@@ -28,7 +29,7 @@ import org.grails.io.support.SpringIOUtils
  * @author Graeme Rocher
  * @since 1.1
  */
-class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
+class XmlDescriptorPluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
 
     Resource pluginDir
     PluginBuildSettings pluginBuildSettings
@@ -37,7 +38,7 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
     String name
     String version
 
-    PluginInfo(Resource pluginXml, PluginBuildSettings pluginBuildSettings) {
+    XmlDescriptorPluginInfo(Resource pluginXml, PluginBuildSettings pluginBuildSettings) {
         if (pluginXml) {
             try {
                 pluginDir = pluginXml.createRelative(".")

@@ -20,7 +20,7 @@ import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.ui.Console
 import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 
 import java.awt.Window
 

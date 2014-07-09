@@ -32,8 +32,8 @@ import org.grails.core.io.watch.DirectoryWatcher
 import org.codehaus.groovy.grails.compiler.Grailsc
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
+import grails.plugins.GrailsPluginInfo
+import org.grails.build.plugins.scopes.PluginScopeInfo
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.apache.tools.ant.BuildException
 import grails.build.logging.GrailsConsole

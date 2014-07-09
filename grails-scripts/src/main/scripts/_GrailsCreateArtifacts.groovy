@@ -16,7 +16,7 @@
 
 import grails.util.GrailsNameUtils
 
-import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.grails.io.support.FileSystemResource
 
 /**
  * Gant script for creating Grails artifacts of all sorts.

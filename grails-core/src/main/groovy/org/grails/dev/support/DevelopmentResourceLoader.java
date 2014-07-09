@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import grails.util.GrailsStringUtils;
+import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -111,7 +112,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
         if (application != null) {
 
             BuildSettings settings = BuildSettingsHolder.getSettings();
-            PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
+            PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
             String pluginPath = GrailsStringUtils.substringAfter(noWebInf, SLASH);
             String pluginName = GrailsStringUtils.substringBefore(pluginPath, SLASH);
             String remainingPath = GrailsStringUtils.substringAfter(pluginPath, SLASH);

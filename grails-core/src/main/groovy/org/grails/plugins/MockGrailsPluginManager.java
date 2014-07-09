@@ -27,7 +27,7 @@ import java.util.Map;
 
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import grails.plugins.exceptions.PluginException;
 import org.springframework.util.Assert;
 
 /**

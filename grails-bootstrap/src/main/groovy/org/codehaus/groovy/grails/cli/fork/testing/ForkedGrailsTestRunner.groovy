@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.cli.fork.testing
 
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
-import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -25,7 +24,7 @@ import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 
 /**
  * Allows forking of JVM when executing the GrailsProjectTestRunner class from the grails-test module.

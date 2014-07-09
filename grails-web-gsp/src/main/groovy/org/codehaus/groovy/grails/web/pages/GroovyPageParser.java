@@ -45,8 +45,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsStringUtils;
 import org.grails.io.support.SpringIOUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import grails.plugins.GrailsPluginInfo;
+import org.grails.build.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -134,7 +134,7 @@ public class GroovyPageParser implements Tokens {
 
     private final String pageName;
     public static final String[] DEFAULT_IMPORTS = {
-        "org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin",
+        "grails.plugins.metadata.GrailsPlugin",
         "org.codehaus.groovy.grails.web.pages.GroovyPage",
         "org.codehaus.groovy.grails.web.taglib.*",
         "org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException",

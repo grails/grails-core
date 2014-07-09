@@ -16,7 +16,7 @@
 
 import grails.util.BuildSettings
 
-import org.codehaus.groovy.grails.resolve.PluginResolveEngine
+import org.grails.dependency.resolution.*
 
 /**
  * Gant script that displays info about a given plugin

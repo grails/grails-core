@@ -29,10 +29,10 @@ import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.grails.dependency.resolution.ivy.IvyDependencyManager
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
-import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.plugins.GrailsVersionUtils
+import org.grails.build.plugins.BasicGrailsPluginInfo
+import grails.plugins.GrailsPluginInfo
+import org.grails.build.plugins.GrailsPluginUtils
+import grails.plugins.GrailsVersionUtils
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.grails.io.support.SpringIOUtils
 

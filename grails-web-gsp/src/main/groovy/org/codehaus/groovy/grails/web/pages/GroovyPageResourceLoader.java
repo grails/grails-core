@@ -24,7 +24,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsStringUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import grails.plugins.GrailsPluginInfo;
 import org.grails.core.io.StaticResourceLoader;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.springframework.core.io.FileSystemResource;

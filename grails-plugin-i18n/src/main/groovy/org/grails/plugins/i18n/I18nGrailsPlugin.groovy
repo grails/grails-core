@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import grails.core.GrailsApplication
 import grails.util.GrailsStringUtils
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 import grails.core.support.GrailsApplicationAware
 import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor

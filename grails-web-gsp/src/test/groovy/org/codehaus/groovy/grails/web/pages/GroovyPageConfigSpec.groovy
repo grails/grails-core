@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import grails.plugins.GrailsPluginInfo
 
 import spock.lang.Issue
 import spock.lang.Specification

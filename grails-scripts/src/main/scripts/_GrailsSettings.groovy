@@ -17,7 +17,7 @@
 import grails.util.BuildScope
 import grails.util.Environment
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 
 /**
  * Gant script containing build variables.

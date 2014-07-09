@@ -15,7 +15,7 @@
  */
 
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
-import org.codehaus.groovy.grails.resolve.PluginInstallEngine
+import org.grails.dependency.resolution.PluginInstallEngine
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".

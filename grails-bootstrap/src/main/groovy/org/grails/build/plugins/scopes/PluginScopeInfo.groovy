@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.build.scopes
+package org.grails.build.plugins.scopes
 
 import org.grails.io.support.Resource
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import grails.plugins.GrailsPluginInfo
 
 /**
  * Encapsulates information about plugins contained within a particular scope.

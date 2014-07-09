@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.plugins.exceptions;
 
-/**
- * Gant script that handles general initialization of a Grails applications
- *
- * @deprecated Use "create-app --inplace" or "upgrade".
- * @author Graeme Rocher
- * @author Peter Ledbrook
- *
- * @since 0.4
- */
+public class PluginException extends RuntimeException {
 
-includeTargets << grailsScript("_GrailsInit")
+    private static final long serialVersionUID = -3041972956196552302L;
 
-setDefaultTarget("init")
+    public PluginException() {
+        super();
+    }
 
+    public PluginException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
+    public PluginException(String message) {
+        super(message);
+    }
+
+    public PluginException(Throwable cause) {
+        super(cause);
+    }
+}

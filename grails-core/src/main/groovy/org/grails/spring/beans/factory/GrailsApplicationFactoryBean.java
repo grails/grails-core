@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.DefaultGrailsApplication;
 import org.grails.io.support.SpringIOUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.build.plugins.GrailsPluginUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.FileSystemResource;

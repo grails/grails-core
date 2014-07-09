@@ -14,7 +14,7 @@ dependencies {
 
 
 task generatePom(type:JavaExec) {
-    main = "org.codehaus.groovy.grails.resolve.GrailsCoreDependenciesPomGenerator"
+    main = "org.grails.dependency.resolution.GrailsCoreDependenciesPomGenerator"
     classpath = configurations.pomGen
     args grailsVersion, "$buildDir/pom.xml"
     outputs.files "$buildDir/pom.xml"

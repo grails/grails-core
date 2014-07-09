@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins
+package org.grails.build.plugins
 
+import grails.plugins.GrailsPluginInfo
+import grails.plugins.GrailsVersionUtils
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
@@ -45,7 +47,7 @@ class GrailsPluginUtils {
     /**
      * Get the name of the a plugin for a particular class.
      *
-     * @deprecated Use {@link GrailsVersionUtils}
+     * @deprecated Use {@link grails.plugins.GrailsVersionUtils}
      */
     static String getPluginName(Class clazz) {
         GrailsVersionUtils.getPluginName(clazz)

@@ -49,7 +49,7 @@ import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 import org.grails.io.support.*;
 import org.grails.io.support.SpringIOUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.build.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.xml.sax.SAXException;
 

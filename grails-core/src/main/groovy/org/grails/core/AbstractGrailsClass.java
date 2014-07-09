@@ -27,7 +27,7 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import org.grails.core.exceptions.NewInstanceCreationException;
 import org.grails.core.util.ClassPropertyFetcher;
-import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
+import grails.plugins.GrailsVersionUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.Assert;

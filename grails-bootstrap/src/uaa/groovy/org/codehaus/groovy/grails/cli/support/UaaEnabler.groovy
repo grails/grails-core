@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import grails.plugins.GrailsPluginInfo
 import org.grails.dependency.resolution.DependencyManager
 import org.codehaus.groovy.tools.LoaderConfiguration
 import org.grails.io.support.SpringIOUtils

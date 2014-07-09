@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.plugins.metadata
 
 import grails.plugins.DefaultGrailsPluginManager
 import grails.core.DefaultGrailsApplication
+import grails.plugins.metadata.GrailsPlugin
 import grails.util.GrailsUtil
 
 /**

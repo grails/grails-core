@@ -25,7 +25,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.LogLog;
-import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import grails.plugins.exceptions.PluginException;
 import org.grails.plugins.logging.log4j.Log4jConfig;
 
 /**

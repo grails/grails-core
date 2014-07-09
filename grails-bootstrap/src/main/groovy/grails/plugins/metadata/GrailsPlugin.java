@@ -13,7 +13,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package org.codehaus.groovy.grails.plugins.metadata;
+package grails.plugins.metadata;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

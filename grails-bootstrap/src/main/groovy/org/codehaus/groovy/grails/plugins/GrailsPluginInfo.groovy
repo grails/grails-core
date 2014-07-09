@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2004-2005 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.exceptions;
+package org.codehaus.groovy.grails.plugins
 
-public class PluginException extends RuntimeException {
-
-    private static final long serialVersionUID = -3041972956196552302L;
-
-    public PluginException() {
-        super();
-    }
-
-    public PluginException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public PluginException(String message) {
-        super(message);
-    }
-
-    public PluginException(Throwable cause) {
-        super(cause);
-    }
+/**
+ * @author Graeme Rocher
+ * @deprecated Use {@link grails.plugins.GrailsPluginInfo} instead
+ */
+@Deprecated
+public interface GrailsPluginInfo extends grails.plugins.GrailsPluginInfo {
 }

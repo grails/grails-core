@@ -16,10 +16,10 @@
 
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.publishing.PluginPackager
-import org.codehaus.groovy.grails.resolve.AbstractIvyDependencyManager
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.grails.dependency.resolution.ivy.AbstractIvyDependencyManager
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**

@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins;
+package org.grails.build.plugins;
 
+import grails.plugins.GrailsPluginInfo;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingPropertyException;
 

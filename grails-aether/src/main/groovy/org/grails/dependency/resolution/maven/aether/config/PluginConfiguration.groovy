@@ -33,42 +33,42 @@ class PluginConfiguration extends DependenciesConfiguration {
 
     @Override
     void addDependency(Dependency dependency, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.addDependency(dependency, customizer)
+        addDependency(dependency, customizer)
     }
 
     @Override
     void addBuildDependency(Dependency dependency, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.addBuildDependency(dependency, customizer)
+        addBuildDependency(dependency, customizer)
     }
 
     @Override
     void build(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.build(extractDependencyProperties(pattern), customizer)
+        build(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void compile(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.compile(extractDependencyProperties(pattern), customizer)
+        compile(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void runtime(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.runtime(extractDependencyProperties(pattern), customizer)
+        runtime(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void provided(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.provided(extractDependencyProperties(pattern), customizer)
+        provided(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void optional(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.optional(extractDependencyProperties(pattern), customizer)
+        optional(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void test(String pattern, @DelegatesTo(DependencyConfiguration) Closure customizer) {
-        Object.test(extractDependencyProperties(pattern), customizer)
+        test(extractDependencyProperties(pattern), customizer)
     }
 
     @Override

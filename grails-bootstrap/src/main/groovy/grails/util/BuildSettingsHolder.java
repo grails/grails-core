@@ -15,7 +15,7 @@
  */
 package grails.util;
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.grails.build.plugins.GrailsPluginUtils;
 
 /**
  * Static singleton holder for the BuildSettings instance. Should only

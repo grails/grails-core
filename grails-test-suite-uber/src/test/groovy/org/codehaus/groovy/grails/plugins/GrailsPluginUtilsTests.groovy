@@ -3,7 +3,8 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 
-import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
+import grails.plugins.metadata.GrailsPlugin
+import org.grails.build.plugins.GrailsPluginUtils
 import org.grails.io.support.Resource
 
 /**

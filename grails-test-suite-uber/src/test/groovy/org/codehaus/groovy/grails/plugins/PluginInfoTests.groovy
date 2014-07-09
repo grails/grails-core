@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.plugins
 import groovy.util.slurpersupport.GPathResult
 import grails.util.PluginBuildSettings
 import org.grails.io.support.Resource
+import org.grails.build.plugins.XmlDescriptorPluginInfo
 
 /**
  * @author Graeme Rocher
@@ -29,7 +30,7 @@ class PluginInfoTests extends GroovyTestCase {
     }
 }
 
-class MockPluginInfo extends PluginInfo {
+class MockPluginInfo extends XmlDescriptorPluginInfo {
 
     MockPluginInfo(Resource pluginDir, PluginBuildSettings pluginBuildSettings) {
         super(pluginDir, pluginBuildSettings)

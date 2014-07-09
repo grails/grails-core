@@ -27,11 +27,11 @@ import org.grails.io.support.FileSystemResource
 import org.grails.io.support.SpringIOUtils
 import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
-import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.plugins.PluginInfo
-import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
+import org.grails.build.plugins.BasicGrailsPluginInfo
+import org.grails.build.plugins.CompositePluginDescriptorReader
+import grails.plugins.GrailsPluginInfo
+import org.grails.build.plugins.XmlDescriptorPluginInfo
+import org.grails.build.plugins.scopes.PluginScopeInfo
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -82,8 +82,8 @@ class PluginBuildSettings {
     private Map cache = new ConcurrentHashMap()
     private Map pluginToDirNameMap = new ConcurrentHashMap()
     private Map pluginMetaDataMap = new ConcurrentHashMap()
-    private Map<String, PluginInfo> pluginInfosMap = new ConcurrentHashMap<String, PluginInfo>()
-    private Map<String, PluginInfo> pluginInfoToSourceMap = new ConcurrentHashMap<String, PluginInfo>()
+    private Map<String, XmlDescriptorPluginInfo> pluginInfosMap = new ConcurrentHashMap<String, XmlDescriptorPluginInfo>()
+    private Map<String, XmlDescriptorPluginInfo> pluginInfoToSourceMap = new ConcurrentHashMap<String, XmlDescriptorPluginInfo>()
 
     private pluginLocations
 

@@ -20,7 +20,7 @@ import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 
 /**
  * Forked implementation of Grails project compiler

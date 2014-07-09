@@ -44,7 +44,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.plugins.VersionComparator;
+import grails.plugins.VersionComparator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.util.Assert;

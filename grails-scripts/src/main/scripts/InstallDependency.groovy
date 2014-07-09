@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 
 /**
  * Gant script that handles the installation of Grails plugins

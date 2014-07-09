@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins;
+package org.grails.build.plugins;
 
+import grails.plugins.GrailsPluginInfo;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClass;
@@ -38,7 +39,7 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.grails.io.support.Resource;
-import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**

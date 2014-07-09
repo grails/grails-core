@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.context.ApplicationContext;
@@ -49,7 +48,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  */
 @SuppressWarnings("rawtypes")
-public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPlugin {
+public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPlugin, org.codehaus.groovy.grails.plugins.GrailsPluginInfo {
 
     int EVENT_ON_CHANGE = 0;
     int EVENT_ON_CONFIG_CHANGE = 1;

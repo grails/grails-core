@@ -21,8 +21,8 @@ import groovy.text.SimpleTemplateEngine
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.grails.io.support.FileSystemResource
-import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.grails.build.plugins.AstPluginDescriptorReader
+import grails.plugins.GrailsPluginInfo
 import org.grails.dependency.resolution.Dependency
 import org.grails.dependency.resolution.DependencyManager
 import org.grails.dependency.resolution.DependencyReport

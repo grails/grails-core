@@ -23,9 +23,9 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin;
+import grails.plugins.GrailsPluginInfo;
+import org.grails.build.plugins.GrailsPluginUtils;
+import grails.plugins.metadata.GrailsPlugin;
 
 import java.io.File;
 import java.io.IOException;

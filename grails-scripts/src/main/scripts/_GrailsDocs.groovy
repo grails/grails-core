@@ -15,7 +15,7 @@
  */
 
 import org.apache.tools.ant.types.Path
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.grails.dependency.resolution.ivy.IvyDependencyManager
 
 import grails.util.GrailsNameUtils
 import grails.doc.DocPublisher

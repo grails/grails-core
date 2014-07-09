@@ -15,8 +15,7 @@
  */
 import groovy.xml.dom.DOMCategory
 
-import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.grails.dependency.resolution.ivy.*
 
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_PluginDependencies")

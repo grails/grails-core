@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.pages
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import grails.plugins.GrailsPluginInfo
 
 @CompileStatic
 class GroovyPageConfig {

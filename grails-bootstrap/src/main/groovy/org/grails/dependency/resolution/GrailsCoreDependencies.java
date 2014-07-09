@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
+import grails.plugins.GrailsVersionUtils;
 
 /**
  * Encapsulates information about the core dependencies of Grails.

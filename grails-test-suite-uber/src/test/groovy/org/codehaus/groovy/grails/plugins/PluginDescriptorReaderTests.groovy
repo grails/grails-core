@@ -5,6 +5,8 @@ import grails.util.PluginBuildSettings
 
 import org.grails.io.support.ByteArrayResource
 import org.grails.io.support.Resource
+import org.grails.build.plugins.AstPluginDescriptorReader
+import org.grails.build.plugins.XmlPluginDescriptorReader
 
 class PluginDescriptorReaderTests extends GroovyTestCase {
 

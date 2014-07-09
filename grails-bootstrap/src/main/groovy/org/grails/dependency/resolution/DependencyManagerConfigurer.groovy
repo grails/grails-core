@@ -16,6 +16,7 @@
 package org.grails.dependency.resolution
 
 import grails.build.logging.GrailsConsole
+import grails.plugins.GrailsVersionUtils
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.Metadata
@@ -56,7 +57,7 @@ class DependencyManagerConfigurer {
         configureRepoAuthentication(grailsConfig, aetherDependencyManager)
 
         final coreDeps = classLoader.loadClass("org.grails.dependency.resolution.maven.aether.config.GrailsAetherCoreDependencies")
-            .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
+            .newInstance(grailsVersion, buildSettings.servletVersion, !GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
         buildSettings.coreDependencies = (GrailsCoreDependencies)coreDeps
         prepareAetherDependencies(aetherDependencyManager, buildSettings, coreDeps)
 
@@ -146,7 +147,7 @@ class DependencyManagerConfigurer {
         setCacheDir(grailsConfig, dependencyManager)
 
         if (!buildSettings.dependenciesExternallyConfigured) {
-            def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
+            def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion, !GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
             buildSettings.coreDependencies = coreDependencies
             configureGlobalFrameworkDependencies(coreDependencies, grailsConfig)
             configureRepoAuthentication(grailsConfig, dependencyManager)

@@ -29,7 +29,7 @@ import org.grails.io.support.Resource
 import grails.plugins.DefaultGrailsPluginManager
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 import grails.plugins.PluginManagerLoader
 
 /**

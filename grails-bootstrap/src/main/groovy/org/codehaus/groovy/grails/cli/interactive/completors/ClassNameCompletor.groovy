@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.Resource
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.build.plugins.GrailsPluginUtils
 
 /**
  * A completor that completes

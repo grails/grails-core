@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins;
+package org.grails.build.plugins;
 
+import grails.plugins.GrailsPluginInfo;
 import grails.util.PluginBuildSettings;
 import org.grails.io.support.Resource;
 
@@ -36,7 +37,7 @@ public class XmlPluginDescriptorReader implements PluginDescriptorReader {
         try {
             Resource pluginXml = pluginDescriptor.createRelative("plugin.xml");
             if (pluginXml.exists()) {
-                return new PluginInfo(pluginXml, pluginSettings);
+                return new XmlDescriptorPluginInfo(pluginXml, pluginSettings);
             }
         }
         catch (Exception e) {
