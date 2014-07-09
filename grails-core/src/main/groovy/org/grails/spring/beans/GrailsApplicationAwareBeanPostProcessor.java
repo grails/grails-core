@@ -18,7 +18,7 @@ package org.grails.spring.beans;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
 import grails.core.support.GrailsConfigurationAware;
-import org.grails.core.LegacyGrailsApplication;
+import org.grails.core.legacy.LegacyGrailsApplication;
 import org.springframework.beans.BeansException;
 
 /**

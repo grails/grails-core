@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.grails.core.AbstractGrailsClass;
 import grails.core.GrailsApplication;
-import org.grails.core.LegacyGrailsApplication;
+import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

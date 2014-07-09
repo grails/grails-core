@@ -21,7 +21,7 @@ import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
 import grails.core.ComponentCapableDomainClass
 import groovy.transform.CompileStatic
-import org.grails.core.LegacyGrailsApplication
+import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.core.artefact.DomainClassArtefactHandler
 
 import grails.core.GrailsApplication

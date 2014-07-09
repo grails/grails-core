@@ -1,4 +1,4 @@
-package org.grails.core
+package org.grails.core.legacy
 
 import grails.core.GrailsApplication
 import groovy.transform.CompileStatic

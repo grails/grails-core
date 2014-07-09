@@ -44,7 +44,7 @@ import grails.core.GrailsApplication;
 import grails.util.GrailsArrayUtils;
 import grails.util.GrailsClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.grails.core.LegacyGrailsApplication;
+import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.io.SpringResource;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.spring.RuntimeSpringConfiguration;

@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.grails.core.LegacyGrailsApplication;
+import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;

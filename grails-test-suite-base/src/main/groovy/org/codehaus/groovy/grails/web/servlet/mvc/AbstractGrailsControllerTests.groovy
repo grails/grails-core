@@ -12,7 +12,7 @@ import grails.web.databinding.GrailsWebDataBinder
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
-import org.grails.core.LegacyGrailsApplication
+import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.plugins.DefaultGrailsPlugin

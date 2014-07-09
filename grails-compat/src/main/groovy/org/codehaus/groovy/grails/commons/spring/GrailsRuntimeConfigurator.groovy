@@ -19,7 +19,7 @@ import grails.spring.BeanBuilder
 import groovy.transform.CompileStatic
 import grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.grails.core.LegacyGrailsApplication
+import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
