@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.commons.metaclass
 
-import grails.beans.utils.LazyMetaPropertyMap
+import grails.beans.util.LazyMetaPropertyMap
 
 /**
  * @author Graeme Rocher

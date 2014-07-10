@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.beans.utils
+package grails.beans.util
 
 import groovy.transform.CompileStatic
 import org.grails.core.util.ClassPropertyFetcher

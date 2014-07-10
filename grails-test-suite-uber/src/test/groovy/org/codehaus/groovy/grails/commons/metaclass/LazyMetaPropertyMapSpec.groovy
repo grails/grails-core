@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.commons.metaclass
 
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
-import grails.beans.utils.LazyMetaPropertyMap
+import grails.beans.util.LazyMetaPropertyMap
 import spock.lang.Specification
 
 /**
