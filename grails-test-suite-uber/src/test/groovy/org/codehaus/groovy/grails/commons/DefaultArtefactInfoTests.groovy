@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.commons
 
 import grails.core.DefaultArtefactInfo
-import org.grails.core.DefaultGrailsControllerClass
+import org.grails.core.artefact.DefaultGrailsControllerClass
 
 /**
  * @author Graeme Rocher

@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core;
+package org.grails.core.artefact;
 
 import grails.core.GrailsServiceClass;
+import org.grails.core.AbstractInjectableGrailsClass;
 
 /**
+ * @author Graeme Rocher
  * @author Steven Devijver
  */
 public class DefaultGrailsServiceClass extends AbstractInjectableGrailsClass implements GrailsServiceClass {

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core;
+package org.grails.core.artefact;
 
 import grails.core.GrailsTagLibClass;
 import groovy.lang.Closure;
+import org.grails.core.AbstractInjectableGrailsClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
 
 import java.beans.PropertyDescriptor;

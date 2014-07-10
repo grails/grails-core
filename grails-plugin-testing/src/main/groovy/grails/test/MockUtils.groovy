@@ -34,7 +34,7 @@ import org.grails.web.converters.Converter
 import org.grails.web.pages.GroovyPageBinding
 import org.grails.web.taglib.GroovyPageAttributes
 import org.grails.web.taglib.exceptions.GrailsTagException
-import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DefaultGrailsDomainClass
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.mime.FormatInterceptor
 import org.grails.validation.ConstrainedPropertyBuilder

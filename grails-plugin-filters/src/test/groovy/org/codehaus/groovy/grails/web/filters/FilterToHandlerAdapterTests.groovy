@@ -4,7 +4,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
 import grails.core.DefaultGrailsApplication
-import org.grails.core.DefaultGrailsControllerClass
+import org.grails.core.artefact.DefaultGrailsControllerClass
 import org.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.springframework.context.support.GenericApplicationContext
 

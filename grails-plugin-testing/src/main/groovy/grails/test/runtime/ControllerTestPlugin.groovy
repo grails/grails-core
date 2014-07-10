@@ -29,7 +29,7 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import javax.servlet.ServletContext
 
 import grails.core.GrailsApplication
-import org.grails.core.artefact.UrlMappingsArtefactHandler
+import grails.web.mapping.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.CodecsGrailsPlugin
 import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.plugins.converters.ConvertersGrailsPlugin

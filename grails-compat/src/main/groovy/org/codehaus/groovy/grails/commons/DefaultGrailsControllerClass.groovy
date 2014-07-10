@@ -24,11 +24,11 @@ import groovy.transform.CompileStatic
  * @author Graeme Rocher
  * @author Steven Devijver
  * @since 0.1
- * @deprecated Use {@link org.grails.core.DefaultGrailsControllerClass} instead
+ * @deprecated Use {@link org.grails.core.artefact.DefaultGrailsControllerClass} instead
  */
 @Deprecated
 @CompileStatic
-class DefaultGrailsControllerClass extends org.grails.core.DefaultGrailsControllerClass {
+class DefaultGrailsControllerClass extends org.grails.core.artefact.DefaultGrailsControllerClass {
 
     DefaultGrailsControllerClass(Class<?> clazz) {
         super(clazz)

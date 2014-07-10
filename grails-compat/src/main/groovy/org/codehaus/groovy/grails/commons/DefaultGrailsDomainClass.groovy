@@ -19,10 +19,10 @@ import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link org.grails.core.DefaultGrailsDomainClass} instead
+ * @deprecated Use {@link org.grails.core.artefact.DefaultGrailsDomainClass} instead
  */
 @CompileStatic
-class DefaultGrailsDomainClass extends org.grails.core.DefaultGrailsDomainClass {
+class DefaultGrailsDomainClass extends org.grails.core.artefact.DefaultGrailsDomainClass {
     DefaultGrailsDomainClass(Class<?> clazz, Map<String, Object> defaultConstraints) {
         super(clazz, defaultConstraints)
     }

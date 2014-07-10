@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.core;
+package grails.web.mapping.artefact;
 
+import grails.core.GrailsClass;
 import groovy.lang.Closure;
 
 import java.util.List;

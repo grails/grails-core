@@ -17,7 +17,6 @@ package org.grails.core.artefact;
 
 import grails.core.ArtefactHandlerAdapter;
 import grails.core.GrailsServiceClass;
-import org.grails.core.DefaultGrailsServiceClass;
 
 /**
  * @author Marc Palmer (marc@anyware.co.uk)

@@ -19,7 +19,6 @@ import org.grails.core.AbstractGrailsClass;
 import grails.core.ArtefactHandlerAdapter;
 import grails.core.GrailsClass;
 import grails.core.GrailsControllerClass;
-import org.grails.core.DefaultGrailsControllerClass;
 
 /**
  * Lookup controllers for uris.

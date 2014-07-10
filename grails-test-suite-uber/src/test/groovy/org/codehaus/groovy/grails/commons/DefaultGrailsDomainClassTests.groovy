@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.commons
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
-import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DefaultGrailsDomainClass
 import org.grails.core.exceptions.InvalidPropertyException
 import org.grails.core.support.GrailsDomainConfigurationUtil
 

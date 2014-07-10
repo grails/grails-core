@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core;
+package org.grails.core.artefact;
 
 import grails.core.GrailsControllerClass;
 import grails.web.Action;
 import groovy.lang.GroovyObject;
+import org.grails.core.AbstractInjectableGrailsClass;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;

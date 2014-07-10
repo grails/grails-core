@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.commons
 
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
-import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DefaultGrailsDomainClass
 
 class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
     GrailsDomainClass parentClass

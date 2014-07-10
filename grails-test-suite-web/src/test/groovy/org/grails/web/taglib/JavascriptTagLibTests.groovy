@@ -1,7 +1,7 @@
 package org.grails.web.taglib
 
 import grails.util.GrailsUtil
-import org.grails.core.artefact.UrlMappingsArtefactHandler
+import grails.web.mapping.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.web.taglib.JavascriptProvider
 import org.grails.plugins.web.taglib.JavascriptTagLib
 import org.grails.core.io.MockStringResourceLoader

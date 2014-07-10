@@ -7,7 +7,7 @@ dependencies {
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compile("org.springframework.boot:spring-boot:1.1.0.M2")
+    compile("org.springframework.boot:spring-boot:1.1.4.RELEASE")
     compile("org.springframework:spring-core:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }

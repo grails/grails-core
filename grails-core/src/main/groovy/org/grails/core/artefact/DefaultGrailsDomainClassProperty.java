@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core;
+package org.grails.core.artefact;
 
 import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import grails.validation.Constrained;
-import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.core.AbstractGrailsClass;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import grails.validation.ConstraintsEvaluator;
 import org.grails.core.support.GrailsDomainConfigurationUtil;

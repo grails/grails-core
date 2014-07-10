@@ -21,11 +21,11 @@ import java.beans.PropertyDescriptor
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link org.grails.core.DefaultGrailsDomainClassProperty} instead
+ * @deprecated Use {@link org.grails.core.artefact.DefaultGrailsDomainClassProperty} instead
  */
 @Deprecated
 @CompileStatic
-class DefaultGrailsDomainClassProperty extends org.grails.core.DefaultGrailsDomainClassProperty {
+class DefaultGrailsDomainClassProperty extends org.grails.core.artefact.DefaultGrailsDomainClassProperty {
 
     DefaultGrailsDomainClassProperty(grails.core.GrailsDomainClass domainClass, PropertyDescriptor descriptor) {
         super(domainClass, descriptor)

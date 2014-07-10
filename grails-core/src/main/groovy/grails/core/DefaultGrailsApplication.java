@@ -185,14 +185,15 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
             registerArtefactHandler(tagLibArtefactHandler);
         }
 
-        final UrlMappingsArtefactHandler urlMappingsArtefactHandler = new UrlMappingsArtefactHandler();
-        if (!hasArtefactHandler(urlMappingsArtefactHandler.getType())) {
-            registerArtefactHandler(urlMappingsArtefactHandler);
+        List<org.codehaus.groovy.grails.commons.ArtefactHandler> legacyArtefactHandlers = GrailsFactoriesLoader.loadFactories(org.codehaus.groovy.grails.commons.ArtefactHandler.class, getClassLoader());
+
+        for (org.codehaus.groovy.grails.commons.ArtefactHandler artefactHandler : legacyArtefactHandlers) {
+            registerArtefactHandler(artefactHandler);
         }
 
-        List<org.codehaus.groovy.grails.commons.ArtefactHandler> additionalArtefactHandlers = GrailsFactoriesLoader.loadFactories(org.codehaus.groovy.grails.commons.ArtefactHandler.class, getClassLoader());
+        List<ArtefactHandler> additionalArtefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler.class, getClassLoader());
 
-        for (org.codehaus.groovy.grails.commons.ArtefactHandler artefactHandler : additionalArtefactHandlers) {
+        for (ArtefactHandler artefactHandler : additionalArtefactHandlers) {
             registerArtefactHandler(artefactHandler);
         }
 

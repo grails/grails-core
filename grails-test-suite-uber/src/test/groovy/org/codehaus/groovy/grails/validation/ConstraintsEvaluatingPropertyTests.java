@@ -12,7 +12,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.grails.test.support.MockHibernatePluginHelper;
-import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.core.artefact.DefaultGrailsDomainClass;
 import org.grails.plugins.MockGrailsPluginManager;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {

@@ -81,7 +81,7 @@ import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.artefact.ControllerArtefactHandler;
-import org.grails.core.DefaultGrailsControllerClass;
+import org.grails.core.artefact.DefaultGrailsControllerClass;
 import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
