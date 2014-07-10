@@ -12,7 +12,8 @@ import groovy.transform.TypeChecked
 @TypeChecked(extensions=['grails.compiler.ValidateableTypeCheckingExtension', 
                          'grails.compiler.CriteriaTypeCheckingExtension',
                          'grails.compiler.DynamicFinderTypeCheckingExtension',
-                         'grails.compiler.DomainMappingTypeCheckingExtension'])
+                         'grails.compiler.DomainMappingTypeCheckingExtension',
+                         'grails.compiler.RelationshipManagementMethodTypeCheckingExtension'])
 @interface GrailsTypeChecked {
 
 }
