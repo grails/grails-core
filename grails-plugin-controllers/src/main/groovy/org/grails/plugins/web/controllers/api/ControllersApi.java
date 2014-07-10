@@ -1110,7 +1110,7 @@ public class ControllersApi extends CommonWebApi {
     private boolean renderMarkup(Closure closure, HttpServletResponse response) {
         StreamingMarkupBuilder b = new StreamingMarkupBuilder();
         b.setEncoding(response.getCharacterEncoding());
-        Writable markup = b.bind(closure);
+        Writable markup = (Writable)b.bind(closure);
         return renderWritable(markup, response);
     }
 
