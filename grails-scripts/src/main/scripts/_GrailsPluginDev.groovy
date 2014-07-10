@@ -20,7 +20,7 @@ import org.grails.build.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.publishing.PluginPackager
 import org.grails.dependency.resolution.ivy.AbstractIvyDependencyManager
 import org.grails.dependency.resolution.ivy.IvyDependencyManager
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * Gant script that deals with those tasks required for plugin developers

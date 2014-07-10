@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.plugins.web
 import grails.core.DefaultGrailsApplication
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
+import org.grails.plugins.web.AbstractGrailsPluginTests
+import org.grails.plugins.web.GroovyPagesGrailsPlugin
 import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
@@ -59,7 +61,7 @@ class FormTagLib {
         pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.web.controllers.ControllersGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
+        pluginsToLoad << gcl.loadClass("org.grails.plugins.web.GroovyPagesGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
     }
 
@@ -111,7 +113,7 @@ class FormTagLib {
             bb.setBinding(new Binding(manager:mockManager))
             bb.beans(beans)
             def beanDef = bb.getBeanDefinition('groovyPageResourceLoader')
-            assertEquals "org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader", beanDef.beanClassName
+            assertEquals "org.grails.web.pages.GroovyPageResourceLoader", beanDef.beanClassName
             assertNotNull beanDef.getPropertyValues().getPropertyValue('baseResource')
 
             assertEquals "file:.", beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()

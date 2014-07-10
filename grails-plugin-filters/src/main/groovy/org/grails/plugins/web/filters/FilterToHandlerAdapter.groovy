@@ -25,7 +25,7 @@ import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import grails.web.util.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.view.NullView
+import org.grails.web.servlet.view.NullView
 import org.grails.web.util.WebUtils
 
 import org.springframework.beans.factory.InitializingBean

@@ -15,8 +15,8 @@
  */
 package grails.test
 
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
+import org.grails.web.pages.GroovyPagesTemplateEngine
+import org.grails.web.util.GrailsPrintWriter
 
 import org.springframework.web.context.request.RequestContextHolder
 

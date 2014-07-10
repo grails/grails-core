@@ -16,7 +16,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
+import org.grails.test.support.MockHibernatePluginHelper;
 import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.plugins.MockGrailsPluginManager;
 import org.springframework.validation.BindException;

@@ -4,7 +4,7 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
+import org.grails.plugins.testing.GrailsMockMultipartFile
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeUtility
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder

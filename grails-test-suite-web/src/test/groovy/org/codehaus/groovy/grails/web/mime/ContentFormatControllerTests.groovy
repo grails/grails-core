@@ -6,7 +6,7 @@ import grails.converters.XML
 import grails.persistence.Entity
 import grails.util.Holders
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
 /**

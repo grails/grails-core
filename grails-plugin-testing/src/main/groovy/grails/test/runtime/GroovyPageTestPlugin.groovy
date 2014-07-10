@@ -17,8 +17,8 @@
 package grails.test.runtime
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding
+import org.grails.web.pages.GroovyPageBinding
+import org.grails.web.pages.GroovyPageRequestBinding
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 

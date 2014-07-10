@@ -20,8 +20,8 @@ import javax.servlet.AsyncListener
 
 import grails.persistence.support.PersistenceContextInterceptor
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
-import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.grails.web.sitemesh.GrailsContentBufferingResponse
+import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.WebUtils
 
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext

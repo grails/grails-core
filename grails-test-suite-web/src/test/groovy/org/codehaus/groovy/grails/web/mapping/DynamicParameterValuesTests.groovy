@@ -1,8 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.mock.web.MockServletContext
 
 /**
  * @author Graeme Rocher

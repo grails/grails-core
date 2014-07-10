@@ -27,7 +27,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-@GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.test.MockTransformation")
+@GroovyASTTransformationClass("org.grails.compiler.injection.test.MockTransformation")
 public @interface Mock {
     Class<?>[] value();
 }

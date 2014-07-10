@@ -30,9 +30,9 @@ import java.lang.reflect.Modifier
 import javax.servlet.ServletContext
 
 import org.grails.core.util.ClassPropertyFetcher
-import org.codehaus.groovy.grails.commons.CodecArtefactHandler
+import org.grails.commons.CodecArtefactHandler
 import grails.core.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
+import org.grails.commons.DefaultGrailsCodecClass
 import grails.core.GrailsApplication
 import org.grails.core.cfg.ConfigurationHelper
 import grails.web.servlet.context.GrailsWebApplicationContext

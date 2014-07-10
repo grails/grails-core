@@ -15,10 +15,6 @@
  */
 package org.grails.web.util;
 
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
-import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;

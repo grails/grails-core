@@ -19,7 +19,7 @@ import grails.plugins.GrailsPlugin;
 import org.grails.plugins.DefaultGrailsPlugin;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
+import org.grails.commons.test.AbstractGrailsMockTests;
 import grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
 

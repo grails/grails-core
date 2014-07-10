@@ -15,8 +15,6 @@
  */
 package org.grails.web.util;
 
-import org.codehaus.groovy.grails.web.util.StringCharArrayAccessor;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.BufferOverflowException;

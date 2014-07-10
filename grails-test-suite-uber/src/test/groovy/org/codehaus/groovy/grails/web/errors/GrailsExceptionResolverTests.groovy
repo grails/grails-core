@@ -7,9 +7,9 @@ import grails.web.UrlConverter
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.grails.support.MockApplicationContext
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -19,7 +19,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.View
 import org.springframework.web.servlet.ViewResolver

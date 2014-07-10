@@ -17,7 +17,7 @@
 package grails.test.spock
 
 import org.spockframework.runtime.extension.ExtensionAnnotation
-import org.codehaus.groovy.grails.test.spock.IntegrationSpecConfigurerExtension
+import org.grails.test.spock.IntegrationSpecConfigurerExtension
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target

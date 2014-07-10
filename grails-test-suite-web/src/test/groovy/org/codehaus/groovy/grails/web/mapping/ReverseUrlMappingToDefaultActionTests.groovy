@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
+import org.grails.web.taglib.AbstractGrailsTagTests
 
 /**
  * @author Graeme Rocher

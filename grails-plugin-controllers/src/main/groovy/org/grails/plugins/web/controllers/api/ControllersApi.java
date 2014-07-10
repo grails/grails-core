@@ -54,11 +54,11 @@ import grails.plugins.GrailsPlugin;
 
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.metaclass.*;
-import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
-import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutView;
-import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
+import org.grails.web.pages.GroovyPageTemplate;
+import org.grails.web.servlet.view.GroovyPageView;
+import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
+import org.grails.web.sitemesh.GrailsLayoutView;
+import org.grails.web.sitemesh.GroovyPageLayoutFinder;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 
 import grails.core.GrailsDomainClassProperty;

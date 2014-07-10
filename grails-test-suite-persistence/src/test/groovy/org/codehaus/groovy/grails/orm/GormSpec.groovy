@@ -10,7 +10,7 @@ import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.plugins.DefaultGrailsPlugin
 import grails.plugins.GrailsPluginManager
 import org.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.grails.support.MockApplicationContext
 import org.hibernate.EntityMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
@@ -146,18 +146,18 @@ abstract class GormSpec extends Specification {
 
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.CodecsGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.domain.DomainClassGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.controllers.ControllersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.GroovyPagesGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.mime.MimeTypesGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.grails.plugins.web.filters.FiltersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.converters.ConvertersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.grails.plugins.services.ServicesGrailsPlugin")
         dependantPluginClasses << MockHibernateGrailsPlugin
 
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, grailsApplication) }

@@ -30,7 +30,7 @@ import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.core.support.proxy.ProxyHandler
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
+import org.grails.web.pages.discovery.GroovyPageLocator
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext

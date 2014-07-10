@@ -17,7 +17,7 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.plugins.DefaultGrailsPluginManager;
 
-import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.grails.support.MockApplicationContext;
 import org.grails.validation.GrailsDomainClassValidator;
 import org.grails.web.errors.GrailsExceptionResolver;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +25,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
 

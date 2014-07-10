@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.metaclass
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
  * @author Graeme Rocher

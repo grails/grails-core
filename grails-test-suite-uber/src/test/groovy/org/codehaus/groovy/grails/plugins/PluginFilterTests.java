@@ -12,8 +12,8 @@ import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import org.grails.plugins.*;
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
-import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.grails.commons.test.AbstractGrailsMockTests;
+import org.grails.support.MockApplicationContext;
 
 @SuppressWarnings({"unchecked","rawtypes"})
 public class PluginFilterTests extends AbstractGrailsMockTests {

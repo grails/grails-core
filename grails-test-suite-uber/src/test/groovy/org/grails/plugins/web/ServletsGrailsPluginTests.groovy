@@ -1,15 +1,8 @@
 package org.grails.plugins.web
 
-import groovy.lang.GroovySystem;
-
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.metaclass.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests;
 import org.springframework.mock.web.*
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.ServletContext
 import javax.servlet.http.HttpSession;
 
 import org.springframework.web.util.*

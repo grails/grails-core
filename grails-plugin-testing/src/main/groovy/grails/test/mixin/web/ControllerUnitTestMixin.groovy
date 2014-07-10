@@ -26,13 +26,13 @@ import grails.core.GrailsControllerClass
 import grails.util.GrailsMetaClassUtils
 import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.plugins.converters.api.ConvertersControllersApi
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
+import org.grails.web.pages.GroovyPageUtils
 import org.grails.plugins.support.WebMetaUtils
 import grails.web.mvc.FlashScope
 import grails.web.util.GrailsApplicationAttributes

@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.reload
 
 import org.codehaus.groovy.grails.plugins.MockHibernateGrailsPlugin
-import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
+import org.grails.plugins.web.AbstractGrailsPluginTests
 
 /**
  * Tests for auto-reloading of transactional services.
@@ -72,8 +72,8 @@ dataSource {
        pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.grails.plugins.i18n.I18nGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.grails.plugins.domain.DomainClassGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
        pluginsToLoad << MockHibernateGrailsPlugin
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
+       pluginsToLoad << gcl.loadClass("org.grails.plugins.services.ServicesGrailsPlugin")
     }
 }

@@ -20,12 +20,12 @@ import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.Before
-import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
+import org.grails.test.support.GrailsTestInterceptor
 import grails.test.mixin.TestMixinTargetAware
-import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.grails.test.support.GrailsTestMode
 import org.junit.After
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer
+import org.grails.test.runner.phase.IntegrationTestPhaseConfigurer
 
 /**
  * A mixin for enhancing integration tests with autowiring and transactional capabitities

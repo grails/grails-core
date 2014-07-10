@@ -28,7 +28,7 @@ import grails.core.support.proxy.EntityProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
 import grails.web.mime.MimeType;
 
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.grails.web.pages.FastStringWriter;
 import org.grails.web.converters.AbstractConverter;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.ConverterUtil;

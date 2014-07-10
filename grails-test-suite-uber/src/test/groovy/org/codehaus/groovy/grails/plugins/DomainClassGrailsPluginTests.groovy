@@ -4,7 +4,7 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.control.SourceUnit
 import org.grails.compiler.injection.DefaultGrailsDomainClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
+import org.grails.plugins.web.AbstractGrailsPluginTests
 import grails.compiler.ast.ClassInjector
 
 class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {

@@ -2,6 +2,7 @@ package org.grails.plugins.i18n;
 
 import org.codehaus.groovy.grails.commons.test.*
 import grails.util.Metadata
+import org.grails.commons.test.AbstractGrailsMockTests
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 

@@ -17,7 +17,6 @@ package org.grails.web.util;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.Writable;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 import java.io.IOException;
 import java.io.Writer;

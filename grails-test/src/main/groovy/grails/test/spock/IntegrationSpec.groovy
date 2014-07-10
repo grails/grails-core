@@ -16,16 +16,16 @@
 
 package grails.test.spock
 
-import org.codehaus.groovy.grails.test.support.GrailsTestAutowirer
-import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
-import org.codehaus.groovy.grails.test.support.GrailsTestRequestEnvironmentInterceptor
-import org.codehaus.groovy.grails.test.support.ControllerNameExtractor
+import org.grails.test.support.GrailsTestAutowirer
+import org.grails.test.support.GrailsTestTransactionInterceptor
+import org.grails.test.support.GrailsTestRequestEnvironmentInterceptor
+import org.grails.test.support.ControllerNameExtractor
 
 
 import spock.lang.Specification
 import spock.lang.Shared
 import spock.lang.Stepwise
-import org.codehaus.groovy.grails.test.spock.GrailsSpecTestType
+import org.grails.test.spock.GrailsSpecTestType
 import org.springframework.context.ApplicationContext
 import grails.util.Holders
 

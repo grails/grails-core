@@ -51,7 +51,7 @@
     <!-- The Groovy Server Pages servlet -->
       <servlet>
         <servlet-name>gsp</servlet-name>
-        <servlet-class>org.codehaus.groovy.grails.web.pages.GroovyPagesServlet</servlet-class>
+        <servlet-class>org.grails.web.pages.GroovyPagesServlet</servlet-class>
      </servlet>
 
     <servlet-mapping>

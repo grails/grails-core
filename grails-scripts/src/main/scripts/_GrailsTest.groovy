@@ -15,9 +15,9 @@
  */
 import org.codehaus.groovy.grails.cli.fork.testing.ForkedGrailsTestRunner
 import grails.persistence.support.PersistenceContextInterceptorExecutor
-import org.codehaus.groovy.grails.test.runner.GrailsProjectTestRunner
-import org.codehaus.groovy.grails.test.runner.phase.FunctionalTestPhaseConfigurer
-import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer
+import org.grails.test.runner.GrailsProjectTestRunner
+import org.grails.test.runner.phase.FunctionalTestPhaseConfigurer
+import org.grails.test.runner.phase.IntegrationTestPhaseConfigurer
 
 /**
  * Gant script that runs the Grails unit tests

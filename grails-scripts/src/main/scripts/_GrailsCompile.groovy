@@ -16,7 +16,7 @@
 
 import org.apache.tools.ant.BuildException
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * Gant script that compiles Groovy and Java files in the src tree.

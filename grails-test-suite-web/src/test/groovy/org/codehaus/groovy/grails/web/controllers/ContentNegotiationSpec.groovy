@@ -4,12 +4,8 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.TestFor
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
 
 import spock.lang.Issue
 import spock.lang.Specification

@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import grails.core.GrailsApplication;
-import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
-import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.grails.support.encoding.CodecLookupHelper;
+import org.grails.support.encoding.Encoder;
 
 public class FilteringCodecsByContentTypeSettings {
     private static final String WILDCARD_CONTENT_TYPE = "*/*";

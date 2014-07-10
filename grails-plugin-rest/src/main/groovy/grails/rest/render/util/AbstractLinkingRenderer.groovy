@@ -31,7 +31,7 @@ import grails.core.support.proxy.EntityProxyHandler
 import grails.core.support.proxy.ProxyHandler
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty

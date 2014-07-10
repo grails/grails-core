@@ -15,7 +15,7 @@
 	 	if the tag has no src or library attributes its assumed to be an inline script
         </description>
         <name>javascript</name>
-        <tag-class>org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
+        <tag-class>org.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <description>A predefined JavaScript or AJAX library to load</description>
@@ -57,7 +57,7 @@
     	<description>Escapes a javasacript string replacing single/double quotes and new lines
     	</description>
     	<name>escapeJavascript</name>
-    	<tag-class>org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
+    	<tag-class>org.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
     	<body-content>JSP</body-content>
     </tag>
 
@@ -65,7 +65,7 @@
     	<description>Creates a form submit button that submits the current form to a remote ajax call
     	</description>
     	<name>submitToRemote</name>
-    	<tag-class>org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
+    	<tag-class>org.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
     	<body-content>JSP</body-content>
     	<attribute>
             <name>name</name>
@@ -93,7 +93,7 @@
     	<description>A field that sends its value to a remote link
     	</description>
     	<name>remoteField</name>
-    	<tag-class>org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
+    	<tag-class>org.grails.plugins.web.taglib.JavascriptTagLib</tag-class>
     	<body-content>JSP</body-content>
     	<attribute>
             <name>name</name>
@@ -198,7 +198,7 @@
         	Enables the storing of a value into the given ${var} into the page context
         </description>
         <name>def</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyDefTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyDefTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <description>The value to store</description>
@@ -220,7 +220,7 @@
         	Logical if tag to test whether the given condition is true
         </description>
         <name>if</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyIfTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyIfTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <description>The condition to test</description>
@@ -236,7 +236,7 @@
         	Logical else tag as fallback if the if condition fails
         </description>
         <name>else</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyElseTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyElseTag</tag-class>
         <body-content>JSP</body-content>
         <dynamic-attributes>false</dynamic-attributes>
     </tag>
@@ -246,7 +246,7 @@
         	Logical elseif tag to test whether the given condition is true
         </description>
         <name>elseif</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyElseIfTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyElseIfTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <description>The condition to test</description>
@@ -262,7 +262,7 @@
         	Tag to loop over a collection while the test expression returns true
         </description>
         <name>while</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyWhileTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyWhileTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <description>The condition to test</description>
@@ -276,7 +276,7 @@
     <tag>
         <description>Iterates over the given collection</description>
         <name>each</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyEachTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyEachTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
         	<description>The collection to iterate over</description>
@@ -301,7 +301,7 @@
     <tag>
         <description>Iterates over the given collection</description>
         <name>findAll</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyFindAllTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyFindAllTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
         	<description>The collection to iterate over</description>
@@ -333,7 +333,7 @@
         <description>Iterates over the given collection and collects the elements
         	you want to work with</description>
         <name>collect</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyCollectTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyCollectTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
         	<description>The collection to iterate over</description>
@@ -367,7 +367,7 @@
         <description>Iterates over the given collection and filters the elements
         with a regular expression</description>
         <name>grep</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.GroovyGrepTag</tag-class>
+        <tag-class>org.grails.web.taglib.GroovyGrepTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
         	<description>The collection to iterate over</description>
@@ -399,7 +399,7 @@
 
     <tag>
         <name>link</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspLinkTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspLinkTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>action</name>
@@ -430,7 +430,7 @@
     </tag>
     <tag>
         <name>form</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspFormTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspFormTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>action</name>
@@ -461,7 +461,7 @@
     </tag>
     <tag>
         <name>select</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspSelectTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspSelectTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>name</name>
@@ -487,7 +487,7 @@
     </tag>
     <tag>
         <name>datePicker</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspDatePickerTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspDatePickerTag</tag-class>
         <body-content>empty</body-content>
         <attribute>
             <name>name</name>
@@ -508,7 +508,7 @@
     </tag>
     <tag>
         <name>currencySelect</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspCurrencySelectTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspCurrencySelectTag</tag-class>
         <body-content>empty</body-content>
         <attribute>
             <name>name</name>
@@ -524,7 +524,7 @@
     </tag>
     <tag>
         <name>localeSelect</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspLocaleSelectTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspLocaleSelectTag</tag-class>
         <body-content>empty</body-content>
         <attribute>
             <name>name</name>
@@ -540,7 +540,7 @@
     </tag>
     <tag>
         <name>timeZoneSelect</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspTimeZoneSelectTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspTimeZoneSelectTag</tag-class>
         <body-content>empty</body-content>
         <attribute>
             <name>name</name>
@@ -556,7 +556,7 @@
     </tag>
     <tag>
         <name>checkBox</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspCheckboxTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspCheckboxTag</tag-class>
         <body-content>empty</body-content>
         <attribute>
             <name>name</name>
@@ -572,7 +572,7 @@
     </tag>
     <tag>
         <name>hasErrors</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspHasErrorsTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspHasErrorsTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>model</name>
@@ -593,7 +593,7 @@
     </tag>
     <tag>
         <name>eachError</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspEachErrorTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspEachErrorTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>model</name>
@@ -614,7 +614,7 @@
     </tag>
     <tag>
         <name>renderErrors</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspEachErrorTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspEachErrorTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>model</name>
@@ -640,7 +640,7 @@
     </tag>
     <tag>
         <name>message</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspMessageTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspMessageTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>code</name>
@@ -661,7 +661,7 @@
     </tag>
     <tag>
         <name>remoteFunction</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspRemoteFunctionTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspRemoteFunctionTag</tag-class>
         <body-content>empty</body-content>
         <attribute>
             <name>before</name>
@@ -747,7 +747,7 @@
     </tag>
     <tag>
         <name>remoteLink</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspRemoteLinkTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspRemoteLinkTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>before</name>
@@ -833,7 +833,7 @@
     </tag>
     <tag>
         <name>formRemote</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspFormRemoteTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspFormRemoteTag</tag-class>
         <body-content>JSP</body-content>
         <attribute>
             <name>before</name>
@@ -919,7 +919,7 @@
     </tag>
     <tag>
         <name>invokeTag</name>
-        <tag-class>org.codehaus.groovy.grails.web.taglib.jsp.JspInvokeGrailsTagLibTag</tag-class>
+        <tag-class>org.grails.web.taglib.jsp.JspInvokeGrailsTagLibTag</tag-class>
         <body-content>JSP</body-content>
         <variable>
             <name-given>it</name-given>

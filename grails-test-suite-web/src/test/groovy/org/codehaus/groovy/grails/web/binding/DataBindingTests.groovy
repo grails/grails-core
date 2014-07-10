@@ -5,7 +5,7 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
+import org.grails.plugins.testing.GrailsMockMultipartFile
 import org.junit.Test
 import static org.junit.Assert.*
 

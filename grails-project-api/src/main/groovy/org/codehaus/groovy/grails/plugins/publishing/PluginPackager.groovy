@@ -257,7 +257,7 @@ class PluginPackager {
 
     String packageBinary(String pluginName, File classesDir, File targetDir) {
         def pluginProps = pluginInfo
-        ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
+        ant.taskdef (name: 'gspc', classname : 'org.grails.web.pages.GroovyPageCompilerTask')
         // compile gsps in grails-app/views directory
         File gspTmpDir = new File(projectWorkDir, "gspcompile")
         ant.gspc(destdir:classesDir,

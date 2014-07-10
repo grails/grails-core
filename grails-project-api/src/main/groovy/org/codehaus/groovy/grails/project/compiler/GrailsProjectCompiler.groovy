@@ -427,7 +427,7 @@ class GrailsProjectCompiler extends BaseSettingsApi{
      */
     void compileGroovyPages(String grailsAppName, classesDir = targetClassesDir) {
         final ant = getAnt()
-        ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
+        ant.taskdef (name: 'gspc', classname : 'org.grails.web.pages.GroovyPageCompilerTask')
         // compile gsps in grails-app/views directory
         File gspTmpDir = new File(buildSettings.projectWorkDir, "gspcompile")
         ant.gspc(destdir:classesDir,

@@ -9,7 +9,7 @@ import grails.util.Environment
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
-import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.grails.support.MockApplicationContext
 import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockServletContext
 

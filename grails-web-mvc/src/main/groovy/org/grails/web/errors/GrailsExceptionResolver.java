@@ -43,7 +43,7 @@ import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.exceptions.GrailsMVCException;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
+import org.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.springframework.web.context.ServletContextAware;

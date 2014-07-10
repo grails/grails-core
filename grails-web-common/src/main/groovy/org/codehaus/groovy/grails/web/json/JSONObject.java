@@ -35,10 +35,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.support.encoding.EncodesToWriter;
-import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
-import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWriter;
-import org.codehaus.groovy.grails.support.encoding.StreamingEncoderWritable;
+import org.grails.support.encoding.EncodesToWriter;
+import org.grails.support.encoding.StreamingEncoder;
+import org.grails.support.encoding.StreamingEncoderWriter;
+import org.grails.support.encoding.StreamingEncoderWritable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -102,7 +102,7 @@ public class JSONObject implements JSONElement, Map {
     private static boolean useStreamingJavascriptEncoder=false;
     static {
         try {
-            javascriptEncoder = (StreamingEncoder)ClassUtils.forName("org.codehaus.groovy.grails.plugins.codecs.JSONEncoder", JSONObject.class.getClassLoader()).newInstance();
+            javascriptEncoder = (StreamingEncoder)ClassUtils.forName("org.grails.plugins.codecs.JSONEncoder", JSONObject.class.getClassLoader()).newInstance();
             javascriptEncoderStateless = (EncodesToWriter)javascriptEncoder;
             useStreamingJavascriptEncoder = true;
         }

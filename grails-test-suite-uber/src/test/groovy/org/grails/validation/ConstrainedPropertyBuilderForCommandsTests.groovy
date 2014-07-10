@@ -1,6 +1,6 @@
 package org.grails.validation
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.plugins.support.WebMetaUtils
 
 /**

@@ -18,7 +18,7 @@ import grails.persistence.Entity
 import grails.util.Holders
 import grails.plugins.GrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockHttpSession

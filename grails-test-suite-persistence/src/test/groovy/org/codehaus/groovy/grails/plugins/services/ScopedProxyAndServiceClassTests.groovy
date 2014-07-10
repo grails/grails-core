@@ -4,7 +4,7 @@ import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
 
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.aop.scope.ScopedProxyFactoryBean
 import org.springframework.web.context.request.RequestContextHolder
 

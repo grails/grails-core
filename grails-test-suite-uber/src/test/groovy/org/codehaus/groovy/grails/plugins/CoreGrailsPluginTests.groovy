@@ -7,7 +7,7 @@ import org.grails.plugins.MockGrailsPluginManager
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.beans.factory.config.RuntimeBeanReference
 
@@ -19,7 +19,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
         def pluginManager = new MockGrailsPluginManager()
         ctx.registerMockBean(GrailsPluginManager.BEAN_NAME, pluginManager)
-        ga.config.grails.spring.bean.packages = ['org.codehaus.groovy.grails.plugins.test']
+        ga.config.grails.spring.bean.packages = ['org.grails.plugins.test']
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
         springConfig.servletContext = createMockServletContext()
@@ -105,7 +105,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
         def corePluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
-        def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+        def dataSourcePluginClass = gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
         def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
@@ -117,7 +117,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
         corePlugin.doWithRuntimeConfiguration(springConfig)
         dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
 
-        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
+        def pluginClass = gcl.loadClass("org.grails.plugins.services.ServicesGrailsPlugin")
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
         plugin.doWithRuntimeConfiguration(springConfig)
 

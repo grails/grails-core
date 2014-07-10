@@ -1,3 +1,3 @@
 <plugin name='codecs'>
-  <type>org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin</type>
+  <type>org.grails.plugins.CodecsGrailsPlugin</type>
 </plugin>

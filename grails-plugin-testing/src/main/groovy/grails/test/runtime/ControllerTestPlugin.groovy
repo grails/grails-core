@@ -30,13 +30,13 @@ import javax.servlet.ServletContext
 
 import grails.core.GrailsApplication
 import org.grails.core.artefact.UrlMappingsArtefactHandler
-import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
-import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup
+import org.grails.plugins.CodecsGrailsPlugin
+import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.plugins.converters.ConvertersGrailsPlugin
 import org.grails.plugins.converters.ConvertersPluginSupport
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.ServletsGrailsPluginSupport;
 import org.grails.plugins.web.api.ControllersMimeTypesApi
@@ -49,10 +49,10 @@ import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
 import grails.web.mime.MimeType
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
+import org.grails.web.pages.GroovyPagesTemplateEngine
+import org.grails.web.pages.GroovyPagesTemplateRenderer
+import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry

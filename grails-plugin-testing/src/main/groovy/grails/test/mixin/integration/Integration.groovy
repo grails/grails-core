@@ -29,6 +29,6 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target([ElementType.TYPE])
-@GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.test.IntegrationTestMixinTransformation")
+@GroovyASTTransformationClass("org.grails.compiler.injection.test.IntegrationTestMixinTransformation")
 public @interface Integration {
 }

@@ -22,7 +22,7 @@ import grails.rest.render.RendererRegistry
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import grails.web.mime.MimeType
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus

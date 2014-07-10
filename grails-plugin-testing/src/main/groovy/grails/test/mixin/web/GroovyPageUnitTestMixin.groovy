@@ -23,11 +23,11 @@ import grails.util.GrailsMetaClassUtils
 import grails.core.GrailsTagLibClass
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
-import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
+import org.grails.plugins.web.api.TagLibraryApi
+import org.grails.web.pages.GroovyPagesTemplateEngine
+import org.grails.web.pages.TagLibraryLookup
+import org.grails.web.util.GrailsPrintWriter
+import org.grails.web.util.TagLibraryMetaUtils
 import org.junit.Assert
 
 /**

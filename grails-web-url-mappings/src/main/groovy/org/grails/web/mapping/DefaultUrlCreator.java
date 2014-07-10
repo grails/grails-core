@@ -28,7 +28,7 @@ import java.util.Map;
 import grails.web.mapping.UrlCreator;
 import grails.core.GrailsControllerClass;
 import grails.util.GrailsStringUtils;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.grails.web.pages.FastStringWriter;
 import org.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy;
 import org.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
