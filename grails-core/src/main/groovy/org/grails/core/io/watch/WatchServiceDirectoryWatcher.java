@@ -13,6 +13,8 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +148,14 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 	            		return FileVisitResult.SKIP_SUBTREE;
 	            	}
 	    			WatchKey watchKey = dir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
-	    			watchKeyToExtensionsMap.put(watchKey, fileExtensions);
+	    			final List<String> originalFileExtensions = watchKeyToExtensionsMap.get(watchKey);
+	    			if(originalFileExtensions==null){
+	    				watchKeyToExtensionsMap.put(watchKey, fileExtensions);
+	    			}else{
+	    				final HashSet<String> newFileExtensions = new HashSet<String>(originalFileExtensions);
+	    				newFileExtensions.addAll(fileExtensions);
+	    				watchKeyToExtensionsMap.put(watchKey, Collections.unmodifiableList(new ArrayList(newFileExtensions)));
+	    			}
 	                return FileVisitResult.CONTINUE;
 	            }
 	        });

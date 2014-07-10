@@ -19,7 +19,7 @@ import groovy.transform.AnnotationCollector
 import groovy.transform.CompileStatic
 
 /**
- * 
+ *
  * @since 2.4
  *
  */
@@ -28,6 +28,7 @@ import groovy.transform.CompileStatic
                            'org.grails.compiler.CriteriaTypeCheckingExtension',
                            'org.grails.compiler.WhereQueryTypeCheckingExtension',
                            'org.grails.compiler.DynamicFinderTypeCheckingExtension',
-                           'org.grails.compiler.DomainMappingTypeCheckingExtension'])
+                           'org.grails.compiler.DomainMappingTypeCheckingExtension',
+                           'org.grails.compiler.RelationshipManagementMethodTypeCheckingExtension'])
 @interface GrailsCompileStatic {
 }
