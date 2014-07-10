@@ -32,10 +32,9 @@ import org.springframework.util.StringUtils;
  */
 public class DirectoryWatcher extends Thread {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DirectoryWatcher.class);
-    public static final String ENABLE_JAVA7_WATCH_SERVICE = "enable.java7.watchService";
+	private static final Logger LOG = LoggerFactory.getLogger(DirectoryWatcher.class);
 
-    private final AbstractDirectoryWatcher directoryWatcherDelegate;
+	private final AbstractDirectoryWatcher directoryWatcherDelegate;
 
     public static final String SVN_DIR_NAME = ".svn";
 
@@ -45,17 +44,12 @@ public class DirectoryWatcher extends Thread {
     public DirectoryWatcher() {
         setDaemon(true);
         AbstractDirectoryWatcher directoryWatcherDelegate;
-        if(Boolean.getBoolean(ENABLE_JAVA7_WATCH_SERVICE)) {
-            try {
-                directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.core.io.watch.WatchServiceDirectoryWatcher").newInstance();
-            } catch (Exception e) {
-                LOG.info("Exception while trying to load WatchServiceDirectoryWatcher (this is probably Java 6 and WatchService isn't available). Falling back to PollingDirectoryWatcher.", e);
-                directoryWatcherDelegate = new PollingDirectoryWatcher();
-            }
-        }
-        else {
-            directoryWatcherDelegate = new PollingDirectoryWatcher();
-        }
+        try {
+			directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.codehaus.groovy.grails.compiler.WatchServiceDirectoryWatcher").newInstance();
+		} catch (Exception e) {
+			LOG.info("Exception while trying to load WatchServiceDirectoryWatcher (this is probably Java 6 and WatchService isn't available). Falling back to PollingDirectoryWatcher.", e);
+	        directoryWatcherDelegate = new PollingDirectoryWatcher();
+		}
         this.directoryWatcherDelegate = directoryWatcherDelegate;
     }
 

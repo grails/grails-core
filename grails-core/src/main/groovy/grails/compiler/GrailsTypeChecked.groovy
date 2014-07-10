@@ -4,7 +4,7 @@ import groovy.transform.AnnotationCollector
 import groovy.transform.TypeChecked
 
 /**
- * 
+ *
  * @since 2.4
  *
  */
@@ -12,7 +12,8 @@ import groovy.transform.TypeChecked
 @TypeChecked(extensions=['org.grails.compiler.ValidateableTypeCheckingExtension',
                          'org.grails.compiler.CriteriaTypeCheckingExtension',
                          'org.grails.compiler.DynamicFinderTypeCheckingExtension',
-                         'org.grails.compiler.DomainMappingTypeCheckingExtension'])
+                         'org.grails.compiler.DomainMappingTypeCheckingExtension',
+                         'org.grails.compiler.RelationshipManagementMethodTypeCheckingExtension'])
 @interface GrailsTypeChecked {
 
 }

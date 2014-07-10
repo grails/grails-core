@@ -285,9 +285,56 @@ class SomeClass {
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot find matching method grails.compiler.SomeClass#someDynamicMethodCall'
     }
+    
+    @Issue('GRAILS-11571')
+    void 'test calling relationship management methods'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsTypeChecked
+class SomeClass {
+    def someMethod() {
+        def c = new Company()
+        c.addToCodes('code1')
+        c.removeFromCodes('code2')
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+
+    }
+    
+    @Issue('GRAILS-11571')
+    void 'test calling relationship management methods with invalid name'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsTypeChecked
+class SomeClass {
+    def someMethod() {
+        def c = new Company()
+        c.addToNames('code1')
+    }
+}
+''')
+        
+        then: 'errors are thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot find matching method grails.compiler.Company#addToNames'
+    }
 }
 
 @Entity
 class Company {
     String name
+    static hasMany = [codes: String]
 }
