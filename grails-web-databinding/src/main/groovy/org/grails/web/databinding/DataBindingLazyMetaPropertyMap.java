@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import grails.beans.utils.LazyMetaPropertyMap;
+import grails.beans.util.LazyMetaPropertyMap;
 
 /**
  * Extends the default implementation and does data binding.
