@@ -20,15 +20,9 @@ import groovy.lang.Closure;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URI;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.InnerClassNode;
-import org.grails.io.support.GrailsResourceUtils;
-import org.grails.io.support.UrlResource;
 
 /**
  * Adapter for the {@link grails.core.ArtefactHandler} interface
@@ -69,26 +63,6 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
 
     public String getType() {
         return type;
-    }
-
-    @Override
-    public boolean isArtefact(ClassNode classNode) {
-        int modifiers = classNode.getModifiers();
-        URI uri = classNode.getModule().getContext().getSource().getURI();
-        if(uri == null) return false;
-        try {
-            if(!GrailsResourceUtils.isGrailsResource(new UrlResource(uri))) return false;
-        } catch (MalformedURLException e) {
-            return false;
-        }
-        if(classNode instanceof InnerClassNode) return false;
-
-        if(!classNode.isEnum() && !classNode.isInterface() && !Modifier.isAbstract(modifiers)) {
-            if(classNode.getName().endsWith(artefactSuffix)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public final boolean isArtefact(@SuppressWarnings("rawtypes") Class aClass) {

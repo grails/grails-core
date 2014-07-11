@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import grails.core.support.GrailsApplicationAware;
+import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.validation.ConstraintEvalUtils;
 

@@ -23,7 +23,7 @@ import junit.framework.AssertionFailedError
 
 import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsControllerClass
-import grails.web.mapping.artefact.UrlMappingsArtefactHandler
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.web.mapping.artefact;
+package org.grails.core.artefact;
 
 import grails.core.ArtefactHandlerAdapter;
-import org.grails.web.mapping.artefact.DefaultGrailsUrlMappingsClass;
+import grails.core.GrailsUrlMappingsClass;
+import org.grails.core.DefaultGrailsUrlMappingsClass;
 
 /**
  * A handler for UrlMappings.

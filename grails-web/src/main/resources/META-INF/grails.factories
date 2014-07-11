@@ -1,1 +1,1 @@
-grails.core.ArtefactHandler=org.grails.web.servlet.boostrap.BootstrapArtefactHandler
+org.codehaus.groovy.grails.commons.ArtefactHandler=org.grails.web.servlet.boostrap.BootstrapArtefactHandler

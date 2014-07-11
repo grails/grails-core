@@ -4,11 +4,11 @@ import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link DefaultGrailsServiceClass} instead
+ * @deprecated Use {@link org.grails.core.DefaultGrailsServiceClass} instead
  */
 @Deprecated
 @CompileStatic
-class DefaultGrailsServiceClass extends DefaultGrailsServiceClass {
+class DefaultGrailsServiceClass extends org.grails.core.DefaultGrailsServiceClass {
     DefaultGrailsServiceClass(Class<?> clazz) {
         super(clazz)
     }

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.mapping.artefact;
+package org.grails.core;
 
-import grails.web.mapping.artefact.GrailsUrlMappingsClass;
+import grails.core.GrailsUrlMappingsClass;
 import groovy.lang.Closure;
-import org.grails.core.AbstractGrailsClass;
 
 import java.util.ArrayList;
 import java.util.List;

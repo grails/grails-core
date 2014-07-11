@@ -18,7 +18,7 @@ package org.grails.web.mapping;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import grails.core.GrailsControllerClass;
-import grails.web.mapping.artefact.GrailsUrlMappingsClass;
+import grails.core.GrailsUrlMappingsClass;
 import grails.web.mapping.UrlMappings;
 import groovy.lang.Script;
 
@@ -32,7 +32,7 @@ import grails.core.events.ArtefactAdditionEvent;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.core.support.GrailsApplicationAware;
-import grails.web.mapping.artefact.UrlMappingsArtefactHandler;
+import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;

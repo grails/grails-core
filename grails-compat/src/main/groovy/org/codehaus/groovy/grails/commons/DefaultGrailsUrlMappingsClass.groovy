@@ -18,11 +18,11 @@ package org.codehaus.groovy.grails.commons
 import groovy.transform.CompileStatic
 
 /**
- * @deprecated Use {@link org.grails.web.mapping.artefact.DefaultGrailsUrlMappingsClass} instead
+ * @deprecated Use {@link org.grails.core.DefaultGrailsUrlMappingsClass} instead
  */
 @Deprecated
 @CompileStatic
-class DefaultGrailsUrlMappingsClass extends org.grails.web.mapping.artefact.DefaultGrailsUrlMappingsClass {
+class DefaultGrailsUrlMappingsClass extends org.grails.core.DefaultGrailsUrlMappingsClass {
     DefaultGrailsUrlMappingsClass(Class<?> clazz) {
         super(clazz)
     }

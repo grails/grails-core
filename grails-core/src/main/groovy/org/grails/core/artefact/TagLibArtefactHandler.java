@@ -24,6 +24,7 @@ import grails.core.GrailsClass;
 import grails.core.GrailsTagLibClass;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.grails.core.DefaultGrailsTagLibClass;
 
 /**
  * Configures tag libraries within namespaces in Grails.

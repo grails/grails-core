@@ -15,10 +15,7 @@
  */
 package grails.core;
 
-import grails.core.InjectableGrailsClass;
-
 /**
- * @author Graeme Rocher
  * @author Steven Devijver
  */
 public interface GrailsServiceClass extends InjectableGrailsClass {

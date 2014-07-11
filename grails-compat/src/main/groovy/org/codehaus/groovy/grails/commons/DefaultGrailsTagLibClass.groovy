@@ -17,9 +17,9 @@ package org.codehaus.groovy.grails.commons
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link org.grails.core.artefact.DefaultGrailsTagLibClass} instead
+ * @deprecated Use {@link org.grails.core.DefaultGrailsTagLibClass} instead
  */
-class DefaultGrailsTagLibClass extends org.grails.core.artefact.DefaultGrailsTagLibClass {
+class DefaultGrailsTagLibClass extends org.grails.core.DefaultGrailsTagLibClass {
 
     DefaultGrailsTagLibClass(Class<?> clazz) {
         super(clazz)

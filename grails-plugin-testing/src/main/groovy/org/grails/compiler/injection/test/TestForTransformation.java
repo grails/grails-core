@@ -65,7 +65,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.core.artefact.ServiceArtefactHandler;
 import org.grails.core.artefact.TagLibArtefactHandler;
-import grails.web.mapping.artefact.UrlMappingsArtefactHandler;
+import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import grails.web.servlet.context.GrailsWebApplicationContext;
 import org.grails.compiler.injection.GrailsASTUtils;
 import grails.compiler.ast.GrailsArtefactClassInjector;

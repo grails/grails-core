@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core.artefact;
+package org.grails.core;
 
 import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.grails.core.AbstractGrailsClass;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.core.exceptions.GrailsDomainException;
 import org.grails.core.exceptions.InvalidPropertyException;

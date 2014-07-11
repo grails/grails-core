@@ -1,1 +1,0 @@
-grails.core.ArtefactHandler=org.grails.core.artefact.ServiceArtefactHandler

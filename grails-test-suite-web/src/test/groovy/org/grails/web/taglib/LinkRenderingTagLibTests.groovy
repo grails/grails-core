@@ -1,6 +1,6 @@
 package org.grails.web.taglib
 
-import grails.web.mapping.artefact.UrlMappingsArtefactHandler
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 
 class LinkRenderingTagLibTests extends AbstractGrailsTagTests {
 
