@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins
 
-import grails.core.GrailsApplication
 import groovy.transform.CompileStatic
-import org.springframework.core.io.Resource
+import groovy.transform.InheritConstructors
 
 
 /**
@@ -25,24 +24,6 @@ import org.springframework.core.io.Resource
  */
 @Deprecated
 @CompileStatic
+@InheritConstructors
 class DefaultGrailsPluginManager extends grails.plugins.DefaultGrailsPluginManager {
-    DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) {
-        super(resourcePath, application)
-    }
-
-    DefaultGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
-        super(pluginResources, application)
-    }
-
-    DefaultGrailsPluginManager(Class<?>[] plugins, GrailsApplication application) {
-        super(plugins, application)
-    }
-
-    DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
-        super(pluginFiles, application)
-    }
-
-    DefaultGrailsPluginManager(GrailsApplication application) {
-        super(application)
-    }
 }

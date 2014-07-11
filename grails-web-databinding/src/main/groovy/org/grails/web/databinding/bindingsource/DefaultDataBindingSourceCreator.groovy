@@ -15,11 +15,10 @@
  */
 package org.grails.web.databinding.bindingsource
 
-import grails.databinding.CollectionDataBindingSource;
-import grails.databinding.DataBindingSource;
+import grails.databinding.CollectionDataBindingSource
 import grails.databinding.SimpleMapDataBindingSource;
 import groovy.transform.CompileStatic
-import grails.beans.utils.LazyBeanMap
+import grails.beans.util.LazyBeanMap
 import grails.databinding.DataBindingSource
 import grails.web.databinding.DataBindingUtils
 

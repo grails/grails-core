@@ -25,11 +25,11 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class ArtefactHandlerAdapter extends grails.core.ArtefactHandlerAdapter{
 
-    ArtefactHandlerAdapter(String type, Class<?> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
+    ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
         super(type, grailsClassType, grailsClassImpl, artefactSuffix)
     }
 
-    ArtefactHandlerAdapter(String type, Class<?> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix, boolean allowAbstract) {
+    ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix, boolean allowAbstract) {
         super(type, grailsClassType, grailsClassImpl, artefactSuffix, allowAbstract)
     }
 }

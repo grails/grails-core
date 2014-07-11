@@ -165,34 +165,15 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      */
     protected void initArtefactHandlers() {
 
-        final DomainClassArtefactHandler domainClassArtefactHandler = new AnnotationDomainClassArtefactHandler();
-        if (!hasArtefactHandler(domainClassArtefactHandler.getType())) {
-            registerArtefactHandler(domainClassArtefactHandler);
+        List<org.codehaus.groovy.grails.commons.ArtefactHandler> legacyArtefactHandlers = GrailsFactoriesLoader.loadFactories(org.codehaus.groovy.grails.commons.ArtefactHandler.class, getClassLoader());
+
+        for (org.codehaus.groovy.grails.commons.ArtefactHandler artefactHandler : legacyArtefactHandlers) {
+            registerArtefactHandler(artefactHandler);
         }
 
-        final ControllerArtefactHandler controllerArtefactHandler = new ControllerArtefactHandler();
-        if (!hasArtefactHandler(controllerArtefactHandler.getType())) {
-            registerArtefactHandler(controllerArtefactHandler);
-        }
+        List<ArtefactHandler> additionalArtefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler.class, getClassLoader());
 
-        final ServiceArtefactHandler serviceArtefactHandler = new ServiceArtefactHandler();
-        if (!hasArtefactHandler(serviceArtefactHandler.getType())) {
-            registerArtefactHandler(serviceArtefactHandler);
-        }
-
-        final TagLibArtefactHandler tagLibArtefactHandler = new TagLibArtefactHandler();
-        if (!hasArtefactHandler(tagLibArtefactHandler.getType())) {
-            registerArtefactHandler(tagLibArtefactHandler);
-        }
-
-        final UrlMappingsArtefactHandler urlMappingsArtefactHandler = new UrlMappingsArtefactHandler();
-        if (!hasArtefactHandler(urlMappingsArtefactHandler.getType())) {
-            registerArtefactHandler(urlMappingsArtefactHandler);
-        }
-
-        List<org.codehaus.groovy.grails.commons.ArtefactHandler> additionalArtefactHandlers = GrailsFactoriesLoader.loadFactories(org.codehaus.groovy.grails.commons.ArtefactHandler.class, getClassLoader());
-
-        for (org.codehaus.groovy.grails.commons.ArtefactHandler artefactHandler : additionalArtefactHandlers) {
+        for (ArtefactHandler artefactHandler : additionalArtefactHandlers) {
             registerArtefactHandler(artefactHandler);
         }
 

@@ -78,7 +78,7 @@ public class GrailsCoreDependencies {
         );
 
         compileDependencies = Arrays.asList(
-            new Dependency("org.codehaus.groovy", "groovy-all", groovyVersion, true),
+            new Dependency("org.codehaus.groovy", "groovy", groovyVersion, true),
             new Dependency("org.grails", "grails-plugin-rest", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-databinding", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-i18n", grailsVersion, true),

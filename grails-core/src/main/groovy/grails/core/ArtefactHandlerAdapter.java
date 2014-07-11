@@ -17,12 +17,20 @@ package grails.core;
 
 import groovy.lang.Closure;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URI;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.InnerClassNode;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.Resource;
+import org.grails.io.support.UrlResource;
 
 /**
  * Adapter for the {@link grails.core.ArtefactHandler} interface
@@ -33,22 +41,22 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.groovy.grails.commons.ArtefactHandler {
 
-    private String type;
-    private Class<?> grailsClassType;
-    private Class<?> grailsClassImpl;
-    private boolean allowAbstract;
+    protected String type;
+    protected Class<?> grailsClassType;
+    protected Class<?> grailsClassImpl;
+    protected boolean allowAbstract;
 
     protected Log log = LogFactory.getLog(ArtefactHandlerAdapter.class);
-    private String artefactSuffix;
+    protected String artefactSuffix;
 
-    public ArtefactHandlerAdapter(String type, Class<?> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
+    public ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
         this.artefactSuffix = artefactSuffix;
         this.type = type;
         this.grailsClassType = grailsClassType;
         this.grailsClassImpl = grailsClassImpl;
     }
 
-    public ArtefactHandlerAdapter(String type, Class<?> grailsClassType, Class<?> grailsClassImpl,
+    public ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl,
             String artefactSuffix, boolean allowAbstract) {
         this.artefactSuffix = artefactSuffix;
         this.type = type;
@@ -63,6 +71,48 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
 
     public String getType() {
         return type;
+    }
+
+
+    /**
+     * Default implementation of {@link grails.core.ArtefactHandler#isArtefact(org.codehaus.groovy.ast.ClassNode)} which returns true if the ClassNode passes the
+     * {@link #isArtefactResource(org.grails.io.support.Resource)} method and the name of the ClassNode ends with the {@link #artefactSuffix}
+     *
+     * @param classNode The ClassNode instance
+     * @return True if the ClassNode is an artefact of this type
+     */
+    @Override
+    public boolean isArtefact(ClassNode classNode) {
+        int modifiers = classNode.getModifiers();
+        URI uri = classNode.getModule().getContext().getSource().getURI();
+        if(uri == null) return false;
+        try {
+            UrlResource resource = new UrlResource(uri);
+            if(!isArtefactResource(resource)) return false;
+        } catch (IOException e) {
+            return false;
+        }
+        if(classNode instanceof InnerClassNode) return false;
+
+        if(!classNode.isEnum() && !classNode.isInterface() && !Modifier.isAbstract(modifiers)) {
+            System.out.println("CLASS NODE IS  " + classNode);
+            String name = classNode.getName();
+            System.out.println("NAME IS " + name);
+            if(name != null && this.artefactSuffix != null && name.endsWith(artefactSuffix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Subclasses can override to narrow down whether the given resource is an artefact of this type. The default is to consider all files under "grails-app" to be a resource
+     *
+     * @param resource The resource
+     * @return True if it is a Grails artefact
+     */
+    protected boolean isArtefactResource(Resource resource) throws IOException {
+        return GrailsResourceUtils.isGrailsResource(resource);
     }
 
     public final boolean isArtefact(@SuppressWarnings("rawtypes") Class aClass) {
