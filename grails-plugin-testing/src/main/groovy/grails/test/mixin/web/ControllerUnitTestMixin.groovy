@@ -73,6 +73,8 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.springframework.web.servlet.DispatcherServlet
+import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 /**
  * Applied to a unit test to test controllers.
@@ -238,6 +240,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             }
 
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
+            
+            localeResolver(SessionLocaleResolver)
         }
         defineBeans(new CodecsGrailsPlugin().doWithSpring)
 
@@ -282,6 +286,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
         request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
+        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, applicationContext.getBean('localeResolver'))
         response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = (GrailsMockHttpServletRequest)webRequest.getCurrentRequest()
