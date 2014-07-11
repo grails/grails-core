@@ -95,9 +95,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
         if(classNode instanceof InnerClassNode) return false;
 
         if(!classNode.isEnum() && !classNode.isInterface() && !Modifier.isAbstract(modifiers)) {
-            System.out.println("CLASS NODE IS  " + classNode);
             String name = classNode.getName();
-            System.out.println("NAME IS " + name);
             if(name != null && this.artefactSuffix != null && name.endsWith(artefactSuffix)) {
                 return true;
             }

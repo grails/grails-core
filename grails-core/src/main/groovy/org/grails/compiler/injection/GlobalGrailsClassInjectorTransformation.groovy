@@ -52,7 +52,12 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation {
 
 
         List<ArtefactHandler> artefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler)
-        def classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
+
+        Map<String, List<ClassInjector>> cache = new HashMap<String, List<ClassInjector>>().withDefault { String key ->
+            ArtefactTypeAstTransformation.findInjectors(key, classInjectors)
+        }
+
         for (ClassNode classNode : classes) {
 
             for(ArtefactHandler handler in artefactHandlers) {
@@ -61,15 +66,13 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation {
                         def annotationNode = new AnnotationNode(new ClassNode(Artefact.class))
                         annotationNode.addMember("value", new ConstantExpression(handler.getType()))
                         classNode.addAnnotation(annotationNode)
+
+                        List<ClassInjector> injectors = cache[handler.type]
+                        ArtefactTypeAstTransformation.performInjection(source, classNode, injectors)
                     }
                 }
             }
 
-            for(ClassInjector injector in classInjectors) {
-                if(injector.shouldInject(url)) {
-                    injector.performInjection(source, classNode)
-                }
-            }
         }
     }
 }
