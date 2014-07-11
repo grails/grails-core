@@ -1,1 +1,1 @@
-org.codehaus.groovy.grails.commons.ArtefactHandler=org.grails.commons.CodecArtefactHandler
+grails.core.ArtefactHandler=org.grails.commons.CodecArtefactHandler

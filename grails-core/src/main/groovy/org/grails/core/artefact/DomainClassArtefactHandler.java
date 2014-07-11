@@ -21,12 +21,17 @@ import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import grails.core.support.GrailsApplicationAware;
+import org.codehaus.groovy.ast.ClassNode;
 import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.io.support.Resource;
 import org.grails.validation.ConstraintEvalUtils;
 
 /**
@@ -55,6 +60,11 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     @SuppressWarnings("rawtypes")
     public GrailsClass newArtefactClass(Class artefactClass) {
         return new DefaultGrailsDomainClass(artefactClass, defaultConstraints);
+    }
+
+    @Override
+    protected boolean isArtefactResource(Resource resource) throws IOException {
+        return super.isArtefactResource(resource) && GrailsResourceUtils.isDomainClass(resource.getURL());
     }
 
     /**
