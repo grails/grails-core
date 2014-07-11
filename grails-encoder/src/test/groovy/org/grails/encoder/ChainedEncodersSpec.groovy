@@ -19,7 +19,7 @@ import groovy.json.StringEscapeUtils
 
 import org.grails.encoder.impl.HTMLEncoder
 import org.grails.encoder.impl.JavaScriptEncoder
-import org.grails.web.util.StreamCharBuffer
+import org.grails.buffer.StreamCharBuffer
 import org.springframework.web.util.HtmlUtils
 
 import spock.lang.Specification

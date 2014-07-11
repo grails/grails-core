@@ -48,7 +48,7 @@ import org.grails.web.taglib.GroovyPageAttributes;
 import org.grails.web.taglib.GroovyPageTagBody;
 import org.grails.web.taglib.GroovyPageTagWriter;
 import org.grails.web.taglib.exceptions.GrailsTagException;
-import org.grails.web.util.GrailsPrintWriter;
+import org.grails.buffer.GrailsPrintWriter;
 import org.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;

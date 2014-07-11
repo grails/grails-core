@@ -22,7 +22,7 @@ import java.io.Writer;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.BodyContent;
 
-import org.grails.web.util.StreamCharBuffer;
+import org.grails.buffer.StreamCharBuffer;
 
 /**
  * Uses an internal CharArrayWriter.

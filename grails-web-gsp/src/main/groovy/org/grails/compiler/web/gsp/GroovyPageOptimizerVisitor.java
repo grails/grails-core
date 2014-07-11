@@ -25,7 +25,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.grails.web.pages.GroovyPage;
-import org.grails.web.util.GrailsPrintWriter;
+import org.grails.buffer.GrailsPrintWriter;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 

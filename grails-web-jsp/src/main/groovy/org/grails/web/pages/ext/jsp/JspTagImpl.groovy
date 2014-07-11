@@ -18,7 +18,7 @@ package org.grails.web.pages.ext.jsp
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.util.ClassUtils
 

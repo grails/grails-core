@@ -18,7 +18,7 @@ package org.grails.web.taglib
 import grails.util.GrailsUtil
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.core.io.MockStringResourceLoader
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.grails.web.pages.GroovyPageBinding
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.sitemesh.FactoryHolder

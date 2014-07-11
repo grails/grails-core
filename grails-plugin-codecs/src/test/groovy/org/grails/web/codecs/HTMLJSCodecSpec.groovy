@@ -5,7 +5,7 @@ import org.grails.encoder.Decoder
 import org.grails.encoder.DefaultEncodingStateRegistry
 import org.grails.encoder.EncodingStateRegistry
 import org.grails.encoder.StreamingEncoder
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 
 import spock.lang.Specification
 

@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
-import org.grails.web.util.StreamByteBuffer;
+import org.grails.buffer.StreamByteBuffer;
 
 /**
  * Unit tests for StreamByteBuffer.

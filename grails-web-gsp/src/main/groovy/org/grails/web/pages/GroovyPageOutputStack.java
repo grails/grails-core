@@ -30,10 +30,10 @@ import org.grails.encoder.EncodingStateRegistry;
 import org.grails.encoder.StreamingEncoder;
 import org.grails.encoder.StreamingEncoderWriter;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.util.CodecPrintWriter;
-import org.grails.web.util.GrailsLazyProxyPrintWriter;
-import org.grails.web.util.GrailsLazyProxyPrintWriter.DestinationFactory;
-import org.grails.web.util.GrailsWrappedWriter;
+import org.grails.buffer.CodecPrintWriter;
+import org.grails.buffer.GrailsLazyProxyPrintWriter;
+import org.grails.buffer.GrailsLazyProxyPrintWriter.DestinationFactory;
+import org.grails.buffer.GrailsWrappedWriter;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 

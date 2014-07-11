@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import org.grails.web.util.GrailsPrintWriter;
-import org.grails.web.util.GrailsPrintWriterAdapter;
-import org.grails.web.util.StreamCharBuffer;
+import org.grails.buffer.GrailsPrintWriter;
+import org.grails.buffer.GrailsPrintWriterAdapter;
+import org.grails.buffer.StreamCharBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.objenesis.ObjenesisStd;

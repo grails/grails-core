@@ -25,9 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.util.GrailsPrintWriterAdapter;
-import org.grails.web.util.StreamByteBuffer;
-import org.grails.web.util.StreamCharBuffer;
+import org.grails.buffer.GrailsPrintWriterAdapter;
+import org.grails.buffer.StreamByteBuffer;
+import org.grails.buffer.StreamCharBuffer;
 import org.grails.web.util.WebUtils;
 
 import com.opensymphony.module.sitemesh.Page;

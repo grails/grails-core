@@ -18,7 +18,7 @@ package org.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import groovy.text.Template
 import groovy.transform.CompileStatic
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.grails.web.pages.GroovyPage
 import org.grails.web.pages.GroovyPageParser
 import org.grails.web.pages.GroovyPageTemplate
@@ -38,7 +38,7 @@ import org.grails.web.sitemesh.GrailsHTMLPageParser
 import org.grails.web.sitemesh.GrailsLayoutView
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.sitemesh.SpringMVCViewDecorator
-import org.grails.web.util.StreamCharBuffer
+import org.grails.buffer.StreamCharBuffer
 import grails.web.util.TypeConvertingMap
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.util;
+package org.grails.buffer;
 
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.Writable;

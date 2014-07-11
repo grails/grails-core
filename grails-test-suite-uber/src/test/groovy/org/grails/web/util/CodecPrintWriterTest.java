@@ -10,6 +10,9 @@ import java.util.Map;
 
 import grails.core.ArtefactHandler;
 import grails.core.ArtefactInfo;
+import org.grails.buffer.CodecPrintWriter;
+import org.grails.buffer.GrailsPrintWriter;
+import org.grails.buffer.StreamCharBuffer;
 import org.grails.commons.DefaultGrailsCodecClass;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
@@ -20,7 +23,7 @@ import org.grails.plugins.testing.GrailsMockHttpServletResponse;
 import org.grails.encoder.DefaultEncodingStateRegistry;
 import org.grails.encoder.Encoder;
 import org.grails.encoder.EncodingStateRegistry;
-import org.grails.web.pages.FastStringWriter;
+import org.grails.buffer.FastStringWriter;
 import org.grails.web.pages.GroovyPageOutputStack;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;

@@ -20,11 +20,11 @@ import groovy.transform.CompileStatic
 
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.grails.web.pages.SitemeshPreprocessor
 import org.grails.web.sitemesh.GSPSitemeshPage
-import org.grails.web.util.GrailsPrintWriter
-import org.grails.web.util.StreamCharBuffer
+import org.grails.buffer.GrailsPrintWriter
+import org.grails.buffer.StreamCharBuffer
 
 import com.opensymphony.module.sitemesh.RequestConstants
 

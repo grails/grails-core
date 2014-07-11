@@ -9,7 +9,7 @@ import grails.test.mixin.TestFor
 
 import org.grails.web.servlet.mvc.HibernateProxy
 import org.grails.web.servlet.mvc.LazyInitializer
-import org.grails.web.util.StreamCharBuffer
+import org.grails.buffer.StreamCharBuffer
 import org.junit.Test
 
 /**

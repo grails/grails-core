@@ -20,7 +20,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.grails.web.util.StreamCharBuffer;
+import org.grails.buffer.StreamCharBuffer;
 
 import com.opensymphony.module.sitemesh.HTMLPage;
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;

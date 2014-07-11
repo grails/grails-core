@@ -3,7 +3,7 @@ package org.grails.web.sitemesh
 import com.opensymphony.module.sitemesh.RequestConstants
 
 import org.grails.web.taglib.AbstractGrailsTagTests
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.springframework.web.context.request.RequestContextHolder
 
 class GSPSitemeshPageTests extends AbstractGrailsTagTests {

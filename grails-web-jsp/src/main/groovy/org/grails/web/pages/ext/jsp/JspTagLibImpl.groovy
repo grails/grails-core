@@ -16,7 +16,7 @@
 package org.grails.web.pages.ext.jsp
 
 import groovy.transform.CompileStatic
-import org.grails.web.pages.FastStringPrintWriter
+import org.grails.buffer.FastStringPrintWriter
 import org.springframework.util.Assert
 
 /**

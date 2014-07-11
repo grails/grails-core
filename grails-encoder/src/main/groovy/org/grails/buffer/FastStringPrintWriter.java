@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.pages;
+package org.grails.buffer;
 
 import java.io.Reader;
 
-import org.grails.web.util.GrailsPrintWriterAdapter;
-import org.grails.web.util.StreamCharBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.objenesis.ObjenesisStd;

@@ -30,9 +30,9 @@ import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.grails.web.util.BoundedCharsAsEncodedBytesCounter;
-import org.grails.web.util.StreamCharBuffer;
-import org.grails.web.util.StreamCharBuffer.LazyInitializingWriter;
-import org.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
+import org.grails.buffer.StreamCharBuffer;
+import org.grails.buffer.StreamCharBuffer.LazyInitializingWriter;
+import org.grails.buffer.StreamCharBuffer.StreamCharBufferWriter;
 
 import com.opensymphony.module.sitemesh.RequestConstants;
 import org.springframework.objenesis.ObjenesisStd;

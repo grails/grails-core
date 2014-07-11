@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.pages;
+package org.grails.buffer;
 
 import java.io.Reader;
-
-import org.grails.web.util.GrailsPrintWriter;
-import org.grails.web.util.StreamCharBuffer;
 
 /**
  * Java's default StringWriter uses a StringBuffer which is synchronized. This

@@ -1,7 +1,7 @@
 package org.grails.web.util
 
-import org.grails.web.util.StreamCharBuffer
-import org.grails.web.util.StreamCharBufferMetaUtils
+import org.grails.buffer.StreamCharBuffer
+import org.grails.buffer.StreamCharBufferMetaUtils
 
 
 class StreamCharBufferGroovyTests extends GroovyTestCase {

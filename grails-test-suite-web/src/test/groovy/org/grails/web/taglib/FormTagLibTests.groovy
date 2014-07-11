@@ -6,7 +6,7 @@ import grails.util.MockRequestDataValueProcessor
 import org.grails.core.AbstractGrailsClass
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.web.taglib.FormTagLib
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the                                         l

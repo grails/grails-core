@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import grails.core.GrailsDomainClass;
 import grails.util.GrailsStringUtils;
+import org.grails.buffer.FastStringWriter;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.encoder.EncodedAppenderWriterFactory;
 import org.grails.encoder.Encoder;
@@ -42,7 +43,7 @@ import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.exceptions.GrailsTagException;
-import org.grails.web.util.CodecPrintWriter;
+import org.grails.buffer.CodecPrintWriter;
 import org.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.InitializingBean;

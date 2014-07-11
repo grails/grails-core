@@ -15,7 +15,7 @@
  */
 package org.grails.web.converters;
 
-import org.grails.web.pages.FastStringWriter;
+import org.grails.buffer.FastStringWriter;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 

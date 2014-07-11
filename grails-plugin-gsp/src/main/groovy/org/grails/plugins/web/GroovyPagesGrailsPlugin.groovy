@@ -57,7 +57,7 @@ import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.view.GroovyPageViewResolver
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.grails.web.util.StreamCharBufferMetaUtils
+import org.grails.buffer.StreamCharBufferMetaUtils
 import org.grails.web.util.TagLibraryMetaUtils
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings

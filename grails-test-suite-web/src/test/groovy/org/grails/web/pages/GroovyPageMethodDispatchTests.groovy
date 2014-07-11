@@ -1,10 +1,7 @@
 package org.grails.web.pages
 
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.grails.web.pages.GroovyPage
-import org.grails.web.pages.GroovyPageBinding
-import org.grails.web.pages.GroovyPagesMetaUtils
-import org.grails.web.util.GrailsPrintWriter
+import org.grails.buffer.GrailsPrintWriter
 import org.springframework.web.context.request.RequestContextHolder
 
 class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {

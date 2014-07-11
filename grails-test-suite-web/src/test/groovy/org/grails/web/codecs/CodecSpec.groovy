@@ -5,7 +5,7 @@ import grails.converters.JSON
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
 
-import org.grails.web.util.StreamCharBuffer
+import org.grails.buffer.StreamCharBuffer
 
 import spock.lang.Issue
 import spock.lang.Specification

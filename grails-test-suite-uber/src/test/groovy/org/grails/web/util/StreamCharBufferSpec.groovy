@@ -15,7 +15,8 @@
 package org.grails.web.util
 
 import grails.util.GrailsWebUtil
-
+import org.grails.buffer.GrailsPrintWriter
+import org.grails.buffer.StreamCharBuffer
 import org.grails.commons.DefaultGrailsCodecClass
 import grails.core.GrailsApplication
 import org.grails.commons.GrailsCodecClass

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.grails.web.util.StreamCharBuffer;
+import org.grails.buffer.StreamCharBuffer;
 
 public class ChainedEncoders {
 

@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 
-import org.grails.web.pages.FastStringWriter
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
+import org.grails.buffer.FastStringWriter
 import org.junit.Test
 
 @TestFor(RenderDynamicMethodTestController)

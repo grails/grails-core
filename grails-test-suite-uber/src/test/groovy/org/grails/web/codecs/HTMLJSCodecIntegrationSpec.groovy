@@ -10,7 +10,7 @@ import org.grails.encoder.impl.HTMLJSCodec
 import org.grails.encoder.impl.JavaScriptCodec
 import org.grails.encoder.impl.RawCodec
 import org.grails.encoder.EncodingStateRegistry
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
 import spock.lang.Specification

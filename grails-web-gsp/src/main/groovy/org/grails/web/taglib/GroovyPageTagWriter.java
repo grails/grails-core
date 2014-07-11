@@ -15,7 +15,7 @@
  */
 package org.grails.web.taglib;
 
-import org.grails.web.pages.FastStringWriter;
+import org.grails.buffer.FastStringWriter;
 
 /**
  * A temporary writer used by GSP to write to a StringWriter and later retrieve the value.

@@ -44,14 +44,15 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsStringUtils;
+import org.grails.buffer.FastStringWriter;
 import org.grails.io.support.SpringIOUtils;
 import grails.plugins.GrailsPluginInfo;
 import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.web.taglib.GrailsTagRegistry;
 import org.grails.web.taglib.GroovySyntaxTag;
 import org.grails.web.taglib.exceptions.GrailsTagException;
-import org.grails.web.util.StreamByteBuffer;
-import org.grails.web.util.StreamCharBuffer;
+import org.grails.buffer.StreamByteBuffer;
+import org.grails.buffer.StreamCharBuffer;
 
 /**
  * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).

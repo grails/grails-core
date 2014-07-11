@@ -1,4 +1,4 @@
-package org.grails.web.util
+package org.grails.buffer
 
 class StreamCharBufferMetaUtils {
     static registerStreamCharBufferMetaClass() {

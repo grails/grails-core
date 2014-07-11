@@ -25,9 +25,9 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import grails.web.mapping.LinkGenerator
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
-import org.grails.web.util.GrailsPrintWriter
+import org.grails.buffer.GrailsPrintWriter
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware

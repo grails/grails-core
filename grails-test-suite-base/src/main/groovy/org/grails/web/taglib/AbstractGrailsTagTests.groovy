@@ -18,7 +18,7 @@ import javax.xml.xpath.XPathFactory
 
 import org.grails.support.MockApplicationContext
 import org.grails.encoder.Encoder
-import org.grails.web.pages.FastStringWriter
+import org.grails.buffer.FastStringWriter
 import org.grails.web.pages.GSPResponseWriter
 import org.grails.web.pages.GroovyPage
 import org.grails.web.pages.GroovyPageMetaInfo

@@ -26,7 +26,7 @@ import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.plugins.web.api.TagLibraryApi
 import org.grails.web.pages.GroovyPagesTemplateEngine
 import org.grails.web.pages.TagLibraryLookup
-import org.grails.web.util.GrailsPrintWriter
+import org.grails.buffer.GrailsPrintWriter
 import org.grails.web.util.TagLibraryMetaUtils
 import org.junit.Assert
 
