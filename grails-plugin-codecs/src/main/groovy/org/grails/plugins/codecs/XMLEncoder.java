@@ -1,7 +1,7 @@
 package org.grails.plugins.codecs;
 
 import grails.converters.XML;
-import org.grails.plugins.codecs.BasicXMLEncoder;
+import org.grails.encoder.impl.BasicXMLEncoder;
 
 public class XMLEncoder extends BasicXMLEncoder {
     @Override

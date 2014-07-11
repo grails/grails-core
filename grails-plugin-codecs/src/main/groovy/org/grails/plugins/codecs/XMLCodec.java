@@ -1,5 +1,7 @@
 package org.grails.plugins.codecs;
 
+import org.grails.encoder.impl.XMLCodecFactory;
+
 /**
  * Escapes some characters for inclusion in XML documents. The decoder part can
  * unescape XML entity references.

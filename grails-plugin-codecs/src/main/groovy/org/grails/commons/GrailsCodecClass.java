@@ -16,7 +16,7 @@
 package org.grails.commons;
 
 import grails.core.InjectableGrailsClass;
-import org.grails.support.encoding.CodecFactory;
+import org.grails.encoder.CodecFactory;
 
 /**
  * Provides access to Codec classes. A Codec class one that ends in the convention

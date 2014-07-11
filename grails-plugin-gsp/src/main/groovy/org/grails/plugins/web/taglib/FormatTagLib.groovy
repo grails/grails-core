@@ -24,8 +24,8 @@ import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 
 import org.apache.commons.lang.time.FastDateFormat
-import org.grails.support.encoding.CodecLookup
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException

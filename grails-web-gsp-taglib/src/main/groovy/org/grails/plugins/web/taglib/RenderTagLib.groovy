@@ -28,8 +28,8 @@ import org.grails.web.pages.TagLibraryLookup
 
 import javax.servlet.http.HttpServletRequest
 
-import org.grails.support.encoding.CodecLookup
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
 import org.grails.web.errors.ErrorsViewStackTracePrinter
 import org.grails.web.errors.ExceptionUtils
 import org.grails.web.sitemesh.FactoryHolder

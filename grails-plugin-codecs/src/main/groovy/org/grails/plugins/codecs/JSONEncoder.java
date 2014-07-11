@@ -1,7 +1,7 @@
 package org.grails.plugins.codecs;
 
 import grails.converters.JSON;
-import org.grails.plugins.codecs.BasicJSONEncoder;
+import org.grails.encoder.impl.BasicJSONEncoder;
 
 public class JSONEncoder extends BasicJSONEncoder {
     @Override

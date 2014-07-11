@@ -38,7 +38,7 @@ import grails.core.GrailsApplication;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsApplicationAware;
-import org.grails.support.encoding.Encoder;
+import org.grails.encoder.Encoder;
 import org.grails.web.pages.exceptions.GroovyPagesException;
 import org.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.grails.web.util.WithCodecHelper;

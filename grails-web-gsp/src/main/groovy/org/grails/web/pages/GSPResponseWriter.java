@@ -22,10 +22,10 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.support.encoding.EncodedAppender;
-import org.grails.support.encoding.EncodedAppenderFactory;
-import org.grails.support.encoding.Encoder;
-import org.grails.support.encoding.EncoderAware;
+import org.grails.encoder.EncodedAppender;
+import org.grails.encoder.EncodedAppenderFactory;
+import org.grails.encoder.Encoder;
+import org.grails.encoder.EncoderAware;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.grails.web.sitemesh.GrailsRoutablePrintWriter;

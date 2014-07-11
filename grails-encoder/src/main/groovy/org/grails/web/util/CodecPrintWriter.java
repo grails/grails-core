@@ -17,11 +17,11 @@ package org.grails.web.util;
 
 import java.io.Writer;
 
-import org.grails.support.encoding.EncodedAppender;
-import org.grails.support.encoding.EncodedAppenderFactory;
-import org.grails.support.encoding.Encoder;
-import org.grails.support.encoding.EncoderAware;
-import org.grails.support.encoding.EncodingStateRegistry;
+import org.grails.encoder.EncodedAppender;
+import org.grails.encoder.EncodedAppenderFactory;
+import org.grails.encoder.Encoder;
+import org.grails.encoder.EncoderAware;
+import org.grails.encoder.EncodingStateRegistry;
 
 public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware, EncodedAppenderFactory {
     private final Encoder encoder;

@@ -24,6 +24,7 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import org.grails.commons.GrailsCodecClass;
 import grails.core.support.GrailsApplicationAware;
+import org.grails.encoder.impl.BasicCodecLookup;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.OrderComparator;
 

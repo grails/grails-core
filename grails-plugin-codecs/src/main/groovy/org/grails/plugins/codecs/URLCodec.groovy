@@ -15,7 +15,7 @@
  */
 package org.grails.plugins.codecs
 
-import org.grails.plugins.codecs.URLCodecFactory
+import org.grails.encoder.impl.URLCodecFactory
 import org.springframework.web.context.request.RequestContextHolder
 
 /**

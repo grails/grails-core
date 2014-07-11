@@ -35,10 +35,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.grails.support.encoding.EncodesToWriter;
-import org.grails.support.encoding.StreamingEncoder;
-import org.grails.support.encoding.StreamingEncoderWriter;
-import org.grails.support.encoding.StreamingEncoderWritable;
+import org.grails.encoder.EncodesToWriter;
+import org.grails.encoder.StreamingEncoder;
+import org.grails.encoder.StreamingEncoderWriter;
+import org.grails.encoder.StreamingEncoderWritable;
 import org.springframework.util.ClassUtils;
 
 /**

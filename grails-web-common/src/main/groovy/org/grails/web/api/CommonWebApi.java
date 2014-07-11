@@ -25,8 +25,8 @@ import javax.servlet.http.HttpSession;
 import grails.core.GrailsApplication;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsApplicationAware;
-import org.grails.support.encoding.CodecLookupHelper;
-import org.grails.support.encoding.Encoder;
+import org.grails.encoder.CodecLookupHelper;
+import org.grails.encoder.Encoder;
 import grails.web.mvc.FlashScope;
 import grails.web.util.GrailsApplicationAttributes;
 import grails.web.servlet.mvc.GrailsParameterMap;
@@ -47,7 +47,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware, Serializable{
     private static final long serialVersionUID = 1;
-    public static final String RAW_CODEC_NAME = "org.grails.plugins.codecs.RawCodec";
+    public static final String RAW_CODEC_NAME = "org.grails.encoder.impl.RawCodec";
 
     private transient GrailsPluginManager pluginManager;
     private transient GrailsApplication grailsApplication;

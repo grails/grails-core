@@ -22,8 +22,8 @@ import java.text.DateFormat
 import java.text.DateFormatSymbols
 
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.support.encoding.CodecLookup
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
 import grails.web.mapping.LinkGenerator
 import org.grails.web.pages.FastStringWriter
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder

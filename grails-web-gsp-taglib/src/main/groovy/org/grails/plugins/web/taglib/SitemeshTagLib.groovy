@@ -18,8 +18,8 @@ package org.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import groovy.transform.CompileStatic
 
-import org.grails.support.encoding.CodecLookup
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
 import org.grails.web.pages.FastStringWriter
 import org.grails.web.pages.SitemeshPreprocessor
 import org.grails.web.sitemesh.GSPSitemeshPage

@@ -2,8 +2,8 @@ package org.grails.plugins.web.taglib
 
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
-import org.grails.support.encoding.CodecLookup
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import grails.web.mapping.UrlMapping
 import org.grails.web.mapping.UrlMappingUtils

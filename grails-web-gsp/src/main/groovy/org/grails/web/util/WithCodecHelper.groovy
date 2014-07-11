@@ -17,8 +17,8 @@ package org.grails.web.util
 
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
-import org.grails.support.encoding.CodecLookupHelper
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookupHelper
+import org.grails.encoder.Encoder
 import org.grails.web.pages.GroovyPageConfig
 import org.grails.web.pages.GroovyPageOutputStack
 import org.grails.web.pages.GroovyPageOutputStackAttributes

@@ -6,10 +6,10 @@ import org.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.grails.commons.GrailsCodecClass
 import org.grails.plugins.codecs.HTMLCodec
-import org.grails.plugins.codecs.HTMLJSCodec
-import org.grails.plugins.codecs.JavaScriptCodec
-import org.grails.plugins.codecs.RawCodec
-import org.grails.support.encoding.EncodingStateRegistry
+import org.grails.encoder.impl.HTMLJSCodec
+import org.grails.encoder.impl.JavaScriptCodec
+import org.grails.encoder.impl.RawCodec
+import org.grails.encoder.EncodingStateRegistry
 import org.grails.web.pages.FastStringWriter
 import org.grails.web.servlet.mvc.GrailsWebRequest
 

@@ -1,10 +1,10 @@
 package org.grails.web.codecs;
 
-import org.grails.plugins.codecs.HTMLJSCodec
-import org.grails.support.encoding.Decoder
-import org.grails.support.encoding.DefaultEncodingStateRegistry
-import org.grails.support.encoding.EncodingStateRegistry
-import org.grails.support.encoding.StreamingEncoder
+import org.grails.encoder.impl.HTMLJSCodec
+import org.grails.encoder.Decoder
+import org.grails.encoder.DefaultEncodingStateRegistry
+import org.grails.encoder.EncodingStateRegistry
+import org.grails.encoder.StreamingEncoder
 import org.grails.web.pages.FastStringWriter
 
 import spock.lang.Specification

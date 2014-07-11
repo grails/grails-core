@@ -17,13 +17,13 @@ package org.grails.plugins.codecs;
 
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
-import org.grails.plugins.codecs.HTML4Decoder;
-import org.grails.plugins.codecs.HTML4Encoder;
-import org.grails.plugins.codecs.HTMLEncoder;
-import org.grails.support.encoding.CodecFactory;
-import org.grails.support.encoding.CodecIdentifier;
-import org.grails.support.encoding.Decoder;
-import org.grails.support.encoding.Encoder;
+import org.grails.encoder.CodecFactory;
+import org.grails.encoder.CodecIdentifier;
+import org.grails.encoder.Decoder;
+import org.grails.encoder.Encoder;
+import org.grails.encoder.impl.HTML4Decoder;
+import org.grails.encoder.impl.HTML4Encoder;
+import org.grails.encoder.impl.HTMLEncoder;
 
 /**
  * Encodes and decodes strings to and from HTML.

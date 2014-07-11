@@ -1,6 +1,6 @@
 package org.grails.plugins.codecs;
 
-import org.grails.plugins.codecs.JSONCodecFactory;
+import org.grails.encoder.impl.JSONCodecFactory;
 
 /**
  * A codec that encodes strings to JSON

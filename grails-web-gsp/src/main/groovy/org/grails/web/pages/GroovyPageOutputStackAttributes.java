@@ -17,7 +17,7 @@ package org.grails.web.pages;
 
 import java.io.Writer;
 
-import org.grails.support.encoding.Encoder;
+import org.grails.encoder.Encoder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 public class GroovyPageOutputStackAttributes {

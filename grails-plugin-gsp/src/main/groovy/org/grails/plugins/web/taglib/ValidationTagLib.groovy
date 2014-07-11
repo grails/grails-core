@@ -24,8 +24,8 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
 import org.apache.commons.lang.StringEscapeUtils
-import org.grails.support.encoding.CodecLookup
-import org.grails.support.encoding.Encoder
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.taglib.GroovyPageAttributes
 import org.springframework.beans.PropertyEditorRegistry
