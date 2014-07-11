@@ -1,6 +1,7 @@
 package grails.test.mixin
 
 import org.junit.Test
+import org.springframework.web.servlet.support.RequestContextUtils
 
 @TestFor(SimpleController)
 @Mock(Simple)
@@ -29,6 +30,19 @@ class ControllerTestForTests {
         mockService.verify()
         assert response.text == 'goodbye'
     }
+    
+    @Test
+    void testLocaleResolver() {
+        def localeResolver = applicationContext.localeResolver
+        request.addPreferredLocale(Locale.FRANCE)
+        assert localeResolver.resolveLocale(request) == Locale.FRANCE
+    }
+    
+    @Test
+    void testLocaleResolverAttribute() {
+        assert RequestContextUtils.getLocaleResolver(request) == applicationContext.localeResolver
+    }
+
 }
 class SimpleController {
     def index = {
