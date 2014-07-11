@@ -59,6 +59,8 @@ import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.DispatcherServlet
+import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 /**
  * Controller TestPlugin for TestRuntime
@@ -126,6 +128,8 @@ class ControllerTestPlugin implements TestPlugin {
             }
 
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, grailsApplication)
+            
+            localeResolver(SessionLocaleResolver)
         }
         defineBeans(runtime, new CodecsGrailsPlugin().doWithSpring)
     }
@@ -156,6 +160,7 @@ class ControllerTestPlugin implements TestPlugin {
 
         def applicationContext = grailsApplication.mainContext
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest((ServletContext)runtime.getValue("servletContext"))
+        request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, grailsApplication.mainContext.getBean('localeResolver'))
         request.method = 'GET'
         request.requestMimeTypesApi = new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext)
         GrailsMockHttpServletResponse response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
