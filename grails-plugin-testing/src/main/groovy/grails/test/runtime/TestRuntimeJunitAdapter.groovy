@@ -42,7 +42,8 @@ class TestRuntimeJunitAdapter {
             Statement apply(Statement statement, Description description) {
                 return new Statement() {
                     public void evaluate() throws Throwable {
-                        TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testInstance.getClass())
+                        Class testClass = description.getTestClass() ?: testInstance.getClass()
+                        TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testClass)
                         before(runtime, testInstance, description)
                         try {
                             statement.evaluate()
@@ -63,11 +64,12 @@ class TestRuntimeJunitAdapter {
         }
     }
 
-    public TestRule newClassRule(final Class testClass) {
+    public TestRule newClassRule(final Class definedInTestClass) {
         return new TestRule() {
             Statement apply(Statement statement, Description description) {
                 return new Statement() {
                     public void evaluate() throws Throwable {
+                        Class testClass = description.getTestClass() ?: definedInTestClass
                         TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testClass)
                         beforeClass(runtime, testClass, description)
                         try {
