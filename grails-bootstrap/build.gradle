@@ -63,7 +63,7 @@ jar {
 
 eclipse {
     classpath {
-        plusConfigurations += configurations.uaa
+        plusConfigurations += [configurations.uaa]
     }
 }
 
