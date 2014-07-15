@@ -77,22 +77,28 @@ public class ControllerTagLibraryApi extends CommonWebApi {
      */
     public Object methodMissing(Object instance, String methodName, Object argsObject) {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
-        TagLibraryLookup lookup = getTagLibraryLookup();
-        if (lookup != null) {
-            GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
-            if (tagLibrary != null) {
-                if (!developmentMode) {
-                    MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(instance);
-                    TagLibraryMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
-                }
-                List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args);
-                if (respondsTo.size()>0) {
-                    return respondsTo.get(0).invoke(tagLibrary, args);
+        if (shouldHandleMethodMissing(instance, methodName, args)) {
+            TagLibraryLookup lookup = getTagLibraryLookup();
+            if (lookup != null) {
+                GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
+                if (tagLibrary != null) {
+                    if (!developmentMode) {
+                        MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(instance);
+                        TagLibraryMetaUtils.registerMethodMissingForTags(controllerMc, lookup,
+                                GroovyPage.DEFAULT_NAMESPACE, methodName);
+                    }
+                    List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args);
+                    if (respondsTo.size() > 0) {
+                        return respondsTo.get(0).invoke(tagLibrary, args);
+                    }
                 }
             }
         }
-
         throw new MissingMethodException(methodName, instance.getClass(), args);
+    }
+
+    protected boolean shouldHandleMethodMissing(Object instance, String methodName, Object[] args) {
+        return !"render".equals(methodName);
     }
 
     /**
