@@ -15,6 +15,7 @@ subprojects { subproject ->
 
 task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency',
                                 dependsOn: libsConfigurations) << {
+/*                                
     def moduleToVersionsMap = [:]
     libsConfigurations.each { configuration ->
         configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
@@ -42,6 +43,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
         }
         throw new GradleException(msg)
     }
+*/
 }
 
 task configurePopulateDependencies << {
