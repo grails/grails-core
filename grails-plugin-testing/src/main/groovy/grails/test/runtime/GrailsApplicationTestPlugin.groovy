@@ -319,7 +319,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 // trigger grailsApplication initialization by requesting value
                 runtime.getValue("grailsApplication", event.arguments)
                 break
-            case 'after':
+            case 'resetGrailsApplication':
                 resetGrailsApplication(runtime)
                 break
             case 'grailsApplicationRequested':
