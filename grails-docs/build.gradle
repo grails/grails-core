@@ -45,6 +45,6 @@ jar.dependsOn docFilesJar
 
 eclipse {
     classpath {
-       plusConfigurations += configurations.gradleConf
+       plusConfigurations += [configurations.gradleConf]
     }
 }

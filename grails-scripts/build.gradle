@@ -54,6 +54,6 @@ sourceSets {
 
 eclipse {
     classpath {
-        plusConfigurations += configurations.scripts
+        plusConfigurations += [configurations.scripts]
     }
 }
