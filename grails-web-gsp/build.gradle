@@ -5,6 +5,7 @@ configurations {
 
 dependencies {
     compile( project(":grails-web-common") )
+    compile( project(":grails-web-taglib") )
 
     compile( project(":grails-web-sitemesh") ) {
         exclude group:'org.grails', module:'grails-web-common'

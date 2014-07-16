@@ -15,42 +15,30 @@
  */
 package org.grails.plugins.web.taglib
 
+import com.opensymphony.module.sitemesh.*
+import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
 import grails.artefact.Artefact
+import grails.web.util.TypeConvertingMap
 import groovy.text.Template
 import groovy.transform.CompileStatic
 import org.grails.buffer.FastStringWriter
-import org.grails.web.pages.GroovyPage
-import org.grails.web.pages.GroovyPageParser
-import org.grails.web.pages.GroovyPageTemplate
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.GroovyPagesTemplateRenderer
-import org.grails.web.pages.TagLibraryLookup
-
-import javax.servlet.http.HttpServletRequest
-
+import org.grails.buffer.StreamCharBuffer
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import org.grails.web.errors.ErrorsViewStackTracePrinter
 import org.grails.web.errors.ExceptionUtils
-import org.grails.web.sitemesh.FactoryHolder
-import org.grails.web.sitemesh.GSPSitemeshPage
-import org.grails.web.sitemesh.GrailsHTMLPageParser
-import org.grails.web.sitemesh.GrailsLayoutView
-import org.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.grails.web.sitemesh.SpringMVCViewDecorator
-import org.grails.buffer.StreamCharBuffer
-import grails.web.util.TypeConvertingMap
+import org.grails.web.pages.GroovyPageParser
+import org.grails.web.pages.GroovyPageTemplate
+import org.grails.web.pages.GroovyPagesTemplateEngine
+import org.grails.web.pages.GroovyPagesTemplateRenderer
+import org.grails.web.sitemesh.*
+import org.grails.web.taglib.TagLibraryLookup
+import org.grails.web.taglib.TagOutput
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
 
-import com.opensymphony.module.sitemesh.Decorator
-import com.opensymphony.module.sitemesh.DecoratorMapper
-import com.opensymphony.module.sitemesh.Factory
-import com.opensymphony.module.sitemesh.Page
-import com.opensymphony.module.sitemesh.PageParser
-import com.opensymphony.module.sitemesh.RequestConstants
-import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
+import javax.servlet.http.HttpServletRequest
 
 /**
  * Tags to help rendering of views and layouts.
@@ -109,7 +97,7 @@ class RenderTagLib implements RequestConstants {
         }
         else if (attrs.action && attrs.controller) {
             def includeAttrs = [action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel]
-            content = GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'include', includeAttrs, null, webRequest)
+            content = TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'include', includeAttrs, null, webRequest)
         }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE)
@@ -117,10 +105,10 @@ class RenderTagLib implements RequestConstants {
                 gspSiteMeshPage = new GSPSitemeshPage()
                 request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, gspSiteMeshPage)
                 if (attrs.view || attrs.template) {
-                    content = GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'render', attrs, null, webRequest)
+                    content = TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'render', attrs, null, webRequest)
                 }
                 else {
-                    def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest)
+                    def bodyClosure = TagOutput.createOutputCapturingClosure(this, body, webRequest)
                     content = bodyClosure()
                 }
                 if (content instanceof StreamCharBuffer) {

@@ -45,11 +45,11 @@ class MyPage extends GroovyPage {
         }
         invokeTag("tag1", 'g', -1, [attr1:"test"], 1)
 
-        def tagResult=tag3([:], new GroovyPage.ConstantClosure('TEST'))?.toString()
+        def tagResult=tag3([:], new TagOutput.ConstantClosure('TEST'))?.toString()
         if (tagResult != 'TEST') {
                 out << '<ERROR in tag3 output>' << tagResult
         }
-        out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest, {
+        out << "hello" + tag2(test:"test2", new TagBodyClosure(this, webRequest, {
 
         }))
     }

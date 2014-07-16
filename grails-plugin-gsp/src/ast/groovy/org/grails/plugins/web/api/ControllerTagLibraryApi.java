@@ -15,27 +15,21 @@
  */
 package org.grails.plugins.web.api;
 
-import grails.util.Environment;
-import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-
-import java.util.List;
-
-import grails.util.GrailsMetaClassUtils;
 import grails.plugins.GrailsPluginManager;
-import org.grails.web.pages.GroovyPage;
-import org.grails.web.pages.TagLibraryLookup;
-import org.grails.web.taglib.NamespacedTagDispatcher;
-import org.grails.web.util.TagLibraryMetaUtils;
-import org.grails.web.util.WithCodecHelper;
+import grails.util.Environment;
+import grails.util.GrailsMetaClassUtils;
+import groovy.lang.*;
 import org.grails.web.api.CommonWebApi;
+import org.grails.web.encoder.WithCodecHelper;
+import org.grails.web.pages.GroovyPage;
+import org.grails.web.taglib.NamespacedTagDispatcher;
+import org.grails.web.taglib.TagLibraryLookup;
+import org.grails.web.taglib.util.TagLibraryMetaUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+
+import java.util.List;
 
 /**
  * Enhances controller classes with a method missing implementation for tags at compile time.

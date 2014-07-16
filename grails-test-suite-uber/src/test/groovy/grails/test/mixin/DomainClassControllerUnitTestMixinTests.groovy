@@ -60,6 +60,7 @@ class DomainClassControllerUnitTestMixinTests {
         assert book.errors.allErrors.size() == 1
         assert book.errors['title'].code == 'nullable'
 
+        response.reset()
         book.clearErrors()
 
         book.title = "The Stand"
@@ -165,6 +166,7 @@ class DomainClassControllerUnitTestMixinTests {
         assert view == "/book/edit"
         assert model.bookInstance != null
 
+        response.reset()
         book.clearErrors()
         params.title = "The Shining"
         params.pages = "500"

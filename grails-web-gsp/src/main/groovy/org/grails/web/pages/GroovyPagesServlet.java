@@ -15,26 +15,16 @@
  */
 package org.grails.web.pages;
 
-import groovy.text.Template;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import grails.util.GrailsStringUtils;
-import org.grails.core.io.support.GrailsFactoriesLoader;
-import org.grails.plugins.BinaryGrailsPlugin;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
+import grails.util.GrailsStringUtils;
+import grails.web.util.GrailsApplicationAttributes;
+import groovy.text.Template;
+import org.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.plugins.BinaryGrailsPlugin;
 import org.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
 import org.grails.web.pages.discovery.GroovyPageScriptSource;
-import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.beans.BeansException;
@@ -45,6 +35,14 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.FrameworkServlet;
 import org.springframework.web.util.WebUtils;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -109,7 +107,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         context.setAttribute(SERVLET_INSTANCE, this);
 
         final WebApplicationContext webApplicationContext = getWebApplicationContext();
-        grailsAttributes = GrailsFactoriesLoader.loadFactoriesWithArguments(GrailsApplicationAttributes.class, getClass().getClassLoader(), context).get(0);
+        grailsAttributes = GrailsFactoriesLoader.loadFactoriesWithArguments(GrailsApplicationAttributes.class, getClass().getClassLoader(), new Object[]{context}).get(0);
         webApplicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(this, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
         groovyPagesTemplateEngine = webApplicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID,
                 GroovyPagesTemplateEngine.class);

@@ -34,14 +34,17 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import grails.core.GrailsApplication;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsApplicationAware;
+
 import org.grails.encoder.Encoder;
+import org.grails.web.encoder.WithCodecHelper;
 import org.grails.web.pages.exceptions.GroovyPagesException;
 import org.grails.web.pages.ext.jsp.TagLibraryResolver;
-import org.grails.web.util.WithCodecHelper;
+import org.grails.web.taglib.TagLibraryLookup;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;

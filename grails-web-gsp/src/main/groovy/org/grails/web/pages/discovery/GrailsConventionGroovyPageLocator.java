@@ -27,7 +27,7 @@ import grails.core.support.GrailsApplicationAware;
 import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
-import org.grails.web.pages.GroovyPageBinding;
+import org.grails.web.taglib.TemplateVariableBinding;
 import grails.web.pages.GroovyPagesUriService;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
@@ -223,7 +223,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * @param templateName The template name
      * @return The GroovyPageScriptSource
      */
-    public GroovyPageScriptSource findTemplateInBinding(String templateName, GroovyPageBinding binding) {
+    public GroovyPageScriptSource findTemplateInBinding(String templateName, TemplateVariableBinding binding) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest == null) {
             return findPageInBinding(uriService.getAbsoluteTemplateURI(templateName), binding);
@@ -239,7 +239,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * @param binding The binding
      * @return The GroovyPageScriptSource
      */
-    public GroovyPageScriptSource findTemplateInBinding(String pluginName, String templateName, GroovyPageBinding binding) {
+    public GroovyPageScriptSource findTemplateInBinding(String pluginName, String templateName, TemplateVariableBinding binding) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest == null) {
             return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName), binding);

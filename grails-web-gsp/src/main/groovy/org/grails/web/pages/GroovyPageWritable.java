@@ -16,31 +16,26 @@
 package org.grails.web.pages;
 
 import grails.util.Environment;
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.Binding;
 import groovy.lang.Writable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.grails.web.pages.exceptions.GroovyPagesException;
+import org.grails.web.servlet.WrappedResponseHolder;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.taglib.TemplateVariableBinding;
+import org.grails.web.taglib.WebRequestTemplateVariableBinding;
+import org.springframework.web.context.request.RequestContextHolder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.grails.web.pages.exceptions.GroovyPagesException;
-import grails.web.util.GrailsApplicationAttributes;
-import org.grails.web.servlet.WrappedResponseHolder;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * Writes itself to the specified writer, typically the response writer.
@@ -148,15 +143,15 @@ class GroovyPageWritable implements Writable {
             }
 
             // Set up the script context
-            GroovyPageBinding parentBinding = null;
+            TemplateVariableBinding parentBinding = null;
             boolean hasRequest = request != null;
             boolean newParentCreated = false;
 
             if (hasRequest) {
-                parentBinding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                parentBinding = (TemplateVariableBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
                 if (parentBinding == null) {
                     if (webRequest != null) {
-                        parentBinding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));
+                        parentBinding = new TemplateVariableBinding(new WebRequestTemplateVariableBinding(webRequest));
                         parentBinding.setRoot(true);
                         newParentCreated = true;
                     }
@@ -240,7 +235,7 @@ class GroovyPageWritable implements Writable {
         return out;
     }
 
-    private void makeLegacyCodecVariablesAvailable(boolean hasRequest, GroovyPageBinding binding) {
+    private void makeLegacyCodecVariablesAvailable(boolean hasRequest, TemplateVariableBinding binding) {
         if (metaInfo.getExpressionEncoder() != null) {
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getExpressionEncoder().getCodecIdentifier().getCodecName());
@@ -273,7 +268,7 @@ class GroovyPageWritable implements Writable {
         // set plugin context path for top level rendering, this means actual view + layout
         // view is top level when parent is GroovyPageRequestBinding
         // pluginContextPath is also resetted when a plugin template is overrided by an application view
-        if (parent==null || (parent instanceof GroovyPageBinding && ((GroovyPageBinding)parent).isRoot()) || "".equals(metaInfo.getPluginPath())) {
+        if (parent==null || (parent instanceof TemplateVariableBinding && ((TemplateVariableBinding)parent).isRoot()) || "".equals(metaInfo.getPluginPath())) {
             binding.setPluginContextPath(metaInfo.getPluginPath());
         }
         binding.setPagePlugin(metaInfo.getPagePlugin());

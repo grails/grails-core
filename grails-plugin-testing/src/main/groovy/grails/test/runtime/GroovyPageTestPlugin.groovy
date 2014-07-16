@@ -18,7 +18,7 @@ package grails.test.runtime
 
 import groovy.transform.CompileStatic
 import org.grails.web.pages.GroovyPageBinding
-import org.grails.web.pages.GroovyPageRequestBinding
+import org.grails.web.taglib.WebRequestTemplateVariableBinding
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
@@ -37,7 +37,7 @@ class GroovyPageTestPlugin implements TestPlugin {
 
     protected void bindPageScope(TestRuntime runtime) {
         GrailsWebRequest webRequest = (GrailsWebRequest) runtime.getValue("webRequest")
-        GroovyPageBinding pageScope = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest))
+        GroovyPageBinding pageScope = new GroovyPageBinding(new WebRequestTemplateVariableBinding(webRequest))
         webRequest.request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
         runtime.putValue("pageScope", pageScope)
     }

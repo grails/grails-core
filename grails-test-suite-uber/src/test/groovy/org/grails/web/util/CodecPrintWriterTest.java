@@ -24,7 +24,7 @@ import org.grails.encoder.DefaultEncodingStateRegistry;
 import org.grails.encoder.Encoder;
 import org.grails.encoder.EncodingStateRegistry;
 import org.grails.buffer.FastStringWriter;
-import org.grails.web.pages.GroovyPageOutputStack;
+import org.grails.web.encoder.OutputEncodingStack;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.junit.Test;
@@ -91,7 +91,7 @@ public class CodecPrintWriterTest {
         GrailsWebRequest webRequest = bindMockHttpRequest();
 
         // Initialize out and codecOut as it is done in GroovyPage.initRun
-        GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
+        OutputEncodingStack outputStack = OutputEncodingStack.currentStack(true, target, false, true);
         GrailsPrintWriter out = outputStack.getOutWriter();
         webRequest.setOut(out);
         GrailsPrintWriter codecOut = new CodecPrintWriter(out, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);

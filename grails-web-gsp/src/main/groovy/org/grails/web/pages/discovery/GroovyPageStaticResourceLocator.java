@@ -19,6 +19,7 @@ import org.grails.core.io.DefaultResourceLocator;
 import org.grails.io.support.GrailsResourceUtils;
 import grails.plugins.GrailsPlugin;
 import org.grails.web.pages.GroovyPageBinding;
+import org.grails.web.taglib.TemplateVariableBinding;
 import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
@@ -38,9 +39,9 @@ public class GroovyPageStaticResourceLocator extends DefaultResourceLocator {
     public Resource findResourceForURI(String uri) {
         Resource resource = super.findResourceForURI(uri);
         if (resource == null || !resource.exists()) {
-            GroovyPageBinding binding = findBindingInWebRequest();
-            if (binding != null) {
-                GrailsPlugin pagePlugin = binding.getPagePlugin();
+            TemplateVariableBinding binding = findBindingInWebRequest();
+            if (binding instanceof GroovyPageBinding) {
+                GrailsPlugin pagePlugin = ((GroovyPageBinding)binding).getPagePlugin();
                 if (pagePlugin != null && pluginManager != null) {
                     resource = findResourceForPlugin(pagePlugin, uri);
                 }
@@ -65,10 +66,10 @@ public class GroovyPageStaticResourceLocator extends DefaultResourceLocator {
         return resource;
     }
 
-    private GroovyPageBinding findBindingInWebRequest() {
+    private TemplateVariableBinding findBindingInWebRequest() {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest != null) {
-            return (GroovyPageBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
+            return (TemplateVariableBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
         }
         return null;
     }

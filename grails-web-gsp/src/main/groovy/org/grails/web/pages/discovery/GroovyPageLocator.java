@@ -15,7 +15,7 @@
  */
 package org.grails.web.pages.discovery;
 
-import org.grails.web.pages.GroovyPageBinding;
+import org.grails.web.taglib.TemplateVariableBinding;
 import org.springframework.core.io.ResourceLoader;
 
 /**
@@ -47,7 +47,7 @@ public interface GroovyPageLocator {
      * @param uri The URI
      * @return A script source
      */
-    GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding);
+    GroovyPageScriptSource findPageInBinding(String pluginName, String uri, TemplateVariableBinding binding);
 
     /**
      * Finds a page for the URI and binding
@@ -56,7 +56,7 @@ public interface GroovyPageLocator {
      * @param binding The binding
      * @return The page source
      */
-    GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding);
+    GroovyPageScriptSource findPageInBinding(String uri, TemplateVariableBinding binding);
 
     /**
      * Removes any precompiled pages for the given URI so that they can be replaced by dynamic pages

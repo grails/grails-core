@@ -1,17 +1,17 @@
 package org.grails.plugins.web.taglib
 
 import grails.gsp.TagLib
+import grails.web.mapping.UrlMapping
+import grails.web.util.GrailsApplicationAttributes
+import grails.web.util.TypeConvertingMap
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import org.grails.web.mapping.ForwardUrlMappingInfo
-import grails.web.mapping.UrlMapping
 import org.grails.web.mapping.UrlMappingUtils
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
-import org.grails.web.pages.GroovyPage
-import org.grails.web.pages.TagLibraryLookup
-import grails.web.util.GrailsApplicationAttributes
-import grails.web.util.TypeConvertingMap
+import org.grails.web.taglib.TagLibraryLookup
+import org.grails.web.taglib.TagOutput
 import org.springframework.web.servlet.support.RequestContextUtils
 
 /**
@@ -327,6 +327,6 @@ class UrlMappingTagLib {
     }
 
     private callLink(Map attrs, Object body) {
-        GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'link', attrs, body, webRequest)
+        TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'link', attrs, body, webRequest)
     }
 }

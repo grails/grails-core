@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.grails.web.pages.GroovyPageBinding;
+import org.grails.web.taglib.TemplateVariableBinding;
 import org.springframework.core.io.ByteArrayResource;
 
 /**
@@ -39,7 +40,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     private long cacheTimeout = -1;
 
     @Override
-    public GroovyPageScriptSource findPageInBinding(final String uri, final GroovyPageBinding binding) {
+    public GroovyPageScriptSource findPageInBinding(final String uri, final TemplateVariableBinding binding) {
         if (uri == null) return null;
 
         Callable<GroovyPageScriptSource> updater = new Callable<GroovyPageScriptSource>() {
@@ -56,7 +57,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     }
 
     @Override
-    public GroovyPageScriptSource findPageInBinding(final String pluginName, final String uri, final GroovyPageBinding binding) {
+    public GroovyPageScriptSource findPageInBinding(final String pluginName, final String uri, final TemplateVariableBinding binding) {
         if (uri == null || pluginName == null) return null;
 
         Callable<GroovyPageScriptSource> updater = new Callable<GroovyPageScriptSource>() {
@@ -129,9 +130,9 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             this.contextPath = contextPath;
         }
 
-        public static final GroovyPageLocatorCacheKey build(final String uri, final String pluginName, final GroovyPageBinding binding) {
-            String pluginNameInCacheKey = (pluginName == null) ? ( binding != null ? (binding.getPagePlugin() != null ? binding.getPagePlugin().getName() : null) : null) : pluginName;
-            return new GroovyPageLocatorCacheKey(uri, pluginNameInCacheKey, binding != null ? binding.getPluginContextPath() : null);
+        public static final GroovyPageLocatorCacheKey build(final String uri, final String pluginName, final TemplateVariableBinding binding) {
+            String pluginNameInCacheKey = (pluginName == null) ? ( binding instanceof GroovyPageBinding && ((GroovyPageBinding)binding).getPagePlugin() != null ? ((GroovyPageBinding)binding).getPagePlugin().getName() : null) : pluginName;
+            return new GroovyPageLocatorCacheKey(uri, pluginNameInCacheKey, binding instanceof GroovyPageBinding ? ((GroovyPageBinding)binding).getPluginContextPath() : null);
         }
 
 

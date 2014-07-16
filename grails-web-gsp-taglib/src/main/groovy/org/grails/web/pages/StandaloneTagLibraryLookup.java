@@ -1,20 +1,16 @@
 package org.grails.web.pages;
 
-import grails.gsp.TagLib;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.grails.core.DefaultGrailsTagLibClass;
 import grails.core.GrailsTagLibClass;
+import grails.gsp.TagLib;
+import org.grails.core.DefaultGrailsTagLibClass;
 import org.grails.plugins.web.taglib.RenderTagLib;
 import org.grails.plugins.web.taglib.SitemeshTagLib;
+import org.grails.web.taglib.TagLibraryLookup;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+
+import java.util.*;
 
 /**
  * GSP TagLibraryLookup class that's used for standalone GSP 

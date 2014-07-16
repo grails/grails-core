@@ -22,14 +22,14 @@ import org.grails.buffer.FastStringWriter
 import org.grails.web.pages.GSPResponseWriter
 import org.grails.web.pages.GroovyPage
 import org.grails.web.pages.GroovyPageMetaInfo
-import org.grails.web.pages.GroovyPageOutputStack
+import org.grails.web.encoder.OutputEncodingStack
+import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.pages.GroovyPageTemplate
 import org.grails.web.pages.GroovyPagesTemplateEngine
 import org.grails.web.pages.SitemeshPreprocessor
 import org.grails.web.sitemesh.GSPSitemeshPage
 import org.grails.web.sitemesh.GrailsHTMLPageParser
 import org.grails.web.sitemesh.GrailsLayoutView
-import org.grails.web.util.WithCodecHelper
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.plugins.DefaultGrailsPlugin
@@ -132,7 +132,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
             appCtx.autowireCapableBeanFactory.autowireBeanProperties(go, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
             def gspTagLibraryLookup = appCtx.gspTagLibraryLookup
 
-            GroovyPageOutputStack stack=GroovyPageOutputStack.currentStack(webRequest, true)
+            OutputEncodingStack stack=OutputEncodingStack.currentStack(webRequest, true)
 
             stack.push(out)
             try {
@@ -147,7 +147,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                     ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(true)
                     def body = args?.size() > 1 ? args[1] : null
                     if (body && !(body instanceof Closure)) {
-                        body = new GroovyPage.ConstantClosure(body)
+                        body = new TagOutput.ConstantClosure(body)
                     }
 
                     def tagresult = null
@@ -174,7 +174,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                                 }
                                 break
                             case 2:
-                                tagresult = tag.call(attrs, (body != null) ? body : GroovyPage.EMPTY_BODY_CLOSURE)
+                                tagresult = tag.call(attrs, (body != null) ? body : TagOutput.EMPTY_BODY_CLOSURE)
                                 outputTagResult(stack.taglibWriter, returnsObject, tagresult)
                                 break
                         }

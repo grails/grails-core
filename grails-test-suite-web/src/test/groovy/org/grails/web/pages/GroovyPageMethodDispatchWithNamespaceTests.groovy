@@ -44,7 +44,7 @@ class MyPage extends org.grails.web.pages.GroovyPage {
             ""
         }
         invokeTag("tag", "t1", -1, [attr1:"test"], 1)
-        out << "hello" + tag2(test:"test2", new GroovyPageTagBody(this, webRequest, {
+        out << "hello" + tag2(test:"test2", new TagBodyClosure(this, webRequest, {
 
         }))
     }

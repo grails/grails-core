@@ -43,8 +43,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.grails.core.artefact.DomainClassArtefactHandler;
+
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
+
 import org.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.grails.core.exceptions.DefaultErrorsPrinter;
 import org.grails.web.pages.exceptions.GroovyPagesException;
@@ -56,8 +58,11 @@ import org.grails.web.pages.discovery.GroovyPageLocator;
 import org.grails.web.pages.discovery.GroovyPageResourceScriptSource;
 import org.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.grails.web.pages.ext.jsp.TagLibraryResolver;
+
 import grails.web.util.GrailsApplicationAttributes;
+
 import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.taglib.TagLibraryLookup;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;

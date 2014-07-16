@@ -109,7 +109,7 @@ abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResp
     @Override
     void reset() {
         final webRequest = GrailsWebRequest.lookup()
-        webRequest?.currentRequest?.removeAttribute("org.codehaus.groovy.grails.REDIRECT_ISSUED")
+        webRequest?.currentRequest?.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         setCommitted(false)
         def field = ReflectionUtils.findField(MockHttpServletResponse, "writer")
         ReflectionUtils.makeAccessible(field)

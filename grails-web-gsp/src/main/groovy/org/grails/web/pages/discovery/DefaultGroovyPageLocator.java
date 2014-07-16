@@ -39,6 +39,7 @@ import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import org.grails.web.pages.GroovyPage;
 import org.grails.web.pages.GroovyPageBinding;
+import org.grails.web.taglib.TemplateVariableBinding;
 import grails.web.util.GrailsApplicationAttributes;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -106,7 +107,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         return resource;
     }
 
-    public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding) {
+    public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, TemplateVariableBinding binding) {
         String contextPath = resolveContextPath(pluginName, uri, binding);
 
         GroovyPageScriptSource scriptSource = findPageInBinding(GrailsResourceUtils.appendPiecesForUri(contextPath, uri), binding);
@@ -116,15 +117,18 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         return scriptSource;
     }
 
-    protected String resolveContextPath(String pluginName, String uri, GroovyPageBinding binding) {
+    protected String resolveContextPath(String pluginName, String uri, TemplateVariableBinding binding) {
         String contextPath = null;
 
         if (uri.startsWith("/plugins/")) {
             contextPath = BLANK;
         } else if (pluginName != null && pluginManager != null) {
             contextPath = pluginManager.getPluginPath(pluginName);
+        } else if (binding instanceof GroovyPageBinding) {
+            String pluginContextPath = ((GroovyPageBinding)binding).getPluginContextPath();
+            contextPath = pluginContextPath != null ? pluginContextPath : BLANK;
         } else {
-            contextPath = binding.getPluginContextPath() != null ? binding.getPluginContextPath() : BLANK;
+            contextPath = BLANK;
         }
 
         return contextPath;
@@ -137,11 +141,11 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         }
     }
 
-    public GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding) {
+    public GroovyPageScriptSource findPageInBinding(String uri, TemplateVariableBinding binding) {
          GroovyPageScriptSource scriptSource = findResourceScriptSource(uri);
 
         if (scriptSource == null) {
-            GrailsPlugin pagePlugin = binding.getPagePlugin();
+            GrailsPlugin pagePlugin = binding instanceof GroovyPageBinding ? ((GroovyPageBinding)binding).getPagePlugin() : null;
             if (pagePlugin instanceof BinaryGrailsPlugin) {
                 BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) pagePlugin;
                 scriptSource = resolveViewInBinaryPlugin(binaryPlugin, uri);

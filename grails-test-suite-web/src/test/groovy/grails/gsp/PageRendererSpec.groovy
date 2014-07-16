@@ -7,7 +7,7 @@ import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.plugins.web.taglib.ApplicationTagLib
 import org.grails.core.io.SimpleMapResourceLoader
 import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.TagLibraryLookup
+import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.springframework.core.io.ByteArrayResource
 

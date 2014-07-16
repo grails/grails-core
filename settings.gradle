@@ -23,10 +23,12 @@ include 'grails-aether',
         'grails-web-fileupload',
         'grails-web-mvc',
         'grails-web-gsp',
+        'grails-web-taglib',
         'grails-web-gsp-taglib',
         'grails-web-sitemesh',
         'grails-web-jsp',
         'grails-web-url-mappings',
+        'grails-web-encoder',
         'grails-wrapper',
 
         // Plugins

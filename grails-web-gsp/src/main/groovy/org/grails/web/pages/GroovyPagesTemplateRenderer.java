@@ -15,10 +15,31 @@
  */
 package org.grails.web.pages;
 
+import grails.core.GrailsDomainClass;
 import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
+import grails.util.GrailsStringUtils;
 import groovy.text.Template;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.grails.buffer.CodecPrintWriter;
+import org.grails.buffer.FastStringWriter;
+import org.grails.encoder.EncodedAppenderWriterFactory;
+import org.grails.encoder.Encoder;
+import org.grails.encoder.StreamingEncoder;
+import org.grails.encoder.StreamingEncoderWriter;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.web.encoder.OutputEncodingSettings;
+import org.grails.web.encoder.WithCodecHelper;
+import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
+import org.grails.web.pages.discovery.GroovyPageScriptSource;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.taglib.TemplateVariableBinding;
+import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -30,26 +51,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import grails.core.GrailsDomainClass;
-import grails.util.GrailsStringUtils;
-import org.grails.buffer.FastStringWriter;
-import org.grails.io.support.GrailsResourceUtils;
-import org.grails.encoder.EncodedAppenderWriterFactory;
-import org.grails.encoder.Encoder;
-import org.grails.encoder.StreamingEncoder;
-import org.grails.encoder.StreamingEncoderWriter;
-import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
-import org.grails.web.pages.discovery.GroovyPageScriptSource;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.exceptions.GrailsTagException;
-import org.grails.buffer.CodecPrintWriter;
-import org.grails.web.util.WithCodecHelper;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.util.Assert;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Service that provides the actual implementation to RenderTagLib's render tag.
@@ -86,7 +87,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         templateCache.clear();
     }
 
-    public void render(GrailsWebRequest webRequest, GroovyPageBinding pageScope, Map<String, Object> attrs, Object body, Writer out) throws IOException {
+    public void render(GrailsWebRequest webRequest, TemplateVariableBinding pageScope, Map<String, Object> attrs, Object body, Writer out) throws IOException {
         Assert.state(groovyPagesTemplateEngine != null, "Property [groovyPagesTemplateEngine] must be set!");
 
         String templateName = getStringValue(attrs, "template");
@@ -106,7 +107,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         makeTemplate(webRequest, t, attrs, body, out);
     }
 
-    private Template findAndCacheTemplate(GroovyPageBinding pageScope, String templateName,
+    private Template findAndCacheTemplate(TemplateVariableBinding pageScope, String templateName,
             String contextPath, String pluginName, final String uri) throws IOException {
 
         String templatePath = GrailsStringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
@@ -223,7 +224,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         Object encodeAs = attrs.get(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME);
         if (encodeAs != null) {
             Map<String, Object> codecSettings= WithCodecHelper.makeSettingsCanonical(encodeAs);
-            String codecForTaglibs = (String)codecSettings.get(GroovyPageConfig.TAGLIB_CODEC_NAME);
+            String codecForTaglibs = (String)codecSettings.get(OutputEncodingSettings.TAGLIB_CODEC_NAME);
             if (codecForTaglibs != null) {
                 Encoder encoder = WithCodecHelper.lookupEncoder(webRequest.getAttributes().getGrailsApplication(), codecForTaglibs);
                 if (out instanceof EncodedAppenderWriterFactory) {
