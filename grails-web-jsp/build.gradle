@@ -29,7 +29,7 @@ jar {
 
 eclipse {
     classpath {
-        plusConfigurations += configurations.jsp21
+        plusConfigurations += [configurations.jsp21]
         file {
             whenMerged { classpath ->
                 // move jsp-api-2.1 to the last one in entries so that it appears after -2.0
