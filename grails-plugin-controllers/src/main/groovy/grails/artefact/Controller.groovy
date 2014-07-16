@@ -130,7 +130,14 @@ trait Controller {
         final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod())
 
         if(entityIdentifierValue != null) {
-            commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue)
+            try {
+                commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
+            } catch (Exception e) {
+                final Errors errors = getErrors(controllerInstance);
+                if(errors != null) {
+                    errors.reject(controllerInstance.getClass().getName() + ".commandObject." + commandObjectParameterName + ".error", e.getMessage());
+                }
+            }
         } else if(requestMethod == HttpMethod.POST || !isDomainClass){
             commandObjectInstance = type.newInstance()
         }
