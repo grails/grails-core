@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.GrailsWebUtil
+import org.grails.compiler.web.ControllerTraitInjector
 import org.grails.compiler.web.ControllerTransformer
 
 import javax.servlet.http.HttpServletRequest
@@ -8,6 +9,7 @@ import javax.servlet.http.HttpServletRequest
 import grails.core.GrailsApplication
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.TraitInjector
 import org.springframework.web.context.request.RequestContextHolder
 
 import spock.lang.Specification
@@ -71,6 +73,12 @@ class ControllerTransformerSpec extends Specification {
                 @Override
                 boolean shouldInject(URL url) { true }
             }
+            def controllerTraitInjector = new ControllerTraitInjector() {
+                @Override
+                boolean shouldInject(URL url) { true }
+            }
+
+            gcl.traitInjectors = [controllerTraitInjector] as TraitInjector[]
             gcl.classInjectors = [transformer] as ClassInjector[]
 
         when:

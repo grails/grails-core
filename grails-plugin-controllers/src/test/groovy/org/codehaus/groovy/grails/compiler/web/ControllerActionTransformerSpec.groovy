@@ -4,6 +4,7 @@ import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
 import grails.web.Action
 import org.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerTraitInjector
 import org.grails.compiler.web.ControllerTransformer
 
 import java.lang.reflect.Modifier
@@ -11,6 +12,7 @@ import java.lang.reflect.Modifier
 import grails.web.servlet.context.GrailsWebApplicationContext
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.injection.TraitInjector
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -33,6 +35,11 @@ class ControllerActionTransformerSpec extends Specification {
             boolean shouldInject(URL url) { true }
         }
 
+        def controllerTraitInjector = new ControllerTraitInjector() {
+            boolean shouldInject(URL url) { true }
+        }
+
+        gcl.traitInjectors = [controllerTraitInjector] as TraitInjector[]
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
         def webRequest = GrailsWebUtil.bindMockWebRequest()
         def appCtx = new GrailsWebApplicationContext()

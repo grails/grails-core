@@ -19,7 +19,6 @@ import grails.async.Promise;
 import grails.converters.JSON;
 import grails.core.GrailsControllerClass;
 import grails.databinding.CollectionDataBindingSource;
-import grails.databinding.DataBindingSource;
 import grails.io.IOUtils;
 import grails.util.*;
 import grails.web.JSONBuilder;
@@ -72,8 +71,6 @@ import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData;
 
 import grails.web.mapping.LinkGenerator;
 
-import org.grails.plugins.support.WebMetaUtils;
-
 import grails.web.util.GrailsApplicationAttributes;
 
 import org.grails.plugins.web.controllers.metaclass.ChainMethod;
@@ -87,7 +84,6 @@ import grails.web.mapping.mvc.RedirectEventListener;
 import grails.web.mapping.mvc.exceptions.CannotRedirectException;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.web.api.CommonWebApi;
 import org.grails.web.converters.Converter;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -230,56 +226,11 @@ public class ControllersApi extends CommonWebApi {
     }
 
     /**
-     * Sets the errors instance of the current controller
-     *
-     * @param errors The error instance
-     */
-    public void setErrors(Object instance, Errors errors) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
-    }
-
-    /**
-     * Obtains the errors instance for the current controller
-     *
-     * @return The Errors instance
-     */
-    public Errors getErrors(Object instance) {
-        return (Errors)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0);
-    }
-
-    /**
-     * Sets the ModelAndView of the current controller
-     *
-     * @param mav The ModelAndView
-     */
-    public void setModelAndView(Object instance, ModelAndView mav) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0);
-    }
-
-    /**
-     * Obtains the ModelAndView for the currently executing controller
-     *
-     * @return The ModelAndView
-     */
-    public ModelAndView getModelAndView(Object instance) {
-        return (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-    }
-
-    /**
      * Obtains the chain model which is used to chain request attributes from one request to the next via flash scope
      * @return The chainModel
      */
     public Map getChainModel(Object instance) {
         return (Map)getFlash(instance).get("chainModel");
-    }
-
-    /**
-     * Return true if there are an errors
-     * @return true if there are errors
-     */
-    public boolean hasErrors(Object instance) {
-        final Errors errors = getErrors(instance);
-        return errors != null && errors.hasErrors();
     }
 
     /**
@@ -640,79 +591,6 @@ public class ControllersApi extends CommonWebApi {
      */
     public String forward(Object instance, Map params) {
         return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
-    }
-
-    /**
-     * Initializes a command object.
-     *
-     * If type is a domain class and the request body or parameters include an id, the id is used to retrieve
-     * the command object instance from the database, otherwise the no-arg constructor on type is invoke.  If
-     * an attempt is made to retrieve the command object instance from the database and no corresponding
-     * record is found, null is returned.
-     *
-     * The command object is then subjected to data binding and dependency injection before being returned.
-     *
-     *
-     * @param controllerInstance The controller instance
-     * @param type The type of the command object
-     * @return the initialized command object or null if the command object is a domain class, the body or
-     * parameters included an id and no corresponding record was found in the database.
-     */
-    public Object initializeCommandObject(final Object controllerInstance, final Class type, final String commandObjectParameterName) throws Exception {
-        final HttpServletRequest request = getRequest(controllerInstance);
-        final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
-        final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSourceForPrefix(commandObjectParameterName, dataBindingSource);
-        Object commandObjectInstance = null;
-        Object entityIdentifierValue = null;
-        final boolean isDomainClass = DomainClassArtefactHandler.isDomainClass(type);
-        if(isDomainClass) {
-            entityIdentifierValue = commandObjectBindingSource.getIdentifierValue();
-            if(entityIdentifierValue == null) {
-                final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-                entityIdentifierValue = webRequest != null ? webRequest.getParams().getIdentifier() : null;
-            }
-        }
-        if(entityIdentifierValue instanceof String) {
-            entityIdentifierValue = ((String)entityIdentifierValue).trim();
-            if("".equals(entityIdentifierValue) || "null".equals(entityIdentifierValue)) {
-                entityIdentifierValue = null;
-            }
-        }
-
-        final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
-
-        if(entityIdentifierValue != null) {
-            commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
-        } else if(requestMethod == HttpMethod.POST || !isDomainClass){
-            commandObjectInstance = type.newInstance();
-        }
-
-        if(commandObjectInstance != null) {
-            final boolean shouldDoDataBinding;
-
-            if(entityIdentifierValue != null) {
-                switch(requestMethod) {
-                    case PATCH:
-                    case POST:
-                    case PUT:
-                        shouldDoDataBinding = true;
-                        break;
-                    default:
-                        shouldDoDataBinding = false;
-                }
-            } else {
-                shouldDoDataBinding = true;
-            }
-
-            if(shouldDoDataBinding) {
-                bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
-            }
-
-            final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
-            final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
-            autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-        }
-        return commandObjectInstance;
     }
 
     @SuppressWarnings("unchecked")

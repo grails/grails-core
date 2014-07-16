@@ -1,5 +1,8 @@
 package org.grails.web.servlet.mvc.beta
 
+import grails.artefact.Artefact
+
+@Artefact('Controller')
 class NamespacedController {
     static namespace = 'secondary'
 

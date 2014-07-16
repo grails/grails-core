@@ -149,11 +149,11 @@ class FilterConfig extends ControllersApi {
     }
 
     void setErrors(Errors errors) {
-        super.setErrors(this, errors)
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0)
     }
 
     Errors getErrors() {
-        return super.getErrors(this)
+        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
     }
 
     Map getChainModel() {
@@ -161,7 +161,8 @@ class FilterConfig extends ControllersApi {
     }
 
     boolean hasErrors() {
-        return super.hasErrors(this)
+        final Errors errors = getErrors()
+        return errors != null && errors.hasErrors()
     }
 
     Object redirect(Map args) {

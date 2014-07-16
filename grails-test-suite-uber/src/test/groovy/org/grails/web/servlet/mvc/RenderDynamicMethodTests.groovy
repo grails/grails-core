@@ -1,11 +1,12 @@
 package org.grails.web.servlet.mvc
 
+import static org.junit.Assert.assertEquals
+import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 
-import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.pages.FastStringWriter
+import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.junit.Test
-import static org.junit.Assert.assertEquals
 
 @TestFor(RenderDynamicMethodTestController)
 class RenderDynamicMethodTests  {
@@ -104,6 +105,7 @@ class RenderDynamicMethodTests  {
     }
 }
 
+@Artefact('Controller')
 class RenderDynamicMethodTestController {
     def renderText = {
         render "text"
