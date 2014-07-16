@@ -1,7 +1,8 @@
 package org.grails.web.pages
 
-import grails.gsp.TagLib
 import grails.core.DefaultGrailsApplication
+import grails.gsp.TagLib
+
 import org.grails.plugins.web.api.TagLibraryApi
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.taglib.NamespacedTagDispatcher
@@ -11,6 +12,7 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.GenericWebApplicationContext
+
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.util.mop.ConfineMetaClassChanges
@@ -30,10 +32,8 @@ class TagLibraryLookupSpec extends Specification {
             def application = new DefaultGrailsApplication([OneTagLib, TwoTagLib] as Class[], TagLibraryLookup.class.classLoader)
             application.initialise()
             def applicationContext = new GenericWebApplicationContext()
-            def api = new TagLibraryApi(gspTagLibraryLookup: lookup)
-            applicationContext.defaultListableBeanFactory.registerSingleton("instanceTagLibraryApi", api)
-            applicationContext.defaultListableBeanFactory.registerSingleton(OneTagLib.name, new OneTagLib())
-            applicationContext.defaultListableBeanFactory.registerSingleton(TwoTagLib.name, new TwoTagLib())
+            applicationContext.defaultListableBeanFactory.registerSingleton(OneTagLib.name, new OneTagLib(gspTagLibraryLookup: lookup))
+            applicationContext.defaultListableBeanFactory.registerSingleton(TwoTagLib.name, new TwoTagLib(gspTagLibraryLookup: lookup))
             applicationContext.defaultListableBeanFactory.registerSingleton("gspTagLibraryLookup", lookup)
             // instanceTagLibraryApi(TagLibraryApi, pluginManager)
             applicationContext.refresh()

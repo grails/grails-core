@@ -19,18 +19,22 @@ import grails.artefact.Artefact;
 import grails.build.logging.GrailsConsole;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsArtefactClassInjector;
+import groovy.transform.CompilationUnitAware;
+
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
@@ -44,8 +48,10 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
  * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation {
+public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation implements CompilationUnitAware {
     private static final ClassNode MY_TYPE = new ClassNode(Artefact.class);
+    
+    protected CompilationUnit compilationUnit;
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
@@ -71,9 +77,28 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
         
         String artefactType = resolveArtefactType(sourceUnit, node, cNode);
         performInjectionOnArtefactType(sourceUnit, cNode, artefactType);
+        
+        performTraitInjectionOnArtefactType(sourceUnit, cNode, artefactType);
+        
         postProcess(sourceUnit, node, cNode, artefactType);
         
         markApplied(cNode);        
+    }
+
+    protected void performTraitInjectionOnArtefactType(SourceUnit sourceUnit,
+            ClassNode cNode, String artefactType) {
+        if(compilationUnit != null) {
+            GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
+            List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
+            List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
+            for(TraitInjector injector : traitInjectors) {
+                List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
+                if(artefactTypes.contains(artefactType)) {
+                    injectorsToUse.add(injector);
+                }
+            }
+            grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
+        }
     }
 
     protected boolean isApplied(ClassNode cNode) {
@@ -172,4 +197,9 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
         }
         return false;
     }
+
+	@Override
+	public void setCompilationUnit(CompilationUnit unit) {
+		compilationUnit = unit;
+	}
 }

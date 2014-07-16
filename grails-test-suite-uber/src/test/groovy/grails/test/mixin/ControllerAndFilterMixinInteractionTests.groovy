@@ -1,7 +1,9 @@
 package grails.test.mixin
 
-import org.junit.Test
+import grails.artefact.Artefact
 import grails.persistence.Entity
+
+import org.junit.Test
 
 @TestFor(SecureUserController)
 @Mock([SecurityFilters, User])
@@ -21,6 +23,7 @@ class ControllerAndFilterMixinInteractionTests {
     }
 }
 
+@Artefact('Controller')
 class SecureUserController {
     def index() { }
 }

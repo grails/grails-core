@@ -15,6 +15,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
 
     void onSetUp() {
         gcl.parseClass """
+        @grails.artefact.Artefact('Controller')
         class TestController {
            def list = {}
         }

@@ -1,5 +1,8 @@
 package org.grails.web.servlet.mvc.alpha
 
+import grails.artefact.Artefact
+
+@Artefact('Controller')
 class NamespacedController {
 
     def redirectToSelf() {

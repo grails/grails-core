@@ -1,12 +1,14 @@
 package org.grails.web.servlet.mvc
 
+import grails.artefact.Artefact
 import grails.util.MockRequestDataValueProcessor
+import grails.web.http.HttpHeaders
 import grails.web.mapping.mvc.RedirectEventListener
+import grails.web.mapping.mvc.exceptions.CannotRedirectException
+import grails.web.util.GrailsApplicationAttributes
+
 import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.support.MockApplicationContext
-import grails.web.util.GrailsApplicationAttributes
-import grails.web.http.HttpHeaders
-import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.grails.web.servlet.mvc.alpha.NamespacedController
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.web.servlet.support.RequestDataValueProcessor
@@ -386,14 +388,17 @@ class TestRedirectListener implements RedirectEventListener {
     }
 }
 
+@Artefact('Controller')
 class ABCController {
     def index = { redirect action: 'list' }
 }
 
+@Artefact('Controller')
 class AController {
     def index = { redirect action: 'list' }
 }
 
+@Artefact('Controller')
 class RedirectController {
 
     static defaultAction = 'toAction'
@@ -448,6 +453,7 @@ class RedirectController {
     }
 }
 
+@Artefact('Controller')
 class NewsSignupController {
 
     static defaultAction = "thankyou"
