@@ -359,13 +359,22 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         MethodNode method = null;
         if (methodNode.getParameters().length > 0) {
+            final BlockStatement methodCode = new BlockStatement();
+            
+            final BlockStatement codeToHandleAllowedMethods = getCodeToHandleAllowedMethods(classNode, methodNode.getName());
+            final Statement codeToCallOriginalMethod = addOriginalMethodCall(methodNode, initializeActionParameters(
+                    classNode, methodNode, methodNode.getName(), parameters, source, context));
+            
+            methodCode.addStatement(codeToHandleAllowedMethods);
+            methodCode.addStatement(codeToCallOriginalMethod);
+            
             method = new MethodNode(
                     methodNode.getName(),
                     Modifier.PUBLIC, returnType,
                     ZERO_PARAMETERS,
                     EMPTY_CLASS_ARRAY,
-                    addOriginalMethodCall(methodNode, initializeActionParameters(
-                            classNode, methodNode, methodNode.getName(), parameters, source, context)));
+                    methodCode);
+            
             GrailsASTUtils.copyAnnotations(methodNode, method);
             annotateActionMethod(classNode, parameters, method);
         } else {
@@ -469,7 +478,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         }
     }
 
-    protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, MethodNode methodNode) {
+    protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, String methodName) {
         GrailsASTUtils.addEnhancedAnnotation(controllerClass, DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
         final BlockStatement checkAllowedMethodsBlock = new BlockStatement();
         
@@ -483,7 +492,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 final List<String> allowedMethodNames = new ArrayList<String>();
                 final MapExpression allowedMethodsMapExpression = (MapExpression) initialAllowedMethodsExpression;
                 final List<MapEntryExpression> allowedMethodsMapEntryExpressions = allowedMethodsMapExpression.getMapEntryExpressions();
-                final String methodName = methodNode.getName();
                 for(MapEntryExpression allowedMethodsMapEntryExpression : allowedMethodsMapEntryExpressions) {
                     final Expression allowedMethodsMapEntryKeyExpression = allowedMethodsMapEntryExpression.getKeyExpression();
                     if(allowedMethodsMapEntryKeyExpression instanceof ConstantExpression) {
@@ -536,7 +544,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         
         final ArgumentListExpression argumentListExpression = new ArgumentListExpression();
         argumentListExpression.addExpression(new ConstantExpression(ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME));
-        argumentListExpression.addExpression(new ConstantExpression(methodNode.getName()));
+        argumentListExpression.addExpression(new ConstantExpression(methodName));
         
         final Expression setAttributeMethodCall = new MethodCallExpression(requestPropertyExpression, "setAttribute", argumentListExpression);
         
@@ -599,7 +607,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final Statement methodBody = methodNode.getCode();
 
         BlockStatement tryBlock = new BlockStatement();
-        BlockStatement codeToHandleAllowedMethods = getCodeToHandleAllowedMethods(controllerClassNode, methodNode);
+        BlockStatement codeToHandleAllowedMethods = getCodeToHandleAllowedMethods(controllerClassNode, methodNode.getName());
         tryBlock.addStatement(codeToHandleAllowedMethods);
         tryBlock.addStatement(methodBody);
 
@@ -809,7 +817,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
         tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(DataBindingSourceCreationException.class), "$dataBindingSourceInitializationException"), catchBlock));
-
+        
         wrapper.addStatement(tryCatchStatement);
     }
 
