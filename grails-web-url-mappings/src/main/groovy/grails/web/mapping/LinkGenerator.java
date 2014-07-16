@@ -44,6 +44,9 @@ public interface LinkGenerator {
     String ATTRIBUTE_MAPPING = "mapping";
     String ATTRIBUTE_EVENT = "event";
     String ATTRIBUTE_ELEMENT_ID = "elementId";
+    String ATTRIBUTE_PLUGIN = "plugin";
+    String ATTRIBUTE_NAMESPACE = "namespace";
+    
 
     Set<String> LINK_ATTRIBUTES = CollectionUtils.newSet(
        ATTRIBUTE_RESOURCE,
@@ -61,7 +64,10 @@ public interface LinkGenerator {
        ATTRIBUTE_PARAMS,
        ATTRIBUTE_MAPPING,
        ATTRIBUTE_EVENT,
-       ATTRIBUTE_ELEMENT_ID);
+       ATTRIBUTE_ELEMENT_ID,
+       ATTRIBUTE_PLUGIN,
+       ATTRIBUTE_NAMESPACE
+       );
 
     /**
      * Generates a link to a static resource for the given named parameters.

@@ -74,7 +74,7 @@ set DISABLE_RELOADING=
 if "%GRAILS_OPTS%" == "" (
 	set GRAILS_OPTS=-server -Xmx768M -Xms64M -Dfile.encoding=UTF-8
 	if not "%GRAILS_NO_PERMGEN%" == "1" (
-		set GRAILS_OPTS=%GRAILS_OPTS% -XX:PermSize=32m -XX:MaxPermSize=256m
+		set GRAILS_OPTS=-server -Xmx768M -Xms64M -XX:PermSize=32m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
 	)
 )
 

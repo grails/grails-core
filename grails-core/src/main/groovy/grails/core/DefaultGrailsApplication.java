@@ -73,7 +73,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected Class<?>[] allClasses = new Class[0];
     protected static Log log = LogFactory.getLog(DefaultGrailsApplication.class);
 
-    protected Set<Class<?>> loadedClasses = new HashSet<Class<?>>();
+    protected Set<Class<?>> loadedClasses = new LinkedHashSet<Class<?>>();
     protected ArtefactHandler[] artefactHandlers;
     protected Map<String, ArtefactHandler> artefactHandlersByName = new HashMap<String, ArtefactHandler>();
     protected List<Class<?>> allArtefactClasses = new ArrayList<Class<?>>();

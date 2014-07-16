@@ -372,6 +372,10 @@ public class ControllersApi extends CommonWebApi {
     public Object render(Object instance, String txt) {
         return invokeRender(instance, txt);
     }
+    
+    public Object render(Object instance, CharSequence txt) {
+        return invokeRender(instance, txt);
+    }
 
     public Object render(Object instance, Map args) {
         return invokeRender(instance, args);
@@ -385,6 +389,10 @@ public class ControllersApi extends CommonWebApi {
         return invokeRender(instance, args, c);
     }
 
+    public Object render(Object instance, Map args, CharSequence body) {
+        return invokeRender(instance, args, body);
+    }
+    
     protected Object invokeRender(Object target, Object... arguments) {
         if (arguments.length == 0) {
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);

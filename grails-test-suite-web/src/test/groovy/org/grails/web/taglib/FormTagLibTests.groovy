@@ -1,6 +1,10 @@
 package org.grails.web.taglib
 
+import grails.core.GrailsUrlMappingsClass
 import grails.util.MockRequestDataValueProcessor
+
+import org.grails.core.AbstractGrailsClass
+import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.web.taglib.FormTagLib
 import org.grails.web.pages.FastStringWriter
 
@@ -16,6 +20,42 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     protected void setUp() {
         super.setUp()
         appCtx.getBean(FormTagLib.name).requestDataValueProcessor = new MockRequestDataValueProcessor()
+    }
+    
+    @Override
+    protected void onInit() {
+        def mappingsClosure = {
+            "/admin/books"(controller:'books', namespace:'admin')
+            "/books"(controller:'books')
+        }
+        grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, new MockGrailsUrlMappingsClass(mappingsClosure));
+    }
+    
+    void testFormNamespace() {
+        def template = '<g:form controller="books" namespace="admin"></g:form>'
+        assertOutputEquals('<form action="/admin/books" method="post" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', template)
+    }
+    
+    void testFormNoNamespace() {
+        def template = '<g:form controller="books"></g:form>'
+        assertOutputEquals('<form action="/books" method="post" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', template)
+    }
+    
+    private static final class MockGrailsUrlMappingsClass extends AbstractGrailsClass implements GrailsUrlMappingsClass {
+        Closure mappingClosure;
+        public MockGrailsUrlMappingsClass(Closure mappingClosure) {
+            super(this.getClass(), "UrlMappings");
+            this.mappingClosure = mappingClosure;
+        }
+        @Override
+        public Closure getMappingsClosure() {
+            return mappingClosure;
+        }
+
+        @Override
+        public List getExcludePatterns() {
+            return null;
+        }
     }
 
     void testFormTagWithAlternativeMethod() {

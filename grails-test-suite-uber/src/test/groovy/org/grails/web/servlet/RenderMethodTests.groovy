@@ -148,7 +148,7 @@ class RenderMethodTests {
 
     @Test
     void testRenderViewWithContentType() {
-        controller.renderXmlView.call()
+        controller.renderXmlView()
 
         assert controller.modelAndView
 
@@ -195,52 +195,52 @@ class RenderMethodTests {
 @Artefact('Controller')
 class RenderController {
 
-    def renderBug = {
+    def renderBug() {
         render(view:'login', [foo:"bar"])
     }
 
-    def renderView = { render(view:'testView') }
-    def renderXmlView = {
+    def renderView() { render(view:'testView') }
+    def renderXmlView() {
         render(view:'xmlView', contentType:'text/xml')
     }
-    def renderObject = {
+    def renderObject() {
         render new RenderTest(foo:"bar")
     }
-    def renderMessageWithStatus = {
+    def renderMessageWithStatus() {
         render text:"test", status:500
     }
-    def renderList = {
+    def renderList() {
         render([1, 2, 3])
     }
-    def renderMap = {
+    def renderMap() {
         render([a:1, b:2])
     }
-    def renderText = { render "test render" }
-    def renderGString = {
+    def renderText() { render "test render" }
+    def renderGString() {
         def foo = 'render'
         render "test $foo"
     }
-    def renderXML = {
+    def renderXML() {
         render(contentType:"text/xml") { hello("world") }
     }
-    def renderTemplate = {
+    def renderTemplate() {
         render(template:"testTemplate", model:[hello:"world"])
     }
-    def renderTemplateWithCollection = {
+    def renderTemplateWithCollection() {
         def people = [
             [firstName: 'Jacob', middleName: 'Ray'],
             [firstName: 'Zachary', middleName: 'Scott']
         ]
         render(template:"peopleTemplate", collection: people)
     }
-    def renderTemplateWithCollectionAndExplicitVarName = {
+    def renderTemplateWithCollectionAndExplicitVarName() {
         def people = [
             [firstName: 'Jacob', middleName: 'Ray'],
             [firstName: 'Zachary', middleName: 'Scott']
         ]
         render(var: 'person', template:"peopleTemplate", collection: people)
     }
-    def renderXmlTemplate = {
+    def renderXmlTemplate() {
         render(template:"xmlTemplate",contentType:"text/xml")
     }
 }

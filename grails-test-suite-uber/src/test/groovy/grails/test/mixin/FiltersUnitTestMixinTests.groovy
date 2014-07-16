@@ -1,8 +1,10 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact;
+import grails.artefact.Artefact
 import grails.test.GrailsMock
 import grails.test.mixin.web.FiltersUnitTestMixin
+
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
@@ -18,6 +20,11 @@ class FiltersUnitTestMixinTests {
 
         controller = mockController(AuthorController)
 
+    }
+    
+    @After
+    void cleanup() {
+        runtime.publishEvent("resetGrailsApplication")
     }
 
     @Test
