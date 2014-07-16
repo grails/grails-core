@@ -60,7 +60,7 @@ class SomeOtherNewClass {
     }
 
     @Issue('GRAILS-9996')
-    void 'Test compiling where query call which refers to an inalid property'() {
+    void 'Test compiling where query call which refers to an invalid property'() {
         given:
         def gcl = new GroovyClassLoader()
 
