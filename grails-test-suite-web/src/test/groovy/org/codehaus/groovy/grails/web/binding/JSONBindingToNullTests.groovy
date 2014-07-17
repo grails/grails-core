@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.binding
 
+import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
@@ -64,6 +65,7 @@ class JSONBindingToNullTests {
     }
 }
 
+@Artefact('Controller')
 class UserController {
     def update() {
         println params

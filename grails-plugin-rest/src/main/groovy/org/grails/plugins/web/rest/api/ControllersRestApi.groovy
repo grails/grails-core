@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse
 
 import grails.core.GrailsDomainClassProperty
 import org.grails.plugins.web.controllers.api.ControllersApi
-import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.core.support.proxy.ProxyHandler
 import grails.web.mime.MimeType
 import org.grails.web.pages.discovery.GroovyPageLocator
@@ -51,7 +50,6 @@ class ControllersRestApi {
     public static final String PROPERTY_RESPONSE_FORMATS = "responseFormats"
 
     protected @Delegate ControllersApi controllersApi
-    protected @Delegate ControllersMimeTypesApi mimeTypesApi
     protected RendererRegistry rendererRegistry
     @Autowired(required = false)
     ProxyHandler proxyHandler
@@ -62,9 +60,8 @@ class ControllersRestApi {
     @Autowired
     ResponseMimeTypesApi responseMimeTypesApi
 
-    ControllersRestApi(RendererRegistry rendererRegistry, ControllersApi controllersApi, ControllersMimeTypesApi mimeTypesApi) {
+    ControllersRestApi(RendererRegistry rendererRegistry, ControllersApi controllersApi) {
         this.controllersApi = controllersApi
-        this.mimeTypesApi = mimeTypesApi
         this.rendererRegistry = rendererRegistry
     }
 

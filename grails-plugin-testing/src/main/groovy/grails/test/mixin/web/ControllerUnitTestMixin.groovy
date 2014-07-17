@@ -29,7 +29,6 @@ import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.controllers.api.ControllersApi
-import org.grails.plugins.web.api.ControllersMimeTypesApi
 import grails.web.mime.MimeType
 import org.grails.web.pages.GroovyPageUtils
 import org.grails.plugins.support.WebMetaUtils
@@ -199,7 +198,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
             enhancer.addApi(new ControllersApi())
             enhancer.addApi(new ControllerTagLibraryApi())
-            enhancer.addApi(new ControllersMimeTypesApi())
             enhancer.enhance(GrailsMetaClassUtils.getExpandoMetaClass(controllerClass))
         }
         controllerArtefact

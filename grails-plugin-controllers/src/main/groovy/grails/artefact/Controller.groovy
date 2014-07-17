@@ -19,11 +19,13 @@ import grails.databinding.DataBindingSource
 import grails.web.databinding.DataBindingUtils
 
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.support.WebMetaUtils
+import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
@@ -168,5 +170,27 @@ trait Controller {
             autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         }
         commandObjectInstance
+    }
+    
+    /**
+     * <p>The withFormat method is used to allow controllers to handle different types of
+     * request formats such as HTML, XML and so on. Example usage:</p>
+     *
+     * <pre>
+     * <code>
+     *    withFormat {
+     *        html { render "html" }
+     *        xml { render "xml}
+     *    }
+     * </code>
+     * </pre>
+     *
+     * @param callable
+     * @return  The result of the closure execution selected
+     */
+    def withFormat(Closure callable) {
+        MimeTypesApiSupport mimeTypesSupport = new MimeTypesApiSupport()
+        HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
+        mimeTypesSupport.withFormat((HttpServletResponse)response, callable)
     }
 }
