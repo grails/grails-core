@@ -15,18 +15,17 @@
  */
 package org.grails.plugins.web.controllers.api;
 
-import java.util.Map;
-
-import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsMetaClassUtils;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
 import grails.web.databinding.DataBindingUtils;
-import org.grails.web.databinding.DataBindingLazyMetaPropertyMap;
+
+import java.util.Map;
+
+import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.validation.BindingResult;
 
 /**
  * Enhancements made to domain classes for data binding.
@@ -64,31 +63,6 @@ public class ControllersDomainBindingApi {
             DataBindingUtils.assignBidirectionalAssociations(instance, namedArgs, dc);
         }
         autowire(instance);
-    }
-
-    /**
-     * Binds the source object to the properties of the target instance converting any types as necessary
-     *
-     * @param instance The instance
-     * @param bindingSource The binding source
-     * @return The BindingResult
-     */
-    public BindingResult setProperties(Object instance, Object bindingSource) {
-        GrailsDomainClass dc = getDomainClass(instance);
-        if (dc == null) {
-            return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
-        }
-        return DataBindingUtils.bindObjectToDomainInstance(dc, instance, bindingSource);
-    }
-
-    /**
-     * Returns a map of the objects properties that can be used to during binding to bind a subset of properties
-     *
-     * @param instance The instance
-     * @return An instance of {@link DataBindingLazyMetaPropertyMap}
-     */
-    public Map getProperties(Object instance) {
-        return new DataBindingLazyMetaPropertyMap(instance);
     }
 
     private static GrailsDomainClass getDomainClass(Object instance) {
