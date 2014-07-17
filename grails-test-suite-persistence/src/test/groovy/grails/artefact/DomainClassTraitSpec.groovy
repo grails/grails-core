@@ -9,8 +9,17 @@ class DomainClassTraitSpec extends Specification {
         expect:
         DomainClass.isAssignableFrom SomeDomainClass
     }
+    
+    void 'test that a class marked with @Entity is enhanced with the DomainClass trait'() {
+        expect:
+        DomainClass.isAssignableFrom SomeOtherDomainClass
+    }
 }
 
 
 @Artefact('Domain')
 class SomeDomainClass{}
+
+@Entity
+class SomeOtherDomainClass{}
+

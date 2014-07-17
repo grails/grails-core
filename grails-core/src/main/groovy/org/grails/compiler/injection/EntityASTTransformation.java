@@ -19,25 +19,30 @@ import grails.build.logging.GrailsConsole;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsDomainClassInjector;
 import grails.persistence.Entity;
+import groovy.transform.CompilationUnitAware;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-
-import java.util.List;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 
 
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class EntityASTTransformation implements ASTTransformation {
+public class EntityASTTransformation implements ASTTransformation, CompilationUnitAware {
 
     private static final ClassNode MY_TYPE = new ClassNode(Entity.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
+    protected CompilationUnit compilationUnit;
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -86,5 +91,23 @@ public class EntityASTTransformation implements ASTTransformation {
                 throw e;
             }
         }
+        
+        if(compilationUnit != null) {
+            GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
+            List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
+            List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
+            for(TraitInjector injector : traitInjectors) {
+                List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
+                if(artefactTypes.contains(DomainClassArtefactHandler.TYPE)) {
+                    injectorsToUse.add(injector);
+                }
+            }
+            grailsTraitInjector.performTraitInjection(sourceUnit, classNode, injectorsToUse);
+        }
+    }
+
+    @Override
+    public void setCompilationUnit(CompilationUnit unit) {
+        compilationUnit = unit;
     }
 }
