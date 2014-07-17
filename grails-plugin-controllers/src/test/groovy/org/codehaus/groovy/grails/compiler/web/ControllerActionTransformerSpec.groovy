@@ -3,16 +3,18 @@ package org.codehaus.groovy.grails.compiler.web
 import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
 import grails.web.Action
+
 import org.grails.compiler.web.ControllerActionTransformer
-import org.grails.compiler.web.ControllerTraitInjector
 import org.grails.compiler.web.ControllerTransformer
 
 import java.lang.reflect.Modifier
 
 import grails.web.servlet.context.GrailsWebApplicationContext
 import grails.compiler.ast.ClassInjector
+import grails.compiler.traits.ControllerTraitInjector;
+import grails.compiler.traits.TraitInjector;
+
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.grails.compiler.injection.TraitInjector
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 

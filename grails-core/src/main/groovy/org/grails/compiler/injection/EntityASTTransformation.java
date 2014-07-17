@@ -18,6 +18,7 @@ package org.grails.compiler.injection;
 import grails.build.logging.GrailsConsole;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsDomainClassInjector;
+import grails.compiler.traits.TraitInjector;
 import grails.persistence.Entity;
 import groovy.transform.CompilationUnitAware;
 

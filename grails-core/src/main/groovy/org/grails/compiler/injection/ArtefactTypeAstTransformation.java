@@ -26,6 +26,7 @@ import java.util.List;
 import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsArtefactClassInjector;
+import grails.compiler.traits.TraitInjector;
 import groovy.transform.CompilationUnitAware;
 
 import org.codehaus.groovy.ast.ASTNode;

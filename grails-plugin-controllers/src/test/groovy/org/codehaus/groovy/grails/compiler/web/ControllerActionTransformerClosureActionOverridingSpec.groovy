@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.GrailsWebUtil
-
 import grails.compiler.ast.ClassInjector
+import grails.compiler.traits.ControllerTraitInjector;
+import grails.compiler.traits.TraitInjector;
+
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.grails.compiler.injection.TraitInjector
 import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.compiler.web.ControllerActionTransformer
-import org.grails.compiler.web.ControllerTraitInjector
 import org.grails.compiler.web.ControllerTransformer
 import org.springframework.web.context.request.RequestContextHolder
 

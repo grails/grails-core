@@ -13,38 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.web.taglib
+package grails.compiler.traits
 
-import grails.artefact.TagLibrary
+import grails.artefact.Controller
 
 import java.util.regex.Pattern
 
-import org.grails.compiler.injection.TraitInjector
 import org.grails.io.support.GrailsResourceUtils
 
 /**
  * 
- * @since 3.0
  * @author Jeff Brown
+ * @since 3.0
  *
  */
-class TagLibraryTraitInjector implements TraitInjector {
+class ControllerTraitInjector implements TraitInjector {
     
-    static Pattern TAGLIB_PATTERN = Pattern.compile(".+/" +
-        GrailsResourceUtils.GRAILS_APP_DIR + "/taglib/(.+)TagLib\\.groovy")
+    static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
+        GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
  
     @Override
     Class getTrait() {
-        TagLibrary
+        Controller
     }
  
     @Override
     boolean shouldInject(URL url) {
-        return url != null && TAGLIB_PATTERN.matcher(url.getFile()).find();
+        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
  
     @Override
     String[] getArtefactTypes() {
-        ['TagLibrary', 'TagLib'] as String[]
+        ['Controller'] as String[]
     }
 }

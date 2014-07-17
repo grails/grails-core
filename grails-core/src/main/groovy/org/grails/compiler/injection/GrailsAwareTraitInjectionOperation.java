@@ -15,6 +15,8 @@
  */
 package org.grails.compiler.injection;
 
+import grails.compiler.traits.TraitInjector;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,10 +48,7 @@ public class GrailsAwareTraitInjectionOperation extends
 
     protected CompilationUnit unit;
     protected static List<TraitInjector> classInjectors;
-    private static final String[] PACKAGES_TO_SCAN = {
-        "org.grails.compiler.web",
-        "org.grails.domain.compiler"
-    };
+    private static final String PACKAGE_TO_SCAN = "grails.compiler.traits";
 
     public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
         this.unit = unit;
@@ -117,14 +116,14 @@ public class GrailsAwareTraitInjectionOperation extends
         ClassLoader classLoader = Thread.currentThread()
                 .getContextClassLoader();
         scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
-        scanner.scan(PACKAGES_TO_SCAN);
+        scanner.scan(PACKAGE_TO_SCAN);
 
         // fallback to current classloader for special cases (e.g. gradle
         // classloader isolation with useAnt=false)
         if (registry.getBeanDefinitionCount() == 0) {
             classLoader = GrailsAwareInjectionOperation.class.getClassLoader();
             scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
-            scanner.scan(PACKAGES_TO_SCAN);
+            scanner.scan(PACKAGE_TO_SCAN);
         }
 
         for (String beanName : registry.getBeanDefinitionNames()) {

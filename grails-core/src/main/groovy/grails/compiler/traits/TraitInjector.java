@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2014 the original author or authors.
  *
@@ -13,13 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.domain.compiler
+package grails.compiler.traits;
 
-import grails.artefact.DomainClass
-
-import org.grails.compiler.injection.TraitInjector
-import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.io.support.GrailsResourceUtils
+import java.net.URL;
 
 /**
  * 
@@ -27,20 +24,11 @@ import org.grails.io.support.GrailsResourceUtils
  * @since 3.0
  *
  */
-class DomainClassTraitInjector implements TraitInjector {
+public interface TraitInjector {
+    Class getTrait();
 
-    Class getTrait() {
-        DomainClass
-    }
+    boolean shouldInject(URL url);
 
-    @Override
-    boolean shouldInject(URL url) {
-        GrailsResourceUtils.isDomainClass(url)
-    }
-
-    @Override
-    String[] getArtefactTypes() {
-        [DomainClassArtefactHandler.TYPE]
-    }
-
+    String[] getArtefactTypes();
 }
+

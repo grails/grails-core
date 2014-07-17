@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.compiler.web
+package grails.compiler.traits
 
-import grails.artefact.Controller
+import grails.artefact.DomainClass
 
-import java.util.regex.Pattern
-
-import org.grails.compiler.injection.TraitInjector
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.io.support.GrailsResourceUtils
 
 /**
@@ -28,23 +26,20 @@ import org.grails.io.support.GrailsResourceUtils
  * @since 3.0
  *
  */
-class ControllerTraitInjector implements TraitInjector {
-    
-    static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
-        GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
- 
-    @Override
+class DomainClassTraitInjector implements TraitInjector {
+
     Class getTrait() {
-        Controller
+        DomainClass
     }
- 
+
     @Override
     boolean shouldInject(URL url) {
-        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
+        GrailsResourceUtils.isDomainClass(url)
     }
- 
+
     @Override
     String[] getArtefactTypes() {
-        ['Controller'] as String[]
+        [DomainClassArtefactHandler.TYPE]
     }
+
 }
