@@ -245,8 +245,13 @@ subprojects { project ->
     if(!isTestSuite) {
         artifacts {
             archives jar
-            archives sourcesJar
-            archives javadocJar
+            def excludedTaskNames = gradle.startParameter.excludedTaskNames
+            if(!excludedTaskNames.contains('sourcesJar')) {
+                archives sourcesJar
+            }
+            if(!excludedTaskNames.contains('javadocJar')) {
+                archives javadocJar
+            }
         }
 
         signing {
