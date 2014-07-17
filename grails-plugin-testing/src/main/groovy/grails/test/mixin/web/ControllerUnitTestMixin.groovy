@@ -25,7 +25,6 @@ import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
 import grails.util.GrailsMetaClassUtils
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.plugins.converters.api.ConvertersControllersApi
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
@@ -199,7 +198,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
 
             enhancer.addApi(new ControllersApi())
-            enhancer.addApi(new ConvertersControllersApi())
             enhancer.addApi(new ControllerTagLibraryApi())
             enhancer.addApi(new ControllersMimeTypesApi())
             enhancer.enhance(GrailsMetaClassUtils.getExpandoMetaClass(controllerClass))
