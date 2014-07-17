@@ -21,7 +21,6 @@ import grails.core.GrailsApplication
 import grails.core.support.GrailsApplicationAware
 import grails.util.GrailsUtil
 
-import org.grails.plugins.converters.api.ConvertersControllersApi
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
@@ -67,8 +66,6 @@ class ConvertersGrailsPlugin implements GrailsApplicationAware {
             marshaller = { JsonErrorsMarshaller om -> }
             converterClass = JSON
         }
-
-        instanceConvertersControllersApi(ConvertersControllersApi)
     }
 
     def doWithDynamicMethods = {applicationContext ->
