@@ -195,6 +195,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             def attributes = new TreeMap([url:[controller:'con', action:'action'], id:'formElementId'])
             tag.call(attributes, { "" })
         }
+        ctx.registerMockBean('requestDataValueProcessor', null)
         assertEquals '<form action="/con/action" method="post" id="formElementId" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', sw.toString().trim()
     }
 
@@ -220,6 +221,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             def attributes = new TreeMap([value:'Edit'])
             tag.call(attributes)
         }
+        ctx.registerMockBean('requestDataValueProcessor', null)
         assertEquals '<input type="submit" name="_action_Edit" value="Edit_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
     }
 
@@ -245,6 +247,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             def attributes = new TreeMap([action:'Edit', value:'Some label for editing'])
             tag.call(attributes)
         }
+        ctx.registerMockBean('requestDataValueProcessor', null)
         assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
     }
 
@@ -296,6 +299,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             def attributes = new TreeMap([src:'edit.gif', value:'Edit'])
             tag.call(attributes)
         }
+        ctx.registerMockBean('requestDataValueProcessor', null)
         assertEquals '<input type="image" name="_action_Edit" value="Edit_PROCESSED_" src="edit.gif?requestDataValueProcessorParamName=paramValue" />', sw.toString() // NO TRIM, TEST WS!
     }
 
