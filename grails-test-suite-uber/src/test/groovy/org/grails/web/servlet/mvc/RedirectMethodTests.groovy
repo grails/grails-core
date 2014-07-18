@@ -272,6 +272,7 @@ class AController {
     def index = { redirect action: 'list' }
 }
 
+@Artefact('Controller')
 class NewsSignupController {
 
     static defaultAction = "thankyou"
