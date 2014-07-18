@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.servlet.mvc
+package org.grails.web.servlet.mvc
 
 import grails.artefact.Artefact
 
@@ -6,13 +6,13 @@ import grails.artefact.Artefact
 class RedirectController {
 
     static defaultAction = 'toAction'
-    
+
     def index() { redirect action: 'list' }
-    
+
     def redirectToDefaultAction() {
         redirect(controller:"redirect")
     }
-    
+
     def testNoController() {
         redirect(action: 'thankyou')
     }
@@ -21,13 +21,13 @@ class RedirectController {
         redirect(action:'one')
         redirect(action:'two')
     }
-    
+
     def responseCommitted() {
         response.outputStream << "write data"
         response.outputStream.flush()
         redirect(action:'one')
     }
-    
+
     def toAction() {
         redirect(action:'foo')
     }
@@ -40,15 +40,15 @@ class RedirectController {
         def prefix = 'f'
         redirect(action:"${prefix}oo")
     }
-    
+
     def toRoot() {
         redirect(controller:'default')
     }
-    
+
     def toController() {
         redirect(controller:'test')
     }
-    
+
     def toControllerAndAction() {
         redirect(controller:'test', action:'foo')
     }
@@ -56,15 +56,15 @@ class RedirectController {
     def toControllerAndActionWithFragment() {
         redirect(controller:'test', action:'foo', fragment:"frag")
     }
-    
+
     def toControllerWithParams() {
         redirect(controller:'test',action:'foo', params:[one:'two', two:'three'])
     }
-    
+
     def toControllerWithDuplicateParams() {
         redirect(controller:'test',action:'foo', params:[one:['two','three']])
     }
-    
+
     def toControllerWithDuplicateArrayParams() {
         redirect(controller:'test',action:'foo', params:[one:['two','three'] as String[]])
     }

@@ -1,11 +1,14 @@
 package org.grails.web.servlet.mvc
 
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.grails.web.servlet.mvc.alpha.NamespacedController
+import org.grails.plugins.web.controllers.api.ControllersApi
+import org.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
+import grails.web.http.HttpHeaders
+import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
+import grails.artefact.Artefact
+import grails.web.mapping.mvc.RedirectEventListener
 
 /**
  * Tests the behaviour of the redirect method.
