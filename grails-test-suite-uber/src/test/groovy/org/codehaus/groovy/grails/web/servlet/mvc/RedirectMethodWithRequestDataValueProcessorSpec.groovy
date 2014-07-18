@@ -8,7 +8,7 @@ import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import spock.lang.Specification
 
 @TestFor(RedirectController)
-class RequestMethodWithRequestDataValueProcessorSpec extends Specification {
+class RedirectMethodWithRequestDataValueProcessorSpec extends Specification {
     
     def doWithSpring = {
         requestDataValueProcessor MockRequestDataValueProcessor
