@@ -105,6 +105,12 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         makeTemplate(webRequest, t, attrs, body, out);
     }
 
+    // required for binary compatibility: GRAILS-11598
+    private Template findAndCacheTemplate(GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
+            String contextPath, String pluginName, String uri) throws IOException {
+        return findAndCacheTemplate(pageScope, templateName, contextPath, pluginName, uri);
+    }
+    
     private Template findAndCacheTemplate(GroovyPageBinding pageScope, String templateName,
             String contextPath, String pluginName, final String uri) throws IOException {
 
