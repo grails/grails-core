@@ -1,5 +1,7 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact;
+
 import org.junit.Test
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -22,6 +24,7 @@ class AutowireServiceViaDefineBeansTests {
     }
 }
 
+@Artefact("Controller")
 class SpringController implements ApplicationContextAware {
     ApplicationContext applicationContext
     SpringService springService
