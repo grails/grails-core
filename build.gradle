@@ -83,6 +83,7 @@ if (jointBuildGroovyJarProperty) {
 
 allprojects {
     repositories {
+        maven { url "https://oss.jfrog.org/oss-snapshot-local" }
         maven { url "http://repo.grails.org/grails/core" }
         mavenLocal()
     }
