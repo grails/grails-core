@@ -26,6 +26,8 @@ import groovy.transform.Immutable
  * @author Lari Hotari
  * @since 2.4.1
   */
+@CompileStatic
+@Immutable
 class TestPluginUsage {
     Collection<Class<? extends TestPlugin>> pluginClasses
     boolean exclude
