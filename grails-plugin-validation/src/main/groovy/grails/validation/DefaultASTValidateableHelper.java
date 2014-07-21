@@ -192,7 +192,22 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
                         final ClassNode paramType = parameter.getType();
                         final String restOfMethodName = methodName.substring(3);
                         final String propertyName = GrailsNameUtils.getPropertyName(restOfMethodName);
-                        fieldsToConstrain.put(propertyName, paramType);
+                        
+                        boolean shouldConstrain = false;
+                        
+                        final PropertyNode property = classNode.getProperty(propertyName);
+                        if(property != null) {
+                            shouldConstrain = true;
+                        } else {
+                            final String getterName = "get" + restOfMethodName;
+                            final MethodNode method = classNode.getMethod(getterName, ZERO_PARAMETERS);
+                            if(method != null) {
+                                shouldConstrain = true;
+                            }
+                        }
+                        if(shouldConstrain) {
+                            fieldsToConstrain.put(propertyName, paramType);
+                        }
                     }
                 }
             }

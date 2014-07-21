@@ -109,20 +109,23 @@ class ValidateableSpec extends Specification {
         validateable.errors.getFieldError('name').rejectedValue == 'lower case'
     }
     
+    @Issue('GRAILS-11601')
     void 'Test that only the expected properties are constrained'() {
         when:
         def constraints = MyValidateable.constraints
         
         then:
-        constraints.size() == 3
+        constraints.size() == 4
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
+        constraints.containsKey 'someProperty'
         
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
+        constraints.someProperty.appliedConstraints.size() == 1
         
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -130,6 +133,7 @@ class ValidateableSpec extends Specification {
         constraints.age.hasAppliedConstraint 'range'
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
+        constraints.someProperty.hasAppliedConstraint 'nullable'
 
         and:
         !constraints.town.nullable
@@ -164,6 +168,18 @@ class MyValidateable {
     String name
     Integer age
     String town
+    private String _someProperty = 'default value'
+    
+    void setSomeOtherProperty(String s) {}
+    
+    void setSomeProperty(String s) {
+        _someProperty = s
+    }
+    
+    String getSomeProperty() {
+        _someProperty
+    }
+    
 
     static constraints = {
         name matches: /[A-Z].*/
