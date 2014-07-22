@@ -115,17 +115,19 @@ class ValidateableSpec extends Specification {
         def constraints = MyValidateable.constraints
         
         then:
-        constraints.size() == 4
+        constraints.size() == 5
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
         constraints.containsKey 'someProperty'
+        constraints.containsKey 'twiceAge'
         
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
         constraints.someProperty.appliedConstraints.size() == 1
+        constraints.twiceAge.appliedConstraints.size() == 1
         
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -134,6 +136,7 @@ class ValidateableSpec extends Specification {
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
         constraints.someProperty.hasAppliedConstraint 'nullable'
+        constraints.twiceAge.hasAppliedConstraint 'nullable'
 
         and:
         !constraints.town.nullable
@@ -180,6 +183,9 @@ class MyValidateable {
         _someProperty
     }
     
+    int getTwiceAge() {
+        age * 2
+    }
 
     static constraints = {
         name matches: /[A-Z].*/

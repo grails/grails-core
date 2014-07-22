@@ -185,29 +185,14 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final MethodNode value = methodEntry.getValue();
             if (!value.isStatic() && value.isPublic() && classNode.equals(value.getDeclaringClass()) && value.getLineNumber() > 0) {
                 Parameter[] parameters = value.getParameters();
-                if (parameters != null && parameters.length == 1) {
+                if (parameters == null || parameters.length == 0) {
                     final String methodName = value.getName();
-                    if (methodName.startsWith("set")) {
-                        final Parameter parameter = parameters[0];
-                        final ClassNode paramType = parameter.getType();
+                    if (methodName.startsWith("get")) {
+                        final ClassNode returnType = value.getReturnType();
                         final String restOfMethodName = methodName.substring(3);
                         final String propertyName = GrailsNameUtils.getPropertyName(restOfMethodName);
-                        
-                        boolean shouldConstrain = false;
-                        
-                        final PropertyNode property = classNode.getProperty(propertyName);
-                        if(property != null) {
-                            shouldConstrain = true;
-                        } else {
-                            final String getterName = "get" + restOfMethodName;
-                            final MethodNode method = classNode.getMethod(getterName, ZERO_PARAMETERS);
-                            if(method != null) {
-                                shouldConstrain = true;
-                            }
-                        }
-                        if(shouldConstrain) {
-                            fieldsToConstrain.put(propertyName, paramType);
-                        }
+
+                        fieldsToConstrain.put(propertyName, returnType);
                     }
                 }
             }
