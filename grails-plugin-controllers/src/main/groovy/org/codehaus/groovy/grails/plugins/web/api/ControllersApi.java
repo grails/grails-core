@@ -57,7 +57,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBindingSource;
-import org.grails.databinding.bindingsource.InvalidRequestBodyException;
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
@@ -495,7 +495,7 @@ public class ControllersApi extends CommonWebApi {
                     bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
                 }
             }
-        } catch (InvalidRequestBodyException e) {
+        } catch (DataBindingSourceCreationException e) {
             commandObjectInstance = type.newInstance();
             final Object o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors");
             if(o instanceof BindingResult) {
