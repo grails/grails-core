@@ -560,7 +560,7 @@ public class ConstrainedProperty implements Constrained {
                     BLANK_CONSTRAINT, owningClass);
         }
 
-        if (blank) {
+        if (!blank) {
             Constraint c = appliedConstraints.get(BLANK_CONSTRAINT);
             if (c == null) {
                 c = new BlankConstraint();
