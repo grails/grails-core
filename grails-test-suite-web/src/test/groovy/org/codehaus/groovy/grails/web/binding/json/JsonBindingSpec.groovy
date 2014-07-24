@@ -5,6 +5,7 @@ import grails.test.mixin.TestFor
 
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator.JsonObjectMap
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(BindingController)
@@ -50,24 +51,12 @@ class JsonBindingSpec extends Specification {
     }
 
     void 'Test parsing invalid JSON'() {
-        given:
-        request.json = '''
-            {
-    "name": [foo.[} this is unparseable JSON{[
-'''
-        when:
-        def model = controller.createPersonCommandObject()
-
-        then:
-        response.status == 400
-        model == null
-
         when:
         request.json = '''
             {
     "name": [foo.[} this is unparseable JSON{[
 '''
-        model = controller.createPerson()
+        def model = controller.createPerson()
         def person = model.person
 
         then:
@@ -105,6 +94,28 @@ class JsonBindingSpec extends Specification {
         !(model.family.mapData instanceof JsonObjectMap)
         model.family.mapData.name == 'Jeff'
         model.family.mapData.country == 'USA'
+    }
+    
+    @Issue('GRAILS-11576')
+    void 'Test binding malformed JSON to a command object'() {
+        given:
+        request.contentType = JSON_CONTENT_TYPE
+        request.method = 'POST'
+        request.JSON = '{"mapData": {"name":"Jeff{{{"'
+        
+        when:
+        def model = controller.createFamily()
+        
+        then:
+        model.family.hasErrors()
+        
+        when:
+        def familyError = model.family.errors.allErrors.find {
+            it.objectName == 'family'
+        }
+        
+        then:
+        familyError?.defaultMessage?.contains 'Error occurred initializing command object [family]. com.google.gson.JsonSyntaxException'
     }
 }
 

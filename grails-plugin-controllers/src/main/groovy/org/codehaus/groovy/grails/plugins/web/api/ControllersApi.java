@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
@@ -56,10 +57,13 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBindingSource;
+import org.grails.databinding.bindingsource.InvalidRequestBodyException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
@@ -420,45 +424,61 @@ public class ControllersApi extends CommonWebApi {
      */
     public Object initializeCommandObject(final Object controllerInstance, final Class type, final String commandObjectParameterName) throws Exception {
         final HttpServletRequest request = getRequest(controllerInstance);
-        final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
-        final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSourceForPrefix(commandObjectParameterName, dataBindingSource);
         Object commandObjectInstance = null;
-        Object entityIdentifierValue = null;
-        final boolean isDomainClass = DomainClassArtefactHandler.isDomainClass(type);
-        if(isDomainClass) {
-            entityIdentifierValue = commandObjectBindingSource.getIdentifierValue();
-            if(entityIdentifierValue == null) {
-                final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-                entityIdentifierValue = webRequest != null ? webRequest.getParams().getIdentifier() : null;
-            }
-        }
-        if(entityIdentifierValue instanceof String) {
-            entityIdentifierValue = ((String)entityIdentifierValue).trim();
-            if("".equals(entityIdentifierValue) || "null".equals(entityIdentifierValue)) {
-                entityIdentifierValue = null;
-            }
-        }
         
-        final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
-        
-        if(entityIdentifierValue != null) {
-            try {
-                commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
-            } catch (Exception e) {
-                final Errors errors = getErrors(controllerInstance);
-                if(errors != null) {
-                    errors.reject(controllerInstance.getClass().getName() + ".commandObject." + commandObjectParameterName + ".error", e.getMessage());
+        try {
+            final DataBindingSource dataBindingSource = DataBindingUtils
+                    .createDataBindingSource(
+                            getGrailsApplication(controllerInstance), type,
+                            request);
+            final DataBindingSource commandObjectBindingSource = WebMetaUtils
+                    .getCommandObjectBindingSourceForPrefix(
+                            commandObjectParameterName, dataBindingSource);
+            Object entityIdentifierValue = null;
+            final boolean isDomainClass = DomainClassArtefactHandler
+                    .isDomainClass(type);
+            if (isDomainClass) {
+                entityIdentifierValue = commandObjectBindingSource
+                        .getIdentifierValue();
+                if (entityIdentifierValue == null) {
+                    final GrailsWebRequest webRequest = GrailsWebRequest
+                            .lookup(request);
+                    entityIdentifierValue = webRequest != null ? webRequest
+                            .getParams().getIdentifier() : null;
                 }
             }
-        } else if(requestMethod == HttpMethod.POST || !isDomainClass){ 
-            commandObjectInstance = type.newInstance();
-        }
+            if (entityIdentifierValue instanceof String) {
+                entityIdentifierValue = ((String) entityIdentifierValue).trim();
+                if ("".equals(entityIdentifierValue)
+                        || "null".equals(entityIdentifierValue)) {
+                    entityIdentifierValue = null;
+                }
+            }
 
-        if(commandObjectInstance != null) {
-            final boolean shouldDoDataBinding;
+            final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
 
-            if(entityIdentifierValue != null) {
-                switch(requestMethod) {
+            if (entityIdentifierValue != null) {
+                try {
+                    commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
+                } catch (Exception e) {
+                    final Errors errors = getErrors(controllerInstance);
+                    if (errors != null) {
+                        errors.reject(controllerInstance.getClass().getName()
+                                + ".commandObject."
+                                + commandObjectParameterName + ".error",
+                                e.getMessage());
+                    }
+                }
+            } else if (requestMethod == HttpMethod.POST || !isDomainClass) {
+                commandObjectInstance = type.newInstance();
+            }
+
+            if (commandObjectInstance != null
+                    && commandObjectBindingSource != null) {
+                final boolean shouldDoDataBinding;
+
+                if (entityIdentifierValue != null) {
+                    switch (requestMethod) {
                     case PATCH:
                     case POST:
                     case PUT:
@@ -466,19 +486,32 @@ public class ControllersApi extends CommonWebApi {
                         break;
                     default:
                         shouldDoDataBinding = false;
+                    }
+                } else {
+                    shouldDoDataBinding = true;
                 }
-            } else {
-                shouldDoDataBinding = true;
-            }
 
-            if(shouldDoDataBinding) {
-                bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
+                if (shouldDoDataBinding) {
+                    bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
+                }
             }
+        } catch (InvalidRequestBodyException e) {
+            commandObjectInstance = type.newInstance();
+            final Object o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors");
+            if(o instanceof BindingResult) {
+                final BindingResult errors = (BindingResult)o;
+                String msg = "Error occurred initializing command object [" + commandObjectParameterName + "]. " + e.getMessage();
+                ObjectError error = new ObjectError(commandObjectParameterName, msg);
+                errors.addError(error);
+            }
+        }
 
+        if(commandObjectInstance != null) {
             final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
             final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
             autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
         }
+
         return commandObjectInstance;
     }
 
