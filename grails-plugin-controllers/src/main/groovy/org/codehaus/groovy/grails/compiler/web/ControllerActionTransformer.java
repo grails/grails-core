@@ -354,7 +354,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 GrailsASTUtils.error(source, methodNode, formattedMessage);
             }
         }
-        wrapMethodBodyWithExceptionHandling(classNode, methodNode);
 
         MethodNode method = null;
         if (methodNode.getParameters().length > 0) {
@@ -376,9 +375,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             
             GrailsASTUtils.copyAnnotations(methodNode, method);
             annotateActionMethod(classNode, parameters, method);
+            wrapMethodBodyWithExceptionHandling(classNode, method);
         } else {
             annotateActionMethod(classNode, parameters, methodNode);
         }
+        
+        wrapMethodBodyWithExceptionHandling(classNode, methodNode);
 
         return method;
     }
