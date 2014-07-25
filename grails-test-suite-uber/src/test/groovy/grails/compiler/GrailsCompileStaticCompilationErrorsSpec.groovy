@@ -297,6 +297,27 @@ class SomeClass {
             eq 'name', 'Anakin'
         }
      
+        def crit = Person.createCriteria()
+
+        def listResults = crit.list {
+            eq 'name', 'Anakin'
+        }
+
+        def paginatedListResults = crit.list(max: 4, offset: 2) {
+            eq 'name', 'Anakin'
+        }
+
+        def listDistinctResults = crit.listDistinct {
+            eq 'name', 'Anakin'
+        }
+
+        def scrollResults = crit.scroll {
+            eq 'name', 'Anakin'
+        }
+
+        def getResults = crit.get {
+            eq 'name', 'Anakin'
+        }
     }
 }
 ''')
