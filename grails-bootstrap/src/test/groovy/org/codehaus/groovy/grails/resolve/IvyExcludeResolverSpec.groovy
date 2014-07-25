@@ -23,6 +23,7 @@ import spock.lang.Specification
  */
 class IvyExcludeResolverSpec extends Specification{
 
+    @spock.lang.Ignore
     void "Test that the IvyExcludeResolver resolves excludes"() {
         given:"An IvyDependencyManager with some dependencies"
             def dependencyManager = new IvyDependencyManager("foo", "1.0")
