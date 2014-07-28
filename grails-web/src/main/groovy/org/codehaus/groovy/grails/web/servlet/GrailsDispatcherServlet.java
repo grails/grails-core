@@ -365,6 +365,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
             }
             catch (ModelAndViewDefiningException ex) {
+                // Exceptions inside includes should propogate up so the original dispatcher handles the exception
+                if(WebUtils.isIncludeRequest(request)) throw ex;
                 handlerException = ex;
                 if (logger.isDebugEnabled()) {
                     logger.debug("ModelAndViewDefiningException encountered", ex);
@@ -372,6 +374,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 mv = ex.getModelAndView();
             }
             catch (Exception ex) {
+                // Exceptions inside includes should propogate up so the original dispatcher handles the exception
+                if(WebUtils.isIncludeRequest(request)) throw ex;
                 handlerException = ex;
                 Object handler = mappedHandler == null ? null : mappedHandler.getHandler();
                 mv = processHandlerException(request, response, handler, ex);
