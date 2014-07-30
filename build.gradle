@@ -18,7 +18,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
-    grailsVersion = '2.4.3.BUILD-SNAPSHOT'
+    grailsVersion = '2.4.3'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
@@ -27,7 +27,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "3.1.2.BUILD-SNAPSHOT"
+    datastoreVersion = "3.1.2.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.3.6"
