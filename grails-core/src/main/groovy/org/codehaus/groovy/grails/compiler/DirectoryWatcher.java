@@ -46,7 +46,7 @@ public class DirectoryWatcher extends Thread {
         AbstractDirectoryWatcher directoryWatcherDelegate;
         try {
 			directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.codehaus.groovy.grails.compiler.WatchServiceDirectoryWatcher").newInstance();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			LOG.info("Exception while trying to load WatchServiceDirectoryWatcher (this is probably Java 6 and WatchService isn't available). Falling back to PollingDirectoryWatcher.", e);
 	        directoryWatcherDelegate = new PollingDirectoryWatcher();
 		}
