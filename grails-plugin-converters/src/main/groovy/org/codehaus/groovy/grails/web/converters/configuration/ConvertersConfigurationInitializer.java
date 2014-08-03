@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
+import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
@@ -42,12 +43,18 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
     private ApplicationContext applicationContext;
 
+    private GrailsApplication grailsApplication;
+
     public ApplicationContext getApplicationContext() {
         return applicationContext;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 
     public final Log LOG = LogFactory.getLog(ConvertersConfigurationInitializer.class);
@@ -58,6 +65,13 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         initXMLConfiguration(application);
         initDeepJSONConfiguration(application);
         initDeepXMLConfiguration(application);
+    }
+
+    /**
+     * Init method for spring bean creation process
+     */
+    public void init() {
+        initialize(grailsApplication);
     }
 
     private void initJSONConfiguration(GrailsApplication application) {

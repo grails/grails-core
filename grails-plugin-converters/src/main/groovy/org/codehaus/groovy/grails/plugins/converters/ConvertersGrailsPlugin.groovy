@@ -52,7 +52,10 @@ class ConvertersGrailsPlugin {
 
         xmlErrorsMarshaller(XmlErrorsMarshaller)
 
-        convertersConfigurationInitializer(ConvertersConfigurationInitializer)
+        convertersConfigurationInitializer(ConvertersConfigurationInitializer) { bean ->
+            grailsApplication = ref('grailsApplication')
+            bean.initMethod = 'init'
+        }
 
         errorsXmlMarshallerRegisterer(ObjectMarshallerRegisterer) {
             marshaller = { XmlErrorsMarshaller om -> }
@@ -68,8 +71,6 @@ class ConvertersGrailsPlugin {
     }
 
     def doWithDynamicMethods = {applicationContext ->
-
-        applicationContext.convertersConfigurationInitializer.initialize(application)
 
         ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 
