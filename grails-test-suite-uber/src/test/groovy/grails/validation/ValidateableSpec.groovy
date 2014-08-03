@@ -147,24 +147,30 @@ class ValidateableSpec extends Specification {
         def constraints = MyNullableValidateable.constraints
 
         then:
-        constraints.size() == 3
-        constraints.containsKey 'name'
+        constraints.size() == 1
         constraints.containsKey 'town'
-        constraints.containsKey 'age'
 
         and:
-        constraints.name.appliedConstraints.size() == 1
-        constraints.age.appliedConstraints.size() == 1
         constraints.town.appliedConstraints.size() == 1
 
-        and: "name and age are nullable by default"
-        constraints.name.nullable
-        constraints.age.nullable
+        and: "name and age are not constrained by default"
+        !constraints.containsKey('name')
+        !constraints.containsKey('age')
 
         and:
         !constraints.town.nullable
     }
+    
+    @Issue('GRAILS-11625')
+    void 'test that properties defined in a class marked with @Validateable(nullable=true) which are not explicitly constrained are not accessed during validation'() {
+        given: 'an instance of a class marked with @Validateable(nullable=true)'
+        def obj = new MyNullableValidateable(town: 'St. Louis')
+        
+        expect: 'property accessors are not invoked for properties which are not explicitly constrained (getName() would throw an exception)'
+        obj.validate()
+    }
 }
+
 
 @Validateable
 class MyValidateable {
@@ -186,7 +192,7 @@ class MyValidateable {
     int getTwiceAge() {
         age * 2
     }
-
+    
     static constraints = {
         name matches: /[A-Z].*/
         age range: 1..99
@@ -198,6 +204,10 @@ class MyNullableValidateable {
     String name
     Integer age
     String town
+    
+    String getName() {
+        throw new UnsupportedOperationException('getName() should not have been called during validation')
+    }
 
     static constraints = {
         town nullable: false
