@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.plugins.converters
 import grails.converters.JSON
 import grails.converters.XML
 import grails.util.GrailsUtil
-
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
@@ -53,7 +52,6 @@ class ConvertersGrailsPlugin {
         xmlErrorsMarshaller(XmlErrorsMarshaller)
 
         convertersConfigurationInitializer(ConvertersConfigurationInitializer) { bean ->
-            grailsApplication = ref('grailsApplication')
             bean.initMethod = 'init'
         }
 

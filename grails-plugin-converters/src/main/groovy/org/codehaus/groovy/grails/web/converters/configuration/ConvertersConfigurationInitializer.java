@@ -17,16 +17,11 @@ package org.codehaus.groovy.grails.web.converters.configuration;
 
 import grails.converters.JSON;
 import grails.converters.XML;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
-import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
@@ -35,11 +30,15 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarsh
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class ConvertersConfigurationInitializer implements ApplicationContextAware {
+public class ConvertersConfigurationInitializer implements ApplicationContextAware, GrailsApplicationAware {
 
     private ApplicationContext applicationContext;
 
