@@ -62,9 +62,9 @@ compileTestGroovy {
 }
 
 test {
-    maxParallelForks = 4
+    maxParallelForks = 2
     forkEvery = 30
-    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
+    jvmArgs = ['-Xmx768M','-XX:MaxPermSize=192m']
     excludes = ["**/*TestCase.class",
                 "**/*\$*.class",
                 "**/ContentFormatControllerTests.class",
