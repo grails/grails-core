@@ -101,48 +101,49 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final Statement ifConstraintsPropertyIsNullStatement = new IfStatement(isConstraintsPropertyNull, ifConstraintsPropertyIsNullBlockStatement, new ExpressionStatement(new EmptyExpression()));
 
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(initializeConstraintsFieldExpression));
-            
-            final Map<String, ClassNode> propertiesToConstrain = getPropertiesToEnsureConstraintsFor(classNode);
-            for (final Map.Entry<String, ClassNode> entry : propertiesToConstrain.entrySet()) {
-                final String propertyName = entry.getKey();
-                final ClassNode propertyType = entry.getValue();
-                final String cpName = "$" + propertyName + "$constrainedProperty";
-                final ArgumentListExpression constrainedPropertyConstructorArgumentList = new ArgumentListExpression();
-                constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(classNode));
-                constrainedPropertyConstructorArgumentList.addExpression(new ConstantExpression(propertyName));
-                constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(propertyType));
-                final ConstructorCallExpression constrainedPropertyCtorCallExpression = new ConstructorCallExpression(
-                        new ClassNode(ConstrainedProperty.class), constrainedPropertyConstructorArgumentList);
-                final Expression declareConstrainedPropertyExpression = new DeclarationExpression(
-                        new VariableExpression(cpName, ClassHelper.OBJECT_TYPE),
-                        Token.newSymbol(Types.EQUALS, 0, 0),
-                        constrainedPropertyCtorCallExpression);
+            if(!defaultNullable) {
+                final Map<String, ClassNode> propertiesToConstrain = getPropertiesToEnsureConstraintsFor(classNode);
+                for (final Map.Entry<String, ClassNode> entry : propertiesToConstrain.entrySet()) {
+                    final String propertyName = entry.getKey();
+                    final ClassNode propertyType = entry.getValue();
+                    final String cpName = "$" + propertyName + "$constrainedProperty";
+                    final ArgumentListExpression constrainedPropertyConstructorArgumentList = new ArgumentListExpression();
+                    constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(classNode));
+                    constrainedPropertyConstructorArgumentList.addExpression(new ConstantExpression(propertyName));
+                    constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(propertyType));
+                    final ConstructorCallExpression constrainedPropertyCtorCallExpression = new ConstructorCallExpression(
+                            new ClassNode(ConstrainedProperty.class), constrainedPropertyConstructorArgumentList);
+                    final Expression declareConstrainedPropertyExpression = new DeclarationExpression(
+                            new VariableExpression(cpName, ClassHelper.OBJECT_TYPE),
+                            Token.newSymbol(Types.EQUALS, 0, 0),
+                            constrainedPropertyCtorCallExpression);
 
-                final ArgumentListExpression applyConstraintMethodArgumentList = new ArgumentListExpression();
-                applyConstraintMethodArgumentList.addExpression(new ConstantExpression(ConstrainedProperty.NULLABLE_CONSTRAINT));
-                applyConstraintMethodArgumentList.addExpression(new ConstantExpression(defaultNullable));
+                    final ArgumentListExpression applyConstraintMethodArgumentList = new ArgumentListExpression();
+                    applyConstraintMethodArgumentList.addExpression(new ConstantExpression(ConstrainedProperty.NULLABLE_CONSTRAINT));
+                    applyConstraintMethodArgumentList.addExpression(new ConstantExpression(defaultNullable));
 
-                final Expression applyNullableConstraintMethodCallExpression = new MethodCallExpression(
-                        new VariableExpression(cpName), "applyConstraint", applyConstraintMethodArgumentList);
-                final ArgumentListExpression putMethodArgumentList = new ArgumentListExpression();
-                putMethodArgumentList.addExpression(new ConstantExpression(propertyName));
-                putMethodArgumentList.addExpression(new VariableExpression(cpName));
-                final MethodCallExpression addToConstraintsMapExpression = new MethodCallExpression(
-                        new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), "put", putMethodArgumentList);
-                final BlockStatement addNullableConstraintBlock = new BlockStatement();
-                addNullableConstraintBlock.addStatement(new ExpressionStatement(declareConstrainedPropertyExpression));
-                addNullableConstraintBlock.addStatement(new ExpressionStatement(applyNullableConstraintMethodCallExpression));
-                addNullableConstraintBlock.addStatement(new ExpressionStatement(addToConstraintsMapExpression));
+                    final Expression applyNullableConstraintMethodCallExpression = new MethodCallExpression(
+                            new VariableExpression(cpName), "applyConstraint", applyConstraintMethodArgumentList);
+                    final ArgumentListExpression putMethodArgumentList = new ArgumentListExpression();
+                    putMethodArgumentList.addExpression(new ConstantExpression(propertyName));
+                    putMethodArgumentList.addExpression(new VariableExpression(cpName));
+                    final MethodCallExpression addToConstraintsMapExpression = new MethodCallExpression(
+                            new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), "put", putMethodArgumentList);
+                    final BlockStatement addNullableConstraintBlock = new BlockStatement();
+                    addNullableConstraintBlock.addStatement(new ExpressionStatement(declareConstrainedPropertyExpression));
+                    addNullableConstraintBlock.addStatement(new ExpressionStatement(applyNullableConstraintMethodCallExpression));
+                    addNullableConstraintBlock.addStatement(new ExpressionStatement(addToConstraintsMapExpression));
 
-                final Expression constraintsMapContainsKeyExpression = new MethodCallExpression(
-                        new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME, ClassHelper.make(Map.class)),
-                        "containsKey", new ArgumentListExpression(new ConstantExpression(propertyName)));
-                final BooleanExpression ifPropertyIsAlreadyConstrainedExpression = new BooleanExpression(constraintsMapContainsKeyExpression);
-                final Statement ifPropertyIsAlreadyConstrainedStatement = new IfStatement(
-                        ifPropertyIsAlreadyConstrainedExpression,
-                        new ExpressionStatement(new EmptyExpression()),
-                        addNullableConstraintBlock);
-                ifConstraintsPropertyIsNullBlockStatement.addStatement(ifPropertyIsAlreadyConstrainedStatement);
+                    final Expression constraintsMapContainsKeyExpression = new MethodCallExpression(
+                            new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME, ClassHelper.make(Map.class)),
+                            "containsKey", new ArgumentListExpression(new ConstantExpression(propertyName)));
+                    final BooleanExpression ifPropertyIsAlreadyConstrainedExpression = new BooleanExpression(constraintsMapContainsKeyExpression);
+                    final Statement ifPropertyIsAlreadyConstrainedStatement = new IfStatement(
+                            ifPropertyIsAlreadyConstrainedExpression,
+                            new ExpressionStatement(new EmptyExpression()),
+                            addNullableConstraintBlock);
+                    ifConstraintsPropertyIsNullBlockStatement.addStatement(ifPropertyIsAlreadyConstrainedStatement);
+                }
             }
 
             final BlockStatement methodBlockStatement = new BlockStatement();

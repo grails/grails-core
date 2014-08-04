@@ -133,7 +133,7 @@ class TestRuntimeJunitAdapter {
     }
 
     protected boolean doesRequireFreshContext(Description testDescription) {
-        if(testDescription?.getAnnotation(FreshRuntime)) {
+        if(testDescription?.getAnnotation(FreshRuntime) || testDescription?.getTestClass()?.isAnnotationPresent(FreshRuntime)) {
             return true
         }
         return false
