@@ -97,8 +97,11 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
                         Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null)));
 
             final BlockStatement ifConstraintsPropertyIsNullBlockStatement = new BlockStatement();
-            Expression ez = new StaticMethodCallExpression(ClassHelper.make(ValidationSupport.class), "getConstrainedPropertiesForClass", new VariableExpression("this"));
-            final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), ez);
+            final ArgumentListExpression getConstrainedPropertiesForClassArguments = new ArgumentListExpression();
+            getConstrainedPropertiesForClassArguments.addExpression(new VariableExpression("this"));
+            getConstrainedPropertiesForClassArguments.addExpression(new ConstantExpression(defaultNullable));
+            final Expression getConstraintsMethodCall = new StaticMethodCallExpression(ClassHelper.make(ValidationSupport.class), "getConstrainedPropertiesForClass", getConstrainedPropertiesForClassArguments);
+            final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), getConstraintsMethodCall);
             final Statement ifConstraintsPropertyIsNullStatement = new IfStatement(isConstraintsPropertyNull, ifConstraintsPropertyIsNullBlockStatement, new ExpressionStatement(new EmptyExpression()));
 
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(initializeConstraintsFieldExpression));

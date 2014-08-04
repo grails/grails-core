@@ -51,6 +51,15 @@ public interface ConstraintsEvaluator {
      * Evaluate constraints for the given class
      *
      * @param cls The class to evaluate constraints for
+     * @param defaultNullable indicates if properties are nullable by default
+     * @return A map of constrained properties
+     */
+    Map<String, Constrained> evaluate(@SuppressWarnings("rawtypes") Class cls, boolean defaultNullable);
+
+    /**
+     * Evaluate constraints for the given class
+     *
+     * @param cls The class to evaluate constraints for
      * @return A map of constrained properties
      */
     Map<String, Constrained> evaluate(GrailsDomainClass cls);

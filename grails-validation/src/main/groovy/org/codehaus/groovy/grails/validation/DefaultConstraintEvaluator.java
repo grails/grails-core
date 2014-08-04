@@ -66,9 +66,13 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
     }
 
     public Map<String, Constrained> evaluate(@SuppressWarnings("rawtypes") Class cls) {
-        return evaluateConstraints(cls, null);
+        return evaluateConstraints(cls, null, false);
     }
 
+    public Map<String, Constrained> evaluate(@SuppressWarnings("rawtypes") Class cls, boolean defaultNullable) {
+        return evaluateConstraints(cls, null, defaultNullable);
+    }
+    
     public Map<String, Constrained> evaluate(GrailsDomainClass cls) {
         return evaluate(cls.getClazz(), cls.getPersistentProperties());
     }
@@ -83,6 +87,20 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
      */
     protected Map<String, Constrained> evaluateConstraints(
           final Class<?> theClass, GrailsDomainClassProperty[] properties) {
+        return evaluateConstraints(theClass, properties, false);
+    }
+    
+    /**
+     * Evaluates the constraints closure to build the list of constraints
+     *
+     * @param theClass  The domain class to evaluate constraints for
+     * @param properties The properties of the instance
+     * @param defaultNullable Indicates if properties are nullable by default
+     *
+     * @return A Map of constraints
+     */
+    protected Map<String, Constrained> evaluateConstraints(
+          final Class<?> theClass, GrailsDomainClassProperty[] properties, boolean defaultNullable) {
 
         boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
         LinkedList<?> classChain = getSuperClassChain(theClass);
@@ -142,7 +160,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             for (Entry<String, Constrained> entry : entrySet) {
                 final Constrained constrainedProperty = entry.getValue();
                 if (!constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
-                    applyDefaultNullableConstraint(constrainedProperty);
+                    applyDefaultNullableConstraint(constrainedProperty, defaultNullable);
                 }
             }
         }
@@ -246,12 +264,12 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
     }
 
     protected void applyDefaultNullableConstraint(GrailsDomainClassProperty p, Constrained cp) {
-        applyDefaultNullableConstraint(cp);
+        applyDefaultNullableConstraint(cp, false);
     }
 
-    protected void applyDefaultNullableConstraint(Constrained cp) {
+    protected void applyDefaultNullableConstraint(Constrained cp, boolean defaultNullable) {
         boolean isCollection = Collection.class.isAssignableFrom(cp.getPropertyType()) || Map.class.isAssignableFrom(cp.getPropertyType());
-        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, isCollection);
+        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, isCollection || defaultNullable);
     }
 
     protected boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, Constrained constrained) {
