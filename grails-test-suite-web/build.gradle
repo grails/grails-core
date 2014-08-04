@@ -43,7 +43,6 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-
     // Required for tag library support
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
@@ -61,61 +60,54 @@ compileTestGroovy {
     groovyOptions.listFiles = true
 }
 
-test {
-    maxParallelForks = 2
+def parallelTestConfig = {
+    maxParallelForks = 2 // Travis provides only 2 cores
     forkEvery = 30
-    jvmArgs = ['-Xmx768M','-XX:MaxPermSize=192m']
-    excludes = ["**/*TestCase.class",
-                "**/*\$*.class",
-                "**/ContentFormatControllerTests.class",
-                "**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class",
-                "**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class",
-                "**/GroovyPageAttributesTests.class",
-                "**/BindingExcludeTests.class",
-                "**/NestedXmlBindingTests.class",
-		"**/GSPResponseWriterSpec.class",
-		"**/RespondMethodSpec.class",
-        "**/ContentNegotiationSpec.class",
-        "**/pages/ext/jsp/*.class"]
+    jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
 }
 
-task isolatedTestsOne(type:Test) {
-    includes = ["**/ContentFormatControllerTests.class"]
-}
-task isolatedTestsTwo(type:Test) {
-    includes = ["**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class",
-                "**/ContentNegotiationSpec.class",
-                "**/pages/ext/jsp/*.class"]
-}
-task isolatedTestsThree(type:Test) {
-    includes = ["**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class"]
-}
-task isolatedTestsFour(type:Test) {
-    includes = ["**/BindingExcludeTests.class"]
-}
-task isolatedTestsFive(type:Test) {
-    includes = ["**/GroovyPageAttributesTests.class"]
-}
-task isolatedTestsSix(type:Test) {
-    includes = ["**/NestedXmlBindingTests.class"]
-}
-task isolatedTestsSeven(type:Test) {
-    maxParallelForks = 1
-    includes = ["**/GSPResponseWriterSpec.class"]
-}
-task isolatedRespondMethodTests(type:Test) {
-    maxParallelForks = 1
-    includes = ["**/RespondMethodSpec.class"]
-}
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix, isolatedTestsSeven, isolatedRespondMethodTests
+def excludedTestClasses = ["**/*TestCase.class",
+                           "**/*\$*.class"]
+def testsToBeExecutedInIsolation = ["**/ContentFormatControllerTests.class",
+                                    "**/JSONBindingTests.class",
+                                    "**/AutoParams*MarshallingTests.class",
+                                    "**/JSONBindingToNullTests.class",
+                                    "**/ControllerWithXmlConvertersTests.class",
+                                    "**/GroovyPageAttributesTests.class",
+                                    "**/BindingExcludeTests.class",
+                                    "**/NestedXmlBindingTests.class",
+                                    "**/GSPResponseWriterSpec.class",
+                                    "**/RespondMethodSpec.class",
+                                    "**/ContentNegotiationSpec.class",
+                                    "**/pages/ext/jsp/*.class"]
 
-/*
 test {
-	jvmArgs '-Xmx1024m', '-Xdebug', '-Xnoagent', '-Dgrails.full.stacktrace=true', '-Djava.compiler=NONE',
-	        '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+    configure parallelTestConfig
+    excludes = ["grails/", "org/grails/", "org/codehaus/"] + testsToBeExecutedInIsolation + excludedTestClasses
 }
-*/
+
+task execGrailsPackageTests(type: Test) {
+    configure parallelTestConfig
+    excludes = testsToBeExecutedInIsolation + excludedTestClasses
+    includes = ["grails/"]
+}
+
+task execOrgGrailsPackageTests(type: Test) {
+    configure parallelTestConfig
+    excludes = testsToBeExecutedInIsolation + excludedTestClasses
+    includes = ["org/grails/"]
+}
+
+task execOrgCodehausPackageTests(type: Test) {
+    configure parallelTestConfig
+    excludes = testsToBeExecutedInIsolation + excludedTestClasses
+    includes = ["org/codehaus/"]
+}
+
+task execIsolatedTests(type: Test) {
+    forkEvery = 1
+    excludes = excludedTestClasses
+    includes = testsToBeExecutedInIsolation
+}
+
+test.dependsOn execGrailsPackageTests, execOrgGrailsPackageTests, execOrgCodehausPackageTests, execIsolatedTests
