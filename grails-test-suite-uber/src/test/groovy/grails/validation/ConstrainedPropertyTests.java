@@ -63,9 +63,19 @@ public class ConstrainedPropertyTests extends TestCase {
 
     public void testGetSetBlank() {
         ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
+        
         cp.setBlank(true);
-
         assertTrue("should be blank", cp.isBlank());
+        assertNull("Blank constraint should not be present", cp.getAppliedConstraint("blank"));
+        
+        cp.setBlank(false);
+        assertFalse("should not be blank", cp.isBlank());
+        assertNotNull("Blank constraint should be present", cp.getAppliedConstraint("blank"));
+
+        // make sure setting it back to true works
+        cp.setBlank(true);
+        assertTrue("should be blank", cp.isBlank());
+        assertNull("Blank constraint should not be present", cp.getAppliedConstraint("blank"));
     }
 
     public void testGetSetMatches() {

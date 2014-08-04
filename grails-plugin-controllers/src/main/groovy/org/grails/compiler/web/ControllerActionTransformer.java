@@ -91,7 +91,6 @@ import grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -795,7 +794,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
             final ClassNode commandObjectNode, final String paramName, SourceUnit source) {
 
-        final BlockStatement tryBlock = new BlockStatement();
         final ArgumentListExpression initializeCommandObjectArguments = new ArgumentListExpression();
         initializeCommandObjectArguments.addExpression(new ClassExpression(commandObjectNode));
         initializeCommandObjectArguments.addExpression(new ConstantExpression(paramName));
@@ -803,21 +801,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
         
         final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
-        tryBlock.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
-
-        final BlockStatement catchBlock = new BlockStatement();
-        final VariableExpression responseVariableExpression = new VariableExpression("response");
-        final MethodCallExpression setStatusMethodCallExpression = new MethodCallExpression(responseVariableExpression, "setStatus", new ConstantExpression(400));
-        applyDefaultMethodTarget(setStatusMethodCallExpression, HttpServletResponse.class);
         
-        catchBlock.addStatement(new ExpressionStatement(setStatusMethodCallExpression));
-        final ReturnStatement returnStatement = new ReturnStatement(new ExpressionStatement(new ConstantExpression(null)));
-        catchBlock.addStatement(returnStatement);
-
-        final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
-        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(DataBindingSourceCreationException.class), "$dataBindingSourceInitializationException"), catchBlock));
-        
-        wrapper.addStatement(tryCatchStatement);
+        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
     }
 
     /**

@@ -2,10 +2,13 @@ package org.codehaus.groovy.grails.web.binding.xml
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
+import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(BindingController)
+@Mock(Person)
 class XmlBindingSpec extends Specification {
 
     void 'Test binding XML body'() {
@@ -52,16 +55,31 @@ class XmlBindingSpec extends Specification {
         person.errors.allErrors[0].code == 'invalidRequestBody'
         'invalidRequestBody' in person.errors.allErrors[0].codes
         'org.codehaus.groovy.grails.web.binding.xml.Person.invalidRequestBody' in person.errors.allErrors[0].codes
-
-
-        when:
-        request.xml = '''<person><someInvalid<this is invalid XML'''
-        model = controller.createPersonCommandObject()
-
-        then:
-        model == null
-        response.status == 400
     }
+    
+    @Issue('GRAILS-11576')
+    void 'Test binding malformed XML to a command object'() {
+        given:
+        request.contentType = XML_CONTENT_TYPE
+        request.method = 'POST'
+        request.xml = '''<person><someInvalid<this is invalid XML'''
+        
+        when:
+        def model = controller.createPersonCommandObject()
+        def person = model.person
+        
+        then:
+        model.person.hasErrors()
+        
+        when:
+        def personError = model.person.errors.allErrors.find {
+            it.objectName == 'person'
+        }
+        
+        then:
+        personError?.defaultMessage?.contains 'Error occurred initializing command object [person]. org.xml.sax.SAXParseException'
+    }
+
 }
 
 @Artefact('Controller')

@@ -16,6 +16,7 @@
 package grails.artefact
 
 import grails.databinding.DataBindingSource
+import grails.util.GrailsMetaClassUtils
 import grails.web.databinding.DataBindingUtils
 
 import javax.servlet.http.HttpServletRequest
@@ -24,13 +25,16 @@ import javax.servlet.http.HttpServletResponse
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 import org.grails.plugins.support.WebMetaUtils
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpMethod
+import org.springframework.validation.BindingResult
 import org.springframework.validation.Errors
+import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
@@ -103,52 +107,67 @@ trait Controller {
      * The command object is then subjected to data binding and dependency injection before being returned.
      *
      *
-     * @param controllerInstance The controller instance
      * @param type The type of the command object
      * @return the initialized command object or null if the command object is a domain class, the body or
      * parameters included an id and no corresponding record was found in the database.
      */
-    def initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
+    public Object initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
         final HttpServletRequest request = getRequest()
-        final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(), type, request)
-        final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSourceForPrefix(commandObjectParameterName, dataBindingSource)
-        Object commandObjectInstance = null
-        Object entityIdentifierValue = null
-        final boolean isDomainClass = DomainClassArtefactHandler.isDomainClass(type)
-        if(isDomainClass) {
-            entityIdentifierValue = commandObjectBindingSource.identifierValue
-            if(entityIdentifierValue == null) {
-                final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
-                entityIdentifierValue = webRequest != null ? webRequest.getParams().getIdentifier() : null
-            }
-        }
-        if(entityIdentifierValue instanceof String) {
-            entityIdentifierValue = ((String)entityIdentifierValue).trim()
-            if("".equals(entityIdentifierValue) || "null".equals(entityIdentifierValue)) {
-                entityIdentifierValue = null
-            }
-        }
+        def commandObjectInstance = null
 
-        final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod())
-
-        if(entityIdentifierValue != null) {
-            try {
-                commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
-            } catch (Exception e) {
-                final Errors errors = getErrors(controllerInstance);
-                if(errors != null) {
-                    errors.reject(controllerInstance.getClass().getName() + ".commandObject." + commandObjectParameterName + ".error", e.getMessage());
+        try {
+            final DataBindingSource dataBindingSource = DataBindingUtils
+                    .createDataBindingSource(
+                            getGrailsApplication(), type,
+                            request)
+            final DataBindingSource commandObjectBindingSource = WebMetaUtils
+                    .getCommandObjectBindingSourceForPrefix(
+                            commandObjectParameterName, dataBindingSource)
+            Object entityIdentifierValue = null
+            final boolean isDomainClass = DomainClassArtefactHandler
+                    .isDomainClass(type)
+            if (isDomainClass) {
+                entityIdentifierValue = commandObjectBindingSource
+                        .getIdentifierValue()
+                if (entityIdentifierValue == null) {
+                    final GrailsWebRequest webRequest = GrailsWebRequest
+                            .lookup(request)
+                    entityIdentifierValue = webRequest != null ? webRequest
+                            .getParams().getIdentifier() : null
                 }
             }
-        } else if(requestMethod == HttpMethod.POST || !isDomainClass){
-            commandObjectInstance = type.newInstance()
-        }
+            if (entityIdentifierValue instanceof String) {
+                entityIdentifierValue = ((String) entityIdentifierValue).trim()
+                if ("".equals(entityIdentifierValue)
+                        || "null".equals(entityIdentifierValue)) {
+                    entityIdentifierValue = null
+                }
+            }
 
-        if(commandObjectInstance != null) {
-            final boolean shouldDoDataBinding
+            final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod())
 
-            if(entityIdentifierValue != null) {
-                switch(requestMethod) {
+            if (entityIdentifierValue != null) {
+                try {
+                    commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue)
+                } catch (Exception e) {
+                    final Errors errors = getErrors()
+                    if (errors != null) {
+                        errors.reject(getClass().getName()
+                                + ".commandObject."
+                                + commandObjectParameterName + ".error",
+                                e.getMessage())
+                    }
+                }
+            } else if (requestMethod == HttpMethod.POST || !isDomainClass) {
+                commandObjectInstance = type.newInstance()
+            }
+
+            if (commandObjectInstance != null
+                    && commandObjectBindingSource != null) {
+                final boolean shouldDoDataBinding
+
+                if (entityIdentifierValue != null) {
+                    switch (requestMethod) {
                     case HttpMethod.PATCH:
                     case HttpMethod.POST:
                     case HttpMethod.PUT:
@@ -156,22 +175,35 @@ trait Controller {
                         break;
                     default:
                         shouldDoDataBinding = false
+                    }
+                } else {
+                    shouldDoDataBinding = true
                 }
-            } else {
-                shouldDoDataBinding = true
-            }
 
-            if(shouldDoDataBinding) {
-                bindData(commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null)
+                if (shouldDoDataBinding) {
+                    bindData(commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null)
+                }
             }
+        } catch (DataBindingSourceCreationException e) {
+            commandObjectInstance = type.newInstance()
+            final Object o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
+            if(o instanceof BindingResult) {
+                final BindingResult errors = (BindingResult)o
+                String msg = "Error occurred initializing command object [" + commandObjectParameterName + "]. " + e.getMessage()
+                ObjectError error = new ObjectError(commandObjectParameterName, msg)
+                errors.addError(error)
+            }
+        }
 
+        if(commandObjectInstance != null) {
             final ApplicationContext applicationContext = getApplicationContext()
             final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory()
             autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         }
+
         commandObjectInstance
     }
-    
+
     /**
      * <p>The withFormat method is used to allow controllers to handle different types of
      * request formats such as HTML, XML and so on. Example usage:</p>
