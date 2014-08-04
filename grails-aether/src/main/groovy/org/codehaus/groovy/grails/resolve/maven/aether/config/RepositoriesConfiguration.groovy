@@ -95,7 +95,7 @@ class RepositoriesConfiguration {
     RemoteRepository mavenCentral(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final existing = repositories.find { RemoteRepository ar -> ar.id == "mavenCentral" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("mavenCentral", "default", "http://repo1.maven.org/maven2/")
+            final repositoryBuilder = new RemoteRepository.Builder("mavenCentral", "default", "https://repo1.maven.org/maven2/")
 
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
