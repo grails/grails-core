@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.project.creation
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
@@ -32,10 +31,12 @@ import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 
 class GrailsProjectCleaner extends BaseSettingsApi {
     private static final GrailsConsole CONSOLE  = GrailsConsole.getInstance()
+    private File stagingDir
 
     AntBuilder ant
     GrailsProjectCleaner(BuildSettings settings, GrailsBuildEventListener buildEventListener) {
         super(settings, buildEventListener, false)
+        stagingDir = settings.projectWarExplodedDir
     }
 
     @CompileStatic
@@ -79,6 +80,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
 
         cleanCompiledSources()
         cleanWarFile()
+        cleanExplodedWar()
 
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanEnd")
@@ -159,8 +161,18 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanWarFileEnd")
         }
+    }
 
+    void cleanExplodedWar(boolean triggerEvents = true) {
+        if (triggerEvents) {
+            buildEventListener.triggerEvent("CleanExplodedWarStart")
+        }
+
+        AntBuilder ant = getAnt()
+        ant.delete(dir: stagingDir, failonerror: false)
+
+        if (triggerEvents) {
+            buildEventListener.triggerEvent("CleanExplodedWarEnd")
+        }
     }
 }
-
-

@@ -57,3 +57,7 @@ target (cleanTestReports: "Cleans the test reports") {
 target (cleanWarFile: "Cleans the deployable .war file") {
     projectCleaner.cleanWarFile(false)
 }
+
+target (cleanExplodedWar: "Cleans the exploded .war directory") {
+    projectCleaner.cleanExplodedWar(false)
+}
