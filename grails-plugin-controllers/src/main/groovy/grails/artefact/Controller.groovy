@@ -184,7 +184,11 @@ trait Controller {
                     bindData(commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null)
                 }
             }
-        } catch (DataBindingSourceCreationException e) {
+        } catch (Exception e) {
+            final exceptionHandlerMethodFor = getExceptionHandlerMethodFor(e.getClass())
+            if(exceptionHandlerMethodFor != null) {
+                throw e
+            }            
             commandObjectInstance = type.newInstance()
             final Object o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
             if(o instanceof BindingResult) {
