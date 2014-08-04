@@ -142,29 +142,38 @@ class ValidateableSpec extends Specification {
         !constraints.town.nullable
     }
 
-    void 'Test that constraints are nullable by default if overridden'() {
+    void 'Test that constraints are nullable by default if overridden and ensure nullable:true constraint is not applied when no other constraints were defined by user'() {
         when:
         def constraints = MyNullableValidateable.constraints
 
         then:
-        constraints.size() == 1
+        constraints.size() == 3
         constraints.containsKey 'town'
+        constraints.containsKey 'age'
+        constraints.containsKey 'country'
 
         and:
         constraints.town.appliedConstraints.size() == 1
+        constraints.country.appliedConstraints.size() == 1
 
-        and: "name and age are not constrained by default"
+        and: 'if property has any constraint defined, nullable is added too'
+        constraints.age.appliedConstraints.size() == 2
+
+        and: "name is not constrained by default"
         !constraints.containsKey('name')
-        !constraints.containsKey('age')
 
-        and:
-        !constraints.town.nullable
+        and: 'when property has other constraints, nullable is added even if not defined explicitly'
+        constraints.age.nullable == false
+        
+        and: 'explicit nullable constraints are correctly applied'
+        constraints.town.nullable == false
+        constraints.country.nullable == true
     }
     
     @Issue('GRAILS-11625')
     void 'test that properties defined in a class marked with @Validateable(nullable=true) which are not explicitly constrained are not accessed during validation'() {
         given: 'an instance of a class marked with @Validateable(nullable=true)'
-        def obj = new MyNullableValidateable(town: 'St. Louis')
+        def obj = new MyNullableValidateable(town: 'St. Louis', age:18)
         
         expect: 'property accessors are not invoked for properties which are not explicitly constrained (getName() would throw an exception)'
         obj.validate()
@@ -201,9 +210,9 @@ class MyValidateable {
 
 @Validateable(nullable = true)
 class MyNullableValidateable {
-    String name
     Integer age
     String town
+    String country
     
     String getName() {
         throw new UnsupportedOperationException('getName() should not have been called during validation')
@@ -211,5 +220,7 @@ class MyNullableValidateable {
 
     static constraints = {
         town nullable: false
+        age validator:{val -> val > 0}
+        country nullable: true
     }
 }
