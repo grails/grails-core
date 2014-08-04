@@ -24,8 +24,10 @@ class MockedBeanSpec extends Specification {
     def "doWithSpring callback is executed"() {
         when:
         def myServiceBean=grailsApplication.mainContext.getBean('myService')
-        myServiceBean.prova()
+        myServiceBean.identity() == System.identityHashCode(this)
         then:
-        1 * myService.prova() >> { true } 
+        1 * myService.identity() >> { System.identityHashCode(this) }
+        where:
+        counter << [0..10].flatten() 
     }
 }

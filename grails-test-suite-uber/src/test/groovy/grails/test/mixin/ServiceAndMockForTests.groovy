@@ -43,6 +43,10 @@ class MyService {
     boolean prova() {
         utils?.isMockForWorking()
     }
+    
+    int identity() {
+        System.identityHashCode(this)
+    }
 }
 
 class MockForUtils2 {
