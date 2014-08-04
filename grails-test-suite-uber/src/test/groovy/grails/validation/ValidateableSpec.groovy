@@ -162,8 +162,8 @@ class ValidateableSpec extends Specification {
         and: "name is not constrained by default"
         !constraints.containsKey('name')
 
-        and: 'when property has other constraints, nullable is added even if not defined explicitly'
-        constraints.age.nullable == false
+        and: 'when property has other constraints, nullable:true is added even if not defined explicitly'
+        constraints.age.nullable == true
         
         and: 'explicit nullable constraints are correctly applied'
         constraints.town.nullable == false
