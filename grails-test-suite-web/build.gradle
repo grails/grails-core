@@ -83,7 +83,7 @@ def testsToBeExecutedInIsolation = ["**/ContentFormatControllerTests.class",
 
 test {
     configure parallelTestConfig
-    excludes = ["grails/", "org/grails/web", "org/codehaus/"] + testsToBeExecutedInIsolation + excludedTestClasses
+    excludes = ["grails/", "org/grails/web/taglib/", "org/codehaus/"] + testsToBeExecutedInIsolation + excludedTestClasses
 }
 
 task execGrailsPackageTests(type: Test) {
@@ -92,10 +92,10 @@ task execGrailsPackageTests(type: Test) {
     includes = ["grails/"]
 }
 
-task execOrgGrailsWebPackageTests(type: Test) {
+task execOrgGrailsWebTaglibPackageTests(type: Test) {
     configure parallelTestConfig
     excludes = testsToBeExecutedInIsolation + excludedTestClasses
-    includes = ["org/grails/web"]
+    includes = ["org/grails/web/taglib/"]
 }
 
 task execOrgCodehausPackageTests(type: Test) {
@@ -110,4 +110,4 @@ task execIsolatedTests(type: Test) {
     includes = testsToBeExecutedInIsolation
 }
 
-test.dependsOn execGrailsPackageTests, execOrgGrailsWebPackageTests, execOrgCodehausPackageTests, execIsolatedTests
+test.dependsOn execGrailsPackageTests, execOrgGrailsWebTaglibPackageTests, execOrgCodehausPackageTests, execIsolatedTests
