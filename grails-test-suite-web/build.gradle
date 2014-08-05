@@ -62,52 +62,45 @@ compileTestGroovy {
 
 def parallelTestConfig = {
     maxParallelForks = 2 // Travis provides only 2 cores
-    forkEvery = 30
+    forkEvery = 10
     jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
 }
 
-def excludedTestClasses = ["**/*TestCase.class",
-                           "**/*\$*.class"]
-def testsToBeExecutedInIsolation = ["**/ContentFormatControllerTests.class",
-                                    "**/JSONBindingTests.class",
-                                    "**/AutoParams*MarshallingTests.class",
-                                    "**/JSONBindingToNullTests.class",
-                                    "**/ControllerWithXmlConvertersTests.class",
-                                    "**/GroovyPageAttributesTests.class",
-                                    "**/BindingExcludeTests.class",
-                                    "**/NestedXmlBindingTests.class",
-                                    "**/GSPResponseWriterSpec.class",
-                                    "**/RespondMethodSpec.class",
-                                    "**/ContentNegotiationSpec.class",
-                                    "**/pages/ext/jsp/*.class"]
+def longRunningTests = ["org/grails/web/taglib/"]
+def isolatedTests = ["**/ContentFormatControllerTests.class",
+                     "**/JSONBindingTests.class",
+                     "**/AutoParams*MarshallingTests.class",
+                     "**/JSONBindingToNullTests.class",
+                     "**/ControllerWithXmlConvertersTests.class",
+                     "**/GroovyPageAttributesTests.class",
+                     "**/BindingExcludeTests.class",
+                     "**/NestedXmlBindingTests.class",
+                     "**/GSPResponseWriterSpec.class",
+                     "**/RespondMethodSpec.class",
+                     "**/ContentNegotiationSpec.class",
+                     "**/pages/ext/jsp/*.class"]
 
-test {
+task execLongRunningTests(type: Test) {
     configure parallelTestConfig
-    excludes = ["grails/", "org/grails/web/taglib/", "org/codehaus/"] + testsToBeExecutedInIsolation + excludedTestClasses
-}
-
-task execGrailsPackageTests(type: Test) {
-    configure parallelTestConfig
-    excludes = testsToBeExecutedInIsolation + excludedTestClasses
-    includes = ["grails/"]
-}
-
-task execOrgGrailsWebTaglibPackageTests(type: Test) {
-    configure parallelTestConfig
-    excludes = testsToBeExecutedInIsolation + excludedTestClasses
-    includes = ["org/grails/web/taglib/"]
-}
-
-task execOrgCodehausPackageTests(type: Test) {
-    configure parallelTestConfig
-    excludes = testsToBeExecutedInIsolation + excludedTestClasses
-    includes = ["org/codehaus/"]
+    excludes = isolatedTests
+    includes = longRunningTests
 }
 
 task execIsolatedTests(type: Test) {
+    configure parallelTestConfig
     forkEvery = 1
-    excludes = excludedTestClasses
-    includes = testsToBeExecutedInIsolation
+    excludes = longRunningTests
+    includes = isolatedTests
 }
 
-test.dependsOn execGrailsPackageTests, execOrgGrailsWebTaglibPackageTests, execOrgCodehausPackageTests, execIsolatedTests
+task createCombinedReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/allTests")
+    reportOn execLongRunningTests, execIsolatedTests, test
+}
+
+test {
+    configure parallelTestConfig
+    excludes = longRunningTests + isolatedTests
+}
+
+test.dependsOn execLongRunningTests, execIsolatedTests
