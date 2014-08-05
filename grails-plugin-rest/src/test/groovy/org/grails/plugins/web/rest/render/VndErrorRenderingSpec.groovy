@@ -6,8 +6,6 @@ import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.core.DefaultGrailsApplication
-import org.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -28,14 +26,8 @@ import org.springframework.http.HttpStatus
  */
 class VndErrorRenderingSpec extends Specification{
 
-    void setup() {
-        new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication()).initialize()
-    }
-
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
-        ConvertersConfigurationHolder.clear()
-
     }
 
     void "Test VND error rendering in XML" () {
