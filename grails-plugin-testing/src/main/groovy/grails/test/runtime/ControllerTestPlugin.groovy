@@ -42,7 +42,6 @@ import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
-import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
 import grails.web.mime.MimeType
@@ -135,7 +134,6 @@ class ControllerTestPlugin implements TestPlugin {
     protected void applicationInitialized(TestRuntime runtime, GrailsApplication grailsApplication) {
         mockDefaultCodecs(runtime)
         grailsApplication.mainContext.getBean(DefaultCodecLookup).reInitialize()
-        ((ConvertersConfigurationInitializer)grailsApplication.mainContext.getBean("convertersConfigurationInitializer")).initialize(grailsApplication)
         ServletsGrailsPluginSupport.enhanceServletApi(grailsApplication.config)
     }
 
