@@ -62,10 +62,11 @@ compileTestGroovy {
 
 ext {
     isTravisRun = System.getenv().get("TRAVIS")
+    maxParallelForks = Math.max(2, (int) (Runtime.runtime.availableProcessors() / 2))
 }
 
 def defaultTestConfig = {
-    maxParallelForks = 2
+    maxParallelForks = maxParallelForks
     forkEvery = 30
     jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
     if (isTravisRun) {
