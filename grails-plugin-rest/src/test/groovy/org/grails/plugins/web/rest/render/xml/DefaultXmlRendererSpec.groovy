@@ -4,7 +4,6 @@ import grails.converters.XML
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
 import grails.core.DefaultGrailsApplication
-import org.grails.web.converters.ConverterUtil
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
@@ -26,9 +25,6 @@ class DefaultXmlRendererSpec extends Specification {
         final initializer = new ConvertersConfigurationInitializer()
         initializer.grailsApplication = new DefaultGrailsApplication()
         initializer.initialize()
-        ValidationErrors.metaClass.asType = { Class type ->
-            ConverterUtil.createConverter(type, delegate, null);
-        }
         XML.registerObjectMarshaller(new ValidationErrorsMarshaller())
     }
 

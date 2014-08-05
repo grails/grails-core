@@ -3,7 +3,6 @@ package org.grails.plugins.web.rest.render.json
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebUtil
 import grails.core.DefaultGrailsApplication
-import org.grails.web.converters.ConverterUtil
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.plugins.web.rest.render.ServletRenderContext
@@ -18,9 +17,6 @@ class JsonRendererSpec extends Specification {
         final initializer = new ConvertersConfigurationInitializer()
         initializer.grailsApplication = new DefaultGrailsApplication()
         initializer.initialize()
-        Album.metaClass.asType = { Class type ->
-            ConverterUtil.createConverter(type, delegate, null);
-        }
     }
 
     void cleanup() {

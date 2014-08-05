@@ -72,13 +72,6 @@ class JSONConverterTests {
 
     @Test
     void testJSONEnumConverting() {
-        Role.metaClass.asType = {java.lang.Class clazz ->
-            if (ConverterUtil.isConverterClass(clazz)) {
-                return ConverterUtil.createConverter(clazz, delegate)
-            }
-            return ConverterUtil.invokeOriginalAsTypeMethod(delegate, clazz)
-        }
-
         def enumInstance = Role.HEAD
         params.e = enumInstance
         controller.testEnum()
