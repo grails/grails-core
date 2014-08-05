@@ -29,7 +29,7 @@ import org.springframework.http.HttpStatus
 class VndErrorRenderingSpec extends Specification{
 
     void setup() {
-        new ConvertersConfigurationInitializer().initialize(new DefaultGrailsApplication())
+        new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication()).initialize()
     }
 
     void cleanup() {

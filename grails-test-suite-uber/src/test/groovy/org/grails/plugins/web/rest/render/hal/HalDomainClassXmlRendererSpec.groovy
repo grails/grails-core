@@ -26,10 +26,10 @@ import spock.lang.Specification
 class HalDomainClassXmlRendererSpec extends Specification {
 
     void setup() {
-        final initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize(new DefaultGrailsApplication())
-
+        final initializer = new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication())
+        initializer.initialize()
     }
+    
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
         ConvertersConfigurationHolder.clear()

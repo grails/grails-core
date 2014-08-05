@@ -13,8 +13,8 @@ class GrailsMockHttpServletRequestSpec extends Specification {
     @Issue("GRAILS-11493")
     def "should allow setting request.xml with XML instance"() {
         given:
-            ConvertersConfigurationInitializer initializer=new ConvertersConfigurationInitializer()
-            initializer.initialize(new DefaultGrailsApplication())
+            ConvertersConfigurationInitializer initializer=new ConvertersConfigurationInitializer(grailsApplication: new DefaultGrailsApplication())
+            initializer.initialize()
             GrailsMockHttpServletRequest request=new GrailsMockHttpServletRequest()
         when:
             request.xml = new XML([a:1, b:2, c:3])

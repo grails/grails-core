@@ -56,6 +56,10 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     public final Log LOG = LogFactory.getLog(ConvertersConfigurationInitializer.class);
 
     public void afterPropertiesSet() {
+        initialize();
+    }
+    
+    public void initialize() {
         LOG.debug("Initializing Converters Default Configurations...");
         initJSONConfiguration();
         initXMLConfiguration();

@@ -17,8 +17,8 @@ import spock.lang.Specification
 @Mock([Album, Company])
 class DomainClassCollectionRenderingSpec extends Specification {
     void setup() {
-        final initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize(grailsApplication)
+        final initializer = new ConvertersConfigurationInitializer(grailsApplication: grailsApplication)
+        initializer.initialize()
     }
 
     @Issue('GRAILS-11197')

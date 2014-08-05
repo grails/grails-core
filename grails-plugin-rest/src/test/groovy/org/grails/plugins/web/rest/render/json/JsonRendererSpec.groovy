@@ -16,7 +16,8 @@ class JsonRendererSpec extends Specification {
 
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize(new DefaultGrailsApplication())
+        initializer.grailsApplication = new DefaultGrailsApplication()
+        initializer.initialize()
         Album.metaClass.asType = { Class type ->
             ConverterUtil.createConverter(type, delegate, null);
         }

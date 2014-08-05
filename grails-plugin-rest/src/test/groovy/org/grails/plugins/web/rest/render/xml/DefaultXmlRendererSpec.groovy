@@ -24,7 +24,8 @@ class DefaultXmlRendererSpec extends Specification {
 
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()
-        initializer.initialize(new DefaultGrailsApplication())
+        initializer.grailsApplication = new DefaultGrailsApplication()
+        initializer.initialize()
         ValidationErrors.metaClass.asType = { Class type ->
             ConverterUtil.createConverter(type, delegate, null);
         }
