@@ -60,13 +60,19 @@ compileTestGroovy {
     groovyOptions.listFiles = true
 }
 
-def parallelTestConfig = {
-    maxParallelForks = 2 // Travis provides only 2 cores
-    forkEvery = 10
-    jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
+ext {
+    isTravisRun = System.getenv().get("TRAVIS")
 }
 
-def longRunningTests = ["org/grails/web/taglib/"]
+def defaultTestConfig = {
+    maxParallelForks = 2
+    forkEvery = 30
+    jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
+    if (isTravisRun) {
+        afterTest { descriptor, result -> println "${descriptor.className}.${descriptor.name}: ${result.resultType}" }
+    }
+}
+
 def isolatedTests = ["**/ContentFormatControllerTests.class",
                      "**/JSONBindingTests.class",
                      "**/AutoParams*MarshallingTests.class",
@@ -80,27 +86,20 @@ def isolatedTests = ["**/ContentFormatControllerTests.class",
                      "**/ContentNegotiationSpec.class",
                      "**/pages/ext/jsp/*.class"]
 
-task execLongRunningTests(type: Test) {
-    configure parallelTestConfig
-    excludes = isolatedTests
-    includes = longRunningTests
-}
-
 task execIsolatedTests(type: Test) {
-    configure parallelTestConfig
+    configure defaultTestConfig
     forkEvery = 1
-    excludes = longRunningTests
     includes = isolatedTests
 }
 
 task createCombinedReport(type: TestReport) {
     destinationDir = file("$buildDir/reports/allTests")
-    reportOn execLongRunningTests, execIsolatedTests, test
+    reportOn execIsolatedTests, test
 }
 
 test {
-    configure parallelTestConfig
-    excludes = longRunningTests + isolatedTests
+    configure defaultTestConfig
+    excludes = isolatedTests
 }
 
-test.dependsOn execLongRunningTests, execIsolatedTests
+test.dependsOn execIsolatedTests
