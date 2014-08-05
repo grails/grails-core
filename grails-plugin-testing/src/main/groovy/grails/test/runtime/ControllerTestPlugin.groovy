@@ -33,7 +33,6 @@ import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.CodecsGrailsPlugin
 import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.plugins.converters.ConvertersGrailsPlugin
-import org.grails.plugins.converters.ConvertersPluginSupport
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
@@ -137,7 +136,6 @@ class ControllerTestPlugin implements TestPlugin {
         mockDefaultCodecs(runtime)
         grailsApplication.mainContext.getBean(DefaultCodecLookup).reInitialize()
         ((ConvertersConfigurationInitializer)grailsApplication.mainContext.getBean("convertersConfigurationInitializer")).initialize(grailsApplication)
-        ConvertersPluginSupport.enhanceApplication(grailsApplication, grailsApplication.mainContext)
         ServletsGrailsPluginSupport.enhanceServletApi(grailsApplication.config)
     }
 

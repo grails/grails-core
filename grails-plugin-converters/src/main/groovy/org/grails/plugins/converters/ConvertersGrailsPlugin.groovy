@@ -69,10 +69,12 @@ class ConvertersGrailsPlugin implements GrailsApplicationAware {
     }
 
     def doWithDynamicMethods = {applicationContext ->
+        // TODO This probably does not need to be here. The GrailsApplication
+        // could be autowired into the convertersConfigurationInitializer and
+        // the initialize() behavior could be implemented in afterPropertiesSet()
+        // or similar...
         def application = grailsApplication
         applicationContext.getBean("convertersConfigurationInitializer").initialize(application)
-
-        ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 
         log.debug "Converters Plugin configured successfully"
     }

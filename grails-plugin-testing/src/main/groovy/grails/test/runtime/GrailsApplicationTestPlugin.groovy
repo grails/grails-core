@@ -17,11 +17,14 @@
 package grails.test.runtime;
 
 import grails.async.Promises
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.spring.BeanBuilder
 import grails.test.MockUtils
 import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
+import grails.web.servlet.context.GrailsWebApplicationContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -29,22 +32,18 @@ import java.lang.reflect.Modifier
 
 import javax.servlet.ServletContext
 
-import org.grails.core.util.ClassPropertyFetcher
-import org.grails.commons.CodecArtefactHandler
-import grails.core.DefaultGrailsApplication
-import org.grails.commons.DefaultGrailsCodecClass
-import grails.core.GrailsApplication
-import org.grails.core.cfg.ConfigurationHelper
-import grails.web.servlet.context.GrailsWebApplicationContext
-import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory;
-import org.grails.spring.RuntimeSpringConfiguration
-import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration;
-import org.grails.core.lifecycle.ShutdownOperations
-import org.grails.plugins.converters.ConvertersPluginSupport
-import org.grails.validation.ConstraintEvalUtils
-import org.grails.web.servlet.context.GrailsConfigUtils;
-import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.async.factory.SynchronousPromiseFactory
+import org.grails.commons.CodecArtefactHandler
+import org.grails.commons.DefaultGrailsCodecClass
+import org.grails.core.cfg.ConfigurationHelper
+import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.core.util.ClassPropertyFetcher
+import org.grails.spring.RuntimeSpringConfiguration
+import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
+import org.grails.validation.ConstraintEvalUtils
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.servlet.context.GrailsConfigUtils
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
@@ -221,7 +220,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     void applicationInitialized(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
         runtime.publishEvent("applicationInitialized", [grailsApplication: grailsApplication])
-        ConvertersPluginSupport.enhanceApplication(grailsApplication, grailsApplication.mainContext)
     }
     
     Set getLoadedCodecs(TestRuntime runtime) {
