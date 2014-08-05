@@ -346,6 +346,21 @@ Radio 3 <input type="radio" name="myGroup" value="3" />
         }()
     }
 
+    
+    void testFieldTagWithEmptyNameAttribute() {
+        Config c
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
+
+        withTag("field", pw) { tag ->
+            assertNotNull tag
+            def message = shouldFail(GrailsTagException) {
+                tag([name: ''])
+            }
+            assertEquals 'Tag [field] is missing required attribute [name] or [field]', message
+        }
+    }
+
     void testSelectTagWithEmptyListFromAttribute() {
         final StringWriter sw = new StringWriter()
         final PrintWriter pw = new PrintWriter(sw)
