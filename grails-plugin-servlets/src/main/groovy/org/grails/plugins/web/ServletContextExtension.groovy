@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins.web.api
+package org.grails.plugins.web
 
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.ServletContext
 
 /**
- * Additional methods added to the HttpServletRequest API.
- *
- * @author Graeme Rocher
- * @since 2.0
+ * 
+ * @author Jeff Brown
+ * @since 3.0
  */
-class ServletRequestApi {
+class ServletContextExtension {
 
-    Closure xhrRequestIdentifier = { false }
-
-    /**
-     * @return test whether the current request is an XHR request
-     */
-    boolean isXhr(HttpServletRequest instance) {
-        instance.getHeader('X-Requested-With') == "XMLHttpRequest" || xhrRequestIdentifier(instance)
+    static propertyMissing(ServletContext context, String name, value) {
+        context.setAttribute name, value
+    }
+    
+    static propertyMissing(ServletContext context, String name) {
+        context.getAttribute name
     }
 }

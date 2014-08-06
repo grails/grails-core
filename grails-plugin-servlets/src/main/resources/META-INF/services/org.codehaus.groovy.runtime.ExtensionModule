@@ -1,0 +1,3 @@
+moduleName=servlets-module
+moduleVersion=1.0
+extensionClasses=org.grails.plugins.web.HttpServletRequestExtension,org.grails.plugins.web.HttpServletResponseExtension,org.grails.plugins.web.HttpSessionExtension,org.grails.plugins.web.ServletContextExtension
