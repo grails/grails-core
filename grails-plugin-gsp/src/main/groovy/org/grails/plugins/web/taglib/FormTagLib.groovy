@@ -133,6 +133,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      * @attr type REQUIRED the input type
      */
     Closure field = { attrs ->
+        attrs.tagName = "field"
         fieldImpl(out, attrs)
     }
 
