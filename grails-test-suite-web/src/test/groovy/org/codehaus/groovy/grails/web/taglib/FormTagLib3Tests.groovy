@@ -348,7 +348,6 @@ Radio 3 <input type="radio" name="myGroup" value="3" />
 
     
     void testFieldTagWithEmptyNameAttribute() {
-        Config c
         final StringWriter sw = new StringWriter()
         final PrintWriter pw = new PrintWriter(sw)
 
