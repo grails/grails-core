@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/grails/grails-core.svg?branch=2.4.x)](https://travis-ci.org/grails/grails-core)
+
 Grails
 ===
 
