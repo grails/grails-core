@@ -76,12 +76,6 @@ def defaultTestConfig = {
 }
 }
 
-test {
-    maxParallelForks = 4
-    forkEvery = 30
-    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
-    excludes = ["**/*TestCase.class",
-                "**/*\$*.class",
 def isolatedTests = ["**/ContentFormatControllerTests.class",
                 "**/JSONBindingTests.class",
                 "**/AutoParams*MarshallingTests.class",
