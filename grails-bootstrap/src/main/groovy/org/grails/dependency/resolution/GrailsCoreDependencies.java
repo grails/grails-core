@@ -85,7 +85,6 @@ public class GrailsCoreDependencies {
             new Dependency("org.grails", "grails-plugin-filters", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-gsp", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-services", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-servlets", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-url-mappings", grailsVersion, true)
         );
 

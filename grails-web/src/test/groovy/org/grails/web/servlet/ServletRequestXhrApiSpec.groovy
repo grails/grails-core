@@ -1,4 +1,4 @@
-package org.grails.plugins.web.api
+package org.grails.web.servlet
 
 import org.springframework.mock.web.MockHttpServletRequest
 

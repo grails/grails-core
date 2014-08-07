@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins.web
+package org.grails.web.servlet
 
-import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletResponse
 
 /**
  * 
  * @author Jeff Brown
  * @since 3.0
+ * 
  */
-class ServletContextExtension {
-
-    static propertyMissing(ServletContext context, String name, value) {
-        context.setAttribute name, value
-    }
-    
-    static propertyMissing(ServletContext context, String name) {
-        context.getAttribute name
+class HttpServletResponseExtension {
+    static leftShift(HttpServletResponse response, arg) {
+        response.writer << arg
     }
 }

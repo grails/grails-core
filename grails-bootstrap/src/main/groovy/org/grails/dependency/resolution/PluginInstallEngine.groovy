@@ -47,7 +47,7 @@ class PluginInstallEngine {
     static final List CORE_PLUGINS = [
         'codecs', 'controllers', 'converters', 'core', 'dataSource', 'domainClass',
         'filters', 'groovyPages', 'i18n', 'logging', 'mimeTypes',
-        'services', 'servlets', 'urlMappings', 'validation']
+        'services', 'urlMappings', 'validation']
 
     Closure errorHandler = { String msg -> throw new ScriptExitException(msg) }
     Closure eventHandler = { String name, String msg -> GrailsConsole.instance.updateStatus msg }

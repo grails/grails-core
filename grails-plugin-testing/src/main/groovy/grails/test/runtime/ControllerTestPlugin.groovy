@@ -37,7 +37,6 @@ import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.controllers.api.ControllersApi
-import org.grails.plugins.web.ServletsGrailsPluginSupport;
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
@@ -134,7 +133,6 @@ class ControllerTestPlugin implements TestPlugin {
     protected void applicationInitialized(TestRuntime runtime, GrailsApplication grailsApplication) {
         mockDefaultCodecs(runtime)
         grailsApplication.mainContext.getBean(DefaultCodecLookup).reInitialize()
-        ServletsGrailsPluginSupport.enhanceServletApi(grailsApplication.config)
     }
 
     protected void mockDefaultCodecs(TestRuntime runtime) {

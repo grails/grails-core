@@ -39,7 +39,7 @@ import org.springframework.context.ApplicationContext
 class MimeTypesGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [core:version, servlets:version, controllers:version]
+    def dependsOn = [core:version, controllers:version]
     def observe = ['controllers']
 
     def doWithSpring = {

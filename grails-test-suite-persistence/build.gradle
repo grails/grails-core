@@ -5,7 +5,6 @@ dependencies {
                 project(':grails-plugin-testing'),
                 project(':grails-plugin-datasource'),
                 project(':grails-plugin-i18n'),
-                project(':grails-plugin-servlets'),
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services'),
                 project(':grails-plugin-controllers'),

@@ -29,7 +29,6 @@ class GrailsHttpSessionTests extends AbstractGrailsPluginTests {
 
     void onSetUp() {
         pluginsToLoad << gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
-        pluginsToLoad << gcl.loadClass("org.grails.plugins.web.ServletsGrailsPlugin")
     }
 
     void testSetAttribute() {

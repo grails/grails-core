@@ -1,3 +1,0 @@
-<plugin name='servlets'>
-  <type>org.grails.plugins.web.ServletsGrailsPlugin</type>
-</plugin>
