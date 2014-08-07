@@ -1,3 +1,3 @@
-moduleName=mimetypes-module
+moduleName=grails-mimetypes-module
 moduleVersion=1.0
 extensionClasses=org.grails.web.mime.HttpServletRequestExtension
