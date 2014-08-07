@@ -15,15 +15,15 @@
  */
 package org.grails.plugins.web.api
 
+import grails.core.GrailsApplication
+import grails.web.http.HttpHeaders
+import grails.web.mime.MimeType
+import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
-import grails.core.GrailsApplication
 import org.grails.web.mime.DefaultAcceptHeaderParser
-import grails.web.mime.MimeType
-import grails.web.util.GrailsApplicationAttributes
-import grails.web.http.HttpHeaders
 
 /**
  * Methods added to the {@link javax.servlet.http.HttpServletRequest} instance for request format handling.
@@ -37,8 +37,6 @@ class RequestMimeTypesApi {
     MimeType[] mimeTypes
     GrailsApplication grailsApplication
 
-    MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
-
     RequestMimeTypesApi() {}
 
     RequestMimeTypesApi(GrailsApplication application, MimeType[] mimeTypes) {
@@ -48,22 +46,6 @@ class RequestMimeTypesApi {
 
     MimeType[] getMimeTypes() { mimeTypes }
 
-    /**
-     * Obtains the request format, which is dictated by the CONTENT_TYPE header and evaluated using the
-     * configured {@link MimeType} instances. Only configured MimeTypes
-     * are allowed.
-     *
-     * @param request The request object
-     * @return The request format or null if exists
-     */
-    String getFormat(HttpServletRequest request) {
-        def result = request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT)
-        if (!result) {
-            result = getMimeTypes(request)[0].extension
-            request.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, result)
-        }
-        result
-    }
 
     /**
      * Obtains a list of configured {@link MimeType} instances for the request
@@ -82,16 +64,5 @@ class RequestMimeTypesApi {
             request.setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, result)
         }
         result
-    }
-
-    /**
-     * Allows for the request.withFormat { } syntax
-     *
-     * @param request The request
-     * @param callable A closure
-     * @return The result of the closure call
-     */
-    Object withFormat(HttpServletRequest request, Closure callable) {
-        apiSupport.withFormat(request, callable)
     }
 }

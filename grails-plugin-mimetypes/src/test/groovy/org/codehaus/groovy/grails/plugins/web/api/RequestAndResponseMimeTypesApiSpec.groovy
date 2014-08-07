@@ -58,8 +58,8 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             request.contentType = "text/xml"
 
         then: "The request format should be 'xml'"
-            requestMimeTypesApi.getFormat(request) == "xml"
-            requestMimeTypesApi.getFormat(request) == "xml" // call twice to test cached value
+            request.getFormat() == "xml"
+            request.getFormat() == "xml" // call twice to test cached value
             request.format == 'xml'
             response.format == 'all'
     }
@@ -73,8 +73,8 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             request.addHeader('Accept', 'text/json')
 
         then: "The request format should be 'xml'"
-            requestMimeTypesApi.getFormat(request) == "xml"
-            requestMimeTypesApi.getFormat(request) == "xml" // call twice to test cached value
+            request.getFormat() == "xml"
+            request.getFormat() == "xml" // call twice to test cached value
             request.format == 'xml'
             response.format == 'json'
     }
@@ -87,8 +87,8 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             request.addHeader('Accept', 'text/json')
 
         then: "The request format should be 'xml'"
-            requestMimeTypesApi.getFormat(request) == "all"
-            requestMimeTypesApi.getFormat(request) == "all" // call twice to test cached value
+            request.getFormat() == "all"
+            request.getFormat() == "all" // call twice to test cached value
             request.format == 'all'
             response.format == 'json'
     }
