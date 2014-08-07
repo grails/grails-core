@@ -112,6 +112,10 @@ class HttpServletRequestExtension {
         results
     }
 
+    static boolean isXhr(HttpServletRequest instance) {
+        // TODO grails.web.xhr.identifier support
+        instance.getHeader('X-Requested-With') == "XMLHttpRequest"
+    }
 
     static boolean isGet(HttpServletRequest request) {
         request.method == 'GET'

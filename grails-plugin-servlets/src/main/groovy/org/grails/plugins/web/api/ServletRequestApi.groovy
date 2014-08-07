@@ -24,13 +24,4 @@ import javax.servlet.http.HttpServletRequest
  * @since 2.0
  */
 class ServletRequestApi {
-
-    Closure xhrRequestIdentifier = { false }
-
-    /**
-     * @return test whether the current request is an XHR request
-     */
-    boolean isXhr(HttpServletRequest instance) {
-        instance.getHeader('X-Requested-With') == "XMLHttpRequest" || xhrRequestIdentifier(instance)
-    }
 }
