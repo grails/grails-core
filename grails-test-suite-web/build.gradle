@@ -60,13 +60,29 @@ compileTestGroovy {
     groovyOptions.listFiles = true
 }
 
+ext {
+    isTravisRun = System.getenv().get("TRAVIS")
+}
+
+def defaultTestConfig = {
+    maxParallelForks = 2
+    forkEvery = 10
+    jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
+    if (isTravisRun) {
+        afterSuite {
+            System.out << '.'
+            System.out.flush()
+        }
+}
+}
+
 test {
     maxParallelForks = 4
     forkEvery = 30
     jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
     excludes = ["**/*TestCase.class",
                 "**/*\$*.class",
-                "**/ContentFormatControllerTests.class",
+def isolatedTests = ["**/ContentFormatControllerTests.class",
                 "**/JSONBindingTests.class",
                 "**/AutoParams*MarshallingTests.class",
                 "**/JSONBindingToNullTests.class",
@@ -78,43 +94,21 @@ test {
 		"**/RespondMethodSpec.class",
         "**/ContentNegotiationSpec.class",
         "**/pages/ext/jsp/*.class"]
+
+task execIsolatedTests(type: Test) {
+    configure defaultTestConfig
+    forkEvery = 1
+    includes = isolatedTests
 }
 
-task isolatedTestsOne(type:Test) {
-    includes = ["**/ContentFormatControllerTests.class"]
+task createCombinedReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/allTests")
+    reportOn execIsolatedTests, test
 }
-task isolatedTestsTwo(type:Test) {
-    includes = ["**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class",
-                "**/ContentNegotiationSpec.class",
-                "**/pages/ext/jsp/*.class"]
-}
-task isolatedTestsThree(type:Test) {
-    includes = ["**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class"]
-}
-task isolatedTestsFour(type:Test) {
-    includes = ["**/BindingExcludeTests.class"]
-}
-task isolatedTestsFive(type:Test) {
-    includes = ["**/GroovyPageAttributesTests.class"]
-}
-task isolatedTestsSix(type:Test) {
-    includes = ["**/NestedXmlBindingTests.class"]
-}
-task isolatedTestsSeven(type:Test) {
-    maxParallelForks = 1
-    includes = ["**/GSPResponseWriterSpec.class"]
-}
-task isolatedRespondMethodTests(type:Test) {
-    maxParallelForks = 1
-    includes = ["**/RespondMethodSpec.class"]
-}
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix, isolatedTestsSeven, isolatedRespondMethodTests
 
-/*
 test {
-	jvmArgs '-Xmx1024m', '-Xdebug', '-Xnoagent', '-Dgrails.full.stacktrace=true', '-Djava.compiler=NONE',
-	        '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+    configure defaultTestConfig
+    excludes = isolatedTests
 }
-*/
+
+test.dependsOn execIsolatedTests
