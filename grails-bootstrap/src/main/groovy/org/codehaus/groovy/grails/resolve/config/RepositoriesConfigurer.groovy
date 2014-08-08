@@ -227,7 +227,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
             dependencyManager.repositoryData << [type: 'jcenter']
             IBiblioResolver mavenResolver = createSnapshotResolver(
                 name:"jcenter",
-                root: "http://jcenter.bintray.com",
+                root: "https://jcenter.bintray.com",
                 m2compatible: true,
                 settings: dependencyManager.ivySettings,
                 changingPattern: ".*SNAPSHOT"

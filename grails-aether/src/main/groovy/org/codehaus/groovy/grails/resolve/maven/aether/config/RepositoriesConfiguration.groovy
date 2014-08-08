@@ -110,7 +110,7 @@ class RepositoriesConfiguration {
     RemoteRepository jcenter(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final existing = repositories.find { RemoteRepository ar -> ar.id == "jcenter" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "http://jcenter.bintray.com")
+            final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "https://jcenter.bintray.com")
 
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
