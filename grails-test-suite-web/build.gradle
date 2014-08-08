@@ -66,8 +66,8 @@ ext {
 }
 
 def defaultTestConfig = {
-    maxParallelForks = 2
-    forkEvery = 10
+    maxParallelForks = isTravisRun ? 2 : 4
+    forkEvery = isTravisRun ? 10 : 100
     jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
     if (isTravisRun) {
         afterSuite {
