@@ -57,7 +57,7 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies {
             if (grailsVersion.endsWith("-SNAPSHOT")) {
                 dsl.repositories {
                     RepositoriesConfiguration repositoryConfiguration = (RepositoriesConfiguration)getDelegate()
-                    repositoryConfiguration.mavenRepo("http://repo.grails.org/grails/core")
+                    repositoryConfiguration.mavenRepo("https://grails.artifactoryonline.com/grails/core")
                 }
             }
 
