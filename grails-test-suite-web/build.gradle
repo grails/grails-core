@@ -75,6 +75,8 @@ def defaultTestConfig = {
             System.out.flush()
         }
     }
+    excludes = ["**/*TestCase.class",
+                "**/*\$*.class"]
 }
 
 def isolatedTests = ["**/ContentFormatControllerTests.class",
@@ -103,7 +105,7 @@ task createCombinedReport(type: TestReport) {
 
 test {
     configure defaultTestConfig
-    excludes = isolatedTests
+    excludes += isolatedTests
 }
 
 test.dependsOn execIsolatedTests
