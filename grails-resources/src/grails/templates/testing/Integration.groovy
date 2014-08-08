@@ -1,11 +1,6 @@
-@artifact.package@
+@artifact.package@import grails.test.spock.IntegrationSpec
 
-import spock.lang.*
-
-/**
- *
- */
-class @artifact.name@ extends Specification {
+class @artifact.name@ extends IntegrationSpec {
 
     def setup() {
     }
