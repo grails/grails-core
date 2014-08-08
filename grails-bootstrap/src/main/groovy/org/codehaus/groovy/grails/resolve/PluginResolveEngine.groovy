@@ -100,7 +100,7 @@ grails.project.dependency.resolution = {
                 if (url in ignored) {
                     continue
                 }
-                if (url == 'http://repo1.maven.org/maven2/') {
+                if (url == 'https://repo1.maven.org/maven2/') {
                     url = 'mavenCentral()'
                 }
                 repos << url
