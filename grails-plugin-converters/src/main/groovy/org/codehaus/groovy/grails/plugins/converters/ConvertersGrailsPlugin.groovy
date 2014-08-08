@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.plugins.converters
 import grails.converters.JSON
 import grails.converters.XML
 import grails.util.GrailsUtil
-
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
@@ -52,7 +51,9 @@ class ConvertersGrailsPlugin {
 
         xmlErrorsMarshaller(XmlErrorsMarshaller)
 
-        convertersConfigurationInitializer(ConvertersConfigurationInitializer)
+        convertersConfigurationInitializer(ConvertersConfigurationInitializer) { bean ->
+            bean.initMethod = 'init'
+        }
 
         errorsXmlMarshallerRegisterer(ObjectMarshallerRegisterer) {
             marshaller = { XmlErrorsMarshaller om -> }
@@ -68,8 +69,6 @@ class ConvertersGrailsPlugin {
     }
 
     def doWithDynamicMethods = {applicationContext ->
-
-        applicationContext.convertersConfigurationInitializer.initialize(application)
 
         ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 
