@@ -42,7 +42,6 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
-
     // Required for tag library support
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
@@ -65,8 +64,8 @@ ext {
 }
 
 def defaultTestConfig = {
-    maxParallelForks = 2
-    forkEvery = 10
+    maxParallelForks = isTravisRun ? 2 : 4
+    forkEvery = isTravisRun ? 10 : 100
     jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
     if (isTravisRun) {
         afterSuite {
@@ -74,6 +73,8 @@ def defaultTestConfig = {
             System.out.flush()
         }
 }
+    excludes = ["**/*TestCase.class",
+                "**/*\$*.class"]
 }
 
 def isolatedTests = ["**/ContentFormatControllerTests.class",
@@ -102,7 +103,7 @@ task createCombinedReport(type: TestReport) {
 
 test {
     configure defaultTestConfig
-    excludes = isolatedTests
+    excludes += isolatedTests
 }
 
 test.dependsOn execIsolatedTests
