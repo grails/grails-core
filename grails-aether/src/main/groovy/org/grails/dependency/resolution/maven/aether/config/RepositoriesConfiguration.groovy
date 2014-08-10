@@ -94,7 +94,7 @@ class RepositoriesConfiguration {
     RemoteRepository mavenCentral(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final existing = repositories.find { RemoteRepository ar -> ar.id == "mavenCentral" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("mavenCentral", "default", "http://repo1.maven.org/maven2/")
+            final repositoryBuilder = new RemoteRepository.Builder("mavenCentral", "default", "https://repo1.maven.org/maven2/")
 
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
@@ -109,7 +109,7 @@ class RepositoriesConfiguration {
     RemoteRepository jcenter(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final existing = repositories.find { RemoteRepository ar -> ar.id == "jcenter" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "http://jcenter.bintray.com")
+            final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "https://jcenter.bintray.com")
 
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
@@ -149,7 +149,7 @@ class RepositoriesConfiguration {
     RemoteRepository grailsCentral(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final existing = repositories.find { RemoteRepository ar -> ar.id == "grailsCentral" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
+            final repositoryBuilder = new RemoteRepository.Builder("grailsCentral", "default", "https://grails.artifactoryonline.com/grails/plugins")
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
             repositories << repository

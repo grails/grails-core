@@ -139,9 +139,9 @@ task pluginsFromRepo {
             mkdir(dir: dir)
             plugins.each { name, version ->
                 def versionTag = version.replaceAll(/\./, '_').toUpperCase()
-                get(src: "http://repo.grails.org/grails/plugins/org/grails/plugins/${name}/${version}/${name}-${version}.zip",
+                get(src: "https://grails.artifactoryonline.com/grails/plugins/org/grails/plugins/${name}/${version}/${name}-${version}.zip",
                     dest: dir, verbose: true, usetimestamp: true)
-                get(src: "http://repo.grails.org/grails/plugins/org/grails/plugins/${name}/${version}/${name}-${version}.pom",
+                get(src: "https://grails.artifactoryonline.com/grails/plugins/org/grails/plugins/${name}/${version}/${name}-${version}.pom",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }

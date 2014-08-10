@@ -42,7 +42,11 @@ class AetherExcludeResolver implements ExcludeResolver {
         for (Dependency d in applicationDependencies) {
             newDependencyManager.parseDependencies {
                 delegate.dependencies {
-                    compile "$d.group:$d.name:$d.version"
+                    compile "$d.group:$d.name:$d.version", {
+                        if(d.excludeArray){
+                            excludes d.excludeArray
+                        }
+                    }
                 }
             }
         }

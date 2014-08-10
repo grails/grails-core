@@ -71,6 +71,22 @@ class Book {
         assert dc.properties.find { it.name == 'auteur'} != null
     }
 
+    void testListPersistentProperties() {
+        def cls = gcl.parseClass('''
+class Book {
+    Long id
+    Long version
+    String title
+    List<String> authors
+}
+''')
+
+        def dc = new DefaultGrailsDomainClass(cls)
+
+        assert dc.persistentProperties.size() == 2
+        assert dc.properties.size() == 4
+    }
+
     void testManyToManyIntegrity() {
         gcl.parseClass """
                 class Test {

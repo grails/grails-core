@@ -92,6 +92,8 @@ grails.project.dependency.resolution = {
             'http://plugins.grails.org',
             'http://repo.grails.org/grails/plugins/',
             'http://repo.grails.org/grails/core/',
+            'https://grails.artifactoryonline.com/grails/plugins/',
+            'https://grails.artifactoryonline.com/grails/core/',
             'http://svn.codehaus.org/grails/trunk/grails-plugins']
 
         if (pluginXml.repositories.children().size()) {
@@ -100,7 +102,7 @@ grails.project.dependency.resolution = {
                 if (url in ignored) {
                     continue
                 }
-                if (url == 'http://repo1.maven.org/maven2/') {
+                if (url == 'https://repo1.maven.org/maven2/') {
                     url = 'mavenCentral()'
                 }
                 repos << url

@@ -59,6 +59,27 @@ class AetherDependencyManagerSpec extends Specification {
 
     }
 
+    @Issue('GPRELEASE-59')
+    void "Test that an excluded dependency that isn't available is excluded"() {
+        given:"A dependency with an exclusion of an unavailable artifact"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                }
+                dependencies {
+                    compile('com.octo.captcha:jcaptcha:1.0') {
+                        excludes 'javax.servlet:servlet-api', 'com.jhlabs:imaging'
+                    }
+                }
+            }
+
+        when:"The dependency is resolved"
+            def compileFiles = dependencyManager.resolve('compile').allArtifacts
+        then:"The transitive dependency is excluded"
+            !compileFiles.any { File f -> f.name.contains('imaging')}
+    }
+
     @Issue('GRAILS-11055')
     void "Test that a transitive dependency excluded with the map syntax is actually excluded"() {
         given:"A dependency with an exclusion"
@@ -205,7 +226,7 @@ class AetherDependencyManagerSpec extends Specification {
             def dependencyManager = new AetherDependencyManager()
             dependencyManager.parseDependencies {
                 repositories {
-                    mavenRepo("http://repo.grails.org/grails/core")
+                    mavenRepo("https://grails.artifactoryonline.com/grails/core")
                 }
                 dependencies {
                     agent "org.springsource.springloaded:springloaded-core:1.1.1"
@@ -442,7 +463,7 @@ class AetherDependencyManagerSpec extends Specification {
                     excludes 'grails-docs'
                 }
                 repositories {
-                    mavenRepo "http://repo.grails.org/grails/core"
+                    mavenRepo "https://grails.artifactoryonline.com/grails/core"
                 }
             }
 
@@ -459,7 +480,7 @@ class AetherDependencyManagerSpec extends Specification {
         dependencyManager.parseDependencies {
             inherits("global")
             repositories {
-                mavenRepo "http://repo.grails.org/grails/core"
+                mavenRepo "https://grails.artifactoryonline.com/grails/core"
             }
         }
 
@@ -479,7 +500,7 @@ class AetherDependencyManagerSpec extends Specification {
                 excludes 'grails-plugin-servlets'
             }
             repositories {
-                mavenRepo "http://repo.grails.org/grails/core"
+                mavenRepo "https://grails.artifactoryonline.com/grails/core"
             }
         }
 
@@ -500,7 +521,7 @@ class AetherDependencyManagerSpec extends Specification {
                 excludes 'ehcache-core'
             }
             repositories {
-                mavenRepo "http://repo.grails.org/grails/core"
+                mavenRepo "https://grails.artifactoryonline.com/grails/core"
             }
             dependencies {
                 runtime 'mysql:mysql-connector-java:5.1.20'
@@ -530,13 +551,13 @@ class AetherDependencyManagerSpec extends Specification {
                     id = "grailsCentral"
                 }
                 repositories {
-                    repository  = mavenRepo( id:'grailsCentral', url:"http://repo.grails.org/grails/core" )
+                    repository  = mavenRepo( id:'grailsCentral', url:"https://grails.artifactoryonline.com/grails/core" )
                 }
             }
         then:"The credentials are correctly populated"
             authentication != null
             repository.id == 'grailsCentral'
-            repository.url == "http://repo.grails.org/grails/core"
+            repository.url == "https://grails.artifactoryonline.com/grails/core"
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
@@ -553,16 +574,16 @@ class AetherDependencyManagerSpec extends Specification {
                 authentication = credentials {
                     username = "foo"
                     password = "bar"
-                    id = "repo_grails_org_grails_core"
+                    id = "grails_artifactoryonline_com_grails_core"
                 }
                 repositories {
-                    repository  = mavenRepo("http://repo.grails.org/grails/core" )
+                    repository  = mavenRepo("https://grails.artifactoryonline.com/grails/core" )
                 }
             }
         then:"The credentials are correctly populated"
             authentication != null
-            repository.id == 'repo_grails_org_grails_core'
-            repository.url == "http://repo.grails.org/grails/core"
+            repository.id == 'grails_artifactoryonline_com_grails_core'
+            repository.url == "https://grails.artifactoryonline.com/grails/core"
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }

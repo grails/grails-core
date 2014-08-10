@@ -217,7 +217,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     @CompileStatic
     void grailsCentral() {
         if (!context.offline && isResolverNotAlreadyDefined('grailsCentral')) {
-            mavenRepo(root:"http://repo.grails.org/grails/plugins", name:"grailsCentral")
+            mavenRepo(root:"https://grails.artifactoryonline.com/grails/plugins", name:"grailsCentral")
         }
     }
 
@@ -227,7 +227,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
             dependencyManager.repositoryData << [type: 'jcenter']
             IBiblioResolver mavenResolver = createSnapshotResolver(
                 name:"jcenter",
-                root: "http://jcenter.bintray.com",
+                root: "https://jcenter.bintray.com",
                 m2compatible: true,
                 settings: dependencyManager.ivySettings,
                 changingPattern: ".*SNAPSHOT"
