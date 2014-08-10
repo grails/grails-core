@@ -255,7 +255,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
             Class currentPropType = currentProp.getType();
             // establish if the property is a one-to-many
-            // if it is a Set and there are relationships defined
+            // if it is a Set/Collection and there are relationships defined
             // and it is defined as persistent
             if (currentPropType != null) {
                 if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
@@ -381,9 +381,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 property.setBasicCollectionType(true);
             }
         }
-        else if (!Map.class.isAssignableFrom(property.getType())) {
-            // no relationship defined for set.
-            // set not persistent
+        else if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom(property.getType())) {
+            // no relationship defined for set/collection.
+            // set/collection not persistent
             property.setPersistent(false);
         }
     }
