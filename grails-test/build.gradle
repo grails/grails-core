@@ -36,4 +36,5 @@ dependencies {
 
     // needed for Spock
     compile 'org.objenesis:objenesis:1.4'
+    testCompile "cglib:cglib:${cglibVersion}"
 }
