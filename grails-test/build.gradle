@@ -40,4 +40,6 @@ dependencies {
         ext.notInPom = true
     }
 
+    // needed for Spock
+    compile "org.objenesis:objenesis:${objenesisVersion}"
 }
