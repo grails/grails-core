@@ -35,5 +35,5 @@ dependencies {
     }
 
     // needed for Spock
-    compile 'org.objenesis:objenesis:1.4'
+    compile "org.objenesis:objenesis:${objenesisVersion}"
 }
