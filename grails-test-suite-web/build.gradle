@@ -59,20 +59,9 @@ compileTestGroovy {
     groovyOptions.listFiles = true
 }
 
-ext {
-    isTravisRun = System.getenv().get("TRAVIS")
-}
-
 def defaultTestConfig = {
-    maxParallelForks = isTravisRun ? 2 : 4
-    forkEvery = isTravisRun ? 10 : 100
-    jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m'] // Travis provides up to 3GB of Memory
-    if (isTravisRun) {
-        afterSuite {
-            System.out << '.'
-            System.out.flush()
-        }
-}
+    maxParallelForks = isTravisBuild ? 2 : 4
+    forkEvery = isTravisBuild ? 10 : 100
     excludes = ["**/*TestCase.class",
                 "**/*\$*.class"]
 }
