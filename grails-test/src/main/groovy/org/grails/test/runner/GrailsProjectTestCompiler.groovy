@@ -44,8 +44,8 @@ class GrailsProjectTestCompiler extends GrailsProjectCompiler{
         final ant = super.getAnt()
 
         ant.path(id: "grails.test.classpath", testClasspath)
-        ant.taskdef (name: 'testc', classname:'org.codehaus.groovy.grails.test.compiler.GrailsTestCompiler', classpathref:"grails.test.classpath")
-        ant.taskdef (name: 'itestc', classname:'org.codehaus.groovy.grails.test.compiler.GrailsIntegrationTestCompiler', classpathref:"grails.test.classpath")
+        ant.taskdef (name: 'testc', classname:'org.grails.test.compiler.GrailsTestCompiler', classpathref:"grails.test.classpath")
+        ant.taskdef (name: 'itestc', classname:'org.grails.test.compiler.GrailsIntegrationTestCompiler', classpathref:"grails.test.classpath")
 
         return ant
     }
