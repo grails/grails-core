@@ -217,11 +217,13 @@ subprojects { project ->
         }
         if (isTravisBuild) {
             maxParallelForks = 2
-            jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m']
+            jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=256m']
             afterSuite {
                 System.out.print('.')
                 System.out.flush()
             }
+        } else {
+            jvmArgs = ['-Xmx1024M', '-XX:MaxPermSize=384m']
         }        
     }
 

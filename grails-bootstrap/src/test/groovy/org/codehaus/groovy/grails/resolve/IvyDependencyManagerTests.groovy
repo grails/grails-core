@@ -63,7 +63,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                 mavenRepo "https://grails.artifactoryonline.com/grails/core"
             }
             plugins {
-                test ":hibernate:2.0.3"
+                test ":hibernate:3.6.10.17"
             }
         }
         settings.loadConfig(config)
