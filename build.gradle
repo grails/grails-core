@@ -212,9 +212,6 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
-        if(System.getProperty("debug.tests")) {
-            jvmArgs debugArguments
-        }
         if (isTravisBuild) {
             maxParallelForks = 2
             jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=256m']
@@ -225,6 +222,9 @@ subprojects { project ->
         } else {
             jvmArgs = ['-Xmx1024M', '-XX:MaxPermSize=384m']
         }        
+        if(System.getProperty("debug.tests")) {
+            jvmArgs debugArguments
+        }
     }
 
     task singleTest(type: Test) {
