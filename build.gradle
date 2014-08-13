@@ -20,6 +20,8 @@ ext.provided = { providedDeps << it }
 ext {
     grailsVersion = '2.3.11'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
+    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
     aspectjVersion = "1.7.4"
@@ -205,6 +207,14 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
+        if (isTravisBuild) {
+            maxParallelForks = 2
+            jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=192m']
+            afterSuite {
+                System.out.print('.')
+                System.out.flush()
+            }
+        }   
     }
 
     if(!isTestSuite) {

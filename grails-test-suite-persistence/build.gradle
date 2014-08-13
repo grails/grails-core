@@ -44,8 +44,10 @@ dependencies {
 
 test {
     maxParallelForks = 2
-    forkEvery = 100
-    jvmArgs = ['-Xmx2048M','-XX:MaxPermSize=256m']
+    forkEvery = isTravisBuild ? 25 : 100
+    if(!isTravisBuild) {
+        jvmArgs = ['-Xmx2048M','-XX:MaxPermSize=256m']
+    }
     excludes = ['**/GrailsDomainBinderTests.class',
                 '**/ComponentValidationTests.class',
                 '**/HibernateMappingUniqueConstraintTests.class']

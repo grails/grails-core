@@ -46,9 +46,11 @@ dependencies {
 }
 
 test {
-     maxParallelForks = 4
-     forkEvery = 100
-     maxHeapSize = '1024m'
+     maxParallelForks = isTravisBuild ? 2 : 4
+     forkEvery = isTravisBuild ? 25 : 100
+     if(!isTravisBuild) {
+         maxHeapSize = '1024m'
+     }
      excludes = [
          "**/rest/render/**/*Spec.class",
          "**/*TestCase.class",

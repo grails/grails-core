@@ -56,58 +56,40 @@ compileTestGroovy {
     groovyOptions.listFiles = true
 }
 
-test {
-    maxParallelForks = 4
-    forkEvery = 100
-    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
+def defaultTestConfig = {
+    maxParallelForks = isTravisBuild ? 2 : 4
+    forkEvery = isTravisBuild ? 10 : 100
     excludes = ["**/*TestCase.class",
-                "**/*\$*.class",
-                "**/ContentFormatControllerTests.class",
-                "**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class",
-                "**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class",
-                "**/GroovyPageAttributesTests.class",
-                "**/BindingExcludeTests.class",
-                "**/NestedXmlBindingTests.class",
-		"**/GSPResponseWriterSpec.class",
-		"**/RespondMethodSpec.class"]
+                "**/*\$*.class"]
 }
 
-task isolatedTestsOne(type:Test) {
-    includes = ["**/ContentFormatControllerTests.class"]
-}
-task isolatedTestsTwo(type:Test) {
-    includes = ["**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class"]
-}
-task isolatedTestsThree(type:Test) {
-    includes = ["**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class"]
-}
-task isolatedTestsFour(type:Test) {
-    includes = ["**/BindingExcludeTests.class"]
-}
-task isolatedTestsFive(type:Test) {
-    includes = ["**/GroovyPageAttributesTests.class"]
-}
-task isolatedTestsSix(type:Test) {
-    includes = ["**/NestedXmlBindingTests.class"]
-}
-task isolatedTestsSeven(type:Test) {
-    maxParallelForks = 1
-    includes = ["**/GSPResponseWriterSpec.class"]
-}
-task isolatedRespondMethodTests(type:Test) {
-    maxParallelForks = 1
-    includes = ["**/RespondMethodSpec.class"]
-}
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix, isolatedTestsSeven, isolatedRespondMethodTests
+def isolatedTests = ["**/ContentFormatControllerTests.class",
+                     "**/JSONBindingTests.class",
+                     "**/AutoParams*MarshallingTests.class",
+                     "**/JSONBindingToNullTests.class",
+                     "**/ControllerWithXmlConvertersTests.class",
+                     "**/GroovyPageAttributesTests.class",
+                     "**/BindingExcludeTests.class",
+                     "**/NestedXmlBindingTests.class",
+                     "**/GSPResponseWriterSpec.class",
+                     "**/RespondMethodSpec.class",
+                     "**/ContentNegotiationSpec.class",
+                     "**/pages/ext/jsp/*.class"]
 
+task execIsolatedTests(type: Test) {
+    configure defaultTestConfig
+    forkEvery = 1
+    includes = isolatedTests
+}
 
-/*
+task createCombinedReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/allTests")
+    reportOn execIsolatedTests, test
+}
+
 test {
-	jvmArgs '-Xmx1024m', '-Xdebug', '-Xnoagent', '-Dgrails.full.stacktrace=true', '-Djava.compiler=NONE',
-	        '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+    configure defaultTestConfig
+    excludes += isolatedTests
 }
-*/
+
+test.dependsOn execIsolatedTests
