@@ -33,6 +33,7 @@ import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.CodecsGrailsPlugin
 import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.plugins.converters.ConvertersGrailsPlugin
+import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
@@ -107,8 +108,9 @@ class ControllerTestPlugin implements TestPlugin {
             }
             jspTagLibraryResolver(TagLibraryResolverImpl, lazyBean)
             gspTagLibraryLookup(LazyTagLibraryLookup, lazyBean)
+            groovyPageUnitTestResourceLoader(GroovyPageUnitTestResourceLoader, groovyPages)
             groovyPageLocator(GrailsConventionGroovyPageLocator) {
-                resourceLoader = new GroovyPageUnitTestResourceLoader(groovyPages)
+                resourceLoader = ref('groovyPageUnitTestResourceLoader')
             }
             groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
                 bean.lazyInit = true
@@ -126,6 +128,8 @@ class ControllerTestPlugin implements TestPlugin {
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, grailsApplication)
             
             localeResolver(SessionLocaleResolver)
+            
+            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref('grailsApplication'))
         }
         defineBeans(runtime, new CodecsGrailsPlugin().doWithSpring)
     }
