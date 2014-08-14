@@ -24,7 +24,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
@@ -37,10 +40,12 @@ import org.springframework.core.io.Resource;
  * @since 2.0
  * @author Graeme Rocher
  */
-public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
+public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader implements GrailsApplicationAware, InitializingBean {
 
     public static final String WEB_INF_PREFIX = "/WEB-INF/grails-app/views";
     private Map<String,String> groovyPages = new ConcurrentHashMap<String, String>();
+    private String basePath;
+    private GrailsApplication grailsApplication;
 
     public GroovyPageUnitTestResourceLoader(Map<String, String> groovyPages) {
         this.groovyPages = groovyPages;
@@ -59,19 +64,22 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
                 // continue
             }
         }
-
-        BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-        String systemBaseDirectory = System.getProperty("base.dir");
-        String basedir = systemBaseDirectory != null ? systemBaseDirectory : ".";
-        if (buildSettings != null) {
-            try {
-                basedir = buildSettings.getBaseDir().getCanonicalPath();
-            } catch (IOException e) {
-                // ignore
+        
+        if(basePath == null) {
+            BuildSettings buildSettings = BuildSettingsHolder.getSettings();
+            String systemBaseDirectory = System.getProperty("base.dir");
+            String basedir = systemBaseDirectory != null ? systemBaseDirectory : ".";
+            if (buildSettings != null) {
+                try {
+                    basedir = buildSettings.getBaseDir().getCanonicalPath();
+                } catch (IOException e) {
+                    // ignore
+                }
             }
+            basePath = basedir + File.separatorChar + GrailsResourceUtils.VIEWS_DIR_PATH;
         }
 
-        String path = basedir + File.separatorChar + GrailsResourceUtils.VIEWS_DIR_PATH + location;
+        String path = basePath + location;
         path = makeCanonical(path);
         return new FileSystemResource(path);
     }
@@ -81,6 +89,22 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
             return new File(path).getCanonicalPath();
         } catch (IOException e) {
             return path;
+        }
+    }
+
+    @Override
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if(grailsApplication != null) {
+            Map config = grailsApplication.getFlatConfig();
+            Object viewDir = config.get("grails.gsp.view.dir");
+            if(viewDir != null) {
+                basePath = viewDir.toString();
+            }
         }
     }
 }

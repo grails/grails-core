@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup
 import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
@@ -111,8 +112,9 @@ class ControllerTestPlugin implements TestPlugin {
             }
             jspTagLibraryResolver(TagLibraryResolverImpl, lazyBean)
             gspTagLibraryLookup(LazyTagLibraryLookup, lazyBean)
+            groovyPageUnitTestResourceLoader(GroovyPageUnitTestResourceLoader, groovyPages)
             groovyPageLocator(GrailsConventionGroovyPageLocator) {
-                resourceLoader = new GroovyPageUnitTestResourceLoader(groovyPages)
+                resourceLoader = ref('groovyPageUnitTestResourceLoader')
             }
             groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
                 bean.lazyInit = true
@@ -130,6 +132,8 @@ class ControllerTestPlugin implements TestPlugin {
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, grailsApplication)
             
             localeResolver(SessionLocaleResolver)
+            
+            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref('grailsApplication'))
         }
         defineBeans(runtime, new CodecsGrailsPlugin().doWithSpring)
     }
