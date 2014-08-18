@@ -606,7 +606,11 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         if (value instanceof JSONObject.Null) {
             return null
         }
-        super.convert typeToConvertTo, value
+        def persistentInstance
+        if(isDomainClass(typeToConvertTo)) {
+            persistentInstance = getPersistentInstance(typeToConvertTo, value)
+        }
+        persistentInstance ?: super.convert(typeToConvertTo, value)
     }
 
     @Autowired
