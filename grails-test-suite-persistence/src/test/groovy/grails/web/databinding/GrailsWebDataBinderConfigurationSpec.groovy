@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.orm
+package grails.web.databinding
 
 import grails.databinding.SimpleMapDataBindingSource;
 import grails.test.mixin.Mock
