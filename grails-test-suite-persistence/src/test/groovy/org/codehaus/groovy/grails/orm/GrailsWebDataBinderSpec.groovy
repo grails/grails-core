@@ -1382,6 +1382,24 @@ class GrailsWebDataBinderSpec extends Specification {
         publisher.localCurrency instanceof Currency
         'USD' == publisher.localCurrency.currencyCode
     }
+    
+    @Issue('GRAILS-11666')
+    void 'test binding array of id to a collection of domain instances in a non domain classes'() {
+        given:
+        def pub1 = new Publisher(name: 'Pub One').save()
+        def pub2 = new Publisher(name: 'Pub Two').save()
+        def pub3 = new Publisher(name: 'Pub Three').save()
+        def obj = new NonDomainClassWithSetOfDomainInstances()
+        String[] idArray = [pub1.id, pub3.id] as String[]
+        
+        when:
+        binder.bind obj, [publishers: idArray] as SimpleMapDataBindingSource
+        
+        then:
+        obj.publishers?.size() == 2
+        obj.publishers.find { it.name == 'Pub One' }
+        obj.publishers.find { it.name == 'Pub Three' }
+    }
 }
 
 @Entity
@@ -1627,6 +1645,9 @@ class NonDomainClassWithMapProperty {
     Map<String, Album> albums
 }
 
+class NonDomainClassWithSetOfDomainInstances {
+    Set<Publisher> publishers
+}
 class Album {
     String title
 }
