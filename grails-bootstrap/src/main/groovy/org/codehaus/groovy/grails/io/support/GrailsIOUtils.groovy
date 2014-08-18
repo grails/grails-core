@@ -77,7 +77,7 @@ class GrailsIOUtils extends IOUtils{
      * @param encoding The encoding
      */
     static void copy(InputStream input, Writer output, String encoding = null) {
-        def reader = encoding ? new InputStreamReader(input) : new InputStreamReader(input)
+        def reader = encoding ? new InputStreamReader(input, encoding) : new InputStreamReader(input)
         copy(reader, output)
     }
 
