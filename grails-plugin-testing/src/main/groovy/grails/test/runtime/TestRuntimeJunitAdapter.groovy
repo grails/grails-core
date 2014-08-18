@@ -110,6 +110,7 @@ class TestRuntimeJunitAdapter {
     }
 
     protected void after(TestRuntime runtime, Object testInstance, Description description, Throwable throwable) {
+        runtime.publishEvent("resetGrailsApplication", [testInstance: testInstance, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
         runtime.publishEvent("after", [testInstance: testInstance, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
     }
 
