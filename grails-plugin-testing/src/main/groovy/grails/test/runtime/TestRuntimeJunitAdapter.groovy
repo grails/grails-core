@@ -111,6 +111,7 @@ class TestRuntimeJunitAdapter {
 
     protected void after(TestRuntime runtime, Object testInstance, Description description, Throwable throwable) {
         runtime.publishEvent("after", [testInstance: testInstance, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
+        handleDirtiesRuntimeAnnotation(runtime, description, testInstance)
     }
 
     protected void beforeClass(TestRuntime runtime, Class testClass, Description description) {
@@ -123,6 +124,13 @@ class TestRuntimeJunitAdapter {
         runtime.publishEvent("afterClass", [testClass: testClass, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
         if(!runtime.shared) {
             runtime.requestClose()
+        }
+    }
+    
+    protected handleDirtiesRuntimeAnnotation(TestRuntime runtime, Description description, testInstance) {
+        if(description?.getAnnotation(DirtiesRuntime)) {
+            def eventArguments = [testClass: testInstance.getClass(), description: description]
+            runtime.publishEvent('requestFreshRuntime', eventArguments, [immediateDelivery: true])
         }
     }
     
