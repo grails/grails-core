@@ -35,6 +35,6 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@GroovyASTTransformationClass('org.codehaus.groovy.grails.compiler.injection.test.DirtiesRuntimeTransformation')
+@GroovyASTTransformationClass('org.grails.compiler.injection.test.DirtiesRuntimeTransformation')
 public @interface DirtiesRuntime {
 }
