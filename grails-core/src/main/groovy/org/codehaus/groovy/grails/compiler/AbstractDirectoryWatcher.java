@@ -78,7 +78,7 @@ abstract class AbstractDirectoryWatcher implements Runnable {
     }
 
     protected boolean isValidDirectoryToMonitor(File file){
-    	return file.isDirectory() && ! file.isHidden() && !DirectoryWatcher.SVN_DIR_NAME.equals(file.getName());
+    	return file.isDirectory() && ! file.isHidden() && !file.getName().startsWith(".");
     }
 
     protected boolean isValidFileToMonitor(File file, Collection<String> fileExtensions) {
