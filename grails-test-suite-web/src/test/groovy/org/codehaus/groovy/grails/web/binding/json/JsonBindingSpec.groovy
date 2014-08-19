@@ -117,6 +117,17 @@ class JsonBindingSpec extends Specification {
         then:
         familyError?.defaultMessage?.contains 'Error occurred initializing command object [family]. com.google.gson.JsonSyntaxException'
     }
+    
+    @Issue('GRAILS-11646')
+    void 'should JSON encoding be handled'() {
+        given:
+        request.contentType = 'application/json; charset=ISO-8859-1'
+        request.method = 'POST'
+        request.content = '{"data": "Multibyte characters: äöåÄÖÅ"}'
+        
+        expect:
+        request.JSON.toString() == '{"data":"Multibyte characters: äöåÄÖÅ"}'
+    } 
 }
 
 @Artefact('Controller')
