@@ -131,7 +131,7 @@ mappings {
 
         filter.doFilterInternal(request, response, null)
 
-        assertEquals "/test.dispatch", response.forwardedUrl
+        assertEquals "/test", response.forwardedUrl
     }
 
     def resourceMappingScript = '''
@@ -169,7 +169,7 @@ class BookController {
 
         filter.doFilterInternal(request, response, null)
 
-        assertEquals "/grails/book/index.dispatch", response.forwardedUrl
+        assertEquals "/book/index", response.forwardedUrl
 
         response.reset()
         request.setMethod("DELETE")
@@ -208,7 +208,7 @@ class BookController {
 
         filter.doFilterInternal(request, response, null)
 
-        assertEquals "/grails/blog/show.dispatch", response.forwardedUrl
+        assertEquals "/blog/show", response.forwardedUrl
         assertEquals "my_entry", webRequest.params.id
         assertEquals "2007", webRequest.params.year
         assertEquals "06", webRequest.params.month
@@ -239,7 +239,7 @@ class BookController {
 
         filter.doFilterInternal(request, response, null)
 
-        assertEquals "/grails/noIndex/myAction.dispatch", response.forwardedUrl
+        assertEquals "/noIndex/myAction", response.forwardedUrl
 
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
@@ -283,7 +283,7 @@ class IndexAndActionController {
 
         filter.doFilterInternal(request, response, null)
 
-        assertEquals "/grails/indexAndAction.dispatch", response.forwardedUrl
+        assertEquals "/indexAndAction", response.forwardedUrl
 
         webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
@@ -374,7 +374,7 @@ class BlogController {
         filter.init(new MockFilterConfig(servletContext))
         filter.doFilterInternal(request, response, null)
 
-        assertEquals "/grails/blog.dispatch", response.forwardedUrl
+        assertEquals "/blog", response.forwardedUrl
     }
 
     void testExcludePatterns() {

@@ -70,22 +70,22 @@ class BookController {
         filter.init(new MockFilterConfig(servletContext))
 
         filter.doFilterInternal(request, response, null)
-        assertEquals "/grails/book/list.dispatch", response.forwardedUrl
+        assertEquals "/book/list", response.forwardedUrl
 
         request.method = "POST"
         filter.doFilterInternal(request, response, null)
-        assertEquals "/grails/book/update.dispatch", response.forwardedUrl
+        assertEquals "/book/update", response.forwardedUrl
 
         request.method = "DELETE"
         filter.doFilterInternal(request, response, null)
-        assertEquals "/grails/book/delete.dispatch", response.forwardedUrl
+        assertEquals "/book/delete", response.forwardedUrl
 
         request.method = "PUT"
         filter.doFilterInternal(request, response, null)
-        assertEquals "/grails/book/save.dispatch", response.forwardedUrl
+        assertEquals "/book/save", response.forwardedUrl
 
         request.method = "PATCH"
         filter.doFilterInternal(request, response, null)
-        assertEquals "/grails/book/patch.dispatch", response.forwardedUrl
+        assertEquals "/book/patch", response.forwardedUrl
     }
 }
