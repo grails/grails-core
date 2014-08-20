@@ -294,11 +294,6 @@ class SomeClass {
             eq 'name', 'Anakin'
         }
      
-        Person.createCriteria {
-            cache true
-            eq 'name', 'Anakin'
-        }
-     
         def crit = Person.createCriteria()
 
         def listResults = crit.list {
