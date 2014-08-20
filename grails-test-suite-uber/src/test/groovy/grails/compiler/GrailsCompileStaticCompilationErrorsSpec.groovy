@@ -290,32 +290,34 @@ class SomeClass {
 
     def someMethod() {
         Person.withCriteria {
-            eq 'name', 'Anakin'
-        }
-     
-        Person.createCriteria {
+            cache true
             eq 'name', 'Anakin'
         }
      
         def crit = Person.createCriteria()
 
         def listResults = crit.list {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def paginatedListResults = crit.list(max: 4, offset: 2) {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def listDistinctResults = crit.listDistinct {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def scrollResults = crit.scroll {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def getResults = crit.get {
+            cache true
             eq 'name', 'Anakin'
         }
     }

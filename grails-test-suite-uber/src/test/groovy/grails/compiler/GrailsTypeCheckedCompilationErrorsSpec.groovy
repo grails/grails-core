@@ -219,33 +219,36 @@ import groovy.transform.TypeCheckingMode
 class SomeClass {
 
     def someMethod() {
+
         Company.withCriteria {
+            cache true
             eq 'name', 'Anakin'
         }
      
-        Company.createCriteria {
-            eq 'name', 'Anakin'
-        }
-
         def crit = Company.createCriteria()
 
         def listResults = crit.list {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def paginatedListResults = crit.list(max: 4, offset: 2) {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def listDistinctResults = crit.listDistinct {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def scrollResults = crit.scroll {
+            cache true
             eq 'name', 'Anakin'
         }
 
         def getResults = crit.get {
+            cache true
             eq 'name', 'Anakin'
         }
     }
