@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.web.converters.configuration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.converters.Converter;
@@ -45,11 +47,11 @@ public class ConvertersConfigurationHolder {
 
     private static ConvertersConfigurationHolder INSTANCE = new ConvertersConfigurationHolder();
 
-    private final Map<Class<? extends Converter>, ConverterConfiguration> defaultConfiguration =
-        new HashMap<Class<? extends Converter>, ConverterConfiguration>();
+    private final ConcurrentMap<Class<? extends Converter>, ConverterConfiguration> defaultConfiguration =
+        new ConcurrentHashMap<Class<? extends Converter>, ConverterConfiguration>();
 
-    private final Map<Class<? extends Converter>, Map<String, ConverterConfiguration>> namedConfigurations =
-        new HashMap<Class<? extends Converter>, Map<String, ConverterConfiguration>>();
+    private final ConcurrentMap<Class<? extends Converter>, Map<String, ConverterConfiguration>> namedConfigurations =
+        new ConcurrentHashMap<Class<? extends Converter>, Map<String, ConverterConfiguration>>();
 
     private final Map<Class<? extends Converter>, ThreadLocal<ConverterConfiguration>> threadLocalConfiguration =
         new HashMap<Class<? extends Converter>, ThreadLocal<ConverterConfiguration>>();
@@ -81,11 +83,14 @@ public class ConvertersConfigurationHolder {
         ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);
         if (cfg == null) {
             cfg = getInstance().defaultConfiguration.get(converterClass);
+            if (cfg == null) {
+                cfg = new DefaultConverterConfiguration();
+                ConverterConfiguration<C> existing = getInstance().defaultConfiguration.putIfAbsent(converterClass, cfg);
+                if(existing != null) {
+                    cfg = existing;
+                }
+            }
         }
-        if (cfg == null) {
-            cfg = new DefaultConverterConfiguration();
-        }
-        setThreadLocalConverterConfiguration(converterClass, cfg);
         return cfg;
     }
 
