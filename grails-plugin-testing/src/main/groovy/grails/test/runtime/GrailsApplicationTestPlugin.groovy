@@ -42,6 +42,7 @@ import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.beans.CachedIntrospectionResults
@@ -271,6 +272,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             ((DefaultGrailsApplication)runtime.getValue('grailsApplication'))?.clear()
         }
         runtime.removeValue("loadedCodecs")
+        ConvertersConfigurationHolder.getInstance().clear()
     }
     
     void shutdownApplicationContext(TestRuntime runtime) {

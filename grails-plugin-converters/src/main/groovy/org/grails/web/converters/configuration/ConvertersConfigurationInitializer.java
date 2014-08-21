@@ -71,6 +71,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         LOG.debug("Initializing default JSON Converters Configuration...");
 
         List<ObjectMarshaller<JSON>> marshallers = new ArrayList<ObjectMarshaller<JSON>>();
+        marshallers.addAll(getPreviouslyConfiguredMarshallers(JSON.class));
         marshallers.add(new org.grails.web.converters.marshaller.json.ArrayMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.json.ByteArrayMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.json.CollectionMarshaller());
@@ -129,6 +130,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         LOG.debug("Initializing default XML Converters Configuration...");
 
         List<ObjectMarshaller<XML>> marshallers = new ArrayList<ObjectMarshaller<XML>>();
+        marshallers.addAll(getPreviouslyConfiguredMarshallers(XML.class));
         marshallers.add(new org.grails.web.converters.marshaller.xml.Base64ByteArrayMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.xml.ArrayMarshaller());
         marshallers.add(new org.grails.web.converters.marshaller.xml.CollectionMarshaller());
@@ -207,5 +209,10 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     @Override
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+    private <C extends Converter> List<ObjectMarshaller<C>> getPreviouslyConfiguredMarshallers(Class<C> converterClass) {
+        ConverterConfiguration<C> previousConfiguration = ConvertersConfigurationHolder.getConverterConfiguration(converterClass);
+        return previousConfiguration.getOrderedObjectMarshallers();
     }
 }

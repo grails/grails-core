@@ -26,6 +26,7 @@ import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
+import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
@@ -160,6 +161,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         Holders.config = null
         Holders.grailsApplication = null
         Holders.setPluginManager(null)
+
+        ConvertersConfigurationHolder.getInstance().clear()
 
         super.tearDown()
     }
