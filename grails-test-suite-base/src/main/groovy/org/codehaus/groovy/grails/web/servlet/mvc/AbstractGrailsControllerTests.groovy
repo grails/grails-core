@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -160,6 +161,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         Holders.grailsApplication = null
         Holders.setPluginManager(null)
 
+        ConvertersConfigurationHolder.getInstance().clear()
+        
         super.tearDown()
     }
 
