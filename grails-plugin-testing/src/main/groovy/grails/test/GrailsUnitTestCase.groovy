@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
@@ -91,6 +92,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
         ConfigurationHolder.config = previousConfig
         MockUtils.resetIds()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        ConvertersConfigurationHolder.getInstance().clear()
     }
 
     /**

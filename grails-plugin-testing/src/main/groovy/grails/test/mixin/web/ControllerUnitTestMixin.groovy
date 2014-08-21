@@ -45,6 +45,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mime.MimeType
@@ -253,6 +254,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     static void cleanupGrailsWeb() {
         servletContext = null
         ServletContextHolder.setServletContext(null)
+        ConvertersConfigurationHolder.getInstance().clear()
     }
 
     @Before
