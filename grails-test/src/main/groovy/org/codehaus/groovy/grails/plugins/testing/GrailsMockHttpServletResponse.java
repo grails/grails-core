@@ -28,7 +28,7 @@ public class GrailsMockHttpServletResponse extends AbstractGrailsMockHttpServlet
         String strippedUrl = forwardedUrl;
         if(strippedUrl != null) {
             if(strippedUrl.startsWith("/grails/")) {
-                // String off /grails, leave the second /
+                // Strip off /grails, leave the second /
                 strippedUrl = strippedUrl.substring(7);
             }
             if(strippedUrl.endsWith(".dispatch")) {
