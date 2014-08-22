@@ -5,6 +5,7 @@ import grails.web.CamelCaseUrlConverter
 
 import org.springframework.mock.web.MockServletContext
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -12,6 +13,23 @@ import spock.lang.Specification
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
+    
+    @Issue('GRAILS-11680')
+    @Ignore
+    void 'Test mapping ordering problem'() {
+        given:
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/barbi"(resources: "barbi")
+            "/bar"(resources: "bar")
+        }
+        
+        when:
+        def urlMappings = urlMappingsHolder.urlMappings
+        
+        then:
+        urlMappingsHolder.matchAll('/bar', 'GET')[0].controllerName == 'bar'
+        urlMappingsHolder.matchAll('/barbi', 'GET')[0].controllerName == 'barbi'
+    }
 
     @Issue('GRAILS-10869')
     void 'Test resources and namespaced controller'() {
