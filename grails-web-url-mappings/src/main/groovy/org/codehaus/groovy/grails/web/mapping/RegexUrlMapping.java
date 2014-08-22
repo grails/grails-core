@@ -208,12 +208,18 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @return A regex Pattern objet
      */
     protected Pattern convertToRegex(String url) {
+        final String trailingWildcardPlaceholder = "___TRAILING_WILDCARD_PLACEHOLDER____";
         Pattern regex;
         String pattern = null;
+        if(url.endsWith("(.(*))?") && !url.endsWith("(*)?(.(*))?") && !url.endsWith("(*)(.(*))?")) {
+            pattern = url.substring(0, url.length() - 7).replace(".",  "\\.") + trailingWildcardPlaceholder;
+        } else {
+            pattern = url.replace(".",  "\\.");
+        }
+        
         try {
             // Escape any characters that have special meaning in regular expressions,
             // such as '.' and '+'.
-            pattern = url.replace(".", "\\.");
             pattern = pattern.replace("+", "\\+");
 
             int lastSlash = pattern.lastIndexOf('/');
@@ -236,6 +242,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             } else {
                 pattern += urlEnd
                                 .replace("(\\.(*))", "\\.?([^/]+)?")
+                                .replace(trailingWildcardPlaceholder, "(\\.(*))?")
                                 .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
                                 .replaceAll("([^\\*])\\*$", "$1[^/]+")
                                 .replaceAll("\\*\\*", ".*")
