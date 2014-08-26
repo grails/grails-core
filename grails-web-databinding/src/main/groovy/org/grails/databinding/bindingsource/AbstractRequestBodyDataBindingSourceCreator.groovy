@@ -39,7 +39,15 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
             if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
                 def is = req.getInputStream()
-                return createBindingSource(is, req.getCharacterEncoding())
+                if(is != null) {
+                    PushbackInputStream pushbackInputStream = new PushbackInputStream(is)
+                    int firstByte = pushbackInputStream.read()
+                    if(firstByte != -1) {
+                        pushbackInputStream.unread firstByte
+                        return createBindingSource(pushbackInputStream, req.getCharacterEncoding())
+                    }
+                }
+                return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
             }
             if(bindingSource instanceof InputStream) {
                 def is = (InputStream)bindingSource

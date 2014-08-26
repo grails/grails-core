@@ -128,6 +128,38 @@ class JsonBindingSpec extends Specification {
         expect:
         request.JSON.toString() == '{"data":"Multibyte characters: äöåÄÖÅ"}'
     } 
+    
+    @Issue('GRAILS-11686')
+    void 'test binding request parameters if content type indicates json but the body is empty'() {
+        given:
+        request.contentType = 'application/json'
+        params.name = 'Douglas'
+        params.age = '42'
+        
+        when:
+        def model = controller.createPersonCommandObject()
+        
+        then:
+        model.person instanceof Person
+        model.person.name == 'Douglas'
+        model.person.age == 42
+    }
+    
+    @Issue('GRAILS-11686')
+    void 'test binding request parameters if the JSON body is an empty String'() {
+        given:
+        request.json = ''
+        params.name = 'Douglas'
+        params.age = '42'
+        
+        when:
+        def model = controller.createPersonCommandObject()
+        
+        then:
+        model.person instanceof Person
+        model.person.name == 'Douglas'
+        model.person.age == 42
+    }
 }
 
 @Artefact('Controller')

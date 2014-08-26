@@ -80,6 +80,51 @@ class XmlBindingSpec extends Specification {
         personError?.defaultMessage?.contains 'Error occurred initializing command object [person]. org.xml.sax.SAXParseException'
     }
 
+    @Issue('GRAILS-11686')
+    void 'test binding request parameters if content type indicates xml but the body is empty'() {
+        when:
+        request.contentType = 'application/xml'
+
+        params.name = 'Douglas'
+        params.age = '42'
+        params.'homeAddress.city' = "O'Fallon"
+        params.'homeAddress.state' = 'Missouri'
+        params.'workAddress.state' = 'California'
+        params.'workAddress.city' = 'San Mateo'
+        def model = controller.createPerson()
+
+    then:
+        model.person instanceof Person
+        model.person.name == 'Douglas'
+        model.person.age == 42
+        model.person.homeAddress.city == "O'Fallon"
+        model.person.homeAddress.state == 'Missouri'
+        model.person.workAddress.city == 'San Mateo'
+        model.person.workAddress.state == 'California'
+    }
+
+    @Issue('GRAILS-11686')
+    void 'test binding request parameters if the XML content is an empty String'() {
+        when:
+        request.xml = ''
+
+        params.name = 'Douglas'
+        params.age = '42'
+        params.'homeAddress.city' = "O'Fallon"
+        params.'homeAddress.state' = 'Missouri'
+        params.'workAddress.state' = 'California'
+        params.'workAddress.city' = 'San Mateo'
+        def model = controller.createPerson()
+
+    then:
+        model.person instanceof Person
+        model.person.name == 'Douglas'
+        model.person.age == 42
+        model.person.homeAddress.city == "O'Fallon"
+        model.person.homeAddress.state == 'Missouri'
+        model.person.workAddress.city == 'San Mateo'
+        model.person.workAddress.state == 'California'
+    }
 }
 
 @Artefact('Controller')
