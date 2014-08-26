@@ -39,8 +39,6 @@ import org.springframework.web.context.request.RequestAttributes
  */
 trait TagLibrary {
     
-    TagLibraryLookup tagLibraryLookup
-    
     /**
      * Throws a GrailsTagException
      *
@@ -130,10 +128,6 @@ trait TagLibrary {
     
     @Autowired
     void setGspTagLibraryLookup(TagLibraryLookup lookup) {
-        tagLibraryLookup = lookup;
-    }
-
-    void setTagLibraryLookup(TagLibraryLookup lookup) {
         tagLibraryLookup = lookup;
     }
 }

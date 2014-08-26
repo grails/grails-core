@@ -109,4 +109,10 @@ public class TagLibraryApi extends CommonWebApi {
         }
         return tagLibraryLookup;
     }
+    
+    
+    public void setTagLibraryLookup(TagLibraryLookup lookup) {
+        tagLibraryLookup = lookup;
+    }
+ 
 }
