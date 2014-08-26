@@ -76,7 +76,6 @@ public class GrailsAwareTraitInjectionOperation extends
 
         List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
         for (TraitInjector injector : classInjectors) {
-            System.out.println("injector: " + injector);
             if (injector.shouldInject(url)) {
                 injectorsToUse.add(injector);
             }
