@@ -27,6 +27,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.trait.TraitComposer;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -90,7 +91,9 @@ public class GrailsAwareTraitInjectionOperation extends
             ClassNode traitClassNode = ClassHelper.make(trait);
             if (!classNode.implementsInterface(traitClassNode)) {
                 classNode.addInterface(traitClassNode);
-                TraitComposer.doExtendTraits(classNode, source, unit);
+                if(unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
+                    TraitComposer.doExtendTraits(classNode, source, unit);
+                }
             }
         }
     }
