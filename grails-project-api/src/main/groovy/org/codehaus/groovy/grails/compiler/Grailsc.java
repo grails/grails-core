@@ -25,7 +25,6 @@ import org.codehaus.groovy.ant.Groovyc;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.grails.compiler.injection.GrailsAwareInjectionOperation;
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 
 public class Grailsc extends Groovyc {
 
@@ -35,10 +34,6 @@ public class Grailsc extends Groovyc {
         CompilationUnit unit = super.makeCompileUnit();
         GrailsAwareInjectionOperation operation = new GrailsAwareInjectionOperation();
         unit.addPhaseOperation(operation, Phases.CANONICALIZATION);
-        
-        GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(unit);
-        unit.addPhaseOperation(grailsTraitInjector, Phases.SEMANTIC_ANALYSIS);
-
         return unit;
     }
 

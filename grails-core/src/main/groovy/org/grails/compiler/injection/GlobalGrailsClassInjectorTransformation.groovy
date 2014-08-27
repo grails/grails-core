@@ -2,17 +2,13 @@ package org.grails.compiler.injection
 
 import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
-import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.ModuleNode
 import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.ASTTransformation
@@ -31,10 +27,9 @@ import org.grails.io.support.UrlResource
  */
 @GroovyASTTransformation(phase= CompilePhase.CANONICALIZATION)
 @CompileStatic
-class GlobalGrailsClassInjectorTransformation implements ASTTransformation, CompilationUnitAware {
+class GlobalGrailsClassInjectorTransformation implements ASTTransformation {
 
     public static final ClassNode ARTEFACT_CLASS_NODE = new ClassNode(Artefact.class)
-    CompilationUnit compilationUnit
 
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
@@ -59,22 +54,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         List<ArtefactHandler> artefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler)
         ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
 
-        GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit)
-        List<TraitInjector> allTraitInjectors = grailsTraitInjector.getTraitInjectors()
-
         Map<String, List<ClassInjector>> cache = new HashMap<String, List<ClassInjector>>().withDefault { String key ->
             ArtefactTypeAstTransformation.findInjectors(key, classInjectors)
-        }
-
-        Map<String, List<TraitInjector>> traitInjectorCache = new HashMap<String, List<TraitInjector>>().withDefault { String key ->
-            List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
-            for(TraitInjector injector : allTraitInjectors) {
-                List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes())
-                if(artefactTypes.contains(key)) {
-                    injectorsToUse.add(injector)
-                }
-            }
-            injectorsToUse
         }
 
         for (ClassNode classNode : classes) {
@@ -88,12 +69,10 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
                         List<ClassInjector> injectors = cache[handler.type]
                         ArtefactTypeAstTransformation.performInjection(source, classNode, injectors)
-                        
-                        List<TraitInjector> traitInjectorsToUse = traitInjectorCache[handler.type]
-                        grailsTraitInjector.performTraitInjection(source, classNode, traitInjectorsToUse)
                     }
                 }
             }
+
         }
     }
 }
