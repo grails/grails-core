@@ -80,8 +80,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     private static final String[] DEFAULT_GENERICS_PLACEHOLDERS = new String[]{"D", "T"};
 
+    private final Set<String> classesTransformedByThis = new HashSet<String>();
+
     public String[] getArtefactTypes() {
-        return new String[]{getArtefactType()};
+        return new String[]{ getArtefactType() };
     }
 
     protected String getArtefactType() {
@@ -116,7 +118,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if(shouldSkipInjection(classNode)) return;
 
-        KNOWN_TRANSFORMED_CLASSES.add(classNode.getName());
+        final String className = classNode.getName();
+        KNOWN_TRANSFORMED_CLASSES.add(className);
+        classesTransformedByThis.add(className);
 
         Map<String, ClassNode> genericsPlaceholders = resolveGenericsPlaceHolders(classNode);
 
@@ -220,7 +224,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     protected boolean shouldSkipInjection(ClassNode classNode) {
         return !isValidTargetClassNode(classNode)
-                || (!isValidArtefactType() && !isValidArtefactTypeByConvention(classNode));
+                || (!isValidArtefactType() && !isValidArtefactTypeByConvention(classNode)) || classesTransformedByThis.contains(classNode.getName());
     }
 
     protected boolean hasArtefactAnnotation(ClassNode classNode) {
