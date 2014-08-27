@@ -100,7 +100,7 @@ class GrailsArtefactTransformerSpec extends Specification {
     void 'Test that set* and get* methods which are not property accessors are added even if they overload actual accessors'() {
         given:
             def testClass = gcl.parseClass('''
-            class TestClass {
+            class TestClass2 {
                 String firstName
             }
             ''')
@@ -130,7 +130,7 @@ class GrailsArtefactTransformerSpec extends Specification {
     void 'Test version attribute on @Enhanced'() {
         given:
             def testClass = gcl.parseClass('''
-            class TestClass {
+            class TestClass3 {
                 String firstName
             }
             ''')
@@ -147,7 +147,7 @@ class GrailsArtefactTransformerSpec extends Specification {
         given:
         def testClass = gcl.parseClass('''
             @Mixin(Date)
-            class TestClass {
+            class TestClass4 {
                 String firstName
             }
             ''')
