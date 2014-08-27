@@ -60,7 +60,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
     private ConcurrentMap<String, CacheEntry<View>> viewCache = new ConcurrentHashMap<String, CacheEntry<View>>();
     private boolean allowGrailsViewCaching = !GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
-
+    
     /**
      * Constructor.
      */
@@ -97,6 +97,11 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         }
 
         String viewCacheKey = groovyPageLocator.resolveViewFormat(viewName);
+        
+        String currentControllerKeyPrefix = resolveCurrentControllerKeyPrefixes();
+        if (currentControllerKeyPrefix != null) {
+            viewCacheKey = currentControllerKeyPrefix + ':' + viewCacheKey;
+        }
 
         CacheEntry<View> entry = viewCache.get(viewCacheKey);
 
@@ -131,6 +136,22 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         }
 
         return view;
+    }
+
+    /**
+     * @return prefix for cache key that contains current controller's context (currently plugin and namespace)
+     */
+    protected String resolveCurrentControllerKeyPrefixes() {
+        String pluginContextPath = null;
+        String namespace = null;
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        if(webRequest != null) {
+            namespace = webRequest.getControllerNamespace();
+            pluginContextPath = (webRequest.getAttributes() != null && webRequest.getCurrentRequest() != null) ? webRequest.getAttributes().getPluginContextPath(webRequest.getCurrentRequest()) : null;
+            return (pluginContextPath != null ? pluginContextPath : "-") + "," + (namespace != null ? namespace : "-");
+        } else {
+            return null;
+        }
     }
 
     private static class WrappedInitializationException extends RuntimeException {

@@ -18,6 +18,8 @@ package org.grails.web.converters.configuration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.grails.core.lifecycle.ShutdownOperations;
 import org.grails.web.converters.Converter;
@@ -45,14 +47,21 @@ public class ConvertersConfigurationHolder {
 
     private static ConvertersConfigurationHolder INSTANCE = new ConvertersConfigurationHolder();
 
-    private final Map<Class<? extends Converter>, ConverterConfiguration> defaultConfiguration =
-        new HashMap<Class<? extends Converter>, ConverterConfiguration>();
+    private final ConcurrentMap<Class<? extends Converter>, ConverterConfiguration> defaultConfiguration =
+        new ConcurrentHashMap<Class<? extends Converter>, ConverterConfiguration>();
 
-    private final Map<Class<? extends Converter>, Map<String, ConverterConfiguration>> namedConfigurations =
-        new HashMap<Class<? extends Converter>, Map<String, ConverterConfiguration>>();
+    private final ConcurrentMap<Class<? extends Converter>, Map<String, ConverterConfiguration>> namedConfigurations =
+        new ConcurrentHashMap<Class<? extends Converter>, Map<String, ConverterConfiguration>>();
 
-    private final Map<Class<? extends Converter>, ThreadLocal<ConverterConfiguration>> threadLocalConfiguration =
-        new HashMap<Class<? extends Converter>, ThreadLocal<ConverterConfiguration>>();
+    private ThreadLocal<Map<Class<? extends Converter>, ConverterConfiguration>> threadLocalConfiguration = createThreadLocalConfiguration();
+
+    protected static ThreadLocal<Map<Class<? extends Converter>, ConverterConfiguration>> createThreadLocalConfiguration() {
+        return new ThreadLocal<Map<Class<? extends Converter>, ConverterConfiguration>>() {
+            protected Map<java.lang.Class<? extends Converter>, ConverterConfiguration> initialValue() {
+                return new HashMap<Class<? extends Converter>, ConverterConfiguration>();
+            };
+        };
+    }
 
     private ConvertersConfigurationHolder() {
         // singleton
@@ -62,7 +71,7 @@ public class ConvertersConfigurationHolder {
         final ConvertersConfigurationHolder configurationHolder = getInstance();
         configurationHolder.defaultConfiguration.clear();
         configurationHolder.namedConfigurations.clear();
-        configurationHolder.threadLocalConfiguration.clear();
+        configurationHolder.threadLocalConfiguration = createThreadLocalConfiguration();
     }
 
     public static <C extends Converter> void setDefaultConfiguration(Class<C> c, ConverterConfiguration<C> cfg) {
@@ -81,9 +90,13 @@ public class ConvertersConfigurationHolder {
         ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);
         if (cfg == null) {
             cfg = getInstance().defaultConfiguration.get(converterClass);
-        }
-        if (cfg == null) {
-            cfg = new DefaultConverterConfiguration();
+            if (cfg == null) {
+                cfg = new DefaultConverterConfiguration();
+                ConverterConfiguration<C> existing = getInstance().defaultConfiguration.putIfAbsent(converterClass, cfg);
+                if(existing != null) {
+                    cfg = existing;
+                }
+            }
         }
         return cfg;
     }
@@ -94,20 +107,11 @@ public class ConvertersConfigurationHolder {
     }
 
     public static <C extends Converter> ConverterConfiguration<C> getThreadLocalConverterConfiguration(Class<C> converterClass) throws ConverterException {
-        return getThreadLocalForConverter(converterClass, true).get();
+        return getInstance().threadLocalConfiguration.get().get(converterClass);
     }
 
-    public static <C extends Converter> void setTheadLocalConverterConfiguration(Class<C> converterClass, ConverterConfiguration<C> cfg) throws ConverterException {
-        getThreadLocalForConverter(converterClass, true).set(cfg);
-    }
-
-    private static <C extends Converter> ThreadLocal<ConverterConfiguration> getThreadLocalForConverter(Class<C> converter, boolean create) {
-        ThreadLocal<ConverterConfiguration> threadlocal = getInstance().threadLocalConfiguration.get(converter);
-        if (threadlocal == null && create) {
-            threadlocal = new ThreadLocal<ConverterConfiguration>();
-            getInstance().threadLocalConfiguration.put(converter, threadlocal);
-        }
-        return threadlocal;
+    public static <C extends Converter> void setThreadLocalConverterConfiguration(Class<C> converterClass, ConverterConfiguration<C> cfg) throws ConverterException {
+        getInstance().threadLocalConfiguration.get().put(converterClass, cfg);
     }
 
     public static <C extends Converter> void setNamedConverterConfiguration(Class<C> converterClass, String name, ConverterConfiguration<C> cfg) throws ConverterException {

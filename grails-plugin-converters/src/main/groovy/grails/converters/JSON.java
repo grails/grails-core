@@ -385,21 +385,21 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     public static Object use(String configName, Closure<?> callable) throws ConverterException {
         ConverterConfiguration<JSON> old = ConvertersConfigurationHolder.getThreadLocalConverterConfiguration(JSON.class);
         ConverterConfiguration<JSON> cfg = getNamedConfig(configName);
-        ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, cfg);
+        ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(JSON.class, cfg);
         try {
             return callable.call();
         }
         finally {
-            ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, old);
+            ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(JSON.class, old);
         }
     }
 
     public static void use(String cfgName) throws ConverterException {
         if (cfgName == null || "default".equals(cfgName)) {
-            ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, null);
+            ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(JSON.class, null);
         }
         else {
-            ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, getNamedConfig(cfgName));
+            ConvertersConfigurationHolder.setThreadLocalConverterConfiguration(JSON.class, getNamedConfig(cfgName));
         }
     }
 

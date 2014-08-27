@@ -87,6 +87,9 @@ allprojects {
     repositories {
         maven { url "https://grails.artifactoryonline.com/grails/core" }
         mavenLocal()
+        if(isBuildSnapshot) {
+            maven { url "http://repo.grails.org/grails/libs-snapshots-local" }
+        }
     }
 
     configurations {
@@ -124,6 +127,10 @@ apply from: "gradle/idea.gradle"
 subprojects { project ->
     version = grailsVersion
     group = "org.grails"
+
+    if(!project.hasProperty("artifactoryPublishPassword") && System.getenv("ARTIFACTORY_PASSWORD")) {
+        project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
+    }
 
     if(project.name == 'grails-dependencies') return
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
@@ -175,11 +182,6 @@ subprojects { project ->
             module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
                     [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
             )
-        }
-    }
-    repositories {
-        if(!isCiBuild) {
-            mavenLocal()
         }
     }
 
@@ -308,19 +310,21 @@ subprojects { project ->
         uploadPublished {
             repositories {
                 project.poms << mavenDeployer {
+                    if(!isBuildSnapshot) {
                     beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+                    }
 
+                    if(project.hasProperty("sonatypeUsername")) {
                     repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                         authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
                                         password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
                     }
-//                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-//                        authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
-//                                        password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
-//                    }
-                    snapshotRepository(url: "https://grails.artifactoryonline.com/grails/libs-snapshots-local") {
+                    }
+                    if(project.hasProperty("artifactoryPublishUsername")) {
+                        snapshotRepository(url: "https://grails.artifactoryonline.com/grails/libs-snapshots-local") {
                         authentication(userName: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null,
                             password: project.hasProperty("artifactoryPublishPassword") ?  project.artifactoryPublishPassword : null)
+                        }
                     }
 
 
