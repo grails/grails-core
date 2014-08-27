@@ -26,6 +26,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import org.grails.core.exceptions.NewInstanceCreationException;
+import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.util.ClassPropertyFetcher;
 import grails.plugins.GrailsVersionUtils;
 import org.springframework.beans.BeanWrapper;
@@ -100,8 +101,14 @@ public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.g
         this.grailsApplication = grailsApplication;
     }
 
-    public GrailsApplication getGrailsApplication() {
-        return grailsApplication;
+    @Override
+    public org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication() {
+        return new LegacyGrailsApplication(grailsApplication);
+    }
+
+    @Override
+    public GrailsApplication getApplication() {
+        return this.grailsApplication;
     }
 
     public String getShortName() {

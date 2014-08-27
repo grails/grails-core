@@ -23,6 +23,9 @@ import groovy.lang.GroovyObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,6 +68,25 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     @Override
     protected boolean isArtefactResource(Resource resource) throws IOException {
         return super.isArtefactResource(resource) && GrailsResourceUtils.isDomainClass(resource.getURL());
+    }
+
+    @Override
+    public boolean isArtefact(ClassNode classNode) {
+        if(classNode == null) return false;
+        if(!isValidArtefactClassNode(classNode, classNode.getModifiers())) return false;
+
+        URI uri = classNode.getModule().getContext().getSource().getURI();
+
+        if(uri != null) {
+            try {
+                return GrailsResourceUtils.isDomainClass(uri.toURL());
+            } catch (MalformedURLException e) {
+                return super.isArtefact(classNode);
+            }
+        }
+        else {
+            return super.isArtefact(classNode);
+        }
     }
 
     /**

@@ -225,7 +225,7 @@ public class DataBindingUtils {
         BindingResult bindingResult = null;
         GrailsApplication grailsApplication = null;
         if (domain != null) {
-            grailsApplication = domain.getGrailsApplication();
+            grailsApplication = domain.getApplication();
         }
         if (grailsApplication == null) {
             grailsApplication = Holders.findApplication();

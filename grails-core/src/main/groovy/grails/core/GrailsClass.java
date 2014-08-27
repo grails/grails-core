@@ -18,6 +18,7 @@ package grails.core;
 import groovy.lang.MetaClass;
 
 import grails.core.support.GrailsApplicationAware;
+import org.codehaus.groovy.grails.commons.*;
 import org.springframework.beans.BeanWrapper;
 
 /**
@@ -40,8 +41,18 @@ public interface GrailsClass extends GrailsApplicationAware{
      * The GrailsApplication that this class belongs to
      *
      * @return The GrailsApplication instance
+     * @deprecated Use {@link #getApplication()} instead
      */
-    GrailsApplication getGrailsApplication();
+    @Deprecated
+    org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication();
+
+
+    /**
+     * The GrailsApplication that this class belongs to
+     *
+     * @return The GrailsApplication instance
+     */
+    GrailsApplication getApplication();
 
     /**
      * Gets the initial value of the given property on the class.

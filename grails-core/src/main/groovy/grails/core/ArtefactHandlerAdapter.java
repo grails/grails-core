@@ -92,15 +92,18 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
         } catch (IOException e) {
             return false;
         }
-        if(classNode instanceof InnerClassNode) return false;
 
-        if(!classNode.isEnum() && !classNode.isInterface() && !Modifier.isAbstract(modifiers)) {
+        if(isValidArtefactClassNode(classNode, modifiers)) {
             String name = classNode.getName();
             if(name != null && this.artefactSuffix != null && name.endsWith(artefactSuffix)) {
                 return true;
             }
         }
         return false;
+    }
+
+    protected boolean isValidArtefactClassNode(ClassNode classNode, int modifiers) {
+        return !classNode.isEnum() && !classNode.isInterface() && !Modifier.isAbstract(modifiers) && !(classNode instanceof InnerClassNode);
     }
 
     /**

@@ -78,8 +78,13 @@ class LegacyGrailsDomainClass  implements GrailsDomainClass  {
     }
 
     @Override
-    GrailsApplication getGrailsApplication() {
+    org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication() {
         return newDomainClass.getGrailsApplication()
+    }
+
+    @Override
+    GrailsApplication getApplication() {
+        return newDomainClass.application
     }
 
     @Override

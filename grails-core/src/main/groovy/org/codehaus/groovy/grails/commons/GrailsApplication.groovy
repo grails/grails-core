@@ -27,6 +27,35 @@ import org.springframework.core.io.Resource
 @Deprecated
 @CompileStatic
 public interface GrailsApplication {
+    /**
+     * The id of the grails application within a bean context
+     */
+    String APPLICATION_ID = "grailsApplication";
+
+    /**
+     * The name of the class that provides configuration
+     */
+    String CONFIG_CLASS = "Config";
+    /**
+     * The name of the DataSource class
+     */
+    String DATA_SOURCE_CLASS = "DataSource";
+    /**
+     * The name of the project metadata file
+     */
+    String PROJECT_META_FILE = "application.properties";
+    /**
+     * The name of the transaction manager bean
+     */
+    String TRANSACTION_MANAGER_BEAN = "transactionManager";
+    String SESSION_FACTORY_BEAN = "sessionFactory";
+    String DATA_SOURCE_BEAN = "dataSource";
+    String MESSAGE_SOURCE_BEAN = "messageSource";
+    String MULTIPART_RESOLVER_BEAN = "multipartResolver";
+    String EXCEPTION_HANDLER_BEAN = "exceptionHandler";
+    String CLASS_LOADER_BEAN = "classLoader";
+    String DIALECT_DETECTOR_BEAN = "dialectDetector";
+    String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
 
     /**
      * Returns the ConfigObject instance.
