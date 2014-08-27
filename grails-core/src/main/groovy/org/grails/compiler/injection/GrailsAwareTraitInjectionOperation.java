@@ -47,7 +47,7 @@ public class GrailsAwareTraitInjectionOperation extends
         CompilationUnit.PrimaryClassNodeOperation {
 
     protected CompilationUnit unit;
-    protected static List<TraitInjector> classInjectors;
+    protected static List<TraitInjector> traitInjectors;
     private static final String PACKAGE_TO_SCAN = "grails.compiler.traits";
 
     public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
@@ -56,7 +56,7 @@ public class GrailsAwareTraitInjectionOperation extends
     }
 
     public void setTraitInjectors(List<TraitInjector> i) {
-        classInjectors = i;
+        traitInjectors = i;
     }
 
     @Override
@@ -75,8 +75,7 @@ public class GrailsAwareTraitInjectionOperation extends
         }
 
         List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
-        for (TraitInjector injector : classInjectors) {
-            System.out.println("injector: " + injector);
+        for (TraitInjector injector : traitInjectors) {
             if (injector.shouldInject(url)) {
                 injectorsToUse.add(injector);
             }
@@ -97,15 +96,15 @@ public class GrailsAwareTraitInjectionOperation extends
     }
 
     public List<TraitInjector> getTraitInjectors() {
-        return Collections.unmodifiableList(classInjectors);
+        return Collections.unmodifiableList(traitInjectors);
     }
 
     protected static void initializeState() {
-        if (classInjectors != null) {
+        if (traitInjectors != null) {
             return;
         }
 
-        classInjectors = new ArrayList<TraitInjector>();
+        traitInjectors = new ArrayList<TraitInjector>();
 
         BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
         ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(
@@ -131,7 +130,7 @@ public class GrailsAwareTraitInjectionOperation extends
                 Class<?> injectorClass = classLoader.loadClass(registry
                         .getBeanDefinition(beanName).getBeanClassName());
                 if (TraitInjector.class.isAssignableFrom(injectorClass))
-                    classInjectors.add((TraitInjector) injectorClass
+                    traitInjectors.add((TraitInjector) injectorClass
                             .newInstance());
             } catch (Exception e) {
                 // ignore
