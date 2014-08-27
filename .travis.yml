@@ -2,8 +2,10 @@ language: groovy
 jdk:
 - oraclejdk7
 env:
-   - TERM=dumb GRADLE_OPTS="-Xmx768m -Xms256m -XX:MaxPermSize=256m -XX:+CMSClassUnloadingEnabled"
+  global:
+  - TERM=dumb 
+  - GRADLE_OPTS="-Xmx768m -Xms256m -XX:MaxPermSize=256m -XX:+CMSClassUnloadingEnabled"
+  - secure: tvWIqrDyxdGkC43Us8BNwqU8aiu3NF5YWMPFW216n+KIO6HXJNyS6oV8gWCcUr/7MQzJEKmDvgnaRYykcX7tVfRQznWhXGro2V5Je6OOdvNrXu6Qr9/2Ue586NHWlA7rLhPOS9XOA6rFIKfPAbbjBwY2bhNXQ0ITxQ7oaT+EiyE=
 before_script: ./gradlew populateDependencies testClasses
-script: ./gradlew test
-# The following stops Travis executing the assemble step
+script: ./travis-build.sh
 install: /bin/true
