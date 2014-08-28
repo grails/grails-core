@@ -217,7 +217,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     @CompileStatic
     void grailsCentral() {
         if (!context.offline && isResolverNotAlreadyDefined('grailsCentral')) {
-            mavenRepo(root:"https://grails.artifactoryonline.com/grails/plugins", name:"grailsCentral")
+            mavenRepo(root:"https://repo.grails.org/grails/plugins", name:"grailsCentral")
         }
     }
 

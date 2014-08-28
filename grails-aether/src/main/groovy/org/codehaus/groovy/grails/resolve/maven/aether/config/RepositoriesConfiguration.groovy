@@ -150,7 +150,7 @@ class RepositoriesConfiguration {
     RemoteRepository grailsCentral(@DelegatesTo(RepositoryConfiguration) Closure configurer = null) {
         final existing = repositories.find { RemoteRepository ar -> ar.id == "grailsCentral" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("grailsCentral", "default", "https://grails.artifactoryonline.com/grails/plugins")
+            final repositoryBuilder = new RemoteRepository.Builder("grailsCentral", "default", "https://repo.grails.org/grails/plugins")
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
             repositories << repository

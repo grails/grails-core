@@ -6,8 +6,8 @@
   <include url="${ivy.default.settings.dir}/ivysettings-main-chain.xml"/>
   <resolvers>
     <chain name="codehaus-plus" dual="true">
-      <ibiblio name="grails-core" root="https://grails.artifactoryonline.com/grails/core" m2compatible="true" changingPattern=".*SNAPSHOT"/>
-      <ibiblio name="grails-plugins" root="https://grails.artifactoryonline.com/grails/plugins" m2compatible="true" changingPattern=".*SNAPSHOT"/>
+      <ibiblio name="grails-core" root="https://repo.grails.org/grails/core" m2compatible="true" changingPattern=".*SNAPSHOT"/>
+      <ibiblio name="grails-plugins" root="https://repo.grails.org/grails/plugins" m2compatible="true" changingPattern=".*SNAPSHOT"/>
 
       <resolver ref="public"/>
     </chain>

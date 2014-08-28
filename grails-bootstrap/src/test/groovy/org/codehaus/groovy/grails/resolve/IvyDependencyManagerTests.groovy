@@ -37,7 +37,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         def dependencyManager = new IvyDependencyManager("test", "0.1",settings)
         dependencyManager.parseDependencies {
             repositories {
-                mavenRepo("https://grails.artifactoryonline.com/grails/core")
+                mavenRepo("https://repo.grails.org/grails/core")
             }
             dependencies {
                 agent "org.springsource.springloaded:springloaded-core:1.1.1"
@@ -57,7 +57,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         config.grails.project.dependency.resolution = {
             repositories {
                 grailsCentral()
-                mavenRepo "https://grails.artifactoryonline.com/grails/core"
+                mavenRepo "https://repo.grails.org/grails/core"
             }
             plugins {
                 test ":hibernate:3.6.10.17"

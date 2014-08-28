@@ -226,7 +226,7 @@ class AetherDependencyManagerSpec extends Specification {
             def dependencyManager = new AetherDependencyManager()
             dependencyManager.parseDependencies {
                 repositories {
-                    mavenRepo("https://grails.artifactoryonline.com/grails/core")
+                    mavenRepo("https://repo.grails.org/grails/core")
                 }
                 dependencies {
                     agent "org.springsource.springloaded:springloaded-core:1.1.1"
@@ -463,7 +463,7 @@ class AetherDependencyManagerSpec extends Specification {
                     excludes 'grails-docs'
                 }
                 repositories {
-                    mavenRepo "https://grails.artifactoryonline.com/grails/core"
+                    mavenRepo "https://repo.grails.org/grails/core"
                 }
             }
 
@@ -480,7 +480,7 @@ class AetherDependencyManagerSpec extends Specification {
         dependencyManager.parseDependencies {
             inherits("global")
             repositories {
-                mavenRepo "https://grails.artifactoryonline.com/grails/core"
+                mavenRepo "https://repo.grails.org/grails/core"
             }
         }
 
@@ -500,7 +500,7 @@ class AetherDependencyManagerSpec extends Specification {
                 excludes 'grails-plugin-servlets'
             }
             repositories {
-                mavenRepo "https://grails.artifactoryonline.com/grails/core"
+                mavenRepo "https://repo.grails.org/grails/core"
             }
         }
 
@@ -521,7 +521,7 @@ class AetherDependencyManagerSpec extends Specification {
                 excludes 'ehcache-core'
             }
             repositories {
-                mavenRepo "https://grails.artifactoryonline.com/grails/core"
+                mavenRepo "https://repo.grails.org/grails/core"
             }
             dependencies {
                 runtime 'mysql:mysql-connector-java:5.1.20'
@@ -551,13 +551,13 @@ class AetherDependencyManagerSpec extends Specification {
                     id = "grailsCentral"
                 }
                 repositories {
-                    repository  = mavenRepo( id:'grailsCentral', url:"https://grails.artifactoryonline.com/grails/core" )
+                    repository  = mavenRepo( id:'grailsCentral', url:"https://repo.grails.org/grails/core" )
                 }
             }
         then:"The credentials are correctly populated"
             authentication != null
             repository.id == 'grailsCentral'
-            repository.url == "https://grails.artifactoryonline.com/grails/core"
+            repository.url == "https://repo.grails.org/grails/core"
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
@@ -574,16 +574,16 @@ class AetherDependencyManagerSpec extends Specification {
                 authentication = credentials {
                     username = "foo"
                     password = "bar"
-                    id = "grails_artifactoryonline_com_grails_core"
+                    id = "repo_grails_org_grails_core"
                 }
                 repositories {
-                    repository  = mavenRepo("https://grails.artifactoryonline.com/grails/core" )
+                    repository  = mavenRepo("https://repo.grails.org/grails/core" )
                 }
             }
         then:"The credentials are correctly populated"
             authentication != null
-            repository.id == 'grails_artifactoryonline_com_grails_core'
-            repository.url == "https://grails.artifactoryonline.com/grails/core"
+            repository.id == 'repo_grails_org_grails_core'
+            repository.url == "https://repo.grails.org/grails/core"
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
