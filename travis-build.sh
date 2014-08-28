@@ -14,7 +14,7 @@ if [[ $TRAVIS_BRANCH =~ ^master|2\.[34]\.x$ && $TRAVIS_REPO_SLUG == "grails/grai
     && $EXIT_STATUS -eq 0 && $grailsVersion == *-SNAPSHOT* 
     && -n "$ARTIFACTORY_PASSWORD" ]]; then
     echo "Publishing archives"
-    ./gradlew -PartifactoryPublishUsername=travis-grails-core upload
+    ./gradlew -PartifactoryPublishUsername=travis-grails-core upload || EXIT_STATUS=$?
 fi
 
 exit $EXIT_STATUS
