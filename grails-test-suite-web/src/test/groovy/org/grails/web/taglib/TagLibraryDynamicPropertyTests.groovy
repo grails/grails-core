@@ -28,27 +28,13 @@ class FooTagLib {
 '''
     }
 
-    void testActionName() {
+    void testDynamicProperties() {
         webRequest.actionName = "test"
-        def template = '<g:showAction />'
-        assertOutputEquals("action: test", template)
-    }
-
-    void testControllerName() {
         webRequest.controllerName = "foo"
-        def template = '<g:showController />'
-        assertOutputEquals("controller: foo", template)
-    }
-
-    void testSession() {
         request.session.foo = "bar"
-        def template = '<g:showSession />'
-        assertOutputEquals("test: bar", template)
-    }
-
-    void testParams() {
         webRequest.params.foo = "bar"
-        def template = '<g:showParam />'
-        assertOutputEquals("test: bar", template)
+        
+        def template = '<g:showAction />, <g:showController />, <g:showSession />, <g:showParam />'
+        assertOutputEquals("action: test, controller: foo, test: bar, test: bar", template)
     }
 }

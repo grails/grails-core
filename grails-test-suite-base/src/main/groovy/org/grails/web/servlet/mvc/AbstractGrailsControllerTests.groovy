@@ -1,5 +1,8 @@
 package org.grails.web.servlet.mvc
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
+import grails.core.GrailsDomainClass
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import grails.util.Holders
@@ -8,26 +11,21 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
+import grails.web.pages.GroovyPagesUriService
+import grails.web.util.GrailsApplicationAttributes
 
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
-import grails.core.GrailsDomainClass
-import org.grails.core.legacy.LegacyGrailsApplication
-import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.databinding.converters.DateConversionHelper
+import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.plugins.DefaultGrailsPlugin
-import org.grails.plugins.domain.DomainClassGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
+import org.grails.plugins.domain.DomainClassGrailsPlugin
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.support.MockApplicationContext
-import org.grails.web.pages.DefaultGroovyPagesUriService
-import grails.web.pages.GroovyPagesUriService
-import grails.web.util.GrailsApplicationAttributes
-import org.grails.databinding.converters.DateConversionHelper
-import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.pages.DefaultGroovyPagesUriService
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
@@ -131,7 +129,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
-        ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(new LegacyGrailsApplication(ga)))
+        ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(ga))
         ga.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
         

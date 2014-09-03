@@ -167,12 +167,12 @@
         <repository>
             <id>grails</id>
             <name>grails</name>
-            <url>https://grails.artifactoryonline.com/grails/core</url>
+            <url>https://repo.grails.org/grails/core</url>
         </repository>
         <repository>
             <id>grails-plugins</id>
             <name>grails-plugins</name>
-            <url>https://grails.artifactoryonline.com/grails/plugins</url>
+            <url>https://repo.grails.org/grails/plugins</url>
         </repository>
     </repositories>
 

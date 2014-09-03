@@ -6,17 +6,7 @@ import org.grails.core.artefact.TagLibArtefactHandler
  * @author Graeme Rocher
  * @since 0.4
  */
-class PageScopeTests extends AbstractGrailsTagTests {
-
-    void testReferringToNonExistentPageScopePropertyDoesNotThrowMissingPropertyException() {
-        def template = "<%= pageScope.nonExistent ?: 'No Property Found'"
-        assertOutputEquals 'No Property Found', template
-    }
-
-    void testNamedBodyParams() {
-        def template = '<g:set var="foo" value="bar" />one: <g:test1 /> two: ${bar} three: ${pageScope.bar}'
-        assertOutputEquals('one: bar two: foo three: foo', template)
-    }
+class PageScopeTagTests extends AbstractGrailsTagTests {
 
     void testScopes() {
         def template = '''

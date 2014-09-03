@@ -16,32 +16,29 @@
 package org.grails.plugins.domain
 
 import grails.artefact.Enhanced
-import grails.core.support.GrailsApplicationAware
-import grails.util.GrailsUtil
-import grails.validation.ValidationErrors
 import grails.core.ComponentCapableDomainClass
-import groovy.transform.CompileStatic
-import org.grails.core.legacy.LegacyGrailsApplication
-import org.grails.core.artefact.DomainClassArtefactHandler
-
 import grails.core.GrailsApplication
-import grails.util.GrailsClassUtils
 import grails.core.GrailsDomainClass
-
-import org.grails.core.support.GrailsDomainConfigurationUtil
-import org.grails.plugins.domain.support.GormApiSupport
-import org.grails.plugins.domain.support.GrailsDomainClassCleaner
-import org.grails.core.util.SoftThreadLocalMap
-import org.grails.validation.ConstraintEvalUtils
-import org.grails.validation.ConstraintsEvaluatorFactoryBean;
-import org.grails.validation.GrailsDomainClassValidator;
-
+import grails.core.support.GrailsApplicationAware
+import grails.util.GrailsClassUtils
+import grails.util.GrailsUtil
 import grails.validation.ConstraintsEvaluator
+import grails.validation.ValidationErrors
+import groovy.transform.CompileStatic
 
+import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.core.legacy.LegacyGrailsApplication
+import org.grails.core.support.GrailsDomainConfigurationUtil
+import org.grails.core.util.SoftThreadLocalMap
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.plugins.domain.support.GormApiSupport
+import org.grails.plugins.domain.support.GrailsDomainClassCleaner
+import org.grails.validation.ConstraintEvalUtils
+import org.grails.validation.ConstraintsEvaluatorFactoryBean
+import org.grails.validation.GrailsDomainClassValidator
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
@@ -78,7 +75,7 @@ class DomainClassGrailsPlugin implements GrailsApplicationAware{
              defaultConstraints = defaultConstraintsMap
         }
 
-        grailsDomainClassMappingContext(GrailsDomainClassMappingContext, new LegacyGrailsApplication(application))
+        grailsDomainClassMappingContext(GrailsDomainClassMappingContext, application)
         
         grailsDomainClassCleaner(GrailsDomainClassCleaner, application)
 
