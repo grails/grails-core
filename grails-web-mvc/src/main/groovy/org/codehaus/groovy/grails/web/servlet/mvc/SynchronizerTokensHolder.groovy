@@ -35,7 +35,7 @@ class SynchronizerTokensHolder implements Serializable {
 
     Map<String, Set<UUID>> currentTokens= [:]
 
-    boolean isValid(String url, String token) {
+    protected boolean isValid(String url, String token) {
         try {
             getTokens(url).contains UUID.fromString(token)
         }
@@ -44,17 +44,17 @@ class SynchronizerTokensHolder implements Serializable {
         }
     }
 
-    String generateToken(String url) {
+    protected String generateToken(String url) {
         final UUID uuid = UUID.randomUUID()
         getTokens(url).add(uuid)
         return uuid
     }
 
-    void resetToken(String url) {
+    protected void resetToken(String url) {
         currentTokens.remove(url)
     }
 
-    void resetToken(String url, String token) {
+    protected void resetToken(String url, String token) {
         if (url && token) {
             final Set set = getTokens(url)
             try {
@@ -67,7 +67,7 @@ class SynchronizerTokensHolder implements Serializable {
         }
     }
 
-    boolean isEmpty() {
+    protected boolean isEmpty() {
         return currentTokens.isEmpty() || currentTokens.every { String url, Set<UUID> uuids -> uuids.isEmpty() }
     }
 
