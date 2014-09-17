@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier
 
 import spock.lang.Specification
 
-class DefaultASTDatabindingHelperSpec extends Specification {
+class DomainClassDataBindingWhiteListSpec extends Specification {
 
     void 'Test class with hasMany'() {
         when:
