@@ -15,6 +15,11 @@
  */
 package grails.artefact
 
+import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
+import org.springframework.validation.BindingResult
+
+import grails.web.databinding.DataBindingUtils
+
 /**
  * 
  * @author Jeff Brown
@@ -22,4 +27,24 @@ package grails.artefact
  *
  */
 trait DomainClass {
+    
+    /**
+     * Binds the source object to the properties of the target instance converting any types as necessary
+     *
+     * @param bindingSource The binding source
+     * @return The BindingResult
+     */
+    BindingResult setProperties(final bindingSource) {
+        DataBindingUtils.bindObjectToInstance(this, bindingSource)
+    }
+
+    /**
+     * Returns a map of the objects properties that can be used to during binding to bind a subset of properties
+     *
+     * @return An instance of {@link DataBindingLazyMetaPropertyMap}
+     */
+    Map<?, ?> getProperties() {
+        new DataBindingLazyMetaPropertyMap(this)
+    }
+
 }
