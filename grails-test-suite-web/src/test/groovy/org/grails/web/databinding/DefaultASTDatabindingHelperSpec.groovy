@@ -1,137 +1,16 @@
 package org.grails.web.databinding
 
-import grails.util.GrailsWebUtil
-
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.classgen.GeneratorContext
-import org.codehaus.groovy.control.SourceUnit
-import grails.compiler.ast.ClassInjector
-import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.grails.web.databinding.DefaultASTDatabindingHelper;
-
-import spock.lang.Specification
+import grails.persistence.Entity
 
 import java.lang.reflect.Modifier
 
-/**
- * Created by graemerocher on 01/04/14.
- */
+import spock.lang.Specification
+
 class DefaultASTDatabindingHelperSpec extends Specification {
-    static widgetClass
-    static widgetSubclass
-    static setterGetterClass
-    static dateBindingClass
-    static classWithHasMany
-    static classWithNoBindableProperties
-
-    def setupSpec() {
-        final gcl = new GrailsAwareClassLoader()
-        final transformer = new AstDatabindingInjector()
-        gcl.classInjectors = [transformer] as ClassInjector[]
-        widgetClass = gcl.parseClass('''
-            class Widget {
-                static transients = ['integerListedInTransientsProperty']
-                Integer bindableProperty
-                Integer secondBindableProperty
-                Integer nonBindableProperty
-                Integer secondNonBindableProperty
-                static Integer staticProperty
-                def untypedProperty
-                transient Integer transientInteger
-                Integer integerListedInTransientsProperty
-                Person person
-
-                static constraints = {
-                    nonBindableProperty bindable: false
-                    secondNonBindableProperty bindable: false
-                    somePropertyThatDoesNotExistAtCompileTime bindable: true
-                    someOtherPropertyThatDoesNotExistAtCompileTime bindable: false
-                }
-            }
-            class Person {
-                String firstName
-            }
-            ''')
-        widgetSubclass = gcl.parseClass('''
-                class WidgetSubclass extends Widget {
-                    Integer subclassBindableProperty
-                    Integer subclassNonBindableProperty
-                    static Integer subclassStaticProperty
-                    def subclassUntypedProperty
-
-                    static constraints = {
-                        bindableProperty bindable: false
-                        subclassNonBindableProperty bindable: false
-                        nonBindableProperty bindable: true
-                    }
-                }
-            ''')
-        setterGetterClass = gcl.parseClass('''
-            class SetterGetterClass {
-                private internalFirstName
-                private internalMiddleName
-                private internalLastName
-                private internalTitle
-
-                void setFirstName(String s) {
-                    internalFirstName = s
-                }
-
-                void setMiddleName(String s, int i) {
-                    internalMiddleName = s
-                }
-
-                void getLastName() {
-                    internalLastName
-                }
-
-                void setTitle(String s) {
-                    internalTitle = s
-                }
-
-                String getTitle() {
-                    internalTitle
-                }
-            }
-            ''')
-        dateBindingClass = gcl.parseClass('''
-                class DateBindingClass {
-                    String name
-                    Date birthDate
-                    Date hireDate
-                    Calendar exitDate
-                    java.sql.Date sqlDate
-                    static constraints = {
-                        hireDate bindable: false
-                    }
-                }
-            ''')
-        classWithHasMany = gcl.parseClass('''
-                class ClassWithHasMany {
-                    String name
-                    static hasMany = [people: Person, widgets: Widget]
-                    static constraints = {
-                        widgets bindable: false
-                    }
-                }
-            ''')
-        classWithNoBindableProperties = gcl.parseClass('''
-                class ClassWithNoBindableProperties {
-                    String firstName
-                    String lastName
-                    static constraints = {
-                        firstName bindable: false
-                        lastName bindable: false
-                    }
-                }''')
-
-        // there must be a request bound in order for the structured date editor to be registered
-        GrailsWebUtil.bindMockWebRequest()
-    }
 
     void 'Test class with hasMany'() {
         when:
-        final whiteListField = classWithHasMany.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
+        final whiteListField = ClassWithHasMany.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
 
         then:
         whiteListField?.modifiers & Modifier.STATIC
@@ -150,7 +29,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test class with getters and setters that do not directly map to fields'() {
         when:
-        final whiteListField = setterGetterClass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
+        final whiteListField = SetterGetterClass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
 
         then:
         whiteListField?.modifiers & Modifier.STATIC
@@ -169,7 +48,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
         'title' in whiteList
 
         when:
-        def obj = setterGetterClass.newInstance()
+        def obj = new SetterGetterClass()
         obj.properties = [firstName: 'a',
                 middleName: 'b',
                 lastName: 'c',
@@ -184,7 +63,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test default generated data binding white list'() {
         when:
-        final whiteListField = widgetClass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
+        final whiteListField = Widget.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
 
         then:
         whiteListField?.modifiers & Modifier.STATIC
@@ -207,7 +86,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test binding to a class that has no bindable properties'() {
         given:
-        def obj = classWithNoBindableProperties.newInstance()
+        def obj = new ClassWithNoBindableProperties()
 
         when:
         obj.properties = [firstName: 'First Name', lastName: 'Last Name']
@@ -219,7 +98,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test that binding respects the generated white list'() {
         given:
-        def obj = widgetClass.newInstance()
+        def obj = new Widget()
 
         when:
         obj.properties = [bindableProperty: 1,
@@ -244,7 +123,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test explicit white list overrides default white list in class'() {
         given:
-        def obj = widgetClass.newInstance()
+        def obj = new Widget()
 
         when:
         obj.properties['bindableProperty', 'nonBindableProperty'] =
@@ -270,7 +149,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test default generated data binding white list on a subclass'() {
         when:
-        final whiteListField = widgetSubclass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
+        final whiteListField = WidgetSubclass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
 
         then:
         whiteListField?.modifiers & Modifier.STATIC
@@ -294,7 +173,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test that binding respects the generated white list in subclass'() {
         given:
-        def obj = widgetSubclass.newInstance()
+        def obj = new WidgetSubclass()
 
         when:
         obj.properties = [bindableProperty: 1,
@@ -327,7 +206,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test explicit white list overrides default white list in subclass'() {
         given:
-        def obj = widgetSubclass.newInstance()
+        def obj = new WidgetSubclass()
 
         when:
         obj.properties['nonBindableProperty', 'subclassNonBindableProperty'] =
@@ -361,7 +240,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
     void 'Test structured Date binding'() {
         given:
-        def obj = dateBindingClass.newInstance()
+        def obj = new DateBindingClass()
 
         when:
         obj.properties = [birthDate_month: '11',
@@ -402,20 +281,101 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     }
 }
 
-class AstDatabindingInjector implements ClassInjector {
-    void performInjection(SourceUnit source, ClassNode classNode) {
-        performInjection(source, null, classNode)
+@Entity
+class SetterGetterClass {
+    private internalFirstName
+    private internalMiddleName
+    private internalLastName
+    private internalTitle
+
+    void setFirstName(String s) {
+        internalFirstName = s
     }
 
-    @Override
-    void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
-        performInjection( source, null, classNode)
+    void setMiddleName(String s, int i) {
+        internalMiddleName = s
     }
 
-    void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, classNode)
+    void getLastName() {
+        internalLastName
     }
-    boolean shouldInject(URL url) {
-        return true
+
+    void setTitle(String s) {
+        internalTitle = s
+    }
+
+    String getTitle() {
+        internalTitle
+    }
+}
+
+@Entity
+class DateBindingClass {
+    String name
+    Date birthDate
+    Date hireDate
+    Calendar exitDate
+    java.sql.Date sqlDate
+    static constraints = {
+        hireDate bindable: false
+    }
+}
+
+@Entity
+class Widget {
+    static transients = [
+        'integerListedInTransientsProperty'
+    ]
+    Integer bindableProperty
+    Integer secondBindableProperty
+    Integer nonBindableProperty
+    Integer secondNonBindableProperty
+    static Integer staticProperty
+    def untypedProperty
+    transient Integer transientInteger
+    Integer integerListedInTransientsProperty
+    Person person
+
+    static constraints = {
+        nonBindableProperty bindable: false
+        secondNonBindableProperty bindable: false
+        somePropertyThatDoesNotExistAtCompileTime bindable: true
+        someOtherPropertyThatDoesNotExistAtCompileTime bindable: false
+    }
+}
+
+@Entity
+class Person {
+    String firstName
+}
+
+@Entity
+class WidgetSubclass extends Widget {
+    Integer subclassBindableProperty
+    Integer subclassNonBindableProperty
+    static Integer subclassStaticProperty
+    def subclassUntypedProperty
+
+    static constraints = {
+        bindableProperty bindable: false
+        subclassNonBindableProperty bindable: false
+        nonBindableProperty bindable: true
+    }
+}
+
+@Entity
+class ClassWithHasMany {
+    String name
+    static hasMany = [people: Person, widgets: Widget]
+    static constraints = { widgets bindable: false }
+}
+
+@Entity
+class ClassWithNoBindableProperties {
+    String firstName
+    String lastName
+    static constraints = {
+        firstName bindable: false
+        lastName bindable: false
     }
 }
