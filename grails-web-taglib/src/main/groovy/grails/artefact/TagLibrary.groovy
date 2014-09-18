@@ -15,14 +15,17 @@
  */
 package grails.artefact
 
+import grails.core.GrailsApplication
+import grails.core.GrailsTagLibClass
 import grails.util.Environment
 import grails.web.util.GrailsApplicationAttributes
+
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.buffer.GrailsPrintWriter
+import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.web.encoder.OutputEncodingStack
 import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.taglib.AbstractTemplateVariableBinding
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput
 import org.grails.web.taglib.TemplateVariableBinding
@@ -135,5 +138,52 @@ trait TagLibrary {
 
     void setTagLibraryLookup(TagLibraryLookup lookup) {
         tagLibraryLookup = lookup;
+    }
+    
+    /**
+     * Method missing implementation that handles tag invocation by method name
+     *
+     * @param methodName The method name
+     * @param argsObject The arguments
+     * @return The result
+     */
+    public Object methodMissing(String methodName, Object argsObject) {
+        Object[] args = argsObject instanceof Object[] ? argsObject : [argsObject] as Object[]
+        String usednamespace
+        
+        GrailsApplication grailsApplication = getGrailsApplication()
+        if (grailsApplication != null) {
+            GrailsTagLibClass taglibrary = grailsApplication.getArtefact(TagLibArtefactHandler.TYPE, this.getClass().getName())
+            if (taglibrary != null) {
+                usednamespace = taglibrary.getNamespace()
+            }
+        }
+        
+        if(usednamespace == null) {
+            usednamespace = TagOutput.DEFAULT_NAMESPACE
+        }
+
+        TagLibraryLookup lookup = getTagLibraryLookup()
+        if (lookup != null) {
+
+            GroovyObject tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName)
+            if (tagLibrary == null) {
+                tagLibrary = lookup.lookupTagLibrary(TagOutput.DEFAULT_NAMESPACE, methodName)
+                usednamespace = TagOutput.DEFAULT_NAMESPACE
+            }
+
+            if (tagLibrary != null && !Environment.isDevelopmentMode()) {
+                TagLibraryMetaUtils.registerMethodMissingForTags(this.getMetaClass(), lookup, usednamespace, methodName)
+            }
+
+            if (tagLibrary != null) {
+                List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args)
+                if (respondsTo.size()>0) {
+                    return respondsTo.get(0).invoke(tagLibrary, args)
+                }
+            }
+        }
+
+        throw new MissingMethodException(methodName, this.getClass(), args)
     }
 }
