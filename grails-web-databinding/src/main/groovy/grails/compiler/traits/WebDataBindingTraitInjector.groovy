@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact
+package grails.compiler.traits
 
+import grails.web.databinding.WebDataBinding
+
+import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.io.support.GrailsResourceUtils
 
 /**
  * 
@@ -22,6 +26,19 @@ package grails.artefact
  * @since 3.0
  *
  */
-trait DomainClass {
-    
+class WebDataBindingTraitInjector implements TraitInjector {
+
+    Class getTrait() {
+        WebDataBinding
+    }
+
+    @Override
+    boolean shouldInject(URL url) {
+        GrailsResourceUtils.isDomainClass(url)
+    }
+
+    @Override
+    String[] getArtefactTypes() {
+        [DomainClassArtefactHandler.TYPE]
+    }
 }
