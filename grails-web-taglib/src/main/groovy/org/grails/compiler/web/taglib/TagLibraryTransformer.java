@@ -112,7 +112,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         
         addGetTagLibNamespaceMethod(classNode, namespace);
 
-        MethodCallExpression tagLibraryLookupMethodCall = new MethodCallExpression(new VariableExpression("this"), "getTagLibraryLookup", ZERO_ARGS);
+        MethodCallExpression tagLibraryLookupMethodCall = new MethodCallExpression(new VariableExpression(apiInstanceProperty, ClassHelper.make(TagLibraryApi.class)), "getTagLibraryLookup", ZERO_ARGS);
         for (PropertyNode tag : tags) {
             String tagName = tag.getName();
             addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName);

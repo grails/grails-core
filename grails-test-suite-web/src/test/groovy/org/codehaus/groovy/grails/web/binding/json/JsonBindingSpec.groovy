@@ -134,7 +134,7 @@ class JsonBindingSpec extends Specification {
 class BindingController {
     def createPerson() {
         def person = new Person()
-        bindData person, request
+        person.properties = request
         [person: person]
     }
 

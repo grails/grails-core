@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2012 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,36 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.web.databinding
+package org.grails.web.databinding;
 
-import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
-import org.springframework.validation.BindingResult
+import grails.web.databinding.DataBindingUtils;
 
-/**
- *
- * @author Jeff Brown
- * @since 3.0
- *
- */
-trait WebDataBinding {
+import java.util.Map;
+
+import org.springframework.validation.BindingResult;
+
+public class DatabindingApi {
     /**
      * Binds the source object to the properties of the target instance converting any types as necessary
      *
+     * @param instance The instance
      * @param bindingSource The binding source
      * @return The BindingResult
      */
-    BindingResult setProperties(final bindingSource) {
-        DataBindingUtils.bindObjectToInstance(this, bindingSource)
+    public BindingResult setProperties(final Object instance, final Object bindingSource) {
+        return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
     }
 
     /**
      * Returns a map of the objects properties that can be used to during binding to bind a subset of properties
      *
-     * @return An instance of {
-     @link DataBindingLazyMetaPropertyMap
-     }
+     * @param instance The instance
+     * @return An instance of {@link DataBindingLazyMetaPropertyMap}
      */
-    Map<?, ?> getProperties() {
-        new DataBindingLazyMetaPropertyMap(this)
+    public Map<?, ?> getProperties(final Object instance) {
+        return new DataBindingLazyMetaPropertyMap(instance);
     }
 }

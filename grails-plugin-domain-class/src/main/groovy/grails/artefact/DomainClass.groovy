@@ -15,7 +15,6 @@
  */
 package grails.artefact
 
-
 /**
  * 
  * @author Jeff Brown
@@ -23,5 +22,4 @@ package grails.artefact
  *
  */
 trait DomainClass {
-    
 }

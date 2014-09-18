@@ -1,11 +1,8 @@
 package org.grails.compiler.web.taglib
 
 import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.TagLibraryTraitInjector
-import grails.compiler.traits.TraitInjector
-
 import org.grails.compiler.injection.GrailsAwareClassLoader
-
+import org.grails.compiler.web.taglib.TagLibraryTransformer
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -64,11 +61,6 @@ class TagLibraryTransformerSpec extends Specification {
             boolean shouldInject(URL url) { true }
         }
         gcl.classInjectors = [transformer] as ClassInjector[]
-        def traitInjector = new TagLibraryTraitInjector() {
-            @Override
-            boolean shouldInject(URL url) { true }
-        }
-        gcl.traitInjectors = [traitInjector] as TraitInjector[]
 
         expect:
         gcl.parseClass('''
