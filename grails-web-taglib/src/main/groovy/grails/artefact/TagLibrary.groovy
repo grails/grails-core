@@ -33,6 +33,7 @@ import org.grails.web.taglib.WebRequestTemplateVariableBinding
 import org.grails.web.taglib.exceptions.GrailsTagException
 import org.grails.web.taglib.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestAttributes
 
 /**
@@ -185,5 +186,15 @@ trait TagLibrary {
         }
 
         throw new MissingMethodException(methodName, this.getClass(), args)
+    }
+    
+    TagLibraryLookup getTagLibraryLookup() {
+        if (tagLibraryLookup == null) {
+            ApplicationContext applicationContext = getApplicationContext()
+            if (applicationContext != null && applicationContext.containsBean("gspTagLibraryLookup")) {
+                tagLibraryLookup = applicationContext.getBean("gspTagLibraryLookup", TagLibraryLookup)
+            }
+        }
+        tagLibraryLookup
     }
 }

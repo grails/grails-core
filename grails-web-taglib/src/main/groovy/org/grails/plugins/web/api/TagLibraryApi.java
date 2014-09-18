@@ -15,15 +15,9 @@
  */
 package org.grails.plugins.web.api;
 
-import grails.core.GrailsApplication;
-import grails.core.GrailsTagLibClass;
 import grails.plugins.GrailsPluginManager;
 
-import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.web.api.CommonWebApi;
-import org.grails.web.taglib.TagLibraryLookup;
-import org.grails.web.taglib.TagOutput;
-import org.springframework.context.ApplicationContext;
 
 /**
  * API for Tag libraries in a Grails application.
@@ -35,23 +29,11 @@ public class TagLibraryApi extends CommonWebApi {
 
     private static final long serialVersionUID = 1;
 
-    private transient TagLibraryLookup tagLibraryLookup;
-
     public TagLibraryApi() {
         super(null);
     }
 
     public TagLibraryApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
-    }
-
-    public TagLibraryLookup getTagLibraryLookup() {
-        if (tagLibraryLookup == null) {
-            ApplicationContext applicationContext = getApplicationContext(null);
-            if (applicationContext != null && applicationContext.containsBean("gspTagLibraryLookup")) {
-                tagLibraryLookup = applicationContext.getBean("gspTagLibraryLookup", TagLibraryLookup.class);
-            }
-        }
-        return tagLibraryLookup;
     }
 }
