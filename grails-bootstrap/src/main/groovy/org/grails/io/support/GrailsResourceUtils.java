@@ -620,7 +620,8 @@ public class GrailsResourceUtils {
 
     public static boolean isGrailsResource(Resource r) {
         try {
-            return isGrailsPath(r.getURL().getFile());
+            String file = r.getURL().getFile();
+            return isGrailsPath(file) || file.endsWith("GrailsPlugin.groovy");
         }
         catch (IOException e) {
             return false;
