@@ -1,5 +1,8 @@
 dependencies {
-    compile 'org.apache.ant:ant:1.9.4'
+    compile project(":grails-bootstrap")
+    compile "org.apache.ant:ant:$antVersion"
     compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    compile "org.fusesource.jansi:jansi:$jansiVersion"
+    compile "jline:jline:$jlineVersion"
 }
 
