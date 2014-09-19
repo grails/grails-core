@@ -1,3 +1,7 @@
+apply plugin:'application'
+
+mainClassName = "org.grails.cli.GrailsCli"
+
 dependencies {
     compile project(":grails-bootstrap")
     compile "org.apache.ant:ant:$antVersion"
