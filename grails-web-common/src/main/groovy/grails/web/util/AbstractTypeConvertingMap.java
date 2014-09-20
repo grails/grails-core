@@ -371,6 +371,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
      */
     public Date getDate(String name, String format) {
         Object value = get(name);
+        if (value instanceof Date) {
+            return (Date)value;
+        }
+        
         if (value != null) {
             try {
                 return new SimpleDateFormat(format).parse(value.toString());
