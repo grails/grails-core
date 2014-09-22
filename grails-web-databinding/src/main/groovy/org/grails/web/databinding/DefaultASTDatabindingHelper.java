@@ -30,16 +30,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import grails.web.controllers.ControllerMethod;
-
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.grails.compiler.injection.GrailsASTUtils;
 
 public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
@@ -76,23 +76,9 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     }};
     
     private static final Set<String> DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT = CollectionUtils.newSet("id", "version", "dateCreated", "lastUpdated");
-
+    
     public void injectDatabindingCode(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
         addDefaultDatabindingWhitelistField(source, classNode);
-        addDatabindingApi(source, context, classNode);
-    }
-
-    private void addDatabindingApi(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
-        new AbstractGrailsArtefactTransformer() {
-            public boolean shouldInject(final URL url) { return true; }
-            @Override public Class<?> getInstanceImplementation() { return DatabindingApi.class; }
-            @Override public Class<?> getStaticImplementation() { return null; }
-            @Override protected boolean requiresAutowiring() { return false; }
-            @Override
-            protected AnnotationNode getMarkerAnnotation() {
-                return new AnnotationNode(new ClassNode(ControllerMethod.class));
-            }
-        }.performInjection(source, context, classNode);
     }
 
     private void addDefaultDatabindingWhitelistField(final SourceUnit sourceUnit, final ClassNode classNode) {
