@@ -57,4 +57,7 @@ include 'grails-aether',
         'grails-test-suite-web',
 
         // Deprecated Compatibility Classes
-        'grails-compat'
+        'grails-compat',
+
+        // Gradle Plugin
+        'grails-gradle-plugin'
