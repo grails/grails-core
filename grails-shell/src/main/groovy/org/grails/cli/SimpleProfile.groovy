@@ -7,7 +7,7 @@ import jline.console.completer.Completer
 class SimpleProfile implements Profile {
     File profileDir
     String name
-    List<CommandLineHandler> commandLineHandlers = []
+    List<CommandLineHandler> commandLineHandlers = null
     
     public SimpleProfile(String name, File profileDir) {
         this.name = name
@@ -21,6 +21,14 @@ class SimpleProfile implements Profile {
 
     @Override
     public Iterable<CommandLineHandler> getCommandLineHandlers() {
-        null
+        if(commandLineHandlers == null) {
+            commandLineHandlers = []
+            File commandsDir = new File(profileDir, "commands")
+            Collection<File> yamlFiles = commandsDir.listFiles().findAll { File file ->
+                file.isFile() && file.name ==~ /^.*\.yml$/ 
+            }
+            commandLineHandlers << new YamlCommandHandler(commandFiles: yamlFiles, profile: this) 
+        }
+        commandLineHandlers
     }    
 }
