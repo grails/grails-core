@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.grails.core.io.watch;
+package org.grails.io.watch;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Utility class to watch directories for changes.
@@ -45,7 +44,7 @@ public class DirectoryWatcher extends Thread {
         setDaemon(true);
         AbstractDirectoryWatcher directoryWatcherDelegate;
         try {
-			directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.codehaus.groovy.grails.compiler.WatchServiceDirectoryWatcher").newInstance();
+			directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.io.watch.WatchServiceDirectoryWatcher").newInstance();
 		} catch (Throwable e) {
 			LOG.info("Exception while trying to load WatchServiceDirectoryWatcher (this is probably Java 6 and WatchService isn't available). Falling back to PollingDirectoryWatcher.", e);
 	        directoryWatcherDelegate = new PollingDirectoryWatcher();
@@ -121,7 +120,7 @@ public class DirectoryWatcher extends Thread {
     public void addWatchDirectory(File dir, String extension) {
         extension = removeStartingDotIfPresent(extension);
         List<String> fileExtensions = new ArrayList<String>();
-        if (!StringUtils.hasText(extension)) {
+        if (extension != null && extension.length() > 0) {
             fileExtensions.add("*");
         }
         else {

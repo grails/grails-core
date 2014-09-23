@@ -1,4 +1,4 @@
-package org.grails.core.io.watch;
+package org.grails.io.watch;
 
 import java.io.File;
 import java.io.IOException;

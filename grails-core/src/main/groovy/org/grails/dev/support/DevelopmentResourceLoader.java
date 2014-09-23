@@ -95,7 +95,8 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
         // the inline plugin map) matches an "inline" plugin, use the location as-is
         // for the resource location.  Otherwise, perform the logic to "normalize" the resource location based on
         // its relativity to the application (i.e. is it from a non-inline plugin, etc).
-        if (BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(location.replaceAll(GRAILS_APP_DIR_PATTERN, "")))) {
+        BuildSettings buildSettings = BuildSettingsHolder.getSettings();
+        if (buildSettings != null && buildSettings.isInlinePluginLocation(new File(location.replaceAll(GRAILS_APP_DIR_PATTERN, "")))) {
             return "file:" + location;
         }
 
@@ -109,9 +110,8 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
             return defaultPath;
         }
 
-        if (application != null) {
+        if (application != null && buildSettings != null) {
 
-            BuildSettings settings = BuildSettingsHolder.getSettings();
             PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
             String pluginPath = GrailsStringUtils.substringAfter(noWebInf, SLASH);
             String pluginName = GrailsStringUtils.substringBefore(pluginPath, SLASH);
@@ -127,8 +127,8 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
                 }
             }
 
-            if (settings != null) {
-                return "file:" + settings.getProjectPluginsDir().getAbsolutePath() + SLASH + pluginName + SLASH + remainingPath;
+            if (buildSettings != null) {
+                return "file:" + buildSettings.getProjectPluginsDir().getAbsolutePath() + SLASH + pluginName + SLASH + remainingPath;
             }
         }
 

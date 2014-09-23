@@ -1,11 +1,10 @@
-package org.grails.core.io.watch;
+package org.grails.io.watch;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.util.StringUtils;
 
 /**
  * Backend for {@link DirectoryWatcher}
@@ -87,7 +86,23 @@ abstract class AbstractDirectoryWatcher implements Runnable {
         		!file.isDirectory() &&
                 !file.isHidden() &&
                 !file.getName().startsWith(".") &&
-                (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
+                (fileExtensions.contains("*") || fileExtensions.contains(getFilenameExtension(name)));
     }
 
+    /**
+     * Extract the filename extension from the given path,
+     * e.g. "mypath/myfile.txt" -> "txt".
+     * @param path the file path (may be {@code null})
+     * @return the extracted filename extension, or {@code null} if none
+     */
+    public static String getFilenameExtension(String path) {
+        if (path == null) {
+            return null;
+        }
+        int extIndex = path.lastIndexOf(".");
+        if (extIndex == -1) {
+            return null;
+        }
+        return path.substring(extIndex + 1);
+    }
 }

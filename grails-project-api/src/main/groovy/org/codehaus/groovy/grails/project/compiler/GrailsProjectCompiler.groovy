@@ -28,7 +28,7 @@ import org.codehaus.groovy.control.Phases
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.fork.compile.ForkedGrailsCompiler
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
-import org.grails.core.io.watch.DirectoryWatcher
+import org.grails.io.watch.DirectoryWatcher
 import org.codehaus.groovy.grails.compiler.Grailsc
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.compiler.injection.GrailsAwareInjectionOperation

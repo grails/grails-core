@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 
+import java.io.File;
 import java.util.Locale;
 import java.util.Map;
 
@@ -478,6 +479,12 @@ public enum Environment {
             BuildSettings settings = BuildSettingsHolder.getSettings();
             if (settings != null) {
                 location = settings.getBaseDir().getAbsolutePath();
+            }
+        }
+        if(!hasLocation(location)) {
+            File current = new File(".", "grails-app");
+            if(current.exists()) {
+                location = current.getParentFile().getAbsolutePath();
             }
         }
         return location;

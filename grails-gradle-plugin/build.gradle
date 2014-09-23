@@ -27,5 +27,6 @@ dependencies {
 
         exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
     }
+
     compile "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
 }

@@ -2,10 +2,13 @@ package org.grails.gradle.plugin.core
 
 import grails.util.BuildSettings
 import grails.util.Environment
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
+import org.grails.gradle.plugin.watch.GrailsWatchPlugin
+import org.grails.gradle.plugin.watch.WatchConfig
 import org.springframework.boot.gradle.SpringBootPlugin
 
 class GrailsPlugin extends GroovyPlugin {
@@ -36,6 +39,13 @@ class GrailsPlugin extends GroovyPlugin {
 
 
         if(environment.isReloadEnabled()) {
+            new GrailsWatchPlugin().apply(project)
+            NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
+            def watchConfig = watchConfigs.create("groovy")
+            watchConfig.directory = project.file("grails-app")
+            watchConfig.extensions = ['groovy', 'java']
+            watchConfig.tasks('compileGroovy')
+
             project.configurations {
                 agent
             }
