@@ -1,0 +1,6 @@
+render
+- template: templates/artifacts/Controller.groovy
+- destination: grails-app/controllers/@artifact.package.path@/@artifact.name@.groovy
+render
+- template: templates/testing/Controller.groovy
+- destination: src/test/groovy/@artifact.package.path@/@artifact.name@Spec.groovy

@@ -1,0 +1,28 @@
+import org.grails.gradle.plugin.*
+
+
+version "0.1"
+group "example"
+
+apply plugin: GrailsPlugin
+
+mainClassName = "@APPNAME@.Application"
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.springframework.boot:spring-boot-autoconfigure:1.1.4.RELEASE'
+  compile 'org.apache.tomcat.embed:tomcat-embed-core:8.0.9'
+  compile "org.grails:grails-dependencies:3.0.0.BUILD-SNAPSHOT"
+  compile "org.grails:grails-web-boot:3.0.0.BUILD-SNAPSHOT"
+  compile "org.grails:grails-compat:3.0.0.BUILD-SNAPSHOT"
+  compile "org.grails.plugins:hibernate:4.3.5.5.BUILD-SNAPSHOT"
+
+
+  compile ("org.hibernate:hibernate-ehcache:4.3.5.Final")
+
+  runtime "org.grails.plugins:asset-pipeline:2.0.0-SNAPSHOT"
+}
