@@ -8,5 +8,6 @@ dependencies {
     compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile "jline:jline:$jlineVersion"
+    compile 'org.yaml:snakeyaml:1.14'
 }
 
