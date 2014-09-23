@@ -16,18 +16,22 @@
 package grails.artefact
 
 import grails.databinding.DataBindingSource
+import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.web.databinding.DataBindingUtils
+
+import java.lang.reflect.Method
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 import org.grails.plugins.support.WebMetaUtils
 import org.grails.plugins.web.api.MimeTypesApiSupport
+import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
@@ -228,5 +232,37 @@ trait Controller {
         MimeTypesApiSupport mimeTypesSupport = new MimeTypesApiSupport()
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         mimeTypesSupport.withFormat((HttpServletResponse)response, callable)
+    }
+    
+    @SuppressWarnings("unchecked")
+    Method getExceptionHandlerMethodFor(final Class<? extends Exception> exceptionType) throws Exception {
+        if(!Exception.class.isAssignableFrom(exceptionType)) {
+            throw new IllegalArgumentException("exceptionType [${exceptionType.getName()}] argument must be Exception or a subclass of Exception")
+        }
+        
+        Method handlerMethod
+        final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = GrailsClassUtils.getStaticFieldValue(this.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME)
+        if(exceptionHandlerMetaDataInstances) {
+
+            // find all of the handler methods which could accept this exception type
+            final List<ControllerExceptionHandlerMetaData> matches = exceptionHandlerMetaDataInstances.findAll { ControllerExceptionHandlerMetaData cemd ->
+                cemd.exceptionType.isAssignableFrom(exceptionType)
+            }
+
+            if(matches.size() > 0) {
+                ControllerExceptionHandlerMetaData theOne = matches.get(0)
+
+                // if there are more than 1, find the one that is farthest down the inheritance hierarchy
+                for(int i = 1; i < matches.size(); i++) {
+                    final ControllerExceptionHandlerMetaData nextMatch = matches.get(i)
+                    if(theOne.getExceptionType().isAssignableFrom(nextMatch.getExceptionType())) {
+                        theOne = nextMatch
+                    }
+                }
+                handlerMethod = this.getClass().getMethod(theOne.getMethodName(), theOne.getExceptionType())
+            }
+        }
+
+        handlerMethod
     }
 }
