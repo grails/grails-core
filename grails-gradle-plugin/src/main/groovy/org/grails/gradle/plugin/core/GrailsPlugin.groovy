@@ -1,12 +1,16 @@
 package org.grails.gradle.plugin.core
 
+import grails.util.BuildSettings
 import grails.util.Environment
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
+import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.springframework.boot.gradle.SpringBootPlugin
 
 class GrailsPlugin extends GroovyPlugin {
+
+
 
     void apply(Project project) {
         super.apply(project)
@@ -27,9 +31,19 @@ class GrailsPlugin extends GroovyPlugin {
 
         grailsSourceDirs << "$projectDir/src/main/groovy"
 
+        System.setProperty( BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
         def environment = Environment.current
 
-        println "ENVIRONMENT IS $environment"
+
+        if(environment.isReloadEnabled()) {
+            project.configurations {
+                agent
+            }
+            project.dependencies {
+                agent "org.springframework:springloaded:1.2.0.RELEASE"
+            }
+            project.afterEvaluate(new AgentTasksEnhancer())
+        }
 
 
         project.sourceSets {
