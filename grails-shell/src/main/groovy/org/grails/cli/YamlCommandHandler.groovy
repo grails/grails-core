@@ -1,23 +1,37 @@
 package org.grails.cli
 
-import grails.build.logging.GrailsConsole;
+import grails.build.logging.GrailsConsole
 
-import java.util.List;
-
-import org.codehaus.groovy.grails.cli.parsing.CommandLine;
+import org.codehaus.groovy.grails.cli.parsing.CommandLine
+import org.yaml.snakeyaml.Yaml;
 
 class YamlCommandHandler implements CommandLineHandler {
     Collection<File> commandFiles
     Profile profile
     List<CommandDescription> commandDescriptions
+    Map<String, YamlCommand> commands
     
     void initialize() {
-        commandDescriptions = commandFiles.collect { File file -> new CommandDescription(name: file.name - '.yml') }
+        Yaml yaml=new Yaml()
+        commands = commandFiles.collectEntries { File file ->
+            def yamlContent = file.withReader { 
+                yaml.load(it)
+            }
+            def commandName = file.name - /\.yml$/
+            [commandName, new YamlCommand(name: commandName, file: file, yamlContent: yamlContent, profile: profile)]
+        }
+        commandDescriptions = commands.collect { String name, YamlCommand cmd ->
+            cmd.description
+        }
     }
 
     @Override
     public boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        // TODO Auto-generated method stub
+        YamlCommand cmd = commands.get(commandLine.getCommandName())
+        if(cmd) {
+            cmd.handleCommand(commandLine, console)
+            return true
+        }
         return false;
     }
 

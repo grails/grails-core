@@ -1,0 +1,11 @@
+description: Creates a tag library
+usage: |
+ create-taglib [taglib name]
+ Creates a tag library class and an associated unit test
+steps:
+ - command: render
+   template: templates/artifacts/TagLib.groovy
+   destination: grails-app/controllers/@artifact.package.path@/@artifact.name@.groovy
+ - command: render
+   template: templates/testing/TagLib.groovy
+   destination: src/test/groovy/@artifact.package.path@/@artifact.name@Spec.groovy
