@@ -16,12 +16,12 @@ class GrailsCli {
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
+    Boolean ansiEnabled = null
     
-    public int run(String... args) {
+    public int execute(String... args) {
         ProfileRepository profileRepository=new ProfileRepository()
         File applicationProperties=new File("application.properties")
         if(!applicationProperties.exists()) {
-            print "not exists..."
             if(!args) {
                 println "usage: create-app appname --profile=web"
                 return 1
@@ -35,7 +35,6 @@ class GrailsCli {
                         profile=matches.group(1)
                     }
                 }
-                println "app: $appname profile: $profile"
                 CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, appname: appname, profile: profile)
                 cmd.run()
             }
@@ -46,11 +45,15 @@ class GrailsCli {
         
             CommandLine mainCommandLine=cliParser.parse(args)
             def commandName = mainCommandLine.getCommandName()
+            GrailsConsole console=GrailsConsole.getInstance()
+            console.setAnsiEnabled(!mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT))
+            if(ansiEnabled != null) {
+                console.setAnsiEnabled(ansiEnabled)
+            }
             if(commandName) {
-                handleCommand(mainCommandLine, GrailsConsole.getInstance())
+                handleCommand(mainCommandLine, console)
             } else {
                 System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
-                GrailsConsole console=GrailsConsole.getInstance()
                 console.reader.addCompleter(aggregateCompleter)
                 console.println("Starting interactive mode...")
                 while(keepRunning) {
@@ -121,6 +124,6 @@ class GrailsCli {
     
     public static void main(String[] args) {
         GrailsCli cli=new GrailsCli()
-        System.exit(cli.run(args))
+        System.exit(cli.execute(args))
     }
 }
