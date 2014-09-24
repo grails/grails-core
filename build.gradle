@@ -205,7 +205,7 @@ subprojects { project ->
                 exclude group:'org.codehaus.groovy', module: 'groovy-all'
             }
             // Required by Spock's Mocking
-            testCompile "cglib:cglib:${cglibVersion}"
+            testCompile "cglib:cglib-nodep:${cglibVersion}"
             testCompile "org.objenesis:objenesis:${objenesisVersion}"
         }
     }
