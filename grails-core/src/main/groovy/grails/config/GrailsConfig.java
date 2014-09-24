@@ -16,12 +16,16 @@
 package grails.config;
 
 import groovy.util.ConfigObject;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import grails.core.GrailsApplication;
+
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -173,10 +177,16 @@ public class GrailsConfig implements Settings{
 
     @SuppressWarnings("rawtypes")
     public Map getFlatConfig() {
+        if(grailsApplication == null) {
+            return Collections.EMPTY_MAP;
+        }
         return grailsApplication.getFlatConfig();
     }
 
     public ConfigObject getConfig() {
+        if(grailsApplication == null) {
+            return new ConfigObject();
+        }
         return grailsApplication.getConfig();
     }
 }
