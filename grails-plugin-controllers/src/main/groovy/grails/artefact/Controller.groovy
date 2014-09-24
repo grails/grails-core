@@ -15,19 +15,27 @@
  */
 package grails.artefact
 
+import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
+import grails.util.CollectionUtils
+import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.web.databinding.DataBindingUtils
 
+import java.lang.reflect.Method
+
+import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 import org.grails.plugins.support.WebMetaUtils
 import org.grails.plugins.web.api.MimeTypesApiSupport
+import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData
+import org.grails.plugins.web.controllers.metaclass.ChainMethod
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
@@ -45,14 +53,13 @@ import org.springframework.web.servlet.ModelAndView
  *
  */
 trait Controller {
-
+    
     /**
      * Return true if there are an errors
      * @return true if there are errors
      */
     boolean hasErrors() {
-        final Errors errors = getErrors();
-        return errors != null && errors.hasErrors();
+        getErrors()?.hasErrors()
     }
 
     /**
@@ -61,7 +68,7 @@ trait Controller {
      * @param errors The error instance
      */
     void setErrors(Errors errors) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0)
     }
 
     /**
@@ -70,7 +77,7 @@ trait Controller {
      * @return The Errors instance
      */
     Errors getErrors() {
-        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0);
+        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
     }
 
 
@@ -80,7 +87,7 @@ trait Controller {
      * @return The ModelAndView
      */
     ModelAndView getModelAndView() {
-        return (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
     }
 
     /**
@@ -89,11 +96,11 @@ trait Controller {
      * @param mav The ModelAndView
      */
     void setModelAndView(ModelAndView mav) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0);
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
     }
 
     GrailsWebRequest currentRequestAttributes() {
-        return (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        RequestContextHolder.currentRequestAttributes()
     }
 
     /**
@@ -111,7 +118,7 @@ trait Controller {
      * @return the initialized command object or null if the command object is a domain class, the body or
      * parameters included an id and no corresponding record was found in the database.
      */
-    public Object initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
+    def initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
         final HttpServletRequest request = getRequest()
         def commandObjectInstance = null
 
@@ -123,7 +130,7 @@ trait Controller {
             final DataBindingSource commandObjectBindingSource = WebMetaUtils
                     .getCommandObjectBindingSourceForPrefix(
                             commandObjectParameterName, dataBindingSource)
-            Object entityIdentifierValue = null
+            def entityIdentifierValue = null
             final boolean isDomainClass = DomainClassArtefactHandler
                     .isDomainClass(type)
             if (isDomainClass) {
@@ -132,8 +139,7 @@ trait Controller {
                 if (entityIdentifierValue == null) {
                     final GrailsWebRequest webRequest = GrailsWebRequest
                             .lookup(request)
-                    entityIdentifierValue = webRequest != null ? webRequest
-                            .getParams().getIdentifier() : null
+                    entityIdentifierValue = webRequest?.getParams().getIdentifier()
                 }
             }
             if (entityIdentifierValue instanceof String) {
@@ -172,7 +178,7 @@ trait Controller {
                     case HttpMethod.POST:
                     case HttpMethod.PUT:
                         shouldDoDataBinding = true
-                        break;
+                        break
                     default:
                         shouldDoDataBinding = false
                     }
@@ -190,7 +196,7 @@ trait Controller {
                 throw e
             }            
             commandObjectInstance = type.newInstance()
-            final Object o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
+            final o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
             if(o instanceof BindingResult) {
                 final BindingResult errors = (BindingResult)o
                 String msg = "Error occurred initializing command object [" + commandObjectParameterName + "]. " + e.getMessage()
@@ -228,5 +234,142 @@ trait Controller {
         MimeTypesApiSupport mimeTypesSupport = new MimeTypesApiSupport()
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         mimeTypesSupport.withFormat((HttpServletResponse)response, callable)
+    }
+    
+    @SuppressWarnings("unchecked")
+    Method getExceptionHandlerMethodFor(final Class<? extends Exception> exceptionType) throws Exception {
+        if(!Exception.class.isAssignableFrom(exceptionType)) {
+            throw new IllegalArgumentException("exceptionType [${exceptionType.getName()}] argument must be Exception or a subclass of Exception")
+        }
+        
+        Method handlerMethod
+        final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = GrailsClassUtils.getStaticFieldValue(this.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME)
+        if(exceptionHandlerMetaDataInstances) {
+
+            // find all of the handler methods which could accept this exception type
+            final List<ControllerExceptionHandlerMetaData> matches = exceptionHandlerMetaDataInstances.findAll { ControllerExceptionHandlerMetaData cemd ->
+                cemd.exceptionType.isAssignableFrom(exceptionType)
+            }
+
+            if(matches.size() > 0) {
+                ControllerExceptionHandlerMetaData theOne = matches.get(0)
+
+                // if there are more than 1, find the one that is farthest down the inheritance hierarchy
+                for(int i = 1; i < matches.size(); i++) {
+                    final ControllerExceptionHandlerMetaData nextMatch = matches.get(i)
+                    if(theOne.getExceptionType().isAssignableFrom(nextMatch.getExceptionType())) {
+                        theOne = nextMatch
+                    }
+                }
+                handlerMethod = this.getClass().getMethod(theOne.getMethodName(), theOne.getExceptionType())
+            }
+        }
+
+        handlerMethod
+    }
+    
+    def bindData(target, bindingSource, Map includeExclude) {
+        bindData target, bindingSource, includeExclude, null
+    }
+
+    def bindData(target, bindingSource, Map includeExclude, String filter) {
+        def include = includeExclude?.include
+        def exclude = includeExclude?.exclude
+        List includeList = include instanceof String ? [include] : include
+        List excludeList = exclude instanceof String ? [exclude] : exclude
+        DataBindingUtils.bindObjectToInstance target, bindingSource, includeList, excludeList, filter
+        this
+    }
+
+    def bindData(target, bindingSource) {
+        bindData target, bindingSource, Collections.EMPTY_MAP, null
+    }
+    
+    def bindData(target, bindingSource, String filter) {
+        bindData target, bindingSource, Collections.EMPTY_MAP, filter
+    }
+    
+    void bindData(Class targetType, Collection collectionToPopulate, CollectionDataBindingSource collectionBindingSource) {
+        DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
+    }
+
+    void bindData(Class targetType, Collection collectionToPopulate, ServletRequest request) {
+        DataBindingUtils.bindToCollection targetType, collectionToPopulate, request
+    }
+
+    def bindData(target, bindingSource, List excludes) {
+        bindData target, bindingSource, [exclude: excludes], null
+    }
+
+    def bindData(target, bindingSource, List excludes, String filter) {
+        bindData target, bindingSource, [exclude: excludes], filter
+    }
+    
+    /**
+     * Returns the URI of the currently executing action
+     *
+     * @return The action URI
+     */
+    String getActionUri() {
+        "/${getControllerName()}/${getActionName()}"
+    }
+
+    /**
+     * Returns the URI of the currently executing controller
+     * @return The controller URI
+     */
+    String getControllerUri() {
+        "/${getControllerName()}"
+    }
+
+    /**
+     * Obtains a URI of a template by name
+     *
+     * @param name The name of the template
+     * @return The template URI
+     */
+    String getTemplateUri(String name) {
+        getGrailsAttributes().getTemplateUri(name, getRequest())
+    }
+
+    /**
+     * Obtains a URI of a view by name
+     *
+     * @param name The name of the view
+     * @return The template URI
+     */
+    String getViewUri(String name) {
+        getGrailsAttributes().getViewUri(name, getRequest())
+    }
+
+    /**
+     * Obtains the chain model which is used to chain request attributes from one request to the next via flash scope
+     * @return The chainModel
+     */
+    Map getChainModel() {
+        getFlash().get("chainModel")
+    }
+    
+    /**
+     * Invokes the chain method for the given arguments
+     *
+     * @param args The arguments
+     * @return Result of the redirect call
+     */
+    def chain(Map args) {
+        ChainMethod.invoke this, args
+    }
+    
+    /**
+     * Sets a response header for the given name and value
+     *
+     * @param headerName The header name
+     * @param headerValue The header value
+     */
+    void header(String headerName, headerValue) {
+        if (headerValue != null) {
+            final HttpServletResponse response = getResponse()
+            response?.setHeader headerName, headerValue.toString()
+        }
     }
 }

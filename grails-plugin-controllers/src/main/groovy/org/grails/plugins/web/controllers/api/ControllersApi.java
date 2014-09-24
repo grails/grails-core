@@ -18,7 +18,6 @@ package org.grails.plugins.web.controllers.api;
 import grails.async.Promise;
 import grails.converters.JSON;
 import grails.core.GrailsControllerClass;
-import grails.databinding.CollectionDataBindingSource;
 import grails.io.IOUtils;
 import grails.util.*;
 import grails.web.JSONBuilder;
@@ -29,15 +28,11 @@ import grails.web.mime.MimeUtility;
 import groovy.lang.*;
 
 import java.io.*;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,18 +57,12 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 
 import grails.core.GrailsDomainClassProperty;
 
-import org.grails.compiler.web.ControllerActionTransformer;
-
 import grails.plugins.GrailsPluginManager;
-import grails.web.databinding.DataBindingUtils;
-
-import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData;
 
 import grails.web.mapping.LinkGenerator;
 
 import grails.web.util.GrailsApplicationAttributes;
 
-import org.grails.plugins.web.controllers.metaclass.ChainMethod;
 import org.grails.plugins.web.controllers.metaclass.ForwardMethod;
 import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod;
 import org.grails.plugins.web.controllers.metaclass.WithFormMethod;
@@ -110,14 +99,10 @@ import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*
 @SuppressWarnings("rawtypes")
 public class ControllersApi extends CommonWebApi {
 
-    private static final String INCLUDE_MAP_KEY = "include";
-    private static final String EXCLUDE_MAP_KEY = "exclude";
-
     private static final long serialVersionUID = 1;
 
     protected static final String RENDER_METHOD_NAME = "render";
     protected static final String BIND_DATA_METHOD = "bindData";
-    protected static final String SLASH = "/";
     protected transient RenderDynamicMethod render;
     protected transient WithFormMethod withFormMethod;
     protected transient ForwardMethod forwardMethod;
@@ -189,51 +174,6 @@ public class ControllersApi extends CommonWebApi {
     }
 
     /**
-     * Returns the URI of the currently executing action
-     *
-     * @return The action URI
-     */
-    public String getActionUri(Object instance) {
-        return SLASH + getControllerName(instance) + SLASH + getActionName(instance);
-    }
-
-    /**
-     * Returns the URI of the currently executing controller
-     * @return The controller URI
-     */
-    public String getControllerUri(Object instance) {
-        return SLASH + getControllerName(instance);
-    }
-
-    /**
-     * Obtains a URI of a template by name
-     *
-     * @param name The name of the template
-     * @return The template URI
-     */
-    public String getTemplateUri(Object instance, String name) {
-        return getGrailsAttributes(instance).getTemplateUri(name, getRequest(instance));
-    }
-
-    /**
-     * Obtains a URI of a view by name
-     *
-     * @param name The name of the view
-     * @return The template URI
-     */
-    public String getViewUri(Object instance, String name) {
-        return getGrailsAttributes(instance).getViewUri(name, getRequest(instance));
-    }
-
-    /**
-     * Obtains the chain model which is used to chain request attributes from one request to the next via flash scope
-     * @return The chainModel
-     */
-    public Map getChainModel(Object instance) {
-        return (Map)getFlash(instance).get("chainModel");
-    }
-
-    /**
      * Redirects for the given arguments.
      *
      * @param argMap The arguments
@@ -302,17 +242,6 @@ public class ControllersApi extends CommonWebApi {
             }
         }
         throw new CannotRedirectException("Cannot redirect for object ["+object+"] it is not a domain or has no identifier. Use an explicit redirect instead ");
-    }
-
-    /**
-     * Invokes the chain method for the given arguments
-     *
-     * @param instance The instance
-     * @param args The arguments
-     * @return Result of the redirect call
-     */
-    public Object chain(Object instance, Map args) {
-        return ChainMethod.invoke(instance, args);
     }
 
     // the render method
@@ -518,59 +447,6 @@ public class ControllersApi extends CommonWebApi {
         return null;
     }
 
-    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes) {
-        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), null);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes, String filter) {
-        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), filter);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude) {
-        return bindData(instance, target, bindingSource, includeExclude, null);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, String filter) {
-        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, filter);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource) {
-        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, null);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude, String filter) {
-        List include = convertToListIfString(includeExclude.get(INCLUDE_MAP_KEY));
-        List exclude = convertToListIfString(includeExclude.get(EXCLUDE_MAP_KEY));
-        DataBindingUtils.bindObjectToInstance(target, bindingSource, include, exclude, filter);
-        return target;
-    }
-
-    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, ServletRequest request) throws Exception {
-        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, request);
-    }
-
-    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
-        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
-    }
-
-    /**
-     * Sets a response header for the given name and value
-     *
-     * @param instance The instance
-     * @param headerName The header name
-     * @param headerValue The header value
-     */
-    public void header(Object instance, String headerName, Object headerValue) {
-        if (headerValue == null) {
-            return;
-        }
-
-        final HttpServletResponse response = getResponse(instance);
-        if (response != null) {
-            response.setHeader(headerName, headerValue.toString());
-        }
-    }
-
     /**
      * Used the synchronizer token pattern to avoid duplicate form submissions
      *
@@ -591,41 +467,6 @@ public class ControllersApi extends CommonWebApi {
      */
     public String forward(Object instance, Map params) {
         return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Method getExceptionHandlerMethodFor(final Object controllerInstance, final Class<? extends Exception> exceptionType) throws Exception {
-        if(!Exception.class.isAssignableFrom(exceptionType)) {
-            throw new IllegalArgumentException("exceptionType [" + exceptionType.getName() + "] argument must be Exception or a subclass of Exception");
-        }
-        Method handlerMethod = null;
-        final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = (List<ControllerExceptionHandlerMetaData>) GrailsClassUtils.getStaticFieldValue(controllerInstance.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME);
-        if(exceptionHandlerMetaDataInstances != null && exceptionHandlerMetaDataInstances.size() > 0) {
-
-            // find all of the handler methods which could accept this exception type
-            final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>) DefaultGroovyMethods.findAll(exceptionHandlerMetaDataInstances, new Closure(this) {
-                @Override
-                public Object call(Object object) {
-                    ControllerExceptionHandlerMetaData md = (ControllerExceptionHandlerMetaData) object;
-                    return md.getExceptionType().isAssignableFrom(exceptionType);
-                }
-            });
-
-            if(matches.size() > 0) {
-                ControllerExceptionHandlerMetaData theOne = matches.get(0);
-
-                // if there are more than 1, find the one that is farthest down the inheritance hierarchy
-                for(int i = 1; i < matches.size(); i++) {
-                    final ControllerExceptionHandlerMetaData nextMatch = matches.get(i);
-                    if(theOne.getExceptionType().isAssignableFrom(nextMatch.getExceptionType())) {
-                        theOne = nextMatch;
-                    }
-                }
-                handlerMethod = controllerInstance.getClass().getMethod(theOne.getMethodName(), theOne.getExceptionType());
-            }
-        }
-
-        return handlerMethod;
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -656,19 +497,6 @@ public class ControllersApi extends CommonWebApi {
         }
         return actionName;
     }
-
-
-    @SuppressWarnings("unchecked")
-    private List convertToListIfString(Object o) {
-        if (o instanceof String) {
-            List list = new ArrayList();
-            list.add(o);
-            o = list;
-        }
-        return (List) o;
-    }
-
-
 
     /**
      * getter to obtain RequestDataValueProcessor from

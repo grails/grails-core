@@ -88,17 +88,37 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
 
     protected void performTraitInjectionOnArtefactType(SourceUnit sourceUnit,
             ClassNode cNode, String artefactType) {
-        if(compilationUnit != null) {
-            GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
-            List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
-            List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
-            for(TraitInjector injector : traitInjectors) {
-                List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
-                if(artefactTypes.contains(artefactType)) {
-                    injectorsToUse.add(injector);
+        if (compilationUnit != null) {
+            try {
+                GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
+                List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
+                List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
+                for (TraitInjector injector : traitInjectors) {
+                    List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
+                    if (artefactTypes.contains(artefactType)) {
+                        injectorsToUse.add(injector);
+                    }
                 }
+                try {
+                    grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
+                } catch (RuntimeException e) {
+                    try {
+                        GrailsConsole.getInstance().error("Error occurred calling Trait injector: "
+                                        + e.getMessage(), e);
+                    } catch (Throwable t) {
+                        // ignore it
+                    }
+                    throw e;
+                }
+            } catch (Exception e) {
+                try {
+                    GrailsConsole.getInstance().error("Error occurred processing Trait injectors: "
+                                    + e.getMessage(), e);
+                } catch (Throwable t) {
+                    // ignore it
+                }
+                throw e;
             }
-            grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
         }
     }
 
