@@ -63,7 +63,6 @@ import grails.web.mapping.LinkGenerator;
 
 import grails.web.util.GrailsApplicationAttributes;
 
-import org.grails.plugins.web.controllers.metaclass.ChainMethod;
 import org.grails.plugins.web.controllers.metaclass.ForwardMethod;
 import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod;
 import org.grails.plugins.web.controllers.metaclass.WithFormMethod;
@@ -243,17 +242,6 @@ public class ControllersApi extends CommonWebApi {
             }
         }
         throw new CannotRedirectException("Cannot redirect for object ["+object+"] it is not a domain or has no identifier. Use an explicit redirect instead ");
-    }
-
-    /**
-     * Invokes the chain method for the given arguments
-     *
-     * @param instance The instance
-     * @param args The arguments
-     * @return Result of the redirect call
-     */
-    public Object chain(Object instance, Map args) {
-        return ChainMethod.invoke(instance, args);
     }
 
     // the render method
@@ -457,24 +445,6 @@ public class ControllersApi extends CommonWebApi {
         applySiteMeshLayout(webRequest.getCurrentRequest(), renderView, explicitSiteMeshLayout);
         webRequest.setRenderView(renderView);
         return null;
-    }
-
-    /**
-     * Sets a response header for the given name and value
-     *
-     * @param instance The instance
-     * @param headerName The header name
-     * @param headerValue The header value
-     */
-    public void header(Object instance, String headerName, Object headerValue) {
-        if (headerValue == null) {
-            return;
-        }
-
-        final HttpServletResponse response = getResponse(instance);
-        if (response != null) {
-            response.setHeader(headerName, headerValue.toString());
-        }
     }
 
     /**

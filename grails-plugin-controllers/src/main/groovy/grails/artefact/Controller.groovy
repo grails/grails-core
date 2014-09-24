@@ -35,6 +35,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.support.WebMetaUtils
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData
+import org.grails.plugins.web.controllers.metaclass.ChainMethod
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
@@ -349,5 +350,30 @@ trait Controller {
      */
     Map getChainModel() {
         getFlash().get("chainModel")
+    }
+    
+    /**
+     * Invokes the chain method for the given arguments
+     *
+     * @param args The arguments
+     * @return Result of the redirect call
+     */
+    def chain(Map args) {
+        ChainMethod.invoke this, args
+    }
+    
+    /**
+     * Sets a response header for the given name and value
+     *
+     * @param headerName The header name
+     * @param headerValue The header value
+     */
+    void header(String headerName, headerValue) {
+        if (headerValue != null) {
+            final HttpServletResponse response = getResponse()
+            if (response != null) {
+                response.setHeader headerName, headerValue.toString()
+            }
+        }
     }
 }
