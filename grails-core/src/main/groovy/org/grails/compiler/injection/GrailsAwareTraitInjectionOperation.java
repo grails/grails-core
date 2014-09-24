@@ -91,10 +91,10 @@ public class GrailsAwareTraitInjectionOperation extends
             ClassNode traitClassNode = ClassHelper.make(trait);
             if (!classNode.implementsInterface(traitClassNode)) {
                 classNode.addInterface(traitClassNode);
-                if(unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
-                    TraitComposer.doExtendTraits(classNode, source, unit);
-                }
             }
+        }
+        if(unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
+            TraitComposer.doExtendTraits(classNode, source, unit);
         }
     }
 
