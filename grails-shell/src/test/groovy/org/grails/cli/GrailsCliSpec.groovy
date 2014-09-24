@@ -3,6 +3,7 @@ package org.grails.cli
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
+import spock.lang.Shared
 import spock.lang.Specification
 
 class GrailsCliSpec extends Specification {
@@ -10,15 +11,18 @@ class GrailsCliSpec extends Specification {
     TemporaryFolder tempFolder = new TemporaryFolder()
     
     GrailsCli cli
-    String previousUserDir
+    @Shared String previousUserDir
     
     def setup() {
         cli = new GrailsCli()
-        previousUserDir = System.getProperty("user.dir")
         System.setProperty("user.dir", tempFolder.getRoot().getAbsolutePath())
     }
     
-    def cleanup() {
+    def setupSpec() {
+        previousUserDir = System.getProperty("user.dir")
+    }
+    
+    def cleanupSpec() {
         System.setProperty("user.dir", previousUserDir)
     }
 
