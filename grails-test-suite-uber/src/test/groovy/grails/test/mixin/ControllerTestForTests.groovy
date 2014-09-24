@@ -1,5 +1,7 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
+
 import org.junit.Test
 import org.springframework.web.servlet.support.RequestContextUtils
 
@@ -44,6 +46,7 @@ class ControllerTestForTests {
     }
 
 }
+@Artefact('Controller')
 class SimpleController {
     def index = {
         render "Hello"
