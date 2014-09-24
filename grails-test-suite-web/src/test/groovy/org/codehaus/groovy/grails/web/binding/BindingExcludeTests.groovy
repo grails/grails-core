@@ -1,7 +1,9 @@
 package org.codehaus.groovy.grails.web.binding
 
+import grails.artefact.Artefact
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+
 import org.junit.Test
 
 @TestFor(ExcludingController)
@@ -34,6 +36,7 @@ class BindingExcludeTests {
     }
 }
 
+@Artefact('Controller')
 class ExcludingController {
     def bind() {
         def p = new Person()

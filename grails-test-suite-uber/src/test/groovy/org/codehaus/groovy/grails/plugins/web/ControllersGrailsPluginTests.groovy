@@ -11,6 +11,7 @@ class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
 
     protected void onSetUp() {
         gcl.parseClass """
+@grails.artefact.Artefact('Controller')
 class TestController {
    def list = {}
 }
