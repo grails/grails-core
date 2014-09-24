@@ -5,6 +5,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.tooling.*
+import org.grails.io.support.DevNullPrintStream
 import org.grails.io.watch.DirectoryWatcher
 
 /**
@@ -29,6 +30,16 @@ class GrailsWatchPlugin implements Plugin<Project> {
                                                .forProjectDirectory( project.projectDir )
                                                .connect()
 
+            Thread.start {
+                // initialise the build in a background thread so as to make it quicker to run the first time
+                connection.newBuild()
+                          .setStandardOutput( new DevNullPrintStream() )
+                          .setStandardError( new DevNullPrintStream() )
+                          .withArguments('-q').run()
+            }
+
+
+
             List<String> tasks = []
             for(WatchConfig wc in watchConfigs) {
                 if(wc.directory && wc.extensions) {
@@ -36,6 +47,8 @@ class GrailsWatchPlugin implements Plugin<Project> {
                     tasks.addAll( wc.tasks )
                 }
             }
+
+            tasks = tasks.unique()
 
             directoryWatcher.addListener(new DirectoryWatcher.FileChangeListener() {
                 @Override

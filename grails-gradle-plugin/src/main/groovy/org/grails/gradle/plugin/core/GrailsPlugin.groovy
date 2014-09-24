@@ -41,10 +41,15 @@ class GrailsPlugin extends GroovyPlugin {
         if(environment.isReloadEnabled()) {
             new GrailsWatchPlugin().apply(project)
             NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
-            def watchConfig = watchConfigs.create("groovy")
-            watchConfig.directory = project.file("grails-app")
-            watchConfig.extensions = ['groovy', 'java']
-            watchConfig.tasks('compileGroovy')
+            def grailsConfig = watchConfigs.create("grailsApp")
+            grailsConfig.directory = project.file("grails-app")
+            grailsConfig.extensions = ['groovy', 'java']
+            grailsConfig.tasks('compileGroovy')
+
+            def groovyConfig = watchConfigs.create("groovyConfig")
+            groovyConfig.directory = project.file("src/main/groovy")
+            groovyConfig.extensions = ['groovy', 'java']
+            groovyConfig.tasks('compileGroovy')
 
             project.configurations {
                 agent

@@ -1,10 +1,12 @@
 package org.grails.boot.support
 
+import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import grails.plugins.DefaultGrailsPluginManager
 import grails.plugins.GrailsPluginManager
@@ -21,6 +23,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 
 /**
@@ -62,6 +65,10 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
         beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
+
+        if(Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)) {
+            GrailsSpringLoadedPlugin.register(pluginManager)
+        }
     }
 
     @Override

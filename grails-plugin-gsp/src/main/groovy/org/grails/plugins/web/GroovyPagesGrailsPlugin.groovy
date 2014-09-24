@@ -26,6 +26,7 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
+import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.plugins.web.taglib.*
@@ -306,7 +307,7 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
             }
         }
         // clear uri cache after changes
-        ctx.groovyPagesUriService.clear()
+        ctx.getBean('groovyPagesUriService',GroovyPagesUriService).clear()
     }
 
     def onConfigChange = { event ->
