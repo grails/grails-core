@@ -15,13 +15,16 @@
  */
 package grails.artefact
 
+import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
+import grails.util.CollectionUtils
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.web.databinding.DataBindingUtils
 
 import java.lang.reflect.Method
 
+import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -264,5 +267,42 @@ trait Controller {
         }
 
         handlerMethod
+    }
+    
+    def bindData(target, bindingSource, Map includeExclude) {
+        bindData target, bindingSource, includeExclude, null
+    }
+
+    def bindData(target, bindingSource, Map includeExclude, String filter) {
+        def include = includeExclude?.include
+        def exclude = includeExclude?.exclude
+        List includeList = include instanceof String ? [include] : include
+        List excludeList = exclude instanceof String ? [exclude] : exclude
+        DataBindingUtils.bindObjectToInstance target, bindingSource, includeList, excludeList, filter
+        this
+    }
+
+    def bindData(target, bindingSource) {
+        bindData target, bindingSource, Collections.EMPTY_MAP, null
+    }
+    
+    def bindData(target, bindingSource, String filter) {
+        bindData target, bindingSource, Collections.EMPTY_MAP, filter
+    }
+    
+    void bindData(Class targetType, Collection collectionToPopulate, CollectionDataBindingSource collectionBindingSource) {
+        DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
+    }
+
+    void bindData(Class targetType, Collection collectionToPopulate, ServletRequest request) {
+        DataBindingUtils.bindToCollection targetType, collectionToPopulate, request
+    }
+
+    def bindData(target, bindingSource, List excludes) {
+        bindData target, bindingSource, [exclude: excludes], null
+    }
+
+    def bindData(target, bindingSource, List excludes, String filter) {
+        bindData target, bindingSource, [exclude: excludes], filter
     }
 }

@@ -18,7 +18,6 @@ package org.grails.plugins.web.controllers.api;
 import grails.async.Promise;
 import grails.converters.JSON;
 import grails.core.GrailsControllerClass;
-import grails.databinding.CollectionDataBindingSource;
 import grails.io.IOUtils;
 import grails.util.*;
 import grails.web.JSONBuilder;
@@ -29,14 +28,11 @@ import grails.web.mime.MimeUtility;
 import groovy.lang.*;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,7 +58,6 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsDomainClassProperty;
 
 import grails.plugins.GrailsPluginManager;
-import grails.web.databinding.DataBindingUtils;
 
 import grails.web.mapping.LinkGenerator;
 
@@ -104,9 +99,6 @@ import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*
  */
 @SuppressWarnings("rawtypes")
 public class ControllersApi extends CommonWebApi {
-
-    private static final String INCLUDE_MAP_KEY = "include";
-    private static final String EXCLUDE_MAP_KEY = "exclude";
 
     private static final long serialVersionUID = 1;
 
@@ -513,41 +505,6 @@ public class ControllersApi extends CommonWebApi {
         return null;
     }
 
-    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes) {
-        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), null);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes, String filter) {
-        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), filter);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude) {
-        return bindData(instance, target, bindingSource, includeExclude, null);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, String filter) {
-        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, filter);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource) {
-        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, null);
-    }
-
-    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude, String filter) {
-        List include = convertToListIfString(includeExclude.get(INCLUDE_MAP_KEY));
-        List exclude = convertToListIfString(includeExclude.get(EXCLUDE_MAP_KEY));
-        DataBindingUtils.bindObjectToInstance(target, bindingSource, include, exclude, filter);
-        return target;
-    }
-
-    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, ServletRequest request) throws Exception {
-        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, request);
-    }
-
-    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
-        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
-    }
-
     /**
      * Sets a response header for the given name and value
      *
@@ -616,19 +573,6 @@ public class ControllersApi extends CommonWebApi {
         }
         return actionName;
     }
-
-
-    @SuppressWarnings("unchecked")
-    private List convertToListIfString(Object o) {
-        if (o instanceof String) {
-            List list = new ArrayList();
-            list.add(o);
-            o = list;
-        }
-        return (List) o;
-    }
-
-
 
     /**
      * getter to obtain RequestDataValueProcessor from
