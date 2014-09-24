@@ -3,12 +3,16 @@ package org.grails.cli
 import java.lang.reflect.Field
 
 import jnr.posix.POSIXFactory
+import net.sf.expectit.Expect
+import net.sf.expectit.ExpectBuilder
 
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
 import spock.lang.Shared
 import spock.lang.Specification
+
+import static net.sf.expectit.matcher.Matchers.*
 
 class GrailsCliSpec extends Specification {
     @Rule
@@ -19,7 +23,7 @@ class GrailsCliSpec extends Specification {
     @Shared Map originalStreams
     
     def setup() {
-        cli = new GrailsCli()
+        cli = new GrailsCli(ansiEnabled: false)
         chdir(tempFolder.getRoot())
     }
 
@@ -46,6 +50,7 @@ class GrailsCliSpec extends Specification {
         originalStreams = [out: System.out, in: System.in, err: System.err]
         previousUserDir = new File("").absoluteFile
         disableFileCanonCaches()
+        System.setProperty("jansi.passthrough", "true")
     }
     
     def cleanupSpec() {
@@ -64,18 +69,59 @@ class GrailsCliSpec extends Specification {
     }    
 
     private File createApp() {
-        cli.run('create-app','newapp','--profile=web')
+        cli.execute('create-app','newapp','--profile=web')
         File appdir = new File(tempFolder.getRoot(), 'newapp')
         return appdir
     }
     
-    def "should start interactive mode"() {
+    def "should start and exit interactive mode"() {
         when:
         File appdir = createApp()
         assert new File(appdir, "application.properties").exists()
         chdir(appdir)
-        int retval = cli.run()
+        int retval = -1
+        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
+        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
+        cliThread.start()
+        Expect expect = expectBuilder.build()
+        expect.sendLine("help")
+        def grailsPrompt = ~/.+/
+        expect.expect(matches(grailsPrompt))
+        expect.sendLine("exit")
+        expect.close()
+        cliThread.join()
         then:
         retval == 0
+    }
+    
+    def "should provide help in interactive mode"() {
+        when:
+        File appdir = createApp()
+        assert new File(appdir, "application.properties").exists()
+        chdir(appdir)
+        int retval = -1
+        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
+        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
+        cliThread.start()
+        Expect expect = expectBuilder.build()
+        expect.sendLine("help")
+        expect.sendLine("exit")
+        expect.close()
+        cliThread.join()
+        then:
+        retval == 0
+    }
+
+    private ExpectBuilder createExpectsBuilderWithSystemInOut() {
+        PipedInputStream emulatedSystemIn = new PipedInputStream()
+        PipedOutputStream commandsOutput = new PipedOutputStream(emulatedSystemIn)
+        System.setIn(emulatedSystemIn)
+
+        PipedInputStream systemOutInput = new PipedInputStream()
+        PrintStream emulatedSystemOut = new PrintStream(new PipedOutputStream(systemOutInput), true)
+        System.setOut(emulatedSystemOut)
+        System.setErr(emulatedSystemOut)
+
+        new ExpectBuilder().withInputs(systemOutInput).withOutput(commandsOutput)
     }
 }
