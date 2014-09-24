@@ -9,5 +9,17 @@ dependencies {
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile "jline:jline:$jlineVersion"
     compile 'org.yaml:snakeyaml:1.14'
+
+    testCompile "net.sf.expectit:expectit-core:0.5.0"
+    testCompile "com.github.jnr:jnr-posix:3.0.6"
 }
 
+eclipse {
+    classpath {
+       file {
+           whenMerged { classpath ->
+                classpath.entries.find { entry -> entry.kind == 'src' && entry.path == "src/test/resources" }?.excludes=["profiles-repository/**"]
+           }
+       }
+    }
+}

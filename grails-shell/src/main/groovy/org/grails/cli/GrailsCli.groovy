@@ -15,14 +15,16 @@ class GrailsCli {
     List<CommandLineHandler> commandLineHandlers=[]
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
+    boolean keepRunning = true
     
-    public void run(String... args) {
+    public int run(String... args) {
         ProfileRepository profileRepository=new ProfileRepository()
         File applicationProperties=new File("application.properties")
         if(!applicationProperties.exists()) {
+            print "not exists..."
             if(!args) {
                 println "usage: create-app appname --profile=web"
-                System.exit(1)
+                return 1
             }
             if(args[0] == 'create-app') {
                 String appname = args[1]
@@ -51,38 +53,19 @@ class GrailsCli {
                 GrailsConsole console=GrailsConsole.getInstance()
                 console.reader.addCompleter(aggregateCompleter)
                 console.println("Starting interactive mode...")
-                while(true) {
+                while(keepRunning) {
                     String commandLine = console.showPrompt()
-                    handleCommand(cliParser.parse(commandLine), console)
+                    handleCommand(cliParser.parseString(commandLine), console)
                 }
             }
         }
+        return 0
     }
     
     boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        if(commandLine.getCommandName()=='help') {
-            List<CommandDescription> allCommands=findAllCommands()
-            String remainingArgs = commandLine.getRemainingArgsString()
-            if(remainingArgs?.trim()) {
-                CommandLine remainingArgsCommand = cliParser.parse(remainingArgs) 
-                String helpCommandName = remainingArgsCommand.getCommandName()
-                for (CommandDescription desc : allCommands) {
-                    if(desc.name == helpCommandName) {
-                        console.println "${desc.name}\t${desc.description}\n${desc.usage}"
-                        return true
-                    }
-                }
-                console.error "Help for command $helpCommandName not found"
-                return false
-            } else {
-                for (CommandDescription desc : allCommands) {
-                    console.println "${desc.name}\t${desc.description}"
-                }
-                console.println("detailed usage with help [command]")
-                return true
-            }
-            return false
-        }        
+        if(handleBuiltInCommands(commandLine, console)) {
+            return true
+        }
         for(CommandLineHandler handler : commandLineHandlers) {
              if(handler.handleCommand(commandLine, console)) {
                  return true
@@ -90,6 +73,42 @@ class GrailsCli {
         }
         console.error("Command not found ${commandLine.commandName}")
         return false
+    }
+
+    private boolean handleBuiltInCommands(CommandLine commandLine, GrailsConsole console) {
+        switch(commandLine.getCommandName()) {
+            case 'help':
+                List<CommandDescription> allCommands=findAllCommands()
+                String remainingArgs = commandLine.getRemainingArgsString()
+                if(remainingArgs?.trim()) {
+                    CommandLine remainingArgsCommand = cliParser.parseString(remainingArgs)
+                    String helpCommandName = remainingArgsCommand.getCommandName()
+                    for (CommandDescription desc : allCommands) {
+                        if(desc.name == helpCommandName) {
+                            console.println "${desc.name}\t${desc.description}\n${desc.usage}"
+                            return true
+                        }
+                    }
+                    console.error "Help for command $helpCommandName not found"
+                    return false
+                } else {
+                    for (CommandDescription desc : allCommands) {
+                        console.println "${desc.name}\t${desc.description}"
+                    }
+                    console.println("detailed usage with help [command]")
+                    return true
+                }
+                break
+            case 'exit':
+                exitInteractiveMode()
+                return true
+                break
+        }
+        return false
+    }
+    
+    private void exitInteractiveMode() {
+        keepRunning = false
     }
 
     private List<CommandDescription> findAllCommands() {
@@ -102,6 +121,6 @@ class GrailsCli {
     
     public static void main(String[] args) {
         GrailsCli cli=new GrailsCli()
-        cli.run(args)
+        System.exit(cli.run(args))
     }
 }
