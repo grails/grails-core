@@ -216,7 +216,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
             Parameter parameterType = parameterTypes[i];
             ClassNode parameterTypeCN = parameterType.getType();
             ClassNode newParameterTypeCN = parameterTypeCN.getPlainNodeReference();
-            if(parameterTypeCN.isUsingGenerics()) {
+            if(parameterTypeCN.isUsingGenerics() && !parameterTypeCN.isGenericsPlaceHolder()) {
                 newParameterTypeCN.setGenericsTypes(parameterTypeCN.getGenericsTypes());
             }
             Parameter newParameter = new Parameter(newParameterTypeCN, parameterType.getName(), parameterType.getInitialExpression());

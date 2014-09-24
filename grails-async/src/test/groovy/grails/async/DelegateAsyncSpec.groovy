@@ -77,6 +77,11 @@ class MathService {
     void calculate() {
         // no-op
     }
+    
+    // having this method here makes sure that the
+    // transformation can deal with copying parameters
+    // that are generics placeholders
+    public <T> void someMethod(T arg) {}
 }
 @DelegateAsync(MathService)
 class AsyncMathService {}
