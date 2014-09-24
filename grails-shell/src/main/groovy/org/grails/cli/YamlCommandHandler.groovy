@@ -17,7 +17,7 @@ class YamlCommandHandler implements CommandLineHandler {
             def yamlContent = file.withReader { 
                 yaml.load(it)
             }
-            def commandName = file.name - /\.yml$/
+            def commandName = file.name - ~/\.yml$/
             [commandName, new YamlCommand(name: commandName, file: file, yamlContent: yamlContent, profile: profile)]
         }
         commandDescriptions = commands.collect { String name, YamlCommand cmd ->
