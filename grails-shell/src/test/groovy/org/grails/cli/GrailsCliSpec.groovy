@@ -105,6 +105,21 @@ class GrailsCliSpec extends Specification {
         return appdir
     }
     
+    private int executeInInteractiveMode(Closure closure) {
+        File appdir = createApp()
+        chdir(appdir)
+        int retval = -1
+        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
+        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
+        cliThread.start()
+        Expect expect = expectBuilder.build()
+        closure.call(expect)
+        expect.sendLine("exit")
+        expect.close()
+        cliThread.join()
+        retval
+    }
+    
     def "should create new application"() {
         when:
         File appdir = createApp()
@@ -115,38 +130,22 @@ class GrailsCliSpec extends Specification {
 
     def "should start and exit interactive mode"() {
         when:
-        File appdir = createApp()
-        assert new File(appdir, "application.properties").exists()
-        chdir(appdir)
-        int retval = -1
-        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
-        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
-        cliThread.start()
-        Expect expect = expectBuilder.build()
-        expectPrompt(expect)
-        expect.sendLine("exit")
-        expect.close()
-        cliThread.join()
+        def helpContent
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+        }        
         then:
         retval == 0
     }
     
     def "should provide help for all commands in interactive mode"() {
         when:
-        File appdir = createApp()
-        assert new File(appdir, "application.properties").exists()
-        chdir(appdir)
-        int retval = -1
-        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
-        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
-        cliThread.start()
-        Expect expect = expectBuilder.build()
-        expectPrompt(expect)
-        expect.sendLine("help")
-        def helpContent = expectPrompt(expect).before
-        expect.sendLine("exit")
-        expect.close()
-        cliThread.join()
+        def helpContent
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("help")
+            helpContent = expectPrompt(expect).before
+        }        
         then:
         retval == 0
         helpContent == '''create-controller\tCreates a controller
@@ -159,20 +158,12 @@ detailed usage with help [command]
     
     def "should provide detailed help commands in interactive mode"() {
         when:
-        File appdir = createApp()
-        assert new File(appdir, "application.properties").exists()
-        chdir(appdir)
-        int retval = -1
-        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
-        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
-        cliThread.start()
-        Expect expect = expectBuilder.build()
-        expectPrompt(expect)
-        expect.sendLine("help create-controller")
-        def helpContent = expectPrompt(expect).before
-        expect.sendLine("exit")
-        expect.close()
-        cliThread.join()
+        def helpContent
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("help create-controller")
+            helpContent = expectPrompt(expect).before
+        }        
         then:
         retval == 0
         helpContent == '''create-controller\tCreates a controller
@@ -180,4 +171,5 @@ create-controller [controller name]
 Creates a controller class and an associated unit test
 '''
     }
+    
 }
