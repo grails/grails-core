@@ -29,7 +29,7 @@ import java.io.PrintStream;
 public class GrailsConsoleErrorPrintStream extends PrintStream {
 
     public GrailsConsoleErrorPrintStream(OutputStream out) {
-        super(out);
+        super(out, true);
     }
 
     public OutputStream getTargetOut() {
