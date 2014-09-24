@@ -36,9 +36,9 @@ class DomainClassCollectionRenderingSpec extends Specification {
             renderer.render(undertow, new ServletRenderContext(webRequest, [includes:['title', 'companies']]))
 
         then: 'all of the nested elements have fully qualified class names'
-            webRequest.response.contentAsString.contains  '"class":"org.codehaus.groovy.grails.web.json.Company","id":1'
-            webRequest.response.contentAsString.contains  '"class":"org.codehaus.groovy.grails.web.json.Album","id":1'
-            webRequest.response.contentAsString.contains  '"class":"org.codehaus.groovy.grails.web.json.Album","id":2'
+            webRequest.response.contentAsString.contains  '"class":"org.grails.web.json.Company","id":1'
+            webRequest.response.contentAsString.contains  '"class":"org.grails.web.json.Album","id":1'
+            webRequest.response.contentAsString.contains  '"class":"org.grails.web.json.Album","id":2'
     }
 }
 

@@ -12,7 +12,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver
 
 class GrailsPluginManagerTests extends AbstractGrailsMockTests {
 
-    private static final String RESOURCE_PATH = "classpath:org/codehaus/groovy/grails/plugins/ClassEditorGrailsPlugin.groovy"
+    private static final String RESOURCE_PATH = "classpath:org/grails/plugins/ClassEditorGrailsPlugin.groovy"
 
     protected void onSetUp() {
         super.onSetUp()

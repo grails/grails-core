@@ -65,7 +65,7 @@ class JsonBindingSpec extends Specification {
         person.errors.allErrors[0].defaultMessage == 'An error occurred parsing the body of the request'
         person.errors.allErrors[0].code == 'invalidRequestBody'
         'invalidRequestBody' in person.errors.allErrors[0].codes
-        'org.codehaus.groovy.grails.web.binding.json.Person.invalidRequestBody' in person.errors.allErrors[0].codes
+        'org.grails.web.binding.json.Person.invalidRequestBody' in person.errors.allErrors[0].codes
     }
 
     void 'Test parsing JSON with other than UTF-8 content type'() {

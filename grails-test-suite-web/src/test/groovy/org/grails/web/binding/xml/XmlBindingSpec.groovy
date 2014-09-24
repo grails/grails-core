@@ -54,7 +54,7 @@ class XmlBindingSpec extends Specification {
         person.errors.allErrors[0].defaultMessage == 'An error occurred parsing the body of the request'
         person.errors.allErrors[0].code == 'invalidRequestBody'
         'invalidRequestBody' in person.errors.allErrors[0].codes
-        'org.codehaus.groovy.grails.web.binding.xml.Person.invalidRequestBody' in person.errors.allErrors[0].codes
+        'org.grails.web.binding.xml.Person.invalidRequestBody' in person.errors.allErrors[0].codes
     }
     
     @Issue('GRAILS-11576')

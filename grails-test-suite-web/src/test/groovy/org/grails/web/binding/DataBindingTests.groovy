@@ -120,7 +120,7 @@ class DataBindingTests  {
 
         assert myBean.someIntProperty == null
         assert fieldError.rejectedValue == 'bad integer'
-        assert fieldError.objectName == 'org.codehaus.groovy.grails.web.binding.MyBean'
+        assert fieldError.objectName == 'org.grails.web.binding.MyBean'
     }
 
     @Test

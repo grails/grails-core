@@ -20,7 +20,7 @@ import org.springframework.core.io.DefaultResourceLoader
 
 class ConfigurationHelperTests extends GroovyTestCase {
 
-    def PACKAGE_PATH = "org/codehaus/groovy/grails/commons/cfg"
+    def PACKAGE_PATH = "org/grails/commons/cfg"
 
     void testLoadingExternalConfig() {
         def config = initConfig {
