@@ -120,7 +120,7 @@ public class GrailsConfig implements Settings{
     }
 
     /**
-     * Configuration Value lookup with thows a GrailsConfigurationException when the value is null
+     * Configuration Value lookup with throws a GrailsConfigurationException when the value is null
      *
      * @param key the flattened key
      * @param <T> the type parameter
@@ -138,7 +138,7 @@ public class GrailsConfig implements Settings{
     }
 
     /**
-     * Configuration Value lookup with thows a GrailsConfigurationException when the value is null
+     * Configuration Value lookup with throws a GrailsConfigurationException when the value is null
      * or not within the allowedValues.
      *
      * @param key           the flattened key
