@@ -104,7 +104,6 @@ public class ControllersApi extends CommonWebApi {
 
     protected static final String RENDER_METHOD_NAME = "render";
     protected static final String BIND_DATA_METHOD = "bindData";
-    protected static final String SLASH = "/";
     protected transient RenderDynamicMethod render;
     protected transient WithFormMethod withFormMethod;
     protected transient ForwardMethod forwardMethod;
@@ -173,51 +172,6 @@ public class ControllersApi extends CommonWebApi {
                 webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(className, ControllerArtefactHandler.TYPE));
             }
         }
-    }
-
-    /**
-     * Returns the URI of the currently executing action
-     *
-     * @return The action URI
-     */
-    public String getActionUri(Object instance) {
-        return SLASH + getControllerName(instance) + SLASH + getActionName(instance);
-    }
-
-    /**
-     * Returns the URI of the currently executing controller
-     * @return The controller URI
-     */
-    public String getControllerUri(Object instance) {
-        return SLASH + getControllerName(instance);
-    }
-
-    /**
-     * Obtains a URI of a template by name
-     *
-     * @param name The name of the template
-     * @return The template URI
-     */
-    public String getTemplateUri(Object instance, String name) {
-        return getGrailsAttributes(instance).getTemplateUri(name, getRequest(instance));
-    }
-
-    /**
-     * Obtains a URI of a view by name
-     *
-     * @param name The name of the view
-     * @return The template URI
-     */
-    public String getViewUri(Object instance, String name) {
-        return getGrailsAttributes(instance).getViewUri(name, getRequest(instance));
-    }
-
-    /**
-     * Obtains the chain model which is used to chain request attributes from one request to the next via flash scope
-     * @return The chainModel
-     */
-    public Map getChainModel(Object instance) {
-        return (Map)getFlash(instance).get("chainModel");
     }
 
     /**

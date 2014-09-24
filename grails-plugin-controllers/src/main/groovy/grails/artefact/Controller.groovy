@@ -52,7 +52,7 @@ import org.springframework.web.servlet.ModelAndView
  *
  */
 trait Controller {
-
+    
     /**
      * Return true if there are an errors
      * @return true if there are errors
@@ -304,5 +304,50 @@ trait Controller {
 
     def bindData(target, bindingSource, List excludes, String filter) {
         bindData target, bindingSource, [exclude: excludes], filter
+    }
+    
+    /**
+     * Returns the URI of the currently executing action
+     *
+     * @return The action URI
+     */
+    String getActionUri() {
+        "/${getControllerName()}/${getActionName()}"
+    }
+
+    /**
+     * Returns the URI of the currently executing controller
+     * @return The controller URI
+     */
+    String getControllerUri() {
+        "/${getControllerName()}"
+    }
+
+    /**
+     * Obtains a URI of a template by name
+     *
+     * @param name The name of the template
+     * @return The template URI
+     */
+    String getTemplateUri(String name) {
+        getGrailsAttributes().getTemplateUri(name, getRequest())
+    }
+
+    /**
+     * Obtains a URI of a view by name
+     *
+     * @param name The name of the view
+     * @return The template URI
+     */
+    String getViewUri(String name) {
+        getGrailsAttributes().getViewUri(name, getRequest())
+    }
+
+    /**
+     * Obtains the chain model which is used to chain request attributes from one request to the next via flash scope
+     * @return The chainModel
+     */
+    Map getChainModel() {
+        getFlash().get("chainModel")
     }
 }
