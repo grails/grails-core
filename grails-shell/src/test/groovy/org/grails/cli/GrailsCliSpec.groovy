@@ -156,4 +156,28 @@ create-taglib\tCreates a tag library
 detailed usage with help [command]
 '''
     }
+    
+    def "should provide detailed help commands in interactive mode"() {
+        when:
+        File appdir = createApp()
+        assert new File(appdir, "application.properties").exists()
+        chdir(appdir)
+        int retval = -1
+        ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
+        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
+        cliThread.start()
+        Expect expect = expectBuilder.build()
+        expectPrompt(expect)
+        expect.sendLine("help create-controller")
+        def helpContent = expectPrompt(expect).before
+        expect.sendLine("exit")
+        expect.close()
+        cliThread.join()
+        then:
+        retval == 0
+        helpContent == '''create-controller\tCreates a controller
+create-controller [controller name]
+Creates a controller class and an associated unit test
+'''
+    }
 }
