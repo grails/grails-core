@@ -80,7 +80,8 @@ public class GrailsConsole {
     private final PrintStream originalSystemErr;
     private StringBuilder maxIndicatorString;
     private int cursorMove;
-
+    private Thread shutdownHookThread;
+    
     /**
      * Whether to enable verbose mode
      */
@@ -137,6 +138,25 @@ public class GrailsConsole {
      */
     private boolean userInputActive;
 
+    public void addShutdownHook() {
+        if( !Environment.isFork() ) {
+            shutdownHookThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    beforeShutdown();
+                }
+            });
+            Runtime.getRuntime().addShutdownHook(shutdownHookThread);
+        }
+    }
+    
+    public void removeShutdownHook() {
+        if(shutdownHookThread != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHookThread);
+        }
+    }
+    
+    
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
         originalSystemOut = System.out;
@@ -258,20 +278,21 @@ public class GrailsConsole {
         if (instance == null) {
             try {
                 final GrailsConsole console = createInstance();
+                console.addShutdownHook();
                 setInstance(console);
-                if( !Environment.isFork() ) {
-                    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            console.beforeShutdown();
-                        }
-                    }));
-                }
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
         }
         return instance;
+    }
+    
+    public static synchronized void removeInstance() {
+        if (instance != null) {
+            instance.removeShutdownHook();
+            instance.restoreOriginalSystemOutAndErr();
+            instance = null;
+        }
     }
 
     public void beforeShutdown() {
@@ -687,6 +708,7 @@ public class GrailsConsole {
      * @param msg The message to log
      */
     private boolean appendCalled = false;
+
     public void append(String msg) {
         verifySystemOut();
         PrintStream printStream = out;
@@ -936,6 +958,11 @@ public class GrailsConsole {
         if (!(System.err instanceof GrailsConsoleErrorPrintStream)) {
             System.setErr(new GrailsConsoleErrorPrintStream(originalSystemErr));
         }
+    }
+    
+    public void restoreOriginalSystemOutAndErr() {
+        System.setOut(originalSystemOut);
+        System.setErr(originalSystemErr);
     }
 
     public void flush() {
