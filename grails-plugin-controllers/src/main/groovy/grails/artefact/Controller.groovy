@@ -59,8 +59,7 @@ trait Controller {
      * @return true if there are errors
      */
     boolean hasErrors() {
-        final Errors errors = getErrors();
-        return errors != null && errors.hasErrors();
+        getErrors()?.hasErrors()
     }
 
     /**
@@ -69,7 +68,7 @@ trait Controller {
      * @param errors The error instance
      */
     void setErrors(Errors errors) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0)
     }
 
     /**
@@ -78,7 +77,7 @@ trait Controller {
      * @return The Errors instance
      */
     Errors getErrors() {
-        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0);
+        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
     }
 
 
@@ -88,7 +87,7 @@ trait Controller {
      * @return The ModelAndView
      */
     ModelAndView getModelAndView() {
-        return (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
     }
 
     /**
@@ -97,11 +96,11 @@ trait Controller {
      * @param mav The ModelAndView
      */
     void setModelAndView(ModelAndView mav) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0);
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
     }
 
     GrailsWebRequest currentRequestAttributes() {
-        return (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        RequestContextHolder.currentRequestAttributes()
     }
 
     /**
@@ -119,7 +118,7 @@ trait Controller {
      * @return the initialized command object or null if the command object is a domain class, the body or
      * parameters included an id and no corresponding record was found in the database.
      */
-    public Object initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
+    def initializeCommandObject(final Class type, final String commandObjectParameterName) throws Exception {
         final HttpServletRequest request = getRequest()
         def commandObjectInstance = null
 
@@ -131,7 +130,7 @@ trait Controller {
             final DataBindingSource commandObjectBindingSource = WebMetaUtils
                     .getCommandObjectBindingSourceForPrefix(
                             commandObjectParameterName, dataBindingSource)
-            Object entityIdentifierValue = null
+            def entityIdentifierValue = null
             final boolean isDomainClass = DomainClassArtefactHandler
                     .isDomainClass(type)
             if (isDomainClass) {
@@ -140,8 +139,7 @@ trait Controller {
                 if (entityIdentifierValue == null) {
                     final GrailsWebRequest webRequest = GrailsWebRequest
                             .lookup(request)
-                    entityIdentifierValue = webRequest != null ? webRequest
-                            .getParams().getIdentifier() : null
+                    entityIdentifierValue = webRequest?.getParams().getIdentifier()
                 }
             }
             if (entityIdentifierValue instanceof String) {
@@ -180,7 +178,7 @@ trait Controller {
                     case HttpMethod.POST:
                     case HttpMethod.PUT:
                         shouldDoDataBinding = true
-                        break;
+                        break
                     default:
                         shouldDoDataBinding = false
                     }
@@ -198,7 +196,7 @@ trait Controller {
                 throw e
             }            
             commandObjectInstance = type.newInstance()
-            final Object o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
+            final o = GrailsMetaClassUtils.invokeMethodIfExists(commandObjectInstance, "getErrors")
             if(o instanceof BindingResult) {
                 final BindingResult errors = (BindingResult)o
                 String msg = "Error occurred initializing command object [" + commandObjectParameterName + "]. " + e.getMessage()
@@ -371,9 +369,7 @@ trait Controller {
     void header(String headerName, headerValue) {
         if (headerValue != null) {
             final HttpServletResponse response = getResponse()
-            if (response != null) {
-                response.setHeader headerName, headerValue.toString()
-            }
+            response?.setHeader headerName, headerValue.toString()
         }
     }
 }
