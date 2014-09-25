@@ -24,3 +24,9 @@ eclipse {
        }
     }
 }
+
+test {
+    // jline doesn't use jline.terminal system property when TERM is dumb so use different TERM value for tests
+    // https://github.com/jline/jline2/blob/6a1b6bf/src/main/java/jline/TerminalFactory.java#L54-L57
+    environment 'TERM', 'xterm'
+}
