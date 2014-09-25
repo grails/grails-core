@@ -19,22 +19,51 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
 
         project.dependencies {
-            gspCompile "org.grails:grails-web-gsp:3.0.0.BUILD-SNAPSHOT"
             gspCompile 'javax.servlet:javax.servlet-api:3.1.0'
         }
 
         def compileGroovyPages = project.tasks.create("compileGroovyPages") << {
             def antBuilder = project.services.get(IsolatedAntBuilder)
 
-            antBuilder.withClasspath(project.configurations.gspCompile).execute {
+            antBuilder.withClasspath(project.configurations.compile).execute {
                 taskdef (name: 'gspc', classname : 'org.grails.web.pages.GroovyPageCompilerTask')
-                gspc(destdir:new File(project.buildDir, "classes/main"),
+                def dest = new File(project.buildDir, "classes/main")
+                def tmpdir = new File(project.buildDir, "gsptmp")
+                dest.mkdirs()
+
+                gspc(destdir: dest,
                     srcdir:"${project.projectDir}/grails-app/views",
                     packagename: project.name,
                     serverpath:"/WEB-INF/grails-app/views/",
-                    tmpdir: new File(project.buildDir, "gsptemp")) {
+                    tmpdir: tmpdir) {
                     classpath {
                         pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
+                    }
+                }
+
+                def webAppDir = new File(project.projectDir, "web-app")
+                if(webAppDir.exists()) {
+                    gspc(destdir: dest,
+                            srcdir:webAppDir,
+                            packagename: project.name,
+                            serverpath:"/",
+                            tmpdir: tmpdir) {
+                        classpath {
+                            pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
+                        }
+                    }
+                }
+
+                def groovyTemplatesDir = new File(project.projectDir, "src/main/templates")
+                if(groovyTemplatesDir.exists()) {
+                    gspc(destdir: dest,
+                            srcdir:groovyTemplatesDir,
+                            packagename: project.name,
+                            serverpath:"/",
+                            tmpdir: tmpdir) {
+                        classpath {
+                            pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
+                        }
                     }
                 }
             }
