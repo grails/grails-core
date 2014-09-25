@@ -32,7 +32,7 @@ class GrailsCliSpec extends Specification {
     
     def setup() {
         GrailsConsole.removeInstance()
-        cli = new GrailsCli(ansiEnabled: false)
+        cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0)
         chdir(tempFolder.getRoot())
     }
 
@@ -41,7 +41,7 @@ class GrailsCliSpec extends Specification {
         previousUserDir = new File("").absoluteFile
         disableFileCanonCaches()
         System.setProperty("jansi.passthrough", "true")
-        System.setProperty("jline.terminal", "jline.UnsupportedTerminal")
+        System.setProperty("jline.terminal", TestTerminal.name)
     }
     
     def cleanup() {
@@ -115,6 +115,7 @@ class GrailsCliSpec extends Specification {
         cliThread.start()
         Expect expect = expectBuilder.build()
         closure.call(expect)
+        expect.send("\340\000") // Operation.KILL_WHOLE_LINE
         expect.sendLine("exit")
         expect.close()
         cliThread.join()
@@ -162,7 +163,8 @@ class GrailsCliSpec extends Specification {
         }        
         then:
         retval == 0
-        helpContent == '''create-controller\tCreates a controller
+        helpContent == '''
+create-controller\tCreates a controller
 create-domain\tCreates a domain class
 create-service\tCreates a service
 create-taglib\tCreates a tag library
@@ -180,7 +182,8 @@ detailed usage with help [command]
         }        
         then:
         retval == 0
-        helpContent == '''create-controller\tCreates a controller
+        helpContent == '''
+create-controller\tCreates a controller
 create-controller [controller name]
 Creates a controller class and an associated unit test
 '''
@@ -196,7 +199,8 @@ Creates a controller class and an associated unit test
         }
         then:
         retval == 0
-        message == '''Error |
+        message == '''
+Error |
 Expecting an argument to create-controller.
 create-controller [controller name]
 Creates a controller class and an associated unit test
@@ -218,4 +222,42 @@ Creates a controller class and an associated unit test
 '''
     }
     
+    
+    def "should complete available commands up to longest match"() {
+        when:
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.send("cr")
+            sleep(500)
+            expect.send("\t")
+            sleep(100)
+            message = expect.expect(anyString()).group()
+        }
+        then:
+        retval == 0
+        message == '''  
+
+create-controller   create-domain       create-service      create-taglib       
+grails> create-'''
+    }
+    
+    @Ignore
+    def "should complete commands fully if only match"() {
+        when:
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.send("create-c")
+            sleep(500)
+            expect.send("\t")
+            sleep(100)
+            message = expect.expect(anyString()).group()
+        }
+        then:
+        retval == 0
+        message == '''
+
+grails> create-controller '''
+    }
 }
