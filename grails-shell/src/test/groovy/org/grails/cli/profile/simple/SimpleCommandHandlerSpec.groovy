@@ -4,8 +4,8 @@ import org.grails.cli.profile.CommandDescription
 
 import spock.lang.Specification
 
-class YamlCommandHandlerSpec extends Specification {
-    YamlCommandHandler commandHandler
+class SimpleCommandHandlerSpec extends Specification {
+    SimpleCommandHandler commandHandler
     
     def setup() {
         def profile = new SimpleProfile('web', new File('src/test/resources/profiles-repository/profiles/web'))

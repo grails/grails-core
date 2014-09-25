@@ -30,7 +30,7 @@ class SimpleProfile implements Profile {
             Collection<File> yamlFiles = commandsDir.listFiles().findAll { File file ->
                 file.isFile() && file.name ==~ /^.*\.yml$/ 
             }.sort(false) { File file -> file.name }
-            YamlCommandHandler commandHandler = new YamlCommandHandler(commandFiles: yamlFiles, profile: this)
+            SimpleCommandHandler commandHandler = new SimpleCommandHandler(commandFiles: yamlFiles, profile: this)
             commandHandler.initialize()
             commandLineHandlers << commandHandler
         }
