@@ -1,0 +1,16 @@
+{
+    "description": "Creates a service",
+    "usage": "create-service [service name]\nCreates a service class and an associated unit test\n",
+    "steps": [
+        {
+            "command": "render",
+            "template": "templates/artifacts/Service.groovy",
+            "destination": "grails-app/services/@artifact.package.path@/@artifact.name@.groovy"
+        },
+        {
+            "command": "render",
+            "template": "templates/testing/Service.groovy",
+            "destination": "src/test/groovy/@artifact.package.path@/@artifact.name@Spec.groovy"
+        }
+    ]
+}
