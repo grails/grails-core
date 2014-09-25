@@ -1,7 +1,7 @@
 package org.grails.cli
 
 import static net.sf.expectit.matcher.Matchers.*
-import grails.build.logging.GrailsConsole;
+import grails.build.logging.GrailsConsole
 
 import java.lang.reflect.Field
 import java.util.concurrent.TimeUnit
@@ -15,6 +15,7 @@ import org.codehaus.groovy.runtime.InvokerHelper
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -94,7 +95,7 @@ class GrailsCliSpec extends Specification {
         System.setOut(emulatedSystemOut)
         System.setErr(emulatedSystemOut)
 
-        ExpectBuilder expectBuilder = new ExpectBuilder().withInputs(systemOutInput).withOutput(expectCommandsPipe).withTimeout(5, TimeUnit.SECONDS)
+        ExpectBuilder expectBuilder = new ExpectBuilder().withInputs(systemOutInput).withOutput(expectCommandsPipe).withTimeout(20, TimeUnit.SECONDS)
         expectBuilder.withEchoOutput(originalStreams.err).withEchoInput(originalStreams.out)
         expectBuilder
     }
@@ -169,6 +170,38 @@ detailed usage with help [command]
         helpContent == '''create-controller\tCreates a controller
 create-controller [controller name]
 Creates a controller class and an associated unit test
+'''
+    }
+    
+    def "should show error message when create-controller is executed without proper arguments"() {
+        when:
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("create-controller")
+            message = expectPrompt(expect).before
+        }
+        then:
+        retval == 0
+        message == '''Error |
+Expecting an argument to create-controller.
+create-controller [controller name]
+Creates a controller class and an associated unit test
+'''
+    }
+    
+    @Ignore
+    def "should create-controller in default package"() {
+        when:
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("create-controller ShoppingBasket")
+            message = expectPrompt(expect).before
+        }
+        then:
+        retval == 0
+        message == '''Creating controller.
 '''
     }
     

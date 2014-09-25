@@ -1,6 +1,8 @@
-package org.grails.cli
+package org.grails.cli.profile
 
 import groovy.transform.CompileStatic
+
+import org.grails.cli.profile.simple.SimpleProfile
 
 @CompileStatic
 class ProfileRepository {

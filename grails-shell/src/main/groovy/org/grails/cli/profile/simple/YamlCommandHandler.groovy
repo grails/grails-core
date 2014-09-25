@@ -1,9 +1,12 @@
-package org.grails.cli
+package org.grails.cli.profile.simple
 
 import grails.build.logging.GrailsConsole
 
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
-import org.yaml.snakeyaml.Yaml;
+import org.grails.cli.CommandLineHandler
+import org.grails.cli.profile.CommandDescription
+import org.grails.cli.profile.Profile
+import org.yaml.snakeyaml.Yaml
 
 class YamlCommandHandler implements CommandLineHandler {
     Collection<File> commandFiles
@@ -17,7 +20,7 @@ class YamlCommandHandler implements CommandLineHandler {
             def yamlContent = file.withReader { 
                 yaml.load(it)
             }
-            def commandName = file.name - ~/\.yml$/
+            String commandName = file.name - ~/\.yml$/
             [commandName, new YamlCommand(name: commandName, file: file, yamlContent: yamlContent, profile: profile)]
         }
         commandDescriptions = commands.collect { String name, YamlCommand cmd ->
