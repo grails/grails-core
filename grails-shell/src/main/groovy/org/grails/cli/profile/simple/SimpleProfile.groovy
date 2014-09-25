@@ -19,7 +19,7 @@ class SimpleProfile implements Profile {
 
     @Override
     public Iterable<Completer> getCompleters() {
-        null
+        [new SimpleProfileCompleter(profile: this)]
     }
 
     @Override
