@@ -1,8 +1,10 @@
-package org.grails.cli;
+package org.grails.cli.profile;
 
 import jline.console.completer.Completer;
 
-interface Profile {
+import org.grails.cli.CommandLineHandler;
+
+public interface Profile {
     String getName();
     Iterable<Completer> getCompleters();
     Iterable<CommandLineHandler> getCommandLineHandlers();
