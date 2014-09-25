@@ -6,6 +6,7 @@ dependencies {
     compile project(":grails-bootstrap")
     compile "org.apache.ant:ant:$antVersion"
     compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
+    compile "org.codehaus.groovy:groovy-json:$groovyVersion"
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile "jline:jline:$jlineVersion"
     compile 'org.yaml:snakeyaml:1.14'
