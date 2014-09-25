@@ -129,6 +129,19 @@ class GrailsCliSpec extends Specification {
         assert new File(appdir, "application.properties").exists()
     }    
 
+    def "should fail with retval 1 when creating app for non-existing profile"() {
+        when:
+        def bytesOut = new ByteArrayOutputStream()
+        def printStream = new PrintStream(bytesOut, true)
+        System.setOut(printStream)
+        System.setErr(printStream)
+        int retval = cli.execute('create-app','newapp','--profile=no_such_profile')
+        def msg = bytesOut.toString()
+        then:
+        retval == 1
+        msg == 'Cannot find profile no_such_profile\n'
+    }
+    
     def "should start and exit interactive mode"() {
         when:
         def helpContent
