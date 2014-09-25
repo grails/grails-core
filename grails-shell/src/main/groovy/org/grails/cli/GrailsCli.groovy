@@ -29,7 +29,7 @@ class GrailsCli {
                 System.err.println "usage: create-app appname --profile=web"
                 return 1
             }
-            createApp(mainCommandLine, profileRepository)
+            return createApp(mainCommandLine, profileRepository)
         } else {
             Profile profile = profileRepository.getProfile('web')
             commandLineHandlers.addAll(profile.getCommandLineHandlers() as Collection)
@@ -56,7 +56,7 @@ class GrailsCli {
         return 0
     }
 
-    private createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
+    private int createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
         String appname = mainCommandLine.getRemainingArgs()[0]
         String profileName = mainCommandLine.optionValue('profile')
         if(!profileName) {
@@ -66,6 +66,7 @@ class GrailsCli {
         if(profile) {
             CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, appname: appname, profile: profileName)
             cmd.run()
+            return 0
         } else {
             System.err.println "Cannot find profile $profileName"
             return 1
