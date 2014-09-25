@@ -4,7 +4,7 @@ import grails.build.logging.GrailsConsole
 
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 
-class RenderCommandStep extends YamlCommandStep {
+class RenderCommandStep extends SimpleCommandStep {
 
     @Override
     public boolean handleStep(CommandLine commandLine, GrailsConsole console) {
