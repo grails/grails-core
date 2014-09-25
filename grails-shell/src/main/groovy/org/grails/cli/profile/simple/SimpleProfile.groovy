@@ -28,7 +28,7 @@ class SimpleProfile implements Profile {
             commandLineHandlers = []
             File commandsDir = new File(profileDir, "commands")
             Collection<File> yamlFiles = commandsDir.listFiles().findAll { File file ->
-                file.isFile() && file.name ==~ /^.*\.yml$/ 
+                file.isFile() && file.name ==~ /^.*\.(yml|json)$/ 
             }.sort(false) { File file -> file.name }
             SimpleCommandHandler commandHandler = new SimpleCommandHandler(commandFiles: yamlFiles, profile: this)
             commandHandler.initialize()
