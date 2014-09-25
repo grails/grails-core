@@ -3,6 +3,8 @@ package org.grails.cli
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
+import org.grails.cli.profile.ProfileRepository
+
 @CompileStatic
 class CreateAppCommand {
     ProfileRepository profileRepository

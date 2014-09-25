@@ -1,4 +1,6 @@
-package org.grails.cli
+package org.grails.cli.profile.simple
+
+import org.grails.cli.profile.CommandDescription
 
 import spock.lang.Specification
 
