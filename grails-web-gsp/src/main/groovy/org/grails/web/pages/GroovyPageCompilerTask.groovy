@@ -38,6 +38,8 @@ import grails.build.logging.GrailsConsole
  */
 class GroovyPageCompilerTask extends MatchingTask {
 
+
+
     File destdir
     Path classpath
     File srcdir
@@ -97,7 +99,18 @@ class GroovyPageCompilerTask extends MatchingTask {
 
         int gspCount = gspFiles?.size()
         if (gspCount) {
-            GrailsConsole.getInstance().updateStatus("Compiling ${gspCount} GSP file${gspCount>1?'s':''} for package [${packagename}]")
+
+            def grailsConsole
+            try {
+                grailsConsole = GrailsConsole.getInstance()
+            } catch(Throwable e) {
+                // ignore
+            }
+            if(grailsConsole)
+                grailsConsole.updateStatus("Compiling ${gspCount} GSP file${gspCount>1?'s':''} for package [${packagename}]")
+            else
+                println "Compiling ${gspCount} GSP file${gspCount>1?'s':''} for package [${packagename}]"
+
         }
 
         if (tmpdir) {

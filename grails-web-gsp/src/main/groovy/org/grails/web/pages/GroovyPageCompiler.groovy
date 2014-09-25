@@ -50,6 +50,11 @@ class GroovyPageCompiler {
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader, compilerConfig)
     }
 
+    void setCleanCompilerConfig(CompilerConfiguration c) {
+        compilerConfig = c
+        classLoader = new GroovyClassLoader(System.classLoader, compilerConfig)
+    }
+
     /**
     * Compiles the given GSP pages and returns a Map of URI to classname mappings
     */
