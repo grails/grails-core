@@ -6,10 +6,10 @@ import grails.build.logging.GrailsConsole
 import java.lang.reflect.Field
 import java.util.concurrent.TimeUnit
 
+import jline.console.KeyMap
 import jnr.posix.POSIXFactory
 import net.sf.expectit.Expect
 import net.sf.expectit.ExpectBuilder
-import net.sf.expectit.Result
 
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.junit.Rule
@@ -75,8 +75,12 @@ class GrailsCliSpec extends Specification {
         }
     }
 
-    private Result expectPrompt(Expect expect) {
-        expect.expect(contains("grails> "))
+    private String expectPrompt(Expect expect) {
+        expect.expect(contains("grails> ")).before
+    }
+    
+    private String expectAnyOutput(Expect expect) {
+        expect.expect(anyString()).group()
     }
 
     void println(Object value) {
@@ -106,7 +110,7 @@ class GrailsCliSpec extends Specification {
         return appdir
     }
     
-    private int executeInInteractiveMode(Closure closure) {
+    private int executeInInteractiveMode(boolean exitByDefault = true, Closure closure) {
         File appdir = createApp()
         chdir(appdir)
         int retval = -1
@@ -115,8 +119,10 @@ class GrailsCliSpec extends Specification {
         cliThread.start()
         Expect expect = expectBuilder.build()
         closure.call(expect)
-        expect.send("\340\000") // Operation.KILL_WHOLE_LINE
-        expect.sendLine("exit")
+        if(exitByDefault) {
+            expect.send("\340\000") // Operation.KILL_WHOLE_LINE
+            expect.sendLine("exit")
+        }
         expect.close()
         cliThread.join()
         retval
@@ -145,7 +151,6 @@ class GrailsCliSpec extends Specification {
     
     def "should start and exit interactive mode"() {
         when:
-        def helpContent
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)
         }        
@@ -159,7 +164,7 @@ class GrailsCliSpec extends Specification {
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)
             expect.sendLine("help")
-            helpContent = expectPrompt(expect).before
+            helpContent = expectPrompt(expect)
         }        
         then:
         retval == 0
@@ -178,7 +183,7 @@ detailed usage with help [command]
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)
             expect.sendLine("help create-controller")
-            helpContent = expectPrompt(expect).before
+            helpContent = expectPrompt(expect)
         }        
         then:
         retval == 0
@@ -195,7 +200,7 @@ Creates a controller class and an associated unit test
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)
             expect.sendLine("create-controller")
-            message = expectPrompt(expect).before
+            message = expectPrompt(expect)
         }
         then:
         retval == 0
@@ -214,7 +219,7 @@ Creates a controller class and an associated unit test
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)
             expect.sendLine("create-controller ShoppingBasket")
-            message = expectPrompt(expect).before
+            message = expectPrompt(expect)
         }
         then:
         retval == 0
@@ -232,7 +237,7 @@ Creates a controller class and an associated unit test
             sleep(500)
             expect.send("\t")
             sleep(100)
-            message = expect.expect(anyString()).group()
+            message = expectAnyOutput(expect)
         }
         then:
         retval == 0
@@ -242,22 +247,30 @@ create-controller   create-domain       create-service      create-taglib
 grails> create-'''
     }
     
-    @Ignore
     def "should complete commands fully if only match"() {
         when:
         def message
+        cli.defaultInputMask = null
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)
             expect.send("create-c")
             sleep(500)
             expect.send("\t")
             sleep(100)
-            message = expect.expect(anyString()).group()
+            message = expectAnyOutput(expect)
         }
         then:
         retval == 0
-        message == '''
-
-grails> create-controller '''
+        message == '''create-c        create-controller '''
+    }
+    
+    def "should exit when CTRL-D is pressed"() {
+        when:
+        int retval = executeInInteractiveMode(false) { Expect expect ->
+            expectPrompt(expect)
+            expect.send(String.valueOf(KeyMap.CTRL_D))
+        }
+        then:
+        retval == 0
     }
 }
