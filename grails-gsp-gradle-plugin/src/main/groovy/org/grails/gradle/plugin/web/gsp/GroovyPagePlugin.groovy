@@ -37,6 +37,7 @@ class GroovyPagePlugin implements Plugin<Project> {
                     serverpath:"/WEB-INF/grails-app/views/",
                     tmpdir: tmpdir) {
                     classpath {
+                        pathelement( path: dest.absolutePath )
                         pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
                     }
                 }
@@ -49,6 +50,7 @@ class GroovyPagePlugin implements Plugin<Project> {
                             serverpath:"/",
                             tmpdir: tmpdir) {
                         classpath {
+                            pathelement( path: dest.absolutePath )
                             pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
                         }
                     }
@@ -62,6 +64,7 @@ class GroovyPagePlugin implements Plugin<Project> {
                             serverpath:"/",
                             tmpdir: tmpdir) {
                         classpath {
+                            pathelement( path: dest.absolutePath )
                             pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
                         }
                     }
@@ -70,6 +73,7 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
 
 
+        compileGroovyPages.dependsOn( project.tasks.getByName("compileGroovy") )
         project.tasks.getByName('assemble').dependsOn(compileGroovyPages)
     }
 }
