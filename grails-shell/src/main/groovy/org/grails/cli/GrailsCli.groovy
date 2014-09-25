@@ -19,6 +19,7 @@ class GrailsCli {
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
     Boolean ansiEnabled = null
+    Character defaultInputMask = null
     
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
@@ -38,6 +39,7 @@ class GrailsCli {
             def commandName = mainCommandLine.getCommandName()
             GrailsConsole console=GrailsConsole.getInstance()
             console.setAnsiEnabled(!mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT))
+            console.defaultInputMask = defaultInputMask
             if(ansiEnabled != null) {
                 console.setAnsiEnabled(ansiEnabled)
             }

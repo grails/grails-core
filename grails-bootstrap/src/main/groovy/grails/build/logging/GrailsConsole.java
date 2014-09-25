@@ -81,6 +81,7 @@ public class GrailsConsole {
     private StringBuilder maxIndicatorString;
     private int cursorMove;
     private Thread shutdownHookThread;
+    private Character defaultInputMask = null;
     
     /**
      * Whether to enable verbose mode
@@ -819,7 +820,8 @@ public class GrailsConsole {
         assertAllowInput(prompt);
         userInputActive = true;
         try {
-            return secure ? reader.readLine(prompt, SECURE_MASK_CHAR) : reader.readLine(prompt);
+            Character inputMask = secure ? SECURE_MASK_CHAR : defaultInputMask;
+            return reader.readLine(prompt, inputMask);
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         } finally {
@@ -967,5 +969,13 @@ public class GrailsConsole {
 
     public void flush() {
         out.flush();
+    }
+
+    public Character getDefaultInputMask() {
+        return defaultInputMask;
+    }
+
+    public void setDefaultInputMask(Character defaultInputMask) {
+        this.defaultInputMask = defaultInputMask;
     }
 }
