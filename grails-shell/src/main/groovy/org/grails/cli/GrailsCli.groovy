@@ -20,10 +20,10 @@ class GrailsCli {
     boolean keepRunning = true
     Boolean ansiEnabled = null
     Character defaultInputMask = null
+    ProfileRepository profileRepository=new ProfileRepository()
     
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
-        ProfileRepository profileRepository=new ProfileRepository()
         File applicationProperties=new File("application.properties")
         if(!applicationProperties.exists()) {
             if(!mainCommandLine || !mainCommandLine.commandName || mainCommandLine.commandName != 'create-app' || !mainCommandLine.getRemainingArgs()) {
@@ -32,7 +32,7 @@ class GrailsCli {
             }
             return createApp(mainCommandLine, profileRepository)
         } else {
-            Profile profile = profileRepository.getProfile('web')
+            Profile profile = profileRepository.getProfile(DEFAULT_PROFILE_NAME)
             commandLineHandlers.addAll(profile.getCommandLineHandlers() as Collection)
             aggregateCompleter.getCompleters().addAll((profile.getCompleters()?:[]) as Collection)
         
@@ -51,7 +51,12 @@ class GrailsCli {
                 console.println("Starting interactive mode...")
                 while(keepRunning) {
                     String commandLine = console.showPrompt()
-                    handleCommand(cliParser.parseString(commandLine), console)
+                    if(commandLine==null) {
+                        // CTRL-D was pressed, exit interactive mode
+                        exitInteractiveMode()
+                    } else {
+                        handleCommand(cliParser.parseString(commandLine), console)
+                    }
                 }
             }
         }
