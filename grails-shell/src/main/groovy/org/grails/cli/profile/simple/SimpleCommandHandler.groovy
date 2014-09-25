@@ -8,29 +8,29 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.Profile
 import org.yaml.snakeyaml.Yaml
 
-class YamlCommandHandler implements CommandLineHandler {
+class SimpleCommandHandler implements CommandLineHandler {
     Collection<File> commandFiles
     Profile profile
     List<CommandDescription> commandDescriptions
-    Map<String, YamlCommand> commands
+    Map<String, SimpleCommand> commands
     
     void initialize() {
-        Yaml yaml=new Yaml()
+        Yaml yamlParser=new Yaml()
         commands = commandFiles.collectEntries { File file ->
-            def yamlContent = file.withReader { 
-                yaml.load(it)
+            Map data = file.withReader { 
+                yamlParser.loadAs(it, Map)
             }
             String commandName = file.name - ~/\.yml$/
-            [commandName, new YamlCommand(name: commandName, file: file, yamlContent: yamlContent, profile: profile)]
+            [commandName, new SimpleCommand(name: commandName, file: file, data: data, profile: profile)]
         }
-        commandDescriptions = commands.collect { String name, YamlCommand cmd ->
+        commandDescriptions = commands.collect { String name, SimpleCommand cmd ->
             cmd.description
         }
     }
 
     @Override
     public boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        YamlCommand cmd = commands.get(commandLine.getCommandName())
+        SimpleCommand cmd = commands.get(commandLine.getCommandName())
         if(cmd) {
             cmd.handleCommand(commandLine, console)
             return true
