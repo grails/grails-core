@@ -1,4 +1,6 @@
-package org.grails.cli;
+package org.grails.cli.profile;
+
+import org.grails.cli.profile.ProfileRepository;
 
 import spock.lang.Specification
 

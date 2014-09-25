@@ -1,7 +1,10 @@
-package org.grails.cli
+package org.grails.cli.profile.simple
 
 import groovy.transform.CompileStatic
 import jline.console.completer.Completer
+
+import org.grails.cli.CommandLineHandler
+import org.grails.cli.profile.Profile
 
 @CompileStatic
 class SimpleProfile implements Profile {
@@ -27,7 +30,9 @@ class SimpleProfile implements Profile {
             Collection<File> yamlFiles = commandsDir.listFiles().findAll { File file ->
                 file.isFile() && file.name ==~ /^.*\.yml$/ 
             }
-            commandLineHandlers << new YamlCommandHandler(commandFiles: yamlFiles, profile: this) 
+            YamlCommandHandler commandHandler = new YamlCommandHandler(commandFiles: yamlFiles, profile: this)
+            commandHandler.initialize()
+            commandLineHandlers << commandHandler
         }
         commandLineHandlers
     }    

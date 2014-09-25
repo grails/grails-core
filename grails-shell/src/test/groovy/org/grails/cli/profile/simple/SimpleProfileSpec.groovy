@@ -1,4 +1,4 @@
-package org.grails.cli
+package org.grails.cli.profile.simple
 
 import spock.lang.Specification
 

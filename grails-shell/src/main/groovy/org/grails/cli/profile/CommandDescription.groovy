@@ -1,4 +1,4 @@
-package org.grails.cli
+package org.grails.cli.profile
 
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic

@@ -2,16 +2,18 @@ package org.grails.cli
 
 import grails.build.logging.GrailsConsole
 import grails.util.Environment
-import groovy.transform.CompileStatic;
-import jline.console.ConsoleReader;
+import groovy.transform.CompileStatic
 import jline.console.completer.AggregateCompleter
-import jline.console.completer.Completer
 
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
+import org.grails.cli.profile.CommandDescription
+import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileRepository
 
 @CompileStatic
 class GrailsCli {
+    public static final String DEFAULT_PROFILE_NAME = 'web'
     List<CommandLineHandler> commandLineHandlers=[]
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
@@ -19,31 +21,20 @@ class GrailsCli {
     Boolean ansiEnabled = null
     
     public int execute(String... args) {
+        CommandLine mainCommandLine=cliParser.parse(args)
         ProfileRepository profileRepository=new ProfileRepository()
         File applicationProperties=new File("application.properties")
         if(!applicationProperties.exists()) {
-            if(!args) {
-                println "usage: create-app appname --profile=web"
+            if(!mainCommandLine || !mainCommandLine.commandName || mainCommandLine.commandName != 'create-app' || !mainCommandLine.getRemainingArgs()) {
+                System.err.println "usage: create-app appname --profile=web"
                 return 1
             }
-            if(args[0] == 'create-app') {
-                String appname = args[1]
-                String profile=null
-                if(args.size() > 2) {
-                    def matches = (args[2] =~ /^--profile=(.*?)$/)
-                    if (matches) {
-                        profile=matches.group(1)
-                    }
-                }
-                CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, appname: appname, profile: profile)
-                cmd.run()
-            }
+            createApp(mainCommandLine, profileRepository)
         } else {
             Profile profile = profileRepository.getProfile('web')
             commandLineHandlers.addAll(profile.getCommandLineHandlers() as Collection)
             aggregateCompleter.getCompleters().addAll((profile.getCompleters()?:[]) as Collection)
         
-            CommandLine mainCommandLine=cliParser.parse(args)
             def commandName = mainCommandLine.getCommandName()
             GrailsConsole console=GrailsConsole.getInstance()
             console.setAnsiEnabled(!mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT))
@@ -63,6 +54,22 @@ class GrailsCli {
             }
         }
         return 0
+    }
+
+    private createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
+        String appname = mainCommandLine.getRemainingArgs()[0]
+        String profileName = mainCommandLine.optionValue('profile')
+        if(!profileName) {
+            profileName=DEFAULT_PROFILE_NAME
+        }
+        Profile profile = profileRepository.getProfile(profileName)
+        if(profile) {
+            CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, appname: appname, profile: profileName)
+            cmd.run()
+        } else {
+            System.err.println "Cannot find profile $profileName"
+            return 1
+        }
     }
     
     boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
