@@ -30,12 +30,21 @@ class GrailsWatchPlugin implements Plugin<Project> {
                                                .forProjectDirectory( project.projectDir )
                                                .connect()
 
+
             Thread.start {
+                sleep 6000
                 // initialise the build in a background thread so as to make it quicker to run the first time
-                connection.newBuild()
-                          .setStandardOutput( new DevNullPrintStream() )
-                          .setStandardError( new DevNullPrintStream() )
-                          .withArguments('-q').run()
+                def previousOut = System.out
+                try {
+                    def sysOut = new DevNullPrintStream()
+                    System.out = sysOut
+                    connection.newBuild()
+                              .setStandardOutput(sysOut)
+                              .setStandardError( new DevNullPrintStream() )
+                              .withArguments('-q').run()
+                } finally {
+                    System.out = previousOut
+                }
             }
 
 
