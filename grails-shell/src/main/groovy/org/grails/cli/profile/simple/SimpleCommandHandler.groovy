@@ -7,12 +7,11 @@ import groovy.json.JsonSlurper
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.Profile
 import org.yaml.snakeyaml.Yaml
 
 class SimpleCommandHandler implements CommandLineHandler {
     Collection<File> commandFiles
-    Profile profile
+    SimpleProfile profile
     List<CommandDescription> commandDescriptions
     Map<String, SimpleCommand> commands
     
