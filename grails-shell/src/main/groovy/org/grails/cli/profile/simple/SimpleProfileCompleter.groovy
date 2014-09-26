@@ -5,11 +5,10 @@ import jline.console.completer.Completer
 
 import org.grails.build.interactive.completors.StringsCompleter
 import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.Profile
 
 @CompileStatic
 class SimpleProfileCompleter implements Completer {
-    Profile profile
+    SimpleProfile profile
 
     /**
      * Perform a completion operation across all aggregated completers.

@@ -46,7 +46,7 @@ class GrailsCli {
             if(ansiEnabled != null) {
                 console.setAnsiEnabled(ansiEnabled)
             }
-            File baseDir = new File(".").absoluteFile
+            File baseDir = new File("").absoluteFile
             if(commandName) {
                 handleCommand(mainCommandLine, console, baseDir)
             } else {
