@@ -7,6 +7,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.GroovyPlugin
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
+import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.watch.GrailsWatchPlugin
 import org.grails.gradle.plugin.watch.WatchConfig
 import org.springframework.boot.gradle.SpringBootPlugin
@@ -20,6 +21,7 @@ class GrailsPlugin extends GroovyPlugin {
 
         project.getPlugins().apply(SpringBootPlugin)
 
+        project.tasks.create(name:"findMainClass", type: FindMainClassTask, overwrite:true)
 
         def projectDir = project.projectDir
 

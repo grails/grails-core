@@ -45,6 +45,9 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.0
  */
 public class GrailsResourceUtils {
+
+    public static final String CLASS_EXTENSION = ".class";
+
     private static final String WINDOWS_FOLDER_SEPARATOR = "\\";
 
     private static final String TOP_PATH = "..";
@@ -260,6 +263,23 @@ public class GrailsResourceUtils {
             }
         }
         return null;
+    }
+
+
+    /**
+     * Returns the class name for a compiled class file
+     *
+     * @param path The path to check
+     * @return The class name or null if it doesn't exist
+     */
+    public static String getClassNameForClassFile(String rootDir, String path) {
+        path = path.replace("/", ".");
+        path = path.replace('\\', '.');
+        path = path.substring(0, path.length() - CLASS_EXTENSION.length());
+        if (rootDir != null) {
+            path = path.substring(rootDir.length());
+        }
+        return path;
     }
 
     /**
