@@ -1,13 +1,12 @@
 package org.grails.cli.profile.simple
 
-import grails.build.logging.GrailsConsole
 import groovy.json.JsonBuilder
 import groovy.json.JsonParserType
 import groovy.json.JsonSlurper
 
-import org.codehaus.groovy.grails.cli.parsing.CommandLine
-import org.grails.cli.CommandLineHandler
 import org.grails.cli.profile.CommandDescription
+import org.grails.cli.profile.CommandLineHandler
+import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.yaml.snakeyaml.Yaml
 
@@ -45,10 +44,10 @@ class SimpleCommandHandler implements CommandLineHandler {
     }
 
     @Override
-    public boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        SimpleCommand cmd = commands.get(commandLine.getCommandName())
+    public boolean handleCommand(ExecutionContext context) {
+        SimpleCommand cmd = commands.get(context.commandLine.getCommandName())
         if(cmd) {
-            cmd.handleCommand(commandLine, console)
+            cmd.handleCommand(context)
             return true
         }
         return false;

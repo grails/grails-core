@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import jline.console.completer.Completer
 
 import org.grails.build.interactive.completors.StringsCompleter
-import org.grails.cli.CommandLineHandler
+import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.Profile
 
 @CompileStatic

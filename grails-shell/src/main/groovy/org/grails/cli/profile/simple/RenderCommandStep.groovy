@@ -1,14 +1,12 @@
 package org.grails.cli.profile.simple
 
-import grails.build.logging.GrailsConsole
-
-import org.codehaus.groovy.grails.cli.parsing.CommandLine
+import org.grails.cli.profile.ExecutionContext
 
 class RenderCommandStep extends SimpleCommandStep {
 
     @Override
-    public boolean handleStep(CommandLine commandLine, GrailsConsole console) {
-        console.info("-render- $commandParameters")
+    public boolean handleStep(ExecutionContext context) {
+        context.console.info("-render- $commandParameters")
         return true
     }
 }
