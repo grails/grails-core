@@ -212,7 +212,6 @@ Creates a controller class and an associated unit test
 '''
     }
     
-    @Ignore
     def "should create-controller in default package"() {
         when:
         def message
@@ -223,7 +222,9 @@ Creates a controller class and an associated unit test
         }
         then:
         retval == 0
-        message == '''Creating controller.
+        message == '''
+Creating grails-app/controllers/ShoppingBasket.groovy
+Creating src/test/groovy/ShoppingBasketSpec.groovy
 '''
     }
     
