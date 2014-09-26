@@ -46,8 +46,9 @@ class GrailsCli {
             if(ansiEnabled != null) {
                 console.setAnsiEnabled(ansiEnabled)
             }
+            File baseDir = new File(".").absoluteFile
             if(commandName) {
-                handleCommand(mainCommandLine, console)
+                handleCommand(mainCommandLine, console, baseDir)
             } else {
                 System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
                 console.reader.addCompleter(aggregateCompleter)
@@ -58,7 +59,7 @@ class GrailsCli {
                         // CTRL-D was pressed, exit interactive mode
                         exitInteractiveMode()
                     } else {
-                        handleCommand(cliParser.parseString(commandLine), console)
+                        handleCommand(cliParser.parseString(commandLine), console, baseDir)
                     }
                 }
             }
@@ -83,8 +84,8 @@ class GrailsCli {
         }
     }
     
-    boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        ExecutionContext context = new ExecutionContextImpl(commandLine, console)
+    boolean handleCommand(CommandLine commandLine, GrailsConsole console, File baseDir) {
+        ExecutionContext context = new ExecutionContextImpl(commandLine, console, baseDir)
         
         if(handleBuiltInCommands(context)) {
             return true
@@ -153,5 +154,6 @@ class GrailsCli {
     private static class ExecutionContextImpl implements ExecutionContext {
         CommandLine commandLine
         GrailsConsole console
+        File baseDir
     }
 }
