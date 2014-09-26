@@ -2,12 +2,15 @@ package org.grails.cli
 
 import grails.build.logging.GrailsConsole
 import grails.util.Environment
+import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import jline.console.completer.AggregateCompleter
 
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
 import org.grails.cli.profile.CommandDescription
+import org.grails.cli.profile.CommandLineHandler
+import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
 
@@ -81,11 +84,13 @@ class GrailsCli {
     }
     
     boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        if(handleBuiltInCommands(commandLine, console)) {
+        ExecutionContext context = new ExecutionContextImpl(commandLine, console)
+        
+        if(handleBuiltInCommands(context)) {
             return true
         }
         for(CommandLineHandler handler : commandLineHandlers) {
-             if(handler.handleCommand(commandLine, console)) {
+             if(handler.handleCommand(context)) {
                  return true
              }
         }
@@ -93,7 +98,9 @@ class GrailsCli {
         return false
     }
 
-    private boolean handleBuiltInCommands(CommandLine commandLine, GrailsConsole console) {
+    private boolean handleBuiltInCommands(ExecutionContext context) {
+        CommandLine commandLine = context.commandLine
+        GrailsConsole console = context.console
         switch(commandLine.getCommandName()) {
             case 'help':
                 List<CommandDescription> allCommands=findAllCommands()
@@ -140,5 +147,11 @@ class GrailsCli {
     public static void main(String[] args) {
         GrailsCli cli=new GrailsCli()
         System.exit(cli.execute(args))
+    }
+    
+    @Canonical
+    private static class ExecutionContextImpl implements ExecutionContext {
+        CommandLine commandLine
+        GrailsConsole console
     }
 }

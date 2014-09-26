@@ -1,10 +1,7 @@
 package org.grails.cli.profile.simple
 
-import grails.build.logging.GrailsConsole
-
-import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ExecutionContext
 
 class SimpleCommand {
     String name
@@ -32,14 +29,14 @@ class SimpleCommand {
         steps
     }
         
-    public boolean handleCommand(CommandLine commandLine, GrailsConsole console) {
-        if(!commandLine.getRemainingArgs()) {
-            console.error("Expecting an argument to $name.")
-            console.info("${description.usage}")
+    public boolean handleCommand(ExecutionContext context) {
+        if(!context.commandLine.getRemainingArgs()) {
+            context.console.error("Expecting an argument to $name.")
+            context.console.info("${description.usage}")
             return true
         }
         for(SimpleCommandStep step : getSteps()) {
-            if(!step.handleStep(commandLine, console)) {
+            if(!step.handleStep(context)) {
                 break
             }
         }
