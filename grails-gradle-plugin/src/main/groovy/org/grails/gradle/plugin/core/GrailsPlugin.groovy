@@ -21,7 +21,8 @@ class GrailsPlugin extends GroovyPlugin {
 
         project.getPlugins().apply(SpringBootPlugin)
 
-        project.tasks.create(name:"findMainClass", type: FindMainClassTask, overwrite:true)
+        def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
+        project.tasks.getByName("bootRepackage").dependsOn(findMainClassTask)
 
         def projectDir = project.projectDir
 
