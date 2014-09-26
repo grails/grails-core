@@ -1,9 +1,6 @@
 package org.grails.cli.profile.simple
 
-import grails.build.logging.GrailsConsole
-
-import org.codehaus.groovy.grails.cli.parsing.CommandLine
-import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ExecutionContext
 
 abstract class SimpleCommandStep {
     Map<String, String> commandParameters
@@ -14,5 +11,5 @@ abstract class SimpleCommandStep {
      * @param console
      * @return true if should continue executing other steps
      */
-    abstract public boolean handleStep(CommandLine commandLine, GrailsConsole console)
+    abstract public boolean handleStep(ExecutionContext context)
 }
