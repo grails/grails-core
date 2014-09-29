@@ -7,6 +7,7 @@ import groovy.json.JsonSlurper
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.ProjectContext
 import org.yaml.snakeyaml.Yaml
 
 class SimpleCommandHandler implements CommandLineHandler {
@@ -62,7 +63,7 @@ class SimpleCommandHandler implements CommandLineHandler {
     }
 
     @Override
-    public List<CommandDescription> listCommands() {
+    public List<CommandDescription> listCommands(ProjectContext context) {
         if(commandDescriptions == null) {
             initialize()
         }

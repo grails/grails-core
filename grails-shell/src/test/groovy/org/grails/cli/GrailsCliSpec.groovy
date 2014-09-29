@@ -307,7 +307,7 @@ grails> create-'''
             }
             return false
         }] as CommandLineHandler
-        cli.profileRepository.getProfile('web').commandLineHandlers << handler
+        cli.profileRepository.getProfile('web').getCommandLineHandlers(null) << handler
         def message
         int retval = executeInInteractiveMode { Expect expect ->
             expectPrompt(expect)

@@ -5,12 +5,13 @@ import jline.console.completer.Completer
 
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProjectContext;
 
 @CompileStatic
 class SimpleProfile implements Profile {
     File profileDir
     String name
-    List<CommandLineHandler> commandLineHandlers = null
+    private List<CommandLineHandler> commandLineHandlers = null
     
     public SimpleProfile(String name, File profileDir) {
         this.name = name
@@ -18,12 +19,12 @@ class SimpleProfile implements Profile {
     }
 
     @Override
-    public Iterable<Completer> getCompleters() {
-        [new SimpleProfileCompleter(profile: this)]
+    public Iterable<Completer> getCompleters(ProjectContext context) {
+        [new CommandLineHandlersCompleter(context:context, commandLineHandlersClosure:{ -> this.getCommandLineHandlers(context) })]
     }
 
     @Override
-    public Iterable<CommandLineHandler> getCommandLineHandlers() {
+    public Iterable<CommandLineHandler> getCommandLineHandlers(ProjectContext context) {
         if(commandLineHandlers == null) {
             commandLineHandlers = []
             Collection<File> commandFiles = findCommandFiles()

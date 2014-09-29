@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface CommandLineHandler {
     boolean handleCommand(ExecutionContext context); 
-    List<CommandDescription> listCommands();
+    List<CommandDescription> listCommands(ProjectContext context);
 }
