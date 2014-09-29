@@ -17,16 +17,23 @@ class SimpleCommand {
     List<SimpleCommandStep> getSteps() {
         if(steps==null) {
             steps = []
-            data.steps.each { 
+            data.steps?.each { 
                 Map<String, String> stepParameters = it.collectEntries { k,v -> [k as String, v as String] }
-                switch(stepParameters.command) {
-                    case 'render':
-                        steps.add(new RenderCommandStep(commandParameters: stepParameters, command: this))
-                        break
+                SimpleCommandStep step = createStep(stepParameters)
+                if (step != null) {
+                    steps.add(step)
                 }
             }
         }
         steps
+    }
+
+    protected SimpleCommandStep createStep(Map stepParameters) {
+        switch(stepParameters.command) {
+            case 'render':
+                return new RenderCommandStep(commandParameters: stepParameters, command: this)
+        }
+        return null
     }
         
     public boolean handleCommand(ExecutionContext context) {
