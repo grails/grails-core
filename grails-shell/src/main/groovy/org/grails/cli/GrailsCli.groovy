@@ -111,14 +111,14 @@ class GrailsCli {
     }
 
     private int createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
-        String appname = mainCommandLine.getRemainingArgs()[0]
+        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
         String profileName = mainCommandLine.optionValue('profile')
         if(!profileName) {
             profileName=DEFAULT_PROFILE_NAME
         }
         Profile profile = profileRepository.getProfile(profileName)
         if(profile) {
-            CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, appname: appname, profile: profileName)
+            CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, groupAndAppName: groupAndAppName, profile: profileName)
             cmd.run()
             return 0
         } else {
@@ -128,7 +128,7 @@ class GrailsCli {
     }
     
     boolean handleCommand(CommandLine commandLine, GrailsConsole console, File baseDir) {
-        ExecutionContext context = new ExecutionContextImpl(commandLine, console, baseDir)
+        ExecutionContext context = new ExecutionContextImpl(commandLine, console, baseDir, applicationConfig)
         
         if(handleBuiltInCommands(context)) {
             return true
@@ -198,5 +198,40 @@ class GrailsCli {
         CommandLine commandLine
         GrailsConsole console
         File baseDir
+        Map<String, Object> applicationConfig
+        
+        private Object navigateMap(Map<String, Object> map, String... path) {
+            if(path.length == 1) {
+                return map.get(path[0])
+            } else {
+                return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
+            }
+        }
+
+        @Override
+        public <T> T navigateConfigForType(Class<T> requiredType, String... path) {
+            Object result = navigateMap(applicationConfig, path)
+            if(result == null) {
+                return null
+            }
+            if(requiredType.isInstance(result)) {
+                return (T)result    
+            } else {
+                return convertToType(result, requiredType)
+            }
+        }
+        
+        private <T> T convertToType(Object value, Class<T> requiredType) {
+            if(requiredType==Integer.class) {
+                return Integer.valueOf(String.valueOf(value))
+            } else {
+                throw new RuntimeException("conversion to $requiredType.name not implemented")
+            }
+        }
+
+        @Override
+        public String navigateConfig(String... path) {
+            return navigateConfigForType(String, path);
+        }
     }
 }
