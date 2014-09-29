@@ -2,15 +2,16 @@ import org.grails.gradle.plugin.*
 
 
 version "0.1"
-group "example"
+name "@grails.app.name@"
+group "@grails.app.group@"
 
 apply plugin: GrailsPlugin
 
-mainClassName = "@APPNAME@.Application"
+mainClassName = "@grails.codegen.defaultPackage@.Application"
 
 repositories {
   mavenLocal()
-  mavenCentral()
+  jcenter()
 }
 
 dependencies {

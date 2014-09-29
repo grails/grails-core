@@ -1,4 +1,4 @@
-package @APPNAME@
+package @grails.codegen.defaultPackage@
 
 import grails.boot.config.GrailsConfiguration
 import org.springframework.boot.SpringApplication
