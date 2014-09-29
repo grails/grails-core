@@ -27,6 +27,13 @@ class GrailsCli {
     
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
+        if(mainCommandLine.hasOption("verbose")) {
+            System.setProperty("grails.verbose", "true")
+        }
+        if(mainCommandLine.hasOption("stacktrace")) {
+            System.setProperty("grails.show.stacktrace", "true")
+        }
+        
         File applicationProperties=new File("application.properties")
         if(!applicationProperties.exists()) {
             if(!mainCommandLine || !mainCommandLine.commandName || mainCommandLine.commandName != 'create-app' || !mainCommandLine.getRemainingArgs()) {
@@ -54,12 +61,16 @@ class GrailsCli {
                 console.reader.addCompleter(aggregateCompleter)
                 console.println("Starting interactive mode...")
                 while(keepRunning) {
-                    String commandLine = console.showPrompt()
-                    if(commandLine==null) {
-                        // CTRL-D was pressed, exit interactive mode
-                        exitInteractiveMode()
-                    } else {
-                        handleCommand(cliParser.parseString(commandLine), console, baseDir)
+                    try {
+                        String commandLine = console.showPrompt()
+                        if(commandLine==null) {
+                            // CTRL-D was pressed, exit interactive mode
+                            exitInteractiveMode()
+                        } else {
+                            handleCommand(cliParser.parseString(commandLine), console, baseDir)
+                        }
+                    } catch (Exception e) {
+                        console.error "Caught exception ${e.message}", e
                     }
                 }
             }
