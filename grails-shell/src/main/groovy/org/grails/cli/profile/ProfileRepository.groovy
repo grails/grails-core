@@ -9,20 +9,25 @@ class ProfileRepository {
     File profilesDirectory = new File(new File(System.getProperty("user.home")), ".grails/repository")
     boolean initialized = false
     long updateInterval = 10*60000L
+    Map<String, Profile> profileCache=[:].asSynchronized()
     
     File getProfileDirectory(String profile) {
         File profileDirectory = new File(new File(profilesDirectory, "profiles"), profile)
         profileDirectory
     }
     
-    Profile getProfile(String profile) {
+    Profile getProfile(String profileName) {
+        Profile profileInstance = profileCache.get(profileName)
+        if(profileInstance) return profileInstance
         if(!initialized) {
             createOrUpdateRepository()
             initialized=true
         }
-        File profileDirectory = getProfileDirectory(profile)
+        File profileDirectory = getProfileDirectory(profileName)
         if(profileDirectory.exists()) {
-            return new SimpleProfile(profile, profileDirectory)
+            profileInstance = new SimpleProfile(profileName, profileDirectory)
+            profileCache.put(profileName, profileInstance)
+            return profileInstance
         } else {
             return null
         }

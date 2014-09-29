@@ -12,12 +12,14 @@ import net.sf.expectit.Expect
 import net.sf.expectit.ExpectBuilder
 
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.grails.cli.profile.CommandLineHandler
+import org.grails.cli.profile.ExecutionContext
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
-import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class GrailsCliSpec extends Specification {
     @Rule
@@ -284,5 +286,45 @@ grails> create-'''
         }
         then:
         retval == 0
+    }
+    
+    @Unroll
+    def "should not exit when command throws exception - showStacktrace:#showStacktrace"() {
+        when:
+        if(showStacktrace) GrailsConsole.getInstance().stacktrace = true
+        CommandLineHandler handler = [handleCommand: { ExecutionContext context ->
+            if(context.commandLine.commandName == 'broken-command') { 
+                throw new RuntimeException("This is broken.")
+            }
+            return false
+        }] as CommandLineHandler
+        cli.profileRepository.getProfile('web').commandLineHandlers << handler
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("broken-command")
+            message = expectPrompt(expect)
+        }
+        then:
+        retval == 0
+        message in expectedMessage
+        where:
+        showStacktrace << [false, true]
+        expectedMessage << [~'''
+Error \\|
+Caught exception This is broken\\. \\(Use --stacktrace to see the full trace\\)
+''', ~'''
+Error \\|
+Caught exception This is broken. \\(NOTE: Stack trace has been filtered. Use --verbose to see entire trace.\\)
+java.lang.RuntimeException: This is broken.
+\tat org.grails.cli.GrailsCliSpec.*
+\tat .*
+\tat .*
+\tat org.grails.cli.GrailsCli.execute\\(GrailsCli.groovy:\\d+\\)
+\tat .*
+
+Error \\|
+Caught exception This is broken.
+''']
     }
 }
