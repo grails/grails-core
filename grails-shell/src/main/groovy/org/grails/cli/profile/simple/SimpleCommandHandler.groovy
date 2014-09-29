@@ -14,28 +14,37 @@ class SimpleCommandHandler implements CommandLineHandler {
     SimpleProfile profile
     List<CommandDescription> commandDescriptions
     Map<String, SimpleCommand> commands
+    Yaml yamlParser=new Yaml()
+    // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
+    JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
     
     void initialize() {
-        Yaml yamlParser=new Yaml()
-        // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
-        JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
         commands = commandFiles.collectEntries { File file ->
-            Map data = file.withReader { 
-                if(file.name.endsWith('.json')) {
-                    jsonSlurper.parse(it) as Map
-                } else {
-                    yamlParser.loadAs(it, Map)
-                }
-            }
+            Map data = readCommandFile(file)
             String commandName = file.name - ~/\.(yml|json)$/
             
             //saveAsJson(new File(file.parent, "${commandName}.json~"), data)
             
-            [commandName, new SimpleCommand(name: commandName, file: file, data: data, profile: profile)]
+            [commandName, createCommand(commandName, file, data)]
         }
         commandDescriptions = commands.collect { String name, SimpleCommand cmd ->
             cmd.description
         }
+    }
+
+    protected Map readCommandFile(File file) {
+        Map data = file.withReader {
+            if(file.name.endsWith('.json')) {
+                jsonSlurper.parse(it) as Map
+            } else {
+                yamlParser.loadAs(it, Map)
+            }
+        }
+        return data
+    }
+
+    protected SimpleCommand createCommand(String commandName, File file, Map data) {
+        new SimpleCommand(name: commandName, file: file, data: data, profile: profile)
     }
 
     private saveAsJson(File file, Map data) {

@@ -26,14 +26,23 @@ class SimpleProfile implements Profile {
     public Iterable<CommandLineHandler> getCommandLineHandlers() {
         if(commandLineHandlers == null) {
             commandLineHandlers = []
-            File commandsDir = new File(profileDir, "commands")
-            Collection<File> yamlFiles = commandsDir.listFiles().findAll { File file ->
-                file.isFile() && file.name ==~ /^.*\.(yml|json)$/ 
-            }.sort(false) { File file -> file.name }
-            SimpleCommandHandler commandHandler = new SimpleCommandHandler(commandFiles: yamlFiles, profile: this)
+            Collection<File> commandFiles = findCommandFiles()
+            SimpleCommandHandler commandHandler = createCommandHandler(commandFiles)
             commandHandler.initialize()
             commandLineHandlers << commandHandler
         }
         commandLineHandlers
     }    
+
+    protected Collection<File> findCommandFiles() {
+        File commandsDir = new File(profileDir, "commands")
+        Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
+            file.isFile() && file.name ==~ /^.*\.(yml|json)$/
+        }.sort(false) { File file -> file.name }
+        return commandFiles
+    }
+
+    protected SimpleCommandHandler createCommandHandler(Collection<File> commandFiles) {
+        return new SimpleCommandHandler(commandFiles: commandFiles, profile: this)
+    }
 }
