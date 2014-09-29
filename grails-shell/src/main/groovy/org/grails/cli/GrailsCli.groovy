@@ -13,6 +13,7 @@ import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
+import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
 class GrailsCli {
@@ -24,6 +25,7 @@ class GrailsCli {
     Boolean ansiEnabled = null
     Character defaultInputMask = null
     ProfileRepository profileRepository=new ProfileRepository()
+    Map<String, Object> applicationConfig
     
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
@@ -34,17 +36,16 @@ class GrailsCli {
             System.setProperty("grails.show.stacktrace", "true")
         }
         
-        File applicationProperties=new File("application.properties")
-        if(!applicationProperties.exists()) {
+        File grailsAppDir=new File("grails-app")
+        if(!grailsAppDir.isDirectory()) {
             if(!mainCommandLine || !mainCommandLine.commandName || mainCommandLine.commandName != 'create-app' || !mainCommandLine.getRemainingArgs()) {
                 System.err.println "usage: create-app appname --profile=web"
                 return 1
             }
             return createApp(mainCommandLine, profileRepository)
         } else {
-            Profile profile = profileRepository.getProfile(DEFAULT_PROFILE_NAME)
-            commandLineHandlers.addAll(profile.getCommandLineHandlers() as Collection)
-            aggregateCompleter.getCompleters().addAll((profile.getCompleters()?:[]) as Collection)
+            applicationConfig = loadApplicationConfig()
+            initializeProfile()
         
             def commandName = mainCommandLine.getCommandName()
             GrailsConsole console=GrailsConsole.getInstance()
@@ -57,25 +58,56 @@ class GrailsCli {
             if(commandName) {
                 handleCommand(mainCommandLine, console, baseDir)
             } else {
-                System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
-                console.reader.addCompleter(aggregateCompleter)
-                console.println("Starting interactive mode...")
-                while(keepRunning) {
-                    try {
-                        String commandLine = console.showPrompt()
-                        if(commandLine==null) {
-                            // CTRL-D was pressed, exit interactive mode
-                            exitInteractiveMode()
-                        } else {
-                            handleCommand(cliParser.parseString(commandLine), console, baseDir)
-                        }
-                    } catch (Exception e) {
-                        console.error "Caught exception ${e.message}", e
-                    }
-                }
+                handleInteractiveMode(console, baseDir)
             }
         }
         return 0
+    }
+
+    private handleInteractiveMode(GrailsConsole console, File baseDir) {
+        System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
+        console.reader.addCompleter(aggregateCompleter)
+        console.println("Starting interactive mode...")
+        while(keepRunning) {
+            try {
+                String commandLine = console.showPrompt()
+                if(commandLine==null) {
+                    // CTRL-D was pressed, exit interactive mode
+                    exitInteractiveMode()
+                } else {
+                    handleCommand(cliParser.parseString(commandLine), console, baseDir)
+                }
+            } catch (Exception e) {
+                console.error "Caught exception ${e.message}", e
+            }
+        }
+    }
+
+    private initializeProfile() {
+        String profileName = navigateMap(applicationConfig, 'grails', 'profile') ?: DEFAULT_PROFILE_NAME
+        Profile profile = profileRepository.getProfile(profileName)
+        commandLineHandlers.addAll(profile.getCommandLineHandlers() as Collection)
+        aggregateCompleter.getCompleters().addAll((profile.getCompleters()?:[]) as Collection)
+    }
+    
+    private Map<String, Object> loadApplicationConfig() {
+        File applicationYml = new File("grails-app/conf/application.yml")
+        if(applicationYml.exists()) {
+            Yaml yamlParser = new Yaml()
+            (Map<String, Object>)applicationYml.withInputStream { 
+                yamlParser.loadAs(it, Map)
+            }
+        } else {
+            [:]
+        }
+    }
+    
+    Object navigateMap(Map<String, Object> map, String... path) {
+        if(path.length == 1) {
+            return map.get(path[0])
+        } else {
+            return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
+        }
     }
 
     private int createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
