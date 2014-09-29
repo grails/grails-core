@@ -5,11 +5,13 @@ import jline.console.completer.Completer
 
 import org.grails.build.interactive.completors.StringsCompleter
 import org.grails.cli.profile.CommandLineHandler
+import org.grails.cli.profile.ProjectContext;
 
 @CompileStatic
-class SimpleProfileCompleter implements Completer {
-    SimpleProfile profile
-
+class CommandLineHandlersCompleter implements Completer {
+    ProjectContext context
+    Closure<Iterable<CommandLineHandler>> commandLineHandlersClosure
+    
     /**
      * Perform a completion operation across all aggregated completers.
      *
@@ -27,8 +29,8 @@ class SimpleProfileCompleter implements Completer {
             completions.add(completion)
         }
         
-        profile.getCommandLineHandlers().each { CommandLineHandler commandLineHandler ->
-            def allCommands = commandLineHandler.listCommands()
+        commandLineHandlersClosure().each { CommandLineHandler commandLineHandler ->
+            def allCommands = commandLineHandler.listCommands(context)
             if (allCommands) {
                 Completer completer = new StringsCompleter(allCommands*.name)
                 completerHandler(completer)
