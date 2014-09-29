@@ -26,6 +26,7 @@ class GrailsCliSpec extends Specification {
     TemporaryFolder tempFolder = new TemporaryFolder()
     
     GrailsCli cli
+    File currentAppDir
     @Shared File previousUserDir
     @Shared Map originalStreams
     
@@ -35,6 +36,8 @@ class GrailsCliSpec extends Specification {
     def setup() {
         GrailsConsole.removeInstance()
         cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0)
+        cli.profileRepository.initialized = true
+        cli.profileRepository.profilesDirectory = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
         chdir(tempFolder.getRoot())
     }
 
@@ -113,8 +116,8 @@ class GrailsCliSpec extends Specification {
     }
     
     private int executeInInteractiveMode(boolean exitByDefault = true, Closure closure) {
-        File appdir = createApp()
-        chdir(appdir)
+        currentAppDir = createApp()
+        chdir(currentAppDir)
         int retval = -1
         ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
         // redirect System.in, System.out, System.err in GrailsConsole
@@ -236,8 +239,14 @@ Creates a controller class and an associated unit test
         then:
         retval == 0
         message == '''
-Creating grails-app/controllers/ShoppingBasket.groovy
-Creating src/test/groovy/ShoppingBasketSpec.groovy
+Creating grails-app/controllers/newapp/ShoppingBasket.groovy
+Creating src/test/groovy/newapp/ShoppingBasketSpec.groovy
+'''
+        new File(currentAppDir, 'grails-app/controllers/newapp/ShoppingBasket.groovy').text == '''package newapp
+class ShoppingBasket {
+
+    def index() { }
+}
 '''
     }
     
@@ -318,6 +327,7 @@ Error \\|
 Caught exception This is broken. \\(NOTE: Stack trace has been filtered. Use --verbose to see entire trace.\\)
 java.lang.RuntimeException: This is broken.
 \tat org.grails.cli.GrailsCliSpec.*
+\tat .*
 \tat .*
 \tat .*
 \tat org.grails.cli.GrailsCli.execute\\(GrailsCli.groovy:\\d+\\)
