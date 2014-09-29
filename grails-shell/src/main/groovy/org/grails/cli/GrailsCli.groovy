@@ -13,6 +13,7 @@ import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.ProjectContext
 import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
@@ -26,6 +27,7 @@ class GrailsCli {
     Character defaultInputMask = null
     ProfileRepository profileRepository=new ProfileRepository()
     Map<String, Object> applicationConfig
+    ProjectContext projectContext
     
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
@@ -55,17 +57,19 @@ class GrailsCli {
                 console.setAnsiEnabled(ansiEnabled)
             }
             File baseDir = new File("").absoluteFile
+            projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             if(commandName) {
-                handleCommand(mainCommandLine, console, baseDir)
+                handleCommand(mainCommandLine)
             } else {
-                handleInteractiveMode(console, baseDir)
+                handleInteractiveMode()
             }
         }
         return 0
     }
 
-    private handleInteractiveMode(GrailsConsole console, File baseDir) {
+    private handleInteractiveMode() {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
+        GrailsConsole console = projectContext.console
         console.reader.addCompleter(aggregateCompleter)
         console.println("Starting interactive mode...")
         while(keepRunning) {
@@ -75,7 +79,7 @@ class GrailsCli {
                     // CTRL-D was pressed, exit interactive mode
                     exitInteractiveMode()
                 } else {
-                    handleCommand(cliParser.parseString(commandLine), console, baseDir)
+                    handleCommand(cliParser.parseString(commandLine))
                 }
             } catch (Exception e) {
                 console.error "Caught exception ${e.message}", e
@@ -86,8 +90,8 @@ class GrailsCli {
     private initializeProfile() {
         String profileName = navigateMap(applicationConfig, 'grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
-        commandLineHandlers.addAll(profile.getCommandLineHandlers() as Collection)
-        aggregateCompleter.getCompleters().addAll((profile.getCompleters()?:[]) as Collection)
+        commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
+        aggregateCompleter.getCompleters().addAll((profile.getCompleters(projectContext)?:[]) as Collection)
     }
     
     private Map<String, Object> loadApplicationConfig() {
@@ -127,8 +131,8 @@ class GrailsCli {
         }
     }
     
-    boolean handleCommand(CommandLine commandLine, GrailsConsole console, File baseDir) {
-        ExecutionContext context = new ExecutionContextImpl(commandLine, console, baseDir, applicationConfig)
+    boolean handleCommand(CommandLine commandLine) {
+        ExecutionContext context = new ExecutionContextImpl(commandLine, projectContext)
         
         if(handleBuiltInCommands(context)) {
             return true
@@ -138,7 +142,7 @@ class GrailsCli {
                  return true
              }
         }
-        console.error("Command not found ${commandLine.commandName}")
+        context.console.error("Command not found ${commandLine.commandName}")
         return false
     }
 
@@ -183,7 +187,7 @@ class GrailsCli {
     private List<CommandDescription> findAllCommands() {
         List<CommandDescription> allCommands=[]
         for(CommandLineHandler handler : commandLineHandlers) {
-            allCommands.addAll((handler.listCommands() ?: []) as Collection)
+            allCommands.addAll((handler.listCommands(projectContext) ?: []) as Collection)
         }
         allCommands
     }
@@ -193,9 +197,15 @@ class GrailsCli {
         System.exit(cli.execute(args))
     }
     
+    
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {
         CommandLine commandLine
+        @Delegate ProjectContext projectContext
+    }
+    
+    @Canonical
+    private static class ProjectContextImpl implements ProjectContext {
         GrailsConsole console
         File baseDir
         Map<String, Object> applicationConfig
