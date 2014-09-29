@@ -115,7 +115,18 @@ class GrailsCliSpec extends Specification {
         chdir(appdir)
         int retval = -1
         ExpectBuilder expectBuilder = createExpectsBuilderWithSystemInOut()
-        Thread cliThread = new Thread({-> retval=cli.execute()} as Runnable)
+        // redirect System.in, System.out, System.err in GrailsConsole
+        def systemIn = System.in
+        def systemOut = System.out
+        def systemErr = System.err
+        GrailsConsole.getInstance().reinitialize(systemIn, systemOut, systemErr)
+        Thread cliThread = new Thread({-> 
+                try {
+                    retval=cli.execute()
+                } catch (Throwable t) {
+                    t.printStackTrace(originalStreams.err)
+                }
+            } as Runnable, "cli-thread")
         cliThread.start()
         Expect expect = expectBuilder.build()
         closure.call(expect)
