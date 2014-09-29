@@ -11,9 +11,25 @@ class RenderCommandStep extends SimpleCommandStep {
         File profileDir = command.profile.profileDir
         File templateFile = new File(profileDir, commandParameters.template)
         
-        String artifactName = context.getCommandLine().getRemainingArgs()[0]
+        String nameAsArgument = context.getCommandLine().getRemainingArgs()[0]
+        List<String> parts = nameAsArgument.split(/\./) as List
         
-        Map<String, String> variables = [('artifact.package.path'): '', ('artifact.name'): artifactName]
+        String artifactName
+        String artifactPackage
+        
+        if(parts.size() == 1) {
+            artifactName = parts[0]
+            artifactPackage = context.navigateConfig('grails', 'codegen', 'defaultPackage')
+        } else {
+            artifactName = parts[-1]
+            artifactPackage = parts[0..-2].join('.')
+        }
+        
+        Map<String, String> variables = [:]
+        variables['artifact.package.name'] = artifactPackage
+        variables['artifact.package.path'] = artifactPackage.replace('.','/')
+        variables['artifact.package'] = "package $artifactPackage\n"
+        variables['artifact.name'] = artifactName
         
         String destinationName = doReplacements(commandParameters.destination, variables)
         File destination = new File(context.baseDir, destinationName).absoluteFile
