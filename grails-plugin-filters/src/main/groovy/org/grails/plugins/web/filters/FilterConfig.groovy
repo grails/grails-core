@@ -15,20 +15,21 @@
  */
 package org.grails.plugins.web.filters
 
-import org.grails.plugins.web.filters.support.DelegateMetaMethod
-import org.grails.plugins.web.filters.support.FilterConfigDelegateMetaMethodTargetStrategy
+import grails.artefact.controller.support.RenderHelper
+import grails.core.GrailsApplication
+import grails.util.GrailsClassUtils
+import grails.web.mvc.FlashScope
+import grails.web.servlet.mvc.GrailsParameterMap
+import grails.web.util.GrailsApplicationAttributes
 
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
-import grails.core.GrailsApplication
-import grails.util.GrailsClassUtils
 import org.grails.plugins.web.controllers.api.ControllersApi
-import grails.web.mvc.FlashScope
-import grails.web.util.GrailsApplicationAttributes
-import grails.web.servlet.mvc.GrailsParameterMap
+import org.grails.plugins.web.filters.support.DelegateMetaMethod
+import org.grails.plugins.web.filters.support.FilterConfigDelegateMetaMethodTargetStrategy
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
@@ -40,7 +41,7 @@ import org.springframework.web.servlet.ModelAndView
  */
 class FilterConfig extends ControllersApi {
     private static final long serialVersionUID = 4420245320722210200L;
-
+    private RenderHelper renderHelper = new RenderHelper()
     String name
     Map scope = [:]
     Closure before
@@ -174,23 +175,23 @@ class FilterConfig extends ControllersApi {
     }
 
     Object render(Object o) {
-        return super.render(this, o)
+        renderHelper.invokeRender this, o
     }
 
     Object render(String txt) {
-        return super.render(this, txt)
+        renderHelper.invokeRender this, txt
     }
 
     Object render(Map args) {
-        return super.render(this, args)
+        renderHelper.invokeRender this, args
     }
 
     Object render(Closure c) {
-        return super.render(this, c)
+        renderHelper.invokeRender this, c
     }
 
     Object render(Map args, Closure c) {
-        return super.render(this, args, c)
+        renderHelper.invokeRender this, args, c
     }
 
     Object bindData(Object target, Object args) {
