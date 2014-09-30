@@ -20,9 +20,9 @@ import grails.core.GrailsApplication
 import grails.databinding.DataBindingSource
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
+import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 import grails.web.databinding.DataBindingUtils
-import grails.web.mvc.FlashScope
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
@@ -48,7 +48,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.validation.BindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
-import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.WebApplicationContextUtils
 import org.springframework.web.servlet.ModelAndView
 
@@ -59,7 +58,7 @@ import org.springframework.web.servlet.ModelAndView
  *
  */
 @CompileStatic
-trait Controller implements ResponseRenderer, DataBinder {
+trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
 
     private ForwardMethod forwardMethod = new ForwardMethod()
     private WithFormMethod withFormMethod = new WithFormMethod()
@@ -67,10 +66,6 @@ trait Controller implements ResponseRenderer, DataBinder {
     private ServletContext servletContext
     private ApplicationContext applicationContext
     
-    HttpServletRequest getRequest() {
-        currentRequestAttributes().getCurrentRequest()
-    }
-
     /**
      * Return true if there are an errors
      * @return true if there are errors
@@ -114,10 +109,6 @@ trait Controller implements ResponseRenderer, DataBinder {
      */
     void setModelAndView(ModelAndView mav) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
-    }
-
-    GrailsWebRequest currentRequestAttributes() {
-        (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
     }
 
     /**
@@ -386,15 +377,6 @@ trait Controller implements ResponseRenderer, DataBinder {
     }
     
     /**
-     * Obtains the GrailsApplicationAttributes instance
-     *
-     * @return The GrailsApplicationAttributes instance
-     */
-    GrailsApplicationAttributes getGrailsAttributes() {
-        currentRequestAttributes().getAttributes()
-    }
-    
-    /**
      * Obtains the ApplicationContext instance
      * @return The ApplicationContext instance
      */
@@ -405,58 +387,4 @@ trait Controller implements ResponseRenderer, DataBinder {
         applicationContext
     }
 
-    /**
-     * Obtains the ServletContext instance
-     *
-     * @return The ServletContext instance
-     */
-    ServletContext getServletContext() {
-        if (servletContext == null) {
-            servletContext = currentRequestAttributes().getServletContext()
-        }
-        servletContext
-    }
-    
-    /**
-     * Obtains the currently executing controller name
-     * @return The controller name
-     */
-    String getControllerName() {
-        currentRequestAttributes().getControllerName()
-    }
-
-    /**
-     * Obtains the currently executing action name
-     * @return The action name
-     */
-    String getActionName() {
-        currentRequestAttributes().getActionName()
-    }
-    
-    /**
-     * Obtains the Grails FlashScope instance
-     *
-     * @return The FlashScope instance
-     */
-    FlashScope getFlash() {
-        currentRequestAttributes().getFlashScope()
-    }
-
-    /**
-     * Obtains the HttpServletResponse instance
-     *
-     * @return The HttpServletResponse instance
-     */
-    HttpServletResponse getResponse() {
-        currentRequestAttributes().getCurrentResponse()
-    }
-
-    /**
-     * Obtains the currently executing web request
-     *
-     * @return The GrailsWebRequest instance
-     */
-    GrailsWebRequest getWebRequest() {
-        currentRequestAttributes()
-    }
 }
