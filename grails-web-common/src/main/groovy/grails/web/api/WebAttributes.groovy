@@ -15,6 +15,7 @@
  */
 package grails.web.api
 
+import grails.core.GrailsApplication
 import grails.web.mvc.FlashScope
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
@@ -24,7 +25,9 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.support.WebApplicationContextUtils
 
 /**
  *
@@ -34,6 +37,9 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 @CompileStatic
 trait WebAttributes {
+    
+    private GrailsApplication grailsApplication
+    private ApplicationContext applicationContext
     
     HttpServletRequest getRequest() {
         currentRequestAttributes().getCurrentRequest()
@@ -105,5 +111,27 @@ trait WebAttributes {
      */
     GrailsWebRequest getWebRequest() {
         currentRequestAttributes()
+    }
+    
+    /**
+     * Obtains the GrailsApplication instance
+     * @return The GrailsApplication instance
+     */
+    GrailsApplication getGrailsApplication() {
+        if (grailsApplication == null) {
+            grailsApplication = getGrailsAttributes().getGrailsApplication()
+        }
+        grailsApplication
+    }
+    
+    /**
+     * Obtains the ApplicationContext instance
+     * @return The ApplicationContext instance
+     */
+    ApplicationContext getApplicationContext() {
+        if (applicationContext == null) {
+            applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        }
+        applicationContext
     }
 }

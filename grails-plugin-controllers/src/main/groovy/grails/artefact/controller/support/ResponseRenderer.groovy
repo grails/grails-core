@@ -15,11 +15,14 @@
  */
 package grails.artefact.controller.support
 
+import groovy.transform.CompileStatic
+
 /**
  * 
  * @author Jeff Brown
  * @since 3.0
  */
+@CompileStatic
 trait ResponseRenderer {
     private RenderHelper helper = new RenderHelper()
     

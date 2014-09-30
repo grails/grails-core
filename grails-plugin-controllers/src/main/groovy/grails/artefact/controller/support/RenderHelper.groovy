@@ -428,7 +428,7 @@ class RenderHelper {
         actionResultTransformers
     }
     
-    public invokeRender(GroovyObject target, Object... arguments) {
+    public invokeRender(target, Object... arguments) {
         if (arguments.length == 0) {
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments)
         }

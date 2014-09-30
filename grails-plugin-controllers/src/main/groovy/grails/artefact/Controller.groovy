@@ -62,10 +62,8 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
 
     private ForwardMethod forwardMethod = new ForwardMethod()
     private WithFormMethod withFormMethod = new WithFormMethod()
-    private GrailsApplication grailsApplication
     private ServletContext servletContext
-    private ApplicationContext applicationContext
-    
+
     /**
      * Return true if there are an errors
      * @return true if there are errors
@@ -365,26 +363,4 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
         withFormMethod.withForm getWebRequest(), callable
     }
     
-    /**
-     * Obtains the GrailsApplication instance
-     * @return The GrailsApplication instance
-     */
-    GrailsApplication getGrailsApplication() {
-        if (grailsApplication == null) {
-            grailsApplication = getGrailsAttributes().getGrailsApplication()
-        }
-        grailsApplication
-    }
-    
-    /**
-     * Obtains the ApplicationContext instance
-     * @return The ApplicationContext instance
-     */
-    ApplicationContext getApplicationContext() {
-        if (applicationContext == null) {
-            applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        }
-        applicationContext
-    }
-
 }

@@ -16,13 +16,16 @@
 package grails.artefact
 
 import grails.util.Environment
+import grails.web.api.WebAttributes
 import grails.web.util.GrailsApplicationAttributes
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.buffer.GrailsPrintWriter
 import org.grails.web.encoder.OutputEncodingStack
 import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.taglib.AbstractTemplateVariableBinding
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput
 import org.grails.web.taglib.TemplateVariableBinding
@@ -37,7 +40,8 @@ import org.springframework.web.context.request.RequestAttributes
  * @author Jeff Brown
  *
  */
-trait TagLibrary {
+@CompileStatic
+trait TagLibrary implements WebAttributes {
     
     TagLibraryLookup tagLibraryLookup
     
@@ -84,9 +88,13 @@ trait TagLibrary {
     }
     
     def withCodec(Object codecInfo, Closure<?> body) {
-        WithCodecHelper.withCodec(getGrailsApplication(null), codecInfo, body)
+        WithCodecHelper.withCodec(getGrailsApplication(), codecInfo, body)
     }
     
+    @CompileStatic(TypeCheckingMode.SKIP)
+    String getTaglibNamespace() {
+        getNamespace()
+    }
     /**
      * Property missing implementation that looks up tag library namespaces or tags in the default namespace
      *
@@ -101,7 +109,7 @@ trait TagLibrary {
 
             Object result = gspTagLibraryLookup.lookupNamespaceDispatcher(name);
             if (result == null) {
-                String namespace = getNamespace();
+                String namespace = getTaglibNamespace();
                 GroovyObject tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name);
                 if (tagLibrary == null) {
                     tagLibrary = gspTagLibraryLookup.lookupTagLibrary(TagOutput.DEFAULT_NAMESPACE, name);
