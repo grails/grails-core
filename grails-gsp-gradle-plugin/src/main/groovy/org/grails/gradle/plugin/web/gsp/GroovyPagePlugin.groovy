@@ -26,57 +26,31 @@ class GroovyPagePlugin implements Plugin<Project> {
 
         def mainSourceSet = findMainSourceSet(project)
 
-        def compileGroovyPages = project.tasks.create("compileGroovyPages") << {
-            def antBuilder = project.services.get(IsolatedAntBuilder)
+        def destDir = mainSourceSet?.output?.classesDir ?: new File(project.buildDir, "main/classes")
 
-            antBuilder.withClasspath(project.configurations.compile).execute {
-                taskdef (name: 'gspc', classname : 'org.grails.web.pages.GroovyPageCompilerTask')
-                def dest = mainSourceSet?.output?.classesDir ?: new File(project.buildDir, "classes/main")
-                def tmpdir = new File(project.buildDir, "gsptmp")
-                dest.mkdirs()
-
-                gspc(destdir: dest,
-                    srcdir:"${project.projectDir}/grails-app/views",
-                    packagename: project.name,
-                    serverpath:"/WEB-INF/grails-app/views/",
-                    tmpdir: tmpdir) {
-                    classpath {
-                        pathelement( path: dest.absolutePath )
-                        pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
-                    }
-                }
-
-                def webAppDir = new File(project.projectDir, "web-app")
-                if(webAppDir.exists()) {
-                    gspc(destdir: dest,
-                            srcdir:webAppDir,
-                            packagename: project.name,
-                            serverpath:"/",
-                            tmpdir: tmpdir) {
-                        classpath {
-                            pathelement( path: dest.absolutePath )
-                            pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
-                        }
-                    }
-                }
-
-                def groovyTemplatesDir = new File(project.projectDir, "src/main/templates")
-                if(groovyTemplatesDir.exists()) {
-                    gspc(destdir: dest,
-                            srcdir:groovyTemplatesDir,
-                            packagename: project.name,
-                            serverpath:"/",
-                            tmpdir: tmpdir) {
-                        classpath {
-                            pathelement( path: dest.absolutePath )
-                            pathelement( path: (project.configurations.gspCompile + project.configurations.compile ).asPath)
-                        }
-                    }
-                }
-            }
+        project.tasks.create("compileGroovyPages", GroovyPageCompileTask) {
+            destinationDir = destDir
+            source = project.file("${project.projectDir}/grails-app/views")
+            serverpath = "/WEB-INF/grails-app/views/"
+            classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
         }
 
+        project.tasks.create("compileWebappGroovyPages", GroovyPageCompileTask) {
+            destinationDir = destDir
+            source = project.file("${project.projectDir}/web-app")
+            serverpath = "/"
+            classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
+        }
 
+        project.tasks.create("compileMainTemplatesGroovyPages", GroovyPageCompileTask) {
+            destinationDir = destDir
+            source = project.file("${project.projectDir}/src/main/templates")
+            serverpath = "/"
+            classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
+        }
+
+        def compileGroovyPages = project.tasks.getByName("compileGroovyPages")
+        compileGroovyPages.dependsOn( project.tasks.getByName('compileWebappGroovyPages'), project.tasks.getByName('compileMainTemplatesGroovyPages'))
         compileGroovyPages.dependsOn( project.tasks.getByName("compileGroovy") )
         project.tasks.getByName('assemble').dependsOn(compileGroovyPages)
     }
@@ -92,3 +66,5 @@ class GroovyPagePlugin implements Plugin<Project> {
         return sourceSets?.find { SourceSet sourceSet -> sourceSet.name == SourceSet.MAIN_SOURCE_SET_NAME }
     }
 }
+
+
