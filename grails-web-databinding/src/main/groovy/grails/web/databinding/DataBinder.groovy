@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact.controller.support
+package grails.web.databinding
 
 import grails.databinding.CollectionDataBindingSource
-import grails.web.databinding.DataBindingUtils
 import groovy.transform.CompileStatic
 
 import javax.servlet.ServletRequest

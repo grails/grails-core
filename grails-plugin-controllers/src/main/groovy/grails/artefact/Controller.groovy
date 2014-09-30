@@ -15,11 +15,11 @@
  */
 package grails.artefact
 
-import grails.artefact.controller.support.DataBinder
 import grails.artefact.controller.support.ResponseRenderer
 import grails.databinding.DataBindingSource
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
+import grails.web.databinding.DataBinder
 import grails.web.databinding.DataBindingUtils
 import grails.web.util.GrailsApplicationAttributes
 
