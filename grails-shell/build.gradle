@@ -2,6 +2,10 @@ apply plugin:'application'
 
 mainClassName = "org.grails.cli.GrailsCli"
 
+repositories { 
+    jcenter()
+}
+
 dependencies {
     compile project(":grails-bootstrap")
     compile "org.apache.ant:ant:$antVersion"
@@ -10,9 +14,12 @@ dependencies {
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile "jline:jline:$jlineVersion"
     compile 'org.yaml:snakeyaml:1.14'
+    compile "org.gradle:gradle-tooling-api:${gradle.gradleVersion}"
 
     testCompile "net.sf.expectit:expectit-core:0.5.0"
     testCompile "com.github.jnr:jnr-posix:3.0.6"
+
+    testRuntime "org.slf4j:slf4j-simple:$slf4jVersion"
 }
 
 eclipse {
