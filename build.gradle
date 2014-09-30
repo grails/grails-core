@@ -49,6 +49,7 @@ ext {
     concurrentlinkedhashmapVersion = "1.4"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
+    tomcatVersion = "7.0.55"
 }
 
 version = grailsVersion
