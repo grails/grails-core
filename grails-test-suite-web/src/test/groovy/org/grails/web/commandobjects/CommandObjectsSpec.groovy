@@ -396,6 +396,22 @@ class CommandObjectsSpec extends Specification {
         then:
         1 == model.co.validationCounter
     }
+
+    @Issue('GRAILS-11694')
+    void "Test validating a command object that has a computed property only validates actual properties"() {
+        when:
+        def ovc = new OtherValidateableClass()
+        ovc.myProperty = '10'
+
+        then:
+        10L == ovc.myPropertyAsLong
+
+        when:
+        ovc.myProperty = 'not an actual long'
+
+        then:
+        assertFalse ovc.validate()
+    }
 }
 
 @Artefact('Controller')
