@@ -30,6 +30,7 @@ class SubController extends BaseController {
 """
 
         gcl.parseClass """
+@grails.artefact.Artefact('Controller')
 class TagLibTestController {
     def list = {
         StringWriter w = new StringWriter()

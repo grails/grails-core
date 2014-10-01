@@ -71,6 +71,14 @@ class ControllersRestApi {
     public <T> Object respond(controller, Map args, value) {
         respond(controller, value, args)
     }
+    
+    // Calls to render used to be delegated to controllersApi.
+    // This method is here until methods in ControllersRestApi
+    // can be migrated to a trait. 
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private render(controller, args) {
+        controller.render args
+    }
 
     /**
      * The respond method will attempt to delivery an appropriate response for the

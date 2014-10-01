@@ -15,20 +15,23 @@
  */
 package grails.artefact
 
-import grails.databinding.CollectionDataBindingSource
+import grails.artefact.controller.support.ResponseRenderer
+import grails.core.GrailsApplication
 import grails.databinding.DataBindingSource
-import grails.util.CollectionUtils
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
+import grails.web.api.WebAttributes
+import grails.web.databinding.DataBinder
 import grails.web.databinding.DataBindingUtils
+import grails.web.util.GrailsApplicationAttributes
+import groovy.transform.CompileStatic
 
 import java.lang.reflect.Method
 
-import javax.servlet.ServletRequest
+import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
@@ -36,6 +39,8 @@ import org.grails.plugins.support.WebMetaUtils
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData
 import org.grails.plugins.web.controllers.metaclass.ChainMethod
+import org.grails.plugins.web.controllers.metaclass.ForwardMethod
+import org.grails.plugins.web.controllers.metaclass.WithFormMethod
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
@@ -43,7 +48,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.validation.BindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
-import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.support.WebApplicationContextUtils
 import org.springframework.web.servlet.ModelAndView
 
 /**
@@ -52,8 +57,13 @@ import org.springframework.web.servlet.ModelAndView
  * @since 3.0
  *
  */
-trait Controller {
-    
+@CompileStatic
+trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
+
+    private ForwardMethod forwardMethod = new ForwardMethod()
+    private WithFormMethod withFormMethod = new WithFormMethod()
+    private ServletContext servletContext
+
     /**
      * Return true if there are an errors
      * @return true if there are errors
@@ -77,7 +87,7 @@ trait Controller {
      * @return The Errors instance
      */
     Errors getErrors() {
-        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
+        (Errors)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
     }
 
 
@@ -87,7 +97,7 @@ trait Controller {
      * @return The ModelAndView
      */
     ModelAndView getModelAndView() {
-        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
+        (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
     }
 
     /**
@@ -97,10 +107,6 @@ trait Controller {
      */
     void setModelAndView(ModelAndView mav) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
-    }
-
-    GrailsWebRequest currentRequestAttributes() {
-        RequestContextHolder.currentRequestAttributes()
     }
 
     /**
@@ -125,11 +131,11 @@ trait Controller {
         try {
             final DataBindingSource dataBindingSource = DataBindingUtils
                     .createDataBindingSource(
-                            getGrailsApplication(), type,
-                            request)
+                    getGrailsApplication(), type,
+                    request)
             final DataBindingSource commandObjectBindingSource = WebMetaUtils
                     .getCommandObjectBindingSourceForPrefix(
-                            commandObjectParameterName, dataBindingSource)
+                    commandObjectParameterName, dataBindingSource)
             def entityIdentifierValue = null
             final boolean isDomainClass = DomainClassArtefactHandler
                     .isDomainClass(type)
@@ -145,7 +151,7 @@ trait Controller {
             if (entityIdentifierValue instanceof String) {
                 entityIdentifierValue = ((String) entityIdentifierValue).trim()
                 if ("".equals(entityIdentifierValue)
-                        || "null".equals(entityIdentifierValue)) {
+                || "null".equals(entityIdentifierValue)) {
                     entityIdentifierValue = null
                 }
             }
@@ -169,18 +175,18 @@ trait Controller {
             }
 
             if (commandObjectInstance != null
-                    && commandObjectBindingSource != null) {
+            && commandObjectBindingSource != null) {
                 final boolean shouldDoDataBinding
 
                 if (entityIdentifierValue != null) {
                     switch (requestMethod) {
-                    case HttpMethod.PATCH:
-                    case HttpMethod.POST:
-                    case HttpMethod.PUT:
-                        shouldDoDataBinding = true
-                        break
-                    default:
-                        shouldDoDataBinding = false
+                        case HttpMethod.PATCH:
+                        case HttpMethod.POST:
+                        case HttpMethod.PUT:
+                            shouldDoDataBinding = true
+                            break
+                        default:
+                            shouldDoDataBinding = false
                     }
                 } else {
                     shouldDoDataBinding = true
@@ -243,11 +249,11 @@ trait Controller {
         }
         
         Method handlerMethod
-        final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = GrailsClassUtils.getStaticFieldValue(this.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME)
+        final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = (List<ControllerExceptionHandlerMetaData>)GrailsClassUtils.getStaticFieldValue(this.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME)
         if(exceptionHandlerMetaDataInstances) {
 
             // find all of the handler methods which could accept this exception type
-            final List<ControllerExceptionHandlerMetaData> matches = exceptionHandlerMetaDataInstances.findAll { ControllerExceptionHandlerMetaData cemd ->
+            final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>)exceptionHandlerMetaDataInstances.findAll { ControllerExceptionHandlerMetaData cemd ->
                 cemd.exceptionType.isAssignableFrom(exceptionType)
             }
 
@@ -266,43 +272,6 @@ trait Controller {
         }
 
         handlerMethod
-    }
-    
-    def bindData(target, bindingSource, Map includeExclude) {
-        bindData target, bindingSource, includeExclude, null
-    }
-
-    def bindData(target, bindingSource, Map includeExclude, String filter) {
-        def include = includeExclude?.include
-        def exclude = includeExclude?.exclude
-        List includeList = include instanceof String ? [include] : include
-        List excludeList = exclude instanceof String ? [exclude] : exclude
-        DataBindingUtils.bindObjectToInstance target, bindingSource, includeList, excludeList, filter
-        this
-    }
-
-    def bindData(target, bindingSource) {
-        bindData target, bindingSource, Collections.EMPTY_MAP, null
-    }
-    
-    def bindData(target, bindingSource, String filter) {
-        bindData target, bindingSource, Collections.EMPTY_MAP, filter
-    }
-    
-    void bindData(Class targetType, Collection collectionToPopulate, CollectionDataBindingSource collectionBindingSource) {
-        DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
-    }
-
-    void bindData(Class targetType, Collection collectionToPopulate, ServletRequest request) {
-        DataBindingUtils.bindToCollection targetType, collectionToPopulate, request
-    }
-
-    def bindData(target, bindingSource, List excludes) {
-        bindData target, bindingSource, [exclude: excludes], null
-    }
-
-    def bindData(target, bindingSource, List excludes, String filter) {
-        bindData target, bindingSource, [exclude: excludes], filter
     }
     
     /**
@@ -347,7 +316,7 @@ trait Controller {
      * @return The chainModel
      */
     Map getChainModel() {
-        getFlash().get("chainModel")
+        (Map)getFlash().get("chainModel")
     }
     
     /**
@@ -372,4 +341,26 @@ trait Controller {
             response?.setHeader headerName, headerValue.toString()
         }
     }
+
+    /**
+     * Forwards a request for the given parameters using the RequestDispatchers forward method
+     *
+     * @param params The parameters
+     * @return The forwarded URL
+     */
+    String forward(Map params) {
+        forwardMethod.forward getRequest(), getResponse(), params
+    }
+
+
+    /**
+     * Used the synchronizer token pattern to avoid duplicate form submissions
+     *
+     * @param callable The closure to execute
+     * @return The result of the closure execution
+     */
+    def withForm(Closure callable) {
+        withFormMethod.withForm getWebRequest(), callable
+    }
+    
 }

@@ -1,8 +1,9 @@
 package grails.test.web
 
-import spock.lang.Specification
+import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 import spock.lang.Issue
+import spock.lang.Specification
 
 @TestFor(YourController)
 @Issue('GRAILS-9196')
@@ -19,6 +20,7 @@ class GetHeadersFromResponseSpec extends Specification{
     }
 }
 
+@Artefact('Controller')
 class YourController {
 
     def index() {
