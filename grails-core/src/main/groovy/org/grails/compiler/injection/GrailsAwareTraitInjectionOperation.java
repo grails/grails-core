@@ -20,7 +20,9 @@ import grails.compiler.traits.TraitInjector;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -50,7 +52,11 @@ public class GrailsAwareTraitInjectionOperation extends
     protected CompilationUnit unit;
     protected static List<TraitInjector> traitInjectors;
     private static final String PACKAGE_TO_SCAN = "grails.compiler.traits";
-
+    
+    // TODO: this is a temporary workaround to keep track of which
+    // classes have already had their traits extended.  
+    private static Set<String> EXTEND_TRAIT_CLASSES = new HashSet<String>();
+    
     public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
         this.unit = unit;
         initializeState();
@@ -94,7 +100,10 @@ public class GrailsAwareTraitInjectionOperation extends
             }
         }
         if(unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
-            TraitComposer.doExtendTraits(classNode, source, unit);
+            if(!EXTEND_TRAIT_CLASSES.contains(classNode.getName())) {
+                TraitComposer.doExtendTraits(classNode, source, unit);
+                EXTEND_TRAIT_CLASSES.add(classNode.getName());
+            }
         }
     }
 
