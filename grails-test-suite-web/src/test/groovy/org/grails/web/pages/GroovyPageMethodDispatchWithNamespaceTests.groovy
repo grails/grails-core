@@ -1,5 +1,6 @@
 package org.grails.web.pages
 
+import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.web.pages.GroovyPagesMetaUtils
 import org.springframework.web.context.request.RequestContextHolder
@@ -7,6 +8,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class GroovyPageMethodDispatchWithNamespaceTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
+        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
         gcl.parseClass(
 """
 import org.grails.web.taglib.*

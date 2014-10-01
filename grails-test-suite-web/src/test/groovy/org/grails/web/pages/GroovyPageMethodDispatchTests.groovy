@@ -1,12 +1,14 @@
 package org.grails.web.pages
 
-import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.buffer.GrailsPrintWriter
+import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation
+import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
 class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
+        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
         gcl.parseClass(
 """
 import org.grails.web.taglib.*
