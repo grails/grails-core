@@ -17,6 +17,7 @@ package org.grails.compiler.injection;
 
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.ClassInjector;
+import grails.compiler.ast.GlobalClassInjector;
 import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
@@ -50,6 +51,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     private static final String INJECTOR_CODEHAUS_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
     private static ClassInjector[] classInjectors;
+    private static ClassInjector[] globalClassInjectors;
     private ClassInjector[] localClassInjectors;
 
     public GrailsAwareInjectionOperation() {
@@ -74,6 +76,13 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
             initializeState();
         }
         return classInjectors;
+    }
+
+    public static ClassInjector[] getGlobalClassInjectors() {
+        if (classInjectors == null) {
+            initializeState();
+        }
+        return globalClassInjectors;
     }
 
     public ClassInjector[] getLocalClassInjectors() {
@@ -106,6 +115,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 resources = scanForPatterns(resolver, pattern2, pattern);
             }
             List<ClassInjector> injectors = new ArrayList<ClassInjector>();
+            List<ClassInjector> globalInjectors = new ArrayList<ClassInjector>();
             Set<Class> injectorClasses = new HashSet<Class>();
             CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(classLoader);
             for (Resource resource : resources) {
@@ -122,7 +132,11 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                         if (ClassInjector.class.isAssignableFrom(injectorClass)) {
 
                             injectorClasses.add(injectorClass);
-                            injectors.add((ClassInjector) injectorClass.newInstance());
+                            ClassInjector classInjector = (ClassInjector) injectorClass.newInstance();
+                            injectors.add(classInjector);
+                            if(GlobalClassInjector.class.isAssignableFrom(injectorClass)) {
+                                globalInjectors.add(classInjector);
+                            }
                         }
                     }
                 } catch (ClassNotFoundException e) {
@@ -149,6 +163,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 }
             });
             classInjectors = injectors.toArray(new ClassInjector[injectors.size()]);
+            globalClassInjectors = globalInjectors.toArray(new ClassInjector[globalInjectors.size()]);
         } catch (IOException e) {
             // ignore
         }

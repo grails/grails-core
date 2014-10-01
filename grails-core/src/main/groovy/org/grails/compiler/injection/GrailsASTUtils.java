@@ -704,7 +704,7 @@ public class GrailsASTUtils {
      * @param childClass The sub class the check
      * @return true if the childClass is either equal to or a sub class of the specified superClass
      */
-    private static boolean isAssignableFrom(ClassNode superClass, ClassNode childClass) {
+    public static boolean isAssignableFrom(ClassNode superClass, ClassNode childClass) {
         ClassNode currentSuper = childClass;
         while (currentSuper != null)  {
             if (currentSuper.equals(superClass)) {

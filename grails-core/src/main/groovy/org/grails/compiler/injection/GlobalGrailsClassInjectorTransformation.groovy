@@ -43,7 +43,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
     void visit(ASTNode[] nodes, SourceUnit source) {
 
         ModuleNode ast = source.getAST();
-        List<ClassNode> classes = ast.getClasses();
+        List<ClassNode> classes = new ArrayList<>(ast.getClasses());
 
         URL url = null
         final String filename = source.name
@@ -82,11 +82,14 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         Set<String> transformedClasses = []
         String pluginClassName = null
+
         for (ClassNode classNode : classes) {
             if(classNode.name.endsWith("GrailsPlugin")) {
                 pluginClassName = classNode.name
                 continue
             }
+
+
             for(ArtefactHandler handler in artefactHandlers) {
                 if(handler.isArtefact(classNode)) {
                     if(!classNode.getAnnotations(ARTEFACT_CLASS_NODE)) {
@@ -107,10 +110,17 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             }
 
 
+            if(!transformedClasses.contains(classNode.name)) {
+                def globalClassInjectors = GrailsAwareInjectionOperation.globalClassInjectors
+
+                for(ClassInjector injector in globalClassInjectors) {
+                    injector.performInjection(source, classNode)
+                }
+            }
         }
 
-        // now create or update grails-plugin.xml
 
+        // now create or update grails-plugin.xml
         // first check if plugin.xml exists
         def compilationTargetDirectory = source.configuration.targetDirectory
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
