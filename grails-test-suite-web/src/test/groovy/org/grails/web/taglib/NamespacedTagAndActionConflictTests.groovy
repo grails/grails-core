@@ -13,7 +13,6 @@ class FeedsTagLib {
         out << "rss feed"
     }
 }
-@grails.artefact.Artefact('Controller')
 class TestController {
     def feed = {
         "foo"

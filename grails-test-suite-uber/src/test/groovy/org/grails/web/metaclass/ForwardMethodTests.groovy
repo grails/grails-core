@@ -1,7 +1,5 @@
 package org.grails.web.metaclass
 
-import grails.artefact.Artefact
-
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
@@ -26,7 +24,6 @@ class ForwardMethodTests extends AbstractGrailsControllerTests {
     }
 }
 
-@Artefact('Controller')
 class ForwardingController {
     def one = {
         forward(action:'two')

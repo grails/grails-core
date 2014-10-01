@@ -1,6 +1,5 @@
 package org.grails.web.binding
 
-import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 
@@ -41,7 +40,6 @@ class JSONRequestToResponseRenderingSpec extends Specification {
     }
 }
 
-@Artefact('Controller')
 class ArrayController {
     def list() {
         def json = request.JSON

@@ -1,6 +1,5 @@
 package org.grails.web.binding
 
-import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
@@ -39,7 +38,6 @@ class BindXmlWithAssociationTests {
     }
 }
 
-@Artefact('Controller')
 class PersonController {
 
     def save = {
