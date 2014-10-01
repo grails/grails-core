@@ -99,7 +99,9 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                         ArtefactTypeAstTransformation.performInjection(source, classNode, injectors)
 
                         List<TraitInjector> traitInjectorsToUse = traitInjectorCache[handler.type]
-                        grailsTraitInjector.performTraitInjection(source, classNode, traitInjectorsToUse)
+                        if(traitInjectorsToUse != null && traitInjectorsToUse.size() > 0) {
+                            grailsTraitInjector.performTraitInjection(source, classNode, traitInjectorsToUse)
+                        }
                     }
                 }
             }

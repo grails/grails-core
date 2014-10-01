@@ -100,7 +100,9 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
                     }
                 }
                 try {
-                    grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
+                    if(injectorsToUse.size() > 0) {
+                        grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
+                    }
                 } catch (RuntimeException e) {
                     try {
                         GrailsConsole.getInstance().error("Error occurred calling Trait injector: "
