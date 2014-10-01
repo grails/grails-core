@@ -59,7 +59,7 @@ class GrailsCli {
             File baseDir = new File("").absoluteFile
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             if(commandName) {
-                handleCommand(mainCommandLine)
+                handleCommand(args.join(" "), mainCommandLine)
             } else {
                 handleInteractiveMode()
             }
@@ -79,7 +79,7 @@ class GrailsCli {
                     // CTRL-D was pressed, exit interactive mode
                     exitInteractiveMode()
                 } else {
-                    handleCommand(cliParser.parseString(commandLine))
+                    handleCommand(commandLine, cliParser.parseString(commandLine))
                 }
             } catch (Exception e) {
                 console.error "Caught exception ${e.message}", e
@@ -131,8 +131,8 @@ class GrailsCli {
         }
     }
     
-    boolean handleCommand(CommandLine commandLine) {
-        ExecutionContext context = new ExecutionContextImpl(commandLine, projectContext)
+    boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
+        ExecutionContext context = new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
         
         if(handleBuiltInCommands(context)) {
             return true
@@ -200,6 +200,7 @@ class GrailsCli {
     
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {
+        String unparsedCommandLine
         CommandLine commandLine
         @Delegate ProjectContext projectContext
     }
