@@ -13,12 +13,12 @@ class ReverseUrlMappingToDefaultActionTests extends AbstractGrailsTagTests {
 class UrlMappings {
     static mappings = {
             "/$id?"{
-                controller = "content"
+                controller = "reverseUrlMappingContent"
                 action = "view"
             }
 
             "/$dir/$id?"{
-                controller = "content"
+                controller = "reverseUrlMappingContent"
                 action = "view"
             }
     }
@@ -26,11 +26,11 @@ class UrlMappings {
 
         gcl.parseClass '''
 @grails.artefact.Artefact("Controller")
-class ContentController {
+class ReverseUrlMappingContentController {
     def view = {}
 }
 @grails.artefact.Artefact("Controller")
-class TestController {
+class ReverseUrlMappingTestController {
     def foo = {}
     def index = {}
 }
@@ -39,7 +39,7 @@ class TestController {
 
     void testLinkTagRendering() {
 
-        def template = '<g:link url="[controller:\'content\', params:[dir:\'about\'], id:\'index\']">click</g:link>'
+        def template = '<g:link url="[controller:\'reverseUrlMappingContent\', params:[dir:\'about\'], id:\'index\']">click</g:link>'
         assertOutputEquals '<a href="/about/index">click</a>', template
     }
 }
