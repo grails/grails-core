@@ -149,4 +149,8 @@ public class GrailsAwareTraitInjectionOperation extends
             }
         }
     }
+    
+    public static void clearExtendedClasses() {
+        EXTEND_TRAIT_CLASSES.clear();
+    }
 }

@@ -1,11 +1,17 @@
 package org.grails.web.pages
 
 import grails.core.GrailsApplication
+
 import org.grails.web.servlet.DefaultGrailsApplicationAttributes
+
 import grails.web.util.GrailsApplicationAttributes
+
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
+
 import grails.web.servlet.mvc.GrailsParameterMap
+
 import org.grails.buffer.GrailsPrintWriterAdapter;
+import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 import org.springframework.context.ApplicationContext
 
 /**
@@ -21,6 +27,7 @@ import org.springframework.context.ApplicationContext
 class GroovyPageTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
+        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
         String taglibCode = """import org.grails.web.taglib.*
         import grails.gsp.*
 

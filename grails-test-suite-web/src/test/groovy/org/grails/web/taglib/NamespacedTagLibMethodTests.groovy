@@ -1,5 +1,6 @@
 package org.grails.web.taglib
 
+import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 import org.grails.core.artefact.TagLibArtefactHandler
 
 /**
@@ -58,6 +59,7 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
     }
 
     protected void onInit() {
+        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
         def tagClass = gcl.parseClass('''
 import grails.gsp.*
 

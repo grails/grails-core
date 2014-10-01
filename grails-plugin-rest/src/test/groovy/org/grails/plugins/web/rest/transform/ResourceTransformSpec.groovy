@@ -8,6 +8,7 @@ import grails.web.Action
 import java.lang.reflect.Method
 
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 
 import spock.lang.Issue
 import spock.lang.Specification
@@ -36,6 +37,7 @@ class ResourceTransformSpec extends Specification {
     @Unroll
     void "Test that the resource transform creates a controller class when super class is #superClass"() {
          given:"A parsed class with a @Resource annotation"
+            GrailsAwareTraitInjectionOperation.clearExtendedClasses()
             def gcl = createGroovyClassLoader()
             gcl.parseClass("""
 import grails.rest.*
@@ -84,6 +86,7 @@ class Book {
     @Unroll
     void "Test that the resource transform creates a read only controller class when super class is #superClass"() {
         given:"A parsed class with a @Resource annotation"
+        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
         def gcl = createGroovyClassLoader()
         gcl.parseClass("""
 import grails.rest.*

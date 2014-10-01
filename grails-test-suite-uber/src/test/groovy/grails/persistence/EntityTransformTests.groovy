@@ -65,16 +65,16 @@ p = new Permission(user:u, permission:"uber")
         def entity = evaluate("""
           import grails.persistence.*
           @Entity
-          class EntityTransformTest {
+          class EntityTransformTest2 {
 
                 boolean enabled
                 int cash
-                EntityTransformTest() {
+                EntityTransformTest2() {
                     enabled = true
                     cash = 30
                 }
           }
-          new EntityTransformTest(cash: 42)
+          new EntityTransformTest2(cash: 42)
         """)
 
         assert entity != null
@@ -86,16 +86,16 @@ p = new Permission(user:u, permission:"uber")
         def entity = evaluate("""
           import grails.persistence.*
           @Entity
-          class EntityTransformTest {
+          class EntityTransformTest3 {
 
-               static belongsTo = [one:EntityTransformTest]
-               static hasMany = [many:EntityTransformTest]
+               static belongsTo = [one:EntityTransformTest3]
+               static hasMany = [many:EntityTransformTest3]
 
                static constraints = {
                     id bindable:true
                }
           }
-          new EntityTransformTest()
+          new EntityTransformTest3()
         """)
 
         assertNull entity.id
