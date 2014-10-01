@@ -3,8 +3,6 @@ package org.grails.web.taglib
 import java.beans.PropertyEditorSupport
 
 import grails.core.GrailsApplication
-
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
 
@@ -15,7 +13,7 @@ import org.springframework.beans.PropertyEditorRegistry
 class PropertyEditorTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
-        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
+
         gcl = new GroovyClassLoader(getClass().classLoader)
         gcl.parseClass '''
 import org.grails.web.taglib.*

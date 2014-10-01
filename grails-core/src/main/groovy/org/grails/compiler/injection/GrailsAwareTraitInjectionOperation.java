@@ -20,9 +20,7 @@ import grails.compiler.traits.TraitInjector;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -52,11 +50,7 @@ public class GrailsAwareTraitInjectionOperation extends
     protected CompilationUnit unit;
     protected static List<TraitInjector> traitInjectors;
     private static final String PACKAGE_TO_SCAN = "grails.compiler.traits";
-    
-    // TODO: this is a temporary workaround to keep track of which
-    // classes have already had their traits extended.  
-    private static Set<String> EXTEND_TRAIT_CLASSES = new HashSet<String>();
-    
+
     public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
         this.unit = unit;
         initializeState();
@@ -92,18 +86,18 @@ public class GrailsAwareTraitInjectionOperation extends
 
     public void performTraitInjection(SourceUnit source, ClassNode classNode,
             List<TraitInjector> injectorsToUse) {
+        boolean traitsAdded = false;
         for (TraitInjector injector : injectorsToUse) {
             Class<?> trait = injector.getTrait();
             ClassNode traitClassNode = ClassHelper.make(trait);
             if (!classNode.implementsInterface(traitClassNode)) {
                 classNode.addInterface(traitClassNode);
+                traitsAdded = true;
             }
         }
-        if(unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
-            if(!EXTEND_TRAIT_CLASSES.contains(classNode.getName())) {
-                TraitComposer.doExtendTraits(classNode, source, unit);
-                EXTEND_TRAIT_CLASSES.add(classNode.getName());
-            }
+        if(traitsAdded && 
+           unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
+            TraitComposer.doExtendTraits(classNode, source, unit);
         }
     }
 
@@ -148,9 +142,5 @@ public class GrailsAwareTraitInjectionOperation extends
                 // ignore
             }
         }
-    }
-    
-    public static void clearExtendedClasses() {
-        EXTEND_TRAIT_CLASSES.clear();
     }
 }

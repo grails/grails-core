@@ -3,8 +3,6 @@ package org.grails.plugins.web
 import grails.core.DefaultGrailsApplication
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
-
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 import org.grails.plugins.web.AbstractGrailsPluginTests
 import org.grails.plugins.web.GroovyPagesGrailsPlugin
 import org.grails.plugins.web.controllers.ControllersGrailsPlugin
@@ -12,7 +10,6 @@ import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
 
     protected void onSetUp() {
-        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
         gcl.parseClass """
 @grails.artefact.Artefact('Controller')
 class TestController {

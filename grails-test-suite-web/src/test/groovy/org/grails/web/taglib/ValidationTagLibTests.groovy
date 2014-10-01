@@ -1,10 +1,7 @@
 package org.grails.web.taglib
 
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation;
 import org.grails.core.io.MockStringResourceLoader
-
 import grails.web.util.GrailsApplicationAttributes
-
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.i18n.LocaleContextHolder
@@ -14,7 +11,7 @@ import org.springframework.validation.FieldError
 class ValidationTagLibTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
-        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
+
         gcl.parseClass '''
 import grails.persistence.*
 

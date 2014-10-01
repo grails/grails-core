@@ -1,10 +1,9 @@
 package org.grails.plugins.web
 
+import org.apache.commons.logging.Log
 import grails.core.DefaultGrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
-
-import org.apache.commons.logging.Log
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation
+import org.grails.plugins.web.AbstractGrailsPluginTests
 
 class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -13,8 +12,6 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
     def taglibClass
 
     protected void onSetUp() {
-        GrailsAwareTraitInjectionOperation.clearExtendedClasses()
-        
         controllerClass = gcl.parseClass("""
         @grails.artefact.Artefact('Controller')
         class TestController {}""")
