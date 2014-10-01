@@ -16,7 +16,7 @@
 package grails.compiler.ast;
 
 /**
- * Extended marker interface that indicates this ClassInjector applies to all types of artefacts.
+ * Extended marker interface that indicates this ClassInjector applies to all types of artefacts (but not all classes).
  *
  * @author Graeme Rocher
  * @since 2.0

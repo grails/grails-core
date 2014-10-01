@@ -25,6 +25,7 @@ import java.util.List;
 
 import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.ClassInjector;
+import grails.compiler.ast.GlobalClassInjector;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.compiler.traits.TraitInjector;
 import groovy.transform.CompilationUnitAware;
@@ -117,7 +118,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
                 } catch (Throwable t) {
                     // ignore it
                 }
-                throw e;
+                throw new RuntimeException(e);
             }
         }
     }
@@ -196,6 +197,9 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();
         for (ClassInjector classInjector : classInjectors) {
             if (classInjector instanceof AllArtefactClassInjector) {
+                injectors.add(classInjector);
+            }
+            else if(classInjector instanceof GlobalClassInjector) {
                 injectors.add(classInjector);
             }
             else if (classInjector instanceof GrailsArtefactClassInjector) {

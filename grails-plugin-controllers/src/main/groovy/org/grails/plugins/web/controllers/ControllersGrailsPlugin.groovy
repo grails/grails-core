@@ -99,6 +99,7 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
         dispatcherServlet(GrailsDispatcherServlet)
         dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), "/*") {
             loadOnStartup = 2
+            asyncSupported = true
         }
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
