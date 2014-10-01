@@ -1,15 +1,53 @@
 package org.grails.web.taglib
+
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+import spock.lang.Specification
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class InvokeTagLibWithBodyAsMethodTests extends AbstractGrailsTagTests {
+@TestFor(TestTagLib)
+class InvokeTagLibWithBodyAsMethodTests extends Specification {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-import grails.gsp.*
+    void testWithResultOfBody() {
+        expect:
+        applyTemplate('<g:testWithResultOfBody>foo</g:testWithResultOfBody>') == 'onetwofoothreefour'
+    }
 
-@TagLib
+    void testInvokeWithBodyClosure() {
+        expect:
+        applyTemplate('<g:testInvokeWithBodyClosure />') == 'body=1body=2body=3'
+    }
+
+    void testWithClosureAndGStringReturn() {
+        expect:
+        applyTemplate('<g:testWithClosureAndGStringReturn />') == 'onetwobarthreefour'
+    }
+
+    void testWithClosureAndStringReturn() {
+        expect:
+        applyTemplate('<g:testWithClosureAndStringReturn />') == 'onetwofoothreefour'
+    }
+
+    void testInvokeTagLibAsMethodWithGString() {
+        expect:
+        applyTemplate('<g:testWithGStringBody />') == 'onetwobarthreefour'
+    }
+
+    void testInvokeTagLibAsMethodWithString() {
+        expect:
+        applyTemplate('<g:testWithStringBody />') == 'onetwofoothreefour'
+    }
+
+    void testInvokeTagLibAsMethodWithClosure() {
+        expect:
+        applyTemplate('<g:testWithClosureBody />') == 'onetwobigbodythreefour'
+    }
+}
+
+@Artefact('TagLib')
 class TestTagLib {
     Closure testInvokeWithBodyClosure = { attrs, body ->
         out << eachItem(items:[1,2,3]) { bodyAttrs ->
@@ -56,41 +94,4 @@ class TestTagLib {
         out << "two" << value << "three"
     }
 }
-''')
-    }
 
-    void testWithResultOfBody() {
-        def template = '<g:testWithResultOfBody>foo</g:testWithResultOfBody>'
-        assertOutputEquals 'onetwofoothreefour', template
-    }
-
-    void testInvokeWithBodyClosure() {
-        def template = '<g:testInvokeWithBodyClosure />'
-        assertOutputEquals 'body=1body=2body=3', template
-    }
-
-    void testWithClosureAndGStringReturn() {
-        def template = '<g:testWithClosureAndGStringReturn />'
-        assertOutputEquals 'onetwobarthreefour', template
-    }
-
-    void testWithClosureAndStringReturn() {
-        def template = '<g:testWithClosureAndStringReturn />'
-        assertOutputEquals 'onetwofoothreefour', template
-    }
-
-    void testInvokeTagLibAsMethodWithGString() {
-        def template = '<g:testWithGStringBody />'
-        assertOutputEquals 'onetwobarthreefour', template
-    }
-
-    void testInvokeTagLibAsMethodWithString() {
-        def template = '<g:testWithStringBody />'
-        assertOutputEquals 'onetwofoothreefour', template
-    }
-
-    void testInvokeTagLibAsMethodWithClosure() {
-        def template = '<g:testWithClosureBody />'
-        assertOutputEquals 'onetwobigbodythreefour', template
-    }
-}

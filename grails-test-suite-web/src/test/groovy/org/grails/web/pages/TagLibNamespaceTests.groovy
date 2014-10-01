@@ -1,33 +1,29 @@
 package org.grails.web.pages
 
-import org.grails.web.taglib.AbstractGrailsTagTests
-import org.springframework.web.context.request.RequestContextHolder
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+import spock.lang.Specification
 
-class TagLibNamespaceTests extends AbstractGrailsTagTests {
+@TestFor(TestTagLib)
+class TagLibNamespaceTests extends Specification {
 
     void testInvokeNamespacedTag() {
-        assertOutputEquals "bar",'<t1:foo />'
+        expect:
+        applyTemplate('<t1:foo />') == 'bar'
     }
 
     void testInvokeNestedNamespacedTag() {
-        assertOutputEquals "<hello>barbar</hello>", '<t1:nested name="hello"><t1:foo /></t1:nested>'
+        expect:
+        applyTemplate('<t1:nested name="hello"><t1:foo /></t1:nested>') == "<hello>barbar</hello>"
     }
 
     void testDynamicDispatch() {
-        def template = '<t1:condition><%println t1."${\'nested\'}"(name:\'hello\')%></t1:condition>'
-
-        assertOutputEquals ''.trim(),template
+        expect:
+        applyTemplate('<t1:condition><%println t1."${\'nested\'}"(name:\'hello\')%></t1:condition>') == ''
     }
+}
 
-    void onTearDown() {
-        RequestContextHolder.setRequestAttributes(null)
-    }
-
-    protected void onSetUp() {
-        gcl.parseClass('''
-import grails.gsp.*
-
-@TagLib
+@Artefact('TagLib')
 class TestTagLib {
     static namespace = "t1"
 
@@ -43,8 +39,5 @@ class TestTagLib {
         out << foo()
         out << body()
        out << "</${attrs.name}>"
-    }
-}
-        ''')
     }
 }
