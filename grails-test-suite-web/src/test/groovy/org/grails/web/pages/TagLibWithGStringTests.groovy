@@ -12,7 +12,7 @@ class TagLibWithGStringTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
-class MyTagLib {
+class GroovyStringTagLib {
 
    static namespace = 'jeff'
 
