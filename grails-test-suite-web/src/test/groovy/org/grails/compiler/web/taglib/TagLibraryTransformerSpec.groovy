@@ -1,32 +1,16 @@
 package org.grails.compiler.web.taglib
 
+import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
+import grails.test.mixin.TestFor
+
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.grails.compiler.web.taglib.TagLibraryTransformer
+
 import spock.lang.Issue
 import spock.lang.Specification
 
+@TestFor(ClosureMethodTestTagLib)
 class TagLibraryTransformerSpec extends Specification {
-
-    static myTagLibClass
-
-    void setupSpec() {
-        def gcl = new GrailsAwareClassLoader()
-        def transformer = new TagLibraryTransformer() {
-            @Override
-            boolean shouldInject(URL url) { true }
-        }
-        gcl.classInjectors = [transformer] as ClassInjector[]
-        myTagLibClass = gcl.parseClass('''
-        class MyTagLib {
-            def closureTagWithNoExplicitArgs = { }
-            def closureTagWithOneArg = { attrs -> }
-            def closureTagWithTwoArgs = { attrs, body -> }
-            def closureTagWithThreeArgs = { attrs, body, extra -> }
-            def closureTagWithFourArgs = { attrs, body, extra, anotherExtra -> }
-        }
-        ''')
-    }
 
     void 'Test tag methods are created for properties which are tags'() {
         expect:
@@ -38,7 +22,7 @@ class TagLibraryTransformerSpec extends Specification {
               *    tagName(Map, Closure)
               *    tagName(Map, CharSequence)
               */
-           5 == myTagLibClass.methods.findAll { methodName == it.name }.size()
+           5 == ClosureMethodTestTagLib.methods.findAll { methodName == it.name }.size()
 
          where:
              methodName << ['closureTagWithNoExplicitArgs', 'closureTagWithOneArg', 'closureTagWithTwoArgs']
@@ -46,7 +30,7 @@ class TagLibraryTransformerSpec extends Specification {
 
     void 'Test tag methods are not created for properties which are not tags'() {
         expect:
-           0 == myTagLibClass.methods.findAll { methodName == it.name }.size()
+           0 == ClosureMethodTestTagLib.methods.findAll { methodName == it.name }.size()
 
          where:
              methodName << ['closureTagWithThreeArgs', 'closureTagWithFourArgs']
@@ -65,7 +49,7 @@ class TagLibraryTransformerSpec extends Specification {
         expect:
         gcl.parseClass('''
         @groovy.transform.CompileStatic
-        class MyTagLib {
+        class StaticallyCompiledTagLib {
             def closureTagWithNoExplicitArgs = { }
             def closureTagWithOneArg = { attrs -> }
             def closureTagWithTwoArgs = { attrs, body -> }
@@ -73,3 +57,14 @@ class TagLibraryTransformerSpec extends Specification {
         ''')
     }
 }
+
+@Artefact('TagLib')
+class ClosureMethodTestTagLib {
+    def closureTagWithNoExplicitArgs = { }
+    def closureTagWithOneArg = { attrs -> }
+    def closureTagWithTwoArgs = { attrs, body -> }
+    def closureTagWithThreeArgs = { attrs, body, extra -> }
+    def closureTagWithFourArgs = { attrs, body, extra, anotherExtra -> }
+}
+
+

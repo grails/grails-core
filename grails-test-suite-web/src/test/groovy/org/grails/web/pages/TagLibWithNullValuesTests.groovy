@@ -1,37 +1,33 @@
 package org.grails.web.pages
 
-import org.grails.web.taglib.AbstractGrailsTagTests
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class TagLibWithNullValuesTests extends AbstractGrailsTagTests {
-
-    protected void onSetUp() {
-        gcl.parseClass('''
-import grails.gsp.*
-
-@TagLib
-class MyTagLib {
-  static namespace = 'my'
-
-  Closure tag1 = { attrs ->
-    out << out.getClass().name << ": [" << attrs.p1 << "] [" << attrs.p2 << "]"
-  }
-
-  Closure tag2 = { attrs ->
-    out << my.tag1(p1: "abc")
-  }
-}
-''')
-    }
+@TestFor(NullValueTagLib)
+class TagLibWithNullValuesTests extends Specification {
 
     void testNullValueHandling() {
-        def template = '<p>This is tag1: <my:tag1 p1="abc"/></p>'
-        assertOutputEquals '<p>This is tag1: org.grails.web.encoder.OutputEncodingStack$OutputProxyWriter: [abc] []</p>', template
-
-        template = '<p>This is tag2: <my:tag2/></p>'
-        assertOutputEquals '<p>This is tag2: org.grails.web.encoder.OutputEncodingStack$OutputProxyWriter: [abc] []</p>', template
+        expect:
+        applyTemplate('<p>This is tag1: <my:tag1 p1="abc"/></p>') == '<p>This is tag1: org.grails.web.encoder.OutputEncodingStack$OutputProxyWriter: [abc] []</p>'
+        applyTemplate('<p>This is tag2: <my:tag2/></p>') == '<p>This is tag2: org.grails.web.encoder.OutputEncodingStack$OutputProxyWriter: [abc] []</p>'
     }
 }
+
+@Artefact('TagLib')
+class NullValueTagLib {
+    static namespace = 'my'
+
+    Closure tag1 = { attrs ->
+        out << out.getClass().name << ": [" << attrs.p1 << "] [" << attrs.p2 << "]"
+    }
+
+    Closure tag2 = { attrs ->
+        out << my.tag1(p1: "abc")
+    }
+}
+  
