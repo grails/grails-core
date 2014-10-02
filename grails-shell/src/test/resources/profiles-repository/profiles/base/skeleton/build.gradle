@@ -1,0 +1,23 @@
+import org.grails.gradle.plugin.*
+
+
+version "0.1"
+name "@grails.app.name@"
+group "@grails.app.group@"
+
+apply plugin: GrailsPlugin
+
+mainClassName = "@grails.codegen.defaultPackage@.Application"
+
+repositories {
+  mavenLocal()
+  jcenter()
+}
+
+dependencies {
+  compile 'org.springframework.boot:spring-boot-autoconfigure:1.1.4.RELEASE'
+  compile "org.grails:grails-dependencies:3.0.0.BUILD-SNAPSHOT"
+  compile "org.grails:grails-compat:3.0.0.BUILD-SNAPSHOT"
+  compile "org.grails.plugins:hibernate:4.3.5.5.BUILD-SNAPSHOT"
+  compile "org.hibernate:hibernate-ehcache:4.3.5.Final"
+}

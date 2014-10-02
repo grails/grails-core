@@ -5,7 +5,7 @@ import jline.console.completer.Completer
 
 import org.grails.build.interactive.completors.StringsCompleter
 import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.ProjectContext;
+import org.grails.cli.profile.ProjectContext
 
 @CompileStatic
 class CommandLineHandlersCompleter implements Completer {
@@ -40,11 +40,13 @@ class CommandLineHandlersCompleter implements Completer {
             }
         }
 
+        Set<CharSequence> newCompletions = new TreeSet<CharSequence>()
         for (Completion completion : completions) {
             if (completion.cursor == max) {
-                candidates.addAll(completion.candidates)
+                newCompletions.addAll(completion.candidates)
             }
         }
+        candidates.addAll(newCompletions)
 
         return max
     }

@@ -1,5 +1,8 @@
 package org.grails.cli.profile
 
+import java.util.List;
+import java.util.Set;
+
 import groovy.transform.CompileStatic
 
 import org.grails.cli.profile.simple.SimpleProfile
@@ -25,11 +28,35 @@ class ProfileRepository {
         }
         File profileDirectory = getProfileDirectory(profileName)
         if(profileDirectory.exists()) {
-            profileInstance = new SimpleProfile(profileName, profileDirectory)
+            profileInstance = SimpleProfile.create(this, profileName, profileDirectory)
             profileCache.put(profileName, profileInstance)
             return profileInstance
         } else {
             return null
+        }
+    }
+    
+    /**
+     * Returns the given profile with all dependencies in topological order where
+     * given profile is last in the order.
+     * 
+     * @param profile
+     * @return
+     */
+    List<Profile> getProfileAndDependencies(Profile profile) {
+        List<Profile> sortedProfiles = []
+        Set<Profile> visitedProfiles = [] as Set
+        visitTopologicalSort(profile, sortedProfiles, visitedProfiles)
+        return sortedProfiles
+    }
+    
+    private void visitTopologicalSort(Profile profile, List<Profile> sortedProfiles, Set<Profile> visitedProfiles) {
+        if(profile != null && !visitedProfiles.contains(profile)) {
+            visitedProfiles.add(profile)
+            profile.getExtends().each { Profile dependentProfile ->
+                visitTopologicalSort(dependentProfile, sortedProfiles, visitedProfiles);
+            }
+            sortedProfiles.add(profile)
         }
     }
     
