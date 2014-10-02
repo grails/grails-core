@@ -189,6 +189,9 @@ class GrailsCli {
         for(CommandLineHandler handler : commandLineHandlers) {
             allCommands.addAll((handler.listCommands(projectContext) ?: []) as Collection)
         }
+        allCommands = allCommands.sort(false) { CommandDescription desc ->
+            desc.getName()
+        }
         allCommands
     }
     
