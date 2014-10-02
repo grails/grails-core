@@ -13,28 +13,6 @@ import org.grails.cli.profile.ProjectContext
 
 @CompileStatic
 class GradleConnectionCommandLineHandler implements CommandLineHandler {
-
-    private ProjectConnection openGradleConnection(File baseDir) {
-        SystemOutErrCapturer.doWithCapturer {
-            GradleConnector.newConnector().forProjectDirectory(baseDir).connect()
-        }
-    }
-    
-    private <T> T withProjectConnection(File baseDir, boolean suppressOutput=true, Closure<T> closure) {
-        ProjectConnection projectConnection=openGradleConnection(baseDir)
-        try {
-            if(suppressOutput) {
-                SystemOutErrCapturer.doWithCapturer {
-                    closure(projectConnection)
-                }
-            } else {
-                closure(projectConnection)
-            }
-        } finally {
-            projectConnection.close()
-        }
-    }
-
     @Override
     public boolean handleCommand(ExecutionContext context) {
         if(context.commandLine.commandName == 'gradle') {
@@ -58,7 +36,7 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler {
     }
     
     public Set<String> listAllTaskSelectors(ProjectContext context) {
-        AllTasksModel allTasksModel = ((AllTasksModel)withProjectConnection(context.getBaseDir()) { ProjectConnection projectConnection ->
+        AllTasksModel allTasksModel = ((AllTasksModel)GradleUtil.withProjectConnection(context.getBaseDir()) { ProjectConnection projectConnection ->
             (AllTasksModel)projectConnection.action(new FetchAllTaskSelectorsBuildAction(context.getBaseDir())).run()
         })
         Set<String> allTaskSelectors=[] as Set
