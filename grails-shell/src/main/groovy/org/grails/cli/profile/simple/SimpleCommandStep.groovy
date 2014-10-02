@@ -3,7 +3,7 @@ package org.grails.cli.profile.simple
 import org.grails.cli.profile.ExecutionContext
 
 abstract class SimpleCommandStep {
-    Map<String, String> commandParameters
+    Map<String, Object> commandParameters
     SimpleCommand command
     
     /**

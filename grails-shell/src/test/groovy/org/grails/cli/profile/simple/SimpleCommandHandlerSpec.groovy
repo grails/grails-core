@@ -17,7 +17,7 @@ class SimpleCommandHandlerSpec extends Specification {
     
     def "should have commands"() {
         expect:
-        commandHandlers*.listCommands(null).flatten().size() == 4
+        commandHandlers*.listCommands(null).flatten().size() == 5
     }
     
     def "commands should have descriptions"() {
