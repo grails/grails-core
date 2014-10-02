@@ -2,10 +2,15 @@ package org.grails.gradle.plugin.core
 
 import grails.util.BuildSettings
 import grails.util.Environment
+import groovy.transform.CompileStatic
+import org.apache.tools.ant.filters.EscapeUnicode
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.compile.GroovyCompile
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.watch.GrailsWatchPlugin
@@ -14,15 +19,15 @@ import org.springframework.boot.gradle.SpringBootPlugin
 
 class GrailsPlugin extends GroovyPlugin {
 
-
-
     void apply(Project project) {
         super.apply(project)
 
         project.getPlugins().apply(SpringBootPlugin)
 
-        def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
-        project.tasks.getByName("bootRepackage").dependsOn(findMainClassTask)
+        project.extensions.create("grails", GrailsExtension)
+
+        enableNative2Ascii(project)
+        registerFindMainClassTask(project)
 
         def projectDir = project.projectDir
 
@@ -77,8 +82,38 @@ class GrailsPlugin extends GroovyPlugin {
                                 "$projectDir/grails-app/conf/hibernate",
                                 "$projectDir/grails-app/conf/spring",
                                 "$projectDir/grails-app/views",
+                                "$projectDir/grails-app/i18n",
                                 "$projectDir/src/main/webapp"
                         ]
+                    }
+                }
+            }
+        }
+    }
+
+    @CompileStatic
+    protected void registerFindMainClassTask(Project project) {
+        def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
+        def bootRepackageTask = project.tasks.getByName("bootRepackage")
+
+        findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
+        bootRepackageTask.dependsOn findMainClassTask
+    }
+
+    /**
+     * Enables native2ascii processing of resource bundles
+     **/
+    protected void enableNative2Ascii(Project project) {
+        for (SourceSet sourceSet in project.sourceSets) {
+            project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
+                def grailsExt = project.extensions.getByType(GrailsExtension)
+                if (grailsExt.native2ascii) {
+                    task.from(sourceSet.resources) {
+                        include '**/*.properties'
+                        filter(EscapeUnicode)
+                    }
+                    task.from(sourceSet.resources) {
+                        exclude '**/*.properties'
                     }
                 }
             }
