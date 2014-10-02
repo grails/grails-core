@@ -45,7 +45,10 @@ class SimpleCommandHandler implements CommandLineHandler {
     }
 
     protected SimpleCommand createCommand(String commandName, File file, Map data) {
-        new SimpleCommand(name: commandName, file: file, data: data, profile: profile)
+        SimpleCommand command = new SimpleCommand(name: commandName, file: file, data: data, profile: profile)
+        Object minArguments = data?.minArguments
+        command.minArguments = minArguments instanceof Integer ? minArguments : 1
+        command
     }
 
     private saveAsJson(File file, Map data) {
