@@ -76,7 +76,9 @@ class GrailsWatchPlugin implements Plugin<Project> {
             directoryWatcher.start()
         }
 
-        def runTasks = project.tasks.getByName('run')
-        runTasks.dependsOn( watchTask )
+        def runTasks = project.tasks.findByName('run')
+        if(runTasks) {
+            runTasks.dependsOn( watchTask )
+        }
     }
 }

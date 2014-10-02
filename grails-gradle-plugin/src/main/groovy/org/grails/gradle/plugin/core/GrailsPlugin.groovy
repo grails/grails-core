@@ -5,7 +5,6 @@ import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
@@ -15,15 +14,11 @@ import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.watch.GrailsWatchPlugin
 import org.grails.gradle.plugin.watch.WatchConfig
-import org.springframework.boot.gradle.SpringBootPlugin
 
 class GrailsPlugin extends GroovyPlugin {
 
     void apply(Project project) {
         super.apply(project)
-
-        project.getPlugins().apply(SpringBootPlugin)
-
         project.extensions.create("grails", GrailsExtension)
 
         enableNative2Ascii(project)
@@ -94,10 +89,11 @@ class GrailsPlugin extends GroovyPlugin {
     @CompileStatic
     protected void registerFindMainClassTask(Project project) {
         def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
-        def bootRepackageTask = project.tasks.getByName("bootRepackage")
-
         findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
-        bootRepackageTask.dependsOn findMainClassTask
+        def bootRepackageTask = project.tasks.findByName("bootRepackage")
+        if(bootRepackageTask) {
+            bootRepackageTask.dependsOn findMainClassTask
+        }
     }
 
     /**
