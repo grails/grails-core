@@ -6,4 +6,5 @@ public interface Profile {
     String getName();
     Iterable<Completer> getCompleters(ProjectContext context);
     Iterable<CommandLineHandler> getCommandLineHandlers(ProjectContext context);
+    Iterable<Profile> getExtends();
 }

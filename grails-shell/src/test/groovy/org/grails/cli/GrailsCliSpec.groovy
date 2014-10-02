@@ -149,7 +149,7 @@ class GrailsCliSpec extends Specification {
         File appdir = createApp()
         then:
         assert appdir.exists() 
-        assert new File(appdir, "application.properties").exists()
+        assert new File(appdir, "grails-app").exists()
     }    
 
     def "should fail with retval 1 when creating app for non-existing profile"() {
