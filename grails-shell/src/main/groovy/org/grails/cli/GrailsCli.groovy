@@ -8,6 +8,7 @@ import jline.console.completer.AggregateCompleter
 
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
+import org.grails.cli.gradle.GradleConnectionCommandLineHandler
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
@@ -91,6 +92,7 @@ class GrailsCli {
         String profileName = navigateMap(applicationConfig, 'grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
+        commandLineHandlers.add(new GradleConnectionCommandLineHandler())
         aggregateCompleter.getCompleters().addAll((profile.getCompleters(projectContext)?:[]) as Collection)
     }
     

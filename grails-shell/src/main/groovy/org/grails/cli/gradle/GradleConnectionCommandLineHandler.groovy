@@ -3,7 +3,7 @@ package org.grails.cli.gradle
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 
-import org.gradle.tooling.GradleConnector
+import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.FetchAllTaskSelectorsBuildAction.AllTasksModel
 import org.grails.cli.profile.CommandDescription
@@ -16,9 +16,17 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler {
     @Override
     public boolean handleCommand(ExecutionContext context) {
         if(context.commandLine.commandName == 'gradle') {
-            
+            GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
+                BuildLauncher buildLauncher = projectConnection.newBuild()
+                def args = context.commandLine.remainingArgsString?.trim()
+                if(args) {
+                    buildLauncher.withArguments(args)
+                }
+                buildLauncher.run()
+            }
+            return true
         }
-        return false;
+        return false
     }
 
     @CompileDynamic
