@@ -564,7 +564,7 @@ abstract class ForkedGrailsProcess {
         }
         cmd.add("-Dgrails.home=${executionContext.grailsHome.canonicalPath}".toString())
         if (reloadingAgent != null) {
-            cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded.synchronize=true", "-Djdk.reflect.allowGetCallerClass=true"])
+            cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-Xverify:none", "-Dspringloaded.synchronize=true", "-Djdk.reflect.allowGetCallerClass=true"])
             def cacheDir=System.getenv("GRAILS_AGENT_CACHE_DIR") ?: BuildSettingsHolder.settings.grailsWorkDir.canonicalPath
             cmd.add("-Dspringloaded=profile=grails;cacheDir=${cacheDir}".toString())
         }
