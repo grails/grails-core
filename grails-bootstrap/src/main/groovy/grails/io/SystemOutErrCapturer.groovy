@@ -1,14 +1,14 @@
-package org.grails.cli.gradle
+package grails.io
 
 class SystemOutErrCapturer {
     ByteArrayOutputStream out
     ByteArrayOutputStream err
-    SystemInOutErrRedirect previousState
+    SystemStreamsRedirector previousState
     
     SystemOutErrCapturer capture() {
         out = new ByteArrayOutputStream()
         err = new ByteArrayOutputStream()
-        previousState = new SystemInOutErrRedirect(null, new PrintStream(out, true), new PrintStream(err, true)).redirect()
+        previousState = SystemStreamsRedirector.create(null, new PrintStream(out, true), new PrintStream(err, true)).redirect()
         this
     }
     
