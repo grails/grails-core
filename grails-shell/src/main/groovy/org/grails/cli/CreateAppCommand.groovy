@@ -17,12 +17,30 @@ class CreateAppCommand {
     Map<String, String> variables = [:]
     String appname
     String groupname
+    File targetDirectory
     
     void run() {
         Profile profileInstance = profileRepository.getProfile(profile)
         initializeVariables()
+        targetDirectory = new File(appname)
+        File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
         for(Profile p : profileRepository.getProfileAndDependencies(profileInstance)) {
+            String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.text : null
             copySkeleton(profileRepository.getProfileDirectory(p.getName()))
+            appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
+        }
+    }
+
+    private void appendToYmlSubDocument(File applicationYmlFile, String previousApplicationYml) {
+        String newApplicationYml = applicationYmlFile.text
+        if(previousApplicationYml && newApplicationYml != previousApplicationYml) {
+            StringBuilder appended = new StringBuilder(previousApplicationYml.length() + newApplicationYml.length() + 30)
+            if(!previousApplicationYml.startsWith("---")) {
+                appended.append('---\n')
+            }
+            appended.append(previousApplicationYml).append("\n---\n")
+            appended.append(newApplicationYml)
+            applicationYmlFile.text = appended.toString()
         }
     }
     
@@ -57,7 +75,7 @@ class CreateAppCommand {
     @CompileStatic(TypeCheckingMode.SKIP)
     private void copySkeleton(File profileDirectory) {
         AntBuilder ant = new AntBuilder()
-        ant.copy(todir: new File(appname), overwrite: true) {
+        ant.copy(todir: targetDirectory, overwrite: true) {
             fileSet(dir: new File(profileDirectory, "skeleton")) {
                 exclude(name: '**/.gitkeep')
             }

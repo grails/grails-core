@@ -2,6 +2,7 @@ package org.grails.cli
 
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
+import grails.config.GrailsConfig
 
 import java.lang.reflect.Field
 import java.util.concurrent.TimeUnit
@@ -34,7 +35,7 @@ class GrailsCliSpec extends Specification {
     PipedOutputStream expectSystemOutPipe
     
     def setup() {
-        System.setProperty("grails.show.stacktrace", "true")
+        //System.setProperty("grails.show.stacktrace", "true")
         GrailsConsole.removeInstance()
         cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0)
         cli.profileRepository.initialized = true
@@ -149,9 +150,16 @@ class GrailsCliSpec extends Specification {
     def "should create new application"() {
         when:
         File appdir = createApp()
+        File configFile = new File(appdir, 'grails-app/conf/application.yml')
+        GrailsConfig grailsConfig = new GrailsConfig()
         then:
         assert appdir.exists() 
         assert new File(appdir, "grails-app").exists()
+        configFile.exists()
+        when:
+        grailsConfig.loadYml(configFile)
+        then:
+        grailsConfig.config.grails.profile == 'web'
     }    
 
     def "should fail with retval 1 when creating app for non-existing profile"() {

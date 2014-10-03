@@ -1,6 +1,7 @@
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
+import grails.config.GrailsConfig
 import grails.io.SystemStreamsRedirector
 import grails.util.Environment
 import groovy.transform.Canonical
@@ -29,7 +30,7 @@ class GrailsCli {
     Boolean ansiEnabled = null
     Character defaultInputMask = null
     ProfileRepository profileRepository=new ProfileRepository()
-    Map<String, Object> applicationConfig
+    GrailsConfig applicationConfig
     ProjectContext projectContext
     
     public int execute(String... args) {
@@ -91,33 +92,22 @@ class GrailsCli {
     }
 
     private initializeProfile() {
-        String profileName = navigateMap(applicationConfig, 'grails', 'profile') ?: DEFAULT_PROFILE_NAME
+        String profileName = applicationConfig.navigateConfig('grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
         commandLineHandlers.add(new GradleConnectionCommandLineHandler())
         aggregateCompleter.getCompleters().addAll((profile.getCompleters(projectContext)?:[]) as Collection)
     }
     
-    private Map<String, Object> loadApplicationConfig() {
+    private GrailsConfig loadApplicationConfig() {
+        GrailsConfig config = new GrailsConfig()
         File applicationYml = new File("grails-app/conf/application.yml")
         if(applicationYml.exists()) {
-            Yaml yamlParser = new Yaml()
-            (Map<String, Object>)applicationYml.withInputStream { 
-                yamlParser.loadAs(it, Map)
-            }
-        } else {
-            [:]
+            config.loadYml(applicationYml)
         }
+        config
     }
     
-    Object navigateMap(Map<String, Object> map, String... path) {
-        if(path.length == 1) {
-            return map.get(path[0])
-        } else {
-            return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
-        }
-    }
-
     private int createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
         String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
         String profileName = mainCommandLine.optionValue('profile')
@@ -216,41 +206,16 @@ class GrailsCli {
     private static class ProjectContextImpl implements ProjectContext {
         GrailsConsole console
         File baseDir
-        Map<String, Object> applicationConfig
-        
-        private Object navigateMap(Map<String, Object> map, String... path) {
-            if(map==null) return null
-            if(path.length == 1) {
-                return map.get(path[0])
-            } else {
-                return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
-            }
+        GrailsConfig grailsConfig
+
+        @Override
+        public String navigateConfig(String... path) {
+            grailsConfig.navigateConfig(path)
         }
 
         @Override
         public <T> T navigateConfigForType(Class<T> requiredType, String... path) {
-            Object result = navigateMap(applicationConfig, path)
-            if(result == null) {
-                return null
-            }
-            if(requiredType.isInstance(result)) {
-                return (T)result    
-            } else {
-                return convertToType(result, requiredType)
-            }
-        }
-        
-        private <T> T convertToType(Object value, Class<T> requiredType) {
-            if(requiredType==Integer.class) {
-                return Integer.valueOf(String.valueOf(value))
-            } else {
-                throw new RuntimeException("conversion to $requiredType.name not implemented")
-            }
-        }
-
-        @Override
-        public String navigateConfig(String... path) {
-            return navigateConfigForType(String, path);
-        }
+            grailsConfig.navigateConfigForType(requiredType, path)
+        }        
     }
 }
