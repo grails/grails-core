@@ -29,6 +29,20 @@ class SystemStreamsRedirector {
         original
     }
     
+    static <T> T withOriginalIO(Closure<T> closure) {
+        original().withRedirectedIO(closure)
+    }
+    
+    public <T> T withRedirectedIO(Closure<T> closure) {
+        SystemStreamsRedirector previous = redirect()
+        try {
+            return closure.call()
+        } finally {
+            previous.redirect()
+        }
+    }
+    
+    
     SystemStreamsRedirector redirect() {
         InputStream prevInput = null
         PrintStream prevOut = null

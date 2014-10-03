@@ -1,6 +1,7 @@
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
+import grails.io.SystemStreamsRedirector
 import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
@@ -20,6 +21,7 @@ import org.yaml.snakeyaml.Yaml
 @CompileStatic
 class GrailsCli {
     public static final String DEFAULT_PROFILE_NAME = 'web'
+    private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
     List<CommandLineHandler> commandLineHandlers=[]
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
