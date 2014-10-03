@@ -3,7 +3,6 @@ package @grails.codegen.defaultPackage@
 import grails.boot.config.GrailsConfiguration
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.context.annotation.Import
 
 @EnableAutoConfiguration
 class Application extends GrailsConfiguration {
