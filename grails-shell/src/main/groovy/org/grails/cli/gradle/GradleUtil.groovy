@@ -1,5 +1,7 @@
 package org.grails.cli.gradle
 
+import grails.io.SystemOutErrCapturer;
+
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 
