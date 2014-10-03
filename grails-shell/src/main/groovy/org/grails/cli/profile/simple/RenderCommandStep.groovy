@@ -43,7 +43,7 @@ class RenderCommandStep extends SimpleCommandStep {
     private Map createVariables(String artifactPackage, String artifactName) {
         Map<String, String> variables = [:]
         variables['artifact.package.name'] = artifactPackage
-        variables['artifact.package.path'] = artifactPackage.replace('.','/')
+        variables['artifact.package.path'] = artifactPackage?.replace('.','/')
         variables['artifact.package'] = "package $artifactPackage\n"
         variables['artifact.name'] = artifactName
         return variables
@@ -57,7 +57,7 @@ class RenderCommandStep extends SimpleCommandStep {
         
         if(parts.size() == 1) {
             artifactName = parts[0]
-            artifactPackage = context.navigateConfig('grails', 'codegen', 'defaultPackage')
+            artifactPackage = context.navigateConfig('grails', 'codegen', 'defaultPackage')?:''
         } else {
             artifactName = parts[-1]
             artifactPackage = parts[0..-2].join('.')
@@ -77,9 +77,9 @@ class RenderCommandStep extends SimpleCommandStep {
     }
     
     protected String doReplacements(String source, Map<String, String> variables) {
-        String result = source
+        String result = source?:''
         variables.each { k, v ->
-            result = result.replace("@${k}@".toString(), v)
+            result = result.replace("@${k}@".toString(), v?:'')
         }
         result
     }

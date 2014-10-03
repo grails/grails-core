@@ -34,10 +34,12 @@ class GrailsCliSpec extends Specification {
     PipedOutputStream expectSystemOutPipe
     
     def setup() {
+        System.setProperty("grails.show.stacktrace", "true")
         GrailsConsole.removeInstance()
         cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0)
         cli.profileRepository.initialized = true
         cli.profileRepository.profilesDirectory = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
+        
         chdir(tempFolder.getRoot())
     }
 
