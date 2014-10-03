@@ -1,0 +1,83 @@
+package grails.config;
+
+import groovy.transform.CompileStatic;
+
+import java.util.Map;
+
+import org.yaml.snakeyaml.Yaml
+
+@CompileStatic
+public class GrailsConfig {
+    Map<String, Object> config
+
+    public GrailsConfig() {
+        config = [:]
+    }
+
+    public void loadYml(File ymlFile) {
+        ymlFile.withInputStream { InputStream input ->
+            loadYml(input)
+        }
+    }
+
+    @groovy.transform.CompileDynamic // fails with CompileStatic!
+    public void loadYml(InputStream input) {
+        Yaml yaml = new Yaml();
+        for(Object yamlObject : yaml.loadAll(input)) {
+            if(yamlObject instanceof Map) {
+                mergeMaps(config, (Map)yamlObject)
+            }
+        }
+    }
+    
+    private void mergeMaps(Map targetMap, Map sourceMap) {
+        sourceMap.each { Object sourceKey, Object sourceValue ->
+            Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
+            Object newValue = sourceValue
+            if(currentValue instanceof Map && sourceValue instanceof Map) {
+                newValue = new LinkedHashMap(currentValue)
+                mergeMaps((Map)newValue, (Map)sourceValue)
+            }
+            targetMap.put(sourceKey, newValue)
+        }
+    }
+    
+    private Object navigateMap(Map<String, Object> map, String... path) {
+        if(map==null) return null
+        if(path.length == 1) {
+            return map.get(path[0])
+        } else {
+            return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
+        }
+    }
+
+    public <T> T navigateConfigForType(Class<T> requiredType, String... path) {
+        Object result = navigateMap(config, path)
+        if(result == null) {
+            return null
+        }
+        if(requiredType.isInstance(result)) {
+            return (T)result
+        } else {
+            return convertToType(result, requiredType)
+        }
+    }
+    
+    private <T> T convertToType(Object value, Class<T> requiredType) {
+        if(requiredType==Integer.class) {
+            if(value instanceof Number) {
+                return Integer.valueOf(((Number)value).intValue())
+            } else {
+                return Integer.valueOf(String.valueOf(value))
+            }
+        } else if(requiredType==String.class) {
+            return String.valueOf(value)
+        } else {
+            throw new RuntimeException("conversion to $requiredType.name not implemented")
+        }
+    }
+
+    public String navigateConfig(String... path) {
+        return navigateConfigForType(String, path);
+    }
+}
