@@ -9,7 +9,7 @@ grails:
                         - Presto
                         - Trident
         types:
-            all: */*
+            all: '*/*'
             atom: 'application/atom+xml'
     urlmapping:
         cache:
