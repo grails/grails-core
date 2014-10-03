@@ -219,6 +219,7 @@ class GrailsCli {
         Map<String, Object> applicationConfig
         
         private Object navigateMap(Map<String, Object> map, String... path) {
+            if(map==null) return null
             if(path.length == 1) {
                 return map.get(path[0])
             } else {
