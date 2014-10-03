@@ -58,6 +58,10 @@ public enum Environment {
     public static String KEY = "grails.env";
 
     /**
+     * The name of the GRAILS_HOME environment variable
+     */
+    public static String ENV_GRAILS_HOME = "GRAILS_HOME";
+    /**
      * Specify whether reloading is enabled for this environment
      */
     public static String RELOAD_ENABLED = "grails.reload.enabled";

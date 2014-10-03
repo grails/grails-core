@@ -105,7 +105,7 @@ class GrailsApp extends SpringApplication {
     @CompileDynamic
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
-            println("Grails application running at http://localhost:${applicationContext.embeddedServletContainer.port}")
+            log.info("Grails application running at http://localhost:${applicationContext.embeddedServletContainer.port}")
         } catch (e) {
             // ignore
         }

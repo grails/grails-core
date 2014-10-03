@@ -2,7 +2,7 @@ configurations {
     optional
 }
 dependencies {
-
+    compile files("${System.properties['java.home']}/lib/tools.jar")
     compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'

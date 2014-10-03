@@ -85,7 +85,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     void onApplicationEvent(ApplicationContextEvent event) {
         def context = event.applicationContext
 
-        println "EVENT RECEIVED!! $event"
         if(event instanceof ContextRefreshedEvent) {
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
@@ -99,7 +98,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
         }
         else if(event instanceof ContextClosedEvent) {
-            println "EXECUTING SHUTDOWN"
             pluginManager.shutdown()
             ShutdownOperations.runOperations()
             Holders.clear()
