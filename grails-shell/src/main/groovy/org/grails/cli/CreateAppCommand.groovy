@@ -54,7 +54,7 @@ class CreateAppCommand {
     @CompileStatic(TypeCheckingMode.SKIP)
     private void copySkeleton(File profileDirectory) {
         AntBuilder ant = new AntBuilder()
-        ant.copy(todir: new File(appname)) {
+        ant.copy(todir: new File(appname), overwrite: true) {
             fileSet(dir: new File(profileDirectory, "skeleton")) {
                 exclude(name: '**/.gitkeep')
             }
