@@ -5,7 +5,6 @@ import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
@@ -15,15 +14,11 @@ import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.watch.GrailsWatchPlugin
 import org.grails.gradle.plugin.watch.WatchConfig
-import org.springframework.boot.gradle.SpringBootPlugin
 
 class GrailsPlugin extends GroovyPlugin {
 
     void apply(Project project) {
         super.apply(project)
-
-        project.getPlugins().apply(SpringBootPlugin)
-
         project.extensions.create("grails", GrailsExtension)
 
         enableNative2Ascii(project)
@@ -46,27 +41,7 @@ class GrailsPlugin extends GroovyPlugin {
         def environment = Environment.current
 
 
-        if(environment.isReloadEnabled()) {
-            new GrailsWatchPlugin().apply(project)
-            NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
-            def grailsConfig = watchConfigs.create("grailsApp")
-            grailsConfig.directory = project.file("grails-app")
-            grailsConfig.extensions = ['groovy', 'java']
-            grailsConfig.tasks('compileGroovy')
-
-            def groovyConfig = watchConfigs.create("groovyConfig")
-            groovyConfig.directory = project.file("src/main/groovy")
-            groovyConfig.extensions = ['groovy', 'java']
-            groovyConfig.tasks('compileGroovy')
-
-            project.configurations {
-                agent
-            }
-            project.dependencies {
-                agent "org.springframework:springloaded:1.2.0.RELEASE"
-            }
-            project.afterEvaluate(new AgentTasksEnhancer())
-        }
+        enableFileWatch(environment, project)
 
 
         project.sourceSets {
@@ -91,13 +66,42 @@ class GrailsPlugin extends GroovyPlugin {
         }
     }
 
+    protected void enableFileWatch(Environment environment, Project project) {
+        if (environment.isReloadEnabled()) {
+//            configureWatchPlugin(project)
+
+            project.configurations {
+                agent
+            }
+            project.dependencies {
+                agent "org.springframework:springloaded:1.2.0.RELEASE"
+            }
+            project.afterEvaluate(new AgentTasksEnhancer())
+        }
+    }
+
+    private void configureWatchPlugin(Project project) {
+        new GrailsWatchPlugin().apply(project)
+        NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
+        def grailsConfig = watchConfigs.create("grailsApp")
+        grailsConfig.directory = project.file("grails-app")
+        grailsConfig.extensions = ['groovy', 'java']
+        grailsConfig.tasks('compileGroovy')
+
+        def groovyConfig = watchConfigs.create("groovyConfig")
+        groovyConfig.directory = project.file("src/main/groovy")
+        groovyConfig.extensions = ['groovy', 'java']
+        groovyConfig.tasks('compileGroovy')
+    }
+
     @CompileStatic
     protected void registerFindMainClassTask(Project project) {
         def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
-        def bootRepackageTask = project.tasks.getByName("bootRepackage")
-
         findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
-        bootRepackageTask.dependsOn findMainClassTask
+        def bootRepackageTask = project.tasks.findByName("bootRepackage")
+        if(bootRepackageTask) {
+            bootRepackageTask.dependsOn findMainClassTask
+        }
     }
 
     /**

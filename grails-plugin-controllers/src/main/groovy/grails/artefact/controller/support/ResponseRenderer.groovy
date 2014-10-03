@@ -30,10 +30,6 @@ trait ResponseRenderer {
         helper.invokeRender this, o.inspect()
     }
 
-    def render(String txt) {
-        helper.invokeRender this, txt
-    }
-
     def render(CharSequence txt) {
         helper.invokeRender this, txt
     }

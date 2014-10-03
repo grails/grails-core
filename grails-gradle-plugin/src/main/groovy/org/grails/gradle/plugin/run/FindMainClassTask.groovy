@@ -29,8 +29,8 @@ class FindMainClassTask extends DefaultTask {
         Project project = this.project
 
         // Try the SpringBoot extension setting
-        def bootExtension = project.extensions.getByType( SpringBootPluginExtension )
-        if(bootExtension.mainClass) {
+        def bootExtension = project.extensions.findByType( SpringBootPluginExtension )
+        if(bootExtension?.mainClass) {
             return bootExtension.mainClass
         }
 
