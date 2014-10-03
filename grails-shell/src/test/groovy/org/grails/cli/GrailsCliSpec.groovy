@@ -189,6 +189,7 @@ create-controller\tCreates a controller
 create-domain\tCreates a domain class
 create-service\tCreates a service
 create-taglib\tCreates a tag library
+gradle\tRuns the gradle build
 run-app\tRuns the application
 detailed usage with help [command]
 '''

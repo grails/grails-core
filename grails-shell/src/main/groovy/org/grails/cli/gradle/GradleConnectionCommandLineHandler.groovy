@@ -32,7 +32,7 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler {
     @CompileDynamic
     @Override
     public List<CommandDescription> listCommands(ProjectContext context) {
-        [new CommandDescription("gradle", "run gradle build", "usage: gradle [task]")]
+        [new CommandDescription("gradle", "Runs the gradle build", "usage: gradle [task]")]
     }
     
     private static final Closure<String> taskNameFormatter = { String projectPath, String taskName ->
