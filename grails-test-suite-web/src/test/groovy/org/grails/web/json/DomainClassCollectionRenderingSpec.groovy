@@ -5,10 +5,10 @@ import grails.rest.render.json.JsonRenderer
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 
-import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 
 import spock.lang.Issue
 import spock.lang.Specification
@@ -28,7 +28,7 @@ class DomainClassCollectionRenderingSpec extends Specification {
             renderer.registerCustomConverter()
 
         when: 'a domain object with a reference to a collection of other domain objects is rendered'
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def undertow = new Album(title: 'Undertow')
             def lateralus = new Album(title: 'Lateralus')
             def company = new Company(name: 'Tool Inc.')

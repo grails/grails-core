@@ -1,7 +1,12 @@
 package org.grails.web.pages;
 
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
+import grails.util.GrailsWebMockUtil;
 import grails.util.GrailsWebUtil;
 import grails.util.Holders;
+import grails.web.pages.GroovyPagesUriService;
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 
@@ -11,17 +16,10 @@ import java.io.InputStream;
 
 import junit.framework.TestCase;
 
-import grails.core.DefaultGrailsApplication;
-import grails.core.GrailsApplication;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.support.MockApplicationContext;
-import grails.web.util.GrailsApplicationAttributes;
-import org.grails.web.pages.GroovyPage;
-import org.grails.web.pages.GroovyPageParser;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.exceptions.GrailsTagException;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
-import org.grails.web.pages.DefaultGroovyPagesUriService;
-import grails.web.pages.GroovyPagesUriService;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -151,7 +149,7 @@ public class ParseTests extends TestCase {
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
-        return GrailsWebUtil.bindMockWebRequest(appCtx);
+        return GrailsWebMockUtil.bindMockWebRequest(appCtx);
     }
 
     public void testParseWithLocalEncoding() throws IOException {

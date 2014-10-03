@@ -16,19 +16,19 @@
 
 package grails.test.runtime
 
+import grails.core.GrailsApplication
 import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
 import grails.test.mixin.support.LazyTagLibraryLookup
 import grails.test.mixin.web.ControllerUnitTestMixin
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
+import grails.web.mime.MimeType
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.springframework.web.multipart.support.StandardServletMultipartResolver
 
 import javax.servlet.ServletContext
 
-import grails.core.GrailsApplication
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.CodecsGrailsPlugin
 import org.grails.plugins.codecs.DefaultCodecLookup
@@ -36,25 +36,25 @@ import org.grails.plugins.converters.ConvertersGrailsPlugin
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
-import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
+import org.grails.plugins.web.rest.api.ControllersRestApi
+import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
-import grails.web.mime.MimeType
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.grails.web.pages.GroovyPagesTemplateEngine
 import org.grails.web.pages.GroovyPagesTemplateRenderer
 import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.plugins.web.rest.api.ControllersRestApi
-import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
@@ -158,7 +158,7 @@ class ControllerTestPlugin implements TestPlugin {
         request.method = 'GET'
         request.requestMimeTypesApi = new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext)
         GrailsMockHttpServletResponse response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
+        GrailsWebRequest webRequest = GrailsWebMockUtil.bindMockWebRequest(applicationContext, request, response)
         runtime.putValue("webRequest", webRequest)
     }
 

@@ -1,10 +1,12 @@
 package org.grails.plugins.web.rest.render.atom
 
 import grails.rest.render.atom.AtomRenderer
+import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
+
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.rest.render.ServletRenderContext
@@ -17,6 +19,7 @@ import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
+
 import spock.lang.Specification
 
 /**
@@ -32,7 +35,7 @@ class AtomDomainClassRendererSpec extends Specification {
             AtomRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
             final author = new Author(name: "Stephen King")
@@ -59,7 +62,7 @@ class AtomDomainClassRendererSpec extends Specification {
             AtomRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
             final author = new Author(name: "Stephen King")

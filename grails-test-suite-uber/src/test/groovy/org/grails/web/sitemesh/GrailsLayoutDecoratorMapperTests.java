@@ -1,7 +1,11 @@
 package org.grails.web.sitemesh;
 
-import grails.util.GrailsWebUtil;
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
+import grails.util.GrailsWebMockUtil;
 import grails.util.Holders;
+import grails.web.pages.GroovyPagesUriService;
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
@@ -15,19 +19,13 @@ import javax.servlet.ServletContext;
 
 import junit.framework.TestCase;
 
-import grails.core.DefaultGrailsApplication;
-import grails.core.GrailsApplication;
 import org.grails.plugins.codecs.DefaultCodecLookup;
 import org.grails.support.MockApplicationContext;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
 import org.grails.web.pages.GroovyPagesTemplateEngine;
-import grails.web.pages.GroovyPagesUriService;
 import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
-import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.GroovyPageViewResolver;
-import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
-import org.grails.web.sitemesh.GroovyPageLayoutFinder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
@@ -78,7 +76,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
         grailsApplication.setMainContext(appCtx);
-        return GrailsWebUtil.bindMockWebRequest(appCtx, new MockHttpServletRequest(appCtx.getServletContext()) {
+        return GrailsWebMockUtil.bindMockWebRequest(appCtx, new MockHttpServletRequest(appCtx.getServletContext()) {
             @Override
             public RequestDispatcher getRequestDispatcher(String path) {
                 return null;

@@ -27,20 +27,20 @@ import java.beans.Introspector
 import java.beans.PropertyDescriptor
 
 import org.apache.commons.logging.Log
+import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.testing.GrailsMockErrors
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.web.converters.Converter
-import org.grails.web.pages.GroovyPageBinding
-import org.grails.web.taglib.GroovyPageAttributes
-import org.grails.web.taglib.exceptions.GrailsTagException
-import org.grails.core.DefaultGrailsDomainClass
-import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.plugins.web.mime.FormatInterceptor
 import org.grails.validation.ConstrainedPropertyBuilder
 import org.grails.validation.DefaultConstraintEvaluator
 import org.grails.validation.GrailsDomainClassValidator
+import org.grails.web.converters.Converter
 import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
+import org.grails.web.pages.GroovyPageBinding
+import org.grails.web.taglib.GroovyPageAttributes
+import org.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
@@ -73,7 +73,7 @@ class MockUtils {
 
     static final errorsObjects = new ThreadLocalMap()
     static final Map<Class, Long> IDS = [:]
-
+    
     /**
      * Enhances a class that has the method signatures setAttribute/getAttribute (such as the Request object) to allow property style access
      * @param clazz The class or interface to mock

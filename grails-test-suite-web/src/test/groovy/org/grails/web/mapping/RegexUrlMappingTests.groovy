@@ -1,13 +1,10 @@
 package org.grails.web.mapping
 
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.validation.ConstrainedProperty
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.exceptions.UrlMappingException
 
-import org.grails.web.mapping.DefaultUrlMappingParser
-import org.grails.web.mapping.DefaultUrlMappingsHolder
-import org.grails.web.mapping.RegexUrlMapping
 import org.springframework.core.io.*
 
 class RegexUrlMappingTests extends AbstractGrailsMappingTests {
@@ -160,7 +157,7 @@ mappings {
     }
 
     void testCreateUrlFromMapping() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
         def res = new ByteArrayResource(mappingScript.bytes)
 
         def mappings = evaluator.evaluateMappings(res)
@@ -207,7 +204,7 @@ mappings {
     }
 
     void testCreateUrlWithFragment() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def res = new ByteArrayResource(mappingScript.bytes)
 

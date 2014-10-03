@@ -15,6 +15,9 @@
  */
 package grails.util;
 
+import grails.core.ApplicationAttributes;
+import grails.core.GrailsApplication;
+import grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
 
@@ -25,16 +28,7 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import grails.core.ApplicationAttributes;
-import grails.core.GrailsApplication;
-import grails.util.GrailsStringUtils;
-import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.servlet.mvc.ParameterCreationListener;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -106,72 +100,6 @@ public class GrailsWebUtil {
     public static Map currentFlatConfiguration() {
         GrailsApplication application = currentApplication();
         return application == null ? Collections.emptyMap() : application.getFlatConfig();
-    }
-
-    /**
-     * Binds a Mock implementation of a GrailsWebRequest object to the current thread. The mock version uses
-     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes.
-     *
-     * @param ctx The WebApplicationContext to use
-     *
-     * @see org.springframework.mock.web.MockHttpServletRequest
-     * @see org.springframework.mock.web.MockHttpServletResponse
-     * @see org.springframework.mock.web.MockServletContext
-     *
-     * @return The GrailsWebRequest instance
-     */
-    public static GrailsWebRequest bindMockWebRequest(WebApplicationContext ctx) {
-        return bindMockWebRequest(ctx, new MockHttpServletRequest(ctx.getServletContext()), new MockHttpServletResponse());
-    }
-
-    /**
-     * Binds a Mock implementation of a GrailsWebRequest object to the current thread. The mock version uses
-     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes.
-     *
-     * @param ctx The WebApplicationContext to use
-     * @param request The request
-     * @param response The response
-     *
-     * @see org.springframework.mock.web.MockHttpServletRequest
-     * @see org.springframework.mock.web.MockHttpServletResponse
-     * @see org.springframework.mock.web.MockServletContext
-     *
-     * @return The GrailsWebRequest instance
-     */
-    public static GrailsWebRequest bindMockWebRequest(ApplicationContext ctx, MockHttpServletRequest request, MockHttpServletResponse response) {
-        ServletContext servletContext = ctx instanceof WebApplicationContext && ((WebApplicationContext)ctx).getServletContext() != null ? ((WebApplicationContext)ctx).getServletContext() : request.getServletContext();
-        GrailsWebRequest webRequest = new GrailsWebRequest(request, response, servletContext, ctx);
-        request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
-        for (ParameterCreationListener listener: ctx.getBeansOfType(ParameterCreationListener.class).values()) {
-            webRequest.addParameterListener(listener);
-        }
-        RequestContextHolder.setRequestAttributes(webRequest);
-        return webRequest;
-    }
-
-    /**
-     * Binds a Mock implementation of a GrailsWebRequest object to the current thread. The mock version uses
-     * instances of the Spring MockHttpServletRequest, MockHttpServletResponse and MockServletContext classes.
-     *
-     * @see org.springframework.mock.web.MockHttpServletRequest
-     * @see org.springframework.mock.web.MockHttpServletResponse
-     * @see org.springframework.mock.web.MockServletContext
-     *
-     * @return The GrailsWebRequest instance
-     */
-    public static GrailsWebRequest bindMockWebRequest() {
-        ServletContext servletContext = new MockServletContext();
-        MockHttpServletRequest request = new MockHttpServletRequest(servletContext);
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        return bindMockWebRequest(servletContext, request, response);
-    }
-
-    private static GrailsWebRequest bindMockWebRequest(ServletContext servletContext, MockHttpServletRequest request, MockHttpServletResponse response) {
-        GrailsWebRequest webRequest = new GrailsWebRequest(request,
-                                                response, servletContext);
-        request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
-        RequestContextHolder.setRequestAttributes(webRequest);
-        return webRequest;
     }
 
     /**

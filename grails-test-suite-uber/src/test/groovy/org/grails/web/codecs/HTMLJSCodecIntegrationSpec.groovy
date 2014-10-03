@@ -1,16 +1,16 @@
 package org.grails.web.codecs;
 
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 
-import org.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.grails.buffer.FastStringWriter
+import org.grails.commons.DefaultGrailsCodecClass
 import org.grails.commons.GrailsCodecClass
-import org.grails.plugins.codecs.HTMLCodec
+import org.grails.encoder.EncodingStateRegistry
 import org.grails.encoder.impl.HTMLJSCodec
 import org.grails.encoder.impl.JavaScriptCodec
 import org.grails.encoder.impl.RawCodec
-import org.grails.encoder.EncodingStateRegistry
-import org.grails.buffer.FastStringWriter
+import org.grails.plugins.codecs.HTMLCodec
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
 import spock.lang.Specification
@@ -36,7 +36,7 @@ public class HTMLJSCodecIntegrationSpec extends Specification {
         def codecClasses = [htmlCodecClass, htmlJsCodecClass, rawCodecClass, jsCodecClass]
         grailsApplication.getCodecClasses() >> { codecClasses }
         codecClasses*.configureCodecMethods()
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
         registry = GrailsWebRequest.lookup().getEncodingStateRegistry()
     }
     

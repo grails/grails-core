@@ -3,7 +3,7 @@ package org.grails.commons.metaclass
 import grails.artefact.Artefact
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 
 import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.plugins.MockGrailsPluginManager
@@ -29,7 +29,7 @@ class MetaClassEnhancerTests extends GroovyTestCase {
 
         enhancer.enhance TestMetaClassController.metaClass
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def controller = new TestMetaClassController()
 

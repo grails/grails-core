@@ -14,7 +14,7 @@
  */
 package org.grails.web.servlet;
 
-import grails.util.GrailsWebUtil;
+import grails.util.GrailsWebMockUtil;
 import grails.web.mvc.FlashScope;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import org.grails.web.servlet.GrailsFlashScope;
 
 /**
  * @author Graeme Rocher
@@ -34,7 +33,7 @@ public class GrailsFlashScopeTests extends TestCase {
     private static final String ERRORS_PROPERTY = "errors";
 
     public void testPutNull() {
-        GrailsWebUtil.bindMockWebRequest();
+        GrailsWebMockUtil.bindMockWebRequest();
 
         FlashScope fs = new GrailsFlashScope();
         fs.put("test",null);
@@ -42,7 +41,7 @@ public class GrailsFlashScopeTests extends TestCase {
 
     public void testNextState() {
 
-        GrailsWebUtil.bindMockWebRequest();
+        GrailsWebMockUtil.bindMockWebRequest();
 
         FlashScope fs = new GrailsFlashScope();
         fs.put("test","value");
@@ -80,7 +79,7 @@ public class GrailsFlashScopeTests extends TestCase {
      */
     public void testPutMap() {
 
-        GrailsWebUtil.bindMockWebRequest();
+        GrailsWebMockUtil.bindMockWebRequest();
 
         //set up a map with ERRORS_PROPERTY
         Map map = new HashMap();

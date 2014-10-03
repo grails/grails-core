@@ -1,11 +1,13 @@
 package org.grails.plugins.web.rest.render.json
 
-import grails.rest.render.json.JsonRenderer
-import grails.util.GrailsWebUtil
 import grails.core.DefaultGrailsApplication
+import grails.rest.render.json.JsonRenderer
+import grails.util.GrailsWebMockUtil
+
+import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.grails.plugins.web.rest.render.ServletRenderContext
+
 import spock.lang.Specification
 
 /**
@@ -30,7 +32,7 @@ class JsonRendererSpec extends Specification {
             renderer.registerCustomConverter()
 
         when:"The renderer renders an object"
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             renderer.render(new Album(title: "Undertow", isbn: "38047301"), new ServletRenderContext(webRequest, [includes:['title']]))
 
         then:"Only included properties are rendered"
@@ -44,7 +46,7 @@ class JsonRendererSpec extends Specification {
             renderer.includes =  ['title']
 
         when:"The renderer renders an object"
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             renderer.render(new Album(title: "Undertow", isbn: "38047301"), new ServletRenderContext(webRequest))
 
         then:"Only included properties are rendered"
@@ -59,7 +61,7 @@ class JsonRendererSpec extends Specification {
             renderer.excludes =  ['isbn']
 
         when:"The renderer renders an object"
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             renderer.render(new Album(title: "Undertow", isbn: "38047301"), new ServletRenderContext(webRequest))
 
         then:"Only included properties are rendered"

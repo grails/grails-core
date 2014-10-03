@@ -1,11 +1,11 @@
 package org.grails.web.i18n
 
-import grails.util.GrailsWebUtil
-import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
+import grails.util.GrailsWebMockUtil
+
+import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
-import org.springframework.mock.web.MockHttpServletRequest
 
 /**
  * @author Graeme Rocher
@@ -19,7 +19,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
     void testSwitchLocaleWithStringArrayParamsObject() {
 
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         def request = webRequest.getCurrentRequest()
         def response = webRequest.getCurrentResponse()
@@ -50,7 +50,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
     void testSwitchLocaleWithParamsObject() {
 
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         def request = webRequest.getCurrentRequest()
         def response = webRequest.getCurrentResponse()
@@ -81,7 +81,7 @@ class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
     void testSwithLocaleWithRequestParameter() {
 
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         MockHttpServletRequest request = webRequest.getCurrentRequest()
         def response = webRequest.getCurrentResponse()

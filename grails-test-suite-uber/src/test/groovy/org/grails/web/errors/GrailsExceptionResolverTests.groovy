@@ -1,19 +1,18 @@
 package org.grails.web.errors
 
-import grails.util.Environment
-import grails.util.GrailsWebUtil
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
-
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.util.Environment
+import grails.util.GrailsWebMockUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
+import grails.web.mapping.UrlMappingsHolder
+
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.support.MockApplicationContext
-import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
-import grails.web.mapping.UrlMappingsHolder
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -69,7 +68,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         }
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
-        def webRequest = GrailsWebUtil.bindMockWebRequest(mockCtx,
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(mockCtx,
                 new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
@@ -97,7 +96,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         }
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
@@ -127,7 +126,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         }
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()

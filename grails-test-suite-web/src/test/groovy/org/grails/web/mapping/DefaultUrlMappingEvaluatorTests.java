@@ -1,6 +1,6 @@
 package org.grails.web.mapping;
 
-import grails.util.GrailsWebUtil;
+import grails.util.GrailsWebMockUtil;
 import grails.validation.ConstrainedProperty;
 import grails.validation.Constraint;
 import grails.web.mapping.UrlMapping;
@@ -13,7 +13,6 @@ import groovy.lang.Script;
 import java.util.List;
 import java.util.Map;
 
-import org.grails.web.mapping.DefaultUrlMappingEvaluator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -95,7 +94,7 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
 
         assertTrue(makeSureMatchesConstraintExistsOnId(mapping));
 
-        GrailsWebRequest r = GrailsWebUtil.bindMockWebRequest();
+        GrailsWebRequest r = GrailsWebMockUtil.bindMockWebRequest();
 
         UrlMappingInfo info = mapping.match("/mycontroller");
         info.configure(r);

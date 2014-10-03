@@ -1,20 +1,18 @@
 package org.codehaus.groovy.grails.compiler.web
 
+import grails.compiler.ast.ClassInjector
+import grails.compiler.traits.ControllerTraitInjector
+import grails.compiler.traits.TraitInjector
 import grails.util.BuildSettings
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.web.Action
-
-import org.grails.compiler.web.ControllerActionTransformer
-import org.grails.compiler.web.ControllerTransformer
+import grails.web.servlet.context.GrailsWebApplicationContext
 
 import java.lang.reflect.Modifier
 
-import grails.web.servlet.context.GrailsWebApplicationContext
-import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.ControllerTraitInjector;
-import grails.compiler.traits.TraitInjector;
-
 import org.grails.compiler.injection.GrailsAwareClassLoader
+import org.grails.compiler.web.ControllerActionTransformer
+import org.grails.compiler.web.ControllerTransformer
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -43,7 +41,7 @@ class ControllerActionTransformerSpec extends Specification {
 
         gcl.traitInjectors = [controllerTraitInjector] as TraitInjector[]
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def appCtx = new GrailsWebApplicationContext()
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)

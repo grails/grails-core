@@ -1,13 +1,9 @@
 package org.grails.web.pages.ext.jsp
 
-import grails.util.GrailsWebUtil
-
 import grails.core.DefaultGrailsApplication
+import grails.util.GrailsWebMockUtil
+
 import org.grails.web.pages.GroovyPagesServlet
-import org.grails.web.pages.ext.jsp.JspTag
-import org.grails.web.pages.ext.jsp.JspTagLib
-import org.grails.web.pages.ext.jsp.PageContextFactory
-import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
@@ -23,7 +19,7 @@ class IterativeJspTagTests extends GroovyTestCase {
     GrailsWebRequest webRequest
 
     protected void setUp() {
-        webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
     }
 

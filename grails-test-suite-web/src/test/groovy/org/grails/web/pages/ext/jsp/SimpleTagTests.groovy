@@ -1,12 +1,12 @@
 package org.grails.web.pages.ext.jsp
 
-import grails.util.GrailsWebUtil
+import grails.core.DefaultGrailsApplication
+import grails.util.GrailsWebMockUtil
 
 import javax.servlet.jsp.JspException
 import javax.servlet.jsp.JspWriter
 import javax.servlet.jsp.tagext.SimpleTagSupport
 
-import grails.core.DefaultGrailsApplication
 import org.grails.web.pages.GroovyPagesServlet
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockServletContext
@@ -21,7 +21,7 @@ class SimpleTagTests extends GroovyTestCase {
     GrailsWebRequest webRequest
 
     protected void setUp() {
-        webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.getCurrentRequest().setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, new GroovyPagesServlet())
     }
 

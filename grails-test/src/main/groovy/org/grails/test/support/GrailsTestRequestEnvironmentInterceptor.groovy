@@ -15,19 +15,18 @@
  */
 package org.grails.test.support
 
+import grails.util.GrailsWebMockUtil
 import grails.util.Holders
+import grails.web.util.GrailsApplicationAttributes
+
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import grails.web.util.GrailsApplicationAttributes
-import org.springframework.web.context.request.RequestContextHolder
-
 import org.springframework.context.ApplicationContext
-
-import grails.util.GrailsWebUtil
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Establishes a “mock” request environment suitable for running tests in.
@@ -55,7 +54,7 @@ class GrailsTestRequestEnvironmentInterceptor {
             response.responseMimeTypesApi = applicationContext.getBean("responseMimeTypesApi", ResponseMimeTypesApi)
         }
 
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
+        GrailsWebRequest webRequest = GrailsWebMockUtil.bindMockWebRequest(applicationContext, request, response)
         Holders.servletContext = webRequest.servletContext
         Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(webRequest.servletContext));
         webRequest.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)

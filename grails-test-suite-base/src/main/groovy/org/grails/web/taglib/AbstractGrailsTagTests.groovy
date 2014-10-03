@@ -4,7 +4,7 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPluginManager
 import grails.test.MockUtils
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.util.Holders
 import grails.util.Metadata
 import grails.web.pages.GroovyPagesUriService
@@ -16,28 +16,28 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-import org.grails.support.MockApplicationContext
-import org.grails.encoder.Encoder
 import org.grails.buffer.FastStringWriter
+import org.grails.core.artefact.ControllerArtefactHandler
+import org.grails.core.artefact.TagLibArtefactHandler
+import org.grails.encoder.Encoder
+import org.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
+import org.grails.support.MockApplicationContext
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.grails.web.encoder.OutputEncodingStack
+import org.grails.web.encoder.WithCodecHelper
+import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.grails.web.pages.GSPResponseWriter
 import org.grails.web.pages.GroovyPage
 import org.grails.web.pages.GroovyPageMetaInfo
-import org.grails.web.encoder.OutputEncodingStack
-import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.pages.GroovyPageTemplate
 import org.grails.web.pages.GroovyPagesTemplateEngine
 import org.grails.web.pages.SitemeshPreprocessor
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.sitemesh.GSPSitemeshPage
 import org.grails.web.sitemesh.GrailsHTMLPageParser
 import org.grails.web.sitemesh.GrailsLayoutView
-import org.grails.core.artefact.ControllerArtefactHandler
-import org.grails.core.artefact.TagLibArtefactHandler
-import org.grails.plugins.DefaultGrailsPlugin
-import org.grails.plugins.MockGrailsPluginManager
-import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
-import org.grails.web.pages.DefaultGroovyPagesUriService
-import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
@@ -98,7 +98,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         Holders.config = config
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
-        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
+        webRequest = GrailsWebMockUtil.bindMockWebRequest(appCtx)
         initRequestAndResponse()
         return webRequest
     }
@@ -257,7 +257,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         mockManager.registerProvidedArtefacts(grailsApplication)
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
 
-        webRequest = GrailsWebUtil.bindMockWebRequest(ctx)
+        webRequest = GrailsWebMockUtil.bindMockWebRequest(ctx)
         onInit()
         try {
             JstlUtils.exposeLocalizationContext webRequest.getRequest(), null

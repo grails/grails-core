@@ -3,22 +3,24 @@ package org.grails.plugins.web.rest.render
 import grails.persistence.Entity
 import grails.rest.render.errors.VndErrorJsonRenderer
 import grails.rest.render.errors.VndErrorXmlRenderer
+import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-import grails.core.DefaultGrailsApplication
-import org.grails.web.mapping.DefaultLinkGenerator
-import org.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.grails.web.mapping.DefaultUrlMappingsHolder
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
+
+import org.grails.web.mapping.DefaultLinkGenerator
+import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.context.support.StaticMessageSource
+import org.springframework.http.HttpStatus
 import org.springframework.mock.web.MockServletContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+
 import spock.lang.Specification
-import org.springframework.http.HttpStatus
 
 /**
  *
@@ -35,7 +37,7 @@ class VndErrorRenderingSpec extends Specification{
             def registry = new DefaultRendererRegistry()
             final vndRenderer = new VndErrorXmlRenderer()
             final messageSource = new StaticMessageSource()
-            final request = GrailsWebUtil.bindMockWebRequest()
+            final request = GrailsWebMockUtil.bindMockWebRequest()
             final response = request.response
             messageSource.addMessage("title.invalid", request.locale, "Bad Title")
             vndRenderer.messageSource = messageSource
@@ -71,7 +73,7 @@ class VndErrorRenderingSpec extends Specification{
             def registry = new DefaultRendererRegistry()
             final vndRenderer = new VndErrorJsonRenderer()
             final messageSource = new StaticMessageSource()
-            final request = GrailsWebUtil.bindMockWebRequest()
+            final request = GrailsWebMockUtil.bindMockWebRequest()
             final response = request.response
             messageSource.addMessage("title.invalid", request.locale, "Bad Title")
             messageSource.addMessage("title.bad", request.locale, "Title Bad")

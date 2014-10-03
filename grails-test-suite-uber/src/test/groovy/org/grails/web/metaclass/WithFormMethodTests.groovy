@@ -15,7 +15,7 @@
 
 package org.grails.web.metaclass
 
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 
 import org.grails.core.exceptions.GrailsRuntimeException
 import org.grails.plugins.web.controllers.metaclass.WithFormMethod
@@ -34,7 +34,7 @@ class WithFormMethodTests extends GroovyTestCase {
     @Override
     protected void setUp() {
         super.setUp()
-        request = GrailsWebUtil.bindMockWebRequest()
+        request = GrailsWebMockUtil.bindMockWebRequest()
     }
 
     @Override
@@ -211,7 +211,7 @@ class WithFormMethodTests extends GroovyTestCase {
 
         assertEquals "bar", result1.foo
 
-        def request2 = GrailsWebUtil.bindMockWebRequest()
+        def request2 = GrailsWebMockUtil.bindMockWebRequest()
         request2.session.setAttribute(SynchronizerTokensHolder.HOLDER,tokensHolder)
         request2.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_URI,url2)
         request2.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_KEY,token2)
@@ -245,7 +245,7 @@ class WithFormMethodTests extends GroovyTestCase {
 
         assertEquals "bar", result1.foo
 
-        def request2 = GrailsWebUtil.bindMockWebRequest()
+        def request2 = GrailsWebMockUtil.bindMockWebRequest()
         request2.session.setAttribute(SynchronizerTokensHolder.HOLDER,tokensHolder)
         request2.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_URI,url2)
         request2.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_KEY,token2)

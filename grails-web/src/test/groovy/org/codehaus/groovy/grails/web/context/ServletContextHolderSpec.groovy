@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.web.context
 
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.web.context.ServletContextHolder
+
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -24,7 +25,7 @@ class ServletContextHolderSpec extends Specification {
 
     def "Test fallback to mock web request"() {
         when:"the ServletContext is set"
-            final request = GrailsWebUtil.bindMockWebRequest()
+            final request = GrailsWebMockUtil.bindMockWebRequest()
         then:"It can be retrieved"
             ServletContextHolder.servletContext == request.servletContext
     }

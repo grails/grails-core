@@ -1,17 +1,17 @@
 package org.grails.web.pages.discovery
 
-import grails.util.GrailsUtil
-import grails.util.GrailsWebUtil
-
 import grails.core.DefaultGrailsApplication
+import grails.plugins.DefaultGrailsPluginManager
+import grails.plugins.metadata.GrailsPlugin
+import grails.util.GrailsUtil
+import grails.util.GrailsWebMockUtil
+import grails.web.util.GrailsApplicationAttributes
+
+import org.grails.core.io.SimpleMapResourceLoader
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.BinaryGrailsPluginDescriptor
 import org.grails.plugins.CoreGrailsPlugin
-import grails.plugins.DefaultGrailsPluginManager
-import grails.plugins.metadata.GrailsPlugin
-import org.grails.core.io.SimpleMapResourceLoader
 import org.grails.web.pages.GroovyPageParser
-import grails.web.util.GrailsApplicationAttributes
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.web.context.request.RequestContextHolder
@@ -70,7 +70,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
 
     void "Test find view with controller instance, view name and specified response format"() {
         setup:
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         when: "The controller and view name is specified as well as a response format of xml"
             resourceLoader.resources["/grails-app/views/test/bar.xml.gsp"] = new ByteArrayResource("contents".bytes)

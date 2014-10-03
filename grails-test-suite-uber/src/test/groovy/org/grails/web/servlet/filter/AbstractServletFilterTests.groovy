@@ -1,20 +1,21 @@
 package org.grails.web.servlet.filter
 
-import grails.util.GrailsWebUtil
+import grails.core.ApplicationAttributes
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
+import grails.plugins.GrailsPluginManager
+import grails.util.GrailsWebMockUtil
 import grails.util.Holders
 
 import javax.servlet.Filter
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import grails.core.ApplicationAttributes
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
-import grails.plugins.GrailsPluginManager
+
 import org.grails.plugins.MockGrailsPluginManager
 import org.grails.support.MockApplicationContext
-import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockFilterConfig
 import org.springframework.mock.web.MockServletContext
@@ -39,7 +40,7 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
         super.setUp()
 
         servletContext = new MockServletContext()
-        webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest = GrailsWebMockUtil.bindMockWebRequest()
         request = webRequest.currentRequest
         response = webRequest.currentResponse
         appCtx = new MockApplicationContext()

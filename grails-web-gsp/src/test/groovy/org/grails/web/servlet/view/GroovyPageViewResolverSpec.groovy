@@ -1,6 +1,6 @@
 package org.grails.web.servlet.view;
 
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.web.util.GrailsApplicationAttributes
 
 import javax.servlet.http.HttpServletRequest
@@ -27,7 +27,7 @@ class GroovyPageViewResolverSpec extends Specification {
         pageLocator.resolveViewFormat(_) >> { String viewName -> viewName }
         resolver.groovyPageLocator = pageLocator
         resolver.allowGrailsViewCaching = true
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, 'a')
         when:
         def view = resolver.resolveViewName('/hello/hello',null)
@@ -58,7 +58,7 @@ class GroovyPageViewResolverSpec extends Specification {
         pageLocator.resolveViewFormat(_) >> { String viewName -> viewName }
         resolver.groovyPageLocator = pageLocator
         resolver.allowGrailsViewCaching = true
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def grailsAppAttributes = Mock(GrailsApplicationAttributes)
         webRequest.attributes = grailsAppAttributes
         grailsAppAttributes.getPluginContextPath(_ as HttpServletRequest) >> { HttpServletRequest request -> webRequest.currentRequest.getAttribute('currentPlugin') }
@@ -93,7 +93,7 @@ class GroovyPageViewResolverSpec extends Specification {
         pageLocator.resolveViewFormat(_) >> { String viewName -> viewName }
         resolver.groovyPageLocator = pageLocator
         resolver.allowGrailsViewCaching = true
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def grailsAppAttributes = Mock(GrailsApplicationAttributes)
         webRequest.attributes = grailsAppAttributes
         grailsAppAttributes.getPluginContextPath(_ as HttpServletRequest) >> { HttpServletRequest request -> webRequest.currentRequest.getAttribute('currentPlugin') }

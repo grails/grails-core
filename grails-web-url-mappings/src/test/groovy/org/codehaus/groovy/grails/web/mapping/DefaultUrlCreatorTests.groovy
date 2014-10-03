@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
+
 import org.grails.web.mapping.DefaultUrlCreator
 import org.springframework.web.context.request.*
 
@@ -8,7 +9,7 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
 
     void testCreateUrl() {
 
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.currentRequest.characterEncoding = "utf-8"
 
         def creator = new DefaultUrlCreator("foo", "index")
@@ -22,7 +23,7 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
     }
 
     void testCreateUrlNoCharacterEncoding() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.currentRequest.characterEncoding = null
 
         def creator = new DefaultUrlCreator("foo", "index")

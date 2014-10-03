@@ -2,9 +2,8 @@ package org.grails.plugins.web
 
 import grails.core.DefaultGrailsApplication
 import grails.spring.BeanBuilder
-import grails.util.GrailsWebUtil
-import org.grails.plugins.web.AbstractGrailsPluginTests
-import org.grails.plugins.web.GroovyPagesGrailsPlugin
+import grails.util.GrailsWebMockUtil
+
 import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
@@ -152,7 +151,7 @@ class FormTagLib {
     }
 
     void testTagLibCallResolution() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(appCtx)
         def instance = appCtx.getBean('TagLibTestController')
         instance.list() // should not throw StackOverflow
         //TODO GRAILS-1765 get MarkupBuilder methodMissing to get called before Controller methodMissing

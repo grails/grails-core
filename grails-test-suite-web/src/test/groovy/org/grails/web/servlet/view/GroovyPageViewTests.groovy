@@ -1,10 +1,10 @@
 package org.grails.web.servlet.view;
 
 import grails.util.*
+
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.support.MockApplicationContext
 import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.servlet.view.GroovyPageView
 import org.springframework.mock.web.*
 import org.springframework.web.context.request.*
 
@@ -12,7 +12,7 @@ import org.springframework.web.context.request.*
 class GroovyPageViewTests extends GroovyTestCase {
 
     void testGroovyPageView() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         def rl = new MockStringResourceLoader()
 

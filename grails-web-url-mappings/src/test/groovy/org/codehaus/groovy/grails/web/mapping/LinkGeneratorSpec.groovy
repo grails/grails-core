@@ -1,12 +1,13 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import grails.util.GrailsWebUtil
+import grails.core.DefaultGrailsApplication
+import grails.plugins.DefaultGrailsPluginManager
+import grails.util.GrailsWebMockUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMappingsHolder
-import grails.core.DefaultGrailsApplication
+
 import org.grails.plugins.CoreGrailsPlugin
-import grails.plugins.DefaultGrailsPluginManager
 import org.grails.web.mapping.CachingLinkGenerator
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.springframework.mock.web.MockHttpServletRequest
@@ -158,7 +159,7 @@ class LinkGeneratorSpec extends Specification {
     def "test absolute links created from request scheme"() {
 
         given:
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             MockHttpServletRequest request = webRequest.currentRequest
 
         when:
@@ -185,7 +186,7 @@ class LinkGeneratorSpec extends Specification {
     def "caching should take request Host header, scheme and port in to account"() {
 
         given:
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             MockHttpServletRequest request = webRequest.currentRequest
             baseUrl = null
             def cachingGenerator = getGenerator(true)
@@ -228,7 +229,7 @@ class LinkGeneratorSpec extends Specification {
     def "caching should ignore request.baseUrl when base is provided for absolute links"() {
 
         given:
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             MockHttpServletRequest request = webRequest.currentRequest
             baseUrl = null
             def cachingGenerator = getGenerator(true)
@@ -251,7 +252,7 @@ class LinkGeneratorSpec extends Specification {
     @Issue('GRAILS-10883')
     def 'cache key should use identity of resource value'() {
         given:
-            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             MockHttpServletRequest request = webRequest.currentRequest
             baseUrl = null
             def cachingGenerator = getGenerator(true)

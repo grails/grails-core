@@ -1,14 +1,11 @@
 package org.grails.web.pages
 
-import grails.util.GrailsUtil
-import grails.util.GrailsWebUtil
-
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
+import grails.util.GrailsUtil
+import grails.util.GrailsWebMockUtil
+
 import org.grails.core.io.MockStringResourceLoader
-import org.grails.web.pages.GroovyPage
-import org.grails.web.pages.GroovyPageParser
-import org.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
 import org.springframework.mock.web.MockServletContext
@@ -17,7 +14,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testCommentAtEndOfTemplate() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def request = webRequest.request
         request.addParameter("showSource", "true")
 
@@ -44,7 +41,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testShowSourceParameter() {
         try {
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def request = webRequest.request
             request.addParameter("showSource", "true")
 
@@ -80,7 +77,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testCreateTemplateFromCurrentRequest2() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         def uri1 = "/another"
         assertNotNull(webRequest.request)
@@ -107,7 +104,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testCreateTemplateFromCurrentRequest1() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         def uri1 = "/somedir/myview"
         assertNotNull(webRequest.request)
@@ -137,7 +134,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testCreateTemplateFromResource() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -155,7 +152,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testNestingGroovyExpressionInAttribute() {
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -185,7 +182,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         // GRAILS-7915
         //if (notYetImplemented()) return
 
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.grailsApplication = createMockGrailsApplication()
@@ -241,7 +238,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingParensInNestedCurlyBraces() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -261,7 +258,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingBracketsInNestedCurlyBraces() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -281,7 +278,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingIfs() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -301,7 +298,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingMultilineQuotes() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -331,7 +328,7 @@ hello
     }
 
     void testParsingMultilineQuotes2() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -361,7 +358,7 @@ hello
     }
 
     void testGscript() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.grailsApplication = createMockGrailsApplication()
@@ -382,7 +379,7 @@ hello
     }
 
     void testGRAILS8218() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
 
@@ -403,7 +400,7 @@ hello
     }
 
     void testGRAILS8199() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
 
@@ -424,7 +421,7 @@ hello
     }
 
     void testParsingQuotes() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -449,7 +446,7 @@ hello
 
     void testCreateTemplateWithBinding() {
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -467,7 +464,7 @@ hello
 
     void testInlineScriptWithValidUnmatchedBrackets() {
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -494,7 +491,7 @@ never
 
     void testInlineScriptWithValidUnmatchedBracketsGspSyntax() {
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -521,7 +518,7 @@ never
 
     void testCreateTemplateFromText() {
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()
@@ -539,7 +536,7 @@ never
 
     void testForEachInProductionMode() {
         System.setProperty("grails.env", "production")
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
         gpte.afterPropertiesSet()

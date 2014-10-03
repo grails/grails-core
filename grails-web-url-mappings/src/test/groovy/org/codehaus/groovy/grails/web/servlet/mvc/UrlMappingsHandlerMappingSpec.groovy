@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.artefact.Artefact
-import grails.util.GrailsWebUtil
-import grails.web.Action
 import grails.core.DefaultGrailsApplication
+import grails.util.GrailsWebMockUtil
+import grails.web.Action
+
 import org.codehaus.groovy.grails.web.mapping.AbstractUrlMappingsSpec
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
@@ -29,7 +30,7 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
 
         when:"A URI is matched"
 
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def request = webRequest.request
             request.setRequestURI("/foo/bar")
             def handlerChain = handler.getHandler(request)

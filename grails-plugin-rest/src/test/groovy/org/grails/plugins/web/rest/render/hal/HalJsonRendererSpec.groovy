@@ -24,6 +24,7 @@ import grails.persistence.Entity
 import grails.rest.render.Renderer
 import grails.rest.render.hal.HalJsonCollectionRenderer
 import grails.rest.render.hal.HalJsonRenderer
+import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
@@ -60,7 +61,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.prettyPrint = true
 
         when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
@@ -101,7 +102,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.prettyPrint = true
 
         when: "A collection of domian objects is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
@@ -182,7 +183,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.collectionName = 'schtuff'
 
         when: "A collection of domian objects is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
@@ -262,7 +263,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.prettyPrint = true
 
             when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
@@ -295,7 +296,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.prettyPrint = true
  
             when:"A collection of POGO is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
@@ -357,7 +358,7 @@ class HalJsonRendererSpec extends Specification{
         def employee = new Employee(name:'employee1', projects: [new Project(name: 'project1')])
 
         when: "I render eagerly loaded domain object"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def renderContext = new ServletRenderContext(webRequest)
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/employees/employee1")
         renderer.render(employee,renderContext)
@@ -410,7 +411,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.elideDuplicates = false
 
         when: "A collection of domian objects is rendered"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
@@ -514,7 +515,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.prettyPrint = true
 
         when: "A collection of domian objects is rendered"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
@@ -606,7 +607,7 @@ class HalJsonRendererSpec extends Specification{
         Renderer render = new HalJsonRenderer(Moment)
 
         when: 'A non domain is rendered'
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/moment/theFuture")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
@@ -626,7 +627,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.prettyPrint = true
 
         when:"A domain object is rendered"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/event/Lollapalooza")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
@@ -679,7 +680,7 @@ class HalJsonRendererSpec extends Specification{
         }
 
         when:"A domain object is rendered"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/event/Lollapalooza")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
@@ -713,7 +714,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.gson = gsonBuilder.create()
 
         when:"A domain object is rendered"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/specialEvent/Lollapalooza")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
@@ -744,7 +745,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.prettyPrint = true
 
         when:"A domain object is rendered"
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)

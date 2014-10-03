@@ -1,23 +1,26 @@
 package org.grails.plugins.web.rest.render.hal
 
+import grails.core.DefaultGrailsApplication
 import grails.rest.render.hal.HalXmlRenderer
+import grails.util.GrailsWebMockUtil
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-import grails.core.DefaultGrailsApplication
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.UrlMappingsHolder
+
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
-import grails.web.mapping.LinkGenerator
-import grails.web.mapping.UrlMappingsHolder
-import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
+
 import spock.lang.Specification
 
 /**
@@ -39,7 +42,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
             HalXmlRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
             final author = new Author(name: "Stephen King")
@@ -67,7 +70,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
 //            renderer.prettyPrint = true
 
         when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
@@ -87,7 +90,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
             HalXmlRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
             final author = new Author(name: "Stephen King")

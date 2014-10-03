@@ -14,22 +14,24 @@
  */
 package org.grails.web.util
 
-import grails.util.GrailsWebUtil
+import grails.core.GrailsApplication
+import grails.util.GrailsWebMockUtil
+
 import org.grails.buffer.GrailsPrintWriter
 import org.grails.buffer.StreamCharBuffer
 import org.grails.commons.DefaultGrailsCodecClass
-import grails.core.GrailsApplication
 import org.grails.commons.GrailsCodecClass
-import org.grails.encoder.impl.HTML4Codec
-import org.grails.plugins.codecs.HTMLCodec
-import org.grails.encoder.impl.JavaScriptCodec;
-import org.grails.encoder.impl.RawCodec
 import org.grails.encoder.EncoderAware
 import org.grails.encoder.EncodesToWriterAdapter
 import org.grails.encoder.EncodingStateRegistryLookupHolder
+import org.grails.encoder.impl.HTML4Codec
+import org.grails.encoder.impl.JavaScriptCodec
+import org.grails.encoder.impl.RawCodec
+import org.grails.plugins.codecs.HTMLCodec
+
 import spock.lang.Issue
 import spock.lang.Specification
-import spock.lang.Unroll;
+import spock.lang.Unroll
 
 class StreamCharBufferSpec extends Specification {
     StreamCharBuffer buffer
@@ -51,7 +53,7 @@ class StreamCharBufferSpec extends Specification {
         grailsApplication.getArtefact("Codec", JavaScriptCodec.name) >> { jsCodecClass }
         def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass, jsCodecClass]
         grailsApplication.getCodecClasses() >> { codecClasses }
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         buffer=new StreamCharBuffer()
         out=new GrailsPrintWriter(buffer.writerForEncoder)

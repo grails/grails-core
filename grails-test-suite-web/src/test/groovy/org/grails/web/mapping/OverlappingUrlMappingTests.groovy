@@ -1,8 +1,8 @@
 package org.grails.web.mapping
 
-import org.grails.web.mapping.DefaultUrlMappingsHolder
+import grails.util.GrailsWebMockUtil
+
 import org.springframework.core.io.ByteArrayResource
-import grails.util.GrailsWebUtil
 
 /**
  * @author Graeme Rocher
@@ -24,7 +24,7 @@ mappings {
 '''
 
     void testEvaluateMappings() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def res = new ByteArrayResource(mappingScript.bytes)
         def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(res))

@@ -1,7 +1,6 @@
 package org.grails.web.pages.ext.jsp
 
-import grails.util.GrailsWebUtil
-import org.grails.web.pages.ext.jsp.GroovyPagesPageContext
+import grails.util.GrailsWebMockUtil
 
 import javax.servlet.jsp.PageContext
 
@@ -14,7 +13,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class GroovyPagesPageContextTests extends GroovyTestCase {
 
     protected void setUp() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
     }
 
     protected void tearDown() {

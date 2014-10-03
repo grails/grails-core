@@ -17,7 +17,8 @@ package org.grails.web.servlet
 
 import grails.persistence.Entity
 import grails.test.mixin.TestFor
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
+
 import org.junit.Test
 
 /**
@@ -28,7 +29,7 @@ class FlashScopeWithErrorsTests  {
 
     @Test
     void testFlashScopeWithErrors() {
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         def b = new Book()
 

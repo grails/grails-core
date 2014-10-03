@@ -1,10 +1,10 @@
 package org.grails.plugins.services
 
 import grails.spring.WebBeanBuilder
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 
-import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.commons.test.AbstractGrailsMockTests
+import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.springframework.aop.scope.ScopedProxyFactoryBean
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -14,7 +14,7 @@ class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
     void testScopedProxy() {
         def bb = new WebBeanBuilder()
 
-        GrailsWebUtil.bindMockWebRequest()
+        GrailsWebMockUtil.bindMockWebRequest()
 
         bb.beans {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)

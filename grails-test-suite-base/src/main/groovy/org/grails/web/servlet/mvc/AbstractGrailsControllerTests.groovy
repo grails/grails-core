@@ -4,7 +4,7 @@ import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
 import grails.util.GrailsNameUtils
-import grails.util.GrailsWebUtil
+import grails.util.GrailsWebMockUtil
 import grails.util.Holders
 import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
@@ -141,7 +141,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
         request = new GrailsMockHttpServletRequest(characterEncoding: "utf-8")
         response = new GrailsMockHttpServletResponse()
-        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx, request, response)
+        webRequest = GrailsWebMockUtil.bindMockWebRequest(appCtx, request, response)
         domainClasses.each { c -> 
             addValidationMethods c
         }
@@ -186,7 +186,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
-        return GrailsWebUtil.bindMockWebRequest(appCtx)
+        return GrailsWebMockUtil.bindMockWebRequest(appCtx)
     }
 
     void runTest(Closure callable) {
