@@ -41,27 +41,7 @@ class GrailsPlugin extends GroovyPlugin {
         def environment = Environment.current
 
 
-        if(environment.isReloadEnabled()) {
-            new GrailsWatchPlugin().apply(project)
-            NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
-            def grailsConfig = watchConfigs.create("grailsApp")
-            grailsConfig.directory = project.file("grails-app")
-            grailsConfig.extensions = ['groovy', 'java']
-            grailsConfig.tasks('compileGroovy')
-
-            def groovyConfig = watchConfigs.create("groovyConfig")
-            groovyConfig.directory = project.file("src/main/groovy")
-            groovyConfig.extensions = ['groovy', 'java']
-            groovyConfig.tasks('compileGroovy')
-
-            project.configurations {
-                agent
-            }
-            project.dependencies {
-                agent "org.springframework:springloaded:1.2.0.RELEASE"
-            }
-            project.afterEvaluate(new AgentTasksEnhancer())
-        }
+        enableFileWatch(environment, project)
 
 
         project.sourceSets {
@@ -84,6 +64,34 @@ class GrailsPlugin extends GroovyPlugin {
                 }
             }
         }
+    }
+
+    protected void enableFileWatch(Environment environment, Project project) {
+        if (environment.isReloadEnabled()) {
+//            configureWatchPlugin(project)
+
+            project.configurations {
+                agent
+            }
+            project.dependencies {
+                agent "org.springframework:springloaded:1.2.0.RELEASE"
+            }
+            project.afterEvaluate(new AgentTasksEnhancer())
+        }
+    }
+
+    private void configureWatchPlugin(Project project) {
+        new GrailsWatchPlugin().apply(project)
+        NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
+        def grailsConfig = watchConfigs.create("grailsApp")
+        grailsConfig.directory = project.file("grails-app")
+        grailsConfig.extensions = ['groovy', 'java']
+        grailsConfig.tasks('compileGroovy')
+
+        def groovyConfig = watchConfigs.create("groovyConfig")
+        groovyConfig.directory = project.file("src/main/groovy")
+        groovyConfig.extensions = ['groovy', 'java']
+        groovyConfig.tasks('compileGroovy')
     }
 
     @CompileStatic

@@ -35,8 +35,11 @@ import org.springframework.web.context.WebApplicationContext
 @CompileStatic
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
 
+    static final boolean RELOADING_ENABLED = Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)
+
     final GrailsApplication grailsApplication
     final GrailsPluginManager pluginManager
+
 
     GrailsApplicationPostProcessor(Class...classes) {
         grailsApplication = new DefaultGrailsApplication(classes as Class[])
@@ -66,7 +69,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
         beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
 
-        if(Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)) {
+        if(RELOADING_ENABLED) {
             GrailsSpringLoadedPlugin.register(pluginManager)
         }
     }
@@ -81,6 +84,8 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     @Override
     void onApplicationEvent(ApplicationContextEvent event) {
         def context = event.applicationContext
+
+        println "EVENT RECEIVED!! $event"
         if(event instanceof ContextRefreshedEvent) {
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
@@ -94,9 +99,13 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
         }
         else if(event instanceof ContextClosedEvent) {
+            println "EXECUTING SHUTDOWN"
             pluginManager.shutdown()
             ShutdownOperations.runOperations()
             Holders.clear()
+            if(RELOADING_ENABLED) {
+                GrailsSpringLoadedPlugin.unregister()
+            }
         }
     }
 
