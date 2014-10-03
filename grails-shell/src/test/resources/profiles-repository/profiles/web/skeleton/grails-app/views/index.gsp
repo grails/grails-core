@@ -86,7 +86,7 @@
 			<h1>Application Status</h1>
 			<ul>
 				<li>App version: <g:meta name="app.version"/></li>
-				<li>Grails version: 3.0.0.BUILD-SNAPSHOT</li>
+				<li>Grails version: <g:meta name="app.grails.version"/></li>
 				<li>Groovy version: ${GroovySystem.getVersion()}</li>
 				<li>JVM version: ${System.getProperty('java.version')}</li>
 				<li>Reloading active: ${grails.util.Environment.reloadingAgentEnabled}</li>
