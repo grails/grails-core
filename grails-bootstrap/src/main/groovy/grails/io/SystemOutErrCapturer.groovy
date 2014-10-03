@@ -19,7 +19,7 @@ class SystemOutErrCapturer {
         }
     }
     
-    public static <T> T doWithCapturer(Closure<T> closure) {
+    public static <T> T withCapturedOutput(Closure<T> closure) {
         SystemOutErrCapturer capturer = new SystemOutErrCapturer().capture()
         try {
             return closure.call(capturer)
