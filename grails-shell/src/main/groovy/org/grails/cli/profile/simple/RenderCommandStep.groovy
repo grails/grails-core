@@ -24,11 +24,11 @@ class RenderCommandStep extends SimpleCommandStep {
     protected renderToDestination(File destination, Map variables) {
         File profileDir = command.profile.profileDir
         File templateFile = new File(profileDir, commandParameters.template)
-        destination.text = doReplacements(templateFile.text, variables)
+        destination.text = new SimpleTemplate(templateFile.text).render(variables)
     }
 
     private File resolveDestination(ExecutionContext context, Map variables) {
-        String destinationName = doReplacements(commandParameters.destination, variables)
+        String destinationName = new SimpleTemplate(commandParameters.destination).render(variables)
         File destination = new File(context.baseDir, destinationName).absoluteFile
 
         if(destination.exists()) {
@@ -76,11 +76,5 @@ class RenderCommandStep extends SimpleCommandStep {
         pathParts.reverse().join('/')
     }
     
-    protected String doReplacements(String source, Map<String, String> variables) {
-        String result = source?:''
-        variables.each { k, v ->
-            result = result.replace("@${k}@".toString(), v?:'')
-        }
-        result
-    }
+
 }
