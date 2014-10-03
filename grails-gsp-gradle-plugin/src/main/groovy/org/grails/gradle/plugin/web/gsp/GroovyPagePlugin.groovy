@@ -52,7 +52,15 @@ class GroovyPagePlugin implements Plugin<Project> {
         def compileGroovyPages = project.tasks.getByName("compileGroovyPages")
         compileGroovyPages.dependsOn( project.tasks.getByName('compileWebappGroovyPages'), project.tasks.getByName('compileMainTemplatesGroovyPages'))
         compileGroovyPages.dependsOn( project.tasks.getByName("compileGroovy") )
-        project.tasks.getByName('assemble').dependsOn(compileGroovyPages)
+
+        def warTask = project.tasks.findByName('war')
+        def assembleTask = project.tasks.findByName('assemble')
+        if(warTask) {
+            warTask.dependsOn(compileGroovyPages)
+        }
+        else {
+            assembleTask?.dependsOn(compileGroovyPages)
+        }
     }
 
     /**
