@@ -1,5 +1,7 @@
 package org.grails.cli
 
+import grails.plugins.GrailsVersionUtils;
+import grails.util.Metadata;
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -42,6 +44,7 @@ class CreateAppCommand {
         variables['grails.codegen.defaultPackage'] = defaultPackage
         variables['grails.codegen.defaultPackage.path']  = defaultPackage.replace('.', '/')
         variables['grails.profile'] = profile
+        variables['grails.version'] = this.getClass().getPackage().getImplementationVersion()
         variables['grails.app.name'] = appname
         variables['grails.app.group'] = groupname
     }
