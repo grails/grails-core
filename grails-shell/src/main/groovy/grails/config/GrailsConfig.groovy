@@ -1,19 +1,31 @@
 package grails.config
 
+import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
 
 import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
-public class GrailsConfig {
-    final Map<String, Object> config
+@Canonical
+public class GrailsConfig implements Cloneable {
+    final NullSafeNavigatorMap configMap
 
     public GrailsConfig() {
-        config = createEmptyConfigMap()
+        configMap = new NullSafeNavigatorMap()
+    }
+    
+    public GrailsConfig(GrailsConfig copyOf) {
+        this(copyOf.@configMap)
     }
 
-    protected Map<String, Object> createEmptyConfigMap() {
-        [:]
+    public GrailsConfig(Map copyOf) {
+        this()
+        mergeMap(copyOf)
+    }
+    
+    public GrailsConfig clone() {
+        new GrailsConfig(this)
     }
 
     public void loadYml(File ymlFile) {
@@ -33,17 +45,19 @@ public class GrailsConfig {
     }
     
     public void mergeMap(Map sourceMap) {
-        mergeMaps(config, sourceMap)
+        mergeMaps(configMap, sourceMap)
     }
     
-    private static void mergeMaps(Map targetMap, Map sourceMap) {
+    private static void mergeMaps(Map<String, Object> targetMap, Map sourceMap) {
         sourceMap.each { Object sourceKeyObject, Object sourceValue ->
             String sourceKey = String.valueOf(sourceKeyObject)
             Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
-            Object newValue = sourceValue
-            if(currentValue instanceof Map && sourceValue instanceof Map) {
-                newValue = new LinkedHashMap(currentValue)
+            Object newValue
+            if(sourceValue instanceof Map) {
+                newValue = new NullSafeNavigatorMap(currentValue instanceof Map ? (Map)currentValue : [:])
                 mergeMaps((Map)newValue, (Map)sourceValue)
+            } else {
+                newValue = sourceValue
             }
             if (newValue == null) {
                 targetMap.remove(sourceKey)
@@ -63,7 +77,7 @@ public class GrailsConfig {
     }
 
     public <T> T navigateConfigForType(Class<T> requiredType, String... path) {
-        Object result = navigateMap(config, path)
+        Object result = navigateMap(configMap, path)
         if(result == null) {
             return null
         }
@@ -110,6 +124,72 @@ public class GrailsConfig {
 
     public String navigateConfig(String... path) {
         return navigateConfigForType(String, path)
+    }
+    
+    public Object getProperty(String name) {
+        if ("configMap".equals(name))
+            return this.configMap
+        return configMap.getProperty(name)
+    }
+    
+    public void setProperty(String name, Object value) {
+        configMap.setProperty(name, value)
+    }
+    
+    @InheritConstructors
+    private static class NullSafeNavigatorMap extends LinkedHashMap<String, Object> {
+        public Object getProperty(String name) {
+            if (!containsKey(name)) {
+                return new NullSafeNavigator(this, [name].asImmutable())
+            }
+            return get(name)
+        }
+        
+        public void setProperty(String name, Object value) {
+            if(value instanceof Map && containsKey(name) && get(name) instanceof Map) {
+                GrailsConfig.mergeMaps((Map)get(name), value)
+            } else {
+                if(value==null) {
+                    remove(name)
+                } else {
+                    put(name, value)
+                }
+            }
+        }
+    }
+    
+    @CompileStatic
+    private static class NullSafeNavigator {
+        final Map<String, Object> parent
+        final List<String> path
+        
+        NullSafeNavigator(Map<String, Object> parent, List<String> path) {
+            this.parent = parent
+            this.path = path
+        }
+        
+        public Object getProperty(String name) {
+            return new NullSafeNavigator(parent, ((path + [name]) as List<String>).asImmutable())
+        }
+        
+        public void setProperty(String name, Object value) {
+            Map<String, Object> parentMap = navigateAndCreateParent(parent, path)
+            parentMap.put(name, value)
+        }
+        
+        private Map<String, Object> navigateAndCreateParent(Map<String, Object> parent, List<String> path) {
+            Map<String, Object> currentMap = parent
+            for(String pathElement : path) {
+                Map<String, Object> newMap = new NullSafeNavigatorMap()
+                currentMap.put(pathElement, newMap)
+                currentMap = newMap
+            }
+            currentMap
+        }
+        
+        public boolean asBoolean() {
+            false
+        }
     }
     
     /**

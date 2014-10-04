@@ -11,9 +11,9 @@ class GrailsConfigSpec extends Specification{
         when:
         config.loadYml(file)
         then:
-        config.config.a1 == [a2:3, b2:4, c2:[a3:3, b2:4, c3:1], d2: 1, e2: 2]
-        config.config.grails.profile == 'web'
-        config.config.grails.containsKey('somekey') == false
+        config.configMap.a1 == [a2:3, b2:4, c2:[a3:3, b2:4, c3:1], d2: 1, e2: 2]
+        config.configMap.grails.profile == 'web'
+        config.configMap.grails.containsKey('somekey') == false
     }
     
     def "should support merging maps"() {
@@ -22,27 +22,27 @@ class GrailsConfigSpec extends Specification{
         when:
         config.mergeMap([a:1])
         then:
-        config.config == [a:1]
+        config.configMap == [a:1]
         when:
         config.mergeMap([b:2])
         then:
-        config.config == [a:1, b:2]
+        config.configMap == [a:1, b:2]
         when:
         config.mergeMap([a: [c:1]])
         then:
-        config.config == [a: [c:1], b:2]
+        config.configMap == [a: [c:1], b:2]
         when:
         config.mergeMap([a: [d: 1]])
         then:
-        config.config == [a: [c:1, d:1], b:2]
+        config.configMap == [a: [c:1, d:1], b:2]
         when:
         config.mergeMap([a: [c: 2]])
         then:
-        config.config == [a: [c:2, d:1], b:2]
+        config.configMap == [a: [c:2, d:1], b:2]
         when: 'key has null value'
         config.mergeMap([a: null])
         then: 'the key should be removed'
-        config.config == [b:2]
+        config.configMap == [b:2]
     }
     
     def "should support basic type conversions"() {
@@ -58,5 +58,84 @@ class GrailsConfigSpec extends Specification{
         config.navigateConfigForType(Boolean, 'booleanValue') == true
         config.navigateConfigForType(Boolean, 'falseValue') == false
     }
+    
+    def "should support null safe navigation for getting"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        expect:
+        config.a.b.c as Boolean == false
+    }
 
+    def "should support null safe navigation for setting"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.a.b.c = 1
+        then:
+        config.configMap == [a: [b: [c: 1]]]
+    }
+
+    def "should support merging values when map is set"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.a.b.c = 1
+        config.a = [d: 2]
+        then:
+        config.configMap == [a: [b: [c: 1], d: 2]]
+        when:
+        config.a.b = [e: 3]
+        then:
+        config.configMap == [a: [b: [c: 1, e: 3], d: 2]]
+    }
+
+    def "should support merging values when map already exists"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.a.b.c = 1
+        config.a = [d: 2]
+        then:
+        config.configMap == [a: [b: [c: 1], d: 2]]
+        when:
+        config.a.b.e = 3
+        then:
+        config.configMap == [a: [b: [c: 1, e: 3], d: 2]]
+    }
+        
+    def "should support setting map in null safe navigation"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.a.b.c = [d: 3, e: [f: 4]]
+        then:
+        config.configMap == [a: [b:[c:[d:3, e:[f:4]]]]]
+    }
+    
+    def "should support cloning"() {
+        given:
+        GrailsConfig config = new GrailsConfig([a: [b:[c:[d:3, e:[f:4]]]]])
+        GrailsConfig config2 = config.clone()
+        expect:
+        config == config2
+        !config.is(config2)
+        config.configMap == config2.configMap
+        !config.configMap.is(config2.configMap)
+        config2.configMap == [a: [b:[c:[d:3, e:[f:4]]]]]
+        when:
+        config.a.b.hello = 'world'
+        then:
+        config.a.b.hello == 'world'
+        config.configMap == [a: [b:[c:[d:3, e:[f:4]], hello:'world']]]
+    }
+    
+    def "should support removing values when key is set to null"() {
+        given:
+        GrailsConfig config = new GrailsConfig([a: [b: [c: [d: 1, e: 2]]]])
+        when:
+        config.a.b = null
+        config.a.b.c = 1
+        then:
+        config.configMap == [a: [b: [c: 1]]]
+    }
 }
