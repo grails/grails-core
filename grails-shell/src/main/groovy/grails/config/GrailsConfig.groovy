@@ -4,6 +4,7 @@ import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 
+import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
@@ -124,6 +125,28 @@ public class GrailsConfig implements Cloneable {
 
     public String navigateConfig(String... path) {
         return navigateConfigForType(String, path)
+    }
+    
+    public boolean asBoolean() {
+        return !configMap.isEmpty()
+    }
+    
+    public Map<String, Object> asMap() {
+        new GrailsConfig(this).@configMap
+    }
+    
+    public Object asType(Class type) {
+        if(type==Boolean || type==boolean) {
+            return asBoolean()
+        } else if (type==String) {
+            return toString()
+        } else if (type==Map) {
+            return asMap()
+        } else if (type==GrailsConfig) {
+            return new GrailsConfig(this)
+        } else {
+            throw new GroovyCastException(this, type)
+        }
     }
     
     public Object getProperty(String name) {
