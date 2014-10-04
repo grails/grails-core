@@ -1,4 +1,4 @@
-package grails.config;
+package grails.config
 
 import spock.lang.Specification
 
@@ -137,5 +137,31 @@ class GrailsConfigSpec extends Specification{
         config.a.b.c = 1
         then:
         config.configMap == [a: [b: [c: 1]]]
+    }
+    
+    def "should support casting to Map"() {
+        given:
+        GrailsConfig config = new GrailsConfig([a: [b: [c: [d: 1, e: 2]]]])
+        expect:
+        (config as Map) == [a: [b: [c: [d: 1, e: 2]]]]
+    }
+    
+    def "should support casting to boolean"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        expect:
+        config as boolean == false
+        when:
+        config.a = 1
+        then:
+        config as boolean == true
+    }
+    
+    def "should support casting map to GrailsConfig"() {
+        given:
+        def config = [a: [b: [c: [d: 1, e: 2]]]] as GrailsConfig
+        expect:
+        config instanceof GrailsConfig
+        config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
     }
 }
