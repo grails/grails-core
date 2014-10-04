@@ -64,6 +64,7 @@ class GrailsConfigSpec extends Specification{
         GrailsConfig config = new GrailsConfig()
         expect:
         config.a.b.c as Boolean == false
+        config.a.b.c as Map == null
     }
 
     def "should support null safe navigation for setting"() {
