@@ -3,40 +3,23 @@ grails:
   profile: web
   codegen:
     defaultPackage: simpleapp
+  somekey: somevalue
+a1:
+  a2: 1
+  b2: 2
+  c2:
+    a3: 1
+    b2: 2
+    c3: 1
+  d2: 1
+---
+a1:
+  a2: 3
+  b2: 4
+  c2:
+    a3: 3
+    b2: 4
+  e2: 2
 ---
 grails:
-    mime:
-        disable:
-            accept:
-                header:
-                    userAgents:
-                        - Gecko
-                        - WebKit
-                        - Presto
-                        - Trident
-        types:
-            all: '*/*'
-            atom: 'application/atom+xml'
-    urlmapping:
-        cache:
-            maxsize: 1000
-    controllers:
-        defaultScope: singleton
-    converters:
-        encoding: UTF-8
-    hibernate:
-        cache:
-            queries: false
-    views:
-        default:
-            codec: html
-        gsp:
-            encoding: UTF-8
-            htmlcodec: xml
-            codecs:
-                expression: html
-                scriptlets: html
-                taglib: none
-                staticparts: none
-...
-
+  somekey: !!null

@@ -1,8 +1,6 @@
 package grails.config;
 
-import groovy.transform.CompileStatic;
-
-import java.util.Map;
+import groovy.transform.CompileStatic
 
 import org.yaml.snakeyaml.Yaml
 
@@ -24,21 +22,30 @@ public class GrailsConfig {
     public void loadYml(InputStream input) {
         Yaml yaml = new Yaml();
         for(Object yamlObject : yaml.loadAll(input)) {
-            if(yamlObject instanceof Map) {
-                mergeMaps(config, (Map)yamlObject)
+            if(yamlObject instanceof Map) { // problem here with CompileStatic
+                mergeMap((Map)yamlObject)
             }
         }
     }
     
-    private void mergeMaps(Map targetMap, Map sourceMap) {
-        sourceMap.each { Object sourceKey, Object sourceValue ->
+    public void mergeMap(Map sourceMap) {
+        mergeMaps(config, sourceMap)
+    }
+    
+    private static void mergeMaps(Map targetMap, Map sourceMap) {
+        sourceMap.each { Object sourceKeyObject, Object sourceValue ->
+            String sourceKey = String.valueOf(sourceKeyObject)
             Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
             Object newValue = sourceValue
             if(currentValue instanceof Map && sourceValue instanceof Map) {
                 newValue = new LinkedHashMap(currentValue)
                 mergeMaps((Map)newValue, (Map)sourceValue)
             }
-            targetMap.put(sourceKey, newValue)
+            if (newValue == null) {
+                targetMap.remove(sourceKey)
+            } else {
+                targetMap.put(sourceKey, newValue)
+            }
         }
     }
     
