@@ -1,9 +1,9 @@
 package grails.config
-
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import org.yaml.snakeyaml.Yaml
 
@@ -212,6 +212,43 @@ public class GrailsConfig implements Cloneable {
         
         public boolean asBoolean() {
             false
+        }
+        
+        public Object invokeMethod(String name, Object args) {
+            throw new NullPointerException("Cannot invoke method " + name + "() on NullSafeNavigator");
+        }
+    
+        public boolean equals(Object to) {
+            return to == null || DefaultGroovyMethods.is(this, to)
+        }
+    
+        public Iterator iterator() {
+            return Collections.EMPTY_LIST.iterator()
+        }
+    
+        public Object plus(String s) {
+            return toString() + s
+        }
+    
+        public Object plus(Object o) {
+            throw new NullPointerException("Cannot invoke method plus on NullSafeNavigator")
+        }
+    
+        public boolean is(Object other) {
+            return other == null || DefaultGroovyMethods.is(this, other)
+        }
+    
+        public Object asType(Class c) {
+            if(c==Boolean || c==boolean) return false
+            return null
+        }
+    
+        public String toString() {
+            return "null"
+        }
+    
+        public int hashCode() {
+            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
         }
     }
     
