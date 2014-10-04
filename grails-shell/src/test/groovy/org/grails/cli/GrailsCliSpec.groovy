@@ -159,7 +159,7 @@ class GrailsCliSpec extends Specification {
         when:
         grailsConfig.loadYml(configFile)
         then:
-        grailsConfig.config.grails.profile == 'web'
+        grailsConfig.grails.profile == 'web'
     }    
 
     def "should fail with retval 1 when creating app for non-existing profile"() {
