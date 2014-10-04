@@ -44,5 +44,19 @@ class GrailsConfigSpec extends Specification{
         then: 'the key should be removed'
         config.config == [b:2]
     }
+    
+    def "should support basic type conversions"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.mergeMap([intValue:'123', doubleValue:'12.34', longValue:'12345678910111213', bigDecimalValue:'12345678910111213141516.12345678910111213141516', booleanValue: 'Yes', falseValue: 'off'])
+        then:
+        config.navigateConfigForType(Integer, 'intValue') == 123
+        config.navigateConfigForType(Double, 'doubleValue') == 12.34d
+        config.navigateConfigForType(Long, 'longValue') == 12345678910111213L
+        config.navigateConfigForType(BigDecimal, 'bigDecimalValue') == new BigDecimal("12345678910111213141516.12345678910111213141516")
+        config.navigateConfigForType(Boolean, 'booleanValue') == true
+        config.navigateConfigForType(Boolean, 'falseValue') == false
+    }
 
 }
