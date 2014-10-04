@@ -6,10 +6,14 @@ import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
 public class GrailsConfig {
-    Map<String, Object> config
+    final Map<String, Object> config
 
     public GrailsConfig() {
-        config = [:]
+        config = createEmptyConfigMap()
+    }
+
+    protected Map<String, Object> createEmptyConfigMap() {
+        [:]
     }
 
     public void loadYml(File ymlFile) {
@@ -63,14 +67,13 @@ public class GrailsConfig {
         if(result == null) {
             return null
         }
-        if(requiredType.isInstance(result)) {
-            return (T)result
-        } else {
-            return convertToType(result, requiredType)
-        }
+        return convertToType(result, requiredType)
     }
     
-    private <T> T convertToType(Object value, Class<T> requiredType) {
+    protected <T> T convertToType(Object value, Class<T> requiredType) {
+        if(requiredType.isInstance(value)) {
+            return (T)value
+        }
         if(requiredType==Integer.class) {
             if(value instanceof Number) {
                 return Integer.valueOf(((Number)value).intValue())
@@ -80,8 +83,12 @@ public class GrailsConfig {
         } else if(requiredType==String.class) {
             return String.valueOf(value)
         } else {
-            throw new RuntimeException("conversion to $requiredType.name not implemented")
+            return convertToOtherTypes(value, requiredType)
         }
+    }
+    
+    protected <T> T convertToOtherTypes(Object value, Class<T> requiredType) {
+        throw new RuntimeException("conversion to $requiredType.name not implemented")
     }
 
     public String navigateConfig(String... path) {
