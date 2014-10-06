@@ -77,7 +77,7 @@ public class GrailsConfig implements Cloneable {
         }
     }
 
-    public <T> T navigateConfigForType(Class<T> requiredType, String... path) {
+    public <T> T navigate(Class<T> requiredType, String... path) {
         Object result = navigateMap(configMap, path)
         if(result == null) {
             return null
@@ -123,8 +123,8 @@ public class GrailsConfig implements Cloneable {
         throw new RuntimeException("conversion to $requiredType.name not implemented")
     }
 
-    public String navigateConfig(String... path) {
-        return navigateConfigForType(String, path)
+    public Object navigate(String... path) {
+        return navigate(Object, path)
     }
     
     public boolean asBoolean() {
@@ -147,6 +147,14 @@ public class GrailsConfig implements Cloneable {
         } else {
             throw new GroovyCastException(this, type)
         }
+    }
+    
+    public Object getAt(Object key) {
+        getProperty(String.valueOf(key))
+    }
+    
+    public void setAt(Object key, Object value) {
+        setProperty(String.valueOf(key), value)
     }
     
     public Object getProperty(String name) {

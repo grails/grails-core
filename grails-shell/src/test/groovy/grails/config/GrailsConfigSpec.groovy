@@ -51,12 +51,12 @@ class GrailsConfigSpec extends Specification{
         when:
         config.mergeMap([intValue:'123', doubleValue:'12.34', longValue:'12345678910111213', bigDecimalValue:'12345678910111213141516.12345678910111213141516', booleanValue: 'Yes', falseValue: 'off'])
         then:
-        config.navigateConfigForType(Integer, 'intValue') == 123
-        config.navigateConfigForType(Double, 'doubleValue') == 12.34d
-        config.navigateConfigForType(Long, 'longValue') == 12345678910111213L
-        config.navigateConfigForType(BigDecimal, 'bigDecimalValue') == new BigDecimal("12345678910111213141516.12345678910111213141516")
-        config.navigateConfigForType(Boolean, 'booleanValue') == true
-        config.navigateConfigForType(Boolean, 'falseValue') == false
+        config.navigate(Integer, 'intValue') == 123
+        config.navigate(Double, 'doubleValue') == 12.34d
+        config.navigate(Long, 'longValue') == 12345678910111213L
+        config.navigate(BigDecimal, 'bigDecimalValue') == new BigDecimal("12345678910111213141516.12345678910111213141516")
+        config.navigate(Boolean, 'booleanValue') == true
+        config.navigate(Boolean, 'falseValue') == false
     }
     
     def "should support null safe navigation for getting"() {
