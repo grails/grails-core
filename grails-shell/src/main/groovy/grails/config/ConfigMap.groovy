@@ -120,6 +120,51 @@ class ConfigMap implements Map<String, Object> {
         currentMap
     }
     
+    public Map<String, Object> toFlatConfig() {
+        Map<String,Object> flatConfig = [:]
+        flattenKeys(flatConfig, this, [], false)
+        flatConfig
+    }
+    
+    public Properties toProperties() {
+        Properties properties = new Properties()
+        flattenKeys((Map<String, Object>)properties, this, [], true)
+        properties
+    }
+    
+    private void flattenKeys(Map<String, Object> flatConfig, Map currentMap, List<String> path, boolean forceStrings) {
+        currentMap.each { key, value ->
+            String stringKey = String.valueOf(key)
+            if(value != null) {
+                if(value instanceof Map) {
+                    flattenKeys(flatConfig, (Map)value, ((path + [stringKey]) as List<String>).asImmutable(), forceStrings)
+                } else {
+                    String fullKey
+                    if(path) {
+                        fullKey = path.join('.') + '.' + stringKey
+                    } else {
+                        fullKey = stringKey
+                    }
+                    if(value instanceof Collection) {
+                        if(forceStrings) {
+                            flatConfig.put(fullKey, ((Collection)value).join(","))
+                        } else {
+                            flatConfig.put(fullKey, value)
+                        }
+                        int index = 0
+                        for(Object item: (Collection)value) {
+                            String collectionKey = "${fullKey}[${index}]".toString()
+                            flatConfig.put(collectionKey, forceStrings ? String.valueOf(item) : item)
+                            index++
+                        }
+                    } else {
+                        flatConfig.put(fullKey, forceStrings ? String.valueOf(value) : value)
+                    }
+                }
+            }
+        }        
+    }
+    
     @CompileStatic
     private static class NullSafeNavigator {
         final ConfigMap parent
