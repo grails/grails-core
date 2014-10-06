@@ -165,4 +165,29 @@ class GrailsConfigSpec extends Specification{
         config instanceof GrailsConfig
         config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
     }
+    
+    def "should support with"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.a.b.c.with {
+            d = 1
+            e = 2
+        }
+        then:
+        config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
+    }
+    
+    def "null safe navigation should be supported without creating keys"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        def subconfigReference = config.a.b.c.d.e
+        expect:
+        config.configMap.size() == 0
+        when:
+        subconfigReference.f.g = 1
+        then:
+        config.configMap == [a: [b: [c: [d: [e: [f: [g: 1]]]]]]]
+        subconfigReference.f == [g: 1]
+    }
 }
