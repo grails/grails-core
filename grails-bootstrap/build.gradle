@@ -41,6 +41,8 @@ dependencies {
         exclude group:'commons-cli', module:'commons-cli'
         exclude group:'org.apache.ant', module:'ant'
     }
+
+    compile "org.yaml:snakeyaml:1.14"
 }
 
 sourceSets {

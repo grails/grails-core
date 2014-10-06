@@ -1,0 +1,11 @@
+description: Creates a domain class
+usage: |
+ create-domain [domain class name]
+ Creates a domain class and an associated unit test
+steps:
+ - command: render
+   template: templates/artifacts/DomainClass.groovy
+   destination: grails-app/domains/@artifact.package.path@/@artifact.name@.groovy
+ - command: render
+   template: templates/testing/DomainClass.groovy
+   destination: src/test/groovy/@artifact.package.path@/@artifact.name@Spec.groovy

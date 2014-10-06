@@ -1,0 +1,4 @@
+grails:
+  profile: @grails.profile@
+  codegen:
+    defaultPackage: @grails.codegen.defaultPackage@

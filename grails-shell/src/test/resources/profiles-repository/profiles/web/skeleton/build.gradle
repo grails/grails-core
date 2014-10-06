@@ -1,0 +1,47 @@
+ext {
+  grailsVersion = "@grails.version@"
+}
+
+buildscript {
+    ext {
+      grailsVersion = "@grails.version@"
+    }  
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "https://repo.spring.io/libs-release" }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath "org.grails:grails-gsp-gradle-plugin:$grailsVersion"
+    }
+}
+
+version "0.1"
+group "@grails.app.group@"
+
+
+apply plugin: "spring-boot"
+apply plugin: "war"
+apply plugin: "grails-core"
+apply plugin: "grails-gsp"
+
+
+repositories {
+  mavenLocal()
+  jcenter()
+  maven { url "https://repo.spring.io/libs-release" }
+}
+
+dependencies {
+  compile "org.springframework.boot:spring-boot-autoconfigure"
+  compile "org.springframework.boot:spring-boot-starter-tomcat"
+  compile "org.grails:grails-dependencies:$grailsVersion"
+  compile "org.grails:grails-web-boot:$grailsVersion"
+
+
+  compile "org.grails.plugins:hibernate:4.3.5.5.BUILD-SNAPSHOT"
+  compile "org.hibernate:hibernate-ehcache:4.3.5.Final"
+
+  runtime "org.grails.plugins:asset-pipeline:2.0.0-SNAPSHOT"
+}
