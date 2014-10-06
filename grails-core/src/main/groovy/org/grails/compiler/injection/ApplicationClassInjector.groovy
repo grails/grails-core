@@ -78,6 +78,7 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
 
     @Override
     boolean shouldInject(URL url) {
+        if(url == null) return false
         def res = new UrlResource(url)
         return GrailsResourceUtils.isGrailsResource(res) && res.filename == "Application.groovy"
     }
