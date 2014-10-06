@@ -1,0 +1,8 @@
+description: Runs the application
+minArguments: 0
+usage: |
+ run-app
+steps:
+ - command: gradle
+   tasks:
+     - run

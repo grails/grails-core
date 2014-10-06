@@ -1,0 +1,34 @@
+ext {
+  grailsVersion = "@grails.version@"
+}
+
+buildscript {
+    ext {
+      grailsVersion = "@grails.version@"
+    }  
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "https://repo.spring.io/libs-release" }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+    }
+}
+
+version "0.1"
+group "@grails.app.group@"
+
+apply plugin: "spring-boot"
+apply plugin: "grails-core"
+
+repositories {
+  mavenLocal()
+  jcenter()
+  maven { url "https://repo.spring.io/libs-release" }
+}
+
+dependencies {
+  compile "org.springframework.boot:spring-boot-autoconfigure"
+  compile "org.grails:grails-dependencies:$grailsVersion"
+}

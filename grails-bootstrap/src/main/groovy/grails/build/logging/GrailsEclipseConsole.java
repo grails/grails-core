@@ -20,7 +20,6 @@ import java.io.OutputStream;
 
 import jline.Terminal;
 import jline.UnsupportedTerminal;
-import jline.console.ConsoleReader;
 
 /**
  * This class is meant to keep changes made in support of Eclipse separate from
@@ -85,11 +84,6 @@ public class GrailsEclipseConsole extends GrailsConsole {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    @Override
-    protected ConsoleReader createConsoleReader() throws IOException {
-        return super.createConsoleReader();
     }
 
     @Override

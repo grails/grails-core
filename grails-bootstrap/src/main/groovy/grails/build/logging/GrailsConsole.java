@@ -76,11 +76,13 @@ public class GrailsConsole {
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     public static final Character SECURE_MASK_CHAR = new Character('*');
-    private final PrintStream originalSystemOut;
-    private final PrintStream originalSystemErr;
+    private PrintStream originalSystemOut;
+    private PrintStream originalSystemErr;
     private StringBuilder maxIndicatorString;
     private int cursorMove;
-
+    private Thread shutdownHookThread;
+    private Character defaultInputMask = null;
+    
     /**
      * Whether to enable verbose mode
      */
@@ -137,19 +139,55 @@ public class GrailsConsole {
      */
     private boolean userInputActive;
 
+    public void addShutdownHook() {
+        if( !Environment.isFork() ) {
+            shutdownHookThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    beforeShutdown();
+                }
+            });
+            Runtime.getRuntime().addShutdownHook(shutdownHookThread);
+        }
+    }
+    
+    public void removeShutdownHook() {
+        if(shutdownHookThread != null) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHookThread);
+        }
+    }
+    
+    
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
-        originalSystemOut = System.out;
-        originalSystemErr = System.err;
-        out = new PrintStream(ansiWrap(originalSystemOut));
-        err = new PrintStream(ansiWrap(originalSystemErr));
 
-        System.setOut(new GrailsConsolePrintStream(out));
-        System.setErr(new GrailsConsoleErrorPrintStream(err));
+        initialize(System.in, System.out, System.err);
+
+        // bit of a WTF this, but see no other way to allow a customization indicator
+        maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
+
+    }
+    
+    /**
+     * Use in testing when System.out, System.err or System.in change
+     * @throws IOException
+     */
+    public void reinitialize(InputStream systemIn, PrintStream systemOut, PrintStream systemErr) throws IOException {
+        if(reader != null) {
+            reader.shutdown();
+        }
+        initialize(systemIn, systemOut, systemErr);
+    }
+
+    protected void initialize(InputStream systemIn, PrintStream systemOut, PrintStream systemErr) throws IOException {
+        bindSystemOutAndErr(systemOut, systemErr);
+
+        redirectSystemOutAndErr(true);
 
         System.setProperty(ShutdownHooks.JLINE_SHUTDOWNHOOK, "false");
+        
         if (isInteractiveEnabled()) {
-            reader = createConsoleReader();
+            reader = createConsoleReader(systemIn);
             reader.setBellEnabled(false);
             reader.setCompletionHandler(new CandidateListCompletionHandler());
             if (isActivateTerminal()) {
@@ -164,10 +202,22 @@ public class GrailsConsole {
         else if (isActivateTerminal()) {
             terminal = createTerminal();
         }
+    }
 
-        // bit of a WTF this, but see no other way to allow a customization indicator
-        maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
+    protected void bindSystemOutAndErr(PrintStream systemOut, PrintStream systemErr) {
+        originalSystemOut = systemOut;
+        out = wrapInPrintStream(originalSystemOut);
+        originalSystemErr = systemErr;
+        err = wrapInPrintStream(originalSystemErr);
+    }
 
+    private PrintStream wrapInPrintStream(PrintStream printStream) {
+        OutputStream ansiWrapped = ansiWrap(printStream);
+        if(ansiWrapped instanceof PrintStream) {
+            return (PrintStream)ansiWrapped;
+        } else {
+            return new PrintStream(ansiWrapped, true);
+        }
     }
 
     public PrintStream getErr() {
@@ -195,8 +245,8 @@ public class GrailsConsole {
         return property == null ? true : Boolean.valueOf(property);
     }
 
-    protected ConsoleReader createConsoleReader() throws IOException {
-        ConsoleReader consoleReader = new ConsoleReader(System.in, out);
+    protected ConsoleReader createConsoleReader(InputStream systemIn) throws IOException {
+        ConsoleReader consoleReader = new ConsoleReader(systemIn, out);
         consoleReader.setExpandEvents(false);
         return consoleReader;
     }
@@ -249,20 +299,24 @@ public class GrailsConsole {
         if (instance == null) {
             try {
                 final GrailsConsole console = createInstance();
+                console.addShutdownHook();
                 setInstance(console);
-                if( !Environment.isFork() ) {
-                    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            console.beforeShutdown();
-                        }
-                    }));
-                }
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
         }
         return instance;
+    }
+    
+    public static synchronized void removeInstance() {
+        if (instance != null) {
+            instance.removeShutdownHook();
+            instance.restoreOriginalSystemOutAndErr();
+            if(instance.getReader() != null) {
+                instance.getReader().shutdown();
+            }
+            instance = null;
+        }
     }
 
     public void beforeShutdown() {
@@ -299,11 +353,15 @@ public class GrailsConsole {
 
     public static void setInstance(GrailsConsole newConsole) {
         instance = newConsole;
-        if (!(System.out instanceof GrailsConsolePrintStream)) {
-            System.setOut(new GrailsConsolePrintStream(instance.out));
+        instance.redirectSystemOutAndErr(false);
+    }
+
+    protected void redirectSystemOutAndErr(boolean force) {
+        if (force || !(System.out instanceof GrailsConsolePrintStream)) {
+            System.setOut(new GrailsConsolePrintStream(out));
         }
-        if (!(System.err instanceof GrailsConsoleErrorPrintStream )) {
-            System.setErr(new GrailsConsoleErrorPrintStream(instance.err));
+        if (force || !(System.err instanceof GrailsConsoleErrorPrintStream )) {
+            System.setErr(new GrailsConsoleErrorPrintStream(err));
         }
     }
 
@@ -678,6 +736,7 @@ public class GrailsConsole {
      * @param msg The message to log
      */
     private boolean appendCalled = false;
+
     public void append(String msg) {
         verifySystemOut();
         PrintStream printStream = out;
@@ -788,7 +847,8 @@ public class GrailsConsole {
         assertAllowInput(prompt);
         userInputActive = true;
         try {
-            return secure ? reader.readLine(prompt, SECURE_MASK_CHAR) : reader.readLine(prompt);
+            Character inputMask = secure ? SECURE_MASK_CHAR : defaultInputMask;
+            return reader.readLine(prompt, inputMask);
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         } finally {
@@ -921,15 +981,23 @@ public class GrailsConsole {
 
     private void verifySystemOut() {
         // something bad may have overridden the system out
-        if (!(System.out instanceof GrailsConsolePrintStream)) {
-            System.setOut(new GrailsConsolePrintStream(originalSystemOut));
-        }
-        if (!(System.err instanceof GrailsConsoleErrorPrintStream)) {
-            System.setErr(new GrailsConsoleErrorPrintStream(originalSystemErr));
-        }
+        redirectSystemOutAndErr(false);
+    }
+    
+    public void restoreOriginalSystemOutAndErr() {
+        System.setOut(originalSystemOut);
+        System.setErr(originalSystemErr);
     }
 
     public void flush() {
         out.flush();
+    }
+
+    public Character getDefaultInputMask() {
+        return defaultInputMask;
+    }
+
+    public void setDefaultInputMask(Character defaultInputMask) {
+        this.defaultInputMask = defaultInputMask;
     }
 }
