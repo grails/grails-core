@@ -2,17 +2,16 @@ package grails.config
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
 @Canonical
 public class GrailsConfig implements Cloneable {
-    final NullSafeNavigatorMap configMap
+    final ConfigMap configMap
 
     public GrailsConfig() {
-        configMap = new NullSafeNavigatorMap(this, [])
+        configMap = new ConfigMap()
     }
     
     public GrailsConfig(GrailsConfig copyOf) {
@@ -45,47 +44,11 @@ public class GrailsConfig implements Cloneable {
     }
     
     public void mergeMap(Map sourceMap) {
-        mergeMaps(configMap, sourceMap)
+        configMap.merge(sourceMap)
     }
     
-    private static void mergeMaps(NullSafeNavigatorMap targetMap, Map sourceMap) {
-        sourceMap.each { Object sourceKeyObject, Object sourceValue ->
-            String sourceKey = String.valueOf(sourceKeyObject)
-            mergeMapEntry(targetMap, sourceKey, sourceValue)
-        }
-    }
-    
-    private static void mergeMapEntry(NullSafeNavigatorMap targetMap, String sourceKey, Object sourceValue) {
-        Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
-        Object newValue
-        if(sourceValue instanceof Map) {
-            NullSafeNavigatorMap subMap = new NullSafeNavigatorMap(targetMap.config, ((targetMap.path + [sourceKey]) as List<String>).asImmutable())
-            if(currentValue instanceof Map) {
-                subMap.putAll((Map)currentValue)
-            }
-            mergeMaps(subMap, (Map)sourceValue)
-            newValue = subMap
-        } else {
-            newValue = sourceValue
-        }
-        if (newValue == null) {
-            targetMap.remove(sourceKey)
-        } else {
-            targetMap.put(sourceKey, newValue)
-        }
-    }
-    
-    private Object navigateMap(Map<String, Object> map, String... path) {
-        if(map==null) return null
-        if(path.length == 1) {
-            return map.get(path[0])
-        } else {
-            return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
-        }
-    }
-
     public <T> T navigate(Class<T> requiredType, String... path) {
-        Object result = navigateMap(configMap, path)
+        Object result = configMap.navigate(path)
         if(result == null) {
             return null
         }
@@ -174,127 +137,6 @@ public class GrailsConfig implements Cloneable {
         configMap.setProperty(name, value)
     }
     
-    @CompileStatic
-    private static class NullSafeNavigatorMap extends LinkedHashMap<String, Object> {
-        final GrailsConfig config
-        final List<String> path
-        
-        public NullSafeNavigatorMap(GrailsConfig config, List<String> path) {
-            super()
-            this.config = config
-            this.path = path
-        }
-        
-        public Object getAt(Object key) {
-            getProperty(String.valueOf(key))
-        }
-        
-        public void setAt(Object key, Object value) {
-            setProperty(String.valueOf(key), value)
-        }
-        
-        public Object getProperty(String name) {
-            if (!containsKey(name)) {
-                return new NullSafeNavigator(this, [name].asImmutable())
-            }
-            return get(name)
-        }
-        
-        public void setProperty(String name, Object value) {
-            GrailsConfig.mergeMapEntry(this, name, value)
-        }
-        
-        public NullSafeNavigatorMap navigateSubMap(List<String> path, boolean createMissing) {
-            NullSafeNavigatorMap currentMap = this
-            for(String pathElement : path) {
-                Object currentItem = currentMap.get(pathElement) 
-                if(currentItem instanceof NullSafeNavigatorMap) {
-                    currentMap = (NullSafeNavigatorMap)currentItem
-                } else if (createMissing) {
-                    Map<String, Object> newMap = new NullSafeNavigatorMap(currentMap.config, ((currentMap.path + [pathElement]) as List<String>).asImmutable())
-                    currentMap.put(pathElement, newMap)
-                    currentMap = newMap
-                } else {
-                    return null
-                }
-            }
-            currentMap
-        }
-    }
-    
-    @CompileStatic
-    private static class NullSafeNavigator {
-        final NullSafeNavigatorMap parent
-        final List<String> path
-        
-        NullSafeNavigator(NullSafeNavigatorMap parent, List<String> path) {
-            this.parent = parent
-            this.path = path
-        }
-        
-        public Object getAt(Object key) {
-            getProperty(String.valueOf(key))
-        }
-        
-        public void setAt(Object key, Object value) {
-            setProperty(String.valueOf(key), value)
-        }
-        
-        public Object getProperty(String name) {
-            NullSafeNavigatorMap parentMap = parent.navigateSubMap(path, false)
-            if(parentMap == null) {
-                return new NullSafeNavigator(parent, ((path + [name]) as List<String>).asImmutable())
-            } else {
-                return parentMap.get(name)
-            }
-        }
-        
-        public void setProperty(String name, Object value) {
-            NullSafeNavigatorMap parentMap = parent.navigateSubMap(path, true)
-            parentMap.put(name, value)
-        }
-        
-        public boolean asBoolean() {
-            false
-        }
-        
-        public Object invokeMethod(String name, Object args) {
-            throw new NullPointerException("Cannot invoke method " + name + "() on NullSafeNavigator");
-        }
-    
-        public boolean equals(Object to) {
-            return to == null || DefaultGroovyMethods.is(this, to)
-        }
-    
-        public Iterator iterator() {
-            return Collections.EMPTY_LIST.iterator()
-        }
-    
-        public Object plus(String s) {
-            return toString() + s
-        }
-    
-        public Object plus(Object o) {
-            throw new NullPointerException("Cannot invoke method plus on NullSafeNavigator")
-        }
-    
-        public boolean is(Object other) {
-            return other == null || DefaultGroovyMethods.is(this, other)
-        }
-    
-        public Object asType(Class c) {
-            if(c==Boolean || c==boolean) return false
-            return null
-        }
-    
-        public String toString() {
-            return "null"
-        }
-    
-        public int hashCode() {
-            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
-        }
-    }
     
     /**
      * toBooleanObject method ported from org.apache.commons.lang.BooleanUtils.toBooleanObject to Groovy code
