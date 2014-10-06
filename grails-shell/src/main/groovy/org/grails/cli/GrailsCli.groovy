@@ -92,7 +92,7 @@ class GrailsCli {
     }
 
     private initializeProfile() {
-        String profileName = applicationConfig.navigateConfig('grails', 'profile') ?: DEFAULT_PROFILE_NAME
+        String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
         commandLineHandlers.add(new GradleConnectionCommandLineHandler())
@@ -210,12 +210,12 @@ class GrailsCli {
 
         @Override
         public String navigateConfig(String... path) {
-            grailsConfig.navigateConfig(path)
+            grailsConfig.navigate(path)
         }
 
         @Override
         public <T> T navigateConfigForType(Class<T> requiredType, String... path) {
-            grailsConfig.navigateConfigForType(requiredType, path)
+            grailsConfig.navigate(requiredType, path)
         }        
     }
 }
