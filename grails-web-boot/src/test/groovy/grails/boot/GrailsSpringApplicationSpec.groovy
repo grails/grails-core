@@ -1,6 +1,6 @@
 package grails.boot
 
-import grails.boot.config.GrailsConfiguration
+import grails.boot.config.GrailsWebConfiguration
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory
@@ -31,7 +31,7 @@ class GrailsSpringApplicationSpec extends Specification{
 
 
     @Configuration
-    static class Application extends GrailsConfiguration {
+    static class Application extends GrailsWebConfiguration {
         @Bean
         public EmbeddedServletContainerFactory containerFactory() {
             return new TomcatEmbeddedServletContainerFactory(0);

@@ -1,6 +1,6 @@
 package org.grails.compiler.boot
 
-import grails.boot.config.GrailsConfiguration
+import grails.boot.config.GrailsWebConfiguration
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GlobalClassInjectorAdapter
 import groovy.transform.CompileStatic
@@ -22,7 +22,7 @@ import java.lang.reflect.Modifier
 
 /**
  * A transformation that automatically produces a Spring servlet initializer for a class that extends GrailsConfiguration. Given a class "Application" that
- * extends {@link GrailsConfiguration}, it produces:
+ * extends {@link GrailsWebConfiguration}, it produces:
  *
  * <pre>
  * <code>
@@ -43,7 +43,7 @@ import java.lang.reflect.Modifier
 @AstTransformer
 class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
 
-    public static final ClassNode GRAILS_CONFIGURATION_CLASS_NODE = ClassHelper.make(GrailsConfiguration)
+    public static final ClassNode GRAILS_CONFIGURATION_CLASS_NODE = ClassHelper.make(GrailsWebConfiguration)
 
     @Override
     void performInjectionInternal(SourceUnit source, ClassNode classNode) {

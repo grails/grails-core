@@ -1,4 +1,5 @@
-package org.grails.boot.support
+package grails.boot.config
+
 
 import grails.util.Environment
 import grails.util.Holders
@@ -10,7 +11,6 @@ import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import grails.plugins.DefaultGrailsPluginManager
 import grails.plugins.GrailsPluginManager
-import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -24,7 +24,6 @@ import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.util.ClassUtils
-import org.springframework.web.context.WebApplicationContext
 
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
@@ -90,12 +89,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             pluginManager.doDynamicMethods()
             pluginManager.doPostProcessing(context)
             Holders.pluginManager = pluginManager
-            if(context instanceof WebApplicationContext) {
-                def servletContext = ((WebApplicationContext) context).servletContext
-                Holders.setServletContext(servletContext);
-                Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
-            }
-
         }
         else if(event instanceof ContextClosedEvent) {
             pluginManager.shutdown()

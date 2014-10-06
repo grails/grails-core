@@ -3,32 +3,20 @@ package grails.boot.config
 import grails.config.Settings
 import groovy.transform.CompileStatic
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
-import org.grails.boot.support.GrailsApplicationPostProcessor
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory
 import org.springframework.util.ClassUtils
-import org.springframework.web.servlet.config.annotation.EnableWebMvc
 
 /**
- * A Grails configuration that scans for classes using the packages defined by the packages() method and creates the necessary
- * {@link grails.core.GrailsApplication} and {@link grails.plugins.GrailsPluginManager} beans
- * that constitute a Grails application.
- *
- * @see GrailsApplicationPostProcessor
- *
- * @author Graeme Rocher
- * @since 3.0
+ * Created by graemerocher on 06/10/14.
  */
 @CompileStatic
-@Configuration
-@EnableWebMvc
-class GrailsConfiguration implements ResourceLoaderAware {
+class GrailsAutoConfiguration implements ResourceLoaderAware {
 
     ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
 
@@ -101,3 +89,4 @@ class GrailsConfiguration implements ResourceLoaderAware {
     }
 
 }
+
