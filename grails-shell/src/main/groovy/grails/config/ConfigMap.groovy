@@ -26,18 +26,30 @@ class ConfigMap implements Map<String, Object> {
         delegateMap = [:]
     }
     
-    public void merge(Map sourceMap) {
-        mergeMaps(this, sourceMap)
+    public void merge(Map sourceMap, boolean parseFlatKeys=false) {
+        mergeMaps(this, sourceMap, parseFlatKeys)
     }
     
-    private static void mergeMaps(ConfigMap targetMap, Map sourceMap) {
+    private static void mergeMaps(ConfigMap targetMap, Map sourceMap, boolean parseFlatKeys) {
         sourceMap.each { Object sourceKeyObject, Object sourceValue ->
             String sourceKey = String.valueOf(sourceKeyObject)
-            mergeMapEntry(targetMap, sourceKey, sourceValue)
+            ConfigMap actualTarget
+            if(parseFlatKeys) {
+                String[] keyParts = sourceKey.split(/\./)
+                if(keyParts.length > 1) {
+                    actualTarget = targetMap.navigateSubMap(keyParts[0..-2] as List, true)
+                    sourceKey = keyParts[-1]
+                } else {
+                    actualTarget = targetMap
+                }
+            } else {
+                actualTarget = targetMap
+            }
+            mergeMapEntry(actualTarget, sourceKey, sourceValue, parseFlatKeys)
         }
     }
     
-    private static void mergeMapEntry(ConfigMap targetMap, String sourceKey, Object sourceValue) {
+    private static void mergeMapEntry(ConfigMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys) {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue
         if(sourceValue instanceof Map) {
@@ -45,7 +57,7 @@ class ConfigMap implements Map<String, Object> {
             if(currentValue instanceof Map) {
                 subMap.putAll((Map)currentValue)
             }
-            mergeMaps(subMap, (Map)sourceValue)
+            mergeMaps(subMap, (Map)sourceValue, parseFlatKeys)
             newValue = subMap
         } else {
             newValue = sourceValue
@@ -73,7 +85,7 @@ class ConfigMap implements Map<String, Object> {
     }
     
     public void setProperty(String name, Object value) {
-        mergeMapEntry(this, name, value)
+        mergeMapEntry(this, name, value, false)
     }
     
     public Object navigate(String... path) {

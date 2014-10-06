@@ -190,4 +190,13 @@ class GrailsConfigSpec extends Specification{
         config.configMap == [a: [b: [c: [d: [e: [f: [g: 1]]]]]]]
         subconfigReference.f == [g: 1]
     }
+    
+    def "merging should support parsing flat keys"() {
+        given:
+        GrailsConfig config = new GrailsConfig()
+        when:
+        config.mergeMap(['a.b.c.d':1, 'a.b.c.e':2], true)
+        then:
+        config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
+    }
 }
