@@ -43,8 +43,8 @@ public class GrailsConfig implements Cloneable {
         }
     }
     
-    public void mergeMap(Map sourceMap) {
-        configMap.merge(sourceMap)
+    public void mergeMap(Map sourceMap, boolean parseFlatKeys=false) {
+        configMap.merge(sourceMap, parseFlatKeys)
     }
     
     public <T> T navigate(Class<T> requiredType, String... path) {
