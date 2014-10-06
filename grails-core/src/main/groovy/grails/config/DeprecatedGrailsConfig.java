@@ -35,13 +35,13 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since  2.0
  */
-public class GrailsConfig implements Settings{
+public class DeprecatedGrailsConfig implements Settings{
 
-    private static final Log LOG = LogFactory.getLog(GrailsConfig.class);
+    private static final Log LOG = LogFactory.getLog(DeprecatedGrailsConfig.class);
 
     private GrailsApplication grailsApplication;
 
-    public GrailsConfig(GrailsApplication grailsApplication) {
+    public DeprecatedGrailsConfig(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
 

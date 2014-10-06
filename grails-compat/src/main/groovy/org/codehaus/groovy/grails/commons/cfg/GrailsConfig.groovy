@@ -9,7 +9,7 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 @Deprecated
-class GrailsConfig extends grails.config.GrailsConfig{
+class GrailsConfig extends grails.config.DeprecatedGrailsConfig{
     GrailsConfig(GrailsApplication grailsApplication) {
         super(grailsApplication)
     }
