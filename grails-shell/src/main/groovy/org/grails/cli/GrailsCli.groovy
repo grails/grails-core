@@ -112,7 +112,6 @@ class GrailsCli {
                     }
                 }
             } catch (UserInterruptException e) {
-                println "CATCHED"
                 exitInteractiveMode()
             } catch (Exception e) {
                 console.error "Caught exception ${e.message}", e
