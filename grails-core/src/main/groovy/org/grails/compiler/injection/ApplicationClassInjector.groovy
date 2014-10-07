@@ -20,6 +20,7 @@ import grails.compiler.ast.GrailsArtefactClassInjector
 import grails.dev.Support
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.ClassExpression
@@ -31,6 +32,7 @@ import org.codehaus.groovy.control.SourceUnit
 import org.grails.core.artefact.ApplicationArtefactHandler
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.UrlResource
+import org.springframework.util.ClassUtils
 
 /**
  * Injector for the 'Application' class
@@ -72,6 +74,11 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                 def methodCallStatement = new ExpressionStatement(enableAgentMethodCall)
                 List<Statement> statements = [ methodCallStatement ]
                 classNode.addStaticInitializerStatements(statements, false)
+
+                def classLoader = Thread.currentThread().contextClassLoader
+                if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
+                    GrailsASTUtils.addAnnotationIfNecessary(classNode, classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration'))
+                }
             }
         }
     }

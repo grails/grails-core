@@ -793,9 +793,15 @@ public class GrailsASTUtils {
         return null;
     }
 
-    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
+    /**
+     * Adds an annotation to the give nclass node if it doesn't already exist
+     *
+     * @param classNode The class node
+     * @param annotationClass The annotation class
+     */
+    public static void addAnnotationIfNecessary(ClassNode classNode, Class<? extends Annotation> annotationClass) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
-        ClassNode annotationClassNode = new ClassNode(Entity.class);
+        ClassNode annotationClassNode = ClassHelper.make(annotationClass);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
         if (annotations.isEmpty()) {
             classNode.addAnnotation(annotationToAdd);
