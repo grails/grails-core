@@ -8,4 +8,6 @@ public interface ExecutionContext extends ProjectContext {
     CommandLine getCommandLine();
     String getUnparsedCommandLine();
     GrailsConsole getConsole();
+    void cancel();
+    void addCancelledListener(CommandCancelledListener listener);
 }

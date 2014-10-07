@@ -334,16 +334,11 @@ grails> create-'''
         expectedMessage << [~'''
 Error \\|
 Caught exception This is broken\\. \\(Use --stacktrace to see the full trace\\)
-''', ~'''
+''', ~'''(?is)
 Error \\|
 Caught exception This is broken. \\(NOTE: Stack trace has been filtered. Use --verbose to see entire trace.\\)
 java.lang.RuntimeException: This is broken.
-\tat org.grails.cli.GrailsCliSpec.*
-\tat .*
-\tat .*
-\tat .*
-\tat org.grails.cli.GrailsCli.execute\\(GrailsCli.groovy:\\d+\\)
-\tat .*
+\tat .*?
 
 Error \\|
 Caught exception This is broken.

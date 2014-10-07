@@ -1,6 +1,5 @@
 package org.grails.cli.gradle
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 
 import org.gradle.tooling.BuildLauncher
@@ -22,6 +21,9 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler {
                 if(args) {
                     buildLauncher.withArguments(args)
                 }
+                
+                GradleUtil.wireCancellationSupport(context, buildLauncher)
+                
                 buildLauncher.run()
             }
             return true
@@ -29,7 +31,9 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler {
         return false
     }
 
-    @CompileDynamic
+    
+
+    @groovy.transform.CompileDynamic
     @Override
     public List<CommandDescription> listCommands(ProjectContext context) {
         [new CommandDescription("gradle", "Runs the gradle build", "usage: gradle [task]")]

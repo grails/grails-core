@@ -21,6 +21,7 @@ class GradleCommandStep extends SimpleCommandStep {
         GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
             BuildLauncher buildLauncher = projectConnection.newBuild().forTasks(tasks as String[])
             fillArguments(context, buildLauncher)
+            GradleUtil.wireCancellationSupport(context, buildLauncher)
             buildLauncher.run()
         }
         return true;
