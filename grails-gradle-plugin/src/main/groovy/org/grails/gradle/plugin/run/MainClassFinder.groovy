@@ -65,7 +65,7 @@ class MainClassFinder {
 
     protected boolean isMainClass(InputStream inputStream) {
         def classReader = new ClassReader(inputStream)
-        if(classReader.superName == 'grails/boot/config/GrailsConfiguration') {
+        if(classReader.superName?.startsWith('grails/boot/config/')) {
             def mainMethodFinder = new MainMethodFinder()
             classReader.accept(mainMethodFinder, ClassReader.SKIP_CODE)
             return mainMethodFinder.found
