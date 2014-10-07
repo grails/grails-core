@@ -6,18 +6,28 @@ import grails.io.SystemStreamsRedirector
 import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+
+import jline.UnixTerminal
+import jline.console.UserInterruptException
 import jline.console.completer.AggregateCompleter
+import jline.internal.NonBlockingInputStream
 
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
 import org.grails.cli.gradle.GradleConnectionCommandLineHandler
+import org.grails.cli.profile.CommandCancelledListener
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProjectContext
-import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
 class GrailsCli {
@@ -71,23 +81,78 @@ class GrailsCli {
         return 0
     }
 
-    private handleInteractiveMode() {
+    private void handleInteractiveMode() {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
         GrailsConsole console = projectContext.console
+        console.reader.setHandleUserInterrupt(true)
         console.reader.addCompleter(aggregateCompleter)
         console.println("Starting interactive mode...")
+        ExecutorService commandExecutor = Executors.newFixedThreadPool(1)
+        try {        
+            interactiveModeLoop(commandExecutor)
+        } finally {
+            commandExecutor.shutdownNow()
+        }
+    }
+
+    private void interactiveModeLoop(ExecutorService commandExecutor) {
+        GrailsConsole console = projectContext.console
+        NonBlockingInputStream nonBlockingInput = (NonBlockingInputStream)console.reader.getInput()
         while(keepRunning) {
             try {
                 String commandLine = console.showPrompt()
                 if(commandLine==null) {
                     // CTRL-D was pressed, exit interactive mode
                     exitInteractiveMode()
-                } else {
-                    handleCommand(commandLine, cliParser.parseString(commandLine))
+                } else if (commandLine.trim()) {
+                    if(nonBlockingInput.isNonBlockingEnabled()) {
+                        handleCommandWithCancellationSupport(commandLine, commandExecutor, nonBlockingInput)
+                    } else {
+                        handleCommand(commandLine, cliParser.parseString(commandLine))
+                    }
                 }
+            } catch (UserInterruptException e) {
+                println "CATCHED"
+                exitInteractiveMode()
             } catch (Exception e) {
                 console.error "Caught exception ${e.message}", e
             }
+        }
+    }
+
+    private Boolean handleCommandWithCancellationSupport(String commandLine, ExecutorService commandExecutor, NonBlockingInputStream nonBlockingInput) {
+        ExecutionContext executionContext = createExecutionContext(commandLine, cliParser.parseString(commandLine))
+        Future<?> commandFuture = commandExecutor.submit({ handleCommand(executionContext) } as Callable<Boolean>)
+        def terminal = projectContext.console.reader.terminal
+        if (terminal instanceof UnixTerminal) {
+            ((UnixTerminal) terminal).disableInterruptCharacter()
+        }
+        try {
+            while(!commandFuture.isDone()) {
+                if(nonBlockingInput.isNonBlockingEnabled()) {
+                    int peeked = nonBlockingInput.peek(100L)
+                    if(peeked > 0) {
+                        // read peeked character from buffer
+                        nonBlockingInput.read(1L)
+                        if(peeked == 3) { // 3 == CTRL-3
+                            executionContext.cancel()
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (terminal instanceof UnixTerminal) {
+                ((UnixTerminal) terminal).enableInterruptCharacter()
+            }
+        }
+        if(!commandFuture.isCancelled()) {
+            try {
+                return commandFuture.get()
+            } catch (ExecutionException e) {
+                throw e.cause
+            }
+        } else {
+            return false
         }
     }
 
@@ -125,9 +190,15 @@ class GrailsCli {
         }
     }
     
-    boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
-        ExecutionContext context = new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
-        
+    ExecutionContext createExecutionContext(String unparsedCommandLine, CommandLine commandLine) {
+        new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
+    }
+    
+    Boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
+        handleCommand(createExecutionContext(unparsedCommandLine, commandLine))
+    }
+    
+    Boolean handleCommand(ExecutionContext context) {
         if(handleBuiltInCommands(context)) {
             return true
         }
@@ -136,7 +207,7 @@ class GrailsCli {
                  return true
              }
         }
-        context.console.error("Command not found ${commandLine.commandName}")
+        context.console.error("Command not found ${context.commandLine.commandName}")
         return false
     }
 
@@ -200,6 +271,23 @@ class GrailsCli {
         String unparsedCommandLine
         CommandLine commandLine
         @Delegate ProjectContext projectContext
+        private List<CommandCancelledListener> cancelListeners=[]
+        
+        @Override
+        public void addCancelledListener(CommandCancelledListener listener) {
+            cancelListeners << listener
+        }    
+        
+        @Override
+        public void cancel() {
+            for(CommandCancelledListener listener : cancelListeners) {
+                try {
+                    listener.commandCancelled()
+                } catch (Exception e) {
+                    console.error("Error notifying listener about cancelling command", e)
+                }
+            }
+        }
     }
     
     @Canonical
