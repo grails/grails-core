@@ -134,7 +134,7 @@ class GrailsCli {
                     if(peeked > 0) {
                         // read peeked character from buffer
                         nonBlockingInput.read(1L)
-                        if(peeked == 3) { // 3 == CTRL-3
+                        if(peeked == 3) { // 3 == CTRL-C
                             executionContext.cancel()
                         }
                     }
