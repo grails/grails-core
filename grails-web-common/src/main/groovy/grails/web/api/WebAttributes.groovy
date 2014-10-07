@@ -20,10 +20,6 @@ import grails.web.mvc.FlashScope
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
-import javax.servlet.ServletContext
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
@@ -40,11 +36,6 @@ trait WebAttributes {
     
     private GrailsApplication grailsApplication
     private ApplicationContext applicationContext
-    
-    HttpServletRequest getRequest() {
-        currentRequestAttributes().getCurrentRequest()
-    }
-
     GrailsWebRequest currentRequestAttributes() {
         (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
     }
@@ -58,18 +49,6 @@ trait WebAttributes {
         currentRequestAttributes().getAttributes()
     }
 
-    /**
-     * Obtains the ServletContext instance
-     *
-     * @return The ServletContext instance
-     */
-    ServletContext getServletContext() {
-        if (servletContext == null) {
-            servletContext = currentRequestAttributes().getServletContext()
-        }
-        servletContext
-    }
-    
     /**
      * Obtains the currently executing controller name
      * @return The controller name
@@ -95,14 +74,6 @@ trait WebAttributes {
         currentRequestAttributes().getFlashScope()
     }
 
-    /**
-     * Obtains the HttpServletResponse instance
-     *
-     * @return The HttpServletResponse instance
-     */
-    HttpServletResponse getResponse() {
-        currentRequestAttributes().getCurrentResponse()
-    }
 
     /**
      * Obtains the currently executing web request
@@ -122,16 +93,5 @@ trait WebAttributes {
             grailsApplication = getGrailsAttributes().getGrailsApplication()
         }
         grailsApplication
-    }
-    
-    /**
-     * Obtains the ApplicationContext instance
-     * @return The ApplicationContext instance
-     */
-    ApplicationContext getApplicationContext() {
-        if (applicationContext == null) {
-            applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        }
-        applicationContext
     }
 }
