@@ -15,15 +15,21 @@
  */
 package org.grails.spring.context.support;
 
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
-import grails.util.CacheEntry;
-import grails.util.Environment;
-import grails.util.Metadata;
-import grails.util.Pair;
-import grails.util.PluginBuildSettings;
+import grails.core.GrailsApplication;
+import grails.core.support.GrailsApplicationAware;
+import grails.plugins.GrailsPlugin;
+import grails.plugins.GrailsPluginManager;
+import grails.plugins.PluginManagerAware;
+import grails.util.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.grails.dev.support.DevelopmentResourceLoader;
+import org.grails.plugins.BinaryGrailsPlugin;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -33,23 +39,6 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsApplication;
-import grails.util.GrailsStringUtils;
-import org.grails.plugins.BinaryGrailsPlugin;
-import grails.plugins.GrailsPlugin;
-import grails.plugins.GrailsPluginInfo;
-import grails.plugins.GrailsPluginManager;
-import org.grails.build.plugins.GrailsPluginUtils;
-import grails.plugins.PluginManagerAware;
-import grails.core.support.GrailsApplicationAware;
-import org.grails.dev.support.DevelopmentResourceLoader;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 /**
  * A ReloadableResourceBundleMessageSource that is capable of loading message sources from plugins.
@@ -72,7 +61,6 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedBinaryPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private long pluginCacheMillis = Long.MIN_VALUE;
-    private final PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
     public List<String> getPluginBaseNames() {
         return pluginBaseNames;
@@ -103,16 +91,29 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             return;
         }
 
+        Resource[] resources = resourceResolver.getResources("classpath:**/*.properties");
+
+        List<String> basenames = new ArrayList<String>();
+        for (Resource resource : resources) {
+            String filename = resource.getFilename();
+            String baseName = GrailsStringUtils.getFileBasename(filename);
+            int i = baseName.indexOf('_');
+            if(i > -1) {
+                baseName = baseName.substring(0, i);
+            }
+            if(!basenames.contains(baseName))
+                basenames.add(baseName);
+        }
+
+        setBasenames(basenames.toArray( new String[basenames.size()]));
+
+
+
         for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
             for (Resource pluginBundle : getPluginBundles(plugin)) {
                 // If the plugin is an inline plugin, use the abosolute path to the plugin's i18n files.
                 // Otherwise, use the relative path to the plugin from the application's perspective.
-                String basePath;
-                if (isInlinePlugin(plugin)) {
-                    basePath = getInlinePluginPath(plugin);
-                } else {
-                    basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
-                }
+                String basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
 
                 final String baseName = GrailsStringUtils.substringBefore(GrailsStringUtils.getFileBasename(pluginBundle.getFilename()), "_");
                 String pathToAdd = basePath + GRAILS_APP_I18N_PATH_COMPONENT + baseName;
@@ -137,52 +138,13 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         }
 
         try {
-            String basePath;
-
-            // If the plugin is inline, use the absolute path to the internationalization files
-            // in order to convert to resources.  Otherwise, use the relative WEB-INF path.
-            String inlinePath = getInlinePluginPath(grailsPlugin);
-            if (inlinePath == null) {
-                basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
-            }
-            else {
-                basePath = inlinePath;
-            }
+            String basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
             return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
         }
         catch (IOException e) {
             LOG.debug("Could not resolve any resources for plugin " + grailsPlugin.getFileSystemName(), e);
             return NO_RESOURCES;
         }
-    }
-
-    /**
-     * Tests whether or not the Grails plugin is currently being run "inline".
-     * @param grailsPlugin The Grails plugin to test.
-     * @return {@code true} if the plugin is being used "inline" or {@code false} if the
-     *   plugin is not being used "inline".
-     */
-    protected boolean isInlinePlugin(GrailsPlugin grailsPlugin) {
-        return getInlinePluginPath(grailsPlugin) != null;
-    }
-
-    /**
-     * Returns the absolute path to the provided Grails plugin if it is being used "inline" or {@code null}
-     * if the plugin is <b>not</b> being used "inline".
-     * @param grailsPlugin The Grails plugin.
-     * @return The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
-     */
-    protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
-        if(Environment.isWarDeployed()) return null;
-        try {
-            final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
-            if (pluginInfo != null) {
-                return new File(pluginBuildSettings.getBuildSettings().getResourcesDir(), "plugins/" + pluginInfo.getFullName()).getCanonicalPath();
-            }
-        } catch(final IOException e) {
-            LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName(), e);
-        }
-        return null;
     }
 
     @Override
@@ -338,30 +300,9 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     @Override
     public void setResourceLoader(ResourceLoader resourceLoader) {
-        if (Metadata.getCurrent().isWarDeployed()) {
-            localResourceLoader = resourceLoader;
-        }
-        else {
-            // The "settings" may be null in some of the Grails unit tests.
-            BuildSettings settings = BuildSettingsHolder.getSettings();
+        super.setResourceLoader(resourceLoader);
 
-            String location = null;
-            if (settings != null) {
-                location = settings.getResourcesDir().getPath();
-            }
-            else if (Environment.getCurrent().isReloadEnabled()) {
-                location = Environment.getCurrent().getReloadLocation();
-            }
-
-            if (location != null) {
-                localResourceLoader = new DevelopmentResourceLoader(application, location);
-            }
-            else {
-                localResourceLoader = resourceLoader;
-            }
-        }
-        super.setResourceLoader(localResourceLoader);
-
+        this.localResourceLoader = resourceLoader;
         if (resourceResolver == null) {
             resourceResolver = new PathMatchingResourcePatternResolver(localResourceLoader);
         }

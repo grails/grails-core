@@ -571,7 +571,10 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 	}
 	
     protected Resource locateResourceWithoutCache(String filename) {
-        Resource resource = resourceLoader.getResource(filename + PROPERTIES_SUFFIX);
+        Resource resource = resourceLoader.getResource(org.grails.io.support.ResourceLoader.CLASSPATH_URL_PREFIX + filename + PROPERTIES_SUFFIX);
+        if(!resource.exists()) {
+            resource = resourceLoader.getResource(filename + PROPERTIES_SUFFIX);
+        }
         if (!resource.exists()) {
             resource = resourceLoader.getResource(filename + XML_SUFFIX);
         }

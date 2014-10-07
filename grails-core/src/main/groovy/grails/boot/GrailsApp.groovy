@@ -1,5 +1,7 @@
 package grails.boot
 
+import grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPluginManager
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -9,6 +11,8 @@ import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.grails.io.watch.DirectoryWatcher
+import org.grails.io.watch.FileExtensionFileChangeListener
+import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
 
@@ -26,6 +30,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @Commons
 class GrailsApp extends SpringApplication {
 
+    static final File BASE_DIR = System.getProperty('base.dir') ? new File(System.getProperty('base.dir')) : new File('.')
+    static final File CLASSES_DIR = System.getProperty('classes.dir') ? new File(System.getProperty('classes.dir')) : new File(BASE_DIR, "build/classes/main")
+    static final File RESOURCES_DIR = System.getProperty('resources.dir') ? new File(System.getProperty('resources.dir')) : new File(BASE_DIR, "build/resources/main")
 
     @Override
     ConfigurableApplicationContext run(String... args) {
@@ -44,56 +51,88 @@ class GrailsApp extends SpringApplication {
     protected void enableDevelopmentModeWatch(Environment environment, ConfigurableApplicationContext applicationContext, String... args) {
         def location = environment.getReloadLocation()
 
-        DirectoryWatcher directoryWatcher = new DirectoryWatcher()
-        configureDirectoryWatcher(directoryWatcher, location)
-        Queue<File> changedFiles = new ConcurrentLinkedQueue<>()
+        if(location) {
+            DirectoryWatcher directoryWatcher = new DirectoryWatcher()
+            configureDirectoryWatcher(directoryWatcher, location)
+            Queue<File> changedFiles = new ConcurrentLinkedQueue<>()
 
-        directoryWatcher.addListener(new DirectoryWatcher.FileChangeListener() {
-            @Override
-            void onChange(File file) {
-               changedFiles << file
-            }
-
-            @Override
-            void onNew(File file) {
-               changedFiles << file
-            }
-        })
-
-        Thread.start {
-            CompilerConfiguration compilerConfig = new CompilerConfiguration()
-            compilerConfig.setTargetDirectory(new File(location, "build/classes/main"))
-
-            while(true) {
-                def i = changedFiles.size()
-                try {
-                    if(i > 1) {
-
-                        // more than one change, recompile and restart
-                        applicationContext.close()
-                        def unit = new CompilationUnit(compilerConfig)
-                        unit.addSources(changedFiles as File[])
-                        unit.compile()
-                        changedFiles.clear()
-                        super.run(args)
-                    }
-                    else if(i == 1) {
-                        def changedFile = changedFiles.poll()
-                        println "File $changedFile changed, recompiling..."
-                        // only one change, just to a simple recompile and propagate the change
-                        def unit = new CompilationUnit(compilerConfig)
-                        unit.addSource(changedFile)
-                        unit.compile()
-                    }
-                } catch (CompilationFailedException cfe) {
-                    log.error("Compilation Error: $cfe.message", cfe)
+            directoryWatcher.addListener(new FileExtensionFileChangeListener(['groovy', 'java']) {
+                @Override
+                void onChange(File file, List<String> extensions) {
+                    changedFiles << file
                 }
 
-                sleep 1000
+                @Override
+                void onNew(File file, List<String> extensions) {
+                    changedFiles << file
+                }
+            })
+
+
+            def pluginManager = applicationContext.getBean(GrailsPluginManager)
+            directoryWatcher.addListener(new DirectoryWatcher.FileChangeListener() {
+                @Override
+                void onChange(File file) {
+                    if(!file.name.endsWith('.groovy') && !file.name.endsWith('.java')) {
+                        pluginManager.informOfFileChange(file)
+                    }
+                }
+
+                @Override
+                void onNew(File file) {
+                    if(!file.name.endsWith('.groovy') && !file.name.endsWith('.java')) {
+                        pluginManager.informOfFileChange(file)
+                    }
+                }
+            })
+
+            for(GrailsPlugin plugin in pluginManager.allPlugins) {
+                for(WatchPattern wp in plugin.watchedResourcePatterns) {
+                    if(wp.file) {
+                        directoryWatcher.addWatchFile(wp.file)
+                    }
+                    else if(wp.directory && wp.extension) {
+                        directoryWatcher.addWatchDirectory(wp.directory, wp.extension)
+                    }
+                }
             }
 
+            Thread.start {
+                CompilerConfiguration compilerConfig = new CompilerConfiguration()
+                compilerConfig.setTargetDirectory(new File(location, "build/classes/main"))
+
+                while(true) {
+                    def i = changedFiles.size()
+                    try {
+                        if(i > 1) {
+
+                            // more than one change, recompile and restart
+                            applicationContext.close()
+                            def unit = new CompilationUnit(compilerConfig)
+                            unit.addSources(changedFiles as File[])
+                            unit.compile()
+                            changedFiles.clear()
+                            super.run(args)
+                        }
+                        else if(i == 1) {
+                            def changedFile = changedFiles.poll()
+                            println "File $changedFile changed, recompiling..."
+                            // only one change, just to a simple recompile and propagate the change
+                            def unit = new CompilationUnit(compilerConfig)
+                            unit.addSource(changedFile)
+                            unit.compile()
+                        }
+                    } catch (CompilationFailedException cfe) {
+                        log.error("Compilation Error: $cfe.message", cfe)
+                    }
+
+                    sleep 1000
+                }
+
+            }
+            directoryWatcher.start()
         }
-        directoryWatcher.start()
+
 
     }
 
