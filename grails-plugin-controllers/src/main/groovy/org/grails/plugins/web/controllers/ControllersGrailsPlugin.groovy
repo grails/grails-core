@@ -17,18 +17,22 @@ package org.grails.plugins.web.controllers
 
 import grails.artefact.Enhanced
 import grails.config.Settings
+import grails.core.GrailsApplication
+import grails.core.GrailsClass
+import grails.core.support.GrailsApplicationAware
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
-import grails.web.mapping.mvc.RedirectEventListener
 import groovy.transform.CompileStatic
+
+import javax.servlet.MultipartConfigElement
+import javax.servlet.Servlet
+import javax.servlet.ServletContext
+import javax.servlet.ServletException
+
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
-import grails.core.GrailsApplication
-import grails.core.GrailsClass
 import org.grails.core.metaclass.MetaClassEnhancer
-import grails.core.support.GrailsApplicationAware
-import org.grails.plugins.web.controllers.api.ControllersApi
 import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
@@ -48,11 +52,6 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
-
-import javax.servlet.MultipartConfigElement
-import javax.servlet.Servlet
-import javax.servlet.ServletContext
-import javax.servlet.ServletException
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -108,10 +107,10 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
 
         def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
         final pluginManager = manager
-
-        instanceControllersApi(ControllersApi, pluginManager) {
-            linkGenerator = ref("grailsLinkGenerator")
-        }
+        
+        def flatConfig = application.getFlatConfig()
+        def gspEnc = flatConfig.get("grails.views.gsp.encoding")
+        def useJsessionId = flatConfig.get(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID)
 
         for (controller in application.controllerClasses) {
             log.debug "Configuring controller $controller.fullName"
@@ -123,6 +122,12 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
                     if (beanScope == 'prototype') {
                         bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
                     }
+                    if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                        gspEncoding = gspEnc.toString()
+                    }
+                    if (useJsessionId instanceof Boolean) {
+                        useJessionId = useJsessionId
+                    }
                 }
             }
         }
@@ -131,23 +136,7 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
     @CompileStatic
     def doWithDynamicMethods(ApplicationContext ctx) {
         def application = grailsApplication
-        ControllersApi controllerApi = ctx.getBean("instanceControllersApi", ControllersApi)
-        Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding")
-
-        if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-            controllerApi.setGspEncoding(gspEnc.toString())
-        }
-
-        def redirectListeners = ctx.getBeansOfType(RedirectEventListener)
-        controllerApi.setRedirectListeners(redirectListeners.values())
-
-        Object o = application.getFlatConfig().get(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID)
-        if (o instanceof Boolean) {
-            controllerApi.setUseJessionId(o)
-        }
-
         def enhancer = new MetaClassEnhancer()
-        enhancer.addApi(controllerApi)
 
         for (GrailsClass controller in application.getArtefacts(ControllerArtefactHandler.TYPE)) {
             def controllerClass = controller

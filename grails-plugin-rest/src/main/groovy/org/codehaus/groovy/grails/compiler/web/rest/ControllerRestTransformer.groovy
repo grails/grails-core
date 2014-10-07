@@ -15,14 +15,15 @@
  */
 package org.codehaus.groovy.grails.compiler.web.rest
 
+import grails.compiler.ast.AstTransformer
 import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
-import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
-import grails.compiler.ast.AstTransformer
-import org.grails.compiler.web.ControllerTransformer
+import org.grails.compiler.web.ControllerActionTransformer
+import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.plugins.web.rest.api.ControllersRestApi
 
 /**
@@ -47,7 +48,7 @@ class ControllerRestTransformer extends AbstractGrailsArtefactTransformer{
     Class<?> getStaticImplementation() { null }
 
     boolean shouldInject(URL url) {
-        return url && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.file).find()
+        return url && ControllerActionTransformer.CONTROLLER_PATTERN.matcher(url.file).find()
     }
 
     @Override

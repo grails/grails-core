@@ -1,10 +1,11 @@
 package org.codehaus.groovy.grails.compiler.web
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import grails.compiler.ast.ClassInjector
+
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.compiler.web.ControllerActionTransformer
-import org.grails.compiler.web.ControllerTransformer
+
 import spock.lang.Specification
 
 class ControllerActionTransformerCompilationErrorsSpec extends Specification {
@@ -17,11 +18,7 @@ class ControllerActionTransformerCompilationErrorsSpec extends Specification {
             @Override
             boolean shouldInject(URL url) { true }
         }
-        def transformer2 = new ControllerTransformer() {
-            @Override
-            boolean shouldInject(URL url) { true }
-        }
-        gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
+        gcl.classInjectors = [transformer]as ClassInjector[]
     }
 
     void 'Test overloaded method actions'() {

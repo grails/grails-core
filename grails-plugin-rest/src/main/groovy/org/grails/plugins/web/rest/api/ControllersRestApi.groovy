@@ -15,26 +15,26 @@
  */
 package org.grails.plugins.web.rest.api
 
+import grails.artefact.Controller
+import grails.core.GrailsDomainClassProperty
+import grails.core.support.proxy.ProxyHandler
 import grails.rest.Resource
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
+import grails.web.mime.MimeType
+import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.grails.plugins.web.api.ResponseMimeTypesApi
-import org.springframework.util.Assert
 
 import javax.servlet.http.HttpServletResponse
 
-import grails.core.GrailsDomainClassProperty
-import org.grails.plugins.web.controllers.api.ControllersApi
-import grails.core.support.proxy.ProxyHandler
-import grails.web.mime.MimeType
-import org.grails.web.pages.discovery.GroovyPageLocator
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.web.pages.discovery.GroovyPageLocator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.util.Assert
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -49,7 +49,6 @@ class ControllersRestApi {
 
     public static final String PROPERTY_RESPONSE_FORMATS = "responseFormats"
 
-    protected @Delegate ControllersApi controllersApi
     protected RendererRegistry rendererRegistry
     @Autowired(required = false)
     ProxyHandler proxyHandler
@@ -60,8 +59,7 @@ class ControllersRestApi {
     @Autowired
     ResponseMimeTypesApi responseMimeTypesApi
 
-    ControllersRestApi(RendererRegistry rendererRegistry, ControllersApi controllersApi) {
-        this.controllersApi = controllersApi
+    ControllersRestApi(RendererRegistry rendererRegistry) {
         this.rendererRegistry = rendererRegistry
     }
 
@@ -110,7 +108,7 @@ class ControllersRestApi {
             value = proxyHandler.unwrapIfProxy(value)
         }
         
-        final webRequest = getWebRequest(controller)
+        final webRequest = ((Controller)controller).getWebRequest()
         List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
         final response = webRequest.getCurrentResponse()
         MimeType[] mimeTypes = getResponseFormat(response)

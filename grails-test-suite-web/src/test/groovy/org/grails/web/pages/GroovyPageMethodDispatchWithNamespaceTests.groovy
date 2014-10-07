@@ -12,6 +12,7 @@ class GroovyPageMethodDispatchWithNamespaceTests extends AbstractGrailsControlle
 import org.grails.web.taglib.*
 import grails.gsp.*
 
+@grails.artefact.Artefact('Controller')
 class TestController {
     def index = {}
 }

@@ -7,8 +7,6 @@ import grails.util.GrailsWebMockUtil
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.compiler.web.ControllerActionTransformer
-import org.grails.compiler.web.ControllerTransformer
-import org.grails.plugins.web.controllers.api.ControllersApi
 import org.springframework.web.context.request.RequestContextHolder
 
 import spock.lang.Specification
@@ -23,11 +21,6 @@ class ControllerActionTransformerClosureActionOverridingSpec extends Specificati
             @Override
             boolean shouldInject(URL url) { true }
         }
-        def transformer2 = new ControllerTransformer() {
-            @Override
-            boolean shouldInject(URL url) { true }
-        }
-
         def controllerTraitInjector = new ControllerTraitInjector() {
             @Override
             boolean shouldInject(URL url) {
@@ -36,7 +29,7 @@ class ControllerActionTransformerClosureActionOverridingSpec extends Specificati
         }
 
         gcl.traitInjectors = [controllerTraitInjector] as TraitInjector[]
-        gcl.classInjectors = [transformer, transformer2] as ClassInjector[]
+        gcl.classInjectors = [transformer] as ClassInjector[]
 
         // Make sure this parent controller is compiled before the subclass.  This is relevant to GRAILS-8268
         gcl.parseClass('''
@@ -59,7 +52,6 @@ class ControllerActionTransformerClosureActionOverridingSpec extends Specificati
         given:
             GrailsWebMockUtil.bindMockWebRequest()
             def subclassController = subclassControllerClass.newInstance()
-            subclassController.instanceControllersApi = new ControllersApi()
 
         when:
             def model = subclassController.index()

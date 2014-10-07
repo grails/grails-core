@@ -42,9 +42,6 @@ class RestfulController<T> {
     String resourceClassName
     boolean readOnly
 
-    @Autowired
-    LinkGenerator linkGenerator
-    
     RestfulController(Class<T> resource) {
         this(resource, false)
     }
@@ -111,7 +108,7 @@ class RestfulController<T> {
             }
             '*' {
                 response.addHeader(HttpHeaders.LOCATION,
-                        linkGenerator.link( resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
+                        grailsLinkGenerator.link( resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
                                             namespace: hasProperty('namespace') ? this.namespace : null ))
                 respond instance, [status: CREATED]
             }
@@ -165,7 +162,7 @@ class RestfulController<T> {
             }
             '*'{
                 response.addHeader(HttpHeaders.LOCATION,
-                        linkGenerator.link( resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
+                        grailsLinkGenerator.link( resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
                                             namespace: hasProperty('namespace') ? this.namespace : null ))
                 respond instance, [status: OK]
             }

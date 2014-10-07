@@ -290,12 +290,9 @@ class AnotherController {
     @Autowired
     MimeUtility mimeUtility
 
-    @Autowired
-    LinkGenerator linkGenerator
-
     def renderMessage() {
         assert mimeUtility !=null
-        assert linkGenerator != null
+        assert grailsLinkGenerator != null
         render messageSource.getMessage("foo.bar", null, request.locale)
     }
 
