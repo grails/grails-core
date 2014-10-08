@@ -18,8 +18,6 @@ package grails.web.databinding
 import grails.databinding.CollectionDataBindingSource
 import groovy.transform.CompileStatic
 
-import javax.servlet.ServletRequest
-
 /**
  *
  * @author Jeff Brown
@@ -44,17 +42,13 @@ trait DataBinder {
     def bindData(target, bindingSource) {
         bindData target, bindingSource, Collections.EMPTY_MAP, null
     }
-    
+
     def bindData(target, bindingSource, String filter) {
         bindData target, bindingSource, Collections.EMPTY_MAP, filter
     }
-    
+
     void bindData(Class targetType, Collection collectionToPopulate, CollectionDataBindingSource collectionBindingSource) {
         DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
-    }
-
-    void bindData(Class targetType, Collection collectionToPopulate, ServletRequest request) {
-        DataBindingUtils.bindToCollection targetType, collectionToPopulate, request
     }
 
     def bindData(target, bindingSource, List excludes) {
