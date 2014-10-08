@@ -70,12 +70,13 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
             def objectId = Integer.valueOf( System.identityHashCode(classNode) )
             if(!transformedInstances.contains(objectId)) {
                 transformedInstances << objectId
+
                 def enableAgentMethodCall = new MethodCallExpression(new ClassExpression(ClassHelper.make(Support)), "enableAgentIfNotPresent", GrailsASTUtils.ZERO_ARGUMENTS)
                 def methodCallStatement = new ExpressionStatement(enableAgentMethodCall)
                 List<Statement> statements = [ methodCallStatement ]
                 classNode.addStaticInitializerStatements(statements, false)
 
-                def classLoader = Thread.currentThread().contextClassLoader
+                def classLoader = getClass().classLoader
                 if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
                     GrailsASTUtils.addAnnotationIfNecessary(classNode, classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration'))
                 }

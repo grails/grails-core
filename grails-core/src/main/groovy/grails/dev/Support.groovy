@@ -24,7 +24,7 @@ class Support {
             def grailsHome = System.getenv(Environment.ENV_GRAILS_HOME)
 
             if(grailsHome) {
-                def file = new File(grailsHome, "lib/org.springframework/springloaded/jars/springloaded-1.2.0.RELEASE.jar")
+                def file = new File(grailsHome, "lib/org.springframework/springloaded/jars/springloaded-1.2.1.RELEASE.jar")
                 if(file.exists()) {
                     def runtimeMxBean = ManagementFactory.runtimeMXBean
                     def arguments = runtimeMxBean.inputArguments

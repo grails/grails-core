@@ -37,12 +37,12 @@ ext {
     jansiVersion = "1.11"
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
-    slf4jVersion = "1.7.5"
+    slf4jVersion = "1.7.6"
 
     spockVersion = '0.7-groovy-2.0'
-    springLoadedVersion = "1.2.0.RELEASE"
+    springLoadedVersion = "1.2.1.RELEASE"
     springBootVersion = "1.1.7.RELEASE"
-    springLoadedCommonOptions = "-noverify -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
+    springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.0.7.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.11"
@@ -393,8 +393,6 @@ task clean(type: Delete) {
            homeLibDir,
            homeSrcDir
 }
-
-task allDependencies(dependsOn: { subprojects*.implicitTasks*.dependencies })
 
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
 subprojects.each { evaluationDependsOn it.path }

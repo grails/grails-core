@@ -7,6 +7,8 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import groovy.util.logging.Commons
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -27,12 +29,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
  */
 @CompileStatic
 @InheritConstructors
-@Commons
 class GrailsApp extends SpringApplication {
 
     static final File BASE_DIR = System.getProperty('base.dir') ? new File(System.getProperty('base.dir')) : new File('.')
     static final File CLASSES_DIR = System.getProperty('classes.dir') ? new File(System.getProperty('classes.dir')) : new File(BASE_DIR, "build/classes/main")
     static final File RESOURCES_DIR = System.getProperty('resources.dir') ? new File(System.getProperty('resources.dir')) : new File(BASE_DIR, "build/resources/main")
+
+    private final Log log = LogFactory.getLog(getClass())
 
     @Override
     ConfigurableApplicationContext run(String... args) {
@@ -145,7 +148,7 @@ class GrailsApp extends SpringApplication {
     @CompileDynamic
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
-            log.info("Grails application running at http://localhost:${applicationContext.embeddedServletContainer.port}")
+            println("Grails application running at http://localhost:${applicationContext.embeddedServletContainer.port}")
         } catch (e) {
             // ignore
         }
