@@ -51,6 +51,7 @@ class SomeOtherController {
     def index = {}
 }
 
+@grails.artefact.Artefact('Controller')
 class DoubleWildCardController {
     def index = { params.path }
     def otherAction = {}

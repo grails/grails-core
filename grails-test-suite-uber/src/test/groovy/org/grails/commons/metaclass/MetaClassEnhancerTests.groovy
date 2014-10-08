@@ -1,52 +1,25 @@
 package org.grails.commons.metaclass
 
-import grails.artefact.Artefact
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
-import grails.util.GrailsWebMockUtil
-
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.plugins.MockGrailsPluginManager
-import org.grails.plugins.web.controllers.api.ControllersApi
-import org.grails.support.MockApplicationContext
-import org.grails.web.mapping.DefaultUrlMappingsHolder
-import org.springframework.web.context.request.RequestContextHolder
 
 class MetaClassEnhancerTests extends GroovyTestCase {
 
     void testEnhanceMetaClass() {
-        def ctx = new MockApplicationContext()
-
-        def application = new DefaultGrailsApplication([TestMetaClassController] as Class[], getClass().classLoader)
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, application)
-
-        ctx.registerMockBean "grailsUrlMappingsHolder", new DefaultUrlMappingsHolder([])
-
-        def controllerApi = new ControllersApi(new MockGrailsPluginManager())
-
         def enhancer = new MetaClassEnhancer()
-        enhancer.addApi controllerApi
+        enhancer.addApi new SomeApi()
 
-        enhancer.enhance TestMetaClassController.metaClass
+        enhancer.enhance ClassToEnhance.metaClass
+        def instance = new ClassToEnhance()
 
-        GrailsWebMockUtil.bindMockWebRequest()
-
-        def controller = new TestMetaClassController()
-
-        controller.testRenderText()
-        assert "hello world" == controller.response.contentAsString
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        RequestContextHolder.setRequestAttributes(null)
+        assert 42 == instance.magicNumber
     }
 }
 
-@Artefact('Controller')
-class TestMetaClassController {
+class ClassToEnhance {
+}
 
-    def testRenderText = {
-        render "hello world"
+class SomeApi {
+    int getMagicNumber(Object instance) {
+        42
     }
 }

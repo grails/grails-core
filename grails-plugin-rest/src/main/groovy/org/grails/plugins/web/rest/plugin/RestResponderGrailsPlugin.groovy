@@ -46,7 +46,7 @@ class RestResponderGrailsPlugin implements GrailsApplicationAware{
         rendererRegistry(DefaultRendererRegistry) { bean ->
             modelSuffix = application.flatConfig.get('grails.scaffolding.templates.domainSuffix') ?: ''
         }
-        instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"), ref("instanceControllersApi"))
+        instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"))
     }
 
     def onChange = { event ->

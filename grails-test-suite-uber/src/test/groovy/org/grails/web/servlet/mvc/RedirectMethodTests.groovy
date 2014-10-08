@@ -112,11 +112,9 @@ class UrlMappings {
         ctx.registerMockBean("testRedirect", callable)
         def pv = new MutablePropertyValues()
         pv.addPropertyValue("callable", callable)
-        ControllersApi api = appCtx.getBean("instanceControllersApi")
-
-        api.setRedirectListeners([new TestRedirectListener(callable: callable)])
 
         def c = new RedirectController()
+        c.setRedirectListeners([new TestRedirectListener(callable: callable)])
         webRequest.controllerName = 'redirect'
 
         c.toAction()

@@ -21,6 +21,9 @@ import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
+import grails.compiler.ast.AnnotatedClassInjector;
+import grails.compiler.ast.AstTransformer;
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -28,6 +31,7 @@ import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
+import grails.web.util.TypeConvertingMap;
 import groovy.lang.Closure;
 
 import java.io.File;
@@ -39,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -80,17 +85,14 @@ import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.grails.core.artefact.ControllerArtefactHandler;
-import org.grails.core.DefaultGrailsControllerClass;
-import grails.compiler.ast.AnnotatedClassInjector;
-import grails.compiler.ast.AstTransformer;
-import org.grails.compiler.injection.GrailsASTUtils;
-import grails.compiler.ast.GrailsArtefactClassInjector;
-import org.grails.plugins.web.controllers.DefaultControllerExceptionHandlerMetaData;
-import grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.core.DefaultGrailsControllerClass;
+import org.grails.core.artefact.ControllerArtefactHandler;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.plugins.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import org.grails.web.databinding.DefaultASTDatabindingHelper;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -149,6 +151,8 @@ class TestController{
 @AstTransformer
 public class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector {
 
+    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
+            GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
     private static final String ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME = "ALLOWED_METHODS_HANDLED";
     private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     public static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(
@@ -942,6 +946,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
 
     public boolean shouldInject(URL url) {
-        return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
+        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
 }

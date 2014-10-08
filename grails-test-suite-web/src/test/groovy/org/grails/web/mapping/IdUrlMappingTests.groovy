@@ -25,6 +25,7 @@ mappings {
 
     void onSetUp() {
         gcl.parseClass('''
+@grails.artefact.Artefact('Controller')
 class EmailConfirmationController {
     def index = {
         [result: "ID = " + params.id]

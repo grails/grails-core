@@ -15,14 +15,22 @@
  */
 package grails.artefact
 
+import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.DEFAULT_ENCODING
 import grails.artefact.controller.support.ResponseRenderer
-import grails.core.GrailsApplication
+import grails.core.GrailsControllerClass
+import grails.core.GrailsDomainClassProperty
 import grails.databinding.DataBindingSource
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
+import grails.util.GrailsUtil
 import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 import grails.web.databinding.DataBindingUtils
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.ResponseRedirector
+import grails.web.mapping.mvc.RedirectEventListener
+import grails.web.mapping.mvc.exceptions.CannotRedirectException
+import grails.web.servlet.mvc.GrailsParameterMap;
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
@@ -32,6 +40,7 @@ import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
@@ -42,14 +51,19 @@ import org.grails.plugins.web.controllers.metaclass.ChainMethod
 import org.grails.plugins.web.controllers.metaclass.ForwardMethod
 import org.grails.plugins.web.controllers.metaclass.WithFormMethod
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpMethod
 import org.springframework.validation.BindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
-import org.springframework.web.context.support.WebApplicationContextUtils
+import org.springframework.web.context.ContextLoader
+import org.springframework.web.context.request.RequestAttributes
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.support.RequestDataValueProcessor
+
 
 /**
  *
@@ -63,6 +77,12 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
     private ForwardMethod forwardMethod = new ForwardMethod()
     private WithFormMethod withFormMethod = new WithFormMethod()
     private ServletContext servletContext
+    
+    private Collection<RedirectEventListener> redirectListeners
+    LinkGenerator grailsLinkGenerator
+    private RequestDataValueProcessor requestDataValueProcessor
+    boolean useJessionId = false
+    String gspEncoding = DEFAULT_ENCODING
 
     /**
      * Return true if there are an errors
@@ -247,7 +267,7 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
         if(!Exception.class.isAssignableFrom(exceptionType)) {
             throw new IllegalArgumentException("exceptionType [${exceptionType.getName()}] argument must be Exception or a subclass of Exception")
         }
-        
+
         Method handlerMethod
         final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = (List<ControllerExceptionHandlerMetaData>)GrailsClassUtils.getStaticFieldValue(this.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME)
         if(exceptionHandlerMetaDataInstances) {
@@ -362,5 +382,140 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes {
     def withForm(Closure callable) {
         withFormMethod.withForm getWebRequest(), callable
     }
-    
+
+     @Autowired(required=false)
+     void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
+         this.redirectListeners = redirectListeners
+     }
+     
+     void setLinkGenerator(LinkGenerator linkGenerator) {
+         grailsLinkGenerator = linkGenerator
+     }
+ 
+     /**
+      * Redirects for the given arguments.
+      *
+      * @param argMap The arguments
+      * @return null
+      */
+     def redirect(Map argMap) {
+ 
+         if (argMap.isEmpty()) {
+             throw new MissingMethodException("redirect",this.getClass(), [ argMap ] as Object[])
+         }
+ 
+         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
+ 
+         if(this instanceof GroovyObject) {
+             GroovyObject controller = (GroovyObject)this
+ 
+             // if there are errors add it to the list of errors
+             Errors controllerErrors = (Errors)controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY)
+             Errors errors = (Errors)argMap.get(ControllerDynamicMethods.ERRORS_PROPERTY)
+             if (controllerErrors != null && errors != null) {
+                 controllerErrors.addAllErrors errors
+             }
+             else {
+                 controller.setProperty ControllerDynamicMethods.ERRORS_PROPERTY, errors
+             }
+             def action = argMap.get(GrailsControllerClass.ACTION)
+             if (action != null) {
+                 argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller))
+             }
+             if (!argMap.containsKey(GrailsControllerClass.NAMESPACE_PROPERTY)) {
+                 // this could be made more efficient if we had a reference to the GrailsControllerClass object, which
+                 // has the namespace property accessible without needing reflection
+                 argMap.put GrailsControllerClass.NAMESPACE_PROPERTY, GrailsClassUtils.getStaticFieldValue(controller.getClass(), GrailsControllerClass.NAMESPACE_PROPERTY)
+             }
+         }
+ 
+         ResponseRedirector redirector = new ResponseRedirector(getLinkGenerator(webRequest))
+         redirector.setRedirectListeners redirectListeners
+         redirector.setRequestDataValueProcessor initRequestDataValueProcessor()
+         redirector.setUseJessionId useJessionId
+         redirector.redirect webRequest.getRequest(), webRequest.getResponse(), argMap
+         null
+     }
+ 
+     /**
+      * Redirects for the given arguments.
+      *
+      * @param object A domain class
+      * @return null
+      */
+     @SuppressWarnings("unchecked")
+     def redirect(object) {
+         if(object != null) {
+ 
+             Class<?> objectClass = object.getClass()
+             boolean isDomain = DomainClassArtefactHandler.isDomainClass(objectClass) && object instanceof GroovyObject
+             if(isDomain) {
+                 def id = ((GroovyObject)object).getProperty(GrailsDomainClassProperty.IDENTITY)
+                 if(id != null) {
+                     def args = [:]
+                     args.put LinkGenerator.ATTRIBUTE_RESOURCE, object
+                     args.put LinkGenerator.ATTRIBUTE_METHOD, HttpMethod.GET.toString()
+                     return redirect(args)
+                 }
+             }
+         }
+         throw new CannotRedirectException("Cannot redirect for object [${object}] it is not a domain or has no identifier. Use an explicit redirect instead ")
+     }
+ 
+     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
+         if (grailsLinkGenerator == null) {
+             ApplicationContext applicationContext = webRequest.getApplicationContext()
+             if (applicationContext != null) {
+                 grailsLinkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator)
+             }
+         }
+         grailsLinkGenerator
+     }
+ 
+     /*
+      * Figures out the action name from the specified action reference (either a string or closure)
+      */
+     private String establishActionName(actionRef, target) {
+         String actionName
+         if (actionRef instanceof String) {
+             actionName = actionRef
+         }
+         else if (actionRef instanceof CharSequence) {
+             actionName = actionRef.toString()
+         }
+         else if (actionRef instanceof Closure) {
+             GrailsUtil.deprecated("Using a closure reference in the 'action' argument of the 'redirect' method is deprecated. Please change to use a String.")
+             actionName = GrailsClassUtils.findPropertyNameForValue(target, actionRef)
+         }
+         actionName
+     }
+ 
+     /**
+      * getter to obtain RequestDataValueProcessor from
+      */
+     private RequestDataValueProcessor initRequestDataValueProcessor() {
+         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
+         ApplicationContext applicationContext = webRequest.getApplicationContext()
+         if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")) {
+             requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor", RequestDataValueProcessor)
+         }
+         requestDataValueProcessor
+     }
+     
+     public static ApplicationContext getStaticApplicationContext() {
+         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes()
+         if (!(requestAttributes instanceof GrailsWebRequest)) {
+             return ContextLoader.getCurrentWebApplicationContext()
+         }
+         ((GrailsWebRequest)requestAttributes).getApplicationContext()
+     }
+
+     /**
+      * Obtains the Grails parameter map
+      *
+      * @return The GrailsParameterMap instance
+      */
+     GrailsParameterMap getParams() {
+         currentRequestAttributes().getParams()
+     }
 }

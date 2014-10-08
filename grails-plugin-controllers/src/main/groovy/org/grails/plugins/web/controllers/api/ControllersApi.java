@@ -15,37 +15,25 @@
  */
 package org.grails.plugins.web.controllers.api;
 
-import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.DEFAULT_ENCODING;
 import grails.core.GrailsControllerClass;
-import grails.core.GrailsDomainClassProperty;
 import grails.plugins.GrailsPluginManager;
-import grails.util.Environment;
 import grails.util.GrailsClassUtils;
-import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.web.mapping.LinkGenerator;
 import grails.web.mapping.ResponseRedirector;
 import grails.web.mapping.mvc.RedirectEventListener;
-import grails.web.mapping.mvc.exceptions.CannotRedirectException;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.grails.core.artefact.ControllerArtefactHandler;
-import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.web.api.CommonWebApi;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpMethod;
 import org.springframework.validation.Errors;
-import org.springframework.web.context.ContextLoader;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.support.RequestDataValueProcessor;
 /**
@@ -59,13 +47,10 @@ public class ControllersApi extends CommonWebApi {
 
     private static final long serialVersionUID = 1;
 
-    protected static final String RENDER_METHOD_NAME = "render";
-    protected static final String BIND_DATA_METHOD = "bindData";
     private Collection<RedirectEventListener> redirectListeners;
     private LinkGenerator linkGenerator;
     private RequestDataValueProcessor requestDataValueProcessor;
     private boolean useJessionId = false;
-    private String gspEncoding = DEFAULT_ENCODING;
 
     public ControllersApi() {
         this(null);
@@ -73,18 +58,6 @@ public class ControllersApi extends CommonWebApi {
 
     public ControllersApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
-    }
-
-    public static ApplicationContext getStaticApplicationContext() {
-        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (!(requestAttributes instanceof GrailsWebRequest)) {
-            return ContextLoader.getCurrentWebApplicationContext();
-        }
-        return ((GrailsWebRequest)requestAttributes).getApplicationContext();
-    }
-
-    public void setGspEncoding(String gspEncoding) {
-       this.gspEncoding = gspEncoding;
     }
 
     public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
@@ -97,30 +70,6 @@ public class ControllersApi extends CommonWebApi {
 
     public void setLinkGenerator(LinkGenerator linkGenerator) {
         this.linkGenerator = linkGenerator;
-    }
-
-    /**
-     * Constructor used by controllers
-     *
-     * @param instance The instance
-     */
-    public static void initialize(Object instance) {
-        ApplicationContext applicationContext = getStaticApplicationContext();
-        if (applicationContext == null) {
-            return;
-        }
-
-        applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(
-                instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-
-        if (Environment.getCurrent() == Environment.TEST) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if (webRequest != null) {
-                // GRAILS-10929 - If the class name ends with $$..., then it's a proxy and we want to remove that from the name
-				String className = instance.getClass().getName().replaceAll("\\$\\$.*$", "");
-                webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(className, ControllerArtefactHandler.TYPE));
-            }
-        }
     }
 
     /**
@@ -167,34 +116,6 @@ public class ControllersApi extends CommonWebApi {
         redirector.redirect(webRequest.getRequest(), webRequest.getResponse(), argMap);
         return null;
     }
-
-    /**
-     * Redirects for the given arguments.
-     *
-     * @param object A domain class
-     * @return null
-     */
-    @SuppressWarnings("unchecked")
-    public Object redirect(Object instance,Object object) {
-        if(object != null) {
-
-            Class<?> objectClass = object.getClass();
-            boolean isDomain = DomainClassArtefactHandler.isDomainClass(objectClass) && object instanceof GroovyObject;
-            if(isDomain) {
-
-                Object id = ((GroovyObject)object).getProperty(GrailsDomainClassProperty.IDENTITY);
-                if(id != null) {
-                    Map args = new HashMap();
-                    args.put(LinkGenerator.ATTRIBUTE_RESOURCE, object);
-                    args.put(LinkGenerator.ATTRIBUTE_METHOD, HttpMethod.GET.toString());
-                    return redirect(instance, args);
-                }
-            }
-        }
-        throw new CannotRedirectException("Cannot redirect for object ["+object+"] it is not a domain or has no identifier. Use an explicit redirect instead ");
-    }
-
-    // the render method
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
         if (linkGenerator == null) {

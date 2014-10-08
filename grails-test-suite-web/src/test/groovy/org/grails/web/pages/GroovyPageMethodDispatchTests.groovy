@@ -13,6 +13,7 @@ import org.grails.web.taglib.*
 import org.grails.web.pages.*
 import grails.gsp.*
 
+@grails.artefact.Artefact('Controller')
 class TestController {
     def index = {}
 }
