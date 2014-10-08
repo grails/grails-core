@@ -381,8 +381,6 @@ task clean(type: Delete) {
            homeSrcDir
 }
 
-task allDependencies(dependsOn: { subprojects*.implicitTasks*.dependencies })
-
 // From this point on we need the subprojects to be fully configured, so force their full evaluation
 subprojects.each { evaluationDependsOn it.path }
 
