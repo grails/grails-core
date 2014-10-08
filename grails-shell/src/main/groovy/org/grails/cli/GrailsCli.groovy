@@ -61,7 +61,6 @@ class GrailsCli {
             return createApp(mainCommandLine, profileRepository)
         } else {
             applicationConfig = loadApplicationConfig()
-            initializeProfile()
         
             def commandName = mainCommandLine.getCommandName()
             GrailsConsole console=GrailsConsole.getInstance()
@@ -72,6 +71,7 @@ class GrailsCli {
             }
             File baseDir = new File("").absoluteFile
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
+            initializeProfile()
             if(commandName) {
                 handleCommand(args.join(" "), mainCommandLine)
             } else {
@@ -159,8 +159,10 @@ class GrailsCli {
         String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
-        commandLineHandlers.add(new GradleConnectionCommandLineHandler())
+        def gradleHandler = new GradleConnectionCommandLineHandler()
+        commandLineHandlers.add(gradleHandler)
         aggregateCompleter.getCompleters().addAll((profile.getCompleters(projectContext)?:[]) as Collection)
+        aggregateCompleter.getCompleters().add(gradleHandler.createCompleter(projectContext))
     }
     
     private GrailsConfig loadApplicationConfig() {
