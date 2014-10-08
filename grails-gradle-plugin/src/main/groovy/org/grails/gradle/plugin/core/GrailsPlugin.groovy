@@ -51,9 +51,11 @@ class GrailsPlugin extends GroovyPlugin {
                     filter {
                         exclude "$projectDir/grails-app/conf/hibernate"
                         exclude "$projectDir/grails-app/conf/spring"
+                        exclude "$projectDir/grails-app/conf/logging"
                     }
                     resources {
                         srcDirs = [
+                                "$projectDir/grails-app/conf/logging",
                                 "$projectDir/grails-app/conf/hibernate",
                                 "$projectDir/grails-app/conf/spring",
                                 "$projectDir/grails-app/views",

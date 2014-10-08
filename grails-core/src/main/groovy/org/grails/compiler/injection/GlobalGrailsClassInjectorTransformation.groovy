@@ -1,6 +1,7 @@
 package org.grails.compiler.injection
 
 import grails.artefact.Artefact
+import grails.boot.GrailsApp
 import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
@@ -47,6 +48,10 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         URL url = null
         final String filename = source.name
+        def uriString = source.source.URI.toString()
+        // logback config, ignore
+        if(uriString.startsWith('data:')) return
+
         Resource resource = new FileSystemResource(filename)
         if (resource.exists()) {
             try {
