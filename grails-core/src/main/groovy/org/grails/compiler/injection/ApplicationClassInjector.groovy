@@ -67,12 +67,10 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
     @CompileDynamic
     void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
         if(applicationArtefactHandler.isArtefact(classNode)) {
-            println "APPLYING APPLICATION TRANSFORM"
             def objectId = Integer.valueOf( System.identityHashCode(classNode) )
             if(!transformedInstances.contains(objectId)) {
                 transformedInstances << objectId
 
-                println "ADDING AGENT"
                 def enableAgentMethodCall = new MethodCallExpression(new ClassExpression(ClassHelper.make(Support)), "enableAgentIfNotPresent", GrailsASTUtils.ZERO_ARGUMENTS)
                 def methodCallStatement = new ExpressionStatement(enableAgentMethodCall)
                 List<Statement> statements = [ methodCallStatement ]
@@ -80,11 +78,7 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
 
                 def classLoader = getClass().classLoader
                 if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
-                    println "ADDING EnableAuto annotaiton"
                     GrailsASTUtils.addAnnotationIfNecessary(classNode, classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration'))
-                }
-                else {
-                    println "NOT BOOT CLASSES"
                 }
             }
         }
