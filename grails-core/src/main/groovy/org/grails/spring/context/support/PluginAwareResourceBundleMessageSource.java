@@ -91,7 +91,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             return;
         }
 
-        Resource[] resources = resourceResolver.getResources("classpath:**/*.properties");
+        Resource[] resources = resourceResolver.getResources("classpath*:**/*.properties");
 
         List<String> basenames = new ArrayList<String>();
         for (Resource resource : resources) {

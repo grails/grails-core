@@ -107,7 +107,7 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
             return
         }
 
-        def resourcesDir = GrailsApp.CLASSES_DIR
+        def resourcesDir = GrailsApp.RESOURCES_DIR
         if (resourcesDir.exists() && event.source instanceof Resource) {
             def eventFile = event.source.file.canonicalFile
             def nativeascii = event.application.config.grails.enable.native2ascii
@@ -120,8 +120,14 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
                 def eventFileRelative = relativePath(appI18nDir, eventFile)
 
                 if (nativeascii) {
-                    ant.native2ascii(src:"./grails-app/i18n", dest:i18nDir,
-                                     includes:eventFileRelative, encoding:"UTF-8")
+                    ant.copy(todir:i18nDir, encoding:"UTF-8") {
+                        fileset(dir:"${Environment.current.reloadLocation}/grails-app/i18n") {
+                            include name:eventFileRelative
+                        }
+                        filterchain {
+                            filterreader(classname:'org.apache.tools.ant.filters.EscapeUnicode')
+                        }
+                    }
                 }
                 else {
                     ant.copy(todir:i18nDir) {
@@ -131,12 +137,9 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
             }
         }
 
-        def messageSource = ctx.messageSource
+        def messageSource = ctx.getBean('messageSource')
         if (messageSource instanceof ReloadableResourceBundleMessageSource) {
             messageSource.clearCache()
-        }
-        else {
-            LOG.warn "Bean messageSource is not an instance of ${ReloadableResourceBundleMessageSource.name}. Can't reload"
         }
     }
 }
