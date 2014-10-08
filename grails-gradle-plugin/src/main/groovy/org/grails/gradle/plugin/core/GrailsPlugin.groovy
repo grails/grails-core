@@ -27,7 +27,7 @@ class GrailsPlugin extends GroovyPlugin {
         def projectDir = project.projectDir
 
         def grailsSourceDirs = []
-        def excludedDirs = ['views', 'migrations', 'assets', 'i18n']
+        def excludedDirs = ['views', 'migrations', 'assets', 'i18n', 'conf']
         new File("$projectDir/grails-app").eachDir { File subdir ->
             def dirName = subdir.name
             if(!subdir.hidden && !dirName.startsWith(".") && !excludedDirs.contains(dirName)) {
@@ -48,19 +48,12 @@ class GrailsPlugin extends GroovyPlugin {
             main {
                 groovy {
                     srcDirs = grailsSourceDirs
-                    filter {
-                        exclude "$projectDir/grails-app/conf/hibernate"
-                        exclude "$projectDir/grails-app/conf/spring"
-                        exclude "$projectDir/grails-app/conf/logging"
-                    }
                     resources {
                         srcDirs = [
-                                "$projectDir/grails-app/conf/logging",
-                                "$projectDir/grails-app/conf/hibernate",
-                                "$projectDir/grails-app/conf/spring",
+                                "$projectDir/src/main/resources",
+                                "$projectDir/grails-app/conf",
                                 "$projectDir/grails-app/views",
-                                "$projectDir/grails-app/i18n",
-                                "$projectDir/src/main/webapp"
+                                "$projectDir/grails-app/i18n"
                         ]
                     }
                 }
@@ -120,6 +113,9 @@ class GrailsPlugin extends GroovyPlugin {
                     }
                     task.from(sourceSet.resources) {
                         exclude '**/*.properties'
+                    }
+                    task.from(sourceSet.resources) {
+                        include '**/*.groovy'
                     }
                 }
             }
