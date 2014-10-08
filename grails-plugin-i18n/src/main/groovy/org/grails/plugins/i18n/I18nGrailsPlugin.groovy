@@ -113,33 +113,36 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
             def nativeascii = event.application.config.grails.enable.native2ascii
             nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
             def ant = new AntBuilder()
-            File appI18nDir = new File("./grails-app/i18n").canonicalFile
-            if (isChildOfFile(eventFile, appI18nDir)) {
-                String i18nDir = resourcesDir.absolutePath
-
-                def eventFileRelative = relativePath(appI18nDir, eventFile)
-
-                if (nativeascii) {
-                    ant.copy(todir:i18nDir, encoding:"UTF-8") {
-                        fileset(dir:"${Environment.current.reloadLocation}/grails-app/i18n") {
-                            include name:eventFileRelative
-                        }
-                        filterchain {
-                            filterreader(classname:'org.apache.tools.ant.filters.EscapeUnicode')
-                        }
-                    }
-                }
-                else {
-                    ant.copy(todir:i18nDir) {
-                        fileset(dir:"./grails-app/i18n", includes:eventFileRelative)
-                    }
-                }
+            File i18nDir = new File("${Environment.current.reloadLocation}/grails-app/i18n").canonicalFile
+            if (isChildOfFile(eventFile, i18nDir)) {
+                executeMessageBundleCopy(ant, eventFile, i18nDir, GrailsApp.RESOURCES_DIR, nativeascii)
+                executeMessageBundleCopy(ant, eventFile, i18nDir, GrailsApp.CLASSES_DIR, nativeascii)
             }
         }
 
         def messageSource = ctx.getBean('messageSource')
         if (messageSource instanceof ReloadableResourceBundleMessageSource) {
             messageSource.clearCache()
+        }
+    }
+
+    private void executeMessageBundleCopy(AntBuilder ant, File eventFile, File i18nDir, File targetDir, boolean nativeascii) {
+        def eventFileRelative = relativePath(i18nDir, eventFile)
+
+        if (nativeascii) {
+            ant.copy(todir: targetDir, encoding: "UTF-8") {
+
+                fileset(dir: i18nDir) {
+                    include name: eventFileRelative
+                }
+                filterchain {
+                    filterreader(classname: 'org.apache.tools.ant.filters.EscapeUnicode')
+                }
+            }
+        } else {
+            ant.copy(todir: targetDir) {
+                fileset(dir: i18nDir, includes: eventFileRelative)
+            }
         }
     }
 }
