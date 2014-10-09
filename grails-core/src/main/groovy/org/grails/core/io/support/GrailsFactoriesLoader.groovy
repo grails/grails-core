@@ -56,9 +56,19 @@ class GrailsFactoriesLoader {
      * using the given class loader.
      * <p>The returned factories are ordered in accordance with the {@link org.springframework.core.OrderComparator}.
      * @param factoryClass the interface or abstract class representing the factory
+     */
+    static <T> List<T> loadFactories(Class<T> factoryClass) {
+        (List<T>)loadFactoriesWithArguments(factoryClass, GrailsFactoriesLoader.class.classLoader)
+    }
+
+    /**
+     * Load the factory implementations of the given type from the default location,
+     * using the given class loader.
+     * <p>The returned factories are ordered in accordance with the {@link org.springframework.core.OrderComparator}.
+     * @param factoryClass the interface or abstract class representing the factory
      * @param classLoader the ClassLoader to use for loading (can be {@code null} to use the default)
      */
-    static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader) {
+    static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader) {
         (List<T>)loadFactoriesWithArguments(factoryClass, classLoader, NO_ARGUMENTS)
     }
 

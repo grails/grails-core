@@ -30,13 +30,9 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.trait.TraitComposer;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.core.io.DefaultResourceLoader;
+import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.type.filter.AssignableTypeFilter;
 
 /**
  *
@@ -49,7 +45,6 @@ public class GrailsAwareTraitInjectionOperation extends
 
     protected CompilationUnit unit;
     protected static List<TraitInjector> traitInjectors;
-    private static final String PACKAGE_TO_SCAN = "grails.compiler.traits";
 
     public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
         this.unit = unit;
@@ -106,41 +101,8 @@ public class GrailsAwareTraitInjectionOperation extends
     }
 
     protected static void initializeState() {
-        if (traitInjectors != null) {
-            return;
-        }
-
-        traitInjectors = new ArrayList<TraitInjector>();
-
-        BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(
-                registry, false);
-        scanner.setIncludeAnnotationConfig(false);
-        scanner.addIncludeFilter(new AssignableTypeFilter(TraitInjector.class));
-
-        ClassLoader classLoader = Thread.currentThread()
-                .getContextClassLoader();
-        scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
-        scanner.scan(PACKAGE_TO_SCAN);
-
-        // fallback to current classloader for special cases (e.g. gradle
-        // classloader isolation with useAnt=false)
-        if (registry.getBeanDefinitionCount() == 0) {
-            classLoader = GrailsAwareInjectionOperation.class.getClassLoader();
-            scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
-            scanner.scan(PACKAGE_TO_SCAN);
-        }
-
-        for (String beanName : registry.getBeanDefinitionNames()) {
-            try {
-                Class<?> injectorClass = classLoader.loadClass(registry
-                        .getBeanDefinition(beanName).getBeanClassName());
-                if (TraitInjector.class.isAssignableFrom(injectorClass))
-                    traitInjectors.add((TraitInjector) injectorClass
-                            .newInstance());
-            } catch (Exception e) {
-                // ignore
-            }
+        if (traitInjectors == null) {
+            traitInjectors = GrailsFactoriesLoader.loadFactories(TraitInjector.class);
         }
     }
 }
