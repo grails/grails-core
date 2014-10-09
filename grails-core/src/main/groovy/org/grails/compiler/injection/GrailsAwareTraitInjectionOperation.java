@@ -44,11 +44,11 @@ public class GrailsAwareTraitInjectionOperation extends
         CompilationUnit.PrimaryClassNodeOperation {
 
     protected CompilationUnit unit;
-    protected static List<TraitInjector> traitInjectors;
+    protected List<TraitInjector> traitInjectors;
 
     public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
         this.unit = unit;
-        initializeState();
+        traitInjectors = GrailsFactoriesLoader.loadFactories(TraitInjector.class);
     }
 
     public void setTraitInjectors(List<TraitInjector> i) {
@@ -98,11 +98,5 @@ public class GrailsAwareTraitInjectionOperation extends
 
     public List<TraitInjector> getTraitInjectors() {
         return Collections.unmodifiableList(traitInjectors);
-    }
-
-    protected static void initializeState() {
-        if (traitInjectors == null) {
-            traitInjectors = GrailsFactoriesLoader.loadFactories(TraitInjector.class);
-        }
     }
 }
