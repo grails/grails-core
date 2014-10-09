@@ -224,9 +224,6 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
             // this file is accounted for later with special handling to do some token replacement
             exclude 'src/grails/grails-macros.xml'
         }
-        from("grails-scripts/src/main/scripts") {
-            into 'scripts'
-        }
         from(docs.destinationDir) {
             into "doc"
         }
