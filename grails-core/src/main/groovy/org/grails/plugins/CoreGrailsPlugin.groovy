@@ -15,9 +15,8 @@
  */
 package org.grails.plugins
 
+import grails.boot.GrailsApp
 import grails.config.Settings
-import grails.util.BuildSettings
-import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.grails.core.legacy.LegacyGrailsApplication
@@ -112,14 +111,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
             shutdownHook(DevelopmentShutdownHook)
         }
         abstractGrailsResourceLocator {
-            if (!warDeployed) {
-                BuildSettings settings = BuildSettingsHolder.settings
-                if (settings) {
-                    def locations = new ArrayList(settings.pluginDirectories.collect { it.absolutePath })
-                    locations << settings.baseDir.absolutePath
-                    searchLocations = locations
-                }
-            }
+            searchLocations = [GrailsApp.BASE_DIR.absolutePath]
         }
         grailsResourceLocator(DefaultResourceLocator) { bean ->
             bean.parent = "abstractGrailsResourceLocator"

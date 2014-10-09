@@ -7,43 +7,46 @@ import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
 @Canonical
-public class GrailsConfig implements Cloneable {
+class GrailsConfig implements Cloneable {
     final ConfigMap configMap
 
-    public GrailsConfig() {
+    GrailsConfig() {
         configMap = new ConfigMap()
     }
     
-    public GrailsConfig(GrailsConfig copyOf) {
+    GrailsConfig(GrailsConfig copyOf) {
         this(copyOf.@configMap)
     }
 
-    public GrailsConfig(Map copyOf) {
+    GrailsConfig(Map copyOf) {
         this()
         mergeMap(copyOf)
     }
     
-    public GrailsConfig clone() {
+    GrailsConfig clone() {
         new GrailsConfig(this)
     }
 
-    public void loadYml(File ymlFile) {
+    void loadYml(File ymlFile) {
         ymlFile.withInputStream { InputStream input ->
             loadYml(input)
         }
     }
 
     @groovy.transform.CompileDynamic // fails with CompileStatic!
-    public void loadYml(InputStream input) {
+    void loadYml(InputStream input) {
         Yaml yaml = new Yaml()
         for(Object yamlObject : yaml.loadAll(input)) {
             if(yamlObject instanceof Map) { // problem here with CompileStatic
                 mergeMap((Map)yamlObject)
             }
         }
+
+        def flatConfig = configMap.toFlatConfig()
+        configMap.putAll(flatConfig)
     }
     
-    public void mergeMap(Map sourceMap, boolean parseFlatKeys=false) {
+    void mergeMap(Map sourceMap, boolean parseFlatKeys=false) {
         configMap.merge(sourceMap, parseFlatKeys)
     }
     
@@ -56,7 +59,10 @@ public class GrailsConfig implements Cloneable {
     }
     
     protected <T> T convertToType(Object value, Class<T> requiredType) {
-        if(requiredType.isInstance(value)) {
+        if(value instanceof ConfigMap.NullSafeNavigator) {
+            return null
+        }
+        else if(requiredType.isInstance(value)) {
             return (T)value
         }
         if(requiredType==String.class) {
@@ -131,6 +137,16 @@ public class GrailsConfig implements Cloneable {
         if ("configMap".equals(name))
             return this.configMap
         return configMap.getProperty(name)
+    }
+
+    public Object get(String name) {
+        if ("configMap".equals(name))
+            return this.configMap
+        return configMap.getProperty(name)
+    }
+
+    public <T> T getProperty(String name, Class<T> requiredType) {
+        return convertToType( configMap.getProperty(name), requiredType )
     }
     
     public void setProperty(String name, Object value) {

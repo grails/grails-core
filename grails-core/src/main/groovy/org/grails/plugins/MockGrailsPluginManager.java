@@ -16,8 +16,6 @@
 package org.grails.plugins;
 
 import grails.plugins.GrailsPlugin;
-import grails.util.BuildSettings;
-import grails.util.PluginBuildSettings;
 import groovy.lang.GroovyClassLoader;
 
 import java.math.BigDecimal;
@@ -110,11 +108,4 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
         Assert.state(!checkForChangesExpected);
     }
 
-    public BuildSettings getBuildSettings() {
-        return null;
-    }
-
-    public PluginBuildSettings getPluginBuildSettings() {
-        return null;
-    }
 }

@@ -1,6 +1,6 @@
 package org.grails.cli
 
-import org.codehaus.groovy.grails.cli.ScriptNameResolver;
+import org.grails.build.parsing.ScriptNameResolver;
 
 class ScriptNameResolverTests extends GroovyTestCase {
     void testFoo() {

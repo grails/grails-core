@@ -24,7 +24,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
+import org.grails.build.logging.GrailsConsolePrintStream;
 import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
 import org.grails.exceptions.reporting.DefaultStackTracePrinter;
 import org.grails.exceptions.reporting.StackTraceFilterer;

@@ -16,7 +16,7 @@
 package org.grails.test.io
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream
+import org.grails.build.logging.GrailsConsolePrintStream
 
 /**
  * Convenience class to temporarily swap in an output stream

@@ -19,8 +19,6 @@ dependencies {
     compile project(":grails-web")
 
     // command line requirements
-    compile project(":grails-project-api")
-
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         ext.notInPom = true
         exclude group:'org.apache.ant', module:'ant'

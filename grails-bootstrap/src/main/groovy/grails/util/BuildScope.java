@@ -46,7 +46,7 @@ public enum BuildScope {
     public static BuildScope getCurrent() {
         String key = System.getProperty(KEY);
         if (key == null) {
-            key = (String) Metadata.getCurrent().get(KEY);
+            key = Metadata.getCurrent().getProperty(KEY, String.class);
         }
 
         if (key != null) {

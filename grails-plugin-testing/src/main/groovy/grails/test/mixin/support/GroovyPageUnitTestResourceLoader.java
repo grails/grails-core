@@ -15,10 +15,9 @@
  */
 package grails.test.mixin.support;
 
+import grails.boot.GrailsApp;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,16 +65,7 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader impl
         }
         
         if(basePath == null) {
-            BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-            String systemBaseDirectory = System.getProperty("base.dir");
-            String basedir = systemBaseDirectory != null ? systemBaseDirectory : ".";
-            if (buildSettings != null) {
-                try {
-                    basedir = buildSettings.getBaseDir().getCanonicalPath();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
+            String basedir = GrailsApp.getBASE_DIR().getAbsolutePath();
             basePath = basedir + File.separatorChar + GrailsResourceUtils.VIEWS_DIR_PATH;
         }
 

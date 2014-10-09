@@ -16,7 +16,6 @@
 package org.grails.dependency.resolution.maven.aether
 
 import grails.build.logging.GrailsConsole
-import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
@@ -198,7 +197,7 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     void produceReport(String scope) {
-        final desc = BuildSettings.SCOPE_TO_DESC[scope]
+        final desc = SCOPE_TO_DESC[scope]
         if (desc) {
             reportOnScope(scope, desc)
         } else {
@@ -241,15 +240,15 @@ class AetherDependencyManager implements DependencyManager {
 
     void produceReport() {
         // build scope
-        reportOnScope(BuildSettings.BUILD_SCOPE, BuildSettings.BUILD_SCOPE_DESC)
+        reportOnScope(BUILD_SCOPE, BUILD_SCOPE_DESC)
         // provided scope
-        reportOnScope(BuildSettings.PROVIDED_SCOPE, BuildSettings.PROVIDED_SCOPE_DESC)
+        reportOnScope(PROVIDED_SCOPE, PROVIDED_SCOPE_DESC)
         // compile scope
-        reportOnScope(BuildSettings.COMPILE_SCOPE, BuildSettings.COMPILE_SCOPE_DESC)
+        reportOnScope(COMPILE_SCOPE, COMPILE_SCOPE_DESC)
         // runtime scope
-        reportOnScope(BuildSettings.RUNTIME_SCOPE, BuildSettings.RUNTIME_SCOPE_DESC)
+        reportOnScope(RUNTIME_SCOPE, RUNTIME_SCOPE_DESC)
         // test scope
-        reportOnScope(BuildSettings.TEST_SCOPE, BuildSettings.TEST_SCOPE_DESC)
+        reportOnScope(TEST_SCOPE, TEST_SCOPE_DESC)
     }
 
     protected void reportOnScope(String scope, String desc) {
@@ -669,7 +668,7 @@ class AetherDependencyManager implements DependencyManager {
         dependency.group == 'org.grails.plugins' || dependency.extension == 'zip'
     }
 
-    DependencyManager createCopy(BuildSettings buildSettings = null) {
+    DependencyManager createCopy() {
         AetherDependencyManager dependencyManager = new AetherDependencyManager()
         dependencyManager.repositories = this.repositories
         dependencyManager.settings = this.settings

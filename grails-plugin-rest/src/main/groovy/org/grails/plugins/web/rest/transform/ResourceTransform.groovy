@@ -15,14 +15,14 @@
  */
 package org.grails.plugins.web.rest.transform
 
+import grails.boot.GrailsApp
+
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
 
 import grails.artefact.Artefact
 import grails.rest.Resource
 import grails.rest.RestfulController
-import grails.util.BuildSettings
-import grails.util.BuildSettingsHolder
 import grails.util.GrailsNameUtils
 import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
@@ -102,13 +102,7 @@ class ResourceTransform implements ASTTransformation{
     ResourceLocator getResourceLocator() {
         if (resourceLocator == null) {
             resourceLocator = new DefaultResourceLocator()
-            BuildSettings buildSettings = BuildSettingsHolder.getSettings()
-            String basedir
-            if (buildSettings != null) {
-                basedir = buildSettings.getBaseDir().getAbsolutePath()
-            } else {
-                basedir = "."
-            }
+            String basedir = GrailsApp.BASE_DIR.absolutePath
 
             resourceLocator.setSearchLocation(basedir)
         }

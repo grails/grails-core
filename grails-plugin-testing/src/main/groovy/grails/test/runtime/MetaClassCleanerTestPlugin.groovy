@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package grails.test.runtime;
+package grails.test.runtime
 
+import grails.build.support.MetaClassRegistryCleaner;
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * a TestPlugin for TestRuntime that cleans MetaClass changes in afterClass test event

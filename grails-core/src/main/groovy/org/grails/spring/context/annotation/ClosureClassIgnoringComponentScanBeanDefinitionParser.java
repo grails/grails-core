@@ -15,8 +15,7 @@
  */
 package org.grails.spring.context.annotation;
 
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
+import grails.boot.GrailsApp;
 import grails.util.Environment;
 import grails.util.Metadata;
 
@@ -204,15 +203,7 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                 Set<Resource> result = new LinkedHashSet<Resource>(16);
 
                 @SuppressWarnings("unused")
-                URL classesDir = null;
-
-                final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
-                if (!warDeployed) {
-                    BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-                    if (buildSettings != null && buildSettings.getClassesDir()!=null) {
-                        classesDir = buildSettings.getClassesDir().toURI().toURL();
-                    }
-                }
+                URL classesDir = GrailsApp.getCLASSES_DIR().toURI().toURL();
 
                 // only scan classes from project classes directory
                 String path = location;

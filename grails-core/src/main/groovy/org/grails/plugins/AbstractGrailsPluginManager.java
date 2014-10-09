@@ -18,6 +18,7 @@ package org.grails.plugins;
 import grails.artefact.Enhanced;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
+import grails.plugins.GrailsVersionUtils;
 import grails.util.BuildScope;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
@@ -38,7 +39,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
-import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
@@ -230,7 +230,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             name = GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name);
         }
         GrailsPlugin plugin = plugins.get(name);
-        if (plugin != null && GrailsPluginUtils.isValidVersion(plugin.getVersion(), version.toString())) {
+        if (plugin != null && GrailsVersionUtils.isValidVersion(plugin.getVersion(), version.toString())) {
             return plugin;
         }
         return null;

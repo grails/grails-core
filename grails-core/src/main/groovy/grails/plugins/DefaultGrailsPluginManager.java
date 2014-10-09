@@ -23,7 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import grails.core.GrailsApplication;
-import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.plugins.*;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
@@ -516,7 +515,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             String requiredVersion = plugin.getDependentVersion(name);
 
             if (name.equals(dependency.getName()) &&
-                    GrailsPluginUtils.isValidVersion(dependency.getVersion(), requiredVersion))
+                    GrailsVersionUtils.isValidVersion(dependency.getVersion(), requiredVersion))
                 return true;
         }
         return false;

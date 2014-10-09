@@ -29,7 +29,7 @@ import org.apache.log4j.WriterAppender
 import org.apache.log4j.xml.XMLLayout
 import org.grails.plugins.logging.log4j.Log4jConfig
 
-class   Log4jDslTests extends GroovyTestCase {
+class Log4jDslTests extends GroovyTestCase {
 
     private Log4jConfig log4jConfig = new Log4jConfig(new ConfigObject())
 
@@ -200,7 +200,9 @@ class   Log4jDslTests extends GroovyTestCase {
     void testDefaultsWarDeployed() {
 
         Metadata.getInstance(new ByteArrayInputStream("""
-grails.war.deployed=true
+grails:
+    war:
+        deployed: true
 """.bytes))
 
         assert Environment.isWarDeployed()

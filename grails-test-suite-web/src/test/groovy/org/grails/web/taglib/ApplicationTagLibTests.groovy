@@ -2,6 +2,7 @@ package org.grails.web.taglib
 
 import grails.util.GrailsUtil
 import grails.util.Holders
+import grails.util.Metadata
 import grails.util.MockRequestDataValueProcessor
 
 import javax.servlet.http.Cookie
@@ -360,6 +361,10 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testMetaTag() {
+        Metadata.getInstance(new ByteArrayInputStream("""
+app:
+    version: 0.9.9.1
+""".bytes))
         def template = '<g:meta name="app.version"/>'
         assertOutputEquals('0.9.9.1', template)
     }

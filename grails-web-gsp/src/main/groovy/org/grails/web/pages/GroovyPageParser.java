@@ -17,7 +17,6 @@ package org.grails.web.pages;
 
 import grails.io.IOUtils;
 import grails.plugins.GrailsPluginInfo;
-import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.GrailsStringUtils;
 import grails.util.Holders;
@@ -26,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.grails.buffer.FastStringWriter;
 import org.grails.buffer.StreamByteBuffer;
 import org.grails.buffer.StreamCharBuffer;
-import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.io.support.SpringIOUtils;
 import org.grails.web.encoder.OutputEncodingSettings;
 import org.grails.web.pages.tags.GrailsTagRegistry;
@@ -217,13 +215,14 @@ public class GroovyPageParser implements Tokens {
         }
 
         GrailsPluginInfo pluginInfo = null;
-        if (filename != null && BuildSettingsHolder.getSettings() != null) {
-            pluginInfo = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
-            if (pluginInfo != null) {
-                pluginAnnotation = "@GrailsPlugin(name='" + pluginInfo.getName() + "', version='" +
-                    pluginInfo.getVersion() + "')";
-            }
-        }
+//        TODO: figure out a way to restore plugin metadata for GSP
+//        if (filename != null && BuildSettingsHolder.getSettings() != null) {
+//            pluginInfo = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
+//            if (pluginInfo != null) {
+//                pluginAnnotation = "@GrailsPlugin(name='" + pluginInfo.getName() + "', version='" +
+//                    pluginInfo.getVersion() + "')";
+//            }
+//        }
 
         OutputEncodingSettings gspConfig = new OutputEncodingSettings(config);
 

@@ -18,8 +18,8 @@ import jline.console.UserInterruptException
 import jline.console.completer.AggregateCompleter
 import jline.internal.NonBlockingInputStream
 
-import org.codehaus.groovy.grails.cli.parsing.CommandLine
-import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
+import org.grails.build.parsing.CommandLine
+import org.grails.build.parsing.CommandLineParser
 import org.grails.cli.gradle.GradleConnectionCommandLineHandler
 import org.grails.cli.profile.CommandCancelledListener
 import org.grails.cli.profile.CommandDescription

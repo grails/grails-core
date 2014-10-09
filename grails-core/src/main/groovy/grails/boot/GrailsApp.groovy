@@ -31,9 +31,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @InheritConstructors
 class GrailsApp extends SpringApplication {
 
+    static final File GRAILS_HOME = System.getProperty('grails.home') ? new File(System.getProperty('grails.home')) : null
     static final File BASE_DIR = System.getProperty('base.dir') ? new File(System.getProperty('base.dir')) : new File('.')
-    static final File CLASSES_DIR = System.getProperty('classes.dir') ? new File(System.getProperty('classes.dir')) : new File(BASE_DIR, "build/classes/main")
-    static final File RESOURCES_DIR = System.getProperty('resources.dir') ? new File(System.getProperty('resources.dir')) : new File(BASE_DIR, "build/resources/main")
+    static final File TARGET_DIR = System.getProperty('target.dir') ? new File(System.getProperty('target.dir')) : new File(BASE_DIR, "build")
+    static final File CLASSES_DIR = System.getProperty('classes.dir') ? new File(System.getProperty('classes.dir')) : new File(TARGET_DIR, "classes/main")
+    static final File RESOURCES_DIR = System.getProperty('resources.dir') ? new File(System.getProperty('resources.dir')) : new File(TARGET_DIR, "resources/main")
 
     private final Log log = LogFactory.getLog(getClass())
 

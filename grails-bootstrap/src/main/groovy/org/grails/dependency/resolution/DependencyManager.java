@@ -15,12 +15,13 @@
  */
 package org.grails.dependency.resolution;
 
-import grails.util.BuildSettings;
 import groovy.lang.Closure;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * General interface for all dependency manager implementations to implement with common utility methods not tied to Ivy or Aether or any
@@ -30,6 +31,23 @@ import java.util.Collection;
  * @since 2.3
  */
 public interface DependencyManager {
+    String BUILD_SCOPE = "build";
+    String COMPILE_SCOPE = "compile";
+    String RUNTIME_SCOPE = "runtime";
+    String TEST_SCOPE = "test";
+    String PROVIDED_SCOPE = "provided";
+    String BUILD_SCOPE_DESC = "Dependencies for the build system only";
+    String COMPILE_SCOPE_DESC = "Dependencies placed on the classpath for compilation";
+    String RUNTIME_SCOPE_DESC = "Dependencies needed at runtime but not for compilation";
+    String TEST_SCOPE_DESC = "Dependencies needed for test compilation and execution but not at runtime";
+    String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment";
+    Map<String, String> SCOPE_TO_DESC = new HashMap<String, String>(){{
+            put(BUILD_SCOPE, BUILD_SCOPE_DESC);
+            put(PROVIDED_SCOPE, PROVIDED_SCOPE_DESC);
+            put(COMPILE_SCOPE, COMPILE_SCOPE_DESC);
+            put(RUNTIME_SCOPE, RUNTIME_SCOPE_DESC);
+            put(TEST_SCOPE, TEST_SCOPE_DESC);
+    }};
 
     /**
      * URL to the central Grails plugin repository's global plugin list
@@ -64,14 +82,6 @@ public interface DependencyManager {
      * @param scope The scope of the report
      */
     void produceReport(String scope);
-
-    /**
-     * Creates a copy of this dependency manager with repository configuration retained but dependencies omitted.
-     *
-     * @param buildSettings The BuildSettings
-     * @return The copy
-     */
-    DependencyManager createCopy(BuildSettings buildSettings);
 
     /**
      * Resolve dependencies for the given scope

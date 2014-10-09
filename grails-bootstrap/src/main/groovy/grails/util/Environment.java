@@ -233,7 +233,13 @@ public enum Environment {
         if (envName != null) {
             return Environment.valueOf(envName.toUpperCase());
         }
-        return null;
+        else {
+            try {
+                return Environment.valueOf(shortName.toUpperCase());
+            } catch ( IllegalArgumentException ise ) {
+                return null;
+            }
+        }
     }
 
     /**
@@ -478,12 +484,8 @@ public enum Environment {
 
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
-        if (!hasLocation(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
-        if (!hasLocation(location)) {
-            BuildSettings settings = BuildSettingsHolder.getSettings();
-            if (settings != null) {
-                location = settings.getBaseDir().getAbsolutePath();
-            }
+        if(!hasLocation(location)) {
+            location = System.getProperty(BuildSettings.APP_BASE_DIR);
         }
         if(!hasLocation(location)) {
             File current = new File(".", "grails-app");

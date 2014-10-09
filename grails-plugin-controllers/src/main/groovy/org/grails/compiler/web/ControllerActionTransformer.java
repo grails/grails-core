@@ -24,7 +24,6 @@ import grails.artefact.Artefact;
 import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.GrailsArtefactClassInjector;
-import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
 import grails.validation.DefaultASTValidateableHelper;
@@ -182,10 +181,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             ClassHelper.byte_TYPE);
     public static final String VOID_TYPE = "void";
 
+    public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert";
+
     private Boolean converterEnabled;
 
     public ControllerActionTransformer() {
-        converterEnabled = Boolean.parseBoolean(System.getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
+        converterEnabled = Boolean.parseBoolean(System.getProperty(CONVERT_CLOSURES_KEY));
     }
 
     public String[] getArtefactTypes() {

@@ -1,8 +1,8 @@
 package org.grails.commons.metaclass
 
+import grails.build.support.MetaClassRegistryCleaner
 import org.grails.core.metaclass.MetaClassEnhancer
 import spock.lang.Specification
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * Tests for the MetaClassEnhancer API

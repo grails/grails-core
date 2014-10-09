@@ -43,10 +43,9 @@ import jline.internal.ShutdownHooks;
 import jline.internal.TerminalLineSettings;
 
 import org.apache.tools.ant.BuildException;
-import org.codehaus.groovy.grails.cli.ScriptExitException;
-import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
+import org.grails.build.interactive.CandidateListCompletionHandler;
+import org.grails.build.logging.GrailsConsoleErrorPrintStream;
+import org.grails.build.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
@@ -679,10 +678,6 @@ public class GrailsConsole {
     }
 
     private void printStackTrace(String message, Throwable error) {
-        if (error instanceof ScriptExitException) {
-            return; // don't bother with exit exceptions
-        }
-
         if ((error instanceof BuildException) && error.getCause() != null) {
             error = error.getCause();
         }

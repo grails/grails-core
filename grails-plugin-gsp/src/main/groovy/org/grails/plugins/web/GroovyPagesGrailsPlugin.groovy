@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web
 
+import grails.boot.GrailsApp
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
@@ -23,15 +24,12 @@ import grails.gsp.PageRenderer
 import grails.plugins.GrailsPluginManager
 import grails.plugins.PluginManagerAware
 import grails.util.BuildSettings
-import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.grails.buffer.StreamCharBufferMetaUtils
-import org.grails.build.plugins.GrailsPluginUtils
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.api.TagLibraryApi
@@ -126,7 +124,6 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
             customResourceLoader = true
             groovyPageResourceLoader(GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
-                pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
             }
         }
         else {
@@ -134,10 +131,8 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
                 customResourceLoader = true
                 groovyPageResourceLoader(GroovyPageResourceLoader) { bean ->
                     bean.lazyInit = true
-                    BuildSettings settings = BuildSettingsHolder.settings
-                    def location = settings?.baseDir ? GroovyPagesGrailsPlugin.transformToValidLocation(settings.baseDir.absolutePath) : '.'
+                    def location = GroovyPagesGrailsPlugin.transformToValidLocation(GrailsApp.BASE_DIR.absolutePath)
                     baseResource = "file:$location"
-                    pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
                 }
             }
             else {
@@ -146,7 +141,6 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
                     groovyPageResourceLoader(GroovyPageResourceLoader) {
                         def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)
                         baseResource = "file:${location}"
-                        pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
                     }
                 }
             }

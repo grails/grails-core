@@ -23,7 +23,6 @@ import grails.plugins.PluginManagerAware;
 import grails.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.dev.support.DevelopmentResourceLoader;
 import org.grails.plugins.BinaryGrailsPlugin;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;

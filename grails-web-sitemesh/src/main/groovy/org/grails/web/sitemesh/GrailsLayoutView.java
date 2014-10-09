@@ -52,7 +52,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
     @Override
     protected void renderTemplate(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
-        Content content = obtainContent(model, webRequest, request, response);
+            Content content = obtainContent(model, webRequest, request, response);
         if (content != null) {
             beforeDecorating(content, model, webRequest, request, response);
             SpringMVCViewDecorator decorator = (SpringMVCViewDecorator)groovyPageLayoutFinder.findLayout(request, content);

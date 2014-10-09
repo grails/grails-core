@@ -15,7 +15,8 @@
  */
 package grails.test
 
-import grails.util.BuildSettingsHolder
+import grails.boot.GrailsApp
+import grails.util.Metadata
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
@@ -40,8 +41,8 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
     private final Condition waiting = lock.newCondition()
 
     private String commandOutput
-    private String grailsHome = System.getProperty("grails.home") ?: BuildSettingsHolder.settings?.grailsHome?.absolutePath
-    private String grailsVersion = System.getProperty("grails.version") ?: BuildSettingsHolder.settings?.grailsVersion
+    private String grailsHome = GrailsApp.GRAILS_HOME
+    private String grailsVersion = Metadata.current.grailsVersion
     private File workDir = new File(System.getProperty("grails.cli.work.dir") ?: ".")
     private Process process
     private boolean streamsProcessed

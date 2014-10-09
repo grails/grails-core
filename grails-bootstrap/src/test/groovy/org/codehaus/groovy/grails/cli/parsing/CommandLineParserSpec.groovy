@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.cli.parsing
 
 import grails.util.Environment
-
+import org.grails.build.parsing.CommandLineParser
+import org.grails.build.parsing.ParseException
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification

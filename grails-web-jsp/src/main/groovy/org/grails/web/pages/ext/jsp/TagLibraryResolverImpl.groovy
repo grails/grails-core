@@ -15,7 +15,6 @@
  */
 package org.grails.web.pages.ext.jsp
 
-import grails.util.BuildSettingsHolder
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
@@ -136,14 +135,7 @@ class TagLibraryResolverImpl implements ServletContextAware, GrailsApplicationAw
     }
 
     protected Resource getWebXmlFromServletContext() {
-        if (grailsApplication.isWarDeployed()) {
-            return new ServletContextResource(servletContext, "/WEB-INF/web.xml")
-        }
-
-        def projectResourcesDir = BuildSettingsHolder.settings?.resourcesDir
-        if (projectResourcesDir) {
-            return new FileSystemResource("${projectResourcesDir.path}/web.xml")
-        }
+        return new ServletContextResource(servletContext, "/WEB-INF/web.xml")
     }
 
     protected List<URL> getJarsFromServletContext() {

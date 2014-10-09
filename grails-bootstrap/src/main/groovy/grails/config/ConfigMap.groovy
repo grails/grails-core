@@ -10,9 +10,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
 class ConfigMap implements Map<String, Object> {
     final ConfigMap rootConfig
     final List<String> path
-    @Delegate
     final Map<String, Object> delegateMap
-    
+
     public ConfigMap() {
         rootConfig = this
         path = []
@@ -25,7 +24,67 @@ class ConfigMap implements Map<String, Object> {
         this.path = path
         delegateMap = [:]
     }
-    
+
+    @Override
+    int size() {
+        delegateMap.size()
+    }
+
+    @Override
+    boolean isEmpty() {
+        delegateMap.isEmpty()
+    }
+
+    @Override
+    boolean containsKey(Object key) {
+        delegateMap.containsKey key
+    }
+
+    @Override
+    boolean containsValue(Object value) {
+        delegateMap.containsValue value
+    }
+
+    @Override
+    Object get(Object key) {
+        delegateMap.get(key)
+    }
+
+    @Override
+    Object put(String key, Object value) {
+        delegateMap.put(key, value)
+    }
+
+    @Override
+    Object remove(Object key) {
+        delegateMap.remove key
+    }
+
+    @Override
+    void putAll(Map<? extends String, ?> m) {
+        delegateMap.putAll m
+    }
+
+    @Override
+    void clear() {
+        delegateMap.clear()
+    }
+
+    @Override
+    Set<String> keySet() {
+        delegateMap.keySet()
+    }
+
+    @Override
+    Collection<Object> values() {
+        delegateMap.values()
+    }
+
+    @Override
+    Set<Map.Entry<String, Object>> entrySet() {
+        delegateMap.entrySet()
+    }
+
     public void merge(Map sourceMap, boolean parseFlatKeys=false) {
         mergeMaps(this, sourceMap, parseFlatKeys)
     }
@@ -53,7 +112,7 @@ class ConfigMap implements Map<String, Object> {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue
         if(sourceValue instanceof Map) {
-            ConfigMap subMap = new ConfigMap(targetMap.rootConfig, ((targetMap.path + [sourceKey]) as List<String>).asImmutable())
+            ConfigMap subMap = new ConfigMap( (ConfigMap)targetMap.rootConfig, ((targetMap.path + [sourceKey]) as List<String>).asImmutable())
             if(currentValue instanceof Map) {
                 subMap.putAll((Map)currentValue)
             }
@@ -110,7 +169,7 @@ class ConfigMap implements Map<String, Object> {
             if(currentItem instanceof ConfigMap) {
                 currentMap = (ConfigMap)currentItem
             } else if (createMissing) {
-                Map<String, Object> newMap = new ConfigMap(currentMap.rootConfig, ((currentMap.path + [pathElement]) as List<String>).asImmutable())
+                Map<String, Object> newMap = new ConfigMap( (ConfigMap)currentMap.rootConfig, ((currentMap.path + [pathElement]) as List<String>).asImmutable())
                 currentMap.put(pathElement, newMap)
                 currentMap = newMap
             } else {
@@ -166,7 +225,7 @@ class ConfigMap implements Map<String, Object> {
     }
     
     @CompileStatic
-    private static class NullSafeNavigator {
+    static class NullSafeNavigator {
         final ConfigMap parent
         final List<String> path
         

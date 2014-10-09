@@ -22,7 +22,6 @@ import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
-import grails.util.PluginBuildSettings;
 import groovy.lang.*;
 
 import java.io.File;
@@ -43,7 +42,6 @@ import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.util.GrailsArrayUtils;
 import grails.util.GrailsClassUtils;
-import org.grails.build.plugins.GrailsPluginUtils;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.io.SpringResource;
 import org.grails.core.exceptions.GrailsConfigurationException;
@@ -347,13 +345,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
 
             List<String> resourceListTmp = new ArrayList<String>();
-            PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
-
-            if (pluginBuildSettings == null) {
-                return;
-            }
-
-            final org.grails.io.support.Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
             final Environment env = Environment.getCurrent();
             final String baseLocation = env.getReloadLocation();
 
@@ -363,12 +354,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                     addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
                 }
                 else {
-                    for (org.grails.io.support.Resource pluginDir : pluginDirs) {
-                        if (pluginDir == null) continue;
-
-                        String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
-                        resourceListTmp.add(pluginResources);
-                    }
                     addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
                 }
             }
@@ -388,13 +373,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                         ", will not be able to auto-reload changes effectively. Try running grails upgrade.: " + e.getMessage());
             }
         }
-        catch (IOException e) {
-            if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + GrailsArrayUtils.toString(watchedResourcePatternReferences) +
-                        "]. This means that the plugin " + this +
-                        ", will not be able to auto-reload changes effectively. Try running grails upgrade.: " + e.getMessage());
-            }
-        }
+
     }
 
     private void addBaseLocationPattern(List<String> resourceList, final String baseLocation, String pattern) {
