@@ -92,7 +92,10 @@ class GrailsFactoriesLoader {
 
         List<Class<T>> result = []
         for (String factoryName in factoryNames) {
-            result.add loadFactoryClass(factoryName, factoryClass, classLoader)
+            def clazz = loadFactoryClass(factoryName, factoryClass, classLoader)
+            if(clazz) {
+                result << clazz
+            }
         }
         return result
     }
@@ -143,7 +146,7 @@ class GrailsFactoriesLoader {
             return (Class<? extends T>) instanceClass
         }
         catch (Throwable ex) {
-            throw new IllegalArgumentException("Cannot instantiate factory class: $factoryClass.name", ex);
+            logger.error "Cannot instantiate class: $instanceClassName", ex
         }
     }
 
