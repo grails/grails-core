@@ -306,7 +306,7 @@ if $cygwin; then
     for arg in "$@" ; do
     	CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
     	if [ $CHECK -ne 0 ] ; then
-	    	convArg=`cygpath --path --ignore --mixed "$arg"`
+	    	convArg=`cygpath --path --ignore --mixed -- "$arg"`
     	else
 			convArg=$arg
     	fi
