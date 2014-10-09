@@ -64,9 +64,7 @@ public class GrailsCoreDependencies {
 
         buildDependencies = Arrays.asList(
             new Dependency("xalan","serializer", "2.7.1", true, "xml-apis:xml-apis"),
-            new Dependency("org.grails", "grails-bootstrap", grailsVersion, true ),
-            new Dependency("org.grails", "grails-project-api", grailsVersion, true, "org.grails:grails-core", "org.grails:grails-web"),
-            new Dependency("org.grails", "grails-scripts", grailsVersion, true )
+            new Dependency("org.grails", "grails-bootstrap", grailsVersion, true )
         );
 
         docDependencies = Arrays.asList(
