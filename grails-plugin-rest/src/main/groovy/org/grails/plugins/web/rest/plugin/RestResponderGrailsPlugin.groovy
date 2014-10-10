@@ -15,17 +15,17 @@
  */
 package org.grails.plugins.web.rest.plugin
 
+import grails.core.GrailsApplication
+import grails.core.GrailsClass
 import grails.core.support.GrailsApplicationAware
 import grails.rest.Resource
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
+
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
-import grails.core.GrailsApplication
-import grails.core.GrailsClass
-import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 
 /**
@@ -46,7 +46,6 @@ class RestResponderGrailsPlugin implements GrailsApplicationAware{
         rendererRegistry(DefaultRendererRegistry) { bean ->
             modelSuffix = application.flatConfig.get('grails.scaffolding.templates.domainSuffix') ?: ''
         }
-        instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"))
     }
 
     def onChange = { event ->

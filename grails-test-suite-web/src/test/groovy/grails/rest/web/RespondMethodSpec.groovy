@@ -197,7 +197,7 @@ class RespondMethodSpec extends Specification{
         given:"A book instance"
         def book = new Book(title: "")
         book.validate()
-        applicationContext.getBean("instanceControllersRestApi").proxyHandler = new TestProxyHandler()
+        controller.proxyHandler = new TestProxyHandler()
         when:"The respond method is used to render a response"
         webRequest.actionName = 'showWithModel'
         controller.respond(new BookProxy(book: book), model: [extra: true])
@@ -214,9 +214,7 @@ class RespondMethodSpec extends Specification{
         given:"A book instance"
         def book = new Book(title: "")
         book.validate()
-        ['instanceControllersRestApi','rendererRegistry'].each { beanName ->
-            applicationContext.getBean(beanName).proxyHandler = new TestProxyHandler()
-        }
+
         def renderer=applicationContext.getBean('rendererRegistry').findRenderer(MimeType.HTML, [])
         renderer.proxyHandler = new TestProxyHandler()
         

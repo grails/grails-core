@@ -40,7 +40,6 @@ import org.grails.plugins.web.api.RequestMimeTypesApi
 import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
-import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
@@ -83,7 +82,6 @@ class ControllerTestPlugin implements TestPlugin {
             rendererRegistry(DefaultRendererRegistry) {
                 modelSuffix = config.flatten().get('grails.scaffolding.templates.domainSuffix') ?: ''
             }
-            instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"))
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
 
             def urlConverterType = config?.grails?.web?.url?.converter

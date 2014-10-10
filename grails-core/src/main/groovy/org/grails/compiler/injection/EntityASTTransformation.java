@@ -94,6 +94,7 @@ public class EntityASTTransformation implements ASTTransformation, CompilationUn
         }
         
         if(compilationUnit != null) {
+            // TODO this code is showing up in multiple places and should be centralized.  See ResourceTransform and ArtefactTypeAstTransformation
             GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
             List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
             List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();

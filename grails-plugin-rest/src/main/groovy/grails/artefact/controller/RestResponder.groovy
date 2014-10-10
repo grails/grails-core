@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins.web.rest.api
+package grails.artefact.controller
+
+import java.util.List;
 
 import grails.artefact.Controller
+import grails.artefact.controller.support.ResponseRenderer
 import grails.core.GrailsDomainClassProperty
 import grails.core.support.proxy.ProxyHandler
 import grails.rest.Resource
@@ -28,54 +31,40 @@ import groovy.transform.TypeCheckingMode
 
 import javax.servlet.http.HttpServletResponse
 
-import org.grails.plugins.web.api.ResponseMimeTypesApi
+import org.grails.plugins.web.api.ResponseMimeTypesApi;
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
-import org.grails.web.pages.discovery.GroovyPageLocator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.util.Assert
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.springframework.util.Assert
 
 /**
- * Provides the "respond" method in controllers
  *
- * @since 2.3
- * @author Graeme Rocher
+ * @author Jeff Brown
+ * @since 3.0
+ *
  */
 @CompileStatic
-class ControllersRestApi {
+trait RestResponder {
 
-    public static final String PROPERTY_RESPONSE_FORMATS = "responseFormats"
+    private String PROPERTY_RESPONSE_FORMATS = "responseFormats"
 
-    protected RendererRegistry rendererRegistry
+    @Autowired(required = false)
+    RendererRegistry rendererRegistry
+
     @Autowired(required = false)
     ProxyHandler proxyHandler
-
-    @Autowired(required = false)
-    GroovyPageLocator groovyPageLocator
-
-    @Autowired
+    
+    @Autowired(required=false)
     ResponseMimeTypesApi responseMimeTypesApi
 
-    ControllersRestApi(RendererRegistry rendererRegistry) {
-        this.rendererRegistry = rendererRegistry
-    }
-
     /**
-     * Same as {@link ControllersRestApi#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
+     * Same as {@link RestResponder#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
      */
-    public <T> Object respond(controller, Map args, value) {
-        respond(controller, value, args)
-    }
-    
-    // Calls to render used to be delegated to controllersApi.
-    // This method is here until methods in ControllersRestApi
-    // can be migrated to a trait. 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    private render(controller, args) {
-        controller.render args
+    def respond(Map args, value) {
+        respond(value, args)
     }
 
     /**
@@ -85,15 +74,14 @@ class ControllersRestApi {
      * If the value is null then a 404 will be returned. Otherwise the {@link RendererRegistry}
      * will be consulted for an appropriate response renderer for the requested response format.
      *
-     * @param controller The controller
      * @param value The value
      * @param args The arguments
      * @return
      */
-    Object respond(Object controller, Object value, Map args = [:]) {
+    def respond(value, Map args = [:]) {
         Integer statusCode
         if (args.status) {
-            final Object statusValue = args.status
+            final statusValue = args.status
             if (statusValue instanceof Number) {
                 statusCode = statusValue.intValue()
             } else {
@@ -101,15 +89,15 @@ class ControllersRestApi {
             }
         }
         if (value == null) {
-            return render(controller,[status:statusCode ?: 404 ])
+            return callRender([status:statusCode ?: 404 ])
         }
 
         if (proxyHandler != null) {
             value = proxyHandler.unwrapIfProxy(value)
         }
-        
-        final webRequest = ((Controller)controller).getWebRequest()
-        List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
+
+        final webRequest = ((Controller)this).getWebRequest()
+        List<String> formats = calculateFormats(webRequest.actionName, value, args)
         final response = webRequest.getCurrentResponse()
         MimeType[] mimeTypes = getResponseFormat(response)
         def registry = rendererRegistry
@@ -129,8 +117,6 @@ class ControllersRestApi {
                     webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
                 }
             }
-
-
 
             if (mimeType && formats.contains(mimeType.extension)) {
                 Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
@@ -154,7 +140,7 @@ class ControllersRestApi {
                         return
                     }
 
-                    return render(controller,[status: statusCode ?: 404 ])
+                    return callRender([status: statusCode ?: 404 ])
                 }
 
                 final valueType = value.getClass()
@@ -171,7 +157,6 @@ class ControllersRestApi {
             if(renderer) break
         }
 
-
         if (renderer) {
             final context = new ServletRenderContext(webRequest, args)
             if(statusCode != null) {
@@ -180,16 +165,20 @@ class ControllersRestApi {
             renderer.render(value, context)
             return
         }
-        render(controller,[status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
+        callRender([status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
+    }
+    
+    private callRender(Map args) {
+        ((ResponseRenderer)this).render args
     }
 
-    protected List<String> calculateFormats(controller, String actionName, value, Map args) {
+    private List<String> calculateFormats(String actionName, value, Map args) {
         if (args.formats) {
             return (List<String>) args.formats
         }
 
-        if (controller.hasProperty(PROPERTY_RESPONSE_FORMATS)) {
-            final responseFormatsProperty = ((GroovyObject) controller).getProperty(PROPERTY_RESPONSE_FORMATS)
+        if (this.hasProperty(PROPERTY_RESPONSE_FORMATS)) {
+            final responseFormatsProperty = this.getProperty(PROPERTY_RESPONSE_FORMATS)
             if (responseFormatsProperty instanceof List) {
                 return (List<String>) responseFormatsProperty
             }
@@ -207,16 +196,13 @@ class ControllersRestApi {
         return getDefaultResponseFormats(value)
     }
 
-    protected List<String> getDefaultResponseFormats(value) {
-        Resource resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
-        if (resAnn) {
-            return resAnn.formats().toList()
-        }
-        return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
+    private MimeType[] getResponseFormat(HttpServletResponse response) {
+        Assert.notNull(responseMimeTypesApi, "No configured ResponseMimeTypesApi instance")
+        responseMimeTypesApi.getMimeTypesFormatAware(response)
     }
-
+    
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected Errors getDomainErrors(object) {
+    private Errors getDomainErrors(object) {
         if (object instanceof Errors) {
             return object
         }
@@ -226,9 +212,12 @@ class ControllersRestApi {
         }
         return null
     }
-
-    protected MimeType[] getResponseFormat(HttpServletResponse response) {
-        Assert.notNull(responseMimeTypesApi, "No configured ResponseMimeTypesApi instance")
-        responseMimeTypesApi.getMimeTypesFormatAware(response)
+    
+    private List<String> getDefaultResponseFormats(value) {
+        Resource resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
+        if (resAnn) {
+            return resAnn.formats().toList()
+        }
+        return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
     }
 }
