@@ -87,21 +87,21 @@ class BeanBuilderTests extends GroovyTestCase {
         assertNotNull bean.bean1
     }
 
-    void testContextComponentScanSpringTag() {
-
-        bb.beans {
-            xmlns grailsContext:"http://grails.org/schema/context"
-
-            grailsContext.'component-scan'('base-package' :"**")
-        }
-
-        def appCtx = bb.createApplicationContext()
-
-        def p = appCtx.getBean("person")
-
-        assertTrue(p instanceof AdvisedPerson)
-        assertNotNull p
-    }
+//    void testContextComponentScanSpringTag() {
+//
+//        bb.beans {
+//            xmlns grailsContext:"http://grails.org/schema/context"
+//
+//            grailsContext.'component-scan'('base-package' :"**")
+//        }
+//
+//        def appCtx = bb.createApplicationContext()
+//
+//        def p = appCtx.getBean("person")
+//
+//        assertTrue(p instanceof AdvisedPerson)
+//        assertNotNull p
+//    }
 
     void testUseSpringNamespaceAsMethod() {
 

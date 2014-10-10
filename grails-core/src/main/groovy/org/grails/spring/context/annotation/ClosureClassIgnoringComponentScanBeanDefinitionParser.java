@@ -15,9 +15,8 @@
  */
 package org.grails.spring.context.annotation;
 
-import grails.boot.GrailsApp;
+import grails.util.BuildSettings;
 import grails.util.Environment;
-import grails.util.Metadata;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -202,20 +201,21 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
             protected Resource[] findAllClassPathResources(String location) throws IOException {
                 Set<Resource> result = new LinkedHashSet<Resource>(16);
 
-                @SuppressWarnings("unused")
-                URL classesDir = GrailsApp.getCLASSES_DIR().toURI().toURL();
+                if(BuildSettings.CLASSES_DIR != null) {
+                    @SuppressWarnings("unused")
+                    URL classesDir = BuildSettings.CLASSES_DIR.toURI().toURL();
 
-                // only scan classes from project classes directory
-                String path = location;
-                if (path.startsWith("/")) {
-                    path = path.substring(1);
-                }
-                Enumeration<URL> resourceUrls = getClassLoader().getResources(path);
-                while (resourceUrls.hasMoreElements()) {
-                    URL url = resourceUrls.nextElement();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Scanning URL " + url.toExternalForm() + " while searching for '" + location + "'");
+                    // only scan classes from project classes directory
+                    String path = location;
+                    if (path.startsWith("/")) {
+                        path = path.substring(1);
                     }
+                    Enumeration<URL> resourceUrls = getClassLoader().getResources(path);
+                    while (resourceUrls.hasMoreElements()) {
+                        URL url = resourceUrls.nextElement();
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Scanning URL " + url.toExternalForm() + " while searching for '" + location + "'");
+                        }
                     /*
                     if (!warDeployed && classesDir!= null && url.equals(classesDir)) {
                         result.add(convertClassLoaderURL(url));
@@ -224,7 +224,8 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                         result.add(convertClassLoaderURL(url));
                     }
                     */
-                    result.add(convertClassLoaderURL(url));
+                        result.add(convertClassLoaderURL(url));
+                    }
                 }
                 return result.toArray(new Resource[result.size()]);
             }

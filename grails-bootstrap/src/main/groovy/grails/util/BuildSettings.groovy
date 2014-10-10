@@ -209,4 +209,32 @@ class BuildSettings {
      */
     public static final String LOG_SCRIPT_TIMING_KEY = 'grails.script.logTiming'
 
+    /**
+     * The location of the local Grails installation. Will be null if not known
+     */
+    public static final File GRAILS_HOME = System.getProperty('grails.home') ? new File(System.getProperty('grails.home')) : null
+
+    /**
+     * The base directory of the project
+     */
+    public static final File BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) : new File('.')
+
+    /**
+     * Whether the application is running inside the development environment or deployed
+     */
+    public static final boolean IS_DEPLOYED = !new File(BASE_DIR, "grails-app").exists()
+
+    /**
+     * The target directory of the project, null outside of the development environment
+     */
+    public static final File TARGET_DIR = IS_DEPLOYED ? null : (System.getProperty(PROJECT_TARGET_DIR) ? new File(System.getProperty(PROJECT_TARGET_DIR)) : new File(BASE_DIR, "build"))
+    /**
+     * The resources directory of the project, null outside of the development environment
+     */
+    public static final File RESOURCES_DIR = IS_DEPLOYED ? null : (System.getProperty(PROJECT_RESOURCES_DIR) ? new File(System.getProperty(PROJECT_RESOURCES_DIR)) : new File(TARGET_DIR, "resources/main"))
+    /**
+     * The classes directory of the project, null outside of the development environment
+     */
+    public static final File CLASSES_DIR = IS_DEPLOYED ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
+    public static final String RUN_EXECUTED = "grails.run.executed"
 }

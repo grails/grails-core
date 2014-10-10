@@ -421,7 +421,7 @@ public enum Environment {
 
         final String reloadLocation = getReloadLocationInternal();
         final boolean reloadLocationSpecified = hasLocation(reloadLocation);
-        return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() ||
+        return this == DEVELOPMENT && reloadLocationSpecified ||
                 reloadOverride && reloadLocationSpecified;
     }
 

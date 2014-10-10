@@ -20,6 +20,7 @@ import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
@@ -217,13 +218,12 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
 
         // first load the domain classes
         log.debug("Going to inspect artefact classes.");
-        boolean warDeployed = Environment.isWarDeployed();
+        MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+
         for (final Class<?> theClass : classes) {
             log.debug("Inspecting [" + theClass.getName() + "]");
             // start fresh
-            if (!warDeployed) {
-                GroovySystem.getMetaClassRegistry().removeMetaClass(theClass);
-            }
+            metaClassRegistry.removeMetaClass(theClass);
             if (allArtefactClasses.contains(theClass)) {
                 continue;
             }

@@ -15,7 +15,7 @@
  */
 package org.grails.plugins.logging.log4j
 
-import grails.boot.GrailsApp
+import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
@@ -263,7 +263,7 @@ class Log4jConfig {
 
         def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
 
-        def targetDir = GrailsApp.TARGET_DIR
+        def targetDir = BuildSettings.TARGET_DIR
         targetDir?.mkdirs()
 
         if (!targetDir && Environment.isWarDeployed()) {

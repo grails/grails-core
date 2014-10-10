@@ -15,10 +15,10 @@
  */
 package org.grails.plugins.i18n
 
-import grails.boot.GrailsApp
 import grails.config.Settings
 import grails.core.GrailsApplication
 import grails.core.support.GrailsApplicationAware
+import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.apache.commons.logging.LogFactory
@@ -51,10 +51,6 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
     def doWithSpring = {
         def application = grailsApplication
 
-        if (Environment.isWarDeployed()) {
-            servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
-        }
-
         messageSource(PluginAwareResourceBundleMessageSource) {
             fallbackToSystemLocale = false
             pluginManager = manager
@@ -63,9 +59,6 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
                 cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
                 def fileCacheSecondsSetting = application?.flatConfig?.get('grails.i18n.filecache.seconds')
                 fileCacheSeconds = fileCacheSecondsSetting == null ? 5 : fileCacheSecondsSetting as Integer
-            }
-            if (Environment.isWarDeployed()) {
-                resourceResolver = ref('servletContextResourceResolver')
             }
         }
 
@@ -107,7 +100,7 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
             return
         }
 
-        def resourcesDir = GrailsApp.RESOURCES_DIR
+        def resourcesDir = BuildSettings.RESOURCES_DIR
         if (resourcesDir.exists() && event.source instanceof Resource) {
             def eventFile = event.source.file.canonicalFile
             def nativeascii = event.application.config.grails.enable.native2ascii
@@ -115,8 +108,8 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
             def ant = new AntBuilder()
             File i18nDir = new File("${Environment.current.reloadLocation}/grails-app/i18n").canonicalFile
             if (isChildOfFile(eventFile, i18nDir)) {
-                executeMessageBundleCopy(ant, eventFile, i18nDir, GrailsApp.RESOURCES_DIR, nativeascii)
-                executeMessageBundleCopy(ant, eventFile, i18nDir, GrailsApp.CLASSES_DIR, nativeascii)
+                executeMessageBundleCopy(ant, eventFile, i18nDir, BuildSettings.RESOURCES_DIR, nativeascii)
+                executeMessageBundleCopy(ant, eventFile, i18nDir, BuildSettings.CLASSES_DIR, nativeascii)
             }
         }
 

@@ -15,7 +15,7 @@
  */
 package org.grails.plugins.web.rest.transform
 
-import grails.boot.GrailsApp
+import grails.util.BuildSettings
 
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
@@ -102,7 +102,7 @@ class ResourceTransform implements ASTTransformation{
     ResourceLocator getResourceLocator() {
         if (resourceLocator == null) {
             resourceLocator = new DefaultResourceLocator()
-            String basedir = GrailsApp.BASE_DIR.absolutePath
+            String basedir = BuildSettings.BASE_DIR.absolutePath
 
             resourceLocator.setSearchLocation(basedir)
         }

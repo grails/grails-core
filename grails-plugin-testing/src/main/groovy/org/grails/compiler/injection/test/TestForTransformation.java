@@ -15,7 +15,6 @@
  */
 package org.grails.compiler.injection.test;
 
-import grails.boot.GrailsApp;
 import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
 import grails.test.mixin.services.ServiceUnitTestMixin;
@@ -24,6 +23,7 @@ import grails.test.mixin.web.ControllerUnitTestMixin;
 import grails.test.mixin.web.FiltersUnitTestMixin;
 import grails.test.mixin.web.GroovyPageUnitTestMixin;
 import grails.test.mixin.web.UrlMappingsUnitTestMixin;
+import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import groovy.util.GroovyTestCase;
 
@@ -120,7 +120,7 @@ public class TestForTransformation extends TestMixinTransformation {
     public ResourceLocator getResourceLocator() {
         if (resourceLocator == null) {
             resourceLocator = new DefaultResourceLocator();
-            String basedir = GrailsApp.getBASE_DIR().getAbsolutePath();
+            String basedir = BuildSettings.BASE_DIR.getAbsolutePath();
             resourceLocator.setSearchLocation(basedir);
         }
         return resourceLocator;

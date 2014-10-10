@@ -15,7 +15,6 @@
  */
 package org.grails.plugins.web
 
-import grails.boot.GrailsApp
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
@@ -131,7 +130,7 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
                 customResourceLoader = true
                 groovyPageResourceLoader(GroovyPageResourceLoader) { bean ->
                     bean.lazyInit = true
-                    def location = GroovyPagesGrailsPlugin.transformToValidLocation(GrailsApp.BASE_DIR.absolutePath)
+                    def location = GroovyPagesGrailsPlugin.transformToValidLocation(BuildSettings.BASE_DIR.absolutePath)
                     baseResource = "file:$location"
                 }
             }

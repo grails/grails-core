@@ -241,7 +241,7 @@ public class Metadata extends GrailsConfig  {
      * @return true if this application is deployed as a WAR
      */
     public boolean isWarDeployed() {
-        return warDeployed;
+        return BuildSettings.IS_DEPLOYED && Boolean.getBoolean(BuildSettings.RUN_EXECUTED);
     }
 
 

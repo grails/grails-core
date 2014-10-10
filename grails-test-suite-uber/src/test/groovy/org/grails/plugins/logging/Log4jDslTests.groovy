@@ -197,43 +197,7 @@ class Log4jDslTests extends GroovyTestCase {
         assertEquals Level.DEBUG, logger.level
     }
 
-    void testDefaultsWarDeployed() {
 
-        Metadata.getInstance(new ByteArrayInputStream("""
-grails:
-    war:
-        deployed: true
-""".bytes))
-
-        assert Environment.isWarDeployed()
-
-        log4jConfig.configure {
-            debug 'org.codehaus.groovy.grails.web.servlet',
-                'org.codehaus.groovy.grails.web.pages'
-
-            error 'org.codehaus.groovy.grails.web.sitemesh'
-        }
-
-        def root = Logger.getRootLogger()
-        assertEquals Level.ERROR, root.level
-
-        def appenders = root.getAllAppenders()
-        assertTrue appenders.hasMoreElements()
-
-        def consoleAppender = appenders.nextElement()
-        assertEquals "stdout", consoleAppender.name
-
-        def stackLogger = Logger.getLogger("StackTrace")
-        assertFalse stackLogger.additivity
-
-        assertTrue stackLogger.allAppenders.hasMoreElements()
-        def fileAppender = stackLogger.allAppenders.nextElement()
-
-        assertEquals "stacktrace.log", new File(fileAppender.file).name
-
-        def logger = Logger.getLogger('org.codehaus.groovy.grails.web.servlet')
-        assertEquals Level.DEBUG, logger.level
-    }
     void testCustomAppender() {
 
         def consoleAppender

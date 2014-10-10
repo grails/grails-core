@@ -15,7 +15,6 @@
  */
 package grails.test.mixin.support;
 
-import grails.boot.GrailsApp;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
 
@@ -25,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import grails.util.BuildSettings;
 import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ByteArrayResource;
@@ -65,7 +65,7 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader impl
         }
         
         if(basePath == null) {
-            String basedir = GrailsApp.getBASE_DIR().getAbsolutePath();
+            String basedir = BuildSettings.BASE_DIR.getAbsolutePath();
             basePath = basedir + File.separatorChar + GrailsResourceUtils.VIEWS_DIR_PATH;
         }
 

@@ -2,11 +2,11 @@ package grails.boot
 
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
+import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
-import groovy.util.logging.Commons
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationFailedException
@@ -31,16 +31,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @InheritConstructors
 class GrailsApp extends SpringApplication {
 
-    static final File GRAILS_HOME = System.getProperty('grails.home') ? new File(System.getProperty('grails.home')) : null
-    static final File BASE_DIR = System.getProperty('base.dir') ? new File(System.getProperty('base.dir')) : new File('.')
-    static final File TARGET_DIR = System.getProperty('target.dir') ? new File(System.getProperty('target.dir')) : new File(BASE_DIR, "build")
-    static final File CLASSES_DIR = System.getProperty('classes.dir') ? new File(System.getProperty('classes.dir')) : new File(TARGET_DIR, "classes/main")
-    static final File RESOURCES_DIR = System.getProperty('resources.dir') ? new File(System.getProperty('resources.dir')) : new File(TARGET_DIR, "resources/main")
-
     private final Log log = LogFactory.getLog(getClass())
 
     @Override
     ConfigurableApplicationContext run(String... args) {
+        System.setProperty(BuildSettings.RUN_EXECUTED, "true")
         def applicationContext = super.run(args)
 
         grails.util.Environment environment = grails.util.Environment.getCurrent()

@@ -15,7 +15,7 @@
  */
 package grails.test
 
-import grails.boot.GrailsApp
+import grails.util.BuildSettings
 import grails.util.Metadata
 
 import java.util.concurrent.TimeUnit
@@ -41,7 +41,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
     private final Condition waiting = lock.newCondition()
 
     private String commandOutput
-    private String grailsHome = GrailsApp.GRAILS_HOME
+    private String grailsHome = BuildSettings.GRAILS_HOME
     private String grailsVersion = Metadata.current.grailsVersion
     private File workDir = new File(System.getProperty("grails.cli.work.dir") ?: ".")
     private Process process
