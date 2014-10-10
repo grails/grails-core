@@ -32,6 +32,8 @@ import org.grails.cli.profile.ProjectContext
 @CompileStatic
 class GrailsCli {
     public static final String DEFAULT_PROFILE_NAME = 'web'
+    private static final int KEYPRESS_CTRL_C = 3
+    private static final int KEYPRESS_ESC = 27
     private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
     List<CommandLineHandler> commandLineHandlers=[]
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
@@ -133,7 +135,7 @@ class GrailsCli {
                     if(peeked > 0) {
                         // read peeked character from buffer
                         nonBlockingInput.read(1L)
-                        if(peeked == 3) { // 3 == CTRL-C
+                        if(peeked == KEYPRESS_CTRL_C || peeked == KEYPRESS_ESC) {
                             executionContext.cancel()
                         }
                     }
