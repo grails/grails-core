@@ -91,6 +91,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
             ClassNode cNode, String artefactType) {
         if (compilationUnit != null) {
             try {
+                // TODO this code is showing up in multiple places and should be centralized.  See ResourceTransform and EntityASTTransformation
                 GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
                 List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
                 List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();

@@ -1,9 +1,14 @@
 package grails.test.mixin
 
+import grails.artefact.Controller
+import grails.artefact.controller.RestResponder
+import grails.artefact.controller.support.ResponseRenderer
 import grails.persistence.*
 import grails.rest.*
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.web.api.WebAttributes
+import grails.web.databinding.DataBinder
 
 import org.codehaus.groovy.control.CompilerConfiguration
 
@@ -53,6 +58,15 @@ class Video {
 
     def setup() {
         controller = testFor(controllerClass)
+    }
+    
+    void 'Test that the generated controller implements the expected traits'() {
+        expect:
+        Controller.isAssignableFrom controllerClass
+        WebAttributes.isAssignableFrom controllerClass
+        ResponseRenderer.isAssignableFrom controllerClass
+        DataBinder.isAssignableFrom controllerClass
+        RestResponder.isAssignableFrom controllerClass
     }
     
     void "Test the index action returns the correct model"() {
