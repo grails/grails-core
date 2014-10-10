@@ -156,26 +156,6 @@ task installResources(type: Copy) {
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
 
-    [false,true].each { windowsOnly ->
-        into(homeBinDir.name) {
-            from("grails-resources/src/grails/home/bash")
-            if(windowsOnly) {
-                include '**/*.bat'
-                filter(org.apache.tools.ant.filters.FixCrLfFilter, eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('crlf'))
-            } else {
-                exclude '**/*.bat'
-            }
-            filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-            filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
-            filter(ReplaceTokens, tokens: ['windows.starter.classpath': "%GRAILS_HOME%\\lib\\org.codehaus.groovy\\groovy-all\\jars\\groovy-${groovyVersion}.jar;%GRAILS_HOME%\\dist\\grails-bootstrap-${grailsVersion}.jar".toString()])
-            filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
-            filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/org.springframework/springloaded/jars/springloaded-${springLoadedVersion}.jar ${springLoadedCommonOptions} -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
-            filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/org.springframework/springloaded/jars/springloaded-${springLoadedVersion}.jar ${springLoadedCommonOptions} -Dspringloaded=\\\"%SPRINGLOADED_PARAMS%\\\"".toString()])
-            filter(ReplaceTokens, tokens: ['startup.command': ''])
-            fileMode = 0755
-        }
-    }
-
     // the fileMode property above should take care of the chmod work, but
     // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
     doLast {
@@ -237,17 +217,6 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from('grails-resources/src/grails/home/tests') {
             into "src/resources/tests"
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        }
-        from("grails-resources/src/grails/home/bash") {
-            into "bin"
-            filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-            filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
-            filter(ReplaceTokens, tokens: ['windows.starter.classpath': "%GRAILS_HOME%\\lib\\org.codehaus.groovy\\groovy-all\\jars\\groovy-all-${groovyVersion}.jar;%GRAILS_HOME%\\dist\\grails-bootstrap-${grailsVersion}.jar".toString()])
-            filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
-            filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/org.springframework/springloaded/jars/springloaded-${springLoadedVersion}.jar -Xverify:none -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
-            filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:\"%GRAILS_HOME:\\=/%/lib/org.springframework/springloaded/jars/springloaded-${springLoadedVersion}.jar\" -Xverify:none -Dspringloaded=\\\"%SPRINGLOADED_PARAMS%\\\"".toString()])
-            filter(ReplaceTokens, tokens: ['startup.command': ''])
-            fileMode = 0755
         }
         from("conf") {
             into "conf"
