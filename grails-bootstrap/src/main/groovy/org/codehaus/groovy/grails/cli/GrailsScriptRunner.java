@@ -228,7 +228,8 @@ public class GrailsScriptRunner {
                 System.exit(exitCode);
             }
             catch (ScriptNotFoundException ex) {
-                console.error("Script not found: " + ex.getScriptName());
+                String msg = "Script not found: " + ex.getScriptName();
+                exitWithError(msg, null);
             }
             catch (Throwable t) {
                 String msg = "Error executing script " + script.name + ": " + t.getMessage();
