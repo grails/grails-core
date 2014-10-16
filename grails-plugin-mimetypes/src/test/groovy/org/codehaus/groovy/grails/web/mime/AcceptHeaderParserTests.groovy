@@ -2,8 +2,11 @@ package org.codehaus.groovy.grails.web.mime
 
 import grails.util.Holders
 import grails.core.DefaultGrailsApplication
+import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.mime.DefaultAcceptHeaderParser
+import org.springframework.core.env.MapPropertySource
+import org.springframework.core.env.MutablePropertySources
 
 /**
  * @author Graeme Rocher
@@ -13,7 +16,7 @@ class AcceptHeaderParserTests extends GroovyTestCase {
 
     def config
     protected void setUp() {
-        config = new ConfigSlurper().parse("""
+        def configObject = new ConfigSlurper().parse("""
 grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
                       js: 'text/javascript',
@@ -28,6 +31,9 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       foov2: 'application/vnd.foo+json;v=2.0'
                     ]
         """)
+        def ps = new MutablePropertySources()
+        ps.addLast(new MapPropertySource("grails", configObject))
+        config = new PropertySourcesConfig(ps)
 
     }
 

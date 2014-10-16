@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.config;
+package org.grails.core.cfg;
 
+import grails.config.Config;
+import grails.config.Settings;
 import groovy.util.ConfigObject;
 
 import org.apache.commons.logging.Log;
@@ -22,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 
 import grails.core.GrailsApplication;
 
+import org.grails.config.PropertySourcesConfig;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -34,8 +37,11 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @since  2.0
+ * @deprecated Will be removed in a future version of Grails
+ *
  */
-public class DeprecatedGrailsConfig implements Settings{
+@Deprecated
+public class DeprecatedGrailsConfig implements Settings {
 
     private static final Log LOG = LogFactory.getLog(DeprecatedGrailsConfig.class);
 
@@ -183,9 +189,9 @@ public class DeprecatedGrailsConfig implements Settings{
         return grailsApplication.getFlatConfig();
     }
 
-    public ConfigObject getConfig() {
+    public Config getConfig() {
         if(grailsApplication == null) {
-            return new ConfigObject();
+            return new PropertySourcesConfig();
         }
         return grailsApplication.getConfig();
     }

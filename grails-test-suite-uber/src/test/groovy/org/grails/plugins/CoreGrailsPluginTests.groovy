@@ -2,6 +2,7 @@ package org.grails.plugins
 
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
+import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
@@ -85,7 +86,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
      * @author Luke Daley
      */
     void testBeanPropertyOverride() {
-        ga.config = new ConfigSlurper().parse('''
+        def co = new ConfigSlurper().parse('''
             dataSource {
                 pooled = true
                 driverClassName = "org.h2.Driver"
@@ -102,6 +103,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
                 }
             }
         ''')
+        ga.config = new PropertySourcesConfig().merge(co)
 
         def corePluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)

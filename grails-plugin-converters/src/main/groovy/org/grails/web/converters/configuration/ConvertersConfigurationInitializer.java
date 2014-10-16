@@ -15,7 +15,7 @@
  */
 package org.grails.web.converters.configuration;
 
-import grails.config.DeprecatedGrailsConfig;
+import org.grails.core.cfg.DeprecatedGrailsConfig;
 import grails.converters.JSON;
 import grails.converters.XML;
 import grails.core.GrailsApplication;

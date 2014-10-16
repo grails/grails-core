@@ -15,6 +15,7 @@
  */
 package grails.core;
 
+import grails.config.Config;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
@@ -28,8 +29,10 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import groovy.util.ConfigSlurper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.grails.config.PropertySourcesConfig;
 import org.grails.core.AbstractGrailsApplication;
 import org.grails.core.cfg.ConfigurationHelper;
 import grails.core.events.ArtefactAdditionEvent;
@@ -40,8 +43,11 @@ import org.grails.io.support.GrailsResourceUtils;
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -268,10 +274,29 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         populateAllClasses();
     }
 
-    public ConfigObject getConfig() {
+    public Config getConfig() {
         if (config == null) {
-            this.config = new ConfigObject();
-            setConfig(ConfigurationHelper.loadConfigFromClasspath(this));
+            if(parentContext != null) {
+
+                org.springframework.core.env.Environment environment = parentContext.getEnvironment();
+                if(environment instanceof ConfigurableEnvironment) {
+                    MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
+                    this.config = new PropertySourcesConfig(propertySources);
+                }
+            }
+            else {
+                this.config = new PropertySourcesConfig();
+                if(ClassUtils.isPresent("Config", classLoader)) {
+                    try {
+                        ConfigObject co = new ConfigSlurper().parse(ClassUtils.forName("Config", classLoader));
+                        this.config.merge(co);
+                    } catch (ClassNotFoundException e) {
+                        // ignore
+                    }
+                }
+            }
+
+            setConfig(this.config);
         }
         return config;
     }
@@ -717,7 +742,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
 
     protected GrailsClass addArtefact(String artefactType, Class<?> artefactClass, boolean overrideable) {
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
-        if (handler.isArtefact(artefactClass)) {
+        if (handler != null && handler.isArtefact(artefactClass)) {
             GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);
             artefactGrailsClass.setGrailsApplication(this);
 

@@ -7,7 +7,7 @@ class GrailsConfigSpec extends Specification{
     def "should merge sub-documents in yaml file to single config"() {
         given:
         File file = new File("src/test/resources/grails/config/application.yml")
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.loadYml(file)
         then:
@@ -18,7 +18,7 @@ class GrailsConfigSpec extends Specification{
     
     def "should support merging maps"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.mergeMap([a:1])
         then:
@@ -47,7 +47,7 @@ class GrailsConfigSpec extends Specification{
     
     def "should support basic type conversions"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.mergeMap([intValue:'123', doubleValue:'12.34', longValue:'12345678910111213', bigDecimalValue:'12345678910111213141516.12345678910111213141516', booleanValue: 'Yes', falseValue: 'off'])
         then:
@@ -61,7 +61,7 @@ class GrailsConfigSpec extends Specification{
     
     def "should support null safe navigation for getting"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         expect:
         config.a.b.c as Boolean == false
         config.a.b.c as Map == null
@@ -69,7 +69,7 @@ class GrailsConfigSpec extends Specification{
 
     def "should support null safe navigation for setting"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.a.b.c = 1
         then:
@@ -78,7 +78,7 @@ class GrailsConfigSpec extends Specification{
 
     def "should support merging values when map is set"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.a.b.c = 1
         config.a = [d: 2]
@@ -92,7 +92,7 @@ class GrailsConfigSpec extends Specification{
 
     def "should support merging values when map already exists"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.a.b.c = 1
         config.a = [d: 2]
@@ -106,7 +106,7 @@ class GrailsConfigSpec extends Specification{
         
     def "should support setting map in null safe navigation"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.a.b.c = [d: 3, e: [f: 4]]
         then:
@@ -115,8 +115,8 @@ class GrailsConfigSpec extends Specification{
     
     def "should support cloning"() {
         given:
-        GrailsConfig config = new GrailsConfig([a: [b:[c:[d:3, e:[f:4]]]]])
-        GrailsConfig config2 = config.clone()
+        CodeGenConfig config = new CodeGenConfig([a: [b:[c:[d:3, e:[f:4]]]]])
+        CodeGenConfig config2 = config.clone()
         expect:
         config == config2
         !config.is(config2)
@@ -132,7 +132,7 @@ class GrailsConfigSpec extends Specification{
     
     def "should support removing values when key is set to null"() {
         given:
-        GrailsConfig config = new GrailsConfig([a: [b: [c: [d: 1, e: 2]]]])
+        CodeGenConfig config = new CodeGenConfig([a: [b: [c: [d: 1, e: 2]]]])
         when:
         config.a.b = null
         config.a.b.c = 1
@@ -142,14 +142,14 @@ class GrailsConfigSpec extends Specification{
     
     def "should support casting to Map"() {
         given:
-        GrailsConfig config = new GrailsConfig([a: [b: [c: [d: 1, e: 2]]]])
+        CodeGenConfig config = new CodeGenConfig([a: [b: [c: [d: 1, e: 2]]]])
         expect:
         (config as Map) == [a: [b: [c: [d: 1, e: 2]]]]
     }
     
     def "should support casting to boolean"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         expect:
         config as boolean == false
         when:
@@ -160,15 +160,15 @@ class GrailsConfigSpec extends Specification{
     
     def "should support casting map to GrailsConfig"() {
         given:
-        def config = [a: [b: [c: [d: 1, e: 2]]]] as GrailsConfig
+        def config = [a: [b: [c: [d: 1, e: 2]]]] as CodeGenConfig
         expect:
-        config instanceof GrailsConfig
+        config instanceof CodeGenConfig
         config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
     }
     
     def "should support with"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.a.b.c.with {
             d = 1
@@ -180,7 +180,7 @@ class GrailsConfigSpec extends Specification{
     
     def "null safe navigation should be supported without creating keys"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         def subconfigReference = config.a.b.c.d.e
         expect:
         config.configMap.size() == 0
@@ -193,7 +193,7 @@ class GrailsConfigSpec extends Specification{
     
     def "merging should support parsing flat keys"() {
         given:
-        GrailsConfig config = new GrailsConfig()
+        CodeGenConfig config = new CodeGenConfig()
         when:
         config.mergeMap(['a.b.c.d':1, 'a.b.c.e':2], true)
         then:

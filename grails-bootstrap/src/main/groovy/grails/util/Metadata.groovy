@@ -13,17 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.util;
+package grails.util
 
-import grails.config.GrailsConfig
-import groovy.transform.CompileStatic;
+import grails.config.CodeGenConfig
+import groovy.transform.CompileStatic
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -35,7 +29,7 @@ import java.util.*;
  * @since 1.1
  */
 @CompileStatic
-public class Metadata extends GrailsConfig  {
+public class Metadata extends CodeGenConfig  {
     private static final long serialVersionUID = -582452926111226898L;
     public static final String FILE = "application.yml";
     public static final String APPLICATION_VERSION = "app.version";
@@ -50,7 +44,7 @@ public class Metadata extends GrailsConfig  {
     private File metadataFile;
     private boolean warDeployed;
     private String servletVersion = DEFAULT_SERVLET_VERSION;
-    private GrailsConfig config;
+    private CodeGenConfig config;
 
     private Metadata() {
         loadFromDefault();

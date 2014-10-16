@@ -53,7 +53,9 @@ class LegacyGrailsApplication extends GroovyObjectSupport  implements GrailsAppl
 
     @Override
     ConfigObject getConfig() {
-        grailsApplication.config
+        def configObject = new ConfigObject()
+        configObject.putAll(grailsApplication.config)
+        return configObject
     }
 
     @Override

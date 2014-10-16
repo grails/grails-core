@@ -15,6 +15,8 @@
  */
 package org.grails.plugins;
 
+import grails.config.Config;
+import grails.config.Settings;
 import grails.plugins.PluginFilter;
 import groovy.util.ConfigObject;
 
@@ -34,17 +36,13 @@ import org.springframework.util.StringUtils;
  */
 public class PluginFilterRetriever {
 
-    @SuppressWarnings("rawtypes")
-    public PluginFilter getPluginFilter(Map properties) {
 
-        Assert.notNull(properties);
-        if (properties instanceof ConfigObject) {
-            properties = ((ConfigObject)properties).flatten();
-        }
-        Object includes = properties.get("grails.plugin.includes");
-        if (includes == null) properties.get("plugin.includes");
-        Object excludes = properties.get("grails.plugin.excludes");
-        if (excludes == null) properties.get("plugin.excludes");
+    @SuppressWarnings("rawtypes")
+    public PluginFilter getPluginFilter(Config config) {
+
+        Assert.notNull(config);
+        Object includes = config.getProperty(Settings.PLUGIN_INCLUDES, Object.class, null);
+        Object excludes = config.getProperty(Settings.PLUGIN_EXCLUDES, Object.class, null);
 
         return getPluginFilter(includes, excludes);
     }

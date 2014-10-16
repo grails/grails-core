@@ -14,6 +14,7 @@
  */
 package org.grails.core;
 
+import grails.config.Config;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.util.Holders;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.grails.config.PropertySourcesConfig;
 import org.grails.core.cfg.ConfigurationHelper;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsConfigurationAware;
@@ -33,11 +35,13 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.ClassUtils;
 
 public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware {
     protected ClassLoader classLoader;
-    protected ConfigObject config;
+    protected Config config;
     @SuppressWarnings("rawtypes")
     protected Map flatConfig = Collections.emptyMap();
     protected ApplicationContext parentContext;
@@ -50,6 +54,15 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        org.springframework.core.env.Environment environment = applicationContext.getEnvironment();
+        if(environment instanceof ConfigurableEnvironment) {
+            MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
+            PropertySourcesConfig newConfig = new PropertySourcesConfig(propertySources);
+            if(this.config != null) {
+                newConfig.merge(this.config);
+            }
+            this.config = newConfig;
+        }
         this.parentContext = applicationContext;
     }
 
@@ -63,13 +76,19 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
         return getMetadata().isWarDeployed();
     }
     
-    public ConfigObject getConfig() {
+    public Config getConfig() {
         return config;
     }
 
-    public void setConfig(ConfigObject config) {
+    public void setConfig(Config config) {
         this.config = config;
         Holders.setConfig(config);
+        updateFlatConfig();
+    }
+
+    public void setConfig(ConfigObject config) {
+        this.config = new PropertySourcesConfig().merge(config);
+        Holders.setConfig(this.config);
         updateFlatConfig();
     }
 
@@ -78,7 +97,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
         if (config == null) {
             flatConfig = new LinkedHashMap();
         } else {
-            flatConfig = config.flatten(new LinkedHashMap());
+            flatConfig = config.flatten();
         }
     }
 

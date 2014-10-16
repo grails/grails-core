@@ -18,7 +18,6 @@ package org.grails.compiler.injection;
 import grails.artefact.Enhanced;
 import grails.build.logging.GrailsConsole;
 import grails.compiler.ast.GrailsArtefactClassInjector;
-import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import groovy.lang.Closure;
@@ -793,6 +792,30 @@ public class GrailsASTUtils {
         return null;
     }
 
+
+    /**
+     * Adds the given expression as a member of the given annotation
+     *
+     * @param annotationNode The annotation node
+     * @param memberName The name of the member
+     * @param expression The expression
+     */
+    public void addExpressionToAnnotationMember(AnnotationNode annotationNode, String memberName, Expression expression) {
+        Expression exclude = annotationNode.getMember(memberName);
+        if(exclude instanceof ListExpression) {
+            ((ListExpression)exclude).addExpression(expression);
+        }
+        else if(exclude != null) {
+            ListExpression list = new ListExpression();
+            list.addExpression(list);
+            list.addExpression(expression);
+            annotationNode.setMember(memberName, list);
+        }
+        else {
+            annotationNode.setMember(memberName, expression);
+        }
+    }
+
     /**
      * Adds an annotation to the give nclass node if it doesn't already exist
      *
@@ -800,15 +823,32 @@ public class GrailsASTUtils {
      * @param annotationClass The annotation class
      */
     public static void addAnnotationIfNecessary(ClassNode classNode, Class<? extends Annotation> annotationClass) {
+        addAnnotationOrGetExisting(classNode, annotationClass);
+    }
+
+    /**
+     * Adds an annotation to the given class node or returns the existing annotation
+     *
+     * @param classNode The class node
+     * @param annotationClass The annotation class
+     */
+    public static AnnotationNode addAnnotationOrGetExisting(ClassNode classNode, Class<? extends Annotation> annotationClass) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = ClassHelper.make(annotationClass);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
         if (annotations.isEmpty()) {
             classNode.addAnnotation(annotationToAdd);
+            return annotationToAdd;
         }
         else {
-            boolean foundAnn = findAnnotation(annotationClassNode, annotations) != null;
-            if (!foundAnn) classNode.addAnnotation(annotationToAdd);
+            AnnotationNode existing = findAnnotation(annotationClassNode, annotations);
+            if (existing != null){
+                return existing;
+            }
+            else {
+                classNode.addAnnotation(annotationToAdd);
+                return annotationToAdd;
+            }
         }
     }
     

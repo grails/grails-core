@@ -15,6 +15,7 @@
  */
 package grails.util;
 
+import grails.config.Config;
 import groovy.util.ConfigObject;
 
 import java.util.Collections;
@@ -47,7 +48,7 @@ public class Holders {
     private static final Log LOG = LogFactory.getLog(Holders.class);
     private static Holder<GrailsPluginManager> pluginManagers = new Holder<GrailsPluginManager>("PluginManager");
     private static Holder<Boolean> pluginManagersInCreation = new Holder<Boolean>("PluginManagers in creation");
-    private static Holder<ConfigObject> configs = new Holder<ConfigObject>("config");
+    private static Holder<Config> configs = new Holder<Config>("config");
     private static Holder<Map<?, ?>> flatConfigs = new Holder<Map<?, ?>>("flat config");
 
     private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy.class, Holders.class.getClassLoader());
@@ -137,14 +138,14 @@ public class Holders {
         applicationSingleton = application;
     }
 
-    public static void setConfig(ConfigObject config) {
+    public static void setConfig(Config config) {
         configs.set(config);
 
         // reset flat config
-        flatConfigs.set(config == null ? null : config.flatten(new LinkedHashMap()));
+        flatConfigs.set(config == null ? null : config.flatten());
     }
 
-    public static ConfigObject getConfig() {
+    public static Config getConfig() {
         return get(configs, "config");
     }
 

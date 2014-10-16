@@ -22,6 +22,6 @@ class GrailsWebConfiguration extends GrailsAutoConfiguration {
 
     @Override
     GrailsApplicationPostProcessor grailsApplicationPostProcessor() {
-        return new GrailsWebApplicationPostProcessor(classes() as Class[])
+        return new GrailsWebApplicationPostProcessor(applicationContext, classes() as Class[])
     }
 }

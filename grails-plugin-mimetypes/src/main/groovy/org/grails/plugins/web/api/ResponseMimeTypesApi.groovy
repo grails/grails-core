@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.api
 
+import grails.config.Settings
 import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
@@ -67,11 +68,11 @@ class ResponseMimeTypesApi {
     }
 
     protected void loadConfig() {
-        final config = grailsApplication.flatConfig
-        final useAcceptHeader = config.get("grails.mime.use.accept.header")
-        this.useAcceptHeader = useAcceptHeader instanceof Boolean ? useAcceptHeader : true
-        if (config.containsKey('grails.mime.disable.accept.header.userAgents')) {
-            final disableForUserAgentsConfig = config.get('grails.mime.disable.accept.header.userAgents')
+        final config = grailsApplication.config
+        useAcceptHeader = config.getProperty(Settings.MIME_USE_ACCEPT_HEADER, Boolean, true)
+
+        if (config.containsKey(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS)) {
+            final disableForUserAgentsConfig = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS, Object)
             if(disableForUserAgentsConfig instanceof Pattern) {
                 this.disableForUserAgents = (Pattern)disableForUserAgentsConfig
             } else if (disableForUserAgentsConfig instanceof Collection && disableForUserAgentsConfig) {

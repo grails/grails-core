@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.web.mime
 
+import grails.config.Config
+import grails.config.Settings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import grails.web.mime.MimeType
@@ -77,7 +79,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
 
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected Map<CharSequence, CharSequence> getMimeConfig(ConfigObject config) {
-        config?.grails?.mime?.types
+    protected Map<CharSequence, CharSequence> getMimeConfig(Config config) {
+        return config.getProperty(Settings.MIME_TYPES, Map)
     }
 }

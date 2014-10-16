@@ -7,24 +7,24 @@ import org.yaml.snakeyaml.Yaml
 
 @CompileStatic
 @Canonical
-class GrailsConfig implements Cloneable {
+class CodeGenConfig implements Cloneable {
     final ConfigMap configMap
 
-    GrailsConfig() {
+    CodeGenConfig() {
         configMap = new ConfigMap()
     }
-    
-    GrailsConfig(GrailsConfig copyOf) {
+
+    CodeGenConfig(CodeGenConfig copyOf) {
         this(copyOf.@configMap)
     }
 
-    GrailsConfig(Map copyOf) {
+    CodeGenConfig(Map copyOf) {
         this()
         mergeMap(copyOf)
     }
     
-    GrailsConfig clone() {
-        new GrailsConfig(this)
+    CodeGenConfig clone() {
+        new CodeGenConfig(this)
     }
 
     void loadYml(File ymlFile) {
@@ -108,7 +108,7 @@ class GrailsConfig implements Cloneable {
     }
     
     public Map<String, Object> asMap() {
-        new GrailsConfig(this).@configMap
+        new CodeGenConfig(this).@configMap
     }
     
     public Object asType(Class type) {
@@ -118,8 +118,8 @@ class GrailsConfig implements Cloneable {
             return toString()
         } else if (type==Map) {
             return asMap()
-        } else if (type==GrailsConfig) {
-            return new GrailsConfig(this)
+        } else if (type==CodeGenConfig) {
+            return new CodeGenConfig(this)
         } else {
             throw new GroovyCastException(this, type)
         }

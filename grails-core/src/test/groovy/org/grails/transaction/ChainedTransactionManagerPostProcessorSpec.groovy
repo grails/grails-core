@@ -1,13 +1,14 @@
 package org.grails.transaction
 
 import grails.spring.BeanBuilder
+import org.grails.config.PropertySourcesConfig
 import spock.lang.Specification
 
 class ChainedTransactionManagerPostProcessorSpec extends Specification {
     void "transactionManager bean should get replaced when there are multiple transaction manager beans"() {
         given:
         def bb = new BeanBuilder()
-        def config = new ConfigObject()
+        def config = new PropertySourcesConfig()
         bb.beans {
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config)
             transactionManager(ChainedTransactionManagerTests.TestPlatformTransactionManager, "transactionManager")
@@ -28,7 +29,7 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
     void "transactionManager bean should get replaced when are only 2 transaction manager beans"() {
         given:
         def bb = new BeanBuilder()
-        def config = new ConfigObject()
+        def config = new PropertySourcesConfig()
         bb.beans {
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config)
             transactionManager(ChainedTransactionManagerTests.TestPlatformTransactionManager, "transactionManager")
@@ -48,7 +49,7 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
     void "transactionManager bean should not get replaced when there is only one transactionManager"() {
         given:
         def bb = new BeanBuilder()
-        def config = new ConfigObject()
+        def config = new PropertySourcesConfig()
         bb.beans {
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config)
             transactionManagerPostProcessor(TransactionManagerPostProcessor)
@@ -64,7 +65,7 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
     void "transactionManager bean should not get replaced when additional datasources aren't transactional"() {
         given:
         def bb = new BeanBuilder()
-        def config = new ConfigObject()
+        def config = new PropertySourcesConfig()
         config.dataSource_ds1.transactional = false
         config.dataSource_ds2.transactional = false
         bb.beans {
@@ -84,7 +85,7 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
     void "transactionManager bean should get replaced when one of the additional datasources is transactional"() {
         given:
         def bb = new BeanBuilder()
-        def config = new ConfigObject()
+        def config = new PropertySourcesConfig()
         config.dataSource_ds1.transactional = false
         config.dataSource_ds2.transactional = true
         bb.beans {
@@ -107,7 +108,7 @@ class ChainedTransactionManagerPostProcessorSpec extends Specification {
     void "it should be possible to blacklist transaction manager beans that shouldn't be added to the chained transaction manager"() {
         given:
         def bb = new BeanBuilder()
-        def config = new ConfigObject()
+        def config = new PropertySourcesConfig()
         bb.beans {
             def blacklistPattern='customTransactionManager'
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, null, blacklistPattern)

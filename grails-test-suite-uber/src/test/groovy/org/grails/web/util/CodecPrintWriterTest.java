@@ -1,6 +1,8 @@
 package org.grails.web.util;
 
 import static org.junit.Assert.assertEquals;
+
+import grails.config.Config;
 import grails.util.Metadata;
 import groovy.util.ConfigObject;
 
@@ -163,7 +165,7 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
-    public ConfigObject getConfig() {
+    public Config getConfig() {
         throw new UnsupportedOperationException();
     }
 

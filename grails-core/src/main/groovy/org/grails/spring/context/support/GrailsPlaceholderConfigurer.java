@@ -15,7 +15,9 @@
  */
 package org.grails.spring.context.support;
 
-import grails.config.DeprecatedGrailsConfig;
+import grails.config.Config;
+import grails.config.Settings;
+import org.grails.core.cfg.DeprecatedGrailsConfig;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
@@ -36,14 +38,14 @@ public class GrailsPlaceholderConfigurer extends PropertySourcesPlaceholderConfi
 
     public GrailsPlaceholderConfigurer(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
-        DeprecatedGrailsConfig config = new DeprecatedGrailsConfig(grailsApplication);
-        setPlaceholderPrefix(config.get(DeprecatedGrailsConfig.SPRING_PLACEHOLDER_PREFIX, "${"));
+        Config config = grailsApplication.getConfig();
+        setPlaceholderPrefix(config.getProperty(Settings.SPRING_PLACEHOLDER_PREFIX, "${"));
         setIgnoreUnresolvablePlaceholders(true);
     }
 
     @Override
     protected void loadProperties(Properties props) throws IOException {
-        ConfigObject config = grailsApplication.getConfig();
+        Config config = grailsApplication.getConfig();
         if (config != null) {
             props.putAll(config.toProperties());
         }

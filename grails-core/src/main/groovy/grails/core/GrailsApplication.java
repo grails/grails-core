@@ -15,6 +15,7 @@
  */
 package grails.core;
 
+import grails.config.Config;
 import grails.util.Environment;
 import grails.util.Metadata;
 import groovy.util.ConfigObject;
@@ -82,7 +83,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      *
      * @return The ConfigObject instance
      */
-    ConfigObject getConfig();
+    Config getConfig();
 
     /**
      * Returns the flatten ConfigObject for use from Java classes.

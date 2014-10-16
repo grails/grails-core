@@ -225,7 +225,7 @@ class ConfigMap implements Map<String, Object> {
     }
     
     @CompileStatic
-    static class NullSafeNavigator {
+    static class NullSafeNavigator implements Map<String, Object>{
         final ConfigMap parent
         final List<String> path
         
@@ -234,15 +234,102 @@ class ConfigMap implements Map<String, Object> {
             this.path = path
         }
         
-        public Object getAt(Object key) {
+        Object getAt(Object key) {
             getProperty(String.valueOf(key))
         }
         
-        public void setAt(Object key, Object value) {
+        void setAt(Object key, Object value) {
             setProperty(String.valueOf(key), value)
         }
-        
-        public Object getProperty(String name) {
+
+        @Override
+        int size() {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap != null) {
+                return parentMap.size()
+            }
+            return 0
+        }
+
+        @Override
+        boolean isEmpty() {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap != null) {
+                return parentMap.isEmpty()
+            }
+            return true
+        }
+
+        boolean containsKey(Object key) {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap == null) return false
+            else {
+                return parentMap.containsKey(key)
+            }
+        }
+
+        @Override
+        boolean containsValue(Object value) {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap != null) {
+                return parentMap.containsValue(value)
+            }
+            return false
+        }
+
+        @Override
+        Object get(Object key) {
+            return getAt(key)
+        }
+
+        @Override
+        Object put(String key, Object value) {
+            throw new UnsupportedOperationException("Configuration cannot be modified");
+        }
+
+        @Override
+        Object remove(Object key) {
+            throw new UnsupportedOperationException("Configuration cannot be modified");
+        }
+
+        @Override
+        void putAll(Map<? extends String, ?> m) {
+            throw new UnsupportedOperationException("Configuration cannot be modified");
+        }
+
+        @Override
+        void clear() {
+            throw new UnsupportedOperationException("Configuration cannot be modified");
+        }
+
+        @Override
+        Set<String> keySet() {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap != null) {
+                return parentMap.keySet()
+            }
+            return Collections.emptySet()
+        }
+
+        @Override
+        Collection<Object> values() {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap != null) {
+                return parentMap.values()
+            }
+            return Collections.emptySet()
+        }
+
+        @Override
+        Set<Map.Entry<String, Object>> entrySet() {
+            ConfigMap parentMap = parent.navigateSubMap(path, false)
+            if(parentMap != null) {
+                return parentMap.entrySet()
+            }
+            return Collections.emptySet()
+        }
+
+        Object getProperty(String name) {
             ConfigMap parentMap = parent.navigateSubMap(path, false)
             if(parentMap == null) {
                 return new NullSafeNavigator(parent, ((path + [name]) as List<String>).asImmutable())

@@ -1,5 +1,6 @@
 package org.grails.transaction;
 
+import grails.config.Config;
 import groovy.util.ConfigObject;
 
 import java.util.LinkedHashMap;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.grails.config.PropertySourcesConfig;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -54,13 +56,13 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     private static final String TRANSACTION_MANAGER = "transactionManager";
     private static final String READONLY = "readOnly";
     
-    private ConfigObject config;
+    private Config config;
     
-    public ChainedTransactionManagerPostProcessor(ConfigObject config) {
+    public ChainedTransactionManagerPostProcessor(Config config) {
         this(config, null, null);
     }
     
-    public ChainedTransactionManagerPostProcessor(ConfigObject config, String whitelistPattern, String blacklistPattern) {
+    public ChainedTransactionManagerPostProcessor(Config config, String whitelistPattern, String blacklistPattern) {
         this.config = config;
         if (whitelistPattern != null) {
             beanNameWhitelistPattern = whitelistPattern;
@@ -71,20 +73,21 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     }
     
     public ChainedTransactionManagerPostProcessor() {
-        this(new ConfigObject(), null, null);
+        this(new PropertySourcesConfig(), null, null);
     }
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Map<String, ConfigObject> readDataSourceConfig() {
-        Map<String, ConfigObject> dsConfigs = new LinkedHashMap<String, ConfigObject>();
+    protected Map<String, Map> readDataSourceConfig() {
+        Map<String, Map> dsConfigs = new LinkedHashMap<String, Map>();
         if (config != null) {
             if(config.containsKey("dataSource")) {
-                dsConfigs.put("", (ConfigObject)config.get("dataSource"));
+                dsConfigs.put("", (Map)config.get("dataSource"));
             }
-            for(Map.Entry entry : (Set<Map.Entry>)config.entrySet()) {
+            for(Map.Entry<String, Object> entry : config.entrySet()) {
                 String name=String.valueOf(entry.getKey());
-                if(name.startsWith("dataSource_") && entry.getValue() instanceof ConfigObject) {
-                    dsConfigs.put(name.substring("dataSource_".length()), (ConfigObject)entry.getValue());
+                Object value = entry.getValue();
+                if(name.startsWith("dataSource_") && value instanceof Map) {
+                    dsConfigs.put(name.substring("dataSource_".length()), (Map) value);
                 }
             }
         }
@@ -98,7 +101,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
 
     protected void registerAdditionalTransactionManagers(BeanDefinitionRegistry registry, BeanDefinition chainedTransactionManagerBeanDefinition, ManagedList<RuntimeBeanReference> transactionManagerRefs) {
         String[] allBeanNames = registry.getBeanDefinitionNames();
-        Map<String, ConfigObject> dsConfigs=readDataSourceConfig();        
+        Map<String, Map> dsConfigs=readDataSourceConfig();
         for (String beanName : allBeanNames) {
             BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
             if(!TRANSACTION_MANAGER.equals(beanName) && !PRIMARY_TRANSACTION_MANAGER.equals(beanName) && isValidTransactionManagerBeanDefinition(beanName, beanDefinition)) {
@@ -156,7 +159,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     }
 
     protected int countChainableTransactionManagerBeans(BeanDefinitionRegistry registry) {
-        Map<String, ConfigObject> dsConfigs=readDataSourceConfig();        
+        Map<String, Map> dsConfigs=readDataSourceConfig();
         int transactionManagerBeanCount=0;
         for (String beanName : registry.getBeanDefinitionNames()) {
             BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
@@ -174,11 +177,11 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         return beanName.matches(beanNameWhitelistPattern) && (beanNameBlacklistPattern==null || !beanName.matches(beanNameBlacklistPattern)) && !beanName.matches(beanNameInternalBlacklistPattern);
     }
     
-    protected boolean isNotTransactional(Map<String, ConfigObject> dsConfigs, String suffix) {
+    protected boolean isNotTransactional(Map<String, Map> dsConfigs, String suffix) {
         if (suffix == null) {
             return false;
         }
-        ConfigObject dsConfig = dsConfigs.get(suffix);
+        Map dsConfig = dsConfigs.get(suffix);
         if (dsConfig != null) {
             if(dsConfig.containsKey(TRANSACTIONAL)) {
                 Object transactionalValue = dsConfig.get(TRANSACTIONAL);
@@ -239,7 +242,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         return Ordered.HIGHEST_PRECEDENCE;
     }
 
-    public void setConfig(ConfigObject config) {
+    public void setConfig(Config config) {
         this.config = config;
     }
 

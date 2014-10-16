@@ -19,6 +19,7 @@ import javax.servlet.ServletContext;
 
 import junit.framework.TestCase;
 
+import org.grails.config.PropertySourcesConfig;
 import org.grails.plugins.codecs.DefaultCodecLookup;
 import org.grails.support.MockApplicationContext;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
@@ -26,6 +27,10 @@ import org.grails.web.pages.GroovyPagesTemplateEngine;
 import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.GroovyPageViewResolver;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
@@ -40,7 +45,7 @@ import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
-    private GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
+    private GrailsWebRequest buildMockRequest(grails.config.Config config) throws Exception {
         MockApplicationContext appCtx = new MockApplicationContext();
         appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService());
 
@@ -169,7 +174,10 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     public void testOverridingDefaultTemplateViaConfig() throws Exception {
             ConfigObject config = new ConfigSlurper().parse("grails.sitemesh.default.layout='otherApplication'");
-            GrailsWebRequest webRequest = buildMockRequest(config);
+            MutablePropertySources propertySources = new MutablePropertySources();
+            propertySources.addLast(new MapPropertySource("grails", config));
+
+            GrailsWebRequest webRequest = buildMockRequest(new PropertySourcesConfig(propertySources));
             webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
             MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
             appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");

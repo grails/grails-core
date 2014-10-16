@@ -3,6 +3,7 @@ package org.grails.boot.support
 import grails.boot.config.GrailsApplicationPostProcessor
 import grails.util.Holders
 import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
 import org.springframework.context.event.ApplicationContextEvent
@@ -16,11 +17,8 @@ import org.springframework.web.context.WebApplicationContext
  * @since 3.0
  */
 @CompileStatic
+@InheritConstructors
 class GrailsWebApplicationPostProcessor extends GrailsApplicationPostProcessor {
-
-    GrailsWebApplicationPostProcessor(Class... classes) {
-        super(classes)
-    }
 
     @Override
     void onApplicationEvent(ApplicationContextEvent event) {

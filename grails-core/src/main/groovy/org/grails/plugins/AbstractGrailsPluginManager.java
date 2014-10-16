@@ -16,6 +16,7 @@
 package org.grails.plugins;
 
 import grails.artefact.Enhanced;
+import grails.config.ConfigMap;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.GrailsVersionUtils;
@@ -146,6 +147,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                 @Override
                 public org.codehaus.groovy.grails.commons.GrailsApplication convert(GrailsApplication source) {
                     return new LegacyGrailsApplication(source);
+                }
+            });
+            converterRegistry.addConverter(new Converter<ConfigMap.NullSafeNavigator, Object>() {
+                @Override
+                public Object convert(ConfigMap.NullSafeNavigator source) {
+                    return null;
                 }
             });
         }

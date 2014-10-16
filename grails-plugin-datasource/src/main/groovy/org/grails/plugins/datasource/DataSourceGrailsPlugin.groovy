@@ -15,9 +15,14 @@
  */
 package org.grails.plugins.datasource
 
+import grails.config.Config
+import grails.core.support.GrailsApplicationAware
+import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 
 import javax.sql.DataSource
 
@@ -43,7 +48,7 @@ import org.springframework.util.ClassUtils
  * @author Graeme Rocher
  * @since 0.4
  */
-class DataSourceGrailsPlugin {
+class DataSourceGrailsPlugin implements ApplicationContextAware, GrailsApplicationAware {
 
     private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
     def version = GrailsUtil.getGrailsVersion()
@@ -51,30 +56,40 @@ class DataSourceGrailsPlugin {
 
     def watchedResources = "file:./grails-app/conf/DataSource.groovy"
 
+    ApplicationContext applicationContext
+    GrailsApplication grailsApplication
+
     def doWithSpring = {
-        if (!parentCtx?.containsBean('transactionManager')) {
-            def whitelistPattern=application?.flatConfig?.'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
-            def blacklistPattern=application?.flatConfig?.'grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern'
-            chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, application?.config, whitelistPattern, blacklistPattern)
+        Config config = grailsApplication.config
+        if (!applicationContext?.containsBean('transactionManager')) {
+            def whitelistPattern=config.get('grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern')
+            def blacklistPattern=config.get('grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern')
+            chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
         }
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
         def dsConfigs = [:]
-        if (!application.config.dataSource && application.domainClasses.size() == 0) {
+        def defaultDataSource = config.getProperty('dataSource', Map)
+        if (!defaultDataSource && grailsApplication.domainClasses.size() == 0) {
             log.info "No default data source or domain classes found. Default datasource configuration skipped"
         }
         else {
-            dsConfigs.dataSource = application.config.dataSource
+            dsConfigs.dataSource = defaultDataSource
         }
 
-        application.config.each { name, value ->
-            if (name.startsWith('dataSource_') && value instanceof ConfigObject) {
+        for(Map.Entry<String, Object> entry in config.entrySet()) {
+            def name = entry.key
+            def value = entry.value
+            if (name.startsWith('dataSource_') && value instanceof Map) {
                 dsConfigs[name] = value
             }
         }
-        
-        createDatasource.delegate = delegate
-        dsConfigs.each { name, ds -> createDatasource name, ds }
+
+        dsConfigs.each { name, ds ->
+            if(ds) {
+                createDatasource delegate, name, ds
+            }
+        }
         
         embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
 
@@ -101,30 +116,30 @@ class DataSourceGrailsPlugin {
         }
     }
 
-    def createDatasource = { String datasourceName, ds ->
-        boolean isDefault = datasourceName == 'dataSource'
-        String suffix = isDefault ? '' : datasourceName[10..-1]
+    protected void createDatasource(beanBuilder, String dataSourceName, Map dataSourceData ) {
+        boolean isDefault = dataSourceName == 'dataSource'
+        String suffix = isDefault ? '' : dataSourceName[10..-1]
         String unproxiedName = "dataSourceUnproxied$suffix"
         String lazyName = "dataSourceLazy$suffix"
 
-        if (parentCtx?.containsBean(datasourceName)) {
+        if (applicationContext?.containsBean(dataSourceName)) {
             return
         }
 
-        if (ds.jndiName) {
-            "$unproxiedName"(JndiObjectFactoryBean) {
-                jndiName = ds.jndiName
+        if (dataSourceData?.jndiName) {
+            beanBuilder."$unproxiedName"(JndiObjectFactoryBean) {
+                jndiName = dataSourceData.jndiName
                 expectedType = DataSource
             }
-            "$lazyName"(LazyConnectionDataSourceProxy, ref(unproxiedName))
-            "$datasourceName"(TransactionAwareDataSourceProxy, ref(lazyName))
+            beanBuilder."$lazyName"(LazyConnectionDataSourceProxy, beanBuilder.ref(unproxiedName))
+            beanBuilder."$dataSourceName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
             return
         }
 
-        boolean readOnly = Boolean.TRUE.equals(ds.readOnly)
-        boolean pooled = !Boolean.FALSE.equals(ds.pooled)
+        boolean readOnly = Boolean.TRUE.equals(dataSourceData.readOnly)
+        boolean pooled = !Boolean.FALSE.equals(dataSourceData.pooled)
 
-        String driver = ds.driverClassName ?: "org.h2.Driver"
+        String driver = dataSourceData?.driverClassName ?: "org.h2.Driver"
 
         final String hsqldbDriver = "org.hsqldb.jdbcDriver"
         if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
@@ -138,8 +153,8 @@ class DataSourceGrailsPlugin {
 
         String pwd
         boolean passwordSet = false
-        if (ds.password) {
-            pwd = resolvePassword(ds, application)
+        if (dataSourceData.password) {
+            pwd = resolvePassword(dataSourceData, grailsApplication)
             passwordSet = true
         }
         else if (defaultDriver) {
@@ -147,16 +162,16 @@ class DataSourceGrailsPlugin {
             passwordSet = true
         }
 
-        "abstractGrailsDataSourceBean$suffix" {
+        beanBuilder."abstractGrailsDataSourceBean$suffix" {
             driverClassName = driver
 
             if (pooled) {
                 defaultReadOnly = readOnly
             }
 
-            url = ds.url ?: "jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000"
+            url = dataSourceData.url ?: "jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000"
 
-            String theUsername = ds.username ?: (defaultDriver ? "sa" : null)
+            String theUsername = dataSourceData.username ?: (defaultDriver ? "sa" : null)
             if (theUsername != null) {
                 username = theUsername
             }
@@ -164,8 +179,8 @@ class DataSourceGrailsPlugin {
             if (passwordSet) password = pwd
 
             // support for setting custom properties (for example maxActive) on the dataSource bean
-            def dataSourceProperties = ds.properties
-            if (dataSourceProperties != null) {
+            def dataSourceProperties = dataSourceData.properties
+            if (dataSourceProperties) {
                 if (dataSourceProperties instanceof Map) {
                     for (entry in dataSourceProperties) {
                         log.debug("Setting property on dataSource bean $entry.key -> $entry.value")
@@ -182,24 +197,24 @@ class DataSourceGrailsPlugin {
             dsBean.parent = 'abstractGrailsDataSourceBean' + suffix
         }
 
-        String desc = isDefault ? 'data source' : "data source '$datasourceName'"
+        String desc = isDefault ? 'data source' : "data source '$dataSourceName'"
         log.info "[RuntimeConfiguration] Configuring $desc for environment: $Environment.current"
 
         Class dsClass = pooled ? TomcatDataSource : readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
 
-        def bean = "$unproxiedName"(dsClass, parentConfig)
+        def bean = beanBuilder."$unproxiedName"(dsClass, parentConfig)
         if (pooled) {
             bean.destroyMethod = "close"
         }
 
-        "$lazyName"(LazyConnectionDataSourceProxy, ref(unproxiedName))
-        "$datasourceName"(TransactionAwareDataSourceProxy, ref(lazyName))
+        beanBuilder."$lazyName"(LazyConnectionDataSourceProxy, beanBuilder.ref(unproxiedName))
+        beanBuilder."$dataSourceName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
         
         // transactionManager beans will get overridden in Hibernate plugin
-        "transactionManager$suffix"(DataSourceTransactionManager, ref(lazyName))
+        beanBuilder."transactionManager$suffix"(DataSourceTransactionManager, beanBuilder.ref(lazyName))
     }
 
-    String resolvePassword(ds, application) {
+    String resolvePassword(ds, GrailsApplication application) {
 
         if (!ds.passwordEncryptionCodec) {
             return ds.password
@@ -217,7 +232,7 @@ class DataSourceGrailsPlugin {
         }
 
         encryptionCodec = encryptionCodec.toString()
-        def codecClass = application.codecClasses.find {
+        def codecClass = application.getArtefacts("Codec").find {
             it.name.equalsIgnoreCase(encryptionCodec) || it.fullName == encryptionCodec
         }?.clazz
 
@@ -244,20 +259,6 @@ class DataSourceGrailsPlugin {
     }
 
 
-    def onChange = { event ->
-        if (!event.source) {
-            return
-        }
-
-        final application = event.application
-        final slurper = ConfigurationHelper.getConfigSlurper(Environment.current.name, application)
-
-        final newConfig = slurper.parse(event.source)
-        application.config.merge(newConfig)
-
-        // TODO: Handle reloading of the dataSource bean
-    }
-
     def onShutdown = { event ->
         if (Metadata.getCurrent().isWarDeployed() || Environment.isFork()) {
             deregisterJDBCDrivers()
@@ -269,7 +270,7 @@ class DataSourceGrailsPlugin {
             DataSourceUtils.clearJdbcDriverRegistrations()
         }
         catch (e) {
-            log.debug "Error deregistering JDBC driver [$driver]: $e.message", e
+            log.debug "Error deregistering JDBC drivers: $e.message", e
         }
     }
 }

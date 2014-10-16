@@ -17,6 +17,7 @@ import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.core.env.ConfigurableEnvironment
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -45,6 +46,14 @@ class GrailsApp extends SpringApplication {
         printRunStatus(applicationContext)
 
         return applicationContext
+    }
+
+    @Override
+    protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
+        def env = Environment.current
+
+
+        environment.addActiveProfile(env.name)
     }
 
     @CompileDynamic // TODO: Report Groovy VerifierError

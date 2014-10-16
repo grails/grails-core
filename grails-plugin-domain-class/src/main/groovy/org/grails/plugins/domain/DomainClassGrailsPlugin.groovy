@@ -16,6 +16,7 @@
 package org.grails.plugins.domain
 
 import grails.artefact.Enhanced
+import grails.config.Config
 import grails.core.ComponentCapableDomainClass
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
@@ -109,7 +110,7 @@ class DomainClassGrailsPlugin implements GrailsApplicationAware{
         }
     }
 
-    static getDefaultConstraints(ConfigObject config) {
+    static getDefaultConstraints(Config config) {
         ConstraintEvalUtils.getDefaultConstraints(config)
     }
 

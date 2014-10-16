@@ -14,6 +14,7 @@
  */
 package grails.core;
 
+import org.grails.config.PropertySourcesConfig;
 import org.grails.core.AbstractGrailsApplication;
 import groovy.util.ConfigObject;
 
@@ -29,7 +30,7 @@ import org.springframework.core.io.Resource;
 public class StandaloneGrailsApplication extends AbstractGrailsApplication {
     public StandaloneGrailsApplication() {
         super();
-        setConfig(new ConfigObject());
+        setConfig(new PropertySourcesConfig());
     }
     
     @Override

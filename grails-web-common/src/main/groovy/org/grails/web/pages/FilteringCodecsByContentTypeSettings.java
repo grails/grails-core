@@ -15,6 +15,8 @@
  */
 package org.grails.web.pages;
 
+import grails.config.Config;
+import grails.config.Settings;
 import groovy.util.ConfigObject;
 
 import java.util.Iterator;
@@ -43,23 +45,19 @@ public class FilteringCodecsByContentTypeSettings {
     public void initialize(GrailsApplication grailsApplication) {
         contentTypeToEncoderMapping=null;
         contentTypePatternToEncoderMapping=null;
-        Object codecForContentTypeConfig = getConfigSettings(grailsApplication.getConfig());
+        Map codecForContentTypeConfig = getConfigSettings(grailsApplication.getConfig());
         if (codecForContentTypeConfig != null) {
-            if (codecForContentTypeConfig instanceof Map) {
-                contentTypeToEncoderMapping=new LinkedHashMap<String, Encoder>();
-                contentTypePatternToEncoderMapping=new LinkedHashMap<Pattern, Encoder>();
-                Map codecForContentTypeMapping=(Map)codecForContentTypeConfig;
-                for(Iterator i=codecForContentTypeMapping.entrySet().iterator();i.hasNext();) {
-                    Map.Entry entry=(Map.Entry)i.next();
-                    Encoder encoder=CodecLookupHelper.lookupEncoder(grailsApplication, String.valueOf(entry.getValue()));
-                    if (entry.getKey() instanceof Pattern) {
-                        contentTypePatternToEncoderMapping.put((Pattern)entry.getKey(), encoder);
-                    } else {
-                        contentTypeToEncoderMapping.put(String.valueOf(entry.getKey()), encoder);
-                    }
+            contentTypeToEncoderMapping=new LinkedHashMap<String, Encoder>();
+            contentTypePatternToEncoderMapping=new LinkedHashMap<Pattern, Encoder>();
+            Map codecForContentTypeMapping=(Map)codecForContentTypeConfig;
+            for(Iterator i=codecForContentTypeMapping.entrySet().iterator();i.hasNext();) {
+                Map.Entry entry=(Map.Entry)i.next();
+                Encoder encoder=CodecLookupHelper.lookupEncoder(grailsApplication, String.valueOf(entry.getValue()));
+                if (entry.getKey() instanceof Pattern) {
+                    contentTypePatternToEncoderMapping.put((Pattern)entry.getKey(), encoder);
+                } else {
+                    contentTypeToEncoderMapping.put(String.valueOf(entry.getKey()), encoder);
                 }
-            } else {
-                throw new IllegalStateException(CONFIG_PROPERTY_CODEC_FOR_CONTENT_TYPE + " only accepts a configuration that is a java.util.Map instance");
             }
         }
     }
@@ -83,18 +81,7 @@ public class FilteringCodecsByContentTypeSettings {
         return contentTypeToEncoderMapping.get(WILDCARD_CONTENT_TYPE);
     }
     
-    protected Object getConfigSettings(ConfigObject config) {
-        Object settings = null;
-        if(config != null) {
-            Object grailsConfig = config.get("grails");
-            if(grailsConfig instanceof Map) {
-                Object viewsConfig = ((Map)grailsConfig).get("views");
-                if(viewsConfig instanceof Map) {
-                    settings = ((Map)viewsConfig).get("filteringCodecForContentType");
-                }
-            }
-        }
-        
-        return settings;
+    protected Map getConfigSettings(Config config) {
+        return config.getProperty(Settings.VIEWS_FILTERING_CODEC_FOR_CONTENT_TYPE, Map.class);
     }
 }

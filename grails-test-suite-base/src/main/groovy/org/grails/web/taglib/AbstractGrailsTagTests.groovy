@@ -9,6 +9,7 @@ import grails.util.Holders
 import grails.util.Metadata
 import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes
+import org.grails.config.PropertySourcesConfig
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -93,7 +94,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         }
     }
 
-    GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
+    GrailsWebRequest buildMockRequest(ConfigObject co) throws Exception {
+        def config = new PropertySourcesConfig().merge(co)
         ga.config = config
         Holders.config = config
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)

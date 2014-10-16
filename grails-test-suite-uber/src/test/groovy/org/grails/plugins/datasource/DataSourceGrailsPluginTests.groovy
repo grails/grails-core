@@ -1,8 +1,10 @@
 package org.grails.plugins.datasource
 
+import grails.core.DefaultGrailsApplication
 import grails.spring.BeanBuilder
 import grails.util.Holders
 import groovy.sql.Sql
+import org.grails.config.PropertySourcesConfig
 
 import javax.sql.DataSource
 
@@ -24,27 +26,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         Holders.setGrailsApplication(null)
     }
 
-    void testDataSourceWithEncryptedPassword() {
-        def encryptedPassword = MockCodec.encode("")
-        def config = new ConfigSlurper().parse("""
-            dataSource {
-                pooled = true
-                driverClassName = "org.h2.Driver"
-                url="jdbc:h2:mem:devDB"
-                username = "sa"
-                password = "$encryptedPassword"
-                passwordEncryptionCodec = 'org.grails.plugins.datasource.MockCodec'
-                dbCreate = "create-drop"
-            }
-        """)
 
-        def appCtx = createAppCtx(config)
-
-        DataSource dataSource = appCtx.getBean("dataSource")
-        assert dataSource
-
-        configurator.pluginManager.shutdown()
-    }
 
     void testShutdownH2DbDataSource() {
         def config = new ConfigSlurper().parse('''
@@ -58,12 +40,13 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                 }
         ''')
 
-        def appCtx = createAppCtx(config)
+        def appCtx = createBeanBuilder(config).createApplicationContext()
 
         DataSource dataSource = appCtx.getBean("dataSource")
         assert dataSource
 
-        configurator.pluginManager.shutdown()
+        new DataSourceGrailsPlugin().onShutdown()
+
     }
 
     void testDataSourcePluginOtherDriverWithUserAndPass() {
@@ -458,9 +441,10 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
     private createAppCtx(config) {
 
-        ga.config = config
-        gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
-        gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
+        ga.config = new PropertySourcesConfig().merge(config)
+
+        def corePlugin = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
+        def dsPlugin = gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
 
         configurator = new GrailsRuntimeConfigurator(ga, ctx)
         configurator.configure(ctx.getServletContext())
@@ -468,8 +452,13 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
     private BeanBuilder createBeanBuilder(config) {
         def bb = new BeanBuilder(binding: new Binding([application: [config: config]]))
-        bb.beans new DataSourceGrailsPlugin().doWithSpring
-        bb
+        def plugin = new DataSourceGrailsPlugin()
+        def application = new DefaultGrailsApplication()
+        application.config = new PropertySourcesConfig()
+        application.config.merge(config)
+        plugin.grailsApplication = application
+        bb.beans plugin.doWithSpring
+        return bb
     }
 }
 

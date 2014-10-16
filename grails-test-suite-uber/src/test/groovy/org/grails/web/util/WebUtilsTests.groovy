@@ -2,6 +2,7 @@ package org.grails.web.util
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.support.MockApplicationContext
 import grails.web.mime.MimeType
@@ -44,7 +45,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
     }
 
     void testAreFileExtensionsEnabled() {
-        def ga = new DefaultGrailsApplication(config:config)
+        def ga = new DefaultGrailsApplication(config:new PropertySourcesConfig().merge(config))
         bindMockRequest(ga)
 
         assert !WebUtils.areFileExtensionsEnabled()
@@ -53,7 +54,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
 grails.mime.file.extensions=true
        """)
 
-        ga.config = config
+        ga.config = new PropertySourcesConfig().merge(config)
 
         assert WebUtils.areFileExtensionsEnabled()
     }
@@ -72,7 +73,7 @@ grails.mime.file.extensions=true
     }
 
     void testGetFormatFromURI() {
-        def ga = new DefaultGrailsApplication(config:config)
+        def ga = new DefaultGrailsApplication(config:new PropertySourcesConfig().merge(config))
         bindMockRequest(ga)
 
         assertNull WebUtils.getFormatFromURI("/foo/bar/")

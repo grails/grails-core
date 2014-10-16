@@ -15,6 +15,7 @@
  */
 package grails.test.mixin.support
 
+import grails.config.Config
 import grails.test.GrailsMock
 import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
@@ -148,7 +149,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
         (GrailsApplication)runtime.getValue("grailsApplication")
     }
     
-    ConfigObject getConfig() {
+    Config getConfig() {
         getGrailsApplication().getConfig()
     }
     

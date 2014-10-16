@@ -24,6 +24,8 @@ import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.ListExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.Statement
@@ -78,11 +80,20 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
 
                 def classLoader = getClass().classLoader
                 if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
-                    GrailsASTUtils.addAnnotationIfNecessary(classNode, classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration'))
+                    def clazz = classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration')
+                    def enableAutoConfigurationAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, clazz)
+
+
+                    if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration', classLoader)) {
+                        def dataSourceAutoConfig = new ClassExpression(ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration')))
+                        GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, "exclude", dataSourceAutoConfig)
+                    }
                 }
             }
         }
     }
+
+
 
     @Override
     boolean shouldInject(URL url) {

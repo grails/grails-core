@@ -3,6 +3,8 @@ package grails.boot.config
 import grails.config.Settings
 import groovy.transform.CompileStatic
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.Resource
@@ -16,16 +18,17 @@ import org.springframework.util.ClassUtils
  * Created by graemerocher on 06/10/14.
  */
 @CompileStatic
-class GrailsAutoConfiguration implements ResourceLoaderAware {
+class GrailsAutoConfiguration implements ResourceLoaderAware, ApplicationContextAware {
 
     ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
+    ApplicationContext applicationContext
 
     /**
      * @return A post processor that uses the {@link grails.plugins.GrailsPluginManager} to configure the {@link org.springframework.context.ApplicationContext}
      */
     @Bean
     GrailsApplicationPostProcessor grailsApplicationPostProcessor() {
-        return new GrailsApplicationPostProcessor(classes() as Class[])
+        return new GrailsApplicationPostProcessor( applicationContext, classes() as Class[])
     }
 
     /**

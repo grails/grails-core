@@ -2,7 +2,7 @@ package org.grails.cli
 
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
-import grails.config.GrailsConfig
+import grails.config.CodeGenConfig
 
 import java.lang.reflect.Field
 import java.util.concurrent.TimeUnit
@@ -151,7 +151,7 @@ class GrailsCliSpec extends Specification {
         when:
         File appdir = createApp()
         File configFile = new File(appdir, 'grails-app/conf/application.yml')
-        GrailsConfig grailsConfig = new GrailsConfig()
+        CodeGenConfig grailsConfig = new CodeGenConfig()
         then:
         assert appdir.exists() 
         assert new File(appdir, "grails-app").exists()

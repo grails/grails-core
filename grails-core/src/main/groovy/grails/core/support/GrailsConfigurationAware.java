@@ -15,9 +15,9 @@
  */
 package grails.core.support;
 
+import grails.config.Config;
 import org.springframework.beans.factory.Aware;
 
-import groovy.util.ConfigObject;
 
 /**
  * Obtains the Grails ConfigObject via Spring.
@@ -27,5 +27,5 @@ import groovy.util.ConfigObject;
  */
 public interface GrailsConfigurationAware extends Aware {
 
-    void setConfiguration(ConfigObject co);
+    void setConfiguration(Config co);
 }

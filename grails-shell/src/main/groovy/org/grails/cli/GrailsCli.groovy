@@ -1,7 +1,7 @@
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
-import grails.config.GrailsConfig
+import grails.config.CodeGenConfig
 import grails.io.SystemStreamsRedirector
 import grails.util.Environment
 import groovy.transform.Canonical
@@ -42,7 +42,7 @@ class GrailsCli {
     Boolean ansiEnabled = null
     Character defaultInputMask = null
     ProfileRepository profileRepository=new ProfileRepository()
-    GrailsConfig applicationConfig
+    CodeGenConfig applicationConfig
     ProjectContext projectContext
     
     public int execute(String... args) {
@@ -167,8 +167,8 @@ class GrailsCli {
         aggregateCompleter.getCompleters().add(gradleHandler.createCompleter(projectContext))
     }
     
-    private GrailsConfig loadApplicationConfig() {
-        GrailsConfig config = new GrailsConfig()
+    private CodeGenConfig loadApplicationConfig() {
+        CodeGenConfig config = new CodeGenConfig()
         File applicationYml = new File("grails-app/conf/application.yml")
         if(applicationYml.exists()) {
             config.loadYml(applicationYml)
@@ -297,7 +297,7 @@ class GrailsCli {
     private static class ProjectContextImpl implements ProjectContext {
         GrailsConsole console
         File baseDir
-        GrailsConfig grailsConfig
+        CodeGenConfig grailsConfig
 
         @Override
         public String navigateConfig(String... path) {
