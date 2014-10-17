@@ -103,7 +103,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> getFlatConfig() {
-        return config.flatten();
+        return getConfig().flatten();
     }
 
     @Override
