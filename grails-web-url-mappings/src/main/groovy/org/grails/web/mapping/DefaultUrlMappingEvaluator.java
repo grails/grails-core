@@ -106,7 +106,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private static final String RESOURCES = "resources";
 
     private GrailsPluginManager pluginManager;
-    private WebApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
 
 
     /**
@@ -118,9 +118,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         this.servletContext = servletContext;
     }
 
-    public DefaultUrlMappingEvaluator(WebApplicationContext applicationContext) {
-        if (applicationContext != null) {
-            this.servletContext = applicationContext.getServletContext();
+    public DefaultUrlMappingEvaluator(ApplicationContext applicationContext) {
+        if (applicationContext instanceof WebApplicationContext) {
+            this.servletContext = ((WebApplicationContext)applicationContext).getServletContext();
         }
         this.applicationContext = applicationContext;
     }

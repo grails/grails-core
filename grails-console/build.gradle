@@ -1,0 +1,6 @@
+dependencies {
+
+    compile project(":grails-core")
+    compile "org.codehaus.groovy:groovy-console:$groovyVersion"
+    compile("org.springframework.boot:spring-boot:$springBootVersion")
+}

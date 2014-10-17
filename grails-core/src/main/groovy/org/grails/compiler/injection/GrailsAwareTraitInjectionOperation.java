@@ -85,7 +85,16 @@ public class GrailsAwareTraitInjectionOperation extends
         for (TraitInjector injector : injectorsToUse) {
             Class<?> trait = injector.getTrait();
             ClassNode traitClassNode = ClassHelper.make(trait);
-            if (!classNode.implementsInterface(traitClassNode)) {
+            boolean implementsTrait = false;
+            boolean traitNotLoaded = false;
+            try {
+                implementsTrait = classNode.implementsInterface(traitClassNode);
+            } catch (Throwable e) {
+                // if we reach this point, the trait injector could not be loaded due to missing dependencies (for example missing servlet-api). This is ok, as we want to be able to compile against non-servlet environments.
+                traitNotLoaded = true;
+            }
+            if (!implementsTrait && !traitNotLoaded) {
+                System.out.println("traitClassNode = " + traitClassNode);
                 classNode.addInterface(traitClassNode);
                 traitsAdded = true;
             }

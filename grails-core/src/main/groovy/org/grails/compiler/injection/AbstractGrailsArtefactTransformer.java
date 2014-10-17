@@ -139,7 +139,16 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     protected void performInstanceImplementationInjection(SourceUnit source, ClassNode classNode,
             Map<String, ClassNode> genericsPlaceholders, Class instanceImplementation) {
-        ClassNode implementationNode = GrailsASTUtils.replaceGenericsPlaceholders(ClassHelper.make(instanceImplementation), genericsPlaceholders);
+        ClassNode implementationNode;
+        final ConstructorCallExpression constructorCallExpression;
+        try {
+            implementationNode = GrailsASTUtils.replaceGenericsPlaceholders(ClassHelper.make(instanceImplementation), genericsPlaceholders);
+            constructorCallExpression = GrailsASTUtils.hasZeroArgsConstructor(implementationNode) ? new ConstructorCallExpression(implementationNode, ZERO_ARGS) : null;
+        } catch (Throwable e) {
+            // if we get here it means we have reached a point where there were errors loading the class to perform injection with, probably due to missing dependencies
+            // this may well be ok, as we want to be able to compile against, for example, non servlet environments. In this case just bail out.
+            return;
+        }
 
         String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
         Expression apiInstance = new VariableExpression(apiInstanceProperty, implementationNode);
@@ -151,9 +160,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             ((MethodCallExpression)apiInstance).setMethodTarget(lookupMethod);
         }
         else if (requiresAutowiring()) {
-
-            final ConstructorCallExpression constructorCallExpression = GrailsASTUtils.hasZeroArgsConstructor(implementationNode) ? new ConstructorCallExpression(implementationNode, ZERO_ARGS) : null;
-
             PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, constructorCallExpression, null, null);
             propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
             if(getMarkerAnnotation() != null) {
@@ -162,7 +168,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             classNode.addProperty(propertyNode);
         }
         else {
-            final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
             FieldNode fieldNode = classNode.getField(apiInstanceProperty);
             if (fieldNode == null || (Modifier.isPrivate(fieldNode.getModifiers()) && !fieldNode.getDeclaringClass().equals(classNode))) {
                 fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);

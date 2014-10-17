@@ -77,7 +77,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
 
-        final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator((WebApplicationContext) applicationContext);
+        final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator(applicationContext);
         mappingEvaluator.setPluginManager(pluginManager);
 
         if (mappings.length == 0) {

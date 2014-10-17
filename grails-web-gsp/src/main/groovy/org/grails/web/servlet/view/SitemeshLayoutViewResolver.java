@@ -60,6 +60,8 @@ public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver impleme
     }
     
     public void init() {
+        if(servletContext == null) return;
+
         Factory sitemeshFactory = (Factory)servletContext.getAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE);
         if(sitemeshFactory==null) {
             sitemeshFactory = loadSitemeshConfig();
@@ -101,7 +103,9 @@ public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver impleme
         };
         Config config = new Config(filterConfig);
         Grails5535Factory sitemeshFactory = new Grails5535Factory(config);
-        servletContext.setAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE, sitemeshFactory);
+        if(servletContext != null) {
+            servletContext.setAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE, sitemeshFactory);
+        }
         sitemeshFactory.refresh();
         FactoryHolder.setFactory(sitemeshFactory);
         sitemeshConfigLoaded = true;
@@ -119,9 +123,12 @@ public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver impleme
     }
 
     protected void clearSitemeshConfig() {
+        if(servletContext == null) return;
         if(sitemeshConfigLoaded) {
             FactoryHolder.setFactory(null);
-            servletContext.removeAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE);
+            if(servletContext != null) {
+                servletContext.removeAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE);
+            }
             sitemeshConfigLoaded = false;
         }
     }

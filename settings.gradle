@@ -3,6 +3,7 @@ rootProject.name = "grails.core.ROOT"
 include 'grails-aether',
         'grails-async',
         'grails-bootstrap',
+        'grails-console',
         'grails-core',
         'grails-databinding',
         'grails-dependencies',
