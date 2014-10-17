@@ -1,0 +1,79 @@
+
+/*
+ * Copyright 2014 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.grails.config;
+
+import grails.util.Environment;
+import groovy.transform.CompileStatic;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A PropertySource aware of the Grails environment and that resolves keys based on the environment from other property sources
+ *
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+
+public class EnvironmentAwarePropertySource extends EnumerablePropertySource<PropertySources> {
+    EnvironmentAwarePropertySource(PropertySources source) {
+        super("grails.environment", source);
+    }
+
+    protected List<String> propertyNames;
+    @Override
+    public String[] getPropertyNames() {
+        if(propertyNames == null) {
+            propertyNames = new ArrayList<String>();
+            Environment env = Environment.getCurrent();
+            String key = "environments." + env.getName();
+            for(PropertySource propertySource : source) {
+                if((propertySource != this) && propertySource instanceof EnumerablePropertySource) {
+                    EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
+
+                    for(String propertyName : enumerablePropertySource.getPropertyNames()) {
+                        if(propertyName.startsWith(key)) {
+                            propertyNames.add(propertyName.substring(key.length() + 1));
+                        }
+                    }
+                }
+            }
+        }
+        return propertyNames.toArray(new String[propertyNames.size()]);
+    }
+
+    @Override
+    public Object getProperty(String name) {
+        if(!propertyNames.contains(name)) {
+            return null;
+        }
+
+        Environment env = Environment.getCurrent();
+        String key = "environments." + env.getName() + '.' + name;
+        for(PropertySource propertySource : source) {
+            if(propertySource != this) {
+                Object value = propertySource.getProperty(key);
+                if(value != null) return value;
+            }
+        }
+        return null;
+    }
+}

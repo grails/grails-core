@@ -17,7 +17,7 @@ package org.grails.config;
 
 import grails.config.Config;
 import grails.config.ConfigMap;
-import grails.util.GrailsStringUtils;
+import grails.util.*;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
@@ -51,18 +51,32 @@ public class PropertySourcesConfig implements Config, Map<String,Object> {
         this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
     }
 
+    public void refresh() {
+        initializeFromPropertySources(propertySources);
+    }
+
     protected void initializeFromPropertySources(PropertySources propertySources) {
         for(PropertySource propertySource : propertySources) {
             if(propertySource instanceof EnumerablePropertySource) {
                 EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
-                Map map = new HashMap();
-                for(String propertyName : enumerablePropertySource.getPropertyNames()) {
-                    map.put(propertyName, enumerablePropertySource.getProperty(propertyName));
-                }
-
-                configMap.merge(map, true);
+                mergeEnumerablePropertySource(enumerablePropertySource);
             }
         }
+
+        EnvironmentAwarePropertySource environmentAwarePropertySource = new EnvironmentAwarePropertySource(propertySources);
+        mergeEnumerablePropertySource(environmentAwarePropertySource);
+        if(propertySources instanceof MutablePropertySources) {
+            ((MutablePropertySources)propertySources).addLast(environmentAwarePropertySource);
+        }
+    }
+
+    private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
+        Map map = new HashMap();
+        for(String propertyName : enumerablePropertySource.getPropertyNames()) {
+            map.put(propertyName, enumerablePropertySource.getProperty(propertyName));
+        }
+
+        configMap.merge(map, true);
     }
 
     public void setClassLoader(ClassLoader classLoader) {

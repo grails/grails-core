@@ -38,7 +38,8 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
     @Override
     PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
-        ConfigSlurper configSlurper = new ConfigSlurper( profile ?: Environment.current.name )
+        def env = Environment.current.name
+        ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
 
         configSlurper.setBinding(userHome: System.getProperty('user.home'),
                                  grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
