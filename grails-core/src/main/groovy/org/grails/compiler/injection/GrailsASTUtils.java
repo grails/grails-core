@@ -800,7 +800,7 @@ public class GrailsASTUtils {
      * @param memberName The name of the member
      * @param expression The expression
      */
-    public void addExpressionToAnnotationMember(AnnotationNode annotationNode, String memberName, Expression expression) {
+    public static void addExpressionToAnnotationMember(AnnotationNode annotationNode, String memberName, Expression expression) {
         Expression exclude = annotationNode.getMember(memberName);
         if(exclude instanceof ListExpression) {
             ((ListExpression)exclude).addExpression(expression);
