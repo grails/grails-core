@@ -1,0 +1,3 @@
+moduleName=grails-core
+moduleVersion=3.0
+extensionClasses=org.grails.spring.context.ApplicationContextExtension
