@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.commons
+package grails.util 
 
 import spock.lang.Specification
 
