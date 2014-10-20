@@ -19,7 +19,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Wrapper for a value inside a cache that adds timestamp information
@@ -35,7 +36,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CacheEntry<V> {
     private final AtomicReference<V> valueRef=new AtomicReference<V>(null);
     private long createdMillis;
-    private transient final Lock writeLock=new ReentrantLock();
+    private final ReadWriteLock lock=new ReentrantReadWriteLock();
+    private final Lock readLock=lock.readLock();
+    private final Lock writeLock=lock.writeLock();
     private volatile boolean initialized=false;
 
     public CacheEntry() {
@@ -160,7 +163,7 @@ public class CacheEntry<V> {
     }
     
     protected V getValueWhileUpdating(Object cacheRequestObject) {
-        return getValue();
+        return valueRef.get();
     }
 
     protected V updateValue(V oldValue, Callable<V> updater, Object cacheRequestObject) throws Exception {
@@ -168,13 +171,23 @@ public class CacheEntry<V> {
     }
 
     public V getValue() {
-        return valueRef.get();
+        try {
+            readLock.lock();
+            return valueRef.get();
+        } finally {
+            readLock.unlock();
+        }
     }
     
     public void setValue(V val) {
-        valueRef.set(val);
-        setInitialized(true);
-        resetTimestamp(true);
+        try{
+            writeLock.lock();
+            valueRef.set(val);
+            setInitialized(true);
+            resetTimestamp(true);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     protected boolean hasExpired(long timeout, Object cacheRequestObject) {
