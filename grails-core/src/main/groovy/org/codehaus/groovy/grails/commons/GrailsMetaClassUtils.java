@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.AdaptingMetaClass;
 import groovy.lang.Closure;
 import groovy.lang.ClosureInvokingMethod;
+import groovy.lang.DelegatingMetaClass;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
@@ -42,6 +43,7 @@ import org.springframework.beans.BeanUtils;
  */
 public class GrailsMetaClassUtils {
 
+    private static final int MAX_DELEGATE_LEVELS = 10;
     private static final Log LOG = LogFactory.getLog(GrailsMetaClassUtils.class);
     private static final Object[] NO_ARGS = new Object[0];
 
@@ -162,6 +164,9 @@ public class GrailsMetaClassUtils {
         if (instance instanceof GroovyObject) {
             GroovyObject groovyObject = (GroovyObject) instance;
             MetaClass metaClass = groovyObject.getMetaClass();
+            
+            metaClass = unwrapDelegatingMetaClass(metaClass);
+            
             if (!(metaClass instanceof ExpandoMetaClass)) {
                 metaClass = getExpandoMetaClass(instance.getClass());
                 groovyObject.setMetaClass(metaClass);
@@ -170,6 +175,14 @@ public class GrailsMetaClassUtils {
             return metaClass;
         }
         return getExpandoMetaClass(instance.getClass());
+    }
+
+    private static MetaClass unwrapDelegatingMetaClass(MetaClass metaClass) {
+        int counter=0;
+        while(metaClass instanceof DelegatingMetaClass && counter++ < MAX_DELEGATE_LEVELS) {
+            metaClass = ((DelegatingMetaClass)metaClass).getAdaptee();
+        }
+        return metaClass;
     }
 
     /**
