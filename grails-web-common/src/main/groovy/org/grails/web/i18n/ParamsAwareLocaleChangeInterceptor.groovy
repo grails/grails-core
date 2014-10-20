@@ -16,6 +16,9 @@
 package org.grails.web.i18n
 
 import groovy.transform.CompileStatic
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.servlet.DispatcherServlet
+import org.springframework.web.servlet.LocaleResolver
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -40,9 +43,16 @@ class ParamsAwareLocaleChangeInterceptor extends LocaleChangeInterceptor {
 
     String paramName = DEFAULT_PARAM_NAME
 
+    LocaleResolver localeResolver
+
     void setParamName(String name) {
         paramName = name
         super.setParamName name
+    }
+
+    @Autowired(required = false)
+    void setLocaleResolver(LocaleResolver localeResolver) {
+        this.localeResolver = localeResolver
     }
 
     @Override
@@ -63,6 +73,10 @@ class ParamsAwareLocaleChangeInterceptor extends LocaleChangeInterceptor {
                 localeParam = ((Object[])localeParam)[0]
             }
             def localeResolver = RequestContextUtils.getLocaleResolver(request)
+            if(localeResolver == null) {
+                localeResolver = this.localeResolver
+                request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, localeResolver)
+            }
             def localeEditor = new LocaleEditor()
             localeEditor.setAsText localeParam?.toString()
             localeResolver?.setLocale request, response, (Locale)localeEditor.value
