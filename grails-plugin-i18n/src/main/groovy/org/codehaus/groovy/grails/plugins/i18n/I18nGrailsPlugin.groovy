@@ -85,11 +85,11 @@ class I18nGrailsPlugin {
             }
         }
 
+        localeResolver(SessionLocaleResolver)
         localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
             paramName = "lang"
+            localeResolver = ref("localeResolver")
         }
-
-        localeResolver(SessionLocaleResolver)
     }
 
     @CompileStatic
