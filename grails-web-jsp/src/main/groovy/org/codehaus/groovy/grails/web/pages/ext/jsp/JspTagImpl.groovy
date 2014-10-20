@@ -93,15 +93,15 @@ class JspTagImpl implements JspTag {
         GroovyPagesPageContext pageContext = PageContextFactory.getCurrent()
 
         assignParentTag(pageContext, tag)
+        
+        assignPageContext(pageContext, tag)
 
         applyAttributes(tag, attributes)
 
         if (tag instanceof SimpleTag) {
-            tag.jspContext = pageContext
             handleSimpleTag(tag, attributes, pageContext, targetWriter, body)
         }
         else if (tag instanceof Tag) {
-            tag.pageContext = pageContext
             withJspWriterDelegate pageContext, targetWriter, {
 
                 try {
@@ -150,6 +150,15 @@ class JspTagImpl implements JspTag {
                     tag?.release()
                 }
             }
+        }
+    }
+
+    private assignPageContext(GroovyPagesPageContext pageContext, javax.servlet.jsp.tagext.JspTag tag) {
+        if (tag instanceof SimpleTag) {
+            tag.jspContext = pageContext
+        }
+        if (tag instanceof Tag) {
+            tag.pageContext = pageContext
         }
     }
 
