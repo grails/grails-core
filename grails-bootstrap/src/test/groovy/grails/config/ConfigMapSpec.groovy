@@ -43,4 +43,22 @@ class ConfigMapSpec extends Specification {
                  'a.b.c[2]': '3',
                  'a.b.d': '2']
     }
+    
+    def "should support cloning"() {
+        given:
+        ConfigMap configMap = new ConfigMap()
+        configMap.a.b.c = [1, 2, 3]
+        configMap.a.b.d = 2
+        when: 
+        ConfigMap cloned = configMap.clone()
+        then:
+        cloned.toFlatConfig() ==
+                ['a.b.c': [1, 2, 3],
+                 'a.b.c[0]': 1,
+                 'a.b.c[1]': 2,
+                 'a.b.c[2]': 3,
+                 'a.b.d': 2]
+        !cloned.is(configMap)
+        cloned == configMap
+    }
 }

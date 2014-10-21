@@ -7,7 +7,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 @EqualsAndHashCode
 @CompileStatic
-class ConfigMap implements Map<String, Object> {
+class ConfigMap implements Map<String, Object>, Cloneable {
     final ConfigMap rootConfig
     final List<String> path
     final Map<String, Object> delegateMap
@@ -23,6 +23,12 @@ class ConfigMap implements Map<String, Object> {
         this.rootConfig = rootConfig
         this.path = path
         delegateMap = [:]
+    }
+    
+    public ConfigMap clone() {
+        ConfigMap cloned = new ConfigMap()
+        cloned.merge(delegateMap)
+        return cloned
     }
 
     @Override
