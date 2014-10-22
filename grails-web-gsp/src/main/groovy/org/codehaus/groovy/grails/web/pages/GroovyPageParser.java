@@ -158,7 +158,6 @@ public class GroovyPageParser implements Tokens {
     private static final String TAGLIB_CODEC_DIRECTIVE = GroovyPageConfig.TAGLIB_CODEC_NAME + CODEC_DIRECTIVE_POSTFIX;
     private static final String SITEMESH_PREPROCESS_DIRECTIVE = "sitemeshPreprocess";
 
-    private String gspEncoding = System.getProperty("file.encoding", "us-ascii");
     private String pluginAnnotation;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
     private Map<String, String> jspTags = new HashMap<String, String>();
@@ -212,18 +211,15 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding, String expressionCodecName) throws IOException {
+    	this(name, uri, filename, readStream(in, encoding), expressionCodecName);
+    }
+
+    public GroovyPageParser(String name, String uri, String filename, String gspSource) throws IOException {
+    	this(name, uri, filename, gspSource, null);
+    }
+
+    public GroovyPageParser(String name, String uri, String filename, String gspSource, String expressionCodecName) throws IOException {
         Map<?, ?> config = Holders.getFlatConfig();
-
-        this.gspEncoding = encoding;
-        if (this.gspEncoding == null) {
-            if (config != null) {
-                Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
-                if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                    this.gspEncoding = gspEnc.toString();
-                }
-            }
-        }
-
         if (config != null) {
             Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
             if (sitemeshPreprocessEnabled != null) {
@@ -251,8 +247,6 @@ public class GroovyPageParser implements Tokens {
         outCodecDirectiveValue = gspConfig.getCodecSettings(pluginInfo, GroovyPageConfig.OUT_CODEC_NAME);
         taglibCodecDirectiveValue = gspConfig.getCodecSettings(pluginInfo, GroovyPageConfig.TAGLIB_CODEC_NAME);
 
-        String gspSource = readStream(in);
-
         Map<String, String> directives = parseDirectives(gspSource);
 
         if (isSitemeshPreprocessingEnabled(directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
@@ -272,13 +266,6 @@ public class GroovyPageParser implements Tokens {
 
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
         this(name, uri, filename, in, null, null);
-    }
-
-    public void setGspEncoding(String gspEncoding) {
-        this.gspEncoding = gspEncoding;
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("GSP file encoding set to: " + gspEncoding);
-        }
     }
 
     private Map<String, String> parseDirectives(String gspSource) {
@@ -1265,8 +1252,22 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    private String readStream(InputStream in) throws IOException {
-        return GrailsIOUtils.toString(in, gspEncoding != null ? gspEncoding : "UTF-8");
+    private static String readStream(InputStream in, String gspEncoding) throws IOException {
+        if (gspEncoding == null) {
+        	gspEncoding  = getGspEncoding();
+        }
+        return GrailsIOUtils.toString(in, gspEncoding);
+    }
+
+    static String getGspEncoding(){
+        Map<?, ?> config = Holders.getFlatConfig();
+        if (config != null) {
+            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
+            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                return gspEnc.toString();
+            }
+        }
+        return "UTF-8";
     }
 
     private void script(boolean gsp) {
