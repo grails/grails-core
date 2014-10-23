@@ -122,7 +122,7 @@ task sourcesJars(type: Sync) {
 
 task pluginsFromRepo {
     ext.plugins = [
-        cache: "1.1.7",
+        cache: "1.1.8",
         'database-migration': "1.4.0",
         hibernate4: "4.3.5.5",
         jquery: "1.11.1",
