@@ -836,7 +836,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 parameterValues.put("action", urlMapping.getActionName());
             }
 
-            urlMapping.setParameterValues(parameterValues);
+            urlMapping.setParameterValues(new HashMap(parameterValues));
             urlMappings.add(urlMapping);
         }
 
