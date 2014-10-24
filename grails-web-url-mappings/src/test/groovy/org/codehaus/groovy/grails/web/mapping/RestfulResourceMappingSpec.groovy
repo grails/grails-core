@@ -20,6 +20,34 @@ import spock.lang.Specification
  */
 class RestfulResourceMappingSpec extends Specification{
     
+    @Issue('GRAILS-11748')
+    void 'Test params.action'() {
+        given:
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/books"(resources: "book")
+            "/owner"(resource: "person")
+        }
+        
+        when:
+        def urlMappings = urlMappingsHolder.urlMappings
+        
+        then:
+        urlMappingsHolder.matchAll('/books', 'GET')[0].parameters.action == 'index'
+        urlMappingsHolder.matchAll('/books/create', 'GET')[0].parameters.action == 'create'
+        urlMappingsHolder.matchAll('/books', 'POST')[0].parameters.action == 'save'
+        urlMappingsHolder.matchAll('/books/42', 'GET')[0].parameters.action == 'show'
+        urlMappingsHolder.matchAll('/books/42/edit', 'GET')[0].parameters.action == 'edit'
+        urlMappingsHolder.matchAll('/books/42', 'PUT')[0].parameters.action == 'update'
+        urlMappingsHolder.matchAll('/books/42', 'DELETE')[0].parameters.action == 'delete'
+        
+        urlMappingsHolder.matchAll('/owner/create', 'GET')[0].parameters.action == 'create'
+        urlMappingsHolder.matchAll('/owner', 'POST')[0].parameters.action == 'save'
+        urlMappingsHolder.matchAll('/owner', 'GET')[0].parameters.action == 'show'
+        urlMappingsHolder.matchAll('/owner/edit', 'GET')[0].parameters.action == 'edit'
+        urlMappingsHolder.matchAll('/owner', 'PUT')[0].parameters.action == 'update'
+        urlMappingsHolder.matchAll('/owner', 'DELETE')[0].parameters.action == 'delete'
+    }
+    
     @Issue('GRAILS-11680')
     @Ignore
     void 'Test mapping ordering problem'() {
