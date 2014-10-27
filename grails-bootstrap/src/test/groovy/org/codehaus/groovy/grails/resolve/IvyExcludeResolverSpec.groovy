@@ -17,12 +17,14 @@
 package org.codehaus.groovy.grails.resolve
 
 import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  */
 class IvyExcludeResolverSpec extends Specification{
 
+    @Ignore
     void "Test that the IvyExcludeResolver resolves excludes"() {
         given:"An IvyDependencyManager with some dependencies"
             def dependencyManager = new IvyDependencyManager("foo", "1.0")
