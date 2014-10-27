@@ -19,17 +19,15 @@ import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovySystem;
+import groovy.lang.MetaMethod;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +37,9 @@ import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
+import org.codehaus.groovy.reflection.CachedClass;
+import org.codehaus.groovy.runtime.m12n.ExtensionModuleScanner;
+import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -679,7 +680,47 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         }
         Class<?>[] classes = populateAllClasses();
         configureLoadedClasses(classes);
+
+        initialiseGroovyExtensionModules();
         initialised = true;
+    }
+
+    protected void initialiseGroovyExtensionModules() {
+        Map<CachedClass, List<MetaMethod>> map = new HashMap<CachedClass, List<MetaMethod>>();
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        try {
+            Enumeration<URL> resources = classLoader.getResources(ExtensionModuleScanner.MODULE_META_INF_FILE);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                if (url.getPath().contains("groovy-all")) {
+                    // already registered
+                    continue;
+                }
+                Properties properties = new Properties();
+                InputStream inStream = null;
+                try {
+                    inStream = url.openStream();
+                    properties.load(inStream);
+                    ((MetaClassRegistryImpl)GroovySystem.getMetaClassRegistry()).registerExtensionModuleFromProperties(properties, classLoader, map);
+                }
+                catch (IOException e) {
+                    throw new GroovyRuntimeException("Unable to load module META-INF descriptor", e);
+                }
+                finally {
+                    if(inStream != null) {
+                        inStream.close();
+                    }
+                }
+            }
+        }
+        catch (IOException ignored) {}
+
+        for (Map.Entry<CachedClass, List<MetaMethod>> moduleMethods : map.entrySet()) {
+            CachedClass cls = moduleMethods.getKey();
+            cls.addNewMopMethods( moduleMethods.getValue() );
+        }
     }
 
     public boolean isInitialised() {
