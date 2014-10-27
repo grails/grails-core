@@ -40,6 +40,7 @@ import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
+import org.springframework.context.annotation.ConfigurationClassPostProcessor
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 
@@ -60,6 +61,9 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
         def application = grailsApplication
+
+        // enable post-processing of @Configuration beans defined by plugins
+        grailsConfigurationClassPostProcessor ConfigurationClassPostProcessor
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
         final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
