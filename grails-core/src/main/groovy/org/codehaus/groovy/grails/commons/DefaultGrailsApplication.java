@@ -685,7 +685,11 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         initialised = true;
     }
 
-    protected void initialiseGroovyExtensionModules() {
+    private static boolean extensionMethodsInitialized = false;
+    protected static void initialiseGroovyExtensionModules() {
+        if(extensionMethodsInitialized) return;
+
+        extensionMethodsInitialized = true;
         Map<CachedClass, List<MetaMethod>> map = new HashMap<CachedClass, List<MetaMethod>>();
 
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
