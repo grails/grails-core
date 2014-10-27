@@ -24,7 +24,7 @@ ext {
 
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
-    aspectjVersion = "1.8.1"
+    aspectjVersion = "1.8.2"
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
