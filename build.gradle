@@ -18,7 +18,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
-    grailsVersion = '2.4.4'
+    grailsVersion = '2.4.5.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -221,7 +221,7 @@ subprojects { project ->
             }
         } else {
             jvmArgs = ['-Xmx1024M', '-XX:MaxPermSize=384m']
-        }        
+        }
         if(System.getProperty("debug.tests")) {
             jvmArgs debugArguments
         }
