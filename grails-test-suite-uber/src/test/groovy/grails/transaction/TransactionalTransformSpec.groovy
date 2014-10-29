@@ -39,6 +39,10 @@ import spock.lang.Specification
 /**
  */
 class TransactionalTransformSpec extends Specification {
+    void cleanup() {
+        TransactionSynchronizationManager.unbindResourceIfPossible('someresource')
+    }
+    
     @Issue('GRAILS-10402')
     void "Test @Transactional annotation with inheritance"() {
         when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
@@ -578,6 +582,109 @@ new BookService()
             status.isRollbackOnly()
     }
 
+    
+    @Issue('GRAILS-11806')
+    void "Test without unbindResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+   
+    @Transactional
+    class SomeService {
+
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource')
+    }
+    
+    @Issue('GRAILS-11806')
+    void "Test with unbindResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+   
+    
+    class SomeService {
+        @Transactional(unbindResources=true)
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+
+        @Transactional
+        boolean hasResourceWithoutUnbinding(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource') == false
+            someService.hasResourceWithoutUnbinding('someresource') == true
+    }
+    
+    
+    @Issue('GRAILS-11806')
+    void "Test Rollback without unbindResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+   
+    @Rollback
+    class SomeService {
+
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource')
+    }
+    
+    @Issue('GRAILS-11806')
+    void "Test Rollback with unbindResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+   
+    @Rollback(unbindResources=true)
+    class SomeService {
+
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource') == false
+    }
 }
 
 

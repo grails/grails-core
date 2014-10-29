@@ -26,6 +26,7 @@ import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute
 import org.springframework.transaction.interceptor.TransactionAttribute
 import org.springframework.transaction.support.TransactionCallback
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate
 
 /**
@@ -55,7 +56,12 @@ class GrailsTransactionTemplate {
     }
 
     Object executeAndRollback(Closure action) throws TransactionException {
+        boolean unbinding = shouldUnbindResources()
+        Map<Object, Object> preboundResources = null
         try {
+            if(unbinding) {
+                preboundResources = unbindResources()
+            }
             Object result = transactionTemplate.execute(new TransactionCallback() {
                 Object doInTransaction(TransactionStatus status) {
                     try {
@@ -78,10 +84,20 @@ class GrailsTransactionTemplate {
         catch (ThrowableHolderException e) {
             throw e.getCause()
         }
+        finally {
+            if(unbinding && preboundResources != null) {
+                bindResources(preboundResources)
+            }
+        }
     }
 
     Object execute(Closure action) throws TransactionException {
+        boolean unbinding = shouldUnbindResources()
+        Map<Object, Object> preboundResources = null
         try {
+            if(unbinding) {
+                preboundResources = unbindResources()
+            }
             Object result = transactionTemplate.execute(new TransactionCallback() {
                 Object doInTransaction(TransactionStatus status) {
                     try {
@@ -118,6 +134,15 @@ class GrailsTransactionTemplate {
         catch (ThrowableHolderException e) {
             throw e.getCause()
         }
+        finally {
+            if(unbinding && preboundResources != null) {
+                bindResources(preboundResources)
+            }
+        }
+    }
+
+    protected boolean shouldUnbindResources() {
+        return transactionAttribute instanceof GrailsTransactionAttribute && transactionAttribute.isUnbindResources()
     }
 
     /**
@@ -150,6 +175,28 @@ class GrailsTransactionTemplate {
         @Override
         public String toString() {
             return getCause().toString();
+        }
+    }
+    
+    /**
+     * Unbind all thread local bound resources in TransactionSynchronizationManager
+     * @return
+     */
+    protected Map<Object, Object> unbindResources() {
+        Map<Object, Object> resourceMap = Collections.unmodifiableMap(new LinkedHashMap(TransactionSynchronizationManager.getResourceMap()));
+        for(Map.Entry<Object,Object> entry : resourceMap.entrySet()) {
+            TransactionSynchronizationManager.unbindResource(entry.getKey());
+        }
+        return resourceMap;
+    }
+    
+    /**
+     * Bind all resources in the map given as parameter with TransactionSynchronizationManager.bindResource method
+     * @param resourceMap
+     */
+    protected bindResources(Map<Object, Object> resourceMap) {
+        for(Map.Entry<Object,Object> entry : resourceMap.entrySet()) {
+            TransactionSynchronizationManager.bindResource(entry.getKey(), entry.getValue());
         }
     }
 }

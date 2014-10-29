@@ -20,6 +20,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.annotation.*;
 
@@ -147,4 +148,13 @@ public @interface Transactional {
      *   
      */
     boolean inheritRollbackOnly() default true;
+    
+    
+    /**
+     * Unbind any prebound {@link TransactionSynchronizationManager} resources like an OpenSessionInView session and rebind them 
+     * after the transaction finishes.
+     * 
+     * @return
+     */
+    boolean unbindResources() default false;
 }
