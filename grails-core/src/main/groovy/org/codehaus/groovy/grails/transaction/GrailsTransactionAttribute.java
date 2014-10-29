@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.transaction;
 
+import grails.transaction.PreboundResourcesUsage;
+
 import java.util.List;
 
 import org.springframework.transaction.TransactionDefinition;
@@ -10,6 +12,7 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
 public class GrailsTransactionAttribute extends RuleBasedTransactionAttribute {
     private static final long serialVersionUID = 1L;
     private boolean inheritRollbackOnly = true;
+    private PreboundResourcesUsage preboundResources = PreboundResourcesUsage.ADAPTIVE;
 
     public GrailsTransactionAttribute() {
         super();
@@ -45,6 +48,7 @@ public class GrailsTransactionAttribute extends RuleBasedTransactionAttribute {
         super(other);
         if(other instanceof GrailsTransactionAttribute) {
             this.inheritRollbackOnly = ((GrailsTransactionAttribute)other).inheritRollbackOnly;
+            this.preboundResources = ((GrailsTransactionAttribute)other).preboundResources;
         }
     }
 
@@ -54,5 +58,13 @@ public class GrailsTransactionAttribute extends RuleBasedTransactionAttribute {
 
     public void setInheritRollbackOnly(boolean inheritRollbackOnly) {
         this.inheritRollbackOnly = inheritRollbackOnly;
+    }
+
+    public PreboundResourcesUsage getPreboundResources() {
+        return preboundResources;
+    }
+
+    public void setPreboundResources(PreboundResourcesUsage unbindResources) {
+        this.preboundResources = unbindResources;
     }
 }

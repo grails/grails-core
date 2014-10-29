@@ -147,4 +147,11 @@ public @interface Transactional {
      *   
      */
     boolean inheritRollbackOnly() default true;
+    
+    
+    /**
+     * Setting for determining the use of pre-bound resources like an OpenSessionInView session 
+     * @see PreboundResourcesUsage for details. ADAPTIVE is the default setting.
+     */
+    PreboundResourcesUsage preboundResources() default PreboundResourcesUsage.ADAPTIVE;
 }

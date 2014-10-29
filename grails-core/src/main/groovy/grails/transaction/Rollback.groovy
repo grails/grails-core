@@ -15,14 +15,14 @@
  */
 package grails.transaction
 
-import org.codehaus.groovy.transform.GroovyASTTransformationClass
-
 import java.lang.annotation.Documented
 import java.lang.annotation.ElementType
 import java.lang.annotation.Inherited
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
+
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 /**
  * A transforms that applies a transaction that always rolls back. Useful for testing. See {@link Transactional}
@@ -41,4 +41,10 @@ public @interface Rollback {
      * back after the method has completed.
      */
     boolean value() default true;
+    
+    /**
+     * Setting for determining the use of pre-bound resources like an OpenSessionInView session 
+     * @see PreboundResourcesUsage for details. ADAPTIVE is the default setting.
+     */
+    PreboundResourcesUsage preboundResources() default PreboundResourcesUsage.ADAPTIVE;
 }

@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.orm.support
 
+import grails.transaction.PreboundResourcesUsage
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.transaction.GrailsTransactionAttribute
@@ -25,6 +26,7 @@ import org.springframework.transaction.TransactionException
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.interceptor.TransactionAttribute
 import org.springframework.transaction.support.TransactionCallback
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate
 
 /**
@@ -32,6 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate
  * transaction exception handling.
  *
  * @author Kazuki YAMAMOTO
+ * @author Lari Hotari
  */
 @CompileStatic
 class GrailsTransactionTemplate {
@@ -57,7 +60,12 @@ class GrailsTransactionTemplate {
     }
 
     Object executeAndRollback(Closure action) throws TransactionException {
+        boolean unbinding = shouldUnbindResources()
+        Map<Object, Object> preboundResources = null
         try {
+            if(unbinding) {
+                preboundResources = unbindResources()
+            }
             Object result = transactionTemplate.execute(new TransactionCallback() {
                 Object doInTransaction(TransactionStatus status) {
                     try {
@@ -80,10 +88,20 @@ class GrailsTransactionTemplate {
         catch (ThrowableHolderException e) {
             throw e.getCause()
         }
+        finally {
+            if(unbinding && preboundResources != null) {
+                bindResources(preboundResources)
+            }
+        }
     }
 
     Object execute(Closure action) throws TransactionException {
+        boolean unbinding = shouldUnbindResources()
+        Map<Object, Object> preboundResources = null
         try {
+            if(unbinding) {
+                preboundResources = unbindResources()
+            }
             Object result = transactionTemplate.execute(new TransactionCallback() {
                 Object doInTransaction(TransactionStatus status) {
                     try {
@@ -100,11 +118,7 @@ class GrailsTransactionTemplate {
                             return new ThrowableHolder(e)
                         }
                     } finally {
-                        boolean inheritRollbackOnly = true
-                        if(transactionAttribute instanceof GrailsTransactionAttribute) {
-                            inheritRollbackOnly = transactionAttribute.isInheritRollbackOnly()    
-                        } 
-                        if(inheritRollbackOnly && status.isRollbackOnly()) {
+                        if(transactionAttribute.isInheritRollbackOnly() && status.isRollbackOnly()) {
                             status.setRollbackOnly()
                         }
                     }
@@ -120,6 +134,55 @@ class GrailsTransactionTemplate {
         catch (ThrowableHolderException e) {
             throw e.getCause()
         }
+        finally {
+            if(unbinding && preboundResources != null) {
+                bindResources(preboundResources)
+            }
+        }
+    }
+
+    protected boolean shouldUnbindResources() {
+        switch(resolvePreboundResourcesUsageAttribute()) {
+            case PreboundResourcesUsage.ADAPTIVE:
+                return resolveAdaptiveResourceUsageBehaviour()
+            case PreboundResourcesUsage.DONT_USE:
+                return true
+            case PreboundResourcesUsage.REUSE:
+                return false
+        }
+    }
+
+    protected PreboundResourcesUsage resolvePreboundResourcesUsageAttribute() {
+        return transactionAttribute.getPreboundResources()
+    }
+    
+    protected boolean resolveAdaptiveResourceUsageBehaviour() {
+        int propagationBehavior = transactionAttribute.getPropagationBehavior()
+        switch(propagationBehavior) {
+            case TransactionDefinition.PROPAGATION_REQUIRED:
+                if(hasActiveTransactionContext()) {
+                    // don't unbind resources if there is currently an active transaction
+                    return false
+                } else {
+                    return shouldUnbindResourcesBeforeEnteringTransactionalContext()
+                }
+            case TransactionDefinition.PROPAGATION_SUPPORTS:
+            case TransactionDefinition.PROPAGATION_MANDATORY:
+                // never unbind resources in these cases by default
+                return false
+            default:
+                return true
+        }
+    }
+    
+    protected boolean hasActiveTransactionContext() {
+        return TransactionSynchronizationManager.isSynchronizationActive()
+    }
+    
+    protected boolean shouldUnbindResourcesBeforeEnteringTransactionalContext() {
+        // we won't use the OSIV session by default
+        // you must explicitly use @Transactional(preboundResources=PreboundResourcesUsage.REUSE) for methods that should accept OSIV session 
+        return true
     }
 
     /**
@@ -152,6 +215,28 @@ class GrailsTransactionTemplate {
         @Override
         public String toString() {
             return getCause().toString();
+        }
+    }
+    
+    /**
+     * Unbind all thread local bound resources in TransactionSynchronizationManager
+     * @return
+     */
+    protected Map<Object, Object> unbindResources() {
+        Map<Object, Object> resourceMap = Collections.unmodifiableMap(new LinkedHashMap(TransactionSynchronizationManager.getResourceMap()));
+        for(Map.Entry<Object,Object> entry : resourceMap.entrySet()) {
+            TransactionSynchronizationManager.unbindResource(entry.getKey());
+        }
+        return resourceMap;
+    }
+    
+    /**
+     * Bind all resources in the map given as parameter with TransactionSynchronizationManager.bindResource method
+     * @param resourceMap
+     */
+    protected void bindResources(Map<Object, Object> resourceMap) {
+        for(Map.Entry<Object,Object> entry : resourceMap.entrySet()) {
+            TransactionSynchronizationManager.bindResource(entry.getKey(), entry.getValue());
         }
     }
 }

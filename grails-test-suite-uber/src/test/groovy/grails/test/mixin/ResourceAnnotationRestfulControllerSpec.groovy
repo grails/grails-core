@@ -27,6 +27,7 @@ import grails.rest.*
 
 @Entity
 @Resource(formats=['html', 'xml'], uri="/videos")
+@groovy.transform.EqualsAndHashCode
 class Video {
     String title
     static constraints = {
@@ -104,6 +105,7 @@ class Video {
         when:"A domain instance is passed to the show action"
             def video = domainClass.newInstance(title: "Game of Thrones")
             video.save(flush:true)
+            video.discard()
             params.id = video.id
             controller.show()
 
@@ -140,6 +142,7 @@ class Video {
 
         when:"A valid domain instance is passed to the update action"
             def video = domainClass.newInstance(title: 'Title').save(flush: true)
+            video.discard()
             response.reset()
             request.contentType = FORM_CONTENT_TYPE
             params.id = video.id
@@ -162,6 +165,7 @@ class Video {
 
         when:"A valid domain instance is passed to the update action"
             def video = domainClass.newInstance(title: 'Title').save(flush: true)
+            video.discard()
             response.reset()
             request.contentType = FORM_CONTENT_TYPE
             params.id = video.id

@@ -53,7 +53,7 @@ class RestfulControllerSubclassSpec extends Specification {
     @Issue('GRAILS-11462')
     void 'Test that update populates the instance with values from the request body'() {
         given:
-        def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save()
+        def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save(flush:true)
         
         when:
         request.method = 'PUT'
@@ -71,7 +71,7 @@ class RestfulControllerSubclassSpec extends Specification {
     @Issue('GRAILS-11462')
     void 'Test that update populates the instance with values from the request parameters'() {
         given:
-        def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save()
+        def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save(flush:true)
         
         when:
         request.method = 'PUT'

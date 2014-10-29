@@ -39,6 +39,10 @@ import spock.lang.Specification
 /**
  */
 class TransactionalTransformSpec extends Specification {
+    void cleanup() {
+        TransactionSynchronizationManager.unbindResourceIfPossible('someresource')
+    }
+    
     @Issue('GRAILS-10402')
     void "Test @Transactional annotation with inheritance"() {
         when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
@@ -578,6 +582,112 @@ new BookService()
             status.isRollbackOnly()
     }
 
+    
+    @Issue('GRAILS-11806')
+    void "Test REUSE preboundResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+    import static grails.transaction.PreboundResourcesUsage.*
+   
+    @Transactional(preboundResources=REUSE)
+    class SomeService {
+
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource')
+    }
+    
+    @Issue('GRAILS-11806')
+    void "Test DONT_USE preboundResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+    import static grails.transaction.PreboundResourcesUsage.*
+    
+    class SomeService {
+        @Transactional(preboundResources=DONT_USE)
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+
+        @Transactional(preboundResources=REUSE)
+        boolean hasResourceWithoutUnbinding(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource') == false
+            someService.hasResourceWithoutUnbinding('someresource') == true
+    }
+    
+    
+    @Issue('GRAILS-11806')
+    void "Test Rollback with REUSE preboundResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+    import static grails.transaction.PreboundResourcesUsage.*
+   
+    @Rollback(preboundResources=REUSE)
+    class SomeService {
+
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource')
+    }
+    
+    @Issue('GRAILS-11806')
+    void "Test Rollback with DONT_USE preboundResources attribute"() {
+        given:
+            def someService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.support.TransactionSynchronizationManager
+    import static grails.transaction.PreboundResourcesUsage.*
+   
+    @Rollback(preboundResources=DONT_USE)
+    class SomeService {
+
+        boolean hasResource(key) {
+            TransactionSynchronizationManager.hasResource(key)
+        }
+    }
+
+    new SomeService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            someService.transactionManager = transactionManager
+            TransactionSynchronizationManager.bindResource('someresource', 'somevalue')
+        expect:
+            someService.hasResource('someresource') == false
+    }
 }
 
 
