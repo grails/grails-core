@@ -16,7 +16,6 @@
 package grails.transaction
 
 import org.codehaus.groovy.transform.GroovyASTTransformationClass
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.lang.annotation.Documented
 import java.lang.annotation.ElementType
@@ -42,12 +41,4 @@ public @interface Rollback {
      * back after the method has completed.
      */
     boolean value() default true;
-    
-    /**
-     * Unbind any prebound {@link TransactionSynchronizationManager} resources like an OpenSessionInView session and rebind them
-     * after the transaction finishes.
-     *
-     * @return
-     */
-    boolean unbindResources() default false;
 }
