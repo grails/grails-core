@@ -94,7 +94,6 @@ public class GrailsAwareTraitInjectionOperation extends
                 traitNotLoaded = true;
             }
             if (!implementsTrait && !traitNotLoaded) {
-                System.out.println("traitClassNode = " + traitClassNode);
                 classNode.addInterface(traitClassNode);
                 traitsAdded = true;
             }
