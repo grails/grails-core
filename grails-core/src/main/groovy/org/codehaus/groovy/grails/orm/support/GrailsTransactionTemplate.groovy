@@ -23,7 +23,6 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionException
 import org.springframework.transaction.TransactionStatus
-import org.springframework.transaction.interceptor.DefaultTransactionAttribute
 import org.springframework.transaction.interceptor.TransactionAttribute
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.support.TransactionTemplate
@@ -38,20 +37,23 @@ import org.springframework.transaction.support.TransactionTemplate
 class GrailsTransactionTemplate {
 
     private TransactionTemplate transactionTemplate
-    private TransactionAttribute transactionAttribute
+    private GrailsTransactionAttribute transactionAttribute
 
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager) {
-        this(transactionManager, new DefaultTransactionAttribute())
+        this(transactionManager, new GrailsTransactionAttribute())
     }
 
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager, TransactionDefinition transactionDefinition) {
-        this.transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition)
-        this.transactionAttribute = new DefaultTransactionAttribute()
+        this(transactionManager, transactionDefinition instanceof GrailsTransactionAttribute ? (GrailsTransactionAttribute)transactionDefinition : new GrailsTransactionAttribute(transactionDefinition));
     }
 
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager, TransactionAttribute transactionAttribute) {
-        this.transactionTemplate = new TransactionTemplate(transactionManager, transactionAttribute)
-        this.transactionAttribute = transactionAttribute
+        this(transactionManager, transactionAttribute instanceof GrailsTransactionAttribute ? (GrailsTransactionAttribute)transactionAttribute : new GrailsTransactionAttribute(transactionAttribute));
+    }
+    
+    GrailsTransactionTemplate(PlatformTransactionManager transactionManager, GrailsTransactionAttribute transactionAttribute) {
+        this.transactionAttribute = transactionAttribute;
+        this.transactionTemplate = new TransactionTemplate(transactionManager, this.transactionAttribute)
     }
 
     Object executeAndRollback(Closure action) throws TransactionException {
