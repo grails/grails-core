@@ -81,7 +81,7 @@ public class Metadata extends CodeGenConfig  {
     private void afterLoading() {
         def map = [:]
         // allow override via system properties
-        map.putAll(System.properties)
+        map.putAll(System.properties.findAll { it.value })
         configMap.putAll( map )
         warDeployed = getProperty(WAR_DEPLOYED, Boolean)
     }
