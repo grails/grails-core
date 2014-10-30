@@ -2,18 +2,19 @@ package org.grails.gradle.plugin.core
 
 import grails.util.BuildSettings
 import grails.util.Environment
+import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
-import org.gradle.api.NamedDomainObjectContainer
+import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
-import org.grails.gradle.plugin.watch.GrailsWatchPlugin
-import org.grails.gradle.plugin.watch.WatchConfig
 
 class GrailsPlugin extends GroovyPlugin {
 
@@ -21,7 +22,7 @@ class GrailsPlugin extends GroovyPlugin {
         super.apply(project)
         project.extensions.create("grails", GrailsExtension)
 
-        enableNative2Ascii(project)
+
         registerFindMainClassTask(project)
 
         def projectDir = project.projectDir
@@ -43,6 +44,20 @@ class GrailsPlugin extends GroovyPlugin {
 
         enableFileWatch(environment, project)
 
+        def grailsVersion = project.getProperties().get('grailsVersion')
+
+        if(!grailsVersion) {
+            def grailsCoreDep = project.configurations.getByName('compile').dependencies.find { Dependency d -> d.name == 'grails-core' }
+            grailsVersion = grailsCoreDep.version
+        }
+
+        enableNative2Ascii(project, grailsVersion)
+
+        project.tasks.withType(JavaExec).each { JavaExec task ->
+            task.systemProperty Metadata.APPLICATION_NAME, project.name
+            task.systemProperty Metadata.APPLICATION_VERSION, project.version
+            task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
+        }
 
         project.sourceSets {
             main {
@@ -75,20 +90,6 @@ class GrailsPlugin extends GroovyPlugin {
         }
     }
 
-    private void configureWatchPlugin(Project project) {
-        new GrailsWatchPlugin().apply(project)
-        NamedDomainObjectContainer<WatchConfig> watchConfigs = project.extensions.getByName('watch')
-        def grailsConfig = watchConfigs.create("grailsApp")
-        grailsConfig.directory = project.file("grails-app")
-        grailsConfig.extensions = ['groovy', 'java']
-        grailsConfig.tasks('compileGroovy')
-
-        def groovyConfig = watchConfigs.create("groovyConfig")
-        groovyConfig.directory = project.file("src/main/groovy")
-        groovyConfig.extensions = ['groovy', 'java']
-        groovyConfig.tasks('compileGroovy')
-    }
-
     @CompileStatic
     protected void registerFindMainClassTask(Project project) {
         def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
@@ -102,24 +103,31 @@ class GrailsPlugin extends GroovyPlugin {
     /**
      * Enables native2ascii processing of resource bundles
      **/
-    protected void enableNative2Ascii(Project project) {
+    protected void enableNative2Ascii(Project project, grailsVersion) {
         for (SourceSet sourceSet in project.sourceSets) {
             project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
                 def grailsExt = project.extensions.getByType(GrailsExtension)
-                if (grailsExt.native2ascii) {
-                    task.from(sourceSet.resources) {
-                        include '**/*.properties'
+                task.filter( ReplaceTokens, tokens: [
+                        'info.app.name': project.name,
+                        'info.app.version': project.version,
+                        'info.app.grailsVersion': grailsVersion
+                    ]
+                )
+                task.from(sourceSet.resources) {
+                    include '**/*.properties'
+                    if(grailsExt.native2ascii) {
                         filter(EscapeUnicode)
                     }
-                    task.from(sourceSet.resources) {
-                        exclude '**/*.properties'
-                    }
-                    task.from(sourceSet.resources) {
-                        include '**/*.groovy'
-                    }
+                }
+                task.from(sourceSet.resources) {
+                    exclude '**/*.properties'
+                }
+                task.from(sourceSet.resources) {
+                    include '**/*.groovy'
                 }
             }
         }
+
     }
 
 }

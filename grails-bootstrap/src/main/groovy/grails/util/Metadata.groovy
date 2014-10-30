@@ -32,11 +32,11 @@ import java.util.*;
 public class Metadata extends CodeGenConfig  {
     private static final long serialVersionUID = -582452926111226898L;
     public static final String FILE = "application.yml";
-    public static final String APPLICATION_VERSION = "app.version";
-    public static final String APPLICATION_NAME = "app.name";
-    public static final String APPLICATION_GRAILS_VERSION = "app.grails.version";
-    public static final String SERVLET_VERSION = "app.servlet.version";
-    public static final String WAR_DEPLOYED = "grails.war.deployed";
+    public static final String APPLICATION_VERSION = "info.app.version";
+    public static final String APPLICATION_NAME = "info.app.name";
+    public static final String APPLICATION_GRAILS_VERSION = "info.app.grailsVersion";
+    public static final String SERVLET_VERSION = "info.app.servletVersion";
+    public static final String WAR_DEPLOYED = "info.app.warDeployed";
     public static final String DEFAULT_SERVLET_VERSION = "2.5";
 
     private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata");
@@ -44,7 +44,6 @@ public class Metadata extends CodeGenConfig  {
     private File metadataFile;
     private boolean warDeployed;
     private String servletVersion = DEFAULT_SERVLET_VERSION;
-    private CodeGenConfig config;
 
     private Metadata() {
         loadFromDefault();
@@ -80,6 +79,10 @@ public class Metadata extends CodeGenConfig  {
     }
 
     private void afterLoading() {
+        def map = [:]
+        // allow override via system properties
+        map.putAll(System.properties)
+        configMap.putAll( map )
         warDeployed = getProperty(WAR_DEPLOYED, Boolean)
     }
 
