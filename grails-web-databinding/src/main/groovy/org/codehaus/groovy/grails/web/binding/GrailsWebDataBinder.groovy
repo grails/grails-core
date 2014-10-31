@@ -475,6 +475,12 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 def otherSide = property.otherSide
                 if (otherSide.isManyToOne()) {
                     val[otherSide.name] = obj
+                } else if(otherSide.isManyToMany()) {
+                    Collection otherCollection = GrailsMetaClassUtils.getPropertyIfExists(val, otherSide.name, Collection)
+                    if (otherCollection == null || !otherCollection.contains(obj)) {
+                        def methodName = 'addTo' + GrailsNameUtils.getClassName(otherSide.name)
+                        GrailsMetaClassUtils.invokeMethodIfExists(val, methodName, [obj] as Object[])
+                    }
                 }
             }
         }
