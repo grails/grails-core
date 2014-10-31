@@ -25,6 +25,8 @@ dependencies {
     compile "junit:junit:${junitVersion}", {
         exclude group:'org.hamcrest', module: 'hamcrest-core'
     }
+
+    runtime "cglib:cglib:${cglibVersion}"
 }
 
 eclipse {

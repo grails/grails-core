@@ -38,6 +38,7 @@ public class GrailsCoreDependencies {
     protected final String jaxbVersion = "2.0";
     protected String servletApiVersion = "3.0.1";
     protected String spockVersion = "0.7-groovy-2.0";
+    protected String cglibVersion = "2.2.2";
     protected String junitVersion = "4.11";
 
     public boolean java5compatible;
@@ -96,6 +97,7 @@ public class GrailsCoreDependencies {
             testDependencies = Arrays.asList(
                 new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
                 new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes),
+                new Dependency("cglib", "cglib-nodep", cglibVersion, true),
                 new Dependency("junit", "junit", junitVersion, true)
             );
         }

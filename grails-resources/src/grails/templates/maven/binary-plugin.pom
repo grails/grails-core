@@ -102,7 +102,7 @@
             <plugin>
                 <groupId>org.grails</groupId>
                 <artifactId>grails-maven-plugin</artifactId>
-                <version>2.4.2</version>
+                <version>2.4.4</version>
                 <configuration>
                     <grailsVersion>\${grails.version}</grailsVersion>
                 </configuration>
