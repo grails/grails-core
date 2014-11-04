@@ -6,6 +6,7 @@ import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
+import grails.plugins.metadata.GrailsPlugin
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileDynamic
@@ -94,6 +95,12 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 continue
             }
 
+            def projectName = classNode.getNodeMetaData("projectName")
+            def projectVersion = classNode.getNodeMetaData("projectVersion")
+
+            if(projectName && projectVersion) {
+                GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: projectName, version:projectVersion])
+            }
 
             for(ArtefactHandler handler in artefactHandlers) {
                 if(handler.isArtefact(classNode)) {

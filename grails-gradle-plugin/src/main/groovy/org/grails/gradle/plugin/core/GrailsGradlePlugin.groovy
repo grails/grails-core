@@ -16,7 +16,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
 
-class GrailsPlugin extends GroovyPlugin {
+class GrailsGradlePlugin extends GroovyPlugin {
 
     void apply(Project project) {
         super.apply(project)

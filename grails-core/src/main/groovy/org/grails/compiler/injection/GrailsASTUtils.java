@@ -833,25 +833,42 @@ public class GrailsASTUtils {
      * @param annotationClass The annotation class
      */
     public static AnnotationNode addAnnotationOrGetExisting(ClassNode classNode, Class<? extends Annotation> annotationClass) {
+        return addAnnotationOrGetExisting(classNode, annotationClass, Collections.<String, Object>emptyMap());
+    }
+
+    /**
+     * Adds an annotation to the given class node or returns the existing annotation
+     *
+     * @param classNode The class node
+     * @param annotationClass The annotation class
+     */
+    public static AnnotationNode addAnnotationOrGetExisting(ClassNode classNode, Class<? extends Annotation> annotationClass, Map<String, Object> members) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = ClassHelper.make(annotationClass);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
         if (annotations.isEmpty()) {
             classNode.addAnnotation(annotationToAdd);
-            return annotationToAdd;
         }
         else {
             AnnotationNode existing = findAnnotation(annotationClassNode, annotations);
             if (existing != null){
-                return existing;
+                annotationToAdd = existing;
             }
             else {
                 classNode.addAnnotation(annotationToAdd);
-                return annotationToAdd;
             }
         }
+
+        if(members != null && !members.isEmpty()) {
+            for (Map.Entry<String, Object> memberEntry : members.entrySet()) {
+                Object value = memberEntry.getValue();
+                annotationToAdd.setMember( memberEntry.getKey(), value instanceof Expression ? (Expression)value : new ConstantExpression(value));
+            }
+        }
+        return annotationToAdd;
     }
-    
+
+
     /**
      * Add the grails.artefact.Enhanced annotation to classNode if it does not already exist and ensure that
      * all of the features in the enhancedFor array are represented in the enhancedFor attribute of the
