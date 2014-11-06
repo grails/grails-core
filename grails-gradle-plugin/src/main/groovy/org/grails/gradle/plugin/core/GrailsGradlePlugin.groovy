@@ -67,6 +67,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
                    from "${project.buildDir}/assetCompile"
                 }
             }
+            else {
+                project.processResources {
+                    from "${project.buildDir}/assetCompile"
+                }
+            }
 
         }
         project.tasks.withType(JavaExec).each { JavaExec task ->
