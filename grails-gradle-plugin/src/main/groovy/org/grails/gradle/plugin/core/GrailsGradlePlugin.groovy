@@ -54,10 +54,20 @@ class GrailsGradlePlugin extends GroovyPlugin {
         enableNative2Ascii(project, grailsVersion)
 
 
+        if(project.extensions.findByName('assets')) {
+            project.assets {
+                assetsPath = 'grails-app/assets'
+                compileDir = 'build/assetCompile/assets'
+            }
+        }
 
         project.afterEvaluate {
-            def assetsConfiguration = project.extensions.findByName('assets')
-            assetsConfiguration?.assetsPath = 'grails-app/assets'
+            if( project.tasks.findByName("war") ) {
+                project.war {
+                   from "${project.buildDir}/assetCompile"
+                }
+            }
+
         }
         project.tasks.withType(JavaExec).each { JavaExec task ->
             task.systemProperty Metadata.APPLICATION_NAME, project.name
