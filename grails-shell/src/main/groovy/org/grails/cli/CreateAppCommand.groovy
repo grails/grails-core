@@ -18,6 +18,7 @@ class CreateAppCommand {
     String appname
     String groupname
     File targetDirectory
+    List<String> binaryFileExtensions = ['png','gif','jpg','jpeg','ico','icns','pdf','zip','jar','class']
     
     void run() {
         Profile profileInstance = profileRepository.getProfile(profile)
@@ -75,14 +76,32 @@ class CreateAppCommand {
     @CompileStatic(TypeCheckingMode.SKIP)
     private void copySkeleton(File profileDirectory) {
         AntBuilder ant = new AntBuilder()
-        ant.copy(todir: targetDirectory, overwrite: true) {
-            fileSet(dir: new File(profileDirectory, "skeleton")) {
+        File srcDir = new File(profileDirectory, "skeleton")
+        ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
+            fileSet(dir: srcDir, casesensitive: false) {
                 exclude(name: '**/.gitkeep')
+                binaryFileExtensions.each { ext ->
+                    exclude(name: "**/*.${ext}")
+                }
             }
             filterset { 
                 variables.each { k, v ->
                     filter(token:k, value:v)
                 } 
+            }
+            mapper {
+                filtermapper {
+                    variables.each { k, v ->
+                        replacestring(from: "@${k}@".toString(), to:v)
+                    }
+                }
+            }
+        }
+        ant.copy(todir: targetDirectory, overwrite: true) {
+            fileSet(dir: srcDir, casesensitive: false) {
+                binaryFileExtensions.each { ext ->
+                    include(name: "**/*.${ext}")
+                }
             }
             mapper {
                 filtermapper {
