@@ -521,7 +521,7 @@ class AetherDependencyManager implements DependencyManager {
         if(coreDependencies) {
 
             // ensure correct version of Spring is used
-            for (springDep in ['spring-orm', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
+            for (springDep in ['spring-orm', 'spring-beans', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
                 String id = "org.springframework:${springDep}:${coreDependencies.springVersion}"
                 registerManagedDependency(collectRequest, id, alreadyManagedArtefacts)
             }

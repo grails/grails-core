@@ -387,4 +387,10 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
             return new ByteArrayInputStream(contents.getBytes("UTF-8"));
         }
     }
+
+    @Override
+    public <T> T getBean(Class<T> requiredType, Object... args)
+            throws BeansException {
+        return getBean(requiredType);
+    }
 }
