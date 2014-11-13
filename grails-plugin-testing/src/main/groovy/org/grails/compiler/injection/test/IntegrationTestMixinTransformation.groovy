@@ -94,7 +94,7 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
         }
 
         if(mainClass) {
-            def applicationClassNode = ClassHelper.make(Thread.currentThread().contextClassLoader.loadClass(mainClass))
+            def applicationClassNode = ClassHelper.make(mainClass)
 
             if(TestMixinTransformation.isSpockTest(classNode)) {
                 // first add context configuration
@@ -123,12 +123,9 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             // @WebAppConfiguration
             // @IntegrationTest
 
-            if(GrailsASTUtils.isSubclassOf(applicationClassNode, "grails.boot.config.GrailsWebConfiguration")) {
+            if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
                 classNode.addAnnotation(new AnnotationNode(WEB_APP_CONFIGURATION))
                 classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
-            }
-            else {
-                throw new RuntimeException("doesn't implement ${applicationClassNode.superClass}")
             }
 
         }
