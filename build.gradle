@@ -41,7 +41,7 @@ ext {
 
     spockVersion = '0.7-groovy-2.0'
     springLoadedVersion = "1.2.1.RELEASE"
-    springBootVersion = "1.1.7.RELEASE"
+    springBootVersion = "1.2.0.RC1"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.1.2.RELEASE"
     ehcacheVersion = "2.4.6"
@@ -90,6 +90,7 @@ allprojects {
         maven { url "https://repo.grails.org/grails/core" }
         mavenLocal()
         if(isBuildSnapshot) {
+            maven { url "https://repo.spring.io/repo"}
             maven { url "http://repo.grails.org/grails/libs-snapshots-local" }
         }
     }
