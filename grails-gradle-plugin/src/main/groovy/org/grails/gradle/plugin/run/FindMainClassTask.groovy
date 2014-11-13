@@ -6,6 +6,7 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 import org.grails.gradle.plugin.util.SourceSets
+import org.grails.io.support.MainClassFinder
 import org.springframework.boot.gradle.SpringBootPluginExtension
 
 /**

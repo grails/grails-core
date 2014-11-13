@@ -109,6 +109,7 @@ public class GrailsASTUtils {
     public static final Token EQUALS_OPERATOR = Token.newSymbol("==", 0, 0);
     public static final Token LOGICAL_AND_OPERATOR = Token.newSymbol("&&", 0, 0);
     public static final Token NOT_EQUALS_OPERATOR = Token.newSymbol("!=", 0, 0);
+    public static final String OBJECT_CLASS = "java.lang.Object";
 
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
     public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
@@ -1107,6 +1108,22 @@ public class GrailsASTUtils {
      */
     public static boolean isInnerClassNode(ClassNode classNode) {
         return (classNode instanceof InnerClassNode) || classNode.getName().contains("$");
+    }
+
+    /**
+     * Returns true if the given class name is a parent class of the given class
+     *
+     * @param classNode The class node
+     * @param parentClassName the parent class name
+     * @return True if it is a subclass
+     */
+    public static boolean isSubclassOf(ClassNode classNode, String parentClassName) {
+        ClassNode currentSuper = classNode.getSuperClass();
+        while (currentSuper != null && !currentSuper.getName().equals(OBJECT_CLASS)) {
+            if (currentSuper.getName().equals(parentClassName)) return true;
+            currentSuper = currentSuper.getSuperClass();
+        }
+        return false;
     }
 
     @Target(ElementType.CONSTRUCTOR)

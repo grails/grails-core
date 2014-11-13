@@ -87,7 +87,6 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(new ClassNode(MixinMethod.class));
     static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
-    public static final String OBJECT_CLASS = "java.lang.Object";
     public static final String SPEC_CLASS = "spock.lang.Specification";
     private static final String JUNIT3_CLASS = "junit.framework.TestCase";
     public static final String SET_UP_METHOD = "setUp";
@@ -100,7 +99,7 @@ public class TestMixinTransformation implements ASTTransformation{
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
-            throw new RuntimeException("Internal error: wrong types: $node.class / $parent.class");
+            throw new RuntimeException("Internal error: wrong types: " + astNodes[0].getClass() + " / " + astNodes[1].getClass());
         }
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
@@ -216,7 +215,7 @@ public class TestMixinTransformation implements ASTTransformation{
         FieldExpression fieldReference = new FieldExpression(mixinFieldNode);
 
         ClassNode currentMixinClassNode = mixinClassNode; 
-        while (!currentMixinClassNode.getName().equals(OBJECT_CLASS)) {
+        while (!currentMixinClassNode.getName().equals(GrailsASTUtils.OBJECT_CLASS)) {
             final List<MethodNode> mixinMethods = currentMixinClassNode.getMethods();
 
             for (MethodNode mixinMethod : mixinMethods) {
@@ -429,20 +428,11 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     public static boolean isJunit3Test(ClassNode classNode) {
-        return isSubclassOf(classNode, JUNIT3_CLASS);
+        return GrailsASTUtils.isSubclassOf(classNode, JUNIT3_CLASS);
     }
 
     public static boolean isSpockTest(ClassNode classNode) {
-        return isSubclassOf(classNode, SPEC_CLASS);
-    }
-
-    private static boolean isSubclassOf(ClassNode classNode, String testType) {
-        ClassNode currentSuper = classNode.getSuperClass();
-        while (currentSuper != null && !currentSuper.getName().equals(OBJECT_CLASS)) {
-            if (currentSuper.getName().equals(testType)) return true;
-            currentSuper = currentSuper.getSuperClass();
-        }
-        return false;
+        return GrailsASTUtils.isSubclassOf(classNode, SPEC_CLASS);
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {

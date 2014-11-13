@@ -15,7 +15,11 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory
 import org.springframework.util.ClassUtils
 
 /**
- * Created by graemerocher on 06/10/14.
+ * A base class for configurations that bootstrap a Grails application
+ *
+ * @since 3.0
+ * @author Graeme Rocher
+ *
  */
 @CompileStatic
 class GrailsAutoConfiguration implements ResourceLoaderAware, ApplicationContextAware {

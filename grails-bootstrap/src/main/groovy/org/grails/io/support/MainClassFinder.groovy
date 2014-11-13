@@ -1,12 +1,13 @@
-package org.grails.gradle.plugin.run
+package org.grails.io.support
 
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.grails.io.support.GrailsResourceUtils
-import org.springframework.asm.ClassReader
-import org.springframework.asm.ClassVisitor
-import org.springframework.asm.MethodVisitor
-import org.springframework.asm.Opcodes
-import org.springframework.asm.Type
+import groovyjarjarasm.asm.ClassReader
+import groovyjarjarasm.asm.ClassVisitor
+import groovyjarjarasm.asm.MethodVisitor
+import groovyjarjarasm.asm.Opcodes
+import groovyjarjarasm.asm.Type
 
 /**
  * @author Graeme Rocher
@@ -22,7 +23,11 @@ class MainClassFinder {
     private static final String MAIN_METHOD_NAME = "main"
 
 
-    String findMainClass(File rootFolder) {
+    static String mainClassName = null
+
+    static String findMainClass(File rootFolder = BuildSettings.CLASSES_DIR) {
+        if(mainClassName) return mainClassName
+
         if (!rootFolder.exists()) {
             return null // nothing to do
         }
@@ -39,7 +44,8 @@ class MainClassFinder {
                 InputStream inputStream = file.newInputStream()
                 try {
                     if (isMainClass(inputStream)) {
-                        return GrailsResourceUtils.getClassNameForClassFile(prefix, file.absolutePath)
+                        mainClassName = GrailsResourceUtils.getClassNameForClassFile(prefix, file.absolutePath)
+                        return mainClassName
                     }
                 } finally {
                     inputStream?.close()
@@ -63,7 +69,7 @@ class MainClassFinder {
     }
 
 
-    protected boolean isMainClass(InputStream inputStream) {
+    protected static boolean isMainClass(InputStream inputStream) {
         def classReader = new ClassReader(inputStream)
         if(classReader.superName?.startsWith('grails/boot/config/')) {
             def mainMethodFinder = new MainMethodFinder()

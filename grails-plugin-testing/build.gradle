@@ -10,14 +10,13 @@ dependencies {
             project(':grails-plugin-converters'),
             project(':grails-plugin-rest'),
             project(':grails-plugin-codecs'),
-            project(':grails-logging'),
             project(':grails-test')
-
 
     compile("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-
+    compile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    compile "org.spockframework:spock-spring:${spockVersion}"
     compile("org.spockframework:spock-core:${spockVersion}") {
         exclude group:'junit', module: 'junit-dep'
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
