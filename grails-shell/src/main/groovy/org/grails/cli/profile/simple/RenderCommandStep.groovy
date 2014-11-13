@@ -1,5 +1,6 @@
 package org.grails.cli.profile.simple
 
+import grails.util.GrailsNameUtils
 import org.grails.cli.profile.ExecutionContext
 
 class RenderCommandStep extends SimpleCommandStep {
@@ -63,7 +64,7 @@ class RenderCommandStep extends SimpleCommandStep {
             artifactPackage = parts[0..-2].join('.')
         }
         
-        [artifactName, artifactPackage]
+        [GrailsNameUtils.getClassName(artifactName), artifactPackage]
     } 
     
     protected String relativePath(File relbase, File file) {
