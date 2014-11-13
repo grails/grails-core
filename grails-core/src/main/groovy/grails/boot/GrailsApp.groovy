@@ -48,7 +48,7 @@ class GrailsApp extends SpringApplication {
     ConfigurableApplicationContext run(String... args) {
         def applicationContext = super.run(args)
 
-        grails.util.Environment environment = grails.util.Environment.getCurrent()
+        Environment environment = Environment.getCurrent()
         if(environment.isReloadEnabled()) {
             enableDevelopmentModeWatch(environment, applicationContext)
         }
