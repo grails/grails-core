@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.services
 
+import grails.core.GrailsApplication
+import grails.core.support.GrailsApplicationAware
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 
@@ -35,17 +37,22 @@ import org.springframework.transaction.annotation.Transactional
  * @author Graeme Rocher
  * @since 0.4
  */
-class ServicesGrailsPlugin {
+class ServicesGrailsPlugin implements GrailsApplicationAware {
 
     def version = GrailsUtil.getGrailsVersion()
     def loadAfter = ['hibernate', 'hibernate4']
 
+
     def watchedResources = ["file:./grails-app/services/**/*Service.groovy",
                             "file:./plugins/*/grails-app/services/**/*Service.groovy"]
+
+    GrailsApplication grailsApplication
 
     def doWithSpring = {
         xmlns tx:"http://www.springframework.org/schema/tx"
         tx.'annotation-driven'('transaction-manager':'transactionManager')
+
+        def application = grailsApplication
 
         for (GrailsServiceClass serviceClass in application.serviceClasses) {
             def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
@@ -61,7 +68,7 @@ class ServicesGrailsPlugin {
 
             "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) { bean ->
                 bean.lazyInit = lazyInit
-                targetObject = ref("grailsApplication", true)
+                targetObject = application
                 targetMethod = "getArtefact"
                 arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
             }
