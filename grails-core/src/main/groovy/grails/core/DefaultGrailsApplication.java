@@ -48,6 +48,7 @@ import org.grails.io.support.GrailsResourceUtils;
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.io.Resource;
@@ -809,7 +810,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
             if (isInitialised()) {
                 initializeArtefacts(artefactType);
                 ApplicationContext context = getMainContext();
-                if(context != null) {
+                if(context != null && ((ConfigurableApplicationContext)context).isActive()) {
                     context.publishEvent(new ArtefactAdditionEvent(artefactGrailsClass));
                 }
             }
