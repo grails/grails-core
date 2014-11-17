@@ -1,18 +1,16 @@
 package org.grails.cli
 
-import grails.plugins.GrailsVersionUtils
-import grails.util.GrailsNameUtils;
-import grails.util.Metadata;
+import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.GitProfileRepository
 
 
 @CompileStatic
 class CreateAppCommand {
-    ProfileRepository profileRepository
+    GitProfileRepository profileRepository
     String profile
     String groupAndAppName
     Map<String, String> variables = [:]

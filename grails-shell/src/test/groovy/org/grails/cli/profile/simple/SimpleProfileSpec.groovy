@@ -1,6 +1,6 @@
 package org.grails.cli.profile.simple
 
-import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.GitProfileRepository
 
 import spock.lang.Specification
 
@@ -8,7 +8,7 @@ class SimpleProfileSpec extends Specification {
     SimpleProfile profile
     
     def setup() {
-        ProfileRepository profileRepository = new ProfileRepository(initialized:true, profilesDirectory: new File('src/test/resources/profiles-repository'))
+        GitProfileRepository profileRepository = new GitProfileRepository(initialized:true, profilesDirectory: new File('src/test/resources/profiles-repository'))
         profile = SimpleProfile.create(profileRepository, 'web', new File('src/test/resources/profiles-repository/profiles/web'))
     }
     

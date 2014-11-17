@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
@@ -6,6 +21,9 @@ import grails.io.SystemStreamsRedirector
 import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+import jline.console.completer.ArgumentCompleter
+import org.grails.cli.interactive.completors.EscapingFileNameCompletor
+import org.grails.cli.interactive.completors.RegexCompletor
 
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -26,38 +44,66 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.GitProfileRepository
 import org.grails.cli.profile.ProjectContext
 
+
+/**
+ * Main class for the Grails command line. Handles interactive mode and running Grails commands within the context of a profile
+ *
+ * @author Lari Hotari
+ * @author Graeme Rocher
+ *
+ * @since 3.0
+ */
 @CompileStatic
 class GrailsCli {
     public static final String DEFAULT_PROFILE_NAME = 'web'
     private static final int KEYPRESS_CTRL_C = 3
     private static final int KEYPRESS_ESC = 27
+    private static final String USAGE_MESSAGE = "Usage: create-app [NAME] --profile=web"
     private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
+
+
     List<CommandLineHandler> commandLineHandlers=[]
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
     Boolean ansiEnabled = null
     Character defaultInputMask = null
-    ProfileRepository profileRepository=new ProfileRepository()
+    GitProfileRepository profileRepository=new GitProfileRepository()
     CodeGenConfig applicationConfig
     ProjectContext projectContext
-    
+
+    /**
+     * Main method for running via the command line
+     *
+     * @param args The arguments
+     */
+    public static void main(String[] args) {
+        GrailsCli cli=new GrailsCli()
+        System.exit(cli.execute(args))
+    }
+
+    /**
+     * Execute the given command
+     *
+     * @param args The arguments
+     * @return The exit status code
+     */
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
-        if(mainCommandLine.hasOption("verbose")) {
+        if(mainCommandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)) {
             System.setProperty("grails.verbose", "true")
         }
-        if(mainCommandLine.hasOption("stacktrace")) {
+        if(mainCommandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
             System.setProperty("grails.show.stacktrace", "true")
         }
         
         File grailsAppDir=new File("grails-app")
         if(!grailsAppDir.isDirectory()) {
             if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
-                System.err.println "usage: create-app appname --profile=web"
+                System.err.println USAGE_MESSAGE
             }
             switch(mainCommandLine.commandName) {
                 case "create-app":
@@ -65,7 +111,7 @@ class GrailsCli {
                 case "create-plugin":
                     return createPlugin(mainCommandLine, profileRepository)
                 default:
-                    System.err.println "usage: create-app appname --profile=web"
+                    System.err.println USAGE_MESSAGE
                     return 1
 
             }
@@ -74,14 +120,14 @@ class GrailsCli {
         } else {
             applicationConfig = loadApplicationConfig()
         
-            def commandName = mainCommandLine.getCommandName()
-            GrailsConsole console=GrailsConsole.getInstance()
-            console.setAnsiEnabled(!mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT))
+            def commandName = mainCommandLine.commandName
+            GrailsConsole console = GrailsConsole.instance
+            console.ansiEnabled = !mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT)
             console.defaultInputMask = defaultInputMask
             if(ansiEnabled != null) {
-                console.setAnsiEnabled(ansiEnabled)
+                console.ansiEnabled = ansiEnabled
             }
-            File baseDir = new File("").absoluteFile
+            File baseDir = new File(".").absoluteFile
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             initializeProfile()
             if(commandName) {
@@ -93,6 +139,28 @@ class GrailsCli {
         return 0
     }
 
+    ExecutionContext createExecutionContext(String unparsedCommandLine, CommandLine commandLine) {
+        new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
+    }
+    
+    Boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
+        handleCommand(createExecutionContext(unparsedCommandLine, commandLine))
+    }
+    
+    Boolean handleCommand(ExecutionContext context) {
+        if(handleBuiltInCommands(context)) {
+            return true
+        }
+        for(CommandLineHandler handler : commandLineHandlers) {
+             if(handler.handleCommand(context)) {
+                 return true
+             }
+        }
+        context.console.error("Command not found ${context.commandLine.commandName}")
+        return false
+    }
+
+
     private void handleInteractiveMode() {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
         GrailsConsole console = projectContext.console
@@ -100,7 +168,7 @@ class GrailsCli {
         console.reader.addCompleter(aggregateCompleter)
         console.println("Starting interactive mode...")
         ExecutorService commandExecutor = Executors.newFixedThreadPool(1)
-        try {        
+        try {
             interactiveModeLoop(commandExecutor)
         } finally {
             commandExecutor.shutdownNow()
@@ -139,8 +207,8 @@ class GrailsCli {
             ((UnixTerminal) terminal).disableInterruptCharacter()
         }
         try {
-            while(!commandFuture.isDone()) {
-                if(nonBlockingInput.isNonBlockingEnabled()) {
+            while(!commandFuture.done) {
+                if(nonBlockingInput.nonBlockingEnabled) {
                     int peeked = nonBlockingInput.peek(100L)
                     if(peeked > 0) {
                         // read peeked character from buffer
@@ -173,10 +241,16 @@ class GrailsCli {
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
         def gradleHandler = new GradleConnectionCommandLineHandler()
         commandLineHandlers.add(gradleHandler)
-        aggregateCompleter.getCompleters().addAll((profile.getCompleters(projectContext)?:[]) as Collection)
-        aggregateCompleter.getCompleters().add(gradleHandler.createCompleter(projectContext))
+
+        def completers = aggregateCompleter.getCompleters()
+
+        completers.add(new ArgumentCompleter(
+                new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
+        )
+        completers.addAll((profile.getCompleters(projectContext)?:[]) as Collection)
+        completers.add(gradleHandler.createCompleter(projectContext))
     }
-    
+
     private CodeGenConfig loadApplicationConfig() {
         CodeGenConfig config = new CodeGenConfig()
         File applicationYml = new File("grails-app/conf/application.yml")
@@ -186,14 +260,14 @@ class GrailsCli {
         config
     }
 
-    private int createPlugin(CommandLine mainCommandLine, ProfileRepository profileRepository) {
+    private int createPlugin(CommandLine mainCommandLine, GitProfileRepository profileRepository) {
         String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
         CreatePluginCommand cmd = new CreatePluginCommand (profileRepository: profileRepository, groupAndAppName: groupAndAppName)
         cmd.run()
         return 0
     }
 
-    private int createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
+    private int createApp(CommandLine mainCommandLine, GitProfileRepository profileRepository) {
         String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
         String profileName = mainCommandLine.optionValue('profile')
         if(!profileName) {
@@ -209,28 +283,6 @@ class GrailsCli {
             return 1
         }
     }
-    
-    ExecutionContext createExecutionContext(String unparsedCommandLine, CommandLine commandLine) {
-        new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
-    }
-    
-    Boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
-        handleCommand(createExecutionContext(unparsedCommandLine, commandLine))
-    }
-    
-    Boolean handleCommand(ExecutionContext context) {
-        if(handleBuiltInCommands(context)) {
-            return true
-        }
-        for(CommandLineHandler handler : commandLineHandlers) {
-             if(handler.handleCommand(context)) {
-                 return true
-             }
-        }
-        context.console.error("Command not found ${context.commandLine.commandName}")
-        return false
-    }
-
     private boolean handleBuiltInCommands(ExecutionContext context) {
         CommandLine commandLine = context.commandLine
         GrailsConsole console = context.console
@@ -279,12 +331,7 @@ class GrailsCli {
         }
         allCommands
     }
-    
-    public static void main(String[] args) {
-        GrailsCli cli=new GrailsCli()
-        System.exit(cli.execute(args))
-    }
-    
+
     
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {

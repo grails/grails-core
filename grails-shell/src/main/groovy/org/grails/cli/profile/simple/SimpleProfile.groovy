@@ -5,7 +5,7 @@ import jline.console.completer.Completer
 
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.GitProfileRepository
 import org.grails.cli.profile.ProjectContext
 import org.yaml.snakeyaml.Yaml;
 
@@ -22,7 +22,7 @@ class SimpleProfile implements Profile {
         this.profileDir = profileDir
     }
 
-    private void initialize(ProfileRepository repository) {
+    private void initialize(GitProfileRepository repository) {
         parentProfiles = []
         File profileYml = new File(profileDir, "profile.yml")
         if(profileYml.isFile()) {
@@ -43,7 +43,7 @@ class SimpleProfile implements Profile {
         }
     }
 
-    public static SimpleProfile create(ProfileRepository repository, String name, File profileDir) {
+    public static SimpleProfile create(GitProfileRepository repository, String name, File profileDir) {
         SimpleProfile profile = new SimpleProfile(name, profileDir)
         profile.initialize(repository)
         profile
