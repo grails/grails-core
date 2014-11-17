@@ -56,11 +56,21 @@ class GrailsCli {
         
         File grailsAppDir=new File("grails-app")
         if(!grailsAppDir.isDirectory()) {
-            if(!mainCommandLine || !mainCommandLine.commandName || mainCommandLine.commandName != 'create-app' || !mainCommandLine.getRemainingArgs()) {
+            if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
                 System.err.println "usage: create-app appname --profile=web"
-                return 1
             }
-            return createApp(mainCommandLine, profileRepository)
+            switch(mainCommandLine.commandName) {
+                case "create-app":
+                    return createApp(mainCommandLine, profileRepository)
+                case "create-plugin":
+                    return createPlugin(mainCommandLine, profileRepository)
+                default:
+                    System.err.println "usage: create-app appname --profile=web"
+                    return 1
+
+            }
+
+
         } else {
             applicationConfig = loadApplicationConfig()
         
@@ -175,7 +185,14 @@ class GrailsCli {
         }
         config
     }
-    
+
+    private int createPlugin(CommandLine mainCommandLine, ProfileRepository profileRepository) {
+        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
+        CreatePluginCommand cmd = new CreatePluginCommand (profileRepository: profileRepository, groupAndAppName: groupAndAppName)
+        cmd.run()
+        return 0
+    }
+
     private int createApp(CommandLine mainCommandLine, ProfileRepository profileRepository) {
         String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
         String profileName = mainCommandLine.optionValue('profile')
