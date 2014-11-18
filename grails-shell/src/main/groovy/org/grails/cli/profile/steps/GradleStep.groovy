@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.simple
+package org.grails.cli.profile.steps
 
 import groovy.transform.InheritConstructors
 import org.gradle.tooling.BuildLauncher
@@ -31,12 +31,12 @@ import org.grails.cli.profile.ExecutionContext
  *
  * @since 3.0
  */
-class GradleCommandStep extends AbstractStep {
+class GradleStep extends AbstractStep {
     protected List<String> tasks = []
     protected String baseArguments = ""
     protected boolean passArguments = true
 
-    GradleCommandStep(Command command, Map<String, Object> parameters) {
+    GradleStep(Command command, Map<String, Object> parameters) {
         super(command, parameters)
         initialize()
     }

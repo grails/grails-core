@@ -20,6 +20,9 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.MultiStepCommand
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.Step
+import org.grails.cli.profile.steps.GradleStep
+import org.grails.cli.profile.steps.RenderStep
+import org.grails.cli.profile.steps.StepRegistry
 
 /**
  * Simple implementation of the {@link MultiStepCommand} abstract class that parses commands defined in YAML or JSON
@@ -58,13 +61,7 @@ class SimpleCommand extends MultiStepCommand {
     }
 
     protected AbstractStep createStep(Map stepParameters) {
-        switch(stepParameters.command) {
-            case 'render':
-                return new RenderCommandStep(this, stepParameters)
-            case 'gradle':
-                return new GradleCommandStep(this, stepParameters)
-        }
-        return null
+        StepRegistry.getStep(stepParameters.command?.toString(), this, stepParameters)
     }
 
 }
