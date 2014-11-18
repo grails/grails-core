@@ -13,30 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.grails.cli.profile
 
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
-
 /**
- * Describes a {@link Command}
+ * Abstract implementation of the {@link Step} interface
  *
  * @author Graeme Rocher
- * @since 3.0
  */
-@CompileStatic
-@Canonical
-class CommandDescription {
-    /**
-     * The name of the command
-     */
-    String name
-    /**
-     * The description of the command
-     */
-    String description
-    /**
-     * The usage instructions for the command
-     */
-    String usage
+abstract class AbstractStep implements Step {
+    Command command
+    Map<String, Object> parameters
+
+    AbstractStep(Command command, Map<String, Object> parameters) {
+        this.command = command
+        this.parameters = parameters
+    }
 }

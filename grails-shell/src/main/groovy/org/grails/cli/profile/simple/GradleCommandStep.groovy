@@ -1,23 +1,52 @@
+/*
+ * Copyright 2014 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.cli.profile.simple
 
+import groovy.transform.InheritConstructors
 import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.GradleUtil
+import org.grails.cli.profile.AbstractStep
+import org.grails.cli.profile.Command
 import org.grails.cli.profile.ExecutionContext
 
-class GradleCommandStep extends SimpleCommandStep {
-    List<String> tasks = []
-    String baseArguments = ""
-    boolean passArguments = true
+/**
+ * A {@link org.grails.cli.profile.Step} that invokes Gradle
+ *
+ * @author Lari Hotari
+ * @author Graeme Rocher
+ *
+ * @since 3.0
+ */
+class GradleCommandStep extends AbstractStep {
+    protected List<String> tasks = []
+    protected String baseArguments = ""
+    protected boolean passArguments = true
 
-    void initialize() {
-        tasks = commandParameters.tasks
-        baseArguments = commandParameters.baseArguments?:''
-        passArguments = Boolean.valueOf(commandParameters.passArguments?:'true')
+    GradleCommandStep(Command command, Map<String, Object> parameters) {
+        super(command, parameters)
+        initialize()
     }
 
+
     @Override
-    public boolean handleStep(ExecutionContext context) {
+    String getName() { "gradle" }
+
+    @Override
+    public boolean handle(ExecutionContext context) {
         GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
             BuildLauncher buildLauncher = projectConnection.newBuild().forTasks(tasks as String[])
             fillArguments(context, buildLauncher)
@@ -25,6 +54,12 @@ class GradleCommandStep extends SimpleCommandStep {
             buildLauncher.run()
         }
         return true;
+    }
+
+    protected void initialize() {
+        tasks = parameters.tasks
+        baseArguments = parameters.baseArguments?:''
+        passArguments = Boolean.valueOf(parameters.passArguments?:'true')
     }
 
     protected BuildLauncher fillArguments(ExecutionContext context, BuildLauncher buildLauncher) {

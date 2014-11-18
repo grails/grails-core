@@ -39,12 +39,12 @@ import jline.internal.NonBlockingInputStream
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
 import org.grails.cli.gradle.GradleConnectionCommandLineHandler
-import org.grails.cli.profile.CommandCancelledListener
+import org.grails.cli.profile.CommandCancellationListener
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.GitProfileRepository
+import org.grails.cli.profile.git.GitProfileRepository
 import org.grails.cli.profile.ProjectContext
 
 
@@ -152,7 +152,7 @@ class GrailsCli {
             return true
         }
         for(CommandLineHandler handler : commandLineHandlers) {
-             if(handler.handleCommand(context)) {
+             if(handler.handle(context)) {
                  return true
              }
         }
@@ -335,19 +335,19 @@ class GrailsCli {
     
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {
-        String unparsedCommandLine
+        String rawCommandLine
         CommandLine commandLine
         @Delegate ProjectContext projectContext
-        private List<CommandCancelledListener> cancelListeners=[]
+        private List<CommandCancellationListener> cancelListeners=[]
         
         @Override
-        public void addCancelledListener(CommandCancelledListener listener) {
+        public void addCancelledListener(CommandCancellationListener listener) {
             cancelListeners << listener
         }    
         
         @Override
         public void cancel() {
-            for(CommandCancelledListener listener : cancelListeners) {
+            for(CommandCancellationListener listener : cancelListeners) {
                 try {
                     listener.commandCancelled()
                 } catch (Exception e) {

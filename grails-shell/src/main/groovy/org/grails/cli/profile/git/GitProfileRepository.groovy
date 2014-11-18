@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile
+package org.grails.cli.profile.git
 
 import groovy.transform.CompileStatic
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
+import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.simple.SimpleProfile
 
 

@@ -2,7 +2,7 @@ package org.grails.cli.profile.simple
 
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler;
-import org.grails.cli.profile.GitProfileRepository
+import org.grails.cli.profile.git.GitProfileRepository
 
 import spock.lang.Specification
 

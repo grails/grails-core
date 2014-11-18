@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.GitProfileRepository
+import org.grails.cli.profile.git.GitProfileRepository
 
 
 @CompileStatic

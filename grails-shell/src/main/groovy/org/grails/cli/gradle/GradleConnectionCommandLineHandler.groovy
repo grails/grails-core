@@ -16,7 +16,7 @@ import org.grails.cli.profile.ProjectContext
 @CompileStatic
 class GradleConnectionCommandLineHandler implements CommandLineHandler, CompleterFactory {
     @Override
-    public boolean handleCommand(ExecutionContext context) {
+    public boolean handle(ExecutionContext context) {
         if(context.commandLine.commandName == 'gradle') {
             GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
                 BuildLauncher buildLauncher = projectConnection.newBuild()

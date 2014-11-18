@@ -1,5 +1,6 @@
 package org.grails.cli.profile
 
+import org.grails.cli.profile.git.GitProfileRepository
 import spock.lang.Specification
 
 class ProfileRepositorySpec extends Specification {

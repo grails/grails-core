@@ -15,28 +15,16 @@
  */
 package org.grails.cli.profile
 
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
-
 /**
- * Describes a {@link Command}
+ * A {@link Command} applicable only to a certain {@link Profile}
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-@CompileStatic
-@Canonical
-class CommandDescription {
+interface ProfileCommand extends Command {
     /**
-     * The name of the command
+     * @return The profile of the command
      */
-    String name
-    /**
-     * The description of the command
-     */
-    String description
-    /**
-     * The usage instructions for the command
-     */
-    String usage
+    Profile getProfile()
+
 }

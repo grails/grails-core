@@ -15,28 +15,29 @@
  */
 package org.grails.cli.profile
 
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
-
 /**
- * Describes a {@link Command}
+ * An interface that represents a command to be executed by the Grails command line
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-@CompileStatic
-@Canonical
-class CommandDescription {
+interface Command {
     /**
-     * The name of the command
+     * @return The name of the command
      */
-    String name
+    String getName()
+
     /**
-     * The description of the command
+     * @return The description of the command
      */
-    String description
+    CommandDescription getDescription()
+
     /**
-     * The usage instructions for the command
+     * run the command
+     *
+     * @param executionContext The {@link ExecutionContext}
+     *
+     * @return Whether the command should continue
      */
-    String usage
+    boolean handle(ExecutionContext executionContext)
 }

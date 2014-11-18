@@ -15,28 +15,36 @@
  */
 package org.grails.cli.profile
 
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
 
 /**
- * Describes a {@link Command}
+ * Represents a step within a {@link Command}. Commands are made up of 1 or many steps.
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-@CompileStatic
-@Canonical
-class CommandDescription {
+interface Step {
+
     /**
-     * The name of the command
+     * @return The name of the step
      */
-    String name
+    String getName()
     /**
-     * The description of the command
+     * @return The parameters to the step
      */
-    String description
+    Map<String, Object> getParameters()
+
     /**
-     * The usage instructions for the command
+     * @return The command that this step is part of
      */
-    String usage
+    Command getCommand()
+
+    /**
+     * Handles the command logic
+     *
+     * @param context The {@link ExecutionContext} instead
+     *
+     * @return True if the command should proceed to the next step, false otherwise
+     */
+    boolean handle(ExecutionContext context)
+
 }

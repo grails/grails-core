@@ -17,6 +17,8 @@ package org.grails.cli.profile;
 
 import jline.console.completer.Completer;
 
+import java.io.File;
+
 /**
  * A Profile defines an active code generation and command execution policy. For example the "web" profile allows
  * the execution of code gen and build commands that relate to web applications
@@ -25,6 +27,11 @@ import jline.console.completer.Completer;
  * @author Lari Hotari
  */
 public interface Profile {
+    /**
+     * @return The directory where the profile is located locally
+     */
+    File getProfileDir();
+
     /**
      * @return The name of the profile
      */

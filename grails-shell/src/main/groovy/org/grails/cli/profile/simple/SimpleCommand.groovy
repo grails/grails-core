@@ -1,28 +1,54 @@
+/*
+ * Copyright 2014 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.cli.profile.simple
 
-import groovy.transform.Immutable;
-
+import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.MultiStepCommand
+import org.grails.cli.profile.Profile
+import org.grails.cli.profile.Step
 
-class SimpleCommand {
-    String name
+/**
+ * Simple implementation of the {@link MultiStepCommand} abstract class that parses commands defined in YAML or JSON
+ *
+ * @author Lari Hotari
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+class SimpleCommand extends MultiStepCommand {
     File file
-    Map<String, Object> data
-    SimpleProfile profile
-    private List<SimpleCommandStep> steps
-    int minArguments = 1
-    
+    private Map<String, Object> data
+    private List<AbstractStep> steps
+
+    SimpleCommand(String name, Profile profile, File file, Map<String, Object> data) {
+        super(name, profile)
+        this.file = file
+        this.data = data
+    }
+
     CommandDescription getDescription() {
         new CommandDescription(name: name, description: data?.description, usage: data?.usage)
     }
 
-    List<SimpleCommandStep> getSteps() {
+    List<Step> getSteps() {
         if(steps==null) {
             steps = []
             data.steps?.each { 
                 Map<String, Object> stepParameters = it.collectEntries { k,v -> [k as String, v] }
-                SimpleCommandStep step = createStep(stepParameters)
+                AbstractStep step = createStep(stepParameters)
                 if (step != null) {
                     steps.add(step)
                 }
@@ -31,29 +57,14 @@ class SimpleCommand {
         steps
     }
 
-    protected SimpleCommandStep createStep(Map stepParameters) {
+    protected AbstractStep createStep(Map stepParameters) {
         switch(stepParameters.command) {
             case 'render':
-                return new RenderCommandStep(commandParameters: stepParameters, command: this)
+                return new RenderCommandStep(this, stepParameters)
             case 'gradle':
-                GradleCommandStep step = new GradleCommandStep(commandParameters: stepParameters, command: this)
-                step.initialize()
-                return step
+                return new GradleCommandStep(this, stepParameters)
         }
         return null
     }
-        
-    public boolean handleCommand(ExecutionContext context) {
-        if(minArguments > 0 && (!context.commandLine.getRemainingArgs() || context.commandLine.getRemainingArgs().size() < minArguments)) {
-            context.console.error("Expecting ${minArguments ? 'an argument' : minArguments + ' arguments'} to $name.")
-            context.console.info("${description.usage}")
-            return true
-        }
-        for(SimpleCommandStep step : getSteps()) {
-            if(!step.handleStep(context)) {
-                break
-            }
-        }
-        true
-    }
+
 }

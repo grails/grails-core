@@ -13,30 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile
-
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
+package org.grails.cli.profile;
 
 /**
- * Describes a {@link Command}
+ * A listener for listening for cancellation of {@link org.grails.cli.profile.Command} executions
  *
+ * @author Lari Hotari
  * @author Graeme Rocher
- * @since 3.0
  */
-@CompileStatic
-@Canonical
-class CommandDescription {
+public interface CommandCancellationListener {
     /**
-     * The name of the command
+     * Fired when a {@link org.grails.cli.profile.Command} is cancelled
      */
-    String name
-    /**
-     * The description of the command
-     */
-    String description
-    /**
-     * The usage instructions for the command
-     */
-    String usage
+    public void commandCancelled();
 }
