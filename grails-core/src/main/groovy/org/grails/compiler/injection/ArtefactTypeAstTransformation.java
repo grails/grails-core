@@ -184,7 +184,13 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     public static void performInjection(SourceUnit sourceUnit, ClassNode cNode, Collection<ClassInjector> injectors) {
         try {
             for (ClassInjector injector : injectors) {
-                injector.performInjectionOnAnnotatedClass(sourceUnit, cNode);
+                final String injectorName = injector.getClass().getName();
+                final String key = "Processed_by_" + injectorName;
+                final Object nodeMetaData = cNode.getNodeMetaData(key);
+                if(!Boolean.TRUE.equals(nodeMetaData)) {
+                    cNode.setNodeMetaData(key, Boolean.TRUE);
+                    injector.performInjectionOnAnnotatedClass(sourceUnit, cNode);
+                }
             }
         } catch (RuntimeException e) {
             try {
