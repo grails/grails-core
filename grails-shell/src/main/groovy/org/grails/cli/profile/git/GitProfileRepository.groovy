@@ -20,7 +20,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
-import org.grails.cli.profile.simple.SimpleProfile
+import org.grails.cli.profile.DefaultProfile
 
 
 /**
@@ -52,7 +52,7 @@ class GitProfileRepository implements ProfileRepository{
         }
         File profileDirectory = getProfileDirectory(profileName)
         if(profileDirectory.exists()) {
-            profileInstance = SimpleProfile.create(this, profileName, profileDirectory)
+            profileInstance = DefaultProfile.create(this, profileName, profileDirectory)
             profileCache.put(profileName, profileInstance)
             return profileInstance
         } else {

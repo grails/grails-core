@@ -2,6 +2,7 @@ package org.grails.cli.profile.commands
 
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
+import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.cli.profile.steps.StepFactory
@@ -32,6 +33,7 @@ import org.grails.cli.profile.steps.StepFactory
 class CommandRegistry {
 
     private static Map<String, Command> registeredCommands = [:]
+    private static List<CommandFactory> registeredCommandFactories = []
 
     static {
         def commands = ServiceLoader.load(Command).iterator()
@@ -39,6 +41,13 @@ class CommandRegistry {
         while(commands.hasNext()) {
             Command command = commands.next()
             registeredCommands[command.name] = command
+        }
+
+        def commandFactories = ServiceLoader.load(CommandFactory).iterator()
+        while(commandFactories.hasNext()) {
+            CommandFactory commandFactory = commandFactories.next()
+
+            registeredCommandFactories << commandFactory
         }
     }
 
@@ -55,5 +64,14 @@ class CommandRegistry {
             command.profileRepository = repository
         }
         return command
+    }
+
+    static Collection<Command> findCommands( Profile profile ) {
+        Collection<Command> commands = []
+
+        for(CommandFactory cf in registeredCommandFactories) {
+            commands.addAll cf.findCommands( profile )
+        }
+        return commands
     }
 }

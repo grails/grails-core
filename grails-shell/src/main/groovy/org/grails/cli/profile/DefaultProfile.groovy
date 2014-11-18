@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.simple
+package org.grails.cli.profile
 
 import groovy.transform.CompileStatic
 import jline.console.completer.Completer
-
-import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
-import org.grails.cli.profile.ProjectContext
+import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.cli.profile.support.CommandLineHandlersCompleter
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -32,20 +29,20 @@ import org.yaml.snakeyaml.Yaml;
  * @author Graeme Rocher
  */
 @CompileStatic
-class SimpleProfile implements Profile {
+class DefaultProfile implements Profile {
     File profileDir
     String name
-    private List<CommandLineHandler> commandLineHandlers = null
     List<Profile> parentProfiles
     Map<String, Object> profileConfig
+    private List<CommandLineHandler> commandLineHandlers = null
 
-    private SimpleProfile(String name, File profileDir) {
+    private DefaultProfile(String name, File profileDir) {
         this.name = name
         this.profileDir = profileDir
     }
 
-    public static SimpleProfile create(ProfileRepository repository, String name, File profileDir) {
-        SimpleProfile profile = new SimpleProfile(name, profileDir)
+    public static DefaultProfile create(ProfileRepository repository, String name, File profileDir) {
+        DefaultProfile profile = new DefaultProfile(name, profileDir)
         profile.initialize(repository)
         profile
     }
@@ -57,16 +54,15 @@ class SimpleProfile implements Profile {
 
     @Override
     public Iterable<Completer> getCompleters(ProjectContext context) {
-        [ new CommandLineHandlersCompleter(context:context, commandLineHandlersClosure:{ -> this.getCommandLineHandlers(context) }) ]
+        [ new CommandLineHandlersCompleter(context, this) ]
     }
 
     @Override
     public Iterable<CommandLineHandler> getCommandLineHandlers(ProjectContext context) {
         if(commandLineHandlers == null) {
             commandLineHandlers = []
-            Collection<File> commandFiles = findCommandFiles()
-            SimpleCommandHandler commandHandler = createCommandHandler(commandFiles)
-            commandHandler.initialize()
+            def commands = CommandRegistry.findCommands(this)
+            DefaultCommandHandler commandHandler = createCommandHandler(commands)
             commandLineHandlers << commandHandler
             addParentCommandLineHandlers(context, commandLineHandlers)
         }
@@ -81,23 +77,16 @@ class SimpleProfile implements Profile {
         }
     }
 
-    protected Collection<File> findCommandFiles() {
-        File commandsDir = new File(profileDir, "commands")
-        Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
-            file.isFile() && file.name ==~ /^.*\.(yml|json)$/
-        }.sort(false) { File file -> file.name }
-        return commandFiles
-    }
 
-    protected SimpleCommandHandler createCommandHandler(Collection<File> commandFiles) {
-        return new SimpleCommandHandler(commandFiles,this)
+    protected DefaultCommandHandler createCommandHandler(Collection<Command> commands) {
+        return new DefaultCommandHandler(commands,this)
     }
 
     private void initialize(ProfileRepository repository) {
         parentProfiles = []
         File profileYml = new File(profileDir, "profile.yml")
         if(profileYml.isFile()) {
-            profileConfig = (Map<String, Object>)profileYml.withInputStream {
+            profileConfig = (Map<String, Object>)profileYml.withInputStream { InputStream it ->
                 new Yaml().loadAs(it, Map)
             }
             String[] extendsProfiles = profileConfig.get("extends")?.toString()?.split(/\s*,\s*/)

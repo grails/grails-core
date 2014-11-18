@@ -1,7 +1,8 @@
 package org.grails.cli.profile.simple
 
 import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.CommandLineHandler;
+import org.grails.cli.profile.CommandLineHandler
+import org.grails.cli.profile.DefaultProfile;
 import org.grails.cli.profile.git.GitProfileRepository
 
 import spock.lang.Specification
@@ -11,7 +12,7 @@ class SimpleCommandHandlerSpec extends Specification {
     
     def setup() {
         GitProfileRepository profileRepository = new GitProfileRepository(initialized:true, profilesDirectory: new File('src/test/resources/profiles-repository'))
-        def profile = SimpleProfile.create(profileRepository, 'web', new File('src/test/resources/profiles-repository/profiles/web'))
+        def profile = DefaultProfile.create(profileRepository, 'web', new File('src/test/resources/profiles-repository/profiles/web'))
         commandHandlers = profile.getCommandLineHandlers(null)
     }
     

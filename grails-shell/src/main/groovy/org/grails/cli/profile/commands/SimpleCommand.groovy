@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.simple
+package org.grails.cli.profile.commands
 
 import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.CommandDescription

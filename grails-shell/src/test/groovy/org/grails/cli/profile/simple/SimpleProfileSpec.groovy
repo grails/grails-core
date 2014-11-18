@@ -1,15 +1,16 @@
 package org.grails.cli.profile.simple
 
+import org.grails.cli.profile.DefaultProfile
 import org.grails.cli.profile.git.GitProfileRepository
 
 import spock.lang.Specification
 
 class SimpleProfileSpec extends Specification {
-    SimpleProfile profile
+    DefaultProfile profile
     
     def setup() {
         GitProfileRepository profileRepository = new GitProfileRepository(initialized:true, profilesDirectory: new File('src/test/resources/profiles-repository'))
-        profile = SimpleProfile.create(profileRepository, 'web', new File('src/test/resources/profiles-repository/profiles/web'))
+        profile = DefaultProfile.create(profileRepository, 'web', new File('src/test/resources/profiles-repository/profiles/web'))
     }
     
     def "should contain 5 commands"() {

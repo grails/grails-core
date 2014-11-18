@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.simple.SimpleTemplate
+import org.grails.cli.profile.steps.internal.SimpleTemplate
 
 /**
  * A {@link org.grails.cli.profile.Step} that renders a template
