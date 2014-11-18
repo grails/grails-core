@@ -16,7 +16,8 @@
 package org.grails.cli.profile
 
 /**
- * An interface that represents a command to be executed by the Grails command line
+ * An interface that represents a command to be executed by the Grails command line. Commands are by default global,
+ * however a command can be made specific to a particular {@link Profile} by implementation the {@link ProfileCommand} interface.
  *
  * @author Graeme Rocher
  * @since 3.0

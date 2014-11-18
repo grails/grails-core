@@ -32,11 +32,6 @@ public interface ExecutionContext extends ProjectContext {
     CommandLine getCommandLine();
 
     /**
-     * @return The raw unparsed command line arguments as a string
-     */
-    String getRawCommandLine();
-
-    /**
      * Allows cancelling of the running command
      */
     void cancel();

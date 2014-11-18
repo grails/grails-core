@@ -25,6 +25,8 @@ package org.grails.cli.profile
  */
 interface ProfileRepository {
 
+    String DEFAULT_PROFILE_NAME = 'web'
+
     /**
      * Obtains a named {@link Profile}
      * @param profileName The name of the profile

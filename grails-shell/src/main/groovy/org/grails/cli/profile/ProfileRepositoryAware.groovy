@@ -1,7 +1,3 @@
-package org.grails.cli
-
-import groovy.transform.CompileStatic
-
 /*
  * Copyright 2014 original authors
  *
@@ -17,18 +13,14 @@ import groovy.transform.CompileStatic
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.cli.profile
 
 /**
- * A command for creating a plugin
- *
+ * For commands and steps that need to be made aware of the {@link ProfileRepository} to implement
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-@CompileStatic
-class CreatePluginCommand extends CreateAppCommand {
-
-    CreatePluginCommand() {
-        this.profile = 'plugin'
-    }
+interface ProfileRepositoryAware {
+    void setProfileRepository(ProfileRepository profileRepository)
 }

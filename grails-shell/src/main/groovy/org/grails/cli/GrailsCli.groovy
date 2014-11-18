@@ -24,6 +24,10 @@ import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import org.grails.cli.interactive.completors.EscapingFileNameCompletor
 import org.grails.cli.interactive.completors.RegexCompletor
+import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.cli.profile.commands.CreateAppCommand
+import org.grails.cli.profile.commands.CreatePluginCommand
 
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -58,7 +62,7 @@ import org.grails.cli.profile.ProjectContext
  */
 @CompileStatic
 class GrailsCli {
-    public static final String DEFAULT_PROFILE_NAME = 'web'
+    public static final String DEFAULT_PROFILE_NAME = ProfileRepository.DEFAULT_PROFILE_NAME
     private static final int KEYPRESS_CTRL_C = 3
     private static final int KEYPRESS_ESC = 27
     private static final String USAGE_MESSAGE = "Usage: create-app [NAME] --profile=web"
@@ -93,6 +97,7 @@ class GrailsCli {
      */
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
+
         if(mainCommandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)) {
             System.setProperty("grails.verbose", "true")
         }
@@ -104,18 +109,16 @@ class GrailsCli {
         if(!grailsAppDir.isDirectory()) {
             if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
                 System.err.println USAGE_MESSAGE
+                return 1
             }
-            switch(mainCommandLine.commandName) {
-                case "create-app":
-                    return createApp(mainCommandLine, profileRepository)
-                case "create-plugin":
-                    return createPlugin(mainCommandLine, profileRepository)
-                default:
-                    System.err.println USAGE_MESSAGE
-                    return 1
-
+            def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
+            if(cmd) {
+                return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
             }
-
+            else {
+                System.err.println USAGE_MESSAGE
+                return 1
+            }
 
         } else {
             applicationConfig = loadApplicationConfig()
@@ -131,7 +134,8 @@ class GrailsCli {
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             initializeProfile()
             if(commandName) {
-                handleCommand(args.join(" "), mainCommandLine)
+
+                handleCommand(mainCommandLine)
             } else {
                 handleInteractiveMode()
             }
@@ -139,15 +143,15 @@ class GrailsCli {
         return 0
     }
 
-    ExecutionContext createExecutionContext(String unparsedCommandLine, CommandLine commandLine) {
-        new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
+    ExecutionContext createExecutionContext(CommandLine commandLine) {
+        new ExecutionContextImpl(commandLine, projectContext)
     }
     
-    Boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
-        handleCommand(createExecutionContext(unparsedCommandLine, commandLine))
+    Boolean handleCommand( CommandLine commandLine ) {
+        handleCommand(createExecutionContext(commandLine))
     }
     
-    Boolean handleCommand(ExecutionContext context) {
+    Boolean handleCommand( ExecutionContext context ) {
         if(handleBuiltInCommands(context)) {
             return true
         }
@@ -188,7 +192,7 @@ class GrailsCli {
                     if(nonBlockingInput.isNonBlockingEnabled()) {
                         handleCommandWithCancellationSupport(commandLine, commandExecutor, nonBlockingInput)
                     } else {
-                        handleCommand(commandLine, cliParser.parseString(commandLine))
+                        handleCommand( cliParser.parseString(commandLine))
                     }
                 }
             } catch (UserInterruptException e) {
@@ -200,7 +204,7 @@ class GrailsCli {
     }
 
     private Boolean handleCommandWithCancellationSupport(String commandLine, ExecutorService commandExecutor, NonBlockingInputStream nonBlockingInput) {
-        ExecutionContext executionContext = createExecutionContext(commandLine, cliParser.parseString(commandLine))
+        ExecutionContext executionContext = createExecutionContext( cliParser.parseString(commandLine))
         Future<?> commandFuture = commandExecutor.submit({ handleCommand(executionContext) } as Callable<Boolean>)
         def terminal = projectContext.console.reader.terminal
         if (terminal instanceof UnixTerminal) {
@@ -260,29 +264,16 @@ class GrailsCli {
         config
     }
 
-    private int createPlugin(CommandLine mainCommandLine, GitProfileRepository profileRepository) {
-        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
-        CreatePluginCommand cmd = new CreatePluginCommand (profileRepository: profileRepository, groupAndAppName: groupAndAppName)
-        cmd.run()
-        return 0
+    private int createPlugin( CommandLine mainCommandLine ) {
+        CreatePluginCommand cmd = new CreatePluginCommand ()
+        return cmd.handle( createExecutionContext( mainCommandLine ) ) ? 0 : 1
     }
 
-    private int createApp(CommandLine mainCommandLine, GitProfileRepository profileRepository) {
-        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
-        String profileName = mainCommandLine.optionValue('profile')
-        if(!profileName) {
-            profileName=DEFAULT_PROFILE_NAME
-        }
-        Profile profile = profileRepository.getProfile(profileName)
-        if(profile) {
-            CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, groupAndAppName: groupAndAppName, profile: profileName)
-            cmd.run()
-            return 0
-        } else {
-            System.err.println "Cannot find profile $profileName"
-            return 1
-        }
+    private int createApp( CommandLine mainCommandLine) {
+        CreateAppCommand cmd = new CreateAppCommand()
+        return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
     }
+
     private boolean handleBuiltInCommands(ExecutionContext context) {
         CommandLine commandLine = context.commandLine
         GrailsConsole console = context.console
@@ -335,7 +326,6 @@ class GrailsCli {
     
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {
-        String rawCommandLine
         CommandLine commandLine
         @Delegate ProjectContext projectContext
         private List<CommandCancellationListener> cancelListeners=[]
