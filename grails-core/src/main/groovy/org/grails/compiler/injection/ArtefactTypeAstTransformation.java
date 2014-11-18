@@ -17,18 +17,17 @@ package org.grails.compiler.injection;
 
 import grails.artefact.Artefact;
 import grails.build.logging.GrailsConsole;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GlobalClassInjector;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.compiler.traits.TraitInjector;
 import groovy.transform.CompilationUnitAware;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
@@ -184,11 +183,8 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     public static void performInjection(SourceUnit sourceUnit, ClassNode cNode, Collection<ClassInjector> injectors) {
         try {
             for (ClassInjector injector : injectors) {
-                final String injectorName = injector.getClass().getName();
-                final String key = "Processed_by_" + injectorName;
-                final Object nodeMetaData = cNode.getNodeMetaData(key);
-                if(!Boolean.TRUE.equals(nodeMetaData)) {
-                    cNode.setNodeMetaData(key, Boolean.TRUE);
+                if(!GrailsASTUtils.isApplied(cNode, injector.getClass())) {
+                    GrailsASTUtils.markApplied(cNode, injector.getClass());
                     injector.performInjectionOnAnnotatedClass(sourceUnit, cNode);
                 }
             }
