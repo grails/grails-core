@@ -20,10 +20,13 @@ import grails.compiler.traits.TraitInjector;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -94,8 +97,14 @@ public class GrailsAwareTraitInjectionOperation extends
                 traitNotLoaded = true;
             }
             if (!implementsTrait && !traitNotLoaded) {
-                classNode.addInterface(traitClassNode);
-                traitsAdded = true;
+                final GenericsType[] genericsTypes = traitClassNode.getGenericsTypes();
+                final Map<String, ClassNode> parameterNameToParameterValue = new LinkedHashMap<String, ClassNode>();
+                if(genericsTypes != null) {
+                    for(GenericsType gt : genericsTypes) {
+                        parameterNameToParameterValue.put(gt.getName(), classNode);
+                    }
+                }
+                classNode.addInterface(GrailsASTUtils.replaceGenericsPlaceholders(traitClassNode, parameterNameToParameterValue, classNode));                traitsAdded = true;
             }
         }
         if(traitsAdded && 
