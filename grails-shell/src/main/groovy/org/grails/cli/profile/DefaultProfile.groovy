@@ -30,8 +30,8 @@ import org.yaml.snakeyaml.Yaml;
  */
 @CompileStatic
 class DefaultProfile implements Profile {
-    File profileDir
-    String name
+    final File profileDir
+    final String name
     List<Profile> parentProfiles
     Map<String, Object> profileConfig
     private List<CommandLineHandler> commandLineHandlers = null
@@ -101,5 +101,20 @@ class DefaultProfile implements Profile {
             } else {
             }
         }
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        DefaultProfile that = (DefaultProfile) o
+
+        if (name != that.name) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (name != null ? name.hashCode() : 0)
     }
 }

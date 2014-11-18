@@ -67,8 +67,8 @@ class YamlCommandFactory implements CommandFactory {
         return data
     }
 
-    protected SimpleCommand createCommand(Profile profile, String commandName, File file, Map data) {
-        SimpleCommand command = new SimpleCommand( commandName, profile, file, data )
+    protected Command createCommand(Profile profile, String commandName, File file, Map data) {
+        Command command = new DefaultMultiStepCommand( commandName, profile, file, data )
         Object minArguments = data?.minArguments
         command.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
         command

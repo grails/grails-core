@@ -15,19 +15,7 @@
  */
 package org.grails.cli.profile
 
-import groovy.json.JsonBuilder
-import groovy.json.JsonParserType
-import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
-import org.grails.cli.profile.Command
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.DefaultProfile
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProjectContext
-import org.grails.cli.profile.commands.SimpleCommand
-import org.yaml.snakeyaml.Yaml
 
 /**
  * A {@link CommandLineHandler} that can read commands defined in JSON or YAML

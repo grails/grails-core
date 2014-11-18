@@ -3,9 +3,9 @@ package org.grails.cli.profile.commands
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileCommand
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
-import org.grails.cli.profile.steps.StepFactory
 
 /*
  * Copyright 2014 original authors
@@ -72,6 +72,10 @@ class CommandRegistry {
         for(CommandFactory cf in registeredCommandFactories) {
             commands.addAll cf.findCommands( profile )
         }
+
+        commands.addAll( registeredCommands.values()
+                            .findAll { Command c -> (c instanceof ProfileCommand) && ((ProfileCommand)c).profile == profile }
+        )
         return commands
     }
 }

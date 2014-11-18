@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 package org.grails.cli.profile.commands
-
-import org.grails.cli.profile.AbstractStep
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.MultiStepCommand
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.Step
-import org.grails.cli.profile.steps.GradleStep
-import org.grails.cli.profile.steps.RenderStep
+import org.grails.cli.profile.*
 import org.grails.cli.profile.steps.StepRegistry
-
 /**
  * Simple implementation of the {@link MultiStepCommand} abstract class that parses commands defined in YAML or JSON
  *
@@ -31,12 +23,12 @@ import org.grails.cli.profile.steps.StepRegistry
  * @author Graeme Rocher
  * @since 3.0
  */
-class SimpleCommand extends MultiStepCommand {
+class DefaultMultiStepCommand extends MultiStepCommand {
     File file
     private Map<String, Object> data
     private List<AbstractStep> steps
 
-    SimpleCommand(String name, Profile profile, File file, Map<String, Object> data) {
+    DefaultMultiStepCommand(String name, Profile profile, File file, Map<String, Object> data) {
         super(name, profile)
         this.file = file
         this.data = data
