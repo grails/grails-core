@@ -313,7 +313,7 @@ grails> create-'''
     def "should not exit when command throws exception - showStacktrace:#showStacktrace"() {
         when:
         if(showStacktrace) GrailsConsole.getInstance().stacktrace = true
-        CommandLineHandler handler = [handleCommand: { ExecutionContext context ->
+        CommandLineHandler handler = [handle: { ExecutionContext context ->
             if(context.commandLine.commandName == 'broken-command') { 
                 throw new RuntimeException("This is broken.")
             }
@@ -326,9 +326,11 @@ grails> create-'''
             expect.sendLine("broken-command")
             message = expectPrompt(expect)
         }
+
         then:
         retval == 0
         message in expectedMessage
+
         where:
         showStacktrace << [false, true]
         expectedMessage << [~'''
