@@ -15,13 +15,12 @@
  */
 package org.grails.cli.profile.steps
 
-import groovy.transform.InheritConstructors
 import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.AbstractStep
-import org.grails.cli.profile.Command
 import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.ProfileCommand
 
 /**
  * A {@link org.grails.cli.profile.Step} that invokes Gradle
@@ -36,7 +35,7 @@ class GradleStep extends AbstractStep {
     protected String baseArguments = ""
     protected boolean passArguments = true
 
-    GradleStep(Command command, Map<String, Object> parameters) {
+    GradleStep(ProfileCommand command, Map<String, Object> parameters) {
         super(command, parameters)
         initialize()
     }
@@ -47,7 +46,7 @@ class GradleStep extends AbstractStep {
 
     @Override
     public boolean handle(ExecutionContext context) {
-        GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
+        GradleUtil.withProjectConnection(context.baseDir, false) { ProjectConnection projectConnection ->
             BuildLauncher buildLauncher = projectConnection.newBuild().forTasks(tasks as String[])
             fillArguments(context, buildLauncher)
             GradleUtil.wireCancellationSupport(context, buildLauncher)
@@ -58,14 +57,14 @@ class GradleStep extends AbstractStep {
 
     protected void initialize() {
         tasks = parameters.tasks
-        baseArguments = parameters.baseArguments?:''
-        passArguments = Boolean.valueOf(parameters.passArguments?:'true')
+        baseArguments = parameters.baseArguments ?: ''
+        passArguments = Boolean.valueOf(parameters.passArguments?.toString() ?: 'true' )
     }
 
     protected BuildLauncher fillArguments(ExecutionContext context, BuildLauncher buildLauncher) {
         String args = baseArguments
         if(passArguments) {
-            String commandLineArgs = context.getCommandLine().getRemainingArgsString()?.trim()
+            String commandLineArgs = context.commandLine.remainingArgsString?.trim()
             if(commandLineArgs) {
                 args += " " + commandLineArgs
             }

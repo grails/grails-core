@@ -1,4 +1,4 @@
-package org.grails.cli.profile.commands
+package org.grails.cli.profile.commands.factory
 
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile

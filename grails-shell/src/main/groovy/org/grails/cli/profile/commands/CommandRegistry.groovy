@@ -6,6 +6,7 @@ import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
+import org.grails.cli.profile.commands.factory.CommandFactory
 
 /*
  * Copyright 2014 original authors

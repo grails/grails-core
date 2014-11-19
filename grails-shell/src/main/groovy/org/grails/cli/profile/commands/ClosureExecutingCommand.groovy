@@ -3,6 +3,8 @@ package org.grails.cli.profile.commands
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileCommand
 
 /*
  * Copyright 2014 original authors
@@ -26,9 +28,10 @@ import org.grails.cli.profile.ExecutionContext
  * @author Graeme Rocher
  * @since 3.0
  */
-class ClosureExecutingCommand implements Command {
+class ClosureExecutingCommand implements ProfileCommand {
     String name
     Closure callable
+    Profile profile
 
     ClosureExecutingCommand(String name, Closure callable) {
         this.name = name

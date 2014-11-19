@@ -1,6 +1,7 @@
 package org.grails.cli.profile.steps
 
 import org.grails.cli.profile.Command
+import org.grails.cli.profile.ProfileCommand
 import org.grails.cli.profile.Step
 
 /*
@@ -28,11 +29,13 @@ import org.grails.cli.profile.Step
 class DefaultStepFactory implements StepFactory {
     @Override
     Step createStep(String name, Command command, Map parameters) {
-        switch(name) {
-            case 'render':
-                return new RenderStep(command, parameters)
-            case 'gradle':
-                return new GradleStep(command, parameters)
+        if(command instanceof ProfileCommand) {
+            switch(name) {
+                case 'render':
+                    return new RenderStep((ProfileCommand)command, parameters)
+                case 'gradle':
+                    return new GradleStep((ProfileCommand)command, parameters)
+            }
         }
 
     }

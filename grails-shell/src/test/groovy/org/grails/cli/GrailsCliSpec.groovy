@@ -201,6 +201,7 @@ create-service\tCreates a service
 create-taglib\tCreates a tag library
 gradle\tRuns the gradle build
 run-app\tRuns the application
+test-groovy\tTests out a Groovy script
 detailed usage with help [command]
 '''
     }
@@ -345,5 +346,20 @@ java.lang.RuntimeException: This is broken.
 Error \\|
 Caught exception This is broken.
 ''']
+    }
+
+    def "should run custom groovy script"() {
+        when:
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("test-groovy")
+            message = expectPrompt(expect)
+        }
+        then:
+        retval == 0
+        message == '''
+good
+'''
     }
 }

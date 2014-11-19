@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,5 +39,5 @@ public interface CommandLineHandler {
      * @param context The {@link org.grails.cli.profile.ExecutionContext} instance
      * @return A list of {@link org.grails.cli.profile.CommandDescription} instances
      */
-    List<CommandDescription> listCommands(ProjectContext context);
+    Collection<CommandDescription> listCommands(ProjectContext context);
 }

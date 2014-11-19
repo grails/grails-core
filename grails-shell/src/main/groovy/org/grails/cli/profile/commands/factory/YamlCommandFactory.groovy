@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.commands
+package org.grails.cli.profile.commands.factory
 
 import groovy.json.JsonParserType
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
+import org.grails.cli.profile.commands.DefaultMultiStepCommand
 import org.yaml.snakeyaml.Yaml
+
+import java.util.regex.Pattern
 
 
 /**
@@ -30,32 +33,16 @@ import org.yaml.snakeyaml.Yaml
  * @since 3.0
  */
 @CompileStatic
-class YamlCommandFactory implements CommandFactory {
+class YamlCommandFactory extends FileBasedCommandFactory<Map> {
     protected Yaml yamlParser=new Yaml()
     // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
     protected JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
 
+    final Pattern fileExtensionPattern = ~/\.(yml|json)$/
+    final Pattern fileNamePattern = ~/^.*\.(yml|json)$/
+
+
     @Override
-    Collection<Command> findCommands(Profile profile) {
-        def files = findCommandFiles(profile.profileDir)
-        Collection<Command> commands = []
-        for(File file in files) {
-            String commandName = file.name - ~/\.(yml|json)$/
-            def data = readCommandFile(file)
-            commands << createCommand(profile, commandName, file, data)
-        }
-        return commands
-    }
-
-    protected Collection<File> findCommandFiles(File profileDir) {
-        File commandsDir = new File(profileDir, "commands")
-        Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
-            file.isFile() && file.name ==~ /^.*\.(yml|json)$/
-        }.sort(false) { File file -> file.name }
-        return commandFiles
-    }
-
-
     protected Map readCommandFile(File file) {
         Map data = file.withReader { BufferedReader reader ->
             if(file.name.endsWith('.json')) {

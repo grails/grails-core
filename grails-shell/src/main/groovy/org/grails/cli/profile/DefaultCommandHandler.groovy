@@ -28,7 +28,7 @@ class DefaultCommandHandler implements CommandLineHandler {
 
     Profile profile
 
-    protected List<CommandDescription> commandDescriptions
+    protected Collection<CommandDescription> commandDescriptions
     protected Map<String, Command> commands = [:]
 
     DefaultCommandHandler(Collection<Command> commands, Profile profile) {
@@ -36,6 +36,8 @@ class DefaultCommandHandler implements CommandLineHandler {
             this.commands.put(c.name, c)
         }
         this.commandDescriptions = this.commands.values().collect() { Command c -> c.description }
+        this.commandDescriptions = this.commandDescriptions.findAll { CommandDescription cd -> cd != null}
+
         this.profile = profile
     }
 
@@ -50,7 +52,7 @@ class DefaultCommandHandler implements CommandLineHandler {
     }
 
     @Override
-    public List<CommandDescription> listCommands(ProjectContext context) {
+    public Collection<CommandDescription> listCommands(ProjectContext context) {
         return commandDescriptions;
     }
 

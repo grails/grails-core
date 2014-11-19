@@ -5,7 +5,7 @@ import org.grails.cli.profile.git.GitProfileRepository
 
 import spock.lang.Specification
 
-class SimpleProfileSpec extends Specification {
+class DefaultProfileSpec extends Specification {
     DefaultProfile profile
     
     def setup() {
@@ -17,7 +17,7 @@ class SimpleProfileSpec extends Specification {
         when:
         def commands = profile.getCommandLineHandlers()*.listCommands().flatten()
         then:
-        commands.size() == 5
-        commands*.name as Set == ['create-controller', 'create-domain', 'create-service', 'create-taglib', 'run-app'] as Set
+        commands.size() == 6
+        commands*.name as Set == ['test-groovy','create-controller', 'create-domain', 'create-service', 'create-taglib', 'run-app'] as Set
     }
 }

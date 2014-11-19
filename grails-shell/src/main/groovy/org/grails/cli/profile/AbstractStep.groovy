@@ -22,10 +22,10 @@ package org.grails.cli.profile
  * @author Graeme Rocher
  */
 abstract class AbstractStep implements Step {
-    Command command
+    ProfileCommand command
     Map<String, Object> parameters
 
-    AbstractStep(Command command, Map<String, Object> parameters) {
+    AbstractStep(ProfileCommand command, Map<String, Object> parameters) {
         this.command = command
         this.parameters = parameters
     }
