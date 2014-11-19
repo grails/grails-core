@@ -19,6 +19,8 @@ package org.grails.cli.profile.commands.factory
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
+import org.grails.io.support.FileSystemResource
+import org.grails.io.support.Resource
 
 import java.util.regex.Pattern
 
@@ -29,36 +31,36 @@ import java.util.regex.Pattern
  * @since 3.0
  */
 @CompileStatic
-abstract class FileBasedCommandFactory<T> implements CommandFactory {
+abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
 
     @Override
     Collection<Command> findCommands(Profile profile) {
-        def files = findCommandFiles(profile.profileDir)
+        def files = findCommandResources(profile.profileDir)
         Collection<Command> commands = []
-        for(File file in files) {
-            String commandName = evaluateFileName(file)
-            def data = readCommandFile(file)
-            commands << createCommand(profile, commandName, file, data)
+        for(Resource resource in files) {
+            String commandName = evaluateFileName(resource.filename)
+            def data = readCommandFile(resource)
+            commands << createCommand(profile, commandName, resource, data)
         }
         return commands
     }
 
-    protected String evaluateFileName(File file) {
-        file.name - getFileExtensionPattern()
+    protected String evaluateFileName(String fileName) {
+        fileName - getFileExtensionPattern()
     }
 
 
-    protected Collection<File> findCommandFiles(File profileDir) {
+    protected Collection<Resource> findCommandResources(File profileDir) {
         File commandsDir = new File(profileDir, "commands")
         Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
             file.isFile() && file.name ==~ getFileNamePattern()
         }.sort(false) { File file -> file.name }
-        return commandFiles
+        return commandFiles.collect() { File f -> new FileSystemResource(f) }
     }
 
-    protected abstract T readCommandFile(File file)
+    protected abstract T readCommandFile(Resource resource)
 
-    protected abstract Command createCommand(Profile profile, String commandName, File file, T data)
+    protected abstract Command createCommand(Profile profile, String commandName, Resource resource, T data)
 
     protected abstract Pattern getFileNamePattern()
 

@@ -24,13 +24,11 @@ import org.grails.cli.profile.steps.StepRegistry
  * @since 3.0
  */
 class DefaultMultiStepCommand extends MultiStepCommand {
-    File file
     private Map<String, Object> data
     private List<AbstractStep> steps
 
-    DefaultMultiStepCommand(String name, Profile profile, File file, Map<String, Object> data) {
+    DefaultMultiStepCommand(String name, Profile profile, Map<String, Object> data) {
         super(name, profile)
-        this.file = file
         this.data = data
     }
 

@@ -9,6 +9,7 @@ import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.script.CommandScript
 import org.grails.cli.profile.commands.script.CommandScriptTransform
+import org.grails.io.support.Resource
 
 import java.util.regex.Pattern
 
@@ -35,31 +36,31 @@ import java.util.regex.Pattern
  * @since 3.0
  */
 @CompileStatic
-class GroovyScriptCommandFactory extends FileBasedCommandFactory<CommandScript> {
+class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<CommandScript> {
 
     final Pattern fileExtensionPattern = ~/\.(groovy)$/
     final Pattern fileNamePattern = ~/^.*\.(groovy)$/
 
     @Override
     @CompileDynamic
-    protected CommandScript readCommandFile(File file) {
+    protected CommandScript readCommandFile(Resource resource) {
         def configuration = new CompilerConfiguration()
         // TODO: Report bug, this fails with @CompileStatic with a ClassCastException
         String baseClassName = CommandScript.class.getName()
         configuration.setScriptBaseClass(baseClassName)
         configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new CommandScriptTransform()))
         def classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader, configuration)
-        return (CommandScript) classLoader.parseClass(file).newInstance()
+        return (CommandScript) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
     }
 
     @Override
-    protected String evaluateFileName(File file) {
-        def fileName = super.evaluateFileName(file)
-        return fileName.contains('-') ? fileName.toLowerCase() : GrailsNameUtils.getScriptName(fileName)
+    protected String evaluateFileName(String fileName) {
+        def fn = super.evaluateFileName(fileName)
+        return fn.contains('-') ? fn.toLowerCase() : GrailsNameUtils.getScriptName(fn)
     }
 
     @Override
-    protected Command createCommand(Profile profile, String commandName, File file, CommandScript data) {
+    protected Command createCommand(Profile profile, String commandName, Resource resource, CommandScript data) {
         data.setProfile(profile)
         return data
     }

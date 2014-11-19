@@ -21,6 +21,7 @@ import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.DefaultMultiStepCommand
+import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
 
 import java.util.regex.Pattern
@@ -33,7 +34,7 @@ import java.util.regex.Pattern
  * @since 3.0
  */
 @CompileStatic
-class YamlCommandFactory extends FileBasedCommandFactory<Map> {
+class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
     protected Yaml yamlParser=new Yaml()
     // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
     protected JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
@@ -43,19 +44,25 @@ class YamlCommandFactory extends FileBasedCommandFactory<Map> {
 
 
     @Override
-    protected Map readCommandFile(File file) {
-        Map data = file.withReader { BufferedReader reader ->
-            if(file.name.endsWith('.json')) {
-                jsonSlurper.parse(reader) as Map
+    protected Map readCommandFile(Resource resource) {
+        Map data
+        InputStream is
+
+        try {
+            is = resource.inputStream
+            if(resource.filename.endsWith('.json')) {
+                data = jsonSlurper.parse(is, "UTF-8") as Map
             } else {
-                yamlParser.loadAs(reader, Map)
+                data = yamlParser.loadAs(is, Map)
             }
+        } finally {
+            is?.close()
         }
         return data
     }
 
-    protected Command createCommand(Profile profile, String commandName, File file, Map data) {
-        Command command = new DefaultMultiStepCommand( commandName, profile, file, data )
+    protected Command createCommand(Profile profile, String commandName, Resource resource, Map data) {
+        Command command = new DefaultMultiStepCommand( commandName, profile, data )
         Object minArguments = data?.minArguments
         command.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
         command
