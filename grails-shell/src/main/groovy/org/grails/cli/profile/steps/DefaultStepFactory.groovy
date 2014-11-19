@@ -35,6 +35,8 @@ class DefaultStepFactory implements StepFactory {
                     return new RenderStep((ProfileCommand)command, parameters)
                 case 'gradle':
                     return new GradleStep((ProfileCommand)command, parameters)
+                case 'execute':
+                    return new ExecuteStep((ProfileCommand)command, parameters)
             }
         }
 
