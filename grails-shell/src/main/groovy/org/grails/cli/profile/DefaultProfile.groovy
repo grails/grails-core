@@ -41,10 +41,10 @@ class DefaultProfile implements Profile {
         this.profileDir = profileDir
     }
 
-    public static DefaultProfile create(ProfileRepository repository, String name, File profileDir) {
-        DefaultProfile profile = new DefaultProfile(name, profileDir)
+    public static Profile create(ProfileRepository repository, String name, File profileDir) {
+        Profile profile = new DefaultProfile(name, profileDir)
         profile.initialize(repository)
-        profile
+        return profile
     }
 
     @Override
@@ -62,7 +62,7 @@ class DefaultProfile implements Profile {
         if(commandLineHandlers == null) {
             commandLineHandlers = []
             def commands = CommandRegistry.findCommands(this)
-            DefaultCommandHandler commandHandler = createCommandHandler(commands)
+            CommandLineHandler commandHandler = createCommandHandler(commands)
             commandLineHandlers << commandHandler
             addParentCommandLineHandlers(context, commandLineHandlers)
         }
@@ -78,7 +78,7 @@ class DefaultProfile implements Profile {
     }
 
 
-    protected DefaultCommandHandler createCommandHandler(Collection<Command> commands) {
+    protected CommandLineHandler createCommandHandler(Collection<Command> commands) {
         return new DefaultCommandHandler(commands,this)
     }
 
@@ -98,7 +98,6 @@ class DefaultProfile implements Profile {
                     }
                     extendsProfile
                 }
-            } else {
             }
         }
     }

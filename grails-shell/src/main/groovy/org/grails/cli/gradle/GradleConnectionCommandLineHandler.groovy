@@ -1,4 +1,6 @@
 package org.grails.cli.gradle
+
+import grails.io.SystemOutErrCapturer
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
@@ -24,8 +26,6 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
                 if(args) {
                     buildLauncher.withArguments(args)
                 }
-                
-                GradleUtil.wireCancellationSupport(context, buildLauncher)
                 
                 buildLauncher.run()
             }
@@ -70,15 +70,20 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
     }
 
     public Completer createCompleter(ProjectContext context) {
-        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }))
+        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }, true))
     }
     
     private static class ClosureCompleter implements Completer {
         private Closure<Set<String>> closure
         private Completer completer
         
-        public ClosureCompleter(Closure<Set<String>> closure) {
+        public ClosureCompleter(Closure<Set<String>> closure, boolean backgroundInitialize = false) {
             this.closure = closure
+            if(backgroundInitialize) {
+                Thread.start {
+                    completer = new StringsCompleter(closure.call())
+                }
+            }
         }
         
         Completer getCompleter() {

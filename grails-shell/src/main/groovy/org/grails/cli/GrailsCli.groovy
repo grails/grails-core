@@ -22,6 +22,7 @@ import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
+import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.interactive.completors.EscapingFileNameCompletor
 import org.grails.cli.interactive.completors.RegexCompletor
 import org.grails.cli.profile.ProfileRepository
@@ -184,6 +185,7 @@ class GrailsCli {
         NonBlockingInputStream nonBlockingInput = (NonBlockingInputStream)console.reader.getInput()
         while(keepRunning) {
             try {
+                GradleUtil.prepareConnection(projectContext.baseDir)
                 String commandLine = console.showPrompt()
                 if(commandLine==null) {
                     // CTRL-D was pressed, exit interactive mode

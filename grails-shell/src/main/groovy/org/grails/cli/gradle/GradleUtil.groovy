@@ -10,6 +10,17 @@ import org.gradle.tooling.internal.consumer.DefaultCancellationTokenSource
 import org.grails.cli.profile.ExecutionContext
 
 class GradleUtil {
+
+    private static ProjectConnection preparedConnection = null
+
+    public static ProjectConnection prepareConnection(File baseDir) {
+        preparedConnection = GradleConnector.newConnector().forProjectDirectory(baseDir).connect()
+
+        Runtime.addShutdownHook {
+            preparedConnection?.close()
+        }
+    }
+
     public static ProjectConnection openGradleConnection(File baseDir) {
         SystemOutErrCapturer.withCapturedOutput {
             GradleConnector.newConnector().forProjectDirectory(baseDir).connect()
@@ -17,7 +28,7 @@ class GradleUtil {
     }
     
     public static <T> T withProjectConnection(File baseDir, boolean suppressOutput=true, Closure<T> closure) {
-        ProjectConnection projectConnection=openGradleConnection(baseDir)
+        ProjectConnection projectConnection= preparedConnection ?: openGradleConnection(baseDir)
         try {
             if(suppressOutput) {
                 SystemOutErrCapturer.withCapturedOutput {
@@ -29,7 +40,8 @@ class GradleUtil {
                 }
             }
         } finally {
-            projectConnection.close()
+            if(!preparedConnection)
+                projectConnection.close()
         }
     }
     
