@@ -37,7 +37,7 @@ class GrailsCliSpec extends Specification {
     def setup() {
         //System.setProperty("grails.show.stacktrace", "true")
         GrailsConsole.removeInstance()
-        cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0)
+        cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0, integrateGradle: false)
         cli.profileRepository.initialized = true
         cli.profileRepository.profilesDirectory = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
         

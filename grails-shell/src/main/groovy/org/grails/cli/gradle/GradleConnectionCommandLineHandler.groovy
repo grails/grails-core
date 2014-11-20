@@ -17,6 +17,8 @@ import org.grails.cli.profile.ProjectContext
 
 @CompileStatic
 class GradleConnectionCommandLineHandler implements CommandLineHandler, CompleterFactory {
+    boolean backgroundInitialize = true
+
     @Override
     public boolean handle(ExecutionContext context) {
         if(context.commandLine.commandName == 'gradle') {
@@ -70,7 +72,7 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
     }
 
     public Completer createCompleter(ProjectContext context) {
-        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }, true))
+        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }, backgroundInitialize))
     }
     
     private static class ClosureCompleter implements Completer {

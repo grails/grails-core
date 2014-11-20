@@ -79,6 +79,7 @@ class GrailsCli {
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
     Boolean ansiEnabled = null
+    boolean integrateGradle = true
     Character defaultInputMask = null
     GitProfileRepository profileRepository=new GitProfileRepository()
     CodeGenConfig applicationConfig
@@ -189,7 +190,8 @@ class GrailsCli {
         NonBlockingInputStream nonBlockingInput = (NonBlockingInputStream)console.reader.getInput()
         while(keepRunning) {
             try {
-                GradleUtil.prepareConnection(projectContext.baseDir)
+                if(integrateGradle)
+                    GradleUtil.prepareConnection(projectContext.baseDir)
                 String commandLine = console.showPrompt()
                 if(commandLine==null) {
                     // CTRL-D was pressed, exit interactive mode
@@ -255,7 +257,8 @@ class GrailsCli {
         String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
-        def gradleHandler = new GradleConnectionCommandLineHandler()
+
+        def gradleHandler = new GradleConnectionCommandLineHandler(backgroundInitialize: integrateGradle)
         commandLineHandlers.add(gradleHandler)
 
         def completers = aggregateCompleter.getCompleters()
@@ -284,7 +287,7 @@ class GrailsCli {
             populatedFromCache = false
         }
 
-        if(!populatedFromCache) {
+        if(!populatedFromCache && integrateGradle) {
             def connection = GradleUtil.prepareConnection(baseDir)
             EclipseProject project
             try {
