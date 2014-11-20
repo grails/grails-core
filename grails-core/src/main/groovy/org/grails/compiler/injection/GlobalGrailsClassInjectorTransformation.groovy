@@ -15,8 +15,10 @@ import groovy.xml.MarkupBuilder
 import groovy.xml.StreamingMarkupBuilder
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.ModuleNode
+import org.codehaus.groovy.ast.PropertyNode
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilePhase
@@ -28,6 +30,8 @@ import org.grails.io.support.FileSystemResource
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
+
+import java.lang.reflect.Modifier
 
 /**
  * A global transformation that applies Grails' transformations to classes within a Grails project
@@ -90,13 +94,19 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         String pluginClassName = null
 
         for (ClassNode classNode : classes) {
+            def projectName = classNode.getNodeMetaData("projectName")
+            def projectVersion = classNode.getNodeMetaData("projectVersion")
+
             if(classNode.name.endsWith("GrailsPlugin")) {
                 pluginClassName = classNode.name
+
+                if(projectVersion && !classNode.getProperty('version')) {
+                    classNode.addProperty(new PropertyNode('version', Modifier.PUBLIC, ClassHelper.make(Object), classNode, new ConstantExpression(projectVersion.toString()) , null, null))
+                }
+
                 continue
             }
 
-            def projectName = classNode.getNodeMetaData("projectName")
-            def projectVersion = classNode.getNodeMetaData("projectVersion")
 
             if(projectName && projectVersion) {
                 GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: projectName, version:projectVersion])
