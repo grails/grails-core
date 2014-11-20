@@ -28,8 +28,6 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A ResourcePatternResolver implementation that is able to resolve a
@@ -148,7 +146,6 @@ public class PathMatchingResourcePatternResolver {
 
     private static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 
-    private static final Log logger = LogFactory.getLog(PathMatchingResourcePatternResolver.class);
 
     private final ResourceLoader resourceLoader;
 
@@ -456,10 +453,6 @@ public class PathMatchingResourcePatternResolver {
             rootDir = rootDirResource.getFile().getAbsoluteFile();
         }
         catch (IOException ex) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Cannot search for matching files underneath " + rootDirResource +
-                        " because it does not correspond to a directory in the file system", ex);
-            }
             return Collections.emptySet();
         }
         return doFindMatchingFileSystemResources(rootDir, subPattern);
@@ -499,16 +492,9 @@ public class PathMatchingResourcePatternResolver {
         }
         if (!rootDir.isDirectory()) {
             // Complain louder if it exists but is no directory.
-            if (logger.isWarnEnabled()) {
-                logger.warn("Skipping [" + rootDir.getAbsolutePath() + "] because it does not denote a directory");
-            }
             return Collections.emptySet();
         }
         if (!rootDir.canRead()) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Cannot search for matching files underneath directory [" + rootDir.getAbsolutePath() +
-                        "] because the application is not allowed to read the directory");
-            }
             return Collections.emptySet();
         }
         String fullPattern = rootDir.getAbsolutePath().replace( File.separator, "/");
@@ -533,9 +519,6 @@ public class PathMatchingResourcePatternResolver {
     protected void doRetrieveMatchingFiles(String fullPattern, File dir, Set<File> result) throws IOException {
         File[] dirContents = dir.listFiles();
         if (dirContents == null) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Could not retrieve contents of directory [" + dir.getAbsolutePath() + "]");
-            }
             return;
         }
         for (File content : dirContents) {
