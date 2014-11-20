@@ -18,10 +18,14 @@ package org.grails.cli
 import grails.build.logging.GrailsConsole
 import grails.config.CodeGenConfig
 import grails.io.SystemStreamsRedirector
+import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.Canonical
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
+import org.gradle.tooling.model.eclipse.EclipseProject
+import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.interactive.completors.EscapingFileNameCompletor
 import org.grails.cli.interactive.completors.RegexCompletor
@@ -242,6 +246,12 @@ class GrailsCli {
     }
 
     private initializeProfile() {
+        BuildSettings.TARGET_DIR.mkdirs()
+
+
+        def baseDir = projectContext.baseDir
+        populateContextLoader(baseDir)
+
         String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
@@ -255,6 +265,57 @@ class GrailsCli {
         )
         completers.addAll((profile.getCompleters(projectContext)?:[]) as Collection)
         completers.add(gradleHandler.createCompleter(projectContext))
+    }
+
+    protected void populateContextLoader(File baseDir) {
+        def depsFile = new File(BuildSettings.TARGET_DIR, ".dependencies")
+        boolean populatedFromCache = false
+        try {
+            if(depsFile.exists() && depsFile.lastModified() > new File(baseDir, "build.gradle").lastModified()) {
+                def urls = depsFile.text.split('\n').collect() { String str -> new URL(str) }
+                if(urls) {
+                    URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+                    Thread.currentThread().contextClassLoader = classLoader
+                    populatedFromCache = true
+                }
+
+            }
+        } catch (Throwable e) {
+            populatedFromCache = false
+        }
+
+        if(!populatedFromCache) {
+            def connection = GradleUtil.prepareConnection(baseDir)
+            EclipseProject project
+            try {
+                project = connection.action(new ClasspathBuildAction()).run()
+            } catch (e) {
+                connection.close()
+                connection = GradleUtil.refreshConnection(baseDir)
+                project = connection.action(new ClasspathBuildAction()).run()
+            }
+
+            populateClassLoaderFromProject(project)
+        }
+    }
+
+    @CompileDynamic
+    protected void populateClassLoaderFromProject(EclipseProject project) {
+        List<URL> urls = project.getClasspath().collect { dependency -> dependency.file.toURI().toURL() }
+        storeClasspathURLs(urls)
+        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+        Thread.currentThread().contextClassLoader = classLoader
+    }
+
+    protected void storeClasspathURLs(List<URL> urls) {
+        try {
+            def depsFile = new File(BuildSettings.TARGET_DIR, ".dependencies")
+            depsFile.withPrintWriter { PrintWriter writer ->
+                for (url in urls) writer.println(url.toString())
+            }
+        } catch (Throwable e) {
+            GrailsConsole.instance.error("Failed to write dependency cache: ${e.message}", e)
+        }
     }
 
     private CodeGenConfig loadApplicationConfig() {
