@@ -139,7 +139,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         }
         def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
         final failOnError = getFailOnError()
-        enhancer.failOnError = failOnError instanceof Boolean ? failOnError : false
+        enhancer.failOnError = failOnError instanceof Boolean ? (Boolean)failOnError : false
 
         initializeMappingContext()
 
@@ -188,7 +188,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     protected void enhanceSingleEntity(PersistentEntity entity) {
         def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
         final failOnError = config?.grails?.gorm?.failOnError
-        enhancer.failOnError = failOnError instanceof Boolean ? failOnError : false
+        enhancer.failOnError = failOnError instanceof Boolean ? (Boolean)failOnError : false
         if (entity.javaClass.getAnnotation(Enhanced) != null) {
             enhancer.enhance(entity, true)
         } else {
