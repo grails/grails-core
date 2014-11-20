@@ -19,10 +19,10 @@ package org.grails.cli.profile.commands.factory
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
-import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 
 import java.util.regex.Pattern
+
 
 /**
  * A abstract {@link CommandFactory} that reads from the file system
@@ -35,9 +35,9 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
 
     @Override
     Collection<Command> findCommands(Profile profile) {
-        def files = findCommandResources(profile.profileDir)
+        def resources = findCommandResources(profile)
         Collection<Command> commands = []
-        for(Resource resource in files) {
+        for(Resource resource in resources) {
             String commandName = evaluateFileName(resource.filename)
             def data = readCommandFile(resource)
             commands << createCommand(profile, commandName, resource, data)
@@ -46,24 +46,27 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
     }
 
     protected String evaluateFileName(String fileName) {
-        fileName - getFileExtensionPattern()
+        fileName - Pattern.compile(getFileExtensionPattern())
     }
 
+    protected Collection<Resource> findCommandResources(Profile profile) {
+        Collection<Resource> allResources = []
+        for(CommandResourceResolver resolver in getCommandResolvers()) {
+            allResources.addAll resolver.findCommandResources(profile)
+        }
+        return allResources
+    }
 
-    protected Collection<Resource> findCommandResources(File profileDir) {
-        File commandsDir = new File(profileDir, "commands")
-        Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
-            file.isFile() && file.name ==~ getFileNamePattern()
-        }.sort(false) { File file -> file.name }
-        return commandFiles.collect() { File f -> new FileSystemResource(f) }
+    protected Collection<CommandResourceResolver> getCommandResolvers() {
+        return [ new FileSystemCommandResourceResolver(fileNamePattern), new ClasspathCommandResourceResolver(fileNamePattern) ]
     }
 
     protected abstract T readCommandFile(Resource resource)
 
     protected abstract Command createCommand(Profile profile, String commandName, Resource resource, T data)
 
-    protected abstract Pattern getFileNamePattern()
+    protected abstract String getFileNamePattern()
 
-    protected abstract Pattern getFileExtensionPattern()
+    protected abstract String getFileExtensionPattern()
 
 }

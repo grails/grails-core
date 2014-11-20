@@ -11,8 +11,6 @@ import org.grails.cli.profile.commands.script.CommandScript
 import org.grails.cli.profile.commands.script.CommandScriptTransform
 import org.grails.io.support.Resource
 
-import java.util.regex.Pattern
-
 /*
  * Copyright 2014 original authors
  *
@@ -38,8 +36,8 @@ import java.util.regex.Pattern
 @CompileStatic
 class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<CommandScript> {
 
-    final Pattern fileExtensionPattern = ~/\.(groovy)$/
-    final Pattern fileNamePattern = ~/^.*\.(groovy)$/
+    final String fileExtensionPattern = /\.(groovy)$/
+    final String fileNamePattern = /^.*\.(groovy)$/
 
     @Override
     @CompileDynamic

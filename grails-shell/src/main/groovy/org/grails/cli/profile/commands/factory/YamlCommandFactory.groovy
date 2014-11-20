@@ -39,9 +39,8 @@ class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
     // LAX parser for JSON: http://mrhaki.blogspot.ie/2014/08/groovy-goodness-relax-groovy-will-parse.html
     protected JsonSlurper jsonSlurper = new JsonSlurper().setType(JsonParserType.LAX)
 
-    final Pattern fileExtensionPattern = ~/\.(yml|json)$/
-    final Pattern fileNamePattern = ~/^.*\.(yml|json)$/
-
+    final String fileExtensionPattern = /\.(yml|json)$/
+    final String fileNamePattern = /^.*\.(yml|json)$/
 
     @Override
     protected Map readCommandFile(Resource resource) {
@@ -67,4 +66,5 @@ class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
         command.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
         command
     }
+
 }
