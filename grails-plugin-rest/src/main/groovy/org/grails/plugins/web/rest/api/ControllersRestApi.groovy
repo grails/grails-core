@@ -142,7 +142,7 @@ class ControllersRestApi {
                     if (errorsRenderer) {
                         final context = new ServletRenderContext(webRequest, [model: args.model])
                         if (args.view) {
-                            context.viewName = args.view
+                            context.viewName = args.view as String
                         }
                         if(statusCode != null) {
                             context.setStatus(HttpStatus.valueOf(statusCode))
