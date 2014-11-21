@@ -62,6 +62,11 @@ withConfig(configuration) {
 
         processResources.dependsOn(copyPluginResourcesTask)
         project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
+        project.processResources {
+            exclude "application.yml"
+            exclude "logback.groovy"
+            exclude "spring/resources.groovy"
+        }
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
         }
