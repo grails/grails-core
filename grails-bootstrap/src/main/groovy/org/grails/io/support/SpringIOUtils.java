@@ -163,6 +163,20 @@ public class SpringIOUtils {
     }
 
     /**
+     * Copy the contents of the given input File to the given output File.
+     * @param in the file to copy from
+     * @param out the file to copy to
+     * @return the number of bytes copied
+     * @throws java.io.IOException in case of I/O errors
+     */
+    public static int copy(Resource in, File out) throws IOException {
+        assert in != null : "No input File specified";
+        assert out != null : "No output File specified";
+        return copy(new BufferedInputStream(in.getInputStream()),
+                new BufferedOutputStream(new FileOutputStream(out)));
+    }
+
+    /**
      * Copy the contents of the given byte array to the given output File.
      * @param in the byte array to copy from
      * @param out the file to copy to

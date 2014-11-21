@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.templates
+package org.grails.cli.profile.commands.templates
 
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.io.support.DefaultResourceLoader
-import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import org.grails.io.support.ResourceLoader
 
@@ -35,12 +35,12 @@ import org.grails.io.support.ResourceLoader
 class TemplateRenderer  {
 
     ExecutionContext executionContext
-    ResourceLoader resourceLoader
+    @Delegate FileSystemInteraction fileSystemInteraction
     private Map<String, Template> templatecCache = [:]
 
     TemplateRenderer(ExecutionContext executionContext, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
         this.executionContext = executionContext
-        this.resourceLoader = resourceLoader
+        this.fileSystemInteraction = new FileSystemInteraction(executionContext, resourceLoader)
     }
 
     /**
@@ -119,35 +119,13 @@ class TemplateRenderer  {
         }
     }
 
-    /**
-     * Obtain a file for the given path
-     *
-     * @param path The path
-     * @return The file
-     */
-    File file(Object path) {
-        if(path instanceof File) return (File)path
-        else {
-            def baseDir = executionContext.baseDir
-            new File(baseDir ?: new File("."), path.toString())
-        }
+    Iterable<Resource> templates(String pattern) {
+        Collection<Resource> resList = []
+        resList.addAll( resources(pattern) )
+        resList.addAll( resources("classpath*:META-INF/templates/$pattern"))
+        return resList.unique()
     }
 
-    /**
-     * Obtain a resource for the given path
-     * @param path The path
-     * @return The resource
-     */
-    Resource resource(Object path) {
-        if(!path) return null
-        def f = file(path)
-        if(f?.exists()) {
-            return new FileSystemResource(f)
-        }
-        else {
-            return resourceLoader.getResource(path.toString())
-        }
-    }
 
     private static void writeTemplateToDestination(Template template, Map model, File destination) {
         destination.parentFile.mkdirs()

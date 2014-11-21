@@ -55,12 +55,18 @@ withConfig(configuration) {
         }
 
         ProcessResources processResources = (ProcessResources)project.tasks.getByName('processResources')
-        def copyPluginResourcesTask = project.task(type:Copy, "processPluginResources") {
+
+        def copyCommands = project.task(type:Copy, "copyCommands") {
             from "${project.projectDir}/src/main/scripts"
             into "${processResources.destinationDir}/META-INF/commands"
         }
 
-        processResources.dependsOn(copyPluginResourcesTask)
+        def copyTemplates = project.task(type:Copy, "copyTemplates") {
+            from "${project.projectDir}/src/main/templates"
+            into "${processResources.destinationDir}/META-INF/templates"
+        }
+
+        processResources.dependsOn(copyCommands, copyTemplates)
         project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
         project.processResources {
             exclude "application.yml"

@@ -1,4 +1,4 @@
-package org.grails.cli.profile.templates
+package org.grails.cli.profile.commands.templates
 
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable

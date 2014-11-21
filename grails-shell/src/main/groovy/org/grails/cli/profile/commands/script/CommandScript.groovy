@@ -24,7 +24,8 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
-import org.grails.cli.profile.templates.TemplateRenderer
+import org.grails.cli.profile.commands.io.FileSystemInteraction
+import org.grails.cli.profile.commands.templates.TemplateRenderer
 
 /**
  * A base class for Groovy scripts that implement commands
@@ -41,6 +42,7 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
     @Delegate ExecutionContext executionContext
     @Delegate TemplateRenderer templateRenderer
     @Delegate ConsoleLogger consoleLogger = GrailsConsole.getInstance()
+    @Delegate FileSystemInteraction fileSystemInteraction
     AntBuilder ant = new AntBuilder()
 
     /**
@@ -90,6 +92,7 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
         this.executionContext = executionContext
         this.consoleLogger = executionContext.console
         this.templateRenderer = new TemplateRenderer(executionContext)
+        this.fileSystemInteraction = new FileSystemInteraction(executionContext)
     }
 
     ExecutionContext getExecutionContext() {
