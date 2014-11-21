@@ -65,7 +65,7 @@ class YamlCommandFactory extends ResourceResolvingCommandFactory<Map> {
             Command command = new DefaultMultiStepCommand( commandName, profile, data )
             Object minArguments = data?.minArguments
             command.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
-            command
+            return command
         }
         return null
     }

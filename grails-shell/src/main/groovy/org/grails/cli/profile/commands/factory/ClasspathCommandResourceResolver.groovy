@@ -34,7 +34,6 @@ class ClasspathCommandResourceResolver implements CommandResourceResolver {
 
     private Collection<Resource> resources = null
 
-
     ClasspathCommandResourceResolver(Collection<String> matchingFileExtensions) {
         this.matchingFileExtensions = matchingFileExtensions
     }
@@ -42,12 +41,11 @@ class ClasspathCommandResourceResolver implements CommandResourceResolver {
     @Override
     Collection<Resource> findCommandResources(Profile profile) {
         if(resources != null) return resources
-
         def classLoader = classLoader ?: Thread.currentThread().contextClassLoader
         PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(classLoader)
 
         try {
-            resources = []
+           resources = []
             for(String ext in matchingFileExtensions) {
                 resources.addAll resourcePatternResolver.getResources("classpath*:META-INF/commands/*.$ext").toList()
             }
