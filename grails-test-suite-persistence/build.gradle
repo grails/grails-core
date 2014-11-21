@@ -41,7 +41,10 @@ test {
     maxParallelForks = 2
     forkEvery = isTravisBuild ? 25 : 100
     if(!isTravisBuild) {
-        jvmArgs = ['-Xmx2048M','-XX:MaxPermSize=256m']
+        maxHeapSize = '2048m'
+        if(!isJava8Compatible) {
+            jvmArgs '-XX:MaxPermSize=256m'
+        }
     }
     excludes = ['**/GrailsDomainBinderTests.class',
                 '**/ComponentValidationTests.class',
