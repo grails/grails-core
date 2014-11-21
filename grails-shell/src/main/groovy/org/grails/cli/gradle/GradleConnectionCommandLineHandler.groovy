@@ -1,19 +1,14 @@
 package org.grails.cli.gradle
 
-import grails.io.SystemOutErrCapturer
+import grails.build.logging.GrailsConsole
+import grails.io.SystemStreamsRedirector
 import groovy.transform.CompileStatic
-import jline.console.completer.ArgumentCompleter
-import jline.console.completer.Completer
-import jline.console.completer.StringsCompleter
+import jline.console.completer.*
 
 import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.FetchAllTaskSelectorsBuildAction.AllTasksModel
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.CompleterFactory
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.ProjectContext
+import org.grails.cli.profile.*
 
 @CompileStatic
 class GradleConnectionCommandLineHandler implements CommandLineHandler, CompleterFactory {
@@ -24,6 +19,13 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
         if(context.commandLine.commandName == 'gradle') {
             GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
                 BuildLauncher buildLauncher = projectConnection.newBuild()
+                GrailsConsole grailsConsole = GrailsConsole.getInstance() 
+                buildLauncher.colorOutput = grailsConsole.isAnsiEnabled()
+                OutputStream output = SystemStreamsRedirector.original().out
+                if(grailsConsole.isAnsiEnabled()) {
+                    output = grailsConsole.ansiWrap(output)
+                }
+                buildLauncher.setStandardOutput(output)
                 def args = context.commandLine.remainingArgsString?.trim()
                 if(args) {
                     buildLauncher.withArguments(args)
