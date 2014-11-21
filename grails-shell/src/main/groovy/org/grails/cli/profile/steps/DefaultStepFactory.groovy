@@ -37,6 +37,8 @@ class DefaultStepFactory implements StepFactory {
                     return new GradleStep((ProfileCommand)command, parameters)
                 case 'execute':
                     return new ExecuteStep((ProfileCommand)command, parameters)
+                case 'mkdir':
+                    return new MkdirStep((ProfileCommand)command, parameters)
             }
         }
 
