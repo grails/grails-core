@@ -27,4 +27,11 @@ interface ProfileCommand extends Command {
      */
     Profile getProfile()
 
+    /**
+     * Sets the command profile
+     *
+     * @param profile The profile
+     */
+    void setProfile(Profile profile)
+
 }

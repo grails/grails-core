@@ -1,4 +1,4 @@
-package org.grails.cli.profile.steps.internal
+package org.grails.cli.profile.templates
 
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable

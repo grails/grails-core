@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile.commands.script
 
+import grails.build.logging.ConsoleLogger
 import grails.build.logging.GrailsConsole
 import grails.util.Environment
 import grails.util.GrailsNameUtils
@@ -23,6 +24,7 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
+import org.grails.cli.profile.templates.TemplateRenderer
 
 /**
  * A base class for Groovy scripts that implement commands
@@ -31,12 +33,15 @@ import org.grails.cli.profile.ProfileCommand
  * @since 3.0
  */
 @CompileStatic
-abstract class CommandScript extends Script implements ProfileCommand {
+abstract class CommandScript extends Script implements ProfileCommand, ConsoleLogger {
 
     Profile profile
     String name = getClass().name.contains('-') ? getClass().name : GrailsNameUtils.getScriptName(getClass().name)
     CommandDescription description = new CommandDescription(name)
     @Delegate ExecutionContext executionContext
+    @Delegate TemplateRenderer templateRenderer
+    @Delegate ConsoleLogger consoleLogger = GrailsConsole.getInstance()
+    AntBuilder ant = new AntBuilder()
 
     /**
      * The location of the user.home directory
@@ -76,10 +81,18 @@ abstract class CommandScript extends Script implements ProfileCommand {
 
     @Override
     boolean handle(ExecutionContext executionContext) {
-        this.executionContext = executionContext
-        this.binding = new ProfileBinding(profile, executionContext)
+        setExecutionContext(executionContext)
         run()
         return true
     }
 
+    public void setExecutionContext(ExecutionContext executionContext) {
+        this.executionContext = executionContext
+        this.consoleLogger = executionContext.console
+        this.templateRenderer = new TemplateRenderer(executionContext)
+    }
+
+    ExecutionContext getExecutionContext() {
+        return executionContext
+    }
 }
