@@ -20,6 +20,7 @@ import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.CommandException
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.ProfileCommand
+import org.grails.cli.profile.support.ArtefactVariableResolver
 
 /**
  * A step that makes a directory
@@ -37,7 +38,7 @@ class MkdirStep extends AbstractStep {
     MkdirStep(ProfileCommand command, Map<String, Object> parameters) {
         super(command, parameters)
         location = parameters.location
-        if(location) {
+        if(!location) {
             throw new CommandException("Location not specified for mkdir step")
         }
     }
@@ -47,6 +48,15 @@ class MkdirStep extends AbstractStep {
 
     @Override
     boolean handle(ExecutionContext context) {
-        return new File(context.baseDir, location).mkdirs()
+        def args = context.commandLine.remainingArgs
+        if(args) {
+            def name = args[0]
+            def variableResolver = new ArtefactVariableResolver(name)
+            File destination = variableResolver.resolveFile(location, context)
+            return destination.mkdirs()
+        }
+        else {
+            return new File(context.baseDir, location).mkdirs()
+        }
     }
 }

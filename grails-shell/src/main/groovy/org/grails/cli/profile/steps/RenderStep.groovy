@@ -21,6 +21,7 @@ import groovy.transform.InheritConstructors
 import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.commands.templates.SimpleTemplate
+import org.grails.cli.profile.support.ArtefactVariableResolver
 
 /**
  * A {@link org.grails.cli.profile.Step} that renders a template
@@ -45,14 +46,18 @@ class RenderStep extends AbstractStep {
         String artifactName
         String artifactPackage 
         (artifactName, artifactPackage) = resolveNameAndPackage(context, nameAsArgument)
-        Map<String, String> variables = createVariables(artifactPackage, artifactName)
-        
-        File destination = resolveDestination(context, variables)
-        
+
+        def variableResolver = new ArtefactVariableResolver(artifactName, artifactPackage)
+
+        File destination = variableResolver.resolveFile(parameters.destination, context)
+        if(destination.exists()) {
+            throw new RuntimeException("$destination already exists.")
+        }
+
         String relPath = relativePath(context.baseDir, destination)
         context.console.info("Creating $relPath")
         
-        renderToDestination(destination, variables)
+        renderToDestination(destination, variableResolver.variables)
         
         return true
     }
@@ -63,34 +68,12 @@ class RenderStep extends AbstractStep {
         destination.text = new SimpleTemplate(templateFile.text).render(variables)
     }
 
-    private File resolveDestination(ExecutionContext context, Map variables) {
-        String destinationName = new SimpleTemplate(parameters.destination).render(variables)
-        File destination = new File(context.baseDir, destinationName).absoluteFile
-
-        if(destination.exists()) {
-            throw new RuntimeException("$destination already exists.")
-        }
-        if(!destination.getParentFile().exists()) {
-            destination.getParentFile().mkdirs()
-        }
-        return destination
-    }
-
-    private Map createVariables(String artifactPackage, String artifactName) {
-        Map<String, String> variables = [:]
-        variables['artifact.package.name'] = artifactPackage
-        variables['artifact.package.path'] = artifactPackage?.replace('.','/')
-        variables['artifact.package'] = "package $artifactPackage\n"
-        variables['artifact.name'] = artifactName
-        return variables
-    }
-    
     protected List<String> resolveNameAndPackage(ExecutionContext context, String nameAsArgument) {
         List<String> parts = nameAsArgument.split(/\./) as List
-        
+
         String artifactName
         String artifactPackage
-        
+
         if(parts.size() == 1) {
             artifactName = parts[0]
             artifactPackage = context.navigateConfig('grails', 'codegen', 'defaultPackage')?:''
@@ -98,9 +81,9 @@ class RenderStep extends AbstractStep {
             artifactName = parts[-1]
             artifactPackage = parts[0..-2].join('.')
         }
-        
+
         [GrailsNameUtils.getClassName(artifactName), artifactPackage]
-    } 
+    }
     
     protected String relativePath(File relbase, File file) {
         def pathParts = []
