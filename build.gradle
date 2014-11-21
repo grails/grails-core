@@ -92,6 +92,7 @@ allprojects {
         if(isBuildSnapshot) {
             maven { url "https://repo.spring.io/repo"}
             maven { url "http://repo.grails.org/grails/libs-snapshots-local" }
+            maven { url "https://repo.gradle.org/gradle/libs-snapshots-local" }
         }
     }
 
