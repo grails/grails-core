@@ -29,18 +29,29 @@ import org.grails.io.support.Resource
  */
 @CompileStatic
 class ClasspathCommandResourceResolver implements CommandResourceResolver {
-    final String fileNamePattern
-    PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(Thread.currentThread().contextClassLoader)
+    final Collection<String> matchingFileExtensions
+    ClassLoader classLoader
 
-    ClasspathCommandResourceResolver(String fileNamePattern) {
-        this.fileNamePattern = fileNamePattern
+    private Collection<Resource> resources = null
+
+
+    ClasspathCommandResourceResolver(Collection<String> matchingFileExtensions) {
+        this.matchingFileExtensions = matchingFileExtensions
     }
 
     @Override
     Collection<Resource> findCommandResources(Profile profile) {
+        if(resources != null) return resources
+
+        def classLoader = classLoader ?: Thread.currentThread().contextClassLoader
+        PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(classLoader)
 
         try {
-            return resourcePatternResolver.getResources("classpath*:META-INF/commands/$fileNamePattern").toList()
+            resources = []
+            for(String ext in matchingFileExtensions) {
+                resources.addAll resourcePatternResolver.getResources("classpath*:META-INF/commands/*.$ext").toList()
+            }
+            return resources
         } catch (Throwable e) {
             return []
         }

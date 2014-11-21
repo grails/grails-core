@@ -40,13 +40,16 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
         for(Resource resource in resources) {
             String commandName = evaluateFileName(resource.filename)
             def data = readCommandFile(resource)
-            commands << createCommand(profile, commandName, resource, data)
+
+            def command = createCommand(profile, commandName, resource, data)
+            if(command)
+                commands << command
         }
         return commands
     }
 
     protected String evaluateFileName(String fileName) {
-        fileName - Pattern.compile(getFileExtensionPattern())
+        fileName - Pattern.compile(/\.(${getMatchingFileExtensions().join('|')})$/)
     }
 
     protected Collection<Resource> findCommandResources(Profile profile) {
@@ -58,15 +61,13 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
     }
 
     protected Collection<CommandResourceResolver> getCommandResolvers() {
-        return [ new FileSystemCommandResourceResolver(fileNamePattern), new ClasspathCommandResourceResolver(fileNamePattern) ]
+        return [ new FileSystemCommandResourceResolver(matchingFileExtensions), new ClasspathCommandResourceResolver(matchingFileExtensions) ]
     }
 
     protected abstract T readCommandFile(Resource resource)
 
     protected abstract Command createCommand(Profile profile, String commandName, Resource resource, T data)
 
-    protected abstract String getFileNamePattern()
-
-    protected abstract String getFileExtensionPattern()
+    protected abstract Collection<String> getMatchingFileExtensions()
 
 }

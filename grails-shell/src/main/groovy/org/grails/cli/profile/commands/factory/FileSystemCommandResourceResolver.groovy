@@ -33,11 +33,12 @@ import java.util.regex.Pattern
 @CompileStatic
 class FileSystemCommandResourceResolver implements CommandResourceResolver {
 
-    final String fileNamePattern
+    final Collection<String> matchingFileExtensions
     final Pattern fileNamePatternRegex
 
-    FileSystemCommandResourceResolver(String fileNamePattern) {
-        this.fileNamePattern = fileNamePattern
+    FileSystemCommandResourceResolver(Collection<String> matchingFileExtensions) {
+        this.matchingFileExtensions = matchingFileExtensions
+        final String fileNamePattern = /^.*\.(${matchingFileExtensions.join('|')})$/
         this.fileNamePatternRegex = Pattern.compile(fileNamePattern)
     }
 
@@ -45,7 +46,7 @@ class FileSystemCommandResourceResolver implements CommandResourceResolver {
     Collection<Resource> findCommandResources(Profile profile) {
         File commandsDir = new File(profile.profileDir, "commands")
         Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
-            file.isFile() && file.name ==~ getFileNamePattern()
+            file.isFile() && file.name ==~ fileNamePatternRegex
         }.sort(false) { File file -> file.name }
         return commandFiles.collect() { File f -> new FileSystemResource(f) }
     }

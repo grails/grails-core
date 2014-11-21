@@ -36,7 +36,7 @@ import org.grails.io.support.Resource
 @CompileStatic
 class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<CommandScript> {
 
-    final String fileExtensionPattern = /\.(groovy)$/
+    final Collection<String> matchingFileExtensions = ["groovy"]
     final String fileNamePattern = /^.*\.(groovy)$/
 
     @Override

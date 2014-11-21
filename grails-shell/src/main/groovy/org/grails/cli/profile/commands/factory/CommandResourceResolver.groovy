@@ -37,6 +37,6 @@ interface CommandResourceResolver {
      *
      * @return A regex pattern
      */
-    String getFileNamePattern()
+    Collection<String> getMatchingFileExtensions()
 
 }

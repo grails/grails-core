@@ -1,7 +1,8 @@
 package org.grails.gradle.plugin.core
 
 import org.gradle.api.Project
-import org.grails.gradle.plugin.core.GrailsGradlePlugin
+import org.gradle.api.tasks.Copy
+import org.gradle.language.jvm.tasks.ProcessResources
 
 /*
  * Copyright 2014 original authors
@@ -20,7 +21,10 @@ import org.grails.gradle.plugin.core.GrailsGradlePlugin
  */
 
 /**
+ * A Gradle plugin for Grails plugins
+ *
  * @author Graeme Rocher
+ * @since 3.0
  *
  */
 class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
@@ -50,6 +54,13 @@ withConfig(configuration) {
 """
         }
 
+        ProcessResources processResources = (ProcessResources)project.tasks.getByName('processResources')
+        def copyPluginResourcesTask = project.task(type:Copy, "processPluginResources") {
+            from "${project.projectDir}/src/main/scripts"
+            into "${processResources.destinationDir}/META-INF/commands"
+        }
+
+        processResources.dependsOn(copyPluginResourcesTask)
         project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
