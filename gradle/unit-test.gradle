@@ -57,8 +57,13 @@ task coverageReport {
 }
 
 test {
-    systemProperties = ['grails.cli.testing': "true"]
-    jvmArgs = ["-server", "-Xmx1G", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+    systemProperties = ['grails.cli.testing': "true", 'groovy.grails.joint': "true"]
+    maxHeapSize = '1G'
+    minHeapSize = '256m'
+    jvmArgs = ["-server"]
+    if(!isJava8Compatible) {
+        jvmArgs '-XX:MaxPermSize=256m'
+    }    
 }
 
 createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
@@ -79,8 +84,13 @@ def createTestTask(name, includes, excludes) {
 def createTestTaskWithoutSuffix(String name, includes, excludes) {
     task = tasks.add(name: name, type: Test) {
     	doFirst dependencyCache
-        systemProperties = ['grails.cli.testing': "true"]
-        jvmArgs = ["-server", "-Xmx1500m", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
+        systemProperties = ['grails.cli.testing': "true", 'groovy.grails.joint': "true"]
+        maxHeapSize = '1500m'
+        minHeapSize = '256m'
+        jvmArgs = ["-server"]
+        if(!isJava8Compatible) {
+            jvmArgs '-XX:MaxPermSize=256m'
+        }
         systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile
         include includes as String[]
         exclude excludes as String[]
