@@ -63,7 +63,7 @@ class GradleUtil {
     }
     
     public static <T> T withProjectConnection(File baseDir, boolean suppressOutput=true, Closure<T> closure) {
-        ProjectConnection projectConnection= preparedConnection ?: openGradleConnection(baseDir)
+        ProjectConnection projectConnection= preparedConnection ?: prepareConnection(baseDir)
         try {
             if(suppressOutput) {
                 SystemOutErrCapturer.withCapturedOutput {
