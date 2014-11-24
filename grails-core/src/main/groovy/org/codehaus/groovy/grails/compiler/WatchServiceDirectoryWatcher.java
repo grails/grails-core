@@ -84,19 +84,29 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 						}else{
 							List<String> fileExtensions = watchKeyToExtensionsMap.get(watchKey);
 							if(fileExtensions==null){
-								throw new IllegalStateException("No file extensions list found for path not being watched");
-							}
-							if(kind==StandardWatchEventKinds.ENTRY_CREATE){
-								// new directory created, so watch its contents
-								addWatchDirectory(child,fileExtensions);
-							}
-							if(isValidFileToMonitor(childFile,fileExtensions)){
-								if(kind == StandardWatchEventKinds.ENTRY_CREATE){
-									fireOnNew(childFile);
-								}else if(kind == StandardWatchEventKinds.ENTRY_MODIFY){
-									fireOnChange(childFile);
-								}else if(kind == StandardWatchEventKinds.ENTRY_DELETE){
-									// do nothing... there's no way to communicate deletions
+								// this event didn't match a file in individualWatchedFiles so it's a not an individual file we're interested in
+								// this event also didn't match a directory that we're interested in (if it did, fileExtentions wouldn't be null)
+								// so it must be event for a file we're not interested in. An example of how this can happen is:
+								// there's a directory with files in it like this:
+								// /images/a.png
+								// /images/b.png
+								// by using the addWatchFile method, /images/a.png is watched.
+								// Now, /images/b.png is changed. Because java.nio.file.WatchService watches directories, it gets a WatchEvent
+								// for /images/b.png. But we aren't interested in that.
+								LOG.debug("WatchService receieved an event for a file/directory that it's not interested in.");
+							}else{
+								if(kind==StandardWatchEventKinds.ENTRY_CREATE){
+									// new directory created, so watch its contents
+									addWatchDirectory(child,fileExtensions);
+								}
+								if(isValidFileToMonitor(childFile,fileExtensions)){
+									if(kind == StandardWatchEventKinds.ENTRY_CREATE){
+										fireOnNew(childFile);
+									}else if(kind == StandardWatchEventKinds.ENTRY_MODIFY){
+										fireOnChange(childFile);
+									}else if(kind == StandardWatchEventKinds.ENTRY_DELETE){
+										// do nothing... there's no way to communicate deletions
+									}
 								}
 							}
 						}
