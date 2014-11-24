@@ -844,8 +844,16 @@ public class GrailsASTUtils {
      * @param annotationClass The annotation class
      */
     public static AnnotationNode addAnnotationOrGetExisting(ClassNode classNode, Class<? extends Annotation> annotationClass, Map<String, Object> members) {
-        List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = ClassHelper.make(annotationClass);
+        return addAnnotationOrGetExisting(classNode, annotationClassNode, members);
+    }
+
+    public static AnnotationNode addAnnotationOrGetExisting(ClassNode classNode, ClassNode annotationClassNode) {
+        return addAnnotationOrGetExisting(classNode, annotationClassNode, Collections.<String, Object>emptyMap());
+    }
+
+    public static AnnotationNode addAnnotationOrGetExisting(ClassNode classNode, ClassNode annotationClassNode, Map<String, Object> members) {
+        List<AnnotationNode> annotations = classNode.getAnnotations();
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
         if (annotations.isEmpty()) {
             classNode.addAnnotation(annotationToAdd);

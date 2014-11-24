@@ -15,7 +15,10 @@
  */
 package org.grails.web.servlet.mvc
 
+import grails.util.Holders
 import groovy.transform.CompileStatic
+import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
+import org.springframework.context.ApplicationContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -49,6 +52,16 @@ class GrailsDispatcherServlet extends DispatcherServlet{
         }
         else {
             return (GrailsWebRequest) previousAttributes;
+        }
+    }
+
+    @Override
+    protected void initStrategies(ApplicationContext context) {
+        super.initStrategies(context)
+        if(context instanceof WebApplicationContext) {
+            def servletContext = ((WebApplicationContext) context).servletContext
+            Holders.setServletContext(servletContext);
+            Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
         }
     }
 }

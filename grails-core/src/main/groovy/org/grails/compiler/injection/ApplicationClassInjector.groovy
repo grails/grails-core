@@ -79,11 +79,11 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                 classNode.addStaticInitializerStatements(statements, false)
 
                 def classLoader = getClass().classLoader
+                if(ClassUtils.isPresent('javax.servlet.ServletContext', classLoader)) {
+                    GrailsASTUtils.addAnnotationOrGetExisting(classNode, ClassHelper.make(classLoader.loadClass('org.springframework.web.servlet.config.annotation.EnableWebMvc')))
+                }
                 if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
-                    def clazz = classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration')
-                    def enableAutoConfigurationAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, clazz)
-
-
+                    def enableAutoConfigurationAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration')))
                     if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration', classLoader)) {
                         def dataSourceAutoConfig = new ClassExpression(ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration')))
                         GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, "exclude", dataSourceAutoConfig)
