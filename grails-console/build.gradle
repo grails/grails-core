@@ -1,6 +1,26 @@
-dependencies {
+configurations {
+    optional
+}
 
+dependencies {
     compile project(":grails-core")
     compile "org.codehaus.groovy:groovy-console:$groovyVersion"
     compile("org.springframework.boot:spring-boot:$springBootVersion")
+    compile "org.springframework:spring-test:${springVersion}"
+
+    optional "org.springframework:spring-web:${springVersion}"
+
+    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
+
 }
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
+}
+javadoc.classpath += files(configurations.optional)

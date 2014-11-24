@@ -7,11 +7,14 @@ import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
@@ -61,8 +64,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
         }
 
+
+        def tasks = project.tasks
         project.afterEvaluate {
-            if( project.tasks.findByName("war") ) {
+            if( tasks.findByName("war") ) {
                 project.war {
                    from "${project.buildDir}/assetCompile"
                 }
@@ -72,9 +77,12 @@ class GrailsGradlePlugin extends GroovyPlugin {
                     from "${project.buildDir}/assetCompile"
                 }
             }
-
         }
-        project.tasks.withType(JavaExec).each { JavaExec task ->
+
+
+        configureConsoleTask(tasks, project)
+
+        tasks.withType(JavaExec).each { JavaExec task ->
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
@@ -94,6 +102,29 @@ class GrailsGradlePlugin extends GroovyPlugin {
                     }
                 }
             }
+        }
+    }
+
+
+    @CompileStatic
+    protected void configureConsoleTask(TaskContainer tasks, Project project) {
+        def consoleConfiguration = project.configurations.create("console")
+        def findMainClass = tasks.findByName('findMainClass')
+        createConsoleTask(project, tasks, consoleConfiguration)
+
+        def consoleTask = (JavaExec) tasks.findByName('console')
+
+        findMainClass.doLast {
+            consoleTask.args project.properties.get("mainClassName")
+        }
+
+        consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)
+    }
+
+    protected JavaExec createConsoleTask(Project project, TaskContainer tasks, Configuration configuration) {
+        tasks.create("console", JavaExec) {
+            classpath = project.sourceSets.main.runtimeClasspath + configuration
+            main = "grails.ui.console.GrailsSwingConsole"
         }
     }
 
