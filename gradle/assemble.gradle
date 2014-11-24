@@ -189,6 +189,7 @@ task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
     description = "Creates OS specific scripts to run grails-shell as a JVM application."
     mainClassName = 'org.grails.cli.GrailsCli'
     applicationName = 'grails'
+    defaultJvmOpts = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:BiasedLockingStartupDelay=0", "-XX:StarvationMonitorInterval=5000", "-XX:Tier0ProfilingStartPercentage=500", "-Dsun.reflect.inflationThreshold=100000"]
     outputDir = file('bin')
     classpath = rootProject.childProjects['grails-shell'].configurations.runtime
     projectArtifacts = rootProject.childProjects['grails-shell'].tasks['jar'].outputs.files.collect { "dist/${it.name}" }
