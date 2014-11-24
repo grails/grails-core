@@ -74,20 +74,15 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
     }
 
     public Completer createCompleter(ProjectContext context) {
-        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }, backgroundInitialize))
+        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }))
     }
     
     private static class ClosureCompleter implements Completer {
         private Closure<Set<String>> closure
         private Completer completer
         
-        public ClosureCompleter(Closure<Set<String>> closure, boolean backgroundInitialize = false) {
+        public ClosureCompleter(Closure<Set<String>> closure) {
             this.closure = closure
-            if(backgroundInitialize) {
-                Thread.start {
-                    completer = new StringsCompleter(closure.call())
-                }
-            }
         }
         
         Completer getCompleter() {

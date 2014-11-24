@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile.steps
 
+import grails.build.logging.GrailsConsole
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
@@ -51,7 +52,8 @@ class RenderStep extends AbstractStep {
 
         File destination = variableResolver.resolveFile(parameters.destination, context)
         if(destination.exists()) {
-            throw new RuntimeException("$destination already exists.")
+            context.console.error("${destination.canonicalPath} already exists.")
+            return false
         }
 
         String relPath = relativePath(context.baseDir, destination)

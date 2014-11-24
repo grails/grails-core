@@ -39,8 +39,12 @@ class GradleUtil {
     public static ProjectConnection refreshConnection(File baseDir) {
         preparedConnection = GradleConnector.newConnector().forProjectDirectory(baseDir).connect()
 
-        Runtime.addShutdownHook {
-            preparedConnection?.close()
+        try {
+            Runtime.addShutdownHook {
+                preparedConnection?.close()
+            }
+        } catch (e) {
+            // ignore
         }
         return preparedConnection
     }
