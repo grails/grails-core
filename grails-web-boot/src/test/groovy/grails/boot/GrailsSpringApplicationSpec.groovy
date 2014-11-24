@@ -1,14 +1,13 @@
 package grails.boot
 
 import grails.boot.config.GrailsAutoConfiguration
-
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import spock.lang.Specification
 
 /**
@@ -33,6 +32,7 @@ class GrailsSpringApplicationSpec extends Specification{
 
 
     @Configuration
+    @EnableWebMvc
     static class Application extends GrailsAutoConfiguration {
         @Bean
         public EmbeddedServletContainerFactory containerFactory() {
