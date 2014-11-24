@@ -1,31 +1,35 @@
 package org.grails.cli.gradle
+
+import grails.build.logging.GrailsConsole
+import grails.io.SystemStreamsRedirector
 import groovy.transform.CompileStatic
-import jline.console.completer.ArgumentCompleter
-import jline.console.completer.Completer
-import jline.console.completer.StringsCompleter
+import jline.console.completer.*
 
 import org.gradle.tooling.BuildLauncher
 import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.FetchAllTaskSelectorsBuildAction.AllTasksModel
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.CompleterFactory
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.ProjectContext
+import org.grails.cli.profile.*
 
 @CompileStatic
 class GradleConnectionCommandLineHandler implements CommandLineHandler, CompleterFactory {
+    boolean backgroundInitialize = true
+
     @Override
-    public boolean handleCommand(ExecutionContext context) {
+    public boolean handle(ExecutionContext context) {
         if(context.commandLine.commandName == 'gradle') {
             GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
                 BuildLauncher buildLauncher = projectConnection.newBuild()
+                GrailsConsole grailsConsole = GrailsConsole.getInstance() 
+                buildLauncher.colorOutput = grailsConsole.isAnsiEnabled()
+                OutputStream output = SystemStreamsRedirector.original().out
+                if(grailsConsole.isAnsiEnabled()) {
+                    output = grailsConsole.ansiWrap(output)
+                }
+                buildLauncher.setStandardOutput(output)
                 def args = context.commandLine.remainingArgsString?.trim()
                 if(args) {
                     buildLauncher.withArguments(args)
                 }
-                
-                GradleUtil.wireCancellationSupport(context, buildLauncher)
                 
                 buildLauncher.run()
             }
@@ -70,15 +74,20 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
     }
 
     public Completer createCompleter(ProjectContext context) {
-        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }))
+        new ArgumentCompleter(new StringsCompleter("gradle"), new ClosureCompleter({ listAllTaskSelectors(context) }, backgroundInitialize))
     }
     
     private static class ClosureCompleter implements Completer {
         private Closure<Set<String>> closure
         private Completer completer
         
-        public ClosureCompleter(Closure<Set<String>> closure) {
+        public ClosureCompleter(Closure<Set<String>> closure, boolean backgroundInitialize = false) {
             this.closure = closure
+            if(backgroundInitialize) {
+                Thread.start {
+                    completer = new StringsCompleter(closure.call())
+                }
+            }
         }
         
         Completer getCompleter() {

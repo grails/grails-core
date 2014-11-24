@@ -1,0 +1,52 @@
+/*
+ * Copyright 2014 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.grails.cli.profile
+/**
+ * A command that executes multiple steps
+ *
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+abstract class MultiStepCommand implements ProfileCommand {
+
+    String name
+    Profile profile
+    int minArguments = 1
+
+    MultiStepCommand(String name, Profile profile) {
+        this.name = name
+        this.profile = profile
+    }
+    /**
+     * @return The steps that make up the command
+     */
+    abstract List<Step> getSteps()
+
+    @Override
+    boolean handle(ExecutionContext context) {
+        if(minArguments > 0 && (!context.commandLine.getRemainingArgs() || context.commandLine.getRemainingArgs().size() < minArguments)) {
+            context.console.error("Expecting ${minArguments ? 'an argument' : minArguments + ' arguments'} to $name.")
+            context.console.info("${description.usage}")
+            return true
+        }
+        for(AbstractStep step : getSteps()) {
+            if(!step.handle(context)) {
+                break
+            }
+        }
+        true
+    }
+}

@@ -18,12 +18,21 @@ package org.grails.cli
 import grails.build.logging.GrailsConsole
 import grails.config.CodeGenConfig
 import grails.io.SystemStreamsRedirector
+import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.Canonical
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
+import org.gradle.tooling.model.eclipse.EclipseProject
+import org.grails.cli.gradle.ClasspathBuildAction
+import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.interactive.completors.EscapingFileNameCompletor
 import org.grails.cli.interactive.completors.RegexCompletor
+import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.cli.profile.commands.CreateAppCommand
+import org.grails.cli.profile.commands.CreatePluginCommand
 
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -39,12 +48,12 @@ import jline.internal.NonBlockingInputStream
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
 import org.grails.cli.gradle.GradleConnectionCommandLineHandler
-import org.grails.cli.profile.CommandCancelledListener
+import org.grails.cli.profile.CommandCancellationListener
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.GitProfileRepository
+import org.grails.cli.profile.git.GitProfileRepository
 import org.grails.cli.profile.ProjectContext
 
 
@@ -58,7 +67,7 @@ import org.grails.cli.profile.ProjectContext
  */
 @CompileStatic
 class GrailsCli {
-    public static final String DEFAULT_PROFILE_NAME = 'web'
+    public static final String DEFAULT_PROFILE_NAME = ProfileRepository.DEFAULT_PROFILE_NAME
     private static final int KEYPRESS_CTRL_C = 3
     private static final int KEYPRESS_ESC = 27
     private static final String USAGE_MESSAGE = "Usage: create-app [NAME] --profile=web"
@@ -70,6 +79,7 @@ class GrailsCli {
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
     Boolean ansiEnabled = null
+    boolean integrateGradle = true
     Character defaultInputMask = null
     GitProfileRepository profileRepository=new GitProfileRepository()
     CodeGenConfig applicationConfig
@@ -93,6 +103,7 @@ class GrailsCli {
      */
     public int execute(String... args) {
         CommandLine mainCommandLine=cliParser.parse(args)
+
         if(mainCommandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)) {
             System.setProperty("grails.verbose", "true")
         }
@@ -104,18 +115,16 @@ class GrailsCli {
         if(!grailsAppDir.isDirectory()) {
             if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
                 System.err.println USAGE_MESSAGE
+                return 1
             }
-            switch(mainCommandLine.commandName) {
-                case "create-app":
-                    return createApp(mainCommandLine, profileRepository)
-                case "create-plugin":
-                    return createPlugin(mainCommandLine, profileRepository)
-                default:
-                    System.err.println USAGE_MESSAGE
-                    return 1
-
+            def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
+            if(cmd) {
+                return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
             }
-
+            else {
+                System.err.println USAGE_MESSAGE
+                return 1
+            }
 
         } else {
             applicationConfig = loadApplicationConfig()
@@ -131,7 +140,8 @@ class GrailsCli {
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             initializeProfile()
             if(commandName) {
-                handleCommand(args.join(" "), mainCommandLine)
+
+                handleCommand(mainCommandLine)
             } else {
                 handleInteractiveMode()
             }
@@ -139,20 +149,20 @@ class GrailsCli {
         return 0
     }
 
-    ExecutionContext createExecutionContext(String unparsedCommandLine, CommandLine commandLine) {
-        new ExecutionContextImpl(unparsedCommandLine, commandLine, projectContext)
+    ExecutionContext createExecutionContext(CommandLine commandLine) {
+        new ExecutionContextImpl(commandLine, projectContext)
     }
     
-    Boolean handleCommand(String unparsedCommandLine, CommandLine commandLine) {
-        handleCommand(createExecutionContext(unparsedCommandLine, commandLine))
+    Boolean handleCommand( CommandLine commandLine ) {
+        handleCommand(createExecutionContext(commandLine))
     }
     
-    Boolean handleCommand(ExecutionContext context) {
+    Boolean handleCommand( ExecutionContext context ) {
         if(handleBuiltInCommands(context)) {
             return true
         }
         for(CommandLineHandler handler : commandLineHandlers) {
-             if(handler.handleCommand(context)) {
+             if(handler.handle(context)) {
                  return true
              }
         }
@@ -180,6 +190,8 @@ class GrailsCli {
         NonBlockingInputStream nonBlockingInput = (NonBlockingInputStream)console.reader.getInput()
         while(keepRunning) {
             try {
+                if(integrateGradle)
+                    GradleUtil.prepareConnection(projectContext.baseDir)
                 String commandLine = console.showPrompt()
                 if(commandLine==null) {
                     // CTRL-D was pressed, exit interactive mode
@@ -188,7 +200,7 @@ class GrailsCli {
                     if(nonBlockingInput.isNonBlockingEnabled()) {
                         handleCommandWithCancellationSupport(commandLine, commandExecutor, nonBlockingInput)
                     } else {
-                        handleCommand(commandLine, cliParser.parseString(commandLine))
+                        handleCommand( cliParser.parseString(commandLine))
                     }
                 }
             } catch (UserInterruptException e) {
@@ -200,7 +212,7 @@ class GrailsCli {
     }
 
     private Boolean handleCommandWithCancellationSupport(String commandLine, ExecutorService commandExecutor, NonBlockingInputStream nonBlockingInput) {
-        ExecutionContext executionContext = createExecutionContext(commandLine, cliParser.parseString(commandLine))
+        ExecutionContext executionContext = createExecutionContext( cliParser.parseString(commandLine))
         Future<?> commandFuture = commandExecutor.submit({ handleCommand(executionContext) } as Callable<Boolean>)
         def terminal = projectContext.console.reader.terminal
         if (terminal instanceof UnixTerminal) {
@@ -236,10 +248,17 @@ class GrailsCli {
     }
 
     private initializeProfile() {
+        BuildSettings.TARGET_DIR.mkdirs()
+
+
+        def baseDir = projectContext.baseDir
+        populateContextLoader(baseDir)
+
         String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
         Profile profile = profileRepository.getProfile(profileName)
         commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
-        def gradleHandler = new GradleConnectionCommandLineHandler()
+
+        def gradleHandler = new GradleConnectionCommandLineHandler(backgroundInitialize: integrateGradle)
         commandLineHandlers.add(gradleHandler)
 
         def completers = aggregateCompleter.getCompleters()
@@ -251,6 +270,57 @@ class GrailsCli {
         completers.add(gradleHandler.createCompleter(projectContext))
     }
 
+    protected void populateContextLoader(File baseDir) {
+        def depsFile = new File(BuildSettings.TARGET_DIR, ".dependencies")
+        boolean populatedFromCache = false
+        try {
+            if(depsFile.exists() && depsFile.lastModified() > new File(baseDir, "build.gradle").lastModified()) {
+                def urls = depsFile.text.split('\n').collect() { String str -> new URL(str) }
+                if(urls) {
+                    URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+                    Thread.currentThread().contextClassLoader = classLoader
+                    populatedFromCache = true
+                }
+
+            }
+        } catch (Throwable e) {
+            populatedFromCache = false
+        }
+
+        if(!populatedFromCache && integrateGradle) {
+            def connection = GradleUtil.prepareConnection(baseDir)
+            EclipseProject project
+            try {
+                project = connection.action(new ClasspathBuildAction()).run()
+            } catch (e) {
+                connection.close()
+                connection = GradleUtil.refreshConnection(baseDir)
+                project = connection.action(new ClasspathBuildAction()).run()
+            }
+
+            populateClassLoaderFromProject(project)
+        }
+    }
+
+    @CompileDynamic
+    protected void populateClassLoaderFromProject(EclipseProject project) {
+        List<URL> urls = project.getClasspath().collect { dependency -> dependency.file.toURI().toURL() }
+        storeClasspathURLs(urls)
+        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+        Thread.currentThread().contextClassLoader = classLoader
+    }
+
+    protected void storeClasspathURLs(List<URL> urls) {
+        try {
+            def depsFile = new File(BuildSettings.TARGET_DIR, ".dependencies")
+            depsFile.withPrintWriter { PrintWriter writer ->
+                for (url in urls) writer.println(url.toString())
+            }
+        } catch (Throwable e) {
+            GrailsConsole.instance.error("Failed to write dependency cache: ${e.message}", e)
+        }
+    }
+
     private CodeGenConfig loadApplicationConfig() {
         CodeGenConfig config = new CodeGenConfig()
         File applicationYml = new File("grails-app/conf/application.yml")
@@ -260,29 +330,16 @@ class GrailsCli {
         config
     }
 
-    private int createPlugin(CommandLine mainCommandLine, GitProfileRepository profileRepository) {
-        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
-        CreatePluginCommand cmd = new CreatePluginCommand (profileRepository: profileRepository, groupAndAppName: groupAndAppName)
-        cmd.run()
-        return 0
+    private int createPlugin( CommandLine mainCommandLine ) {
+        CreatePluginCommand cmd = new CreatePluginCommand ()
+        return cmd.handle( createExecutionContext( mainCommandLine ) ) ? 0 : 1
     }
 
-    private int createApp(CommandLine mainCommandLine, GitProfileRepository profileRepository) {
-        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
-        String profileName = mainCommandLine.optionValue('profile')
-        if(!profileName) {
-            profileName=DEFAULT_PROFILE_NAME
-        }
-        Profile profile = profileRepository.getProfile(profileName)
-        if(profile) {
-            CreateAppCommand cmd = new CreateAppCommand(profileRepository: profileRepository, groupAndAppName: groupAndAppName, profile: profileName)
-            cmd.run()
-            return 0
-        } else {
-            System.err.println "Cannot find profile $profileName"
-            return 1
-        }
+    private int createApp( CommandLine mainCommandLine) {
+        CreateAppCommand cmd = new CreateAppCommand()
+        return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
     }
+
     private boolean handleBuiltInCommands(ExecutionContext context) {
         CommandLine commandLine = context.commandLine
         GrailsConsole console = context.console
@@ -335,19 +392,18 @@ class GrailsCli {
     
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {
-        String unparsedCommandLine
         CommandLine commandLine
         @Delegate ProjectContext projectContext
-        private List<CommandCancelledListener> cancelListeners=[]
+        private List<CommandCancellationListener> cancelListeners=[]
         
         @Override
-        public void addCancelledListener(CommandCancelledListener listener) {
+        public void addCancelledListener(CommandCancellationListener listener) {
             cancelListeners << listener
         }    
         
         @Override
         public void cancel() {
-            for(CommandCancelledListener listener : cancelListeners) {
+            for(CommandCancellationListener listener : cancelListeners) {
                 try {
                     listener.commandCancelled()
                 } catch (Exception e) {

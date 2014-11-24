@@ -34,8 +34,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Utility methods for resource handling / figuring out class names.
@@ -171,7 +169,6 @@ public class GrailsResourceUtils {
         GRAILS_RESOURCE_PATTERN_TENTH_MATCH,
         GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH
     };
-    private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
 
     private static String createGrailsResourcePattern(String separator, String base) {
         return ".+" + separator + base + separator + "(.+)\\.(groovy|java)$";
@@ -656,9 +653,6 @@ public class GrailsResourceUtils {
             return new UrlResource(appDir.getURL().toString() + "/views");
         }
         catch (IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Error reading URL whilst resolving views dir from ["+resource+"]: " + e.getMessage(),e);
-            }
             return null;
         }
     }
@@ -681,9 +675,6 @@ public class GrailsResourceUtils {
             return null;
         }
         catch (IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Error reading URL whilst resolving app dir from ["+resource+"]: " + e.getMessage(),e);
-            }
             return null;
         }
     }
@@ -718,9 +709,6 @@ public class GrailsResourceUtils {
             }
         }
         catch (IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Error reading URL whilst resolving relative path within WEB-INF from ["+resource+"]: " + e.getMessage(),e);
-            }
             return null;
         }
         return null;
@@ -745,9 +733,6 @@ public class GrailsResourceUtils {
             url = resource.getURL().toString();
         }
         catch (IOException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Error reading URL whilst resolving static resource path from ["+resource+"]: " + e.getMessage(),e);
-            }
             return contextPath;
         }
 

@@ -37,7 +37,7 @@ class GrailsCliSpec extends Specification {
     def setup() {
         //System.setProperty("grails.show.stacktrace", "true")
         GrailsConsole.removeInstance()
-        cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0)
+        cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0, integrateGradle: false)
         cli.profileRepository.initialized = true
         cli.profileRepository.profilesDirectory = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
         
@@ -201,6 +201,7 @@ create-service\tCreates a service
 create-taglib\tCreates a tag library
 gradle\tRuns the gradle build
 run-app\tRuns the application
+test-groovy\tTests out a Groovy script
 detailed usage with help [command]
 '''
     }
@@ -313,7 +314,7 @@ grails> create-'''
     def "should not exit when command throws exception - showStacktrace:#showStacktrace"() {
         when:
         if(showStacktrace) GrailsConsole.getInstance().stacktrace = true
-        CommandLineHandler handler = [handleCommand: { ExecutionContext context ->
+        CommandLineHandler handler = [handle: { ExecutionContext context ->
             if(context.commandLine.commandName == 'broken-command') { 
                 throw new RuntimeException("This is broken.")
             }
@@ -326,9 +327,11 @@ grails> create-'''
             expect.sendLine("broken-command")
             message = expectPrompt(expect)
         }
+
         then:
         retval == 0
         message in expectedMessage
+
         where:
         showStacktrace << [false, true]
         expectedMessage << [~'''
@@ -343,5 +346,20 @@ java.lang.RuntimeException: This is broken.
 Error \\|
 Caught exception This is broken.
 ''']
+    }
+
+    def "should run custom groovy script"() {
+        when:
+        def message
+        int retval = executeInInteractiveMode { Expect expect ->
+            expectPrompt(expect)
+            expect.sendLine("test-groovy")
+            message = expectPrompt(expect)
+        }
+        then:
+        retval == 0
+        message == '''
+good
+'''
     }
 }

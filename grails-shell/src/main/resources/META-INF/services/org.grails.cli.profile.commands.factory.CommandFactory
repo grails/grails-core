@@ -1,0 +1,2 @@
+org.grails.cli.profile.commands.factory.YamlCommandFactory
+org.grails.cli.profile.commands.factory.GroovyScriptCommandFactory

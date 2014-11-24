@@ -59,5 +59,4 @@ include 'grails-aether',
         'grails-compat',
 
         // Gradle Plugin
-        'grails-gradle-plugin',
-        'grails-gsp-gradle-plugin'
+        'grails-gradle-plugin'

@@ -1,12 +1,13 @@
 package org.grails.cli.profile
 
+import org.grails.cli.profile.git.GitProfileRepository
 import spock.lang.Specification
 
 class ProfileRepositorySpec extends Specification {
     GitProfileRepository profileRepository
     
     def setup() {
-        profileRepository = new GitProfileRepository(initialized:true, profilesDirectory: new File('src/test/resources/profiles-repository'))
+        profileRepository = new GitProfileRepository(profilesDirectory: new File('src/test/resources/profiles-repository'))
     }
     
     def "should return profile"() {

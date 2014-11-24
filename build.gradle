@@ -50,6 +50,8 @@ ext {
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
     tomcatVersion = "7.0.55"
+
+    isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
 }
 
 version = grailsVersion
@@ -92,6 +94,7 @@ allprojects {
         if(isBuildSnapshot) {
             maven { url "https://repo.spring.io/repo"}
             maven { url "http://repo.grails.org/grails/libs-snapshots-local" }
+            maven { url "https://repo.gradle.org/gradle/libs-snapshots-local" }
         }
     }
 
@@ -177,7 +180,10 @@ subprojects { project ->
         options.encoding "UTF-8"
         options.docEncoding "UTF-8"
         options.charSet "UTF-8"
-        options.jFlags "-Xms64M", "-Xmx512M", "-XX:MaxPermSize=256m"
+        options.jFlags "-Xms64M", "-Xmx512M"
+        if(!isJava8Compatible) {
+            options.jFlags "-XX:MaxPermSize=256m"
+        }
     }
 
     idea {
@@ -220,13 +226,19 @@ subprojects { project ->
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
         if (isTravisBuild) {
             maxParallelForks = 2
-            jvmArgs = ['-Xmx768M', '-XX:MaxPermSize=256m']
+            maxHeapSize = '768m'
+            if(!isJava8Compatible) {
+                jvmArgs '-XX:MaxPermSize=256m'
+            }
             afterSuite {
                 System.out.print('.')
                 System.out.flush()
             }
         } else {
-            jvmArgs = ['-Xmx1024M', '-XX:MaxPermSize=384m']
+            maxHeapSize = '1024m'
+            if(!isJava8Compatible) {
+                jvmArgs '-XX:MaxPermSize=384m'
+            }
         }        
         if(System.getProperty("debug.tests")) {
             jvmArgs debugArguments

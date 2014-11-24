@@ -19,6 +19,7 @@ import grails.boot.GrailsApp
 import groovy.transform.CompileStatic
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.io.ResourceLoader
+import org.springframework.util.ClassUtils
 
 
 /**
@@ -36,13 +37,23 @@ class GrailsSwingConsole extends GrailsApp {
 
     GrailsSwingConsole(Object... sources) {
         super(sources)
-        setApplicationContextClass(GroovyConsoleApplicationContext)
+        configureApplicationContextClass()
     }
 
     GrailsSwingConsole(ResourceLoader resourceLoader, Object... sources) {
         super(resourceLoader, sources)
-        setApplicationContextClass(GroovyConsoleApplicationContext)
+        configureApplicationContextClass()
     }
+
+    public configureApplicationContextClass() {
+        if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
+            setApplicationContextClass(GroovyConsoleWebApplicationContext)
+        }
+        else {
+            setApplicationContextClass(GroovyConsoleApplicationContext)
+        }
+    }
+
 
     /**
      * Static helper that can be used to run a {@link GrailsApp} from the
@@ -64,5 +75,20 @@ class GrailsSwingConsole extends GrailsApp {
      */
     public static ConfigurableApplicationContext run(Object[] sources, String[] args) {
         return new GrailsSwingConsole(sources).run(args);
+    }
+
+    /**
+     * Main method to run an existing Application class
+     *
+     * @param args The first argument is the Application class name
+     */
+    public static void main(String[] args) {
+        if(args) {
+            def applicationClass = Thread.currentThread().contextClassLoader.loadClass(args[0])
+            new GrailsSwingConsole(applicationClass).run(args)
+        }
+        else {
+            System.err.println("Missing application class name argument")
+        }
     }
 }

@@ -59,7 +59,7 @@ import org.fusesource.jansi.AnsiConsole;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class GrailsConsole {
+public class GrailsConsole implements ConsoleLogger {
 
     private static GrailsConsole instance;
 
@@ -469,6 +469,7 @@ public class GrailsConsole {
     /**
      * Indicates progress with the default progress indicator
      */
+    @Override
     public void indicateProgress() {
         verifySystemOut();
         progressIndicatorActive = true;
@@ -490,6 +491,7 @@ public class GrailsConsole {
      * @param number The current number
      * @param total  The total number
      */
+    @Override
     public void indicateProgress(int number, int total) {
         progressIndicatorActive = true;
         String currMsg = lastMessage;
@@ -506,6 +508,7 @@ public class GrailsConsole {
      * @param number The number
      * @param total  The total
      */
+    @Override
     public void indicateProgressPercentage(long number, long total) {
         verifySystemOut();
         progressIndicatorActive = true;
@@ -530,6 +533,7 @@ public class GrailsConsole {
      *
      * @param number The number
      */
+    @Override
     public void indicateProgress(int number) {
         verifySystemOut();
         progressIndicatorActive = true;
@@ -552,6 +556,7 @@ public class GrailsConsole {
      *
      * @param msg The message
      */
+    @Override
     public void updateStatus(String msg) {
         outputMessage(msg, 1);
     }
@@ -603,6 +608,7 @@ public class GrailsConsole {
      *
      * @param msg The message
      */
+    @Override
     public void addStatus(String msg) {
         outputMessage(msg, 0);
         lastMessage = "";
@@ -613,6 +619,7 @@ public class GrailsConsole {
      *
      * @param msg The error message
      */
+    @Override
     public void error(String msg) {
         error(ERROR, msg);
     }
@@ -622,6 +629,7 @@ public class GrailsConsole {
      *
      * @param msg The error message
      */
+    @Override
     public void warning(String msg) {
         error(WARNING, msg);
     }
@@ -631,6 +639,7 @@ public class GrailsConsole {
      *
      * @param msg The message
      */
+    @Override
     public void warn(String msg) {
         warning(msg);
     }
@@ -654,6 +663,7 @@ public class GrailsConsole {
      * @param msg The message
      * @param error The error
      */
+    @Override
     public void error(String msg, Throwable error) {
         try {
             if ((verbose||stacktrace) && error != null) {
@@ -673,6 +683,7 @@ public class GrailsConsole {
      *
      * @param error The error
      */
+    @Override
     public void error(Throwable error) {
         printStackTrace(null, error);
     }
@@ -700,6 +711,7 @@ public class GrailsConsole {
      *
      * @param msg The message to log
      */
+    @Override
     public void log(String msg) {
         verifySystemOut();
         PrintStream printStream = out;
@@ -757,10 +769,12 @@ public class GrailsConsole {
      *
      * @param msg The message to log
      */
+    @Override
     public void info(String msg) {
         log(msg);
     }
 
+    @Override
     public void verbose(String msg) {
         verifySystemOut();
         try {
