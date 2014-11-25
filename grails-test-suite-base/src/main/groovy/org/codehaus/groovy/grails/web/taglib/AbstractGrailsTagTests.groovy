@@ -11,6 +11,7 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -72,6 +73,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     GrailsApplication ga
     GrailsPluginManager mockManager
     GroovyClassLoader gcl = new GroovyClassLoader()
+    MetaClassRegistryCleaner registryCleaner = MetaClassRegistryCleaner.createAndRegister()
 
     boolean enableProfile = false
 
@@ -206,6 +208,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     }
 
     protected void setUp() throws Exception {
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
         GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = null
         domBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
         xpath = XPathFactory.newInstance().newXPath()
@@ -313,6 +316,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         ServletContextHolder.servletContext = null
         GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = ""
+        registryCleaner.clean()
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
     }
 
     protected void onInit() {
