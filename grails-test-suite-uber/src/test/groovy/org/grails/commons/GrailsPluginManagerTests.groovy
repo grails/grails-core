@@ -33,36 +33,36 @@ hibernate {
 }'''
     }
 
-    void testObservablePlugin() {
-        def manager = new DefaultGrailsPluginManager(
-            [MyGrailsPlugin, AnotherGrailsPlugin, ObservingGrailsPlugin] as Class[], ga)
-
-        manager.loadPlugins()
-
-        assertTrue manager.hasGrailsPlugin("another")
-
-        // Get the "another" plugin and all the plugins that are observing it.
-        def plugin = manager.getGrailsPlugin("another")
-        def observers = manager.getPluginObservers(plugin)
-
-        // Check that the observers are what we expect.
-        def expectedObservers = ["observing"]
-        assert observers*.name.containsAll(expectedObservers)
-        assertEquals expectedObservers.size(), observers.size()
-
-        // the "my" plugin (is not observed by any other plugins).
-        observers = manager.getPluginObservers(manager.getGrailsPlugin("my"))
-        expectedObservers = []
-
-        assertTrue observers*.name.containsAll(expectedObservers)
-        assertEquals expectedObservers.size(), observers.size()
-
-        // Make sure the observers are being notified of changes to the observed plugin.
-        def event = [source:"foo"]
-        manager.informObservers("another", event)
-
-        assertEquals "bar", event.source
-    }
+//    void testObservablePlugin() {
+//        def manager = new DefaultGrailsPluginManager(
+//            [MyGrailsPlugin, AnotherGrailsPlugin, ObservingGrailsPlugin] as Class[], ga)
+//
+//        manager.loadPlugins()
+//
+//        assertTrue manager.hasGrailsPlugin("another")
+//
+//        // Get the "another" plugin and all the plugins that are observing it.
+//        def plugin = manager.getGrailsPlugin("another")
+//        def observers = manager.getPluginObservers(plugin)
+//
+//        // Check that the observers are what we expect.
+//        def expectedObservers = ["observing"]
+//        assert observers*.name.containsAll(expectedObservers)
+//        assertEquals expectedObservers.size(), observers.size()
+//
+//        // the "my" plugin (is not observed by any other plugins).
+//        observers = manager.getPluginObservers(manager.getGrailsPlugin("my"))
+//        expectedObservers = []
+//
+//        assertTrue observers*.name.containsAll(expectedObservers)
+//        assertEquals expectedObservers.size(), observers.size()
+//
+//        // Make sure the observers are being notified of changes to the observed plugin.
+//        def event = [source:"foo"]
+//        manager.informObservers("another", event)
+//
+//        assertEquals "bar", event.source
+//    }
 
     void testNoSelfObserving() {
         def manager = new DefaultGrailsPluginManager([AnotherGrailsPlugin,ObservingAllGrailsPlugin] as Class[], ga)
