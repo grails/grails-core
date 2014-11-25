@@ -266,7 +266,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
     
     void resetGrailsApplication(TestRuntime runtime) {
-        MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         if(runtime.containsValueFor('grailsApplication')) {
             ((DefaultGrailsApplication)runtime.getValue('grailsApplication'))?.clear()

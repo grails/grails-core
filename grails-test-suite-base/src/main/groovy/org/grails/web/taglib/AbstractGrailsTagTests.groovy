@@ -1,15 +1,14 @@
 package org.grails.web.taglib
 
+import grails.build.support.MetaClassRegistryCleaner
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPluginManager
-import grails.test.MockUtils
 import grails.util.GrailsWebMockUtil
 import grails.util.Holders
 import grails.util.Metadata
 import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes
-import org.grails.config.PropertySourcesConfig
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -18,13 +17,14 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
 import org.grails.buffer.FastStringWriter
-import grails.build.support.MetaClassRegistryCleaner
+import org.grails.config.PropertySourcesConfig
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.encoder.Encoder
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.grails.support.MockApplicationContext
+import org.grails.validation.GrailsDomainClassValidator
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.encoder.OutputEncodingStack
 import org.grails.web.encoder.WithCodecHelper
@@ -293,7 +293,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         initRequestAndResponse()
 
         ga.domainClasses.each { dc ->
-            MockUtils.mockDomain dc, dc.clazz, []
+            def v = new GrailsDomainClassValidator()
+            v.domainClass = dc
             dc.validator.messageSource = messageSource
         }
     }
