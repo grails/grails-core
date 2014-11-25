@@ -15,15 +15,16 @@
  */
 package org.grails.plugins.web.rest.transform
 
-import grails.util.BuildSettings
-
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.artefact.Artefact
+import grails.compiler.ast.ClassInjector
 import grails.rest.Resource
 import grails.rest.RestfulController
+import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.web.controllers.ControllerMethod
+import grails.web.mapping.UrlMappings
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileStatic
 
@@ -59,25 +60,18 @@ import org.codehaus.groovy.ast.stmt.IfStatement
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.grails.core.artefact.ControllerArtefactHandler
-import org.grails.compiler.injection.ArtefactTypeAstTransformation
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation
-
-import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.TraitInjector
-
-import org.grails.compiler.injection.GrailsAwareInjectionOperation
-import org.grails.compiler.web.ControllerActionTransformer
-import org.grails.core.io.DefaultResourceLocator
-import org.grails.core.io.ResourceLocator
-import org.grails.transaction.transform.TransactionalTransform
-
-import grails.web.mapping.UrlMappings
-
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.grails.compiler.injection.ArtefactTypeAstTransformation
+import org.grails.compiler.injection.GrailsAwareInjectionOperation
+import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation
+import org.grails.compiler.web.ControllerActionTransformer
+import org.grails.core.artefact.ControllerArtefactHandler
+import org.grails.core.io.DefaultResourceLocator
+import org.grails.core.io.ResourceLocator
+import org.grails.transaction.transform.TransactionalTransform
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 
@@ -160,19 +154,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { !(it instanceof ControllerActionTransformer) })
             
             if(unit) {
-                // TODO this code is showing up in multiple places and should be centralized.  See EntityASTTransformation and ArtefactTypeAstTransformation
-                GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(unit);
-                List<TraitInjector> traitInjectors = grailsTraitInjector.traitInjectors
-                List<TraitInjector> injectorsToUse = []
-                for(TraitInjector injector : traitInjectors) {
-                    List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes())
-                    if(artefactTypes.contains(ControllerArtefactHandler.TYPE)) {
-                        injectorsToUse.add(injector)
-                    }
-                }
-                if(injectorsToUse) {
-                    grailsTraitInjector.performTraitInjection(source, newControllerClassNode, injectorsToUse)
-                }
+                GrailsAwareTraitInjectionOperation.processTraitsForNode(source, newControllerClassNode, 'Controller', unit)
             }
             
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)

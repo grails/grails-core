@@ -15,10 +15,12 @@
  */
 package org.grails.compiler.injection;
 
+import grails.build.logging.GrailsConsole;
 import grails.compiler.traits.TraitInjector;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -115,5 +117,43 @@ public class GrailsAwareTraitInjectionOperation extends
 
     public List<TraitInjector> getTraitInjectors() {
         return Collections.unmodifiableList(traitInjectors);
+    }
+    
+    public static void processTraitsForNode(final SourceUnit sourceUnit, 
+                                            final ClassNode cNode,
+                                            final String artefactType, 
+                                            final CompilationUnit compilationUnit) {
+        try {
+            final GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
+            final List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
+            final List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
+            for (final TraitInjector injector : traitInjectors) {
+                final List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
+                if (artefactTypes.contains(artefactType)) {
+                    injectorsToUse.add(injector);
+                }
+            }
+            try {
+                if(injectorsToUse.size() > 0) {
+                    grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
+                }
+            } catch (RuntimeException e) {
+                try {
+                    GrailsConsole.getInstance().error("Error occurred calling Trait injector: "
+                                    + e.getMessage(), e);
+                } catch (Throwable t) {
+                    // ignore it
+                }
+                throw e;
+            }
+        } catch (Exception e) {
+            try {
+                GrailsConsole.getInstance().error("Error occurred processing Trait injectors: "
+                                + e.getMessage(), e);
+            } catch (Throwable t) {
+                // ignore it
+            }
+            throw new RuntimeException(e);
+        }
     }
 }
