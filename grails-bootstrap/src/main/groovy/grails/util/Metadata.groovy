@@ -198,7 +198,7 @@ public class Metadata extends CodeGenConfig  {
      * @return The Grails version used to build the application
      */
     public String getGrailsVersion() {
-        return getProperty(APPLICATION_GRAILS_VERSION, String.class);
+        return getProperty(APPLICATION_GRAILS_VERSION, String.class) ?: getClass().getPackage().getImplementationVersion();
     }
 
     /**
