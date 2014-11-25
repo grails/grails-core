@@ -61,6 +61,9 @@ public class GrailsTagException extends GrailsException implements SourceCodeAwa
 
     @Override
     public String getMessage() {
-        return "[" + getFileName() +  ":" + getLineNumber()+ "] " + super.getMessage();
+        if(fileName != null) {
+            return "[" + getFileName() +  ":" + getLineNumber()+ "] " + super.getMessage();
+        }
+        return super.getMessage();
     }
 }
