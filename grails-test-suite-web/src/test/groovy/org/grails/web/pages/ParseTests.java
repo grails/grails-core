@@ -103,7 +103,7 @@ public class ParseTests extends TestCase {
             parseCode("myTest3", "<g:message value=\"${boom\">");
         }
         catch (GrailsTagException e) {
-            assertEquals("Unclosed GSP expression", e.getMessage());
+            assertEquals("[myTest3:1] Unclosed GSP expression", e.getMessage());
             return;
         }
         fail("Expected parse exception not thrown");

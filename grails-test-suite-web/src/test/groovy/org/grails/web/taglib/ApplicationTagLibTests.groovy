@@ -715,7 +715,7 @@ app:
         def msg = shouldFail(GrailsTagException) {
             applyTemplate template
         }
-        assertTrue msg?.startsWith('Tag ["join"] missing required attribute ["in"]')
+        assertTrue msg?.contains('Tag ["join"] missing required attribute ["in"]')
     }
 
     void testJoinWithoutSpecifyingDelimiter() {
