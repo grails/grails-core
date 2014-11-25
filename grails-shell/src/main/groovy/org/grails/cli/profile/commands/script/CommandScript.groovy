@@ -24,6 +24,7 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
+import org.grails.cli.profile.codegen.ModelBuilder
 import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.cli.profile.commands.templates.TemplateRenderer
 
@@ -41,6 +42,7 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
     CommandDescription description = new CommandDescription(name)
     @Delegate ExecutionContext executionContext
     @Delegate TemplateRenderer templateRenderer
+    @Delegate ModelBuilder modelBuilder = new ModelBuilder()
     @Delegate ConsoleLogger consoleLogger = GrailsConsole.getInstance()
     @Delegate FileSystemInteraction fileSystemInteraction
     AntBuilder ant = new AntBuilder()
@@ -69,6 +71,13 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
      */
     Map<String, Object> getArgsMap() {
         executionContext.commandLine.undeclaredOptions
+    }
+
+    /**
+     * @return The arguments as a list of strings
+     */
+    List<String> getArgs() {
+        executionContext.commandLine.remainingArgs
     }
 
     /**

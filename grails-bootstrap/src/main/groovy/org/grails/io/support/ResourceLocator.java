@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core.io;
+package org.grails.io.support;
 
 import grails.util.Environment;
 
@@ -26,26 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.grails.io.support.GrailsResourceUtils;
-import org.grails.plugins.BinaryGrailsPlugin;
-import grails.plugins.GrailsPlugin;
-import grails.plugins.GrailsPluginManager;
-import grails.plugins.PluginManagerAware;
-import org.springframework.context.ResourceLoaderAware;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
 /**
- * Default ResourceLocator implementation that doesn't take into account servlet loading.
+ * Used to locate resources at build / development time
  *
  * @author Graeme Rocher
- * @since 2.0
+ * @since 3.0
  */
-public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, PluginManagerAware {
-
+public class ResourceLocator {
     public static final String WILDCARD = "*";
     public static final String FILE_SEPARATOR = File.separator;
     public static final String CLOSURE_MARKER = "$";
@@ -59,7 +46,6 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     protected Map<String, Resource> classNameToResourceCache = new ConcurrentHashMap<String, Resource>();
     protected Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<String, Resource>();
     protected ResourceLoader defaultResourceLoader =  new FileSystemResourceLoader();
-    protected GrailsPluginManager pluginManager;
     protected boolean warDeployed = Environment.isWarDeployed();
 
     public void setSearchLocation(String searchLocation) {
@@ -123,25 +109,18 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                     else if (!warDeployed) {
                         Resource dir = resolveExceptionSafe(resourceSearchDirectory);
                         if (dir.exists() && info != null) {
-                            try {
-                                String filename = dir.getFilename();
-                                if (filename != null && filename.equals(info.pluginName)) {
-                                    Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri);
-                                    if (pluginFile.exists()) {
-                                        resource = pluginFile;
-                                    }
+                            String filename = dir.getFilename();
+                            if (filename != null && filename.equals(info.pluginName)) {
+                                Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri);
+                                if (pluginFile.exists()) {
+                                    resource = pluginFile;
                                 }
-                            } catch (IOException e) {
-                                // ignore
                             }
                         }
                     }
                 }
             }
 
-            if (resource == null && info != null) {
-                resource = findResourceInBinaryPlugins(info);
-            }
 
             if (resource == null || !resource.exists()) {
                 Resource tmp = defaultResourceLoader != null ? defaultResourceLoader.getResource(uri) : null;
@@ -160,17 +139,6 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
         return resource == NULL_RESOURCE ? null : resource;
     }
 
-    protected Resource findResourceInBinaryPlugins(PluginResourceInfo info) {
-        if (pluginManager != null) {
-            String fullPluginName = info.pluginName;
-            for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
-                if (plugin.getFileSystemName().equals(fullPluginName) && (plugin instanceof BinaryGrailsPlugin)) {
-                    return ((BinaryGrailsPlugin)plugin).getResource(info.uri);
-                }
-            }
-        }
-        return null;
-    }
 
     private PluginResourceInfo inferPluginNameFromURI(String uri) {
         if (uri.startsWith("/plugins/")) {
@@ -234,9 +202,6 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
         defaultResourceLoader = resourceLoader;
     }
 
-    public void setPluginManager(GrailsPluginManager pluginManager) {
-        this.pluginManager = pluginManager;
-    }
 
     class PluginResourceInfo {
         String pluginName;

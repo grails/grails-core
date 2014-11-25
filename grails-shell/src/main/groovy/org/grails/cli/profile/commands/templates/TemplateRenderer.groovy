@@ -15,8 +15,10 @@
  */
 package org.grails.cli.profile.commands.templates
 
+import grails.codegen.model.Model
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.commands.io.FileSystemInteraction
@@ -48,10 +50,22 @@ class TemplateRenderer  {
      *
      * @param namedArguments The named arguments are 'template', 'destination' and 'model'
      */
+    @CompileDynamic
     void render(Map<String, Object> namedArguments) {
         if(namedArguments?.template && namedArguments?.destination) {
-            render resource(namedArguments.template), file(namedArguments.destination), namedArguments.model ? (Map)namedArguments.model : Collections.emptyMap()
+            render resource(namedArguments.template), file(namedArguments.destination), namedArguments.model
         }
+    }
+
+    /**
+     * Render the given template to the give destination for the given model
+     *
+     * @param template The contents template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(CharSequence template, File destination, Model model) {
+        render(template, destination, model.asMap())
     }
 
     /**
@@ -63,14 +77,34 @@ class TemplateRenderer  {
      */
     void render(CharSequence template, File destination, Map model = Collections.emptyMap()) {
         if(template && destination) {
-            def templateEngine = new GStringTemplateEngine()
-            def t = templateEngine.createTemplate(template.toString())
-            writeTemplateToDestination(t, model, destination)
+            if(destination.exists()) {
+                executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
+            }
+            else {
+                def templateEngine = new GStringTemplateEngine()
+                try {
+                    def t = templateEngine.createTemplate(template.toString())
+                    writeTemplateToDestination(t, model, destination)
+                } catch (e) {
+                    destination.delete()
+                    throw new TemplateException("Error rendering template to destination ${projectPath( destination )}: ${e.message}", e)
+                }
+            }
         }
     }
 
 
 
+    /**
+     * Render the given template to the give destination for the given model
+     *
+     * @param template The template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(File template, File destination, Model model) {
+        render(template, destination, model.asMap())
+    }
     /**
      * Render the given template to the given destination
      *
@@ -80,15 +114,40 @@ class TemplateRenderer  {
      */
     void render(File template, File destination, Map model = Collections.emptyMap()) {
         if(template && destination) {
-            Template t = templatecCache[template.absolutePath]
-            if(t == null) {
-                def templateEngine = new GStringTemplateEngine()
-                t = templateEngine.createTemplate(template)
+            if(destination.exists()) {
+                executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
             }
-            writeTemplateToDestination(t, model, destination)
+            else {
+                Template t = templatecCache[template.absolutePath]
+                if(t == null) {
+                    try {
+                        def templateEngine = new GStringTemplateEngine()
+                        t = templateEngine.createTemplate(template)
+                    } catch (e) {
+                        throw new TemplateException("Error rendering template [$template] to destination ${projectPath( destination )}: ${e.message}", e)
+                    }
+                }
+                try {
+                    writeTemplateToDestination(t, model, destination)
+                    executionContext.console.addStatus("Generated source ${projectPath( destination )}")
+                } catch (Throwable e) {
+                    destination.delete()
+                    throw new TemplateException("Error rendering template [$template] to destination ${projectPath( destination )}: ${e.message}", e)
+                }
+            }
         }
     }
 
+    /**
+     * Render the given template to the give destination for the given model
+     *
+     * @param template The contents template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(Resource template, File destination, Model model) {
+        render(template, destination, model.asMap())
+    }
     /**
      * Render the given template to the given destination
      *
@@ -98,27 +157,48 @@ class TemplateRenderer  {
      */
     void render(Resource template, File destination, Map model = Collections.emptyMap()) {
         if(template && destination) {
-            Template t = templatecCache[template.filename]
-            if(t == null) {
+            if(destination.exists()) {
+                executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
+            }
+            else {
+                Template t = templatecCache[template.filename]
+                if(t == null) {
 
-                def templateEngine = new GStringTemplateEngine()
-                def reader = new InputStreamReader(template.inputStream, "UTF-8")
-                try {
-                    t = templateEngine.createTemplate(reader)
-                } finally {
                     try {
-                        reader.close()
+                        def templateEngine = new GStringTemplateEngine()
+                        def reader = new InputStreamReader(template.inputStream, "UTF-8")
+                        try {
+                            t = templateEngine.createTemplate(reader)
+                        } finally {
+                            try {
+                                reader.close()
+                            } catch (e) {
+                                // ignore
+                            }
+                        }
                     } catch (e) {
-                        // ignore
+                        throw new TemplateException("Error rendering template [$template.filename] to destination ${projectPath( destination )}: ${e.message}", e)
                     }
                 }
-            }
-            if(t != null) {
-                writeTemplateToDestination(t, model, destination)
+                if(t != null) {
+                    try {
+                        writeTemplateToDestination(t, model, destination)
+                        executionContext.console.addStatus("Generated source ${destination}")
+                    } catch (Throwable e) {
+                        destination.delete()
+                        throw new TemplateException("Error rendering template [$template.filename] to destination ${projectPath( destination )}: ${e.message}", e)
+                    }
+                }
             }
         }
     }
 
+    /**
+     * Find templates matching the given pattern
+     *
+     * @param pattern The pattern
+     * @return The available templates
+     */
     Iterable<Resource> templates(String pattern) {
         Collection<Resource> resList = []
         resList.addAll( resources(pattern) )
@@ -126,11 +206,27 @@ class TemplateRenderer  {
         return resList.unique()
     }
 
+    /**
+     * Find a template at the given location
+     *
+     * @param location The location
+     * @return The resource or null if it doesn't exist
+     */
+    Resource template(Object location) {
+        File f = file("src/main/templates/$location")
+        if(!f?.exists()) {
+            return resource("classpath*:META-INF/templates/" + location)
+        }
+        return resource(f)
+    }
+
 
     private static void writeTemplateToDestination(Template template, Map model, File destination) {
         destination.parentFile.mkdirs()
         destination.withWriter { Writer w ->
             template.make(model).writeTo(w)
+            w.flush()
         }
+
     }
 }

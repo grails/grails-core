@@ -142,12 +142,12 @@ public class GrailsResourceUtils {
 
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"[\\w-]+"));
-        GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "java"));
-        GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "groovy"));
+        GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "main" + fs + "java"));
+        GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "main" + fs + "groovy"));
 
-        GRAILS_RESOURCE_PATTERN_NINTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "test" + fs + "unit"));
-        GRAILS_RESOURCE_PATTERN_TENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "test" + fs + "integration"));
-        GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "test" + fs + "functional"));
+        GRAILS_RESOURCE_PATTERN_NINTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "test" + fs + "groovy"));
+        GRAILS_RESOURCE_PATTERN_TENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "test" + fs + "java"));
+        GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "test" + fs + "functional"));
 
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";

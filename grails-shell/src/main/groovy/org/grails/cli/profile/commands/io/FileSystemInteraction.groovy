@@ -23,6 +23,7 @@ import org.grails.io.support.FileSystemResource
 import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
 import org.grails.io.support.ResourceLoader
+import org.grails.io.support.ResourceLocator
 import org.grails.io.support.SpringIOUtils
 
 
@@ -38,10 +39,13 @@ class FileSystemInteraction {
     ExecutionContext executionContext
     ResourceLoader resourceLoader
     PathMatchingResourcePatternResolver resourcePatternResolver
+    ResourceLocator resourceLocator
 
     FileSystemInteraction(ExecutionContext executionContext, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
         this.executionContext = executionContext
         this.resourceLoader = resourceLoader
+        this.resourceLocator = new ResourceLocator()
+        this.resourceLocator.setSearchLocation(executionContext.baseDir.absolutePath)
         this.resourcePatternResolver = new PathMatchingResourcePatternResolver(resourceLoader)
     }
 
@@ -147,6 +151,15 @@ class FileSystemInteraction {
     }
 
     /**
+     * Finds a source file for the given class name
+     * @param className The class name
+     * @return The source resource
+     */
+    Resource source(String className) {
+        resourceLocator.findResourceForClassName(className)
+    }
+
+    /**
      * Obtain a resource for the given path
      * @param path The path
      * @return The resource
@@ -159,7 +172,20 @@ class FileSystemInteraction {
             return new FileSystemResource(f)
         }
         else {
-            return resourceLoader.getResource(path.toString())
+            def pathStr = path.toString()
+            def resource = resourceLoader.getResource(pathStr)
+            if(resource.exists()) {
+                return resource
+            }
+            else {
+                def allResources = resources(pathStr)
+                if(allResources) {
+                    return allResources[0]
+                }
+                else {
+                    return resource
+                }
+            }
         }
     }
 
@@ -175,6 +201,21 @@ class FileSystemInteraction {
         } catch (e) {
             return []
         }
+    }
+
+    /**
+     * Obtain the path of the resource relative to the current project
+     *
+     * @param path The path to inspect
+     * @return The relative path
+     */
+    String projectPath(Object path) {
+        def file = file(path)
+        if(file) {
+            def basePath = executionContext.baseDir.canonicalPath
+            return (file.canonicalPath - basePath).substring(1)
+        }
+        return ""
     }
 
     /**

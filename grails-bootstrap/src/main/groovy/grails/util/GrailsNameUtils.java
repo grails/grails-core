@@ -261,6 +261,21 @@ public class GrailsNameUtils {
     }
 
     /**
+     * Returns the class name without the package prefix.
+     *
+     * @param className The class name to get a short name for
+     * @return The short name of the class
+     */
+    public static String getPackageName(String className) {
+        int i = className.lastIndexOf(".");
+        String packageName = "";
+        if (i > -1) {
+            packageName = className.substring(0, i);
+        }
+        return packageName;
+    }
+
+    /**
      * Retrieves the script name representation of the supplied class. For example
      * MyFunkyGrailsScript would be my-funky-grails-script.
      *
