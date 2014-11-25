@@ -37,24 +37,18 @@ class GroovyPagePlugin implements Plugin<Project> {
 
         project.tasks.create("compileWebappGroovyPages", GroovyPageCompileTask) {
             destinationDir = destDir
-            source = project.file("${project.projectDir}/web-app")
+            source = project.file("${project.projectDir}/src/main/webapp")
             serverpath = "/"
             classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
         }
 
-        project.tasks.create("compileMainTemplatesGroovyPages", GroovyPageCompileTask) {
-            destinationDir = destDir
-            source = project.file("${project.projectDir}/src/main/templates")
-            serverpath = "/"
-            classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
-        }
 
         def compileGroovyPages = project.tasks.getByName("compileGroovyPages")
-        compileGroovyPages.dependsOn( project.tasks.getByName('compileWebappGroovyPages'), project.tasks.getByName('compileMainTemplatesGroovyPages'))
+        compileGroovyPages.dependsOn( project.tasks.getByName('compileWebappGroovyPages'))
         compileGroovyPages.dependsOn( project.tasks.getByName("compileGroovy") )
 
         def warTask = project.tasks.findByName('war')
-        def assembleTask = project.tasks.findByName('assemble')
+        def assembleTask = project.tasks.findByName('jar')
         if(warTask) {
             warTask.dependsOn(compileGroovyPages)
         }
