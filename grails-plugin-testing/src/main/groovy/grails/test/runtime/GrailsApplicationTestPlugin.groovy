@@ -20,7 +20,6 @@ import grails.async.Promises
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.spring.BeanBuilder
-import grails.test.MockUtils
 import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
@@ -38,6 +37,7 @@ import org.grails.commons.DefaultGrailsCodecClass
 import org.grails.core.cfg.ConfigurationHelper
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.core.util.ClassPropertyFetcher
+import org.grails.plugins.testing.GrailsMockErrors
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.validation.ConstraintEvalUtils
@@ -245,9 +245,24 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         (GrailsApplication)runtime.getValue('grailsApplication')
     }
     
-    void mockForConstraintsTests(TestRuntime runtime, Class clazz, List instances) {
+    void mockForConstraintsTests(TestRuntime runtime, Class clazz) {
         ConstraintEvalUtils.clearDefaultConstraints()
-        MockUtils.prepareForConstraintsTests(clazz, (Map)runtime.getValueOrCreate("validationErrorsMap", { new IdentityHashMap() }), instances ?: [], ConstraintEvalUtils.getDefaultConstraints(getGrailsApplication(runtime).config))
+        mockGetErrors clazz
+    }
+    
+    @CompileStatic(TypeCheckingMode.SKIP)
+    void mockGetErrors(Class clazz) {
+        // rig up the getErrors() method to return an instance of GrailsMockErrors
+        def originalGetErrorsMethod = clazz.metaClass.getMetaMethod('getErrors', [] as Object[])
+        clazz.metaClass.getErrors = { ->
+            def result = originalGetErrorsMethod.invoke(delegate, [] as Object[])
+            if(result && !(result instanceof GrailsMockErrors)) {
+                def mockErrors = new GrailsMockErrors(delegate)
+                mockErrors.addAllErrors result
+                result = mockErrors
+            }
+            result
+        }
     }
 
     void defineBeans(TestRuntime runtime, List<Closure> callables, RuntimeSpringConfiguration targetSpringConfig = null, boolean parent = false) {
@@ -348,7 +363,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 mockCodec(runtime, (Class)event.arguments.codecClass)
                 break
             case 'mockForConstraintsTests':   
-                mockForConstraintsTests(runtime, (Class)event.arguments.clazz, (List)event.arguments.instances)
+                mockForConstraintsTests(runtime, (Class)event.arguments.clazz)
                 break
         }
     }

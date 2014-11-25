@@ -4,13 +4,13 @@ import org.junit.Test
 
 @TestFor(ConstrainedBook)
 class MockForConstraintsTests {
-
+    
     @Test
     void testConstraints() {
 
         def existingBook = new ConstrainedBook(title: "Misery", author: "Stephen King")
 
-        mockForConstraintsTests(ConstrainedBook, [ existingBook ])
+        mockForConstraintsTests(ConstrainedBook)
 
         // Validation should fail if both properties are null.
         def book = new ConstrainedBook()
@@ -19,12 +19,10 @@ class MockForConstraintsTests {
         assert "nullable" == book.errors["title"]
         assert "nullable" == book.errors["author"]
 
-        // So let's demonstrate the unique and minSize constraints.
+        // So let's demonstrate the minSize constraint.
 
         book = new ConstrainedBook(title: "Misery", author: "JK")
         assert !book.validate()
-        assert "unique" == book.errors["title"]
-
         assert "minSize" == book.errors["author"]
 
         // Validation should pass!
