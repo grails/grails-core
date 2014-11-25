@@ -95,7 +95,7 @@ class VersionComparator implements Comparator<String> {
      */
     @CompileStatic
     protected String deSnapshot(String version) {
-        String suffix = SNAPSHOT_SUFFIXES.find { String it -> version.endsWith(it) }
+        String suffix = SNAPSHOT_SUFFIXES.find { String it -> version?.endsWith(it) }
         if (suffix) {
             return version[0..-(suffix.size() + 1)]
         } else {
@@ -105,6 +105,6 @@ class VersionComparator implements Comparator<String> {
 
     @CompileStatic
     protected boolean isSnapshot(String version) {
-        SNAPSHOT_SUFFIXES.any { String it -> version.endsWith(it) }
+        SNAPSHOT_SUFFIXES.any { String it -> version?.endsWith(it) }
     }
 }
