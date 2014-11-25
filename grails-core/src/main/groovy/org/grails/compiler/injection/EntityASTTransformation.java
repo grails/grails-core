@@ -18,12 +18,9 @@ package org.grails.compiler.injection;
 import grails.build.logging.GrailsConsole;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsDomainClassInjector;
-import grails.compiler.traits.TraitInjector;
 import grails.persistence.Entity;
 import groovy.transform.CompilationUnitAware;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -94,17 +91,7 @@ public class EntityASTTransformation implements ASTTransformation, CompilationUn
         }
         
         if(compilationUnit != null) {
-            // TODO this code is showing up in multiple places and should be centralized.  See ResourceTransform and ArtefactTypeAstTransformation
-            GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
-            List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
-            List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
-            for(TraitInjector injector : traitInjectors) {
-                List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
-                if(artefactTypes.contains(DomainClassArtefactHandler.TYPE)) {
-                    injectorsToUse.add(injector);
-                }
-            }
-            grailsTraitInjector.performTraitInjection(sourceUnit, classNode, injectorsToUse);
+            GrailsAwareTraitInjectionOperation.processTraitsForNode(sourceUnit, classNode, DomainClassArtefactHandler.TYPE, compilationUnit);
         }
     }
 
