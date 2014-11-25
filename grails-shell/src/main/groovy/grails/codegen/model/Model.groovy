@@ -24,9 +24,14 @@ package grails.codegen.model
 interface Model {
 
     /**
-     * @return The class name including package
+     * @return The class name excluding package
      */
     String getClassName()
+
+    /**
+     * @return The class name including package
+     */
+    String getFullName()
 
     /**
      * @return The package name

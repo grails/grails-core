@@ -76,6 +76,7 @@ class ModelBuilder {
     @CompileStatic
     private static class ModelImpl implements Model {
         final String className
+        final String fullName
         final String propertyName
         final String packageName
         final String simpleName
@@ -83,11 +84,12 @@ class ModelBuilder {
         final String packagePath
 
         ModelImpl(String className) {
-            this.className = className
+            this.className = GrailsNameUtils.getShortName(className)
+            this.fullName = className
             this.propertyName = GrailsNameUtils.getPropertyName(className)
             this.packageName = GrailsNameUtils.getPackageName(className)
             this.packagePath = packageName.replace('.' as char, File.pathSeparatorChar)
-            this.simpleName = GrailsNameUtils.getShortName(className)
+            this.simpleName = className
             this.lowerCaseName = GrailsNameUtils.getScriptName(className)
 
         }
@@ -104,7 +106,7 @@ class ModelBuilder {
 
         @Override
         Map<String, Object> asMap() {
-            [ className: className, propertyName: propertyName, modelName: propertyName, packageName: packageName, packagePath: packagePath, simpleName: simpleName, lowerCaseName: lowerCaseName]
+            [ className: className, fullName: fullName, propertyName: propertyName, modelName: propertyName, packageName: packageName, packagePath: packagePath, simpleName: simpleName, lowerCaseName: lowerCaseName]
         }
     }
 

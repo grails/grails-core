@@ -183,7 +183,7 @@ class TemplateRenderer  {
                 if(t != null) {
                     try {
                         writeTemplateToDestination(t, model, destination)
-                        executionContext.console.addStatus("Generated source ${destination}")
+                        executionContext.console.addStatus("Generated source ${projectPath(destination)}")
                     } catch (Throwable e) {
                         destination.delete()
                         throw new TemplateException("Error rendering template [$template.filename] to destination ${projectPath( destination )}: ${e.message}", e)
