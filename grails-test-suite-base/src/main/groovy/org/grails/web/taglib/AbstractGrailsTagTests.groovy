@@ -18,7 +18,7 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
 import org.grails.buffer.FastStringWriter
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import grails.build.support.MetaClassRegistryCleaner
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.encoder.Encoder
