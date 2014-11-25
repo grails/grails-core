@@ -1,7 +1,6 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
-import grails.test.MockUtils
 import spock.lang.Specification
 
 @TestFor(Company)
