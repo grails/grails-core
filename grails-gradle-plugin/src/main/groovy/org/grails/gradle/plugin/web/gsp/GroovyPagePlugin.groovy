@@ -2,9 +2,7 @@ package org.grails.gradle.plugin.web.gsp
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.internal.project.IsolatedAntBuilder
-import org.gradle.api.plugins.JavaPluginConvention
-import org.gradle.api.tasks.SourceSet
+import org.grails.gradle.plugin.util.SourceSets
 
 /**
  * A plugin that adds support for compiling Groovy Server Pages (GSP)
@@ -24,7 +22,7 @@ class GroovyPagePlugin implements Plugin<Project> {
             gspCompile 'javax.servlet:javax.servlet-api:3.1.0'
         }
 
-        def mainSourceSet = findMainSourceSet(project)
+        def mainSourceSet = SourceSets.findMainSourceSet(project)
 
         def destDir = mainSourceSet?.output?.classesDir ?: new File(project.buildDir, "main/classes")
 
@@ -57,16 +55,6 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
     }
 
-    /**
-     * Finds the main SourceSet for the project
-     * @param project The project
-     * @return The main source set or null if it can't be found
-     */
-    static SourceSet findMainSourceSet(Project project) {
-        JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention)
-        def sourceSets = plugin?.sourceSets
-        return sourceSets?.find { SourceSet sourceSet -> sourceSet.name == SourceSet.MAIN_SOURCE_SET_NAME }
-    }
 }
 
 
