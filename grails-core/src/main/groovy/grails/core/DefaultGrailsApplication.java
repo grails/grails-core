@@ -810,7 +810,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
             if (isInitialised()) {
                 initializeArtefacts(artefactType);
                 ApplicationContext context = getMainContext();
-                if(context != null && ((ConfigurableApplicationContext)context).isActive()) {
+                if(context instanceof ConfigurableApplicationContext && ((ConfigurableApplicationContext)context).isActive()) {
                     context.publishEvent(new ArtefactAdditionEvent(artefactGrailsClass));
                 }
             }
