@@ -44,6 +44,7 @@ import org.springframework.core.io.Resource;
 public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
     public static final String VIEWS_PROPERTIES = "views.properties";
+    public static final String RELATIVE_VIEWS_PROPERTIES = "../gsp/views.properties";
 
     private BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts = {};
@@ -69,12 +70,19 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     protected void initializeViewMap(BinaryGrailsPluginDescriptor descriptor) {
         final Resource descriptorResource = descriptor.getResource();
 
-        final Resource viewsPropertiesResource;
+        Resource viewsPropertiesResource = null;
         try {
             viewsPropertiesResource = descriptorResource.createRelative(VIEWS_PROPERTIES);
         } catch (IOException e) {
             // ignore
-            return;
+        }
+
+        if (viewsPropertiesResource == null || !viewsPropertiesResource.exists()) {
+            try {
+                viewsPropertiesResource = descriptorResource.createRelative(RELATIVE_VIEWS_PROPERTIES);
+            } catch (IOException e) {
+                // ignore
+            }
         }
 
         if (viewsPropertiesResource == null || !viewsPropertiesResource.exists()) {
