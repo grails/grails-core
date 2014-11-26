@@ -1,7 +1,5 @@
 package org.grails.cli.gradle
 
-import grails.build.logging.GrailsConsole
-import grails.io.SystemStreamsRedirector
 import groovy.transform.CompileStatic
 import jline.console.completer.*
 
@@ -17,21 +15,11 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
     @Override
     public boolean handle(ExecutionContext context) {
         if(context.commandLine.commandName == 'gradle') {
-            GradleUtil.withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
-                BuildLauncher buildLauncher = projectConnection.newBuild()
-                GrailsConsole grailsConsole = GrailsConsole.getInstance() 
-                buildLauncher.colorOutput = grailsConsole.isAnsiEnabled()
-                OutputStream output = SystemStreamsRedirector.original().out
-                if(grailsConsole.isAnsiEnabled()) {
-                    output = grailsConsole.ansiWrap(output)
-                }
-                buildLauncher.setStandardOutput(output)
+            GradleUtil.runBuildWithConsoleOutput(context) { BuildLauncher buildLauncher ->
                 def args = context.commandLine.remainingArgsString?.trim()
                 if(args) {
                     buildLauncher.withArguments(args)
                 }
-                GradleUtil.wireCancellationSupport(context, buildLauncher)
-                buildLauncher.run()
             }
             return true
         }
