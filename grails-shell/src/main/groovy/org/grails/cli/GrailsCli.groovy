@@ -30,6 +30,7 @@ import org.gradle.tooling.model.eclipse.EclipseProject
 import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.gradle.cache.CachedGradleOperation
+import org.grails.cli.gradle.cache.ListReadingCachedGradleOperation
 import org.grails.cli.interactive.completors.EscapingFileNameCompletor
 import org.grails.cli.interactive.completors.RegexCompletor
 import org.grails.cli.profile.ProfileRepository
@@ -274,15 +275,10 @@ class GrailsCli {
     }
 
     protected void populateContextLoader() {
-        def urls = new CachedGradleOperation<List<URL>>(projectContext, ".dependencies") {
+        def urls = new ListReadingCachedGradleOperation<URL>(projectContext, ".dependencies") {
             @Override
-            void writeToCache(PrintWriter writer, List<URL> data) {
-                for (url in data) writer.println(url.toString())
-            }
-
-            @Override
-            List<URL> readFromCached(File f) {
-                return f.text.split('\n').collect() { String str -> new URL(str) }
+            protected URL createListEntry(String str) {
+                return new URL(str)
             }
 
             @Override

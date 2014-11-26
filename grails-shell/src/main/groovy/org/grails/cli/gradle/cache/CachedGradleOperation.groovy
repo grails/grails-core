@@ -15,12 +15,9 @@
  */
 package org.grails.cli.gradle.cache
 
-import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.tooling.ProjectConnection
-import org.gradle.tooling.model.eclipse.EclipseProject
-import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.ProjectContext
 
@@ -35,8 +32,8 @@ import java.util.concurrent.Callable
 @CompileStatic
 abstract class CachedGradleOperation<T> implements Callable<T> {
 
-    private String fileName
-    private ProjectContext projectContext
+    protected String fileName
+    protected ProjectContext projectContext
 
     CachedGradleOperation(ProjectContext projectContext, String fileName) {
         this.fileName = fileName
