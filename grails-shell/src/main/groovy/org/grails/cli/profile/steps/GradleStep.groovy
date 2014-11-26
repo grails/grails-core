@@ -16,11 +16,8 @@
 package org.grails.cli.profile.steps
 
 import org.gradle.tooling.BuildLauncher
-import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.GradleUtil
-import org.grails.cli.profile.AbstractStep
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.ProfileCommand
+import org.grails.cli.profile.*
 
 /**
  * A {@link org.grails.cli.profile.Step} that invokes Gradle
@@ -46,11 +43,9 @@ class GradleStep extends AbstractStep {
 
     @Override
     public boolean handle(ExecutionContext context) {
-        GradleUtil.withProjectConnection(context.baseDir, false) { ProjectConnection projectConnection ->
-            BuildLauncher buildLauncher = projectConnection.newBuild().forTasks(tasks as String[])
+        GradleUtil.runBuildWithConsoleOutput(context) { BuildLauncher buildLauncher ->
+            buildLauncher.forTasks(tasks as String[])
             fillArguments(context, buildLauncher)
-            GradleUtil.wireCancellationSupport(context, buildLauncher)
-            buildLauncher.run()
         }
         return true;
     }

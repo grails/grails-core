@@ -15,12 +15,12 @@
  */
 package org.grails.cli.gradle
 
+import grails.build.logging.GrailsConsole
 import grails.io.SystemOutErrCapturer
 import grails.io.SystemStreamsRedirector
 import groovy.transform.CompileStatic
-import org.gradle.tooling.BuildLauncher
-import org.gradle.tooling.GradleConnector
-import org.gradle.tooling.ProjectConnection
+
+import org.gradle.tooling.*
 import org.gradle.tooling.internal.consumer.DefaultCancellationTokenSource
 import org.grails.cli.profile.ExecutionContext
 
@@ -81,6 +81,22 @@ class GradleUtil {
         } finally {
             if(!preparedConnection)
                 projectConnection.close()
+        }
+    }
+    
+    public static void runBuildWithConsoleOutput(ExecutionContext context, Closure<?> buildLauncherCustomizationClosure) {
+        GrailsConsole grailsConsole = context.getConsole()
+        withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
+            BuildLauncher launcher = projectConnection.newBuild()
+            launcher.colorOutput = grailsConsole.isAnsiEnabled()
+            OutputStream output = SystemStreamsRedirector.original().out
+            if(grailsConsole.isAnsiEnabled()) {
+                output = grailsConsole.ansiWrap(output)
+            }
+            launcher.setStandardOutput(output)
+            wireCancellationSupport(context, launcher)
+            buildLauncherCustomizationClosure.call(launcher)
+            launcher.run()
         }
     }
     
