@@ -22,7 +22,6 @@ import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import grails.config.Config
 import grails.core.GrailsApplication
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -110,11 +109,7 @@ class ConfigurationHelper {
 
             initConfig(co, null, classLoader)
             getCachedConfigs().put(cacheKey, co)
-
-            // See https://jira.codehaus.org/browse/GROOVY-7184 to
-            // make sense of why this extra local variable is used...
-            Config grailsConfig = co
-            Holders.config = grailsConfig
+            Holders.config = co
         }
 
         return co
