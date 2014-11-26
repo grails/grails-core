@@ -35,7 +35,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 trait WebAttributes {
     
     private GrailsApplication grailsApplication
-    private ApplicationContext applicationContext
+
     GrailsWebRequest currentRequestAttributes() {
         (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
     }

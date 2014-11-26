@@ -47,6 +47,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 trait TempControllerServletApi implements WebAttributes {
 
     private ServletContext servletContext
+    private ApplicationContext applicationContext
 
     HttpServletRequest getRequest() {
         currentRequestAttributes().getCurrentRequest()
@@ -58,9 +59,9 @@ trait TempControllerServletApi implements WebAttributes {
      */
     ApplicationContext getApplicationContext() {
         if (applicationContext == null) {
-            applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+            this.applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         }
-        applicationContext
+        this.applicationContext
     }
 
     /**
