@@ -30,7 +30,7 @@ class GradleConnectionCommandLineHandler implements CommandLineHandler, Complete
                 if(args) {
                     buildLauncher.withArguments(args)
                 }
-                
+                GradleUtil.wireCancellationSupport(context, buildLauncher)
                 buildLauncher.run()
             }
             return true
