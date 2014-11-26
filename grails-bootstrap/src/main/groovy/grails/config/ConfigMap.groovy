@@ -15,14 +15,14 @@ class ConfigMap implements Map<String, Object>, Cloneable {
     public ConfigMap() {
         rootConfig = this
         path = []
-        delegateMap = [:]
+        delegateMap = new LinkedHashMap<>()
     }
     
     public ConfigMap(ConfigMap rootConfig, List<String> path) {
         super()
         this.rootConfig = rootConfig
         this.path = path
-        delegateMap = [:]
+        delegateMap = new LinkedHashMap<>()
     }
     
     public ConfigMap clone() {

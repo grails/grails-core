@@ -71,7 +71,7 @@ public class PropertySourcesConfig implements Config, Map<String,Object> {
     }
 
     private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
-        Map map = new HashMap();
+        Map map = new LinkedHashMap();
         for(String propertyName : enumerablePropertySource.getPropertyNames()) {
             map.put(propertyName, enumerablePropertySource.getProperty(propertyName));
         }
