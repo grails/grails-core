@@ -57,7 +57,6 @@ test {
          "**/*TestCase.class",
          "**/DataSourceGrailsPluginTests",
          "**/DefaultGrailsControllerClassTests.class",
-         "**/MockUtilsTests.class",
          "**/GrailsUnitTestCaseTests.class",
          "**/SetupTeardownInvokeTests.class",
          "**/TestMixinSetupTeardownInvokeTests.class",
@@ -71,7 +70,6 @@ test {
 task isolatedTestsOne(type:Test) {
     includes = [
         "**/DataSourceGrailsPluginTests.class",
-        "**/MockUtilsTests.class",
         "**/GrailsUnitTestCaseTests.class",
         "**/SetupTeardownInvokeTests.class",
         "**/TestMixinSetupTeardownInvokeTests.class",

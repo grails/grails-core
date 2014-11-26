@@ -39,13 +39,19 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/grails-app/blah--blah/mycompany/Test.java").getPath()));
         assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/grails-app/blah_blah/mycompany/Test.java").getPath()));
 
-        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/groovy/mycompany/Test.java").getPath()));
-        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/java/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/main/groovy/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/groovy/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/main/java/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/java/mycompany/Test.java").getPath()));
 
-        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/groovy/mycompany/Test.java").getPath()));
-        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/java/mycompany/Test.java").getPath()));
-        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/groovy/mycompany/Test.groovy").getPath()));
-        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/java/mycompany/Test.groovy").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/main/groovy/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/groovy/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/main/java/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/java/mycompany/Test.java").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/main/groovy/mycompany/Test.groovy").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/groovy/mycompany/Test.groovy").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/main/java/mycompany/Test.groovy").getPath()));
+        assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName(new File("/test/grails/app/src/test/java/mycompany/Test.groovy").getPath()));
     }
 
     public void testIsDomainClass() throws Exception {

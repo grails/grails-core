@@ -52,8 +52,8 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
      * so that a "validate()" method is added. This can then be used
      * to test the constraints on the class.
      */
-    void mockForConstraintsTests(Class<?> clazz, List instances = []) {
-        runtime.publishEvent("mockForConstraintsTests", [clazz: clazz, instances: instances])
+    void mockForConstraintsTests(Class<?> clazz) {
+        runtime.publishEvent("mockForConstraintsTests", [clazz: clazz])
     }
 
     /**
