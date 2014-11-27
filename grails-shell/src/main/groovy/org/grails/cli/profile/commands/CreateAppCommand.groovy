@@ -46,16 +46,13 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     File targetDirectory
     List<String> binaryFileExtensions = ['png','gif','jpg','jpeg','ico','icns','pdf','zip','jar','class']
 
+    final CommandDescription description = new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
 
     @Override
     String getName() {
         return NAME
     }
 
-    @Override
-    CommandDescription getDescription() {
-        return new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
-    }
 
     @Override
     boolean handle(ExecutionContext executionContext) {

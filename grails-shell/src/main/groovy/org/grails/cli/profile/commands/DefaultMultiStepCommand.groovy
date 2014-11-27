@@ -27,14 +27,44 @@ class DefaultMultiStepCommand extends MultiStepCommand {
     private Map<String, Object> data
     private List<AbstractStep> steps
 
+    final CommandDescription description
+
     DefaultMultiStepCommand(String name, Profile profile, Map<String, Object> data) {
         super(name, profile)
         this.data = data
+
+        def description = data?.description
+        if(description instanceof List) {
+            List descList = (List)description
+            if(descList) {
+
+                this.description = new CommandDescription(name: name, description: descList.get(0).toString(), usage: data?.usage)
+
+                if(descList.size()>1) {
+                    for(arg in descList[1..-1]) {
+                        if(arg instanceof Map) {
+                            Map map = (Map)arg
+                            if(map.containsKey('usage')) {
+                                this.description.usage = map.get('usage')?.toString()
+                            }
+                            else if(map.containsKey('argument')) {
+                                map.remove('argument')
+                                this.description.argument(map)
+                            }
+                            else if(map.containsKey('flag')) {
+                                map.remove('flag')
+                                this.description.flag(map)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            this.description = new CommandDescription(name: name, description: description.toString(), usage: data?.usage)
+        }
     }
 
-    CommandDescription getDescription() {
-        new CommandDescription(name: name, description: data?.description, usage: data?.usage)
-    }
 
     List<Step> getSteps() {
         if(steps==null) {

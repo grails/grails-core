@@ -16,6 +16,7 @@
 package org.grails.cli.profile
 
 import groovy.transform.Canonical
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 
 /**
@@ -39,4 +40,38 @@ class CommandDescription {
      * The usage instructions for the command
      */
     String usage
+
+    /**
+     * Arguments to the command
+     */
+    List<CommandArgument> arguments = []
+
+    /**
+     * Flags to the command. These differ as they are optional and are prefixed with a hyphen (Example -debug)
+     */
+    List<CommandArgument> flags = []
+
+    /**
+     * Adds an argument for the given named arguments
+     *
+     * @param args The named arguments
+     */
+    @CompileDynamic
+    CommandDescription argument(Map args) {
+        arguments << new CommandArgument(args)
+        return this
+    }
+
+    /**
+     * Adds a flag for the given named arguments
+     *
+     * @param args The named arguments
+     */
+    @CompileDynamic
+    CommandDescription flag(Map args) {
+        def arg = new CommandArgument(args)
+        arg.required = false
+        flags << arg
+        return this
+    }
 }

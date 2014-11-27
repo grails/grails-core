@@ -40,15 +40,24 @@ class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<Command
     final String fileNamePattern = /^.*\.(groovy)$/
 
     @Override
-    @CompileDynamic
     protected CommandScript readCommandFile(Resource resource) {
+        GroovyClassLoader classLoader = createGroovyScriptCommandClassLoader()
+        return (CommandScript) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
+    }
+
+    @CompileDynamic
+    public static GroovyClassLoader createGroovyScriptCommandClassLoader() {
         def configuration = new CompilerConfiguration()
         // TODO: Report bug, this fails with @CompileStatic with a ClassCastException
         String baseClassName = CommandScript.class.getName()
+        return createClassLoaderForBaseClass(configuration, baseClassName)
+    }
+
+    private static GroovyClassLoader createClassLoaderForBaseClass(CompilerConfiguration configuration, String baseClassName) {
         configuration.setScriptBaseClass(baseClassName)
         configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new CommandScriptTransform()))
         def classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader, configuration)
-        return (CommandScript) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
+        return classLoader
     }
 
     @Override

@@ -1,29 +1,17 @@
 package org.grails.cli.profile.commands.script
-
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.AnnotatedNode
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.ConstructorNode
-import org.codehaus.groovy.ast.expr.ArgumentListExpression
-import org.codehaus.groovy.ast.expr.BinaryExpression
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.*
+import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.syntax.Token
-import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.cli.profile.CommandDescription
 
 import java.lang.reflect.Modifier
-
 /*
  * Copyright 2014 original authors
  *
@@ -82,11 +70,53 @@ class CommandScriptTransform implements ASTTransformation {
 
 
                 ArgumentListExpression existing = (ArgumentListExpression) call.arguments
-                if(existing.expressions.size() == 2) {
+
+                def arguments = existing.expressions
+                if(arguments.size() == 2) {
                     def constructorArgs = new ArgumentListExpression()
                     constructorArgs.addExpression(new VariableExpression("name"))
-                    constructorArgs.expressions.addAll(existing.expressions)
-                    def constructDescription = new ConstructorCallExpression(ClassHelper.make(CommandDescription), constructorArgs)
+                    def secondArg = arguments.get(1)
+                    Expression constructDescription = new ConstructorCallExpression(ClassHelper.make(CommandDescription), constructorArgs)
+                    if(secondArg instanceof ClosureExpression) {
+                        constructorArgs.addExpression(arguments.get(0))
+                        ClosureExpression closureExpression = (ClosureExpression)secondArg
+                        def body = closureExpression.code
+                        if(body instanceof BlockStatement) {
+                            BlockStatement bodyBlock = (BlockStatement)body
+                            for(Statement s in bodyBlock.statements) {
+                                if(s instanceof ExpressionStatement) {
+                                    ExpressionStatement es = (ExpressionStatement)s
+
+                                    def expr = es.expression
+                                    if(expr instanceof MethodCallExpression) {
+                                        MethodCallExpression mce = (MethodCallExpression)expr
+                                        def methodCallArgs = mce.getArguments()
+
+                                        switch(mce.methodAsString) {
+                                            case 'usage':
+                                                if(methodCallArgs instanceof ArgumentListExpression) {
+                                                    constructorArgs.addExpression( ((ArgumentListExpression)methodCallArgs).getExpression(0))
+                                                }
+
+                                                break
+                                            case "argument":
+                                                constructDescription = new MethodCallExpression(constructDescription, "argument", methodCallArgs)
+                                            break
+                                            case "flag":
+                                                constructDescription = new MethodCallExpression(constructDescription, "flag", methodCallArgs)
+                                            break
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    else {
+                        constructorArgs.expressions.addAll(arguments)
+                    }
+
                     def assignDescription = new MethodCallExpression(new VariableExpression("this"),"setDescription", constructDescription)
                     constructorBody.addStatement(new ExpressionStatement(assignDescription))
                 }

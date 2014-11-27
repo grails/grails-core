@@ -63,7 +63,17 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
      * @param usage The usage information
      */
     void description(String desc, String usage) {
-        this.description = new CommandDescription(name, desc, usage)
+        // ignore, just a stub for documentation purposes, populated by CommandScriptTransform
+    }
+
+    /**
+     * Provides a description for the command
+     *
+     * @param desc The description
+     * @param usage The usage information
+     */
+    void description(String desc, Closure detail) {
+        // ignore, just a stub for documentation purposes, populated by CommandScriptTransform
     }
 
     /**
