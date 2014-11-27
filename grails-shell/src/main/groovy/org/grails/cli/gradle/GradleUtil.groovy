@@ -57,7 +57,7 @@ class GradleUtil {
     }
 
     public static ProjectConnection openGradleConnection(File baseDir) {
-        SystemOutErrCapturer.withCapturedOutput {
+        SystemOutErrCapturer.withNullOutput {
             GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
             if(System.getenv("GRAILS_GRADLE_HOME")) {
                 gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
@@ -70,7 +70,7 @@ class GradleUtil {
         ProjectConnection projectConnection= preparedConnection ?: prepareConnection(baseDir)
         try {
             if(suppressOutput) {
-                SystemOutErrCapturer.withCapturedOutput {
+                SystemOutErrCapturer.withNullOutput {
                     closure(projectConnection)
                 }
             } else {

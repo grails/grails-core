@@ -34,6 +34,14 @@ class SystemOutErrCapturer {
         this
     }
     
+    SystemOutErrCapturer redirectToNull() {
+        out = null
+        err = null
+        OutputStream nullStream = new NullOutputStream()
+        previousState = SystemStreamsRedirector.create(null, new PrintStream(nullStream, true), new PrintStream(nullStream, true)).redirect()
+        this
+    }
+    
     void close() {
         if(previousState != null) {
             previousState.redirect()
@@ -47,6 +55,33 @@ class SystemOutErrCapturer {
             return closure.call(capturer)
         } finally {
             capturer.close()
+        }
+    }
+    
+    public static <T> T withNullOutput(Closure<T> closure) {
+        SystemOutErrCapturer capturer = new SystemOutErrCapturer().redirectToNull()
+        try {
+            return closure.call(capturer)
+        } finally {
+            capturer.close()
+        }
+    }
+    
+    @CompileStatic
+    private static class NullOutputStream extends OutputStream {
+        @Override
+        public void write(byte[] b) throws IOException {
+            
+        }       
+        
+        @Override
+        public void write(int b) throws IOException {
+            
+        }
+        
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            
         }
     }
 }
