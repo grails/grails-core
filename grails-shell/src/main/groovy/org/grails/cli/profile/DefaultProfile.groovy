@@ -16,9 +16,10 @@
 package org.grails.cli.profile
 
 import groovy.transform.CompileStatic
+import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
+import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.commands.CommandRegistry
-import org.grails.cli.profile.support.CommandLineHandlersCompleter
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -34,7 +35,8 @@ class DefaultProfile implements Profile {
     final String name
     List<Profile> parentProfiles
     Map<String, Object> profileConfig
-    private List<CommandLineHandler> commandLineHandlers = null
+    private List<Command> commands = null
+    private Map<String, Command> commandsByName = new HashMap<>()
 
     private DefaultProfile(String name, File profileDir) {
         this.name = name
@@ -54,32 +56,47 @@ class DefaultProfile implements Profile {
 
     @Override
     public Iterable<Completer> getCompleters(ProjectContext context) {
-        [ new CommandLineHandlersCompleter(context, this) ]
+        def commands = getCommands(context)
+
+        Collection<Completer> completers = []
+
+        // TODO: report Groovy @CompileStatic bug
+        commands.each { Command cmd ->
+           if(cmd instanceof Completer) {
+               completers << new ArgumentCompleter(new StringsCompleter(cmd.name), (Completer)cmd)
+           }else {
+               completers  << new StringsCompleter(cmd.name)
+           }
+        }
+
+        return completers
     }
 
     @Override
-    public Iterable<CommandLineHandler> getCommandLineHandlers(ProjectContext context) {
-        if(commandLineHandlers == null) {
-            commandLineHandlers = []
-            def commands = CommandRegistry.findCommands(this)
-            CommandLineHandler commandHandler = createCommandHandler(commands)
-            commandLineHandlers << commandHandler
-            addParentCommandLineHandlers(context, commandLineHandlers)
-        }
-        commandLineHandlers
-    }
+    Iterable<Command> getCommands(ProjectContext context) {
+        if(commands == null) {
+            commands = []
+            commands.addAll CommandRegistry.findCommands(this)
+            if(parentProfiles) {
+                for(parent in parentProfiles) {
+                    commands.addAll(parent.getCommands(context).toList())
+                }
+            }
 
-    protected void addParentCommandLineHandlers(ProjectContext context, List<CommandLineHandler> commandLineHandlers) {
-        parentProfiles.each {
-            it.getCommandLineHandlers(context)?.each { CommandLineHandler handler ->
-                commandLineHandlers.add(handler)
+            for(Command cmd in commands) {
+                if(cmd instanceof ProjectContextAware) {
+                    ((ProjectContextAware)cmd).projectContext = context
+                }
+                commandsByName[cmd.name] = cmd
             }
         }
+        return commands
     }
 
-
-    protected CommandLineHandler createCommandHandler(Collection<Command> commands) {
-        return new DefaultCommandHandler(commands,this)
+    @Override
+    boolean handleCommand(ExecutionContext context) {
+        def cmd = commandsByName[context.commandLine.commandName]
+        cmd?.handle(context)
     }
 
     private void initialize(ProfileRepository repository) {

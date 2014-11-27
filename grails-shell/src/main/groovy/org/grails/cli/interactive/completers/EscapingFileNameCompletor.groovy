@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.interactive.completors
+package org.grails.cli.interactive.completers
 
 import jline.console.completer.FileNameCompleter
 

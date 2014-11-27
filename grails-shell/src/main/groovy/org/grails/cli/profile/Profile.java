@@ -45,11 +45,19 @@ public interface Profile {
     Iterable<Completer> getCompleters(ProjectContext context);
 
     /**
-     * The profile {@link org.grails.cli.profile.CommandLineHandler} instances
+     * The profile {@link org.grails.cli.profile.Command} instances
+     *
      * @param context The {@link ProjectContext} instance
-     * @return An {@link java.lang.Iterable} of {@link org.grails.cli.profile.CommandLineHandler} instances
+     * @return An {@link java.lang.Iterable} of {@link org.grails.cli.profile.Command} instances
      */
-    Iterable<CommandLineHandler> getCommandLineHandlers(ProjectContext context);
+    Iterable<Command> getCommands(ProjectContext context);
+
+    /**
+     * Obtains a {@link Command}
+     *
+     * @return True if the command was handled
+     */
+    boolean handleCommand(ExecutionContext context);
 
     /**
      * The other {@link org.grails.cli.profile.Profile} instances that this {@link org.grails.cli.profile.Profile} extends

@@ -6,6 +6,7 @@ import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
+import org.grails.cli.profile.ProjectCommand
 import org.grails.cli.profile.commands.factory.CommandFactory
 
 /*
@@ -75,7 +76,7 @@ class CommandRegistry {
         }
 
         commands.addAll( registeredCommands.values()
-                            .findAll { Command c -> (c instanceof ProfileCommand) && ((ProfileCommand)c).profile == profile }
+                            .findAll { Command c -> (c instanceof ProjectCommand) || (c instanceof ProfileCommand) && ((ProfileCommand)c).profile == profile }
         )
         return commands
     }

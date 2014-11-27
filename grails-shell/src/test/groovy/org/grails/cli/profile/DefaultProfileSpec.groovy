@@ -1,4 +1,4 @@
-package org.grails.cli.profile.simple
+package org.grails.cli.profile
 
 import org.grails.cli.profile.DefaultProfile
 import org.grails.cli.profile.git.GitProfileRepository

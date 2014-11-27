@@ -21,7 +21,6 @@ import grails.io.SystemStreamsRedirector
 import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.Canonical
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import org.gradle.tooling.ProjectConnection
@@ -29,10 +28,10 @@ import org.gradle.tooling.model.ExternalDependency
 import org.gradle.tooling.model.eclipse.EclipseProject
 import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleUtil
-import org.grails.cli.gradle.cache.CachedGradleOperation
 import org.grails.cli.gradle.cache.ListReadingCachedGradleOperation
-import org.grails.cli.interactive.completors.EscapingFileNameCompletor
-import org.grails.cli.interactive.completors.RegexCompletor
+import org.grails.cli.interactive.completers.EscapingFileNameCompletor
+import org.grails.cli.interactive.completers.RegexCompletor
+import org.grails.cli.profile.Command
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.cli.profile.commands.CreateAppCommand
@@ -51,10 +50,8 @@ import jline.internal.NonBlockingInputStream
 
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
-import org.grails.cli.gradle.GradleConnectionCommandLineHandler
 import org.grails.cli.profile.CommandCancellationListener
 import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.CommandLineHandler
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.git.GitProfileRepository
@@ -79,7 +76,6 @@ class GrailsCli {
     private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
 
 
-    List<CommandLineHandler> commandLineHandlers=[]
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
@@ -89,6 +85,7 @@ class GrailsCli {
     GitProfileRepository profileRepository=new GitProfileRepository()
     CodeGenConfig applicationConfig
     ProjectContext projectContext
+    Profile profile = null
 
     /**
      * Main method for running via the command line
@@ -166,10 +163,9 @@ class GrailsCli {
         if(handleBuiltInCommands(context)) {
             return true
         }
-        for(CommandLineHandler handler : commandLineHandlers) {
-             if(handler.handle(context)) {
-                 return true
-             }
+
+        if(profile.handleCommand(context)) {
+            return true;
         }
         context.console.error("Command not found ${context.commandLine.commandName}")
         return false
@@ -180,8 +176,17 @@ class GrailsCli {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
         GrailsConsole console = projectContext.console
         console.reader.setHandleUserInterrupt(true)
+        def completers = aggregateCompleter.getCompleters()
+
+        // add bang operator completer
+        completers.add(new ArgumentCompleter(
+                new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
+        )
+
+        completers.addAll((profile.getCompleters(projectContext)?:[]) as Collection)
         console.reader.addCompleter(aggregateCompleter)
-        console.println("Starting interactive mode...")
+
+        console.updateStatus("Starting interactive mode...")
         ExecutorService commandExecutor = Executors.newFixedThreadPool(1)
         try {
             interactiveModeLoop(commandExecutor)
@@ -258,19 +263,11 @@ class GrailsCli {
         populateContextLoader()
 
         String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
-        Profile profile = profileRepository.getProfile(profileName)
-        commandLineHandlers.addAll(profile.getCommandLineHandlers(projectContext) as Collection)
+        this.profile = profileRepository.getProfile(profileName)
 
-        def gradleHandler = new GradleConnectionCommandLineHandler(backgroundInitialize: integrateGradle)
-        commandLineHandlers.add(gradleHandler)
-
-        def completers = aggregateCompleter.getCompleters()
-
-        completers.add(new ArgumentCompleter(
-                new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
-        )
-        completers.addAll((profile.getCompleters(projectContext)?:[]) as Collection)
-        completers.add(gradleHandler.createCompleter(projectContext))
+        if(profile == null) {
+            throw new IllegalStateException("No profile found for name [$profileName].")
+        }
     }
 
     protected void populateContextLoader() {
@@ -322,7 +319,7 @@ class GrailsCli {
         else {
             switch(commandName) {
                 case 'help':
-                    List<CommandDescription> allCommands=findAllCommands()
+                    Collection<CommandDescription> allCommands=findAllCommands()
                     String remainingArgs = commandLine.getRemainingArgsString()
                     if(remainingArgs?.trim()) {
                         CommandLine remainingArgsCommand = cliParser.parseString(remainingArgs)
@@ -401,15 +398,8 @@ class GrailsCli {
         keepRunning = false
     }
 
-    private List<CommandDescription> findAllCommands() {
-        List<CommandDescription> allCommands=[]
-        for(CommandLineHandler handler : commandLineHandlers) {
-            allCommands.addAll((handler.listCommands(projectContext) ?: []) as Collection)
-        }
-        allCommands = allCommands.sort(false) { CommandDescription desc ->
-            desc.getName()
-        }
-        allCommands
+    private Collection<CommandDescription> findAllCommands() {
+        profile.getCommands(projectContext).collect() { Command cmd -> cmd.description }
     }
 
     
