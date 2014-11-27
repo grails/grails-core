@@ -65,7 +65,12 @@ class DefaultProfile implements Profile {
            if(cmd instanceof Completer) {
                completers << new ArgumentCompleter(new StringsCompleter(cmd.name), (Completer)cmd)
            }else {
-               completers  << new StringsCompleter(cmd.name)
+               if(cmd.description.completer) {
+                   completers  << new ArgumentCompleter(new StringsCompleter(cmd.name), cmd.description.completer)
+               }
+               else {
+                   completers  << new StringsCompleter(cmd.name)
+               }
            }
         }
 

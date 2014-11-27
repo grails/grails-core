@@ -88,7 +88,7 @@ class ModelBuilder {
             this.fullName = className
             this.propertyName = GrailsNameUtils.getPropertyName(className)
             this.packageName = GrailsNameUtils.getPackageName(className)
-            this.packagePath = packageName.replace('.' as char, File.pathSeparatorChar)
+            this.packagePath = packageName.replace('.' as char, File.separatorChar)
             this.simpleName = this.className
             this.lowerCaseName = GrailsNameUtils.getScriptName(className)
 

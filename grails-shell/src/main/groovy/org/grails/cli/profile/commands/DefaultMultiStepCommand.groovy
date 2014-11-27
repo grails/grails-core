@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package org.grails.cli.profile.commands
+
+import jline.console.completer.Completer
 import org.grails.cli.profile.*
 import org.grails.cli.profile.steps.StepRegistry
 /**
@@ -54,6 +56,16 @@ class DefaultMultiStepCommand extends MultiStepCommand {
                             else if(map.containsKey('flag')) {
                                 map.remove('flag')
                                 this.description.flag(map)
+                            }
+                            else if(map.containsKey('completer')) {
+                                def completerClass = map.get('completer')
+                                if(completerClass) {
+                                    try {
+                                        this.description.completer = (Completer)Thread.currentThread().contextClassLoader.loadClass(completerClass.toString()).newInstance()
+                                    } catch (e) {
+                                        // ignore
+                                    }
+                                }
                             }
                         }
                     }

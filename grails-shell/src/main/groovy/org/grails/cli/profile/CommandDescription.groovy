@@ -18,6 +18,7 @@ package org.grails.cli.profile
 import groovy.transform.Canonical
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import jline.console.completer.Completer
 
 /**
  * Describes a {@link Command}
@@ -50,6 +51,11 @@ class CommandDescription {
      * Flags to the command. These differ as they are optional and are prefixed with a hyphen (Example -debug)
      */
     List<CommandArgument> flags = []
+
+    /**
+     * A completer for the command
+     */
+    Completer completer = null
 
     /**
      * Adds an argument for the given named arguments
