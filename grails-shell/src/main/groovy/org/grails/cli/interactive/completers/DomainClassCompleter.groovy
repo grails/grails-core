@@ -16,6 +16,7 @@
 package org.grails.cli.interactive.completers
 
 import grails.util.BuildSettings
+import groovy.transform.CompileStatic
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.Resource
 
@@ -25,6 +26,7 @@ import org.grails.io.support.Resource
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class DomainClassCompleter extends ClassNameCompleter {
     DomainClassCompleter() {
         super(new File(BuildSettings.BASE_DIR, "grails-app/domain"))
