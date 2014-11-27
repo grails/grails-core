@@ -37,7 +37,7 @@ class GradleUtil {
     private static ProjectConnection preparedConnection = null
 
     public static ProjectConnection refreshConnection(File baseDir) {
-        preparedConnection = GradleConnector.newConnector().forProjectDirectory(baseDir).connect()
+        preparedConnection = openGradleConnection(baseDir)
 
         try {
             Runtime.addShutdownHook {
@@ -57,7 +57,7 @@ class GradleUtil {
     }
 
     public static ProjectConnection openGradleConnection(File baseDir) {
-        SystemOutErrCapturer.withCapturedOutput {
+        SystemOutErrCapturer.withNullOutput {
             GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
             if(System.getenv("GRAILS_GRADLE_HOME")) {
                 gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
@@ -70,7 +70,7 @@ class GradleUtil {
         ProjectConnection projectConnection= preparedConnection ?: prepareConnection(baseDir)
         try {
             if(suppressOutput) {
-                SystemOutErrCapturer.withCapturedOutput {
+                SystemOutErrCapturer.withNullOutput {
                     closure(projectConnection)
                 }
             } else {
@@ -86,7 +86,7 @@ class GradleUtil {
     
     public static void runBuildWithConsoleOutput(ExecutionContext context, Closure<?> buildLauncherCustomizationClosure) {
         GrailsConsole grailsConsole = context.getConsole()
-        withProjectConnection(context.getBaseDir(), false) { ProjectConnection projectConnection ->
+        withProjectConnection(context.getBaseDir(), true) { ProjectConnection projectConnection ->
             BuildLauncher launcher = projectConnection.newBuild()
             launcher.colorOutput = grailsConsole.isAnsiEnabled()
             OutputStream output = SystemStreamsRedirector.original().out
