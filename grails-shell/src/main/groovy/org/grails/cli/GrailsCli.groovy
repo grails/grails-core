@@ -71,6 +71,7 @@ import org.grails.cli.profile.ProjectContext
  */
 @CompileStatic
 class GrailsCli {
+    static final String ARG_SPLIT_PATTERN = /(?<!\\)\s+/
     public static final String DEFAULT_PROFILE_NAME = ProfileRepository.DEFAULT_PROFILE_NAME
     private static final int KEYPRESS_CTRL_C = 3
     private static final int KEYPRESS_ESC = 27
@@ -254,8 +255,6 @@ class GrailsCli {
     private initializeProfile() {
         BuildSettings.TARGET_DIR.mkdirs()
 
-
-        def baseDir = projectContext.baseDir
         populateContextLoader()
 
         String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
@@ -315,37 +314,89 @@ class GrailsCli {
     private boolean handleBuiltInCommands(ExecutionContext context) {
         CommandLine commandLine = context.commandLine
         GrailsConsole console = context.console
-        switch(commandLine.getCommandName()) {
-            case 'help':
-                List<CommandDescription> allCommands=findAllCommands()
-                String remainingArgs = commandLine.getRemainingArgsString()
-                if(remainingArgs?.trim()) {
-                    CommandLine remainingArgsCommand = cliParser.parseString(remainingArgs)
-                    String helpCommandName = remainingArgsCommand.getCommandName()
-                    for (CommandDescription desc : allCommands) {
-                        if(desc.name == helpCommandName) {
-                            console.println "${desc.name}\t${desc.description}\n${desc.usage}"
-                            return true
+        def commandName = commandLine.commandName
+
+        if(commandName.size()>1 && commandName.startsWith('!')) {
+            return executeProcess(context, commandName)
+        }
+        else {
+            switch(commandName) {
+                case 'help':
+                    List<CommandDescription> allCommands=findAllCommands()
+                    String remainingArgs = commandLine.getRemainingArgsString()
+                    if(remainingArgs?.trim()) {
+                        CommandLine remainingArgsCommand = cliParser.parseString(remainingArgs)
+                        String helpCommandName = remainingArgsCommand.getCommandName()
+                        for (CommandDescription desc : allCommands) {
+                            if(desc.name == helpCommandName) {
+                                console.println "${desc.name}\t${desc.description}\n${desc.usage}"
+                                return true
+                            }
                         }
+                        console.error "Help for command $helpCommandName not found"
+                        return false
+                    } else {
+                        for (CommandDescription desc : allCommands) {
+                            console.println "${desc.name}\t${desc.description}"
+                        }
+                        console.println("detailed usage with help [command]")
+                        return true
                     }
-                    console.error "Help for command $helpCommandName not found"
-                    return false
-                } else {
-                    for (CommandDescription desc : allCommands) {
-                        console.println "${desc.name}\t${desc.description}"
-                    }
-                    console.println("detailed usage with help [command]")
+                    break
+                case '!':
+                    return bang(context)
+                case 'exit':
+                    exitInteractiveMode()
                     return true
-                }
-                break
-            case 'exit':
-                exitInteractiveMode()
-                return true
-                break
+                    break
+            }
+        }
+
+        return false
+    }
+
+    protected boolean executeProcess(ExecutionContext context, String cmd) {
+        def console = context.console
+        try {
+            def args = cmd[1..-1].split(ARG_SPLIT_PATTERN).collect { String it -> unescape(it) }
+            def process = new ProcessBuilder(args).redirectErrorStream(true).start()
+            console.log process.inputStream.getText('UTF-8')
+            return true
+        } catch (e) {
+            console.error "Error occurred executing process: $e.message"
+            return false
+        }
+    }
+
+    /**
+     * Removes '\' escape characters from the given string.
+     */
+    private String unescape(String str) {
+        return str.replace('\\', '')
+    }
+
+    protected Boolean bang(ExecutionContext context) {
+        def console = context.console
+        def history = console.reader.history
+
+        //move one step back to !
+        history.previous()
+
+        if (!history.previous()) {
+            console.error "! not valid. Can not repeat without history"
+        }
+
+        //another step to previous command
+        String historicalCommand = history.current()
+        if (historicalCommand.startsWith("!")) {
+            console.error "Can not repeat command: $historicalCommand"
+        }
+        else {
+            return handleCommand(cliParser.parseString(historicalCommand))
         }
         return false
     }
-    
+
     private void exitInteractiveMode() {
         keepRunning = false
     }

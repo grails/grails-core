@@ -21,7 +21,10 @@ import java.util.*;
 import static jline.internal.Preconditions.checkNotNull;
 
 /**
+ * A completer that completes based on a collection of Strings
+ *
  * @author Graeme Rocher
+ * @since 3.0
  */
 public class StringsCompleter
     implements Completer
