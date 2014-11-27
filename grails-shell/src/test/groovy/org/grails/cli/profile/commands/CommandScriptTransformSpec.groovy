@@ -16,6 +16,7 @@
 
 package org.grails.cli.profile.commands
 
+import org.grails.cli.interactive.completers.DomainClassCompleter
 import org.grails.cli.profile.commands.factory.GroovyScriptCommandFactory
 import org.grails.cli.profile.commands.script.CommandScript
 import spock.lang.Specification
@@ -33,11 +34,14 @@ class CommandScriptTransformSpec extends Specification {
 
         when:"A script is parsed"
             def script = (CommandScript)(gcl.parseClass('''
+import org.grails.cli.interactive.completers.DomainClassCompleter
+
 description("example script") {
     usage "example usage"
-
+    completer DomainClassCompleter
     argument name: 'controllerName', description:'The name of the controller'
     flag name:'test', description:'Do something'
+
 }
 
 
@@ -55,5 +59,6 @@ println "Hello!"
             script.description.flags.size() == 1
             script.description.flags[0].name == 'test'
             script.description.flags[0].description == 'Do something'
+            script.description.completer instanceof DomainClassCompleter
     }
 }

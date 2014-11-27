@@ -99,11 +99,8 @@ class CommandScriptTransform implements ASTTransformation {
                                                 }
 
                                                 break
-                                            case "argument":
-                                                constructDescription = new MethodCallExpression(constructDescription, "argument", methodCallArgs)
-                                            break
-                                            case "flag":
-                                                constructDescription = new MethodCallExpression(constructDescription, "flag", methodCallArgs)
+                                            default:
+                                                constructDescription = new MethodCallExpression(constructDescription, mce.methodAsString, methodCallArgs)
                                             break
 
                                         }

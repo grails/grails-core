@@ -58,6 +58,28 @@ class CommandDescription {
     Completer completer = null
 
     /**
+     * Sets the completer
+     *
+     * @param completer The class of the completer to set
+     * @return The description instance
+     */
+    CommandDescription completer(Class<Completer> completer) {
+        this.completer = completer.newInstance()
+        return this
+    }
+
+    /**
+     * Sets the completer
+     *
+     * @param completer The completer to set
+     * @return The description instance
+     */
+    CommandDescription completer(Completer completer) {
+        this.completer = completer
+        return this
+    }
+
+    /**
      * Adds an argument for the given named arguments
      *
      * @param args The named arguments

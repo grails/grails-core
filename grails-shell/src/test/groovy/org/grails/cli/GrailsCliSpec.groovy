@@ -13,14 +13,11 @@ import net.sf.expectit.Expect
 import net.sf.expectit.ExpectBuilder
 
 import org.codehaus.groovy.runtime.InvokerHelper
-import org.grails.cli.profile.CommandLineHandler
-import org.grails.cli.profile.ExecutionContext
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
 import spock.lang.Shared
 import spock.lang.Specification
-import spock.lang.Unroll
 
 class GrailsCliSpec extends Specification {
     @Rule
