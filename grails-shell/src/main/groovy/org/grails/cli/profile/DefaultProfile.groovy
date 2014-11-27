@@ -100,6 +100,7 @@ class DefaultProfile implements Profile {
 
     @Override
     boolean handleCommand(ExecutionContext context) {
+        getCommands(context) // ensure initialization
         def cmd = commandsByName[context.commandLine.commandName]
         cmd?.handle(context)
     }
