@@ -15,7 +15,7 @@ import net.sf.expectit.ExpectBuilder
 
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.cli.gradle.GradleUtil
-import org.grails.cli.profile.git.GitProfileRepository;
+import org.grails.cli.profile.git.GitProfileRepository
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -45,6 +45,8 @@ class GrailsCliSpec extends Specification {
 
     public static void setupProfileRepositoryForTesting(GitProfileRepository profileRepository, File tempProfilesDirectory, File workingDir) {
         profileRepository.with {
+            // create or update ~/.grails/profiles 
+            createOrUpdateRepository()
             // use ~/.grails/repository as origin for git repository used for tests when it exists
             // supports running unit tests locally without network connection
             if(new File(profilesDirectory, ".git").exists()) {
