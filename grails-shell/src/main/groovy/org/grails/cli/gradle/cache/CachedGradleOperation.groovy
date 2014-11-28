@@ -61,7 +61,7 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
             // ignore
         }
 
-        def data = readFromGradle(GradleUtil.prepareConnection(projectContext.baseDir))
+        def data = GradleUtil.withProjectConnection(projectContext.baseDir, true) { ProjectConnection projectConnection -> readFromGradle(projectConnection) }
         storeData(data)
         return data
     }
