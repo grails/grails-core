@@ -354,6 +354,10 @@ class GrailsCli {
                     exitInteractiveMode()
                     return true
                     break
+                case 'quit':
+                    exitInteractiveMode()
+                    return true
+                    break
             }
         }
 
