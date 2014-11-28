@@ -75,8 +75,18 @@ class GrailsCli {
     private static final int KEYPRESS_ESC = 27
     private static final String USAGE_MESSAGE = "Usage: create-app [NAME] --profile=web"
     private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
+    private static ExecutionContext currentExecutionContext = null
 
     private static boolean interactiveModeActive
+    static {
+        try {
+            Runtime.addShutdownHook {
+                currentExecutionContext?.cancel()
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
 
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
@@ -168,14 +178,21 @@ class GrailsCli {
     }
     
     Boolean handleCommand( ExecutionContext context ) {
-        if(handleBuiltInCommands(context)) {
-            return true
+        synchronized(GrailsCli) {
+            try {
+                currentExecutionContext = context
+                if(handleBuiltInCommands(context)) {
+                    return true
+                }
+        
+                if(profile.handleCommand(context)) {
+                    return true;
+                }
+                return false
+            } finally {
+                currentExecutionContext = null
+            }
         }
-
-        if(profile.handleCommand(context)) {
-            return true;
-        }
-        return false
     }
 
 

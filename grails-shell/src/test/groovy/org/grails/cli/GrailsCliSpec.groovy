@@ -15,7 +15,7 @@ import net.sf.expectit.ExpectBuilder
 
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.cli.gradle.GradleUtil
-import org.grails.cli.profile.git.GitProfileRepository;
+import org.grails.cli.profile.git.GitProfileRepository
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -23,6 +23,8 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 class GrailsCliSpec extends Specification {
+    static int EXPECT_TIMEOUT_SECONDS = System.getenv('TRAVIS') == 'true' ? 120 : 20
+    
     @Rule
     TemporaryFolder tempFolder = new TemporaryFolder()
 
@@ -45,6 +47,8 @@ class GrailsCliSpec extends Specification {
 
     public static void setupProfileRepositoryForTesting(GitProfileRepository profileRepository, File tempProfilesDirectory, File workingDir) {
         profileRepository.with {
+            // create or update ~/.grails/profiles 
+            createOrUpdateRepository()
             // use ~/.grails/repository as origin for git repository used for tests when it exists
             // supports running unit tests locally without network connection
             if(new File(profilesDirectory, ".git").exists()) {
@@ -130,7 +134,8 @@ class GrailsCliSpec extends Specification {
         System.setOut(emulatedSystemOut)
         System.setErr(emulatedSystemOut)
 
-        ExpectBuilder expectBuilder = new ExpectBuilder().withInputs(systemOutInput).withOutput(expectCommandsPipe).withTimeout(20, TimeUnit.SECONDS)
+        ExpectBuilder expectBuilder = new ExpectBuilder().withInputs(systemOutInput).withOutput(expectCommandsPipe)
+        expectBuilder.withTimeout(EXPECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         expectBuilder.withEchoOutput(originalStreams.err).withEchoInput(originalStreams.out)
         expectBuilder
     }

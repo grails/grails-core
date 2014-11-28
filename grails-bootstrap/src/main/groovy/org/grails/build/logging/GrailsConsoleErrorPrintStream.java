@@ -28,12 +28,12 @@ import java.io.PrintStream;
  */
 public class GrailsConsoleErrorPrintStream extends PrintStream {
 
-    public GrailsConsoleErrorPrintStream(OutputStream out) {
+    public GrailsConsoleErrorPrintStream(PrintStream out) {
         super(out, true);
     }
 
-    public OutputStream getTargetOut() {
-        return out;
+    public PrintStream getTargetOut() {
+        return (PrintStream)out;
     }
 
     @Override

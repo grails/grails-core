@@ -16,6 +16,7 @@
 package org.grails.test.io
 
 import groovy.transform.CompileStatic
+
 import org.grails.build.logging.GrailsConsolePrintStream
 
 /**
@@ -72,8 +73,8 @@ class SystemOutAndErrSwapper {
         swappedInOutStream = echoOut ? new MultiplexingOutputStream(swappedOutOut, outStream) : outStream
         swappedInErrStream = echoErr ? new MultiplexingOutputStream(swappedOutErr, errStream) : errStream
 
-        swappedInOut = new TestOutputCapturingPrintStream(swappedInOutStream)
-        swappedInErr = new TestOutputCapturingPrintStream(swappedInErrStream)
+        swappedInOut = new TestOutputCapturingPrintStream(new PrintStream(swappedInOutStream, true))
+        swappedInErr = new TestOutputCapturingPrintStream(new PrintStream(swappedInErrStream, true))
 
         System.out = swappedInOut
         System.err = swappedInErr
@@ -117,7 +118,7 @@ class SystemOutAndErrSwapper {
     static class TestOutputCapturingPrintStream extends GrailsConsolePrintStream {
         BufferedWriter textOut
 
-        TestOutputCapturingPrintStream(OutputStream out) {
+        TestOutputCapturingPrintStream(PrintStream out) {
             super(out)
             textOut = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))
         }

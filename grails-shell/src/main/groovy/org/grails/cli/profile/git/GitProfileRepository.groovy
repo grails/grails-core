@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile.git
 
+import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 
 import org.eclipse.jgit.api.Git
@@ -88,7 +89,7 @@ class GitProfileRepository implements ProfileRepository{
         }
     }
     
-    private File createOrUpdateRepository() {
+    public File createOrUpdateRepository() {
         if(!profilesDirectory.exists()) {
             def parentDir = profilesDirectory.getParentFile()
             if(!parentDir.exists()) parentDir.mkdir()
@@ -97,18 +98,26 @@ class GitProfileRepository implements ProfileRepository{
                                  .setBranch(gitBranch)
                                 .call()
         } else if (!gitRevision) {
-            File fetchHead = new File(profilesDirectory, ".git/FETCH_HEAD")
-            if(!fetchHead.exists() || fetchHead.lastModified() < System.currentTimeMillis() - updateInterval) {
-                Git git = Git.open(profilesDirectory)
-                git.fetch()
-                git.rebase()
-            }
+            fetchAndRebaseIfExpired()
         }
         if (gitRevision) {
             Git git = Git.open(profilesDirectory)
             git.reset().setRef(gitRevision).setMode(gitRevisionResetMode).call()
         }
         profilesDirectory
+    }
+
+    public void fetchAndRebaseIfExpired() {
+        File fetchHead = new File(profilesDirectory, ".git/FETCH_HEAD")
+        if(!fetchHead.exists() || fetchHead.lastModified() < System.currentTimeMillis() - updateInterval) {
+            try {
+                Git git = Git.open(profilesDirectory)
+                git.fetch()
+                git.rebase()
+            } catch (Exception e) {
+                GrailsConsole.getInstance().error("Problem updating profiles from origin git repository", e)
+            }
+        }
     }
 
 }
