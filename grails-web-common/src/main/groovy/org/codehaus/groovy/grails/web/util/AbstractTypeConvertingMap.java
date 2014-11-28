@@ -57,6 +57,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
         if (map == null) map = new LinkedHashMap();
         wrappedMap = map;
     }
+    
+    public boolean equals(Map that) {
+        return equals((Object)that);
+    }    
 
     @Override
     public boolean equals(Object that) {
@@ -91,10 +95,9 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
             final Object key = it.next();
             Object thisValue = wrappedMap.get(key);
             Object thatValue = thatMap.wrappedMap.get(key);
-            if (thisValue == null && thatValue != null) {
-                return false;
-            }
-            if (!thisValue.equals(thatValue)) {
+            if (thisValue == null && thatValue != null || 
+                thisValue != null && thatValue == null || 
+                thisValue != thatValue && !thisValue.equals(thatValue)) {
                 return false;
             }
         }
