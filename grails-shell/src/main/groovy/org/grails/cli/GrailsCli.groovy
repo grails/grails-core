@@ -399,7 +399,7 @@ class GrailsCli {
     }
 
     private Collection<CommandDescription> findAllCommands() {
-        profile.getCommands(projectContext).collect() { Command cmd -> cmd.description }
+        profile.getCommands(projectContext).collect() { Command cmd -> cmd.description }.sort(false) { CommandDescription itDesc ->  itDesc.name }
     }
 
     
