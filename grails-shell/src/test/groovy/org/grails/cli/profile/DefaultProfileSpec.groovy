@@ -21,11 +21,11 @@ class DefaultProfileSpec extends Specification {
         profile = DefaultProfile.create(profileRepository, 'web', webProfileDirectory)
     }
     
-    def "should contain 5 commands"() {
+    def "should contain 16 commands"() {
         when:
         def commands = profile.getCommands([:] as ProjectContext)
         then:
-        commands.size() == 17
+        commands.size() == 16
         commands*.name as Set == ['clean', 'compile', 'console', 'create-controller', 'create-domain-class', 'create-integration-test', 'create-script', 'create-service', 'create-taglib', 'create-unit-test', 'dependency-report', 'gradle', 'package', 'run-app', 'test-groovy', 'war'] as Set
     }
 }
