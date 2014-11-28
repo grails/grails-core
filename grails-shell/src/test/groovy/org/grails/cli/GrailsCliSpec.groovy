@@ -210,13 +210,29 @@ class GrailsCliSpec extends Specification {
         then:
         retval == 0
         helpContent == '''
+clean\tCleans a Grails application's compiled sources
+compile\tCompiles a Grails application
+console\tLoads Grails within the Groovy Swing
 create-controller\tCreates a controller
-create-domain\tCreates a domain class
+create-domain-class\tCreates a domain class
+create-integration-test\tCreates an integration test
+create-script\tCreates a new command line script that can be used for code generation
 create-service\tCreates a service
 create-taglib\tCreates a tag library
-gradle\tRuns the gradle build
+create-unit-test\tCreates a unit test
+dependency-report\tPrints out the Grails application's dependencies
+generate-all\tGenerates a controller that performs CRUD operations and the associated views
+generate-all\tGenerates a controller that performs CRUD operations and the associated views
+generate-controller\tGenerates a controller that performs CRUD operations
+generate-controller\tGenerates a controller that performs CRUD operations
+gradle\tAllows running of Gradle tasks
+gradle\tAllows running of Gradle tasks
+install-form-fields-templates\tInstalls scaffolding templates that use f:all to render properties
+install-form-fields-templates\tInstalls scaffolding templates that use f:all to render properties
+package\tPackages a Grails application
 run-app\tRuns the application
 test-groovy\tTests out a Groovy script
+war\tCreates a WAR file for deployment to a container (like Tomcat)
 detailed usage with help [command]
 '''
     }
@@ -234,7 +250,6 @@ detailed usage with help [command]
         helpContent == '''
 create-controller\tCreates a controller
 create-controller [controller name]
-Creates a controller class and an associated unit test
 '''
     }
     
@@ -252,7 +267,6 @@ Creates a controller class and an associated unit test
 Error |
 Expecting an argument to create-controller.
 create-controller [controller name]
-Creates a controller class and an associated unit test
 '''
     }
     
