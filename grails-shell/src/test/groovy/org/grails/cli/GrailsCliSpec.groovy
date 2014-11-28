@@ -3,6 +3,7 @@ package org.grails.cli
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
 import grails.config.CodeGenConfig
+import grails.io.SystemOutErrCapturer
 
 import java.lang.reflect.Field
 import java.util.concurrent.TimeUnit
@@ -45,7 +46,16 @@ class GrailsCliSpec extends Specification {
             // for development, comment out the following line. the latest commit in ~/.grails/repository master branch will be used by default in that case
             gitRevision = '655eac53'
         }
-        
+        // force profile initialization
+        cli.profileRepository.getProfile('web')
+        // copy files used for testing profiles over the checked out profiles repository directory files
+        File testProfilesRepository = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
+        SystemOutErrCapturer.withNullOutput {
+            new AntBuilder().copy(todir: cli.profileRepository.profilesDirectory, overwrite: true, encoding: 'UTF-8') { 
+                fileSet(dir: testProfilesRepository) 
+            }
+        }
+        // change working directory
         chdir(tempFolder.getRoot())
     }
 
