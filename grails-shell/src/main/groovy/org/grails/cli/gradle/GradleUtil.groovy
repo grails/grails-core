@@ -89,11 +89,7 @@ class GradleUtil {
         withProjectConnection(context.getBaseDir(), true) { ProjectConnection projectConnection ->
             BuildLauncher launcher = projectConnection.newBuild()
             launcher.colorOutput = grailsConsole.isAnsiEnabled()
-            OutputStream output = SystemStreamsRedirector.original().out
-            if(grailsConsole.isAnsiEnabled()) {
-                output = grailsConsole.ansiWrap(output)
-            }
-            launcher.setStandardOutput(output)
+            launcher.setStandardOutput(grailsConsole.out)
             wireCancellationSupport(context, launcher)
             buildLauncherCustomizationClosure.call(launcher)
             launcher.run()
