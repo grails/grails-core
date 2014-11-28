@@ -30,33 +30,39 @@ import org.grails.io.support.Resource
 class ClassNameCompleter extends StringsCompleter {
 
         static Map<String, SortedSet<String>> RESOURCE_SCAN_CACHE = [:]
-        File baseDir
         PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
 
         ClassNameCompleter(File baseDir) {
-                this.baseDir = baseDir.canonicalFile
                 initialize(baseDir)
         }
 
-        private void initialize(File baseDir) {
-                def pattern = "file:${baseDir}/**/*.groovy".toString()
+        ClassNameCompleter(File... baseDirs) {
+                initialize(baseDirs)
+        }
 
-                SortedSet<String> strings = RESOURCE_SCAN_CACHE[pattern]
-                if(strings == null) {
-                        strings = new TreeSet<>()
-                        RESOURCE_SCAN_CACHE[pattern] = strings
-                        def resources = resourcePatternResolver.getResources(pattern)
-                        for (res in resources) {
-                                if(isValidResource(res)) {
-                                        def path = res.file.canonicalPath
-                                        def basePath = baseDir.canonicalPath
-                                        path = (path - basePath)[1..-8]
-                                        path = path.replace(File.separatorChar, '.' as char)
-                                        strings << path
+        private void initialize(File... baseDirs) {
+                if(!baseDirs) return
+                SortedSet<String> allStrings = new TreeSet<>()
+                for(File baseDir in baseDirs) {
+                        def pattern = "file:${baseDir}/**/*.groovy".toString()
+                        SortedSet<String> strings = RESOURCE_SCAN_CACHE[pattern]
+                        if(strings == null) {
+                                strings = new TreeSet<>()
+                                RESOURCE_SCAN_CACHE[pattern] = strings
+                                def resources = resourcePatternResolver.getResources(pattern)
+                                for (res in resources) {
+                                        if(isValidResource(res)) {
+                                                def path = res.file.canonicalPath
+                                                def basePath = baseDir.canonicalPath
+                                                path = (path - basePath)[1..-8]
+                                                path = path.replace(File.separatorChar, '.' as char)
+                                                strings << path
+                                        }
                                 }
                         }
+                        allStrings.addAll(strings)
                 }
-                setStrings(strings)
+                setStrings(allStrings)
         }
 
         boolean isValidResource(Resource resource) {
