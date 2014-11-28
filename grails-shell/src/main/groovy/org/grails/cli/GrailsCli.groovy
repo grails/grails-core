@@ -112,7 +112,11 @@ class GrailsCli {
         if(mainCommandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
             System.setProperty("grails.show.stacktrace", "true")
         }
-        
+
+        if(mainCommandLine.environmentSet) {
+            System.setProperty(Environment.KEY, mainCommandLine.environment)
+        }
+
         File grailsAppDir=new File("grails-app")
         if(!grailsAppDir.isDirectory()) {
             if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
@@ -142,8 +146,7 @@ class GrailsCli {
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             initializeProfile()
             if(commandName) {
-
-                handleCommand(mainCommandLine)
+                return handleCommand(mainCommandLine) ? 0 : 1
             } else {
                 handleInteractiveMode()
             }
@@ -167,7 +170,6 @@ class GrailsCli {
         if(profile.handleCommand(context)) {
             return true;
         }
-        context.console.error("Command not found ${context.commandLine.commandName}")
         return false
     }
 

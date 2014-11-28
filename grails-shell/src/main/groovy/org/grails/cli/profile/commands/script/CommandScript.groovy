@@ -121,7 +121,10 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
     @Override
     boolean handle(ExecutionContext executionContext) {
         setExecutionContext(executionContext)
-        run()
+        def result = run()
+        if(result instanceof Boolean) {
+            return ((Boolean)result)
+        }
         return true
     }
 

@@ -16,6 +16,7 @@ import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
+import org.gradle.api.tasks.testing.Test
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.run.FindMainClassTask
 
@@ -82,10 +83,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         configureConsoleTask(tasks, project)
 
+        tasks.withType(Test).each { Test task ->
+            task.systemProperty Metadata.APPLICATION_NAME, project.name
+            task.systemProperty Metadata.APPLICATION_VERSION, project.version
+            task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
+            task.systemProperty Environment.KEY, Environment.current.name
+        }
+
         tasks.withType(JavaExec).each { JavaExec task ->
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
+            task.systemProperty Environment.KEY, Environment.current.name
         }
 
         project.sourceSets {

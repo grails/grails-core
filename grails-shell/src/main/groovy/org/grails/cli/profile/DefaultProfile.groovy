@@ -122,7 +122,13 @@ class DefaultProfile implements Profile {
         def commandLine = context.commandLine
         def commandName = commandLine.commandName
         def cmd = commandsByName[commandName]
-        cmd?.handle(context)
+        if(cmd) {
+            return cmd.handle(context)
+        }
+        else {
+            context.console.error("Command not found ${context.commandLine.commandName}")
+            return false
+        }
     }
 
     private void initialize(ProfileRepository repository) {
