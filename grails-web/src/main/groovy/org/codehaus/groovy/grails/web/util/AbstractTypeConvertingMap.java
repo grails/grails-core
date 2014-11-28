@@ -56,6 +56,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
         if (map == null) map = new LinkedHashMap();
         wrappedMap = map;
     }
+    
+    public boolean equals(Map that) {
+        return equals((Object)that);
+    }    
 
     @Override
     public boolean equals(Object that) {
