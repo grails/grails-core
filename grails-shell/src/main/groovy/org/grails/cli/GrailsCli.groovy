@@ -27,6 +27,7 @@ import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.ExternalDependency
 import org.gradle.tooling.model.eclipse.EclipseProject
 import org.grails.cli.gradle.ClasspathBuildAction
+import org.grails.cli.gradle.GradleAsyncInvoker
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.gradle.cache.ListReadingCachedGradleOperation
 import org.grails.cli.interactive.completers.EscapingFileNameCompletor
@@ -75,6 +76,7 @@ class GrailsCli {
     private static final String USAGE_MESSAGE = "Usage: create-app [NAME] --profile=web"
     private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
 
+    private static boolean interactiveModeActive
 
     AggregateCompleter aggregateCompleter=new AggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
@@ -97,6 +99,9 @@ class GrailsCli {
         System.exit(cli.execute(args))
     }
 
+    static boolean isInteractiveModeActive() {
+        return interactiveModeActive
+    }
     /**
      * Execute the given command
      *
@@ -200,6 +205,7 @@ class GrailsCli {
     private void interactiveModeLoop(ExecutorService commandExecutor) {
         GrailsConsole console = projectContext.console
         NonBlockingInputStream nonBlockingInput = (NonBlockingInputStream)console.reader.getInput()
+        interactiveModeActive = true
         while(keepRunning) {
             try {
                 if(integrateGradle)
@@ -398,6 +404,7 @@ class GrailsCli {
 
     private void exitInteractiveMode() {
         keepRunning = false
+        GradleAsyncInvoker.POOL.shutdownNow()
     }
 
     private Collection<CommandDescription> findAllCommands() {

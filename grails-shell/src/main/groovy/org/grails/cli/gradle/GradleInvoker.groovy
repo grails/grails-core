@@ -16,10 +16,15 @@
 package org.grails.cli.gradle
 
 import grails.util.Environment
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.tooling.BuildLauncher
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.profile.ExecutionContext
+
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
 
 
 /**
@@ -58,4 +63,10 @@ class GradleInvoker {
             buildLauncher.withArguments( arguments as String[])
         }
     }
+
+    GradleAsyncInvoker getAsync() {
+        return new GradleAsyncInvoker(this)
+    }
+
+
 }
