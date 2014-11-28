@@ -35,13 +35,15 @@ import org.grails.cli.profile.ExecutionContext
 class GradleUtil {
 
     private static ProjectConnection preparedConnection = null
+    private static File preparedConnectionBaseDir = null
 
     public static ProjectConnection refreshConnection(File baseDir) {
         preparedConnection = openGradleConnection(baseDir)
-
+        preparedConnectionBaseDir = baseDir.getAbsoluteFile()
+        
         try {
             Runtime.addShutdownHook {
-                preparedConnection?.close()
+                clearPreparedConnection()
             }
         } catch (e) {
             // ignore
@@ -50,10 +52,18 @@ class GradleUtil {
     }
 
     public static ProjectConnection prepareConnection(File baseDir) {
-        if(preparedConnection == null) {
+        if(preparedConnection == null || preparedConnectionBaseDir != baseDir.getAbsoluteFile()) {
             refreshConnection(baseDir)
         }
         return preparedConnection
+    }
+    
+    public static clearPreparedConnection() {
+        if(preparedConnection != null) {
+            preparedConnection.close()
+            preparedConnection = null
+            preparedConnectionBaseDir = null
+        }
     }
 
     public static ProjectConnection openGradleConnection(File baseDir) {
@@ -67,7 +77,8 @@ class GradleUtil {
     }
     
     public static <T> T withProjectConnection(File baseDir, boolean suppressOutput=true, Closure<T> closure) {
-        ProjectConnection projectConnection= preparedConnection ?: prepareConnection(baseDir)
+        boolean preparedConnectionExisted = preparedConnection != null
+        ProjectConnection projectConnection = prepareConnection(baseDir)
         try {
             if(suppressOutput) {
                 SystemOutErrCapturer.withNullOutput {
@@ -79,8 +90,8 @@ class GradleUtil {
                 }
             }
         } finally {
-            if(!preparedConnection)
-                projectConnection.close()
+            if(!preparedConnectionExisted)
+                clearPreparedConnection()
         }
     }
     

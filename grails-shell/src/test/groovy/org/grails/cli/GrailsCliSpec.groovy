@@ -14,6 +14,7 @@ import net.sf.expectit.Expect
 import net.sf.expectit.ExpectBuilder
 
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.grails.cli.gradle.GradleUtil
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -68,6 +69,8 @@ class GrailsCliSpec extends Specification {
     }
     
     def cleanup() {
+        GradleUtil.clearPreparedConnection()
+        
         expectCommandsPipe?.close()
         expectSystemOutPipe?.close()
 
