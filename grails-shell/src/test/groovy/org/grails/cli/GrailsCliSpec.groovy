@@ -284,11 +284,11 @@ create-controller [controller name]
         then:
         retval == 0
         message == '''
-Creating grails-app/controllers/newapp/ShoppingBasket.groovy
-Creating src/test/groovy/newapp/ShoppingBasketSpec.groovy
+Creating grails-app/controllers/newapp/ShoppingBasketController.groovy
+Creating src/test/groovy/newapp/ShoppingBasketControllerSpec.groovy
 '''
-        new File(currentAppDir, 'grails-app/controllers/newapp/ShoppingBasket.groovy').text == '''package newapp
-class ShoppingBasket {
+        new File(currentAppDir, 'grails-app/controllers/newapp/ShoppingBasketController.groovy').text == '''package newapp
+class ShoppingBasketController {
 
     def index() { }
 }
