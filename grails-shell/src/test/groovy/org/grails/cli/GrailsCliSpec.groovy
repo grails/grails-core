@@ -225,12 +225,8 @@ create-taglib\tCreates a tag library
 create-unit-test\tCreates a unit test
 dependency-report\tPrints out the Grails application's dependencies
 generate-all\tGenerates a controller that performs CRUD operations and the associated views
-generate-all\tGenerates a controller that performs CRUD operations and the associated views
-generate-controller\tGenerates a controller that performs CRUD operations
 generate-controller\tGenerates a controller that performs CRUD operations
 gradle\tAllows running of Gradle tasks
-gradle\tAllows running of Gradle tasks
-install-form-fields-templates\tInstalls scaffolding templates that use f:all to render properties
 install-form-fields-templates\tInstalls scaffolding templates that use f:all to render properties
 package\tPackages a Grails application
 run-app\tRuns the application
