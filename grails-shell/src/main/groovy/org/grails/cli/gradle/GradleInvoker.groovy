@@ -41,7 +41,7 @@ class GradleInvoker {
 
 
         GradleUtil.runBuildWithConsoleOutput(executionContext) { BuildLauncher buildLauncher ->
-            buildLauncher.forTasks(name)
+            buildLauncher.forTasks(name.split(' '))
             buildLauncher.withArguments(argArray.collect() { it.toString() } as String[])
         }
     }
