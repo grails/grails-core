@@ -137,16 +137,16 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public String getRemainingArgsString() {
-        return remainingArgsToString(" ", true);
-    }
-
-    @Override
-    public String getRemainingArgsWithoutOptionsString() {
         return remainingArgsToString(" ", false);
     }
 
+    @Override
+    public String getRemainingArgsWithOptionsString() {
+        return remainingArgsToString(" ", true);
+    }
+
     public String getRemainingArgsLineSeparated() {
-        return remainingArgsToString("\n", true);
+        return remainingArgsToString("\n", false);
     }
 
     private String remainingArgsToString(String separator, boolean includeOptions) {

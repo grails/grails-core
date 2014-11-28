@@ -1,5 +1,6 @@
 package org.grails.cli.profile.commands.factory
 
+import grails.build.logging.GrailsConsole
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -42,7 +43,11 @@ class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<Command
     @Override
     protected CommandScript readCommandFile(Resource resource) {
         GroovyClassLoader classLoader = createGroovyScriptCommandClassLoader()
-        return (CommandScript) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
+        try {
+            return (CommandScript) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
+        } catch (Throwable e) {
+            GrailsConsole.getInstance().error("Failed to compile ${resource.filename}: " + e.getMessage(), e)
+        }
     }
 
     @CompileDynamic

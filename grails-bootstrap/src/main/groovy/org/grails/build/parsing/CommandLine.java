@@ -89,7 +89,7 @@ public interface CommandLine {
     /**
      * @return The remaining args as one big string without undeclared options
      */
-    String getRemainingArgsWithoutOptionsString();
+    String getRemainingArgsWithOptionsString();
 
 
     /**

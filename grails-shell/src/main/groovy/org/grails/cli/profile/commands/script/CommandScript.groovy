@@ -20,6 +20,8 @@ import grails.build.logging.GrailsConsole
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
+import org.grails.cli.gradle.GradleInvoker
+import org.grails.cli.profile.CommandArgument
 import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
@@ -45,6 +47,8 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
     @Delegate ModelBuilder modelBuilder = new ModelBuilder()
     @Delegate ConsoleLogger consoleLogger = GrailsConsole.getInstance()
     @Delegate FileSystemInteraction fileSystemInteraction
+
+    GradleInvoker gradle
     AntBuilder ant = new AntBuilder()
 
     /**
@@ -74,6 +78,20 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
      */
     void description(String desc, Closure detail) {
         // ignore, just a stub for documentation purposes, populated by CommandScriptTransform
+    }
+
+    /**
+     * Obtains details of the given flag if it has been set by the user
+     *
+     * @param name The name of the flag
+     * @return The flag information, or null if it isn't set by the user
+     */
+    CommandArgument flag(String name) {
+        def value = commandLine?.undeclaredOptions?.get(name)
+        if(value) {
+            return description.getFlag(name)
+        }
+        return null
     }
 
     /**
@@ -112,6 +130,7 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
         this.consoleLogger = executionContext.console
         this.templateRenderer = new TemplateRenderer(executionContext)
         this.fileSystemInteraction = new FileSystemInteraction(executionContext)
+        this.gradle = new GradleInvoker(executionContext)
     }
 
     ExecutionContext getExecutionContext() {
