@@ -313,7 +313,7 @@ class GrailsCli {
         GrailsConsole console = context.console
         def commandName = commandLine.commandName
 
-        if(commandName.size()>1 && commandName.startsWith('!')) {
+        if(commandName && commandName.size()>1 && commandName.startsWith('!')) {
             return executeProcess(context, commandName)
         }
         else {

@@ -42,6 +42,10 @@ class CommandDescription {
      */
     String usage
 
+    /**
+     * Any names that should also map to this command
+     */
+    Collection<String> synonyms = []
 
     /**
      * A completer for the command
@@ -83,6 +87,16 @@ class CommandDescription {
         flags.values()
     }
 
+    /**
+     * Adds a synonyms for this command
+     *
+     * @param synonyms The synonyms
+     * @return This command description
+     */
+    CommandDescription synonyms(String...synonyms) {
+        this.synonyms.addAll(synonyms)
+        return this
+    }
     /**
      * Sets the completer
      *

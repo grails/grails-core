@@ -15,9 +15,11 @@
  */
 package org.grails.cli.profile
 
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
+import org.grails.build.parsing.CommandLine
 import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.commands.CommandRegistry
 import org.yaml.snakeyaml.Yaml;
@@ -91,6 +93,13 @@ class DefaultProfile implements Profile {
             def registerCommand = { Command command ->
                 if(!commandsByName.containsKey(command.name)) {
                     commandsByName[command.name] = command
+                    def desc = command.description
+                    def synonyms = desc.synonyms
+                    if(synonyms) {
+                        for(syn in synonyms) {
+                            commandsByName[syn] = command
+                        }
+                    }
                     if(command instanceof ProjectContextAware) {
                         ((ProjectContextAware)command).projectContext = context
                     }
@@ -109,7 +118,10 @@ class DefaultProfile implements Profile {
     @Override
     boolean handleCommand(ExecutionContext context) {
         getCommands(context) // ensure initialization
-        def cmd = commandsByName[context.commandLine.commandName]
+
+        def commandLine = context.commandLine
+        def commandName = commandLine.commandName
+        def cmd = commandsByName[commandName]
         cmd?.handle(context)
     }
 
