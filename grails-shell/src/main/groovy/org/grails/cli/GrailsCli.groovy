@@ -306,16 +306,6 @@ class GrailsCli {
         config
     }
 
-    private int createPlugin( CommandLine mainCommandLine ) {
-        CreatePluginCommand cmd = new CreatePluginCommand ()
-        return cmd.handle( createExecutionContext( mainCommandLine ) ) ? 0 : 1
-    }
-
-    private int createApp( CommandLine mainCommandLine) {
-        CreateAppCommand cmd = new CreateAppCommand()
-        return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
-    }
-
     private boolean handleBuiltInCommands(ExecutionContext context) {
         CommandLine commandLine = context.commandLine
         GrailsConsole console = context.console
