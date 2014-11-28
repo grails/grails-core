@@ -311,7 +311,10 @@ class ShoppingBasketController {
         retval == 0
         message == '''  
 
-create-controller   create-domain       create-service      create-taglib       
+create-controller          create-integration-test    
+create-taglib              create-domain-class        
+create-script              create-service             
+create-unit-test           
 grails> create-'''
     }
     
