@@ -23,6 +23,8 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 class GrailsCliSpec extends Specification {
+    static int EXPECT_TIMEOUT_SECONDS = System.getenv('TRAVIS') == 'true' ? 120 : 20
+    
     @Rule
     TemporaryFolder tempFolder = new TemporaryFolder()
 
@@ -132,7 +134,8 @@ class GrailsCliSpec extends Specification {
         System.setOut(emulatedSystemOut)
         System.setErr(emulatedSystemOut)
 
-        ExpectBuilder expectBuilder = new ExpectBuilder().withInputs(systemOutInput).withOutput(expectCommandsPipe).withTimeout(20, TimeUnit.SECONDS)
+        ExpectBuilder expectBuilder = new ExpectBuilder().withInputs(systemOutInput).withOutput(expectCommandsPipe)
+        expectBuilder.withTimeout(EXPECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         expectBuilder.withEchoOutput(originalStreams.err).withEchoInput(originalStreams.out)
         expectBuilder
     }
