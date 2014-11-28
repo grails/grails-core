@@ -35,8 +35,7 @@ class DefaultProfile implements Profile {
     final String name
     List<Profile> parentProfiles
     Map<String, Object> profileConfig
-    private List<Command> commands = null
-    private Map<String, Command> commandsByName = new HashMap<>()
+    private Map<String, Command> commandsByName
 
     private DefaultProfile(String name, File profileDir) {
         this.name = name
@@ -87,23 +86,24 @@ class DefaultProfile implements Profile {
 
     @Override
     Iterable<Command> getCommands(ProjectContext context) {
-        if(commands == null) {
-            commands = []
-            commands.addAll CommandRegistry.findCommands(this)
+        if(commandsByName == null) {
+            commandsByName = [:]
+            def registerCommand = { Command command ->
+                if(!commandsByName.containsKey(command.name)) {
+                    commandsByName[command.name] = command
+                    if(command instanceof ProjectContextAware) {
+                        ((ProjectContextAware)command).projectContext = context
+                    }
+                }
+            }
+            CommandRegistry.findCommands(this).each(registerCommand)
             if(parentProfiles) {
                 for(parent in parentProfiles) {
-                    commands.addAll(parent.getCommands(context).toList())
+                    parent.getCommands(context).each(registerCommand)
                 }
-            }
-
-            for(Command cmd in commands) {
-                if(cmd instanceof ProjectContextAware) {
-                    ((ProjectContextAware)cmd).projectContext = context
-                }
-                commandsByName[cmd.name] = cmd
             }
         }
-        return commands
+        return commandsByName.values()
     }
 
     @Override

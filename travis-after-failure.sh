@@ -9,5 +9,5 @@ TARGET_URL="s3://s3-eu-west-1.amazonaws.com/grails-travis-failures/$TRAVIS_REPO_
 echo "Uploading all files in working directory to $TARGET_URL ..."
 duplicity --no-encryption --full-if-older-than=14D incr . "$TARGET_URL"
 echo "Cleaning old uploads from S3 ..."
-duplicity --no-encryption remove-older-than 30D "$TARGET_URL"
+duplicity --no-encryption --force remove-older-than 30D "$TARGET_URL"
 fi

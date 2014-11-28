@@ -15,6 +15,7 @@ import net.sf.expectit.ExpectBuilder
 
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.cli.gradle.GradleUtil
+import org.grails.cli.profile.git.GitProfileRepository;
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -37,27 +38,31 @@ class GrailsCliSpec extends Specification {
         //System.setProperty("grails.show.stacktrace", "true")
         GrailsConsole.removeInstance()
         cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0, integrateGradle: false)
-        cli.profileRepository.with {
+        setupProfileRepositoryForTesting(cli.profileRepository, new File(tempFolder.newFolder(), "repository"), previousUserDir)
+        // change working directory
+        chdir(tempFolder.getRoot())
+    }
+
+    public static void setupProfileRepositoryForTesting(GitProfileRepository profileRepository, File tempProfilesDirectory, File workingDir) {
+        profileRepository.with {
             // use ~/.grails/repository as origin for git repository used for tests when it exists
             // supports running unit tests locally without network connection
             if(new File(profilesDirectory, ".git").exists()) {
                 originUri = profilesDirectory.getAbsolutePath()
             }
-            profilesDirectory = new File(tempFolder.newFolder(), "repository")
+            profilesDirectory = tempProfilesDirectory
             // for development, comment out the following line. the latest commit in ~/.grails/repository master branch will be used by default in that case
             gitRevision = '655eac53'
         }
         // force profile initialization
-        cli.profileRepository.getProfile('web')
+        profileRepository.getProfile('web')
         // copy files used for testing profiles over the checked out profiles repository directory files
-        File testProfilesRepository = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
+        File testProfilesRepository = new File(workingDir, 'src/test/resources/profiles-repository').absoluteFile
         SystemOutErrCapturer.withNullOutput {
-            new AntBuilder().copy(todir: cli.profileRepository.profilesDirectory, overwrite: true, encoding: 'UTF-8') { 
-                fileSet(dir: testProfilesRepository) 
+            new AntBuilder().copy(todir: profileRepository.profilesDirectory, overwrite: true, encoding: 'UTF-8') {
+                fileSet(dir: testProfilesRepository)
             }
         }
-        // change working directory
-        chdir(tempFolder.getRoot())
     }
 
     def setupSpec() {

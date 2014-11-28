@@ -45,11 +45,14 @@ class FileSystemCommandResourceResolver implements CommandResourceResolver {
     @Override
     Collection<Resource> findCommandResources(Profile profile) {
         File commandsDir = new File(profile.profileDir, "commands")
-        Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
-            file.isFile() && file.name ==~ fileNamePatternRegex
+        if(commandsDir.isDirectory()) {
+            Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
+                file.isFile() && file.name ==~ fileNamePatternRegex
+            }
+            commandFiles = commandFiles.sort(false) { File file -> file.name }
+            return commandFiles.collect() { File f -> new FileSystemResource(f) }
+        } else {
+            return []
         }
-
-        commandFiles = commandFiles.sort(false) { File file -> file.name }
-        return commandFiles.collect() { File f -> new FileSystemResource(f) }
     }
 }

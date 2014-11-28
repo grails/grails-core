@@ -1,23 +1,31 @@
 package org.grails.cli.profile
 
-import org.grails.cli.profile.DefaultProfile
+import org.grails.cli.GrailsCliSpec
 import org.grails.cli.profile.git.GitProfileRepository
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 import spock.lang.Specification
 
 class DefaultProfileSpec extends Specification {
+    @Rule
+    TemporaryFolder tempFolder = new TemporaryFolder()
+    
     DefaultProfile profile
     
     def setup() {
-        GitProfileRepository profileRepository = new GitProfileRepository(initialized:true, profilesDirectory: new File('src/test/resources/profiles-repository'))
-        profile = DefaultProfile.create(profileRepository, 'web', new File('src/test/resources/profiles-repository/profiles/web'))
+        GitProfileRepository profileRepository = new GitProfileRepository()
+        GrailsCliSpec.setupProfileRepositoryForTesting(profileRepository, new File(tempFolder.newFolder(), "repository"), new File("").absoluteFile)
+        File webProfileDirectory = new File(profileRepository.profilesDirectory, 'profiles/web')
+        assert webProfileDirectory.exists()
+        profile = DefaultProfile.create(profileRepository, 'web', webProfileDirectory)
     }
     
-    def "should contain 5 commands"() {
+    def "should contain 16 commands"() {
         when:
-        def commands = profile.getCommandLineHandlers()*.listCommands().flatten()
+        def commands = profile.getCommands([:] as ProjectContext)
         then:
-        commands.size() == 6
-        commands*.name as Set == ['test-groovy','create-controller', 'create-domain', 'create-service', 'create-taglib', 'run-app'] as Set
+        commands.size() == 16
+        commands*.name as Set == ['clean', 'compile', 'console', 'create-controller', 'create-domain-class', 'create-integration-test', 'create-script', 'create-service', 'create-taglib', 'create-unit-test', 'dependency-report', 'gradle', 'package', 'run-app', 'test-groovy', 'war'] as Set
     }
 }
