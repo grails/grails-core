@@ -53,7 +53,7 @@ class TemplateRenderer  {
     @CompileDynamic
     void render(Map<String, Object> namedArguments) {
         if(namedArguments?.template && namedArguments?.destination) {
-            render resource(namedArguments.template), file(namedArguments.destination), namedArguments.model
+            render resource(namedArguments.template), file(namedArguments.destination), namedArguments.model, namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
         }
     }
 
@@ -75,9 +75,9 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(CharSequence template, File destination, Map model = Collections.emptyMap()) {
+    void render(CharSequence template, File destination, Map model = Collections.emptyMap(), boolean overwrite = false) {
         if(template && destination) {
-            if(destination.exists()) {
+            if(destination.exists() && !overwrite) {
                 executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
             }
             else {
@@ -112,9 +112,9 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(File template, File destination, Map model = Collections.emptyMap()) {
+    void render(File template, File destination, Map model = Collections.emptyMap(), boolean overwrite = false) {
         if(template && destination) {
-            if(destination.exists()) {
+            if(destination.exists() && !overwrite) {
                 executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
             }
             else {
@@ -145,8 +145,8 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(Resource template, File destination, Model model) {
-        render(template, destination, model.asMap())
+    void render(Resource template, File destination, Model model, boolean overwrite = false) {
+        render(template, destination, model.asMap(), overwrite)
     }
     /**
      * Render the given template to the given destination
@@ -155,9 +155,9 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(Resource template, File destination, Map model = Collections.emptyMap()) {
+    void render(Resource template, File destination, Map model = Collections.emptyMap(), boolean overwrite = false) {
         if(template && destination) {
-            if(destination.exists()) {
+            if(destination.exists() && !overwrite) {
                 executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
             }
             else {
