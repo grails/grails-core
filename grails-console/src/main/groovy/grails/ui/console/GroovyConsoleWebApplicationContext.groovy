@@ -56,8 +56,10 @@ class GroovyConsoleWebApplicationContext extends GenericWebApplicationContext {
             void exit(EventObject evt) {
                 super.exit(evt)
                 self.close()
+                System.exit(0)
             }
         }
+
         groovyConsole.run()
 
     }
