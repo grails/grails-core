@@ -62,14 +62,22 @@ class DefaultProfile implements Profile {
 
         // TODO: report Groovy @CompileStatic bug
         commands.each { Command cmd ->
-           if(cmd instanceof Completer) {
-               completers << new ArgumentCompleter(new StringsCompleter(cmd.name), (Completer)cmd)
+           def description = cmd.description
+
+            def commandNameCompleter = new StringsCompleter(cmd.name)
+            if(cmd instanceof Completer) {
+               completers << new ArgumentCompleter(commandNameCompleter, (Completer)cmd)
            }else {
-               if(cmd.description.completer) {
-                   completers  << new ArgumentCompleter(new StringsCompleter(cmd.name), cmd.description.completer)
+               if(description.completer) {
+                   completers  << new ArgumentCompleter(commandNameCompleter, description.completer)
                }
                else {
-                   completers  << new StringsCompleter(cmd.name)
+                   if(description.flags) {
+                       completers  << new ArgumentCompleter(commandNameCompleter, new StringsCompleter(description.flags.collect() { CommandArgument arg -> "-$arg.name".toString() }))
+                   }
+                   else {
+                       completers  << commandNameCompleter
+                   }
                }
            }
         }

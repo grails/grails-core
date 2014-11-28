@@ -87,6 +87,12 @@ public interface CommandLine {
     String getRemainingArgsString();
 
     /**
+     * @return The remaining args as one big string without undeclared options
+     */
+    String getRemainingArgsWithoutOptionsString();
+
+
+    /**
      * @return The remaining args separated by the line separator char
      */
     String getRemainingArgsLineSeparated();

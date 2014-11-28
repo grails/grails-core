@@ -137,23 +137,30 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public String getRemainingArgsString() {
-        return remainingArgsToString(" ");
+        return remainingArgsToString(" ", true);
+    }
+
+    @Override
+    public String getRemainingArgsWithoutOptionsString() {
+        return remainingArgsToString(" ", false);
     }
 
     public String getRemainingArgsLineSeparated() {
-        return remainingArgsToString("\n");
+        return remainingArgsToString("\n", true);
     }
 
-    private String remainingArgsToString(String separator) {
+    private String remainingArgsToString(String separator, boolean includeOptions) {
         StringBuilder sb = new StringBuilder();
         String sep = "";
         List<String> args = new ArrayList<String>(remainingArgs);
-        for (Map.Entry<String, Object> entry : undeclaredOptions.entrySet()) {
-            if (entry.getValue() instanceof Boolean && ((Boolean)entry.getValue())) {
-                args.add('-' + entry.getKey());
-            }
-            else {
-                args.add('-' + entry.getKey() + '=' + entry.getValue());
+        if(includeOptions) {
+            for (Map.Entry<String, Object> entry : undeclaredOptions.entrySet()) {
+                if (entry.getValue() instanceof Boolean && ((Boolean)entry.getValue())) {
+                    args.add('-' + entry.getKey());
+                }
+                else {
+                    args.add('-' + entry.getKey() + '=' + entry.getValue());
+                }
             }
         }
         for (String arg : args) {

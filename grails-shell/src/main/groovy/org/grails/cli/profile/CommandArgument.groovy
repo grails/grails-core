@@ -41,4 +41,9 @@ class CommandArgument {
      */
     boolean required = true
 
+    /**
+     * The string argument this argument translates into
+     */
+    String target
+
 }

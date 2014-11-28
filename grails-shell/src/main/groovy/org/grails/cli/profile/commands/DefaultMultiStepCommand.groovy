@@ -15,6 +15,8 @@
  */
 package org.grails.cli.profile.commands
 
+import grails.build.logging.GrailsConsole
+import groovy.transform.CompileDynamic
 import jline.console.completer.Completer
 import org.grails.cli.profile.*
 import org.grails.cli.profile.steps.StepRegistry
@@ -49,14 +51,6 @@ class DefaultMultiStepCommand extends MultiStepCommand {
                             if(map.containsKey('usage')) {
                                 this.description.usage = map.get('usage')?.toString()
                             }
-                            else if(map.containsKey('argument')) {
-                                map.remove('argument')
-                                this.description.argument(map)
-                            }
-                            else if(map.containsKey('flag')) {
-                                map.remove('flag')
-                                this.description.flag(map)
-                            }
                             else if(map.containsKey('completer')) {
                                 def completerClass = map.get('completer')
                                 if(completerClass) {
@@ -66,6 +60,10 @@ class DefaultMultiStepCommand extends MultiStepCommand {
                                         // ignore
                                     }
                                 }
+                            }
+                            else {
+                                handleArgumentOrFlag(map, 'argument')
+                                handleArgumentOrFlag(map, 'flag')
                             }
                         }
                     }
@@ -77,6 +75,20 @@ class DefaultMultiStepCommand extends MultiStepCommand {
         }
     }
 
+    @CompileDynamic
+    boolean handleArgumentOrFlag(Map map, String name) {
+        try {
+            if(map.containsKey(name)) {
+                def argName = map.remove(name)
+                map.put('name', argName)
+                this.description."$name"(map)
+                return true
+            }
+        } catch (Throwable e) {
+            GrailsConsole.getInstance().error("Invalid $name found in [$profile.name] profile ${map}: ${e.message}", e)
+        }
+        return false
+    }
 
     List<Step> getSteps() {
         if(steps==null) {

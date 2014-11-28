@@ -42,20 +42,46 @@ class CommandDescription {
      */
     String usage
 
-    /**
-     * Arguments to the command
-     */
-    List<CommandArgument> arguments = []
-
-    /**
-     * Flags to the command. These differ as they are optional and are prefixed with a hyphen (Example -debug)
-     */
-    List<CommandArgument> flags = []
 
     /**
      * A completer for the command
      */
     Completer completer = null
+
+    private Map<String, CommandArgument> arguments = new LinkedHashMap<>()
+    private Map<String, CommandArgument> flags = new LinkedHashMap<>()
+
+    /**
+     * Returns an argument for the given name or null if it doesn't exist
+     * @param name The name
+     * @return The argument or null
+     */
+    CommandArgument getArgument(String name) {
+        arguments[name]
+    }
+
+    /**
+     * Returns a flag for the given name or null if it doesn't exist
+     * @param name The name
+     * @return The argument or null
+     */
+    CommandArgument getFlag(String name) {
+        flags[name]
+    }
+
+    /**
+     * Arguments to the command
+     */
+    Collection<CommandArgument> getArguments() {
+        arguments.values()
+    }
+
+    /**
+     * Flags to the command. These differ as they are optional and are prefixed with a hyphen (Example -debug)
+     */
+    Collection<CommandArgument> getFlags() {
+        flags.values()
+    }
 
     /**
      * Sets the completer
@@ -86,7 +112,11 @@ class CommandDescription {
      */
     @CompileDynamic
     CommandDescription argument(Map args) {
-        arguments << new CommandArgument(args)
+        def arg = new CommandArgument(args)
+        def name = arg.name
+        if(name) {
+            arguments[name] = arg
+        }
         return this
     }
 
@@ -98,8 +128,11 @@ class CommandDescription {
     @CompileDynamic
     CommandDescription flag(Map args) {
         def arg = new CommandArgument(args)
-        arg.required = false
-        flags << arg
+        def name = arg.name
+        if(name) {
+            arg.required = false
+            flags[name] = arg
+        }
         return this
     }
 }

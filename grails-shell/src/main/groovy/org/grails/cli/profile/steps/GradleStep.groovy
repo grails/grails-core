@@ -16,6 +16,7 @@
 package org.grails.cli.profile.steps
 
 import org.gradle.tooling.BuildLauncher
+import org.grails.build.parsing.CommandLine
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.*
 
@@ -57,16 +58,27 @@ class GradleStep extends AbstractStep {
     }
 
     protected BuildLauncher fillArguments(ExecutionContext context, BuildLauncher buildLauncher) {
-        String args = baseArguments
-        if(passArguments) {
-            String commandLineArgs = context.commandLine.remainingArgsString?.trim()
-            if(commandLineArgs) {
-                args += " " + commandLineArgs
+        def commandLine = context.commandLine
+
+        List<String> argList = baseArguments ? [baseArguments] : []
+
+        for(Map.Entry<String, Object> entry in commandLine.undeclaredOptions) {
+            def flagName = entry.key
+            def flag = command.description.getFlag(flagName)
+            if(flag) {
+                flagName = flag.target ?: "-$flagName".toString()
             }
+
+            argList << flagName
         }
-        args = args?.trim()
-        if(args) {
-            buildLauncher.withArguments(args)
+
+        if(passArguments) {
+            argList.addAll(commandLine.remainingArgsArray)
+        }
+
+
+        if(argList) {
+            buildLauncher.withArguments(argList as String[])
         }
         buildLauncher
     }
