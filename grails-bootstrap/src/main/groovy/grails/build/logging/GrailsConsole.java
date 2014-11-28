@@ -204,10 +204,20 @@ public class GrailsConsole implements ConsoleLogger {
     }
 
     protected void bindSystemOutAndErr(PrintStream systemOut, PrintStream systemErr) {
-        originalSystemOut = systemOut;
+        originalSystemOut = unwrapPrintStream(systemOut);
         out = wrapInPrintStream(originalSystemOut);
-        originalSystemErr = systemErr;
+        originalSystemErr = unwrapPrintStream(systemErr);
         err = wrapInPrintStream(originalSystemErr);
+    }
+    
+    private PrintStream unwrapPrintStream(PrintStream printStream) {
+        if(printStream instanceof GrailsConsolePrintStream) {
+            return ((GrailsConsolePrintStream)printStream).getTargetOut();
+        }
+        if(printStream instanceof GrailsConsoleErrorPrintStream) {
+            return ((GrailsConsoleErrorPrintStream)printStream).getTargetOut();
+        }
+        return printStream;
     }
 
     private PrintStream wrapInPrintStream(PrintStream printStream) {
