@@ -22,7 +22,7 @@ import spock.lang.Specification
 class GrailsCliSpec extends Specification {
     @Rule
     TemporaryFolder tempFolder = new TemporaryFolder()
-    
+
     GrailsCli cli
     File currentAppDir
     @Shared File previousUserDir
@@ -35,8 +35,16 @@ class GrailsCliSpec extends Specification {
         //System.setProperty("grails.show.stacktrace", "true")
         GrailsConsole.removeInstance()
         cli = new GrailsCli(ansiEnabled: false, defaultInputMask: 0, integrateGradle: false)
-        cli.profileRepository.initialized = true
-        cli.profileRepository.profilesDirectory = new File(previousUserDir, 'src/test/resources/profiles-repository').absoluteFile
+        cli.profileRepository.with {
+            // use ~/.grails/repository as origin for git repository used for tests when it exists
+            // supports running unit tests locally without network connection
+            if(new File(profilesDirectory, ".git").exists()) {
+                originUri = profilesDirectory.getAbsolutePath()
+            }
+            profilesDirectory = new File(tempFolder.newFolder(), "repository")
+            // for development, comment out the following line. the latest commit in ~/.grails/repository master branch will be used by default in that case
+            gitRevision = '655eac53'
+        }
         
         chdir(tempFolder.getRoot())
     }

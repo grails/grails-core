@@ -16,11 +16,10 @@
 package org.grails.cli.profile.git
 
 import groovy.transform.CompileStatic
+
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.internal.storage.file.FileRepository
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
-import org.grails.cli.profile.DefaultProfile
+import org.eclipse.jgit.api.ResetCommand.ResetType
+import org.grails.cli.profile.*
 
 
 /**
@@ -34,6 +33,11 @@ import org.grails.cli.profile.DefaultProfile
 @CompileStatic
 class GitProfileRepository implements ProfileRepository{
     File profilesDirectory = new File(new File(System.getProperty("user.home")), ".grails/repository")
+    String originUri = "https://github.com/grails-profiles/grails-profile-repository"
+    String gitBranch = 'master'
+    // use fixed git revision, used in unit tests
+    String gitRevision
+    ResetType gitRevisionResetMode = ResetType.HARD
     boolean initialized = false
     long updateInterval = 10*60000L
     Map<String, Profile> profileCache=[:].asSynchronized()
@@ -88,16 +92,21 @@ class GitProfileRepository implements ProfileRepository{
         if(!profilesDirectory.exists()) {
             def parentDir = profilesDirectory.getParentFile()
             if(!parentDir.exists()) parentDir.mkdir()
-            Git.cloneRepository().setURI("https://github.com/grails-profiles/grails-profile-repository")
-                                 .setDirectory(new File(parentDir, "repository"))
+            Git.cloneRepository().setURI(originUri)
+                                 .setDirectory(profilesDirectory)
+                                 .setBranch(gitBranch)
                                 .call()
-        } else {
+        } else if (!gitRevision) {
             File fetchHead = new File(profilesDirectory, ".git/FETCH_HEAD")
             if(!fetchHead.exists() || fetchHead.lastModified() < System.currentTimeMillis() - updateInterval) {
-                Git git = new Git(new FileRepository(new File(profilesDirectory.parentFile, "repository")))
+                Git git = Git.open(profilesDirectory)
                 git.fetch()
                 git.rebase()
             }
+        }
+        if (gitRevision) {
+            Git git = Git.open(profilesDirectory)
+            git.reset().setRef(gitRevision).setMode(gitRevisionResetMode).call()
         }
         profilesDirectory
     }
