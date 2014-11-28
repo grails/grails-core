@@ -67,6 +67,11 @@ public enum Environment {
     public static String RELOAD_ENABLED = "grails.reload.enabled";
 
     /**
+     * Whether the display of full stack traces is needed
+     */
+    public static String FULL_STACKTRACE = "grails.full.stacktrace";
+
+    /**
      * The location where to reload resources from
      */
     public static final String RELOAD_LOCATION = "grails.reload.location";

@@ -51,6 +51,7 @@ class GradleInvoker {
             def commandLine = executionContext.commandLine
             if(commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
                 arguments << '--stacktrace'
+                arguments << '-Dgrails.full.stacktrace=true'
             }
 
             arguments.addAll argArray.collect() { it.toString() }

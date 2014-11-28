@@ -83,19 +83,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         configureConsoleTask(tasks, project)
 
-        tasks.withType(Test).each { Test task ->
+        def systemPropertyConfigurer = { task ->
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
             task.systemProperty Environment.KEY, Environment.current.name
+            task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
         }
 
-        tasks.withType(JavaExec).each { JavaExec task ->
-            task.systemProperty Metadata.APPLICATION_NAME, project.name
-            task.systemProperty Metadata.APPLICATION_VERSION, project.version
-            task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
-            task.systemProperty Environment.KEY, Environment.current.name
-        }
+        tasks.withType(Test).each systemPropertyConfigurer
+        tasks.withType(JavaExec).each systemPropertyConfigurer
 
         project.sourceSets {
             main {
