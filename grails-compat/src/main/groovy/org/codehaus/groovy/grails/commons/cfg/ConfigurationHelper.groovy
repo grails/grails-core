@@ -13,29 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.core.cfg
+package org.codehaus.groovy.grails.commons.cfg;
 
 import grails.util.Environment
 import grails.util.Holder
 import grails.util.Holders
 import grails.util.Metadata
 import groovy.transform.CompileStatic
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
+
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+
+import grails.config.Config
 import grails.core.GrailsApplication
+
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap
-
-/**
- * Helper methods for initialising config object.
- *
- * @author Graeme Rocher
- * @since 1.0
- */
+//import org.grails.core.cfg.*
 class ConfigurationHelper {
-
+    
     private static final Log LOG = LogFactory.getLog(this)
 
     private static final String CONFIG_BINDING_USER_HOME = "userHome"
@@ -109,7 +111,11 @@ class ConfigurationHelper {
 
             initConfig(co, null, classLoader)
             getCachedConfigs().put(cacheKey, co)
-            Holders.config = co
+
+            // See https://jira.codehaus.org/browse/GROOVY-7184 to
+            // make sense of why this extra local variable is used...
+            Config grailsConfig = co
+            Holders.config = grailsConfig
         }
 
         return co

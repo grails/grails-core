@@ -30,7 +30,6 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import grails.core.GrailsApplication
-import org.grails.core.cfg.ConfigurationHelper
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.transaction.TransactionManagerPostProcessor
 import org.grails.transaction.ChainedTransactionManagerPostProcessor

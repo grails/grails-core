@@ -27,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.grails.config.PropertySourcesConfig;
-import org.grails.core.cfg.ConfigurationHelper;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;
@@ -47,10 +46,6 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     protected ApplicationContext parentContext;
     protected ApplicationContext mainContext;
     protected Metadata applicationMeta = Metadata.getCurrent();
-    
-    public AbstractGrailsApplication() {
-        ConfigurationHelper.clearCachedConfig(this);
-    }
     
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
