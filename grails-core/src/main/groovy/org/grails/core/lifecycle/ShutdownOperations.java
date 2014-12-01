@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.core.util.ClassPropertyFetcher;
-import org.grails.core.cfg.ConfigurationHelper;
 
 /**
  * Operations that should be executed on shutdown.
@@ -40,7 +39,6 @@ public class ShutdownOperations {
     public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
         public void run() {
             Holders.reset();
-            ConfigurationHelper.clearCachedConfigs();
             //ExpandoMetaClass.disableGlobally();
             ClassPropertyFetcher.clearClassPropertyFetcherCache();
         }

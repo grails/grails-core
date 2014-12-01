@@ -238,6 +238,7 @@ generate-all\tGenerates a controller that performs CRUD operations and the assoc
 generate-controller\tGenerates a controller that performs CRUD operations
 gradle\tAllows running of Gradle tasks
 install-form-fields-templates\tInstalls scaffolding templates that use f:all to render properties
+open\tOpens a file in the project
 package\tPackages a Grails application
 run-app\tRuns the application
 test-groovy\tTests out a Groovy script

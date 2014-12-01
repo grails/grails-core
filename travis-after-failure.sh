@@ -1,4 +1,5 @@
 #!/bin/bash
+./travis/junit-errors-to-stdout.sh
 if [[ $TRAVIS_BRANCH =~ ^master|grails-shell|2\..\.x$ && $TRAVIS_REPO_SLUG == grails/*
     && $TRAVIS_PULL_REQUEST == 'false' ]]; then
 echo "Install duplicity with S3 support"

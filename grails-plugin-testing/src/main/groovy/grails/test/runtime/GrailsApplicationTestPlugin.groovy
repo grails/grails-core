@@ -34,7 +34,6 @@ import javax.servlet.ServletContext
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.commons.CodecArtefactHandler
 import org.grails.commons.DefaultGrailsCodecClass
-import org.grails.core.cfg.ConfigurationHelper
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.core.util.ClassPropertyFetcher
 import org.grails.plugins.testing.GrailsMockErrors
@@ -316,7 +315,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             Promises.promiseFactory = null
             
             Holders.clear()
-            ConfigurationHelper.clearCachedConfigs()
         }
     }
     

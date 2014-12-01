@@ -23,6 +23,7 @@ import grails.plugins.GrailsVersionUtils;
 import grails.util.BuildScope;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
+import grails.util.Metadata;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
@@ -40,11 +41,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
+
 import org.grails.core.legacy.LegacyGrailsApplication;
-import org.grails.core.cfg.ConfigurationHelper;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.io.support.GrailsResourceUtils;
+
 import grails.plugins.exceptions.PluginException;
+
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -83,6 +86,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     protected ApplicationContext applicationContext;
     protected Map<String, GrailsPlugin> failedPlugins = new HashMap<String, GrailsPlugin>();
     protected boolean loadCorePlugins = true;
+    
+    private static final String CONFIG_BINDING_USER_HOME = "userHome";
+    private static final String CONFIG_BINDING_GRAILS_HOME = "grailsHome";
+    private static final String CONFIG_BINDING_APP_NAME = "appName";
+    private static final String CONFIG_BINDING_APP_VERSION = "appVersion";
+
 
     public AbstractGrailsPluginManager(GrailsApplication application) {
         Assert.notNull(application, "Argument [application] cannot be null!");
@@ -405,9 +414,28 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         informOfClassChange(file, cls);
     }
 
+    static ConfigSlurper getConfigSlurper(GrailsApplication application) {
+        String environment = Environment.getCurrent().getName();
+        ConfigSlurper configSlurper = new ConfigSlurper(environment);
+        Map binding = new HashMap();
+
+        // configure config slurper binding
+        binding.put(CONFIG_BINDING_USER_HOME, System.getProperty("user.home"));
+        binding.put(CONFIG_BINDING_GRAILS_HOME, System.getProperty("grails.home"));
+
+        if (application != null) {
+            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME));
+            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION));
+            binding.put(GrailsApplication.APPLICATION_ID, application);
+        }
+
+        configSlurper.setBinding(binding);
+        return configSlurper;
+    }
+
     public void informOfClassChange(File file, @SuppressWarnings("rawtypes") Class cls) {
         if (cls != null && (cls.getName().equals(CONFIG_FILE) || cls.getName().equals(GrailsApplication.DATA_SOURCE_CLASS))) {
-            ConfigSlurper configSlurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application);
+            ConfigSlurper configSlurper = getConfigSlurper(application);
             ConfigObject c;
             try {
                 c = configSlurper.parse(file.toURI().toURL());
