@@ -72,7 +72,13 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             for(Profile p : profileRepository.getProfileAndDependencies(profileInstance)) {
                 String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.text : null
                 copySkeleton(profileRepository.getProfileDirectory(p.getName()))
-                appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
+
+                if(!applicationYmlFile.exists()) {
+                    applicationYmlFile = new File('application.yml')
+                }
+                if(applicationYmlFile.exists()) {
+                    appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
+                }
             }
             return true
         }

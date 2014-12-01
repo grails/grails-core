@@ -133,7 +133,8 @@ class GrailsCli {
         }
 
         File grailsAppDir=new File("grails-app")
-        if(!grailsAppDir.isDirectory()) {
+        File applicationGroovy =new File("Application.groovy")
+        if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
             if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
                 System.err.println USAGE_MESSAGE
                 return 1
@@ -296,21 +297,24 @@ class GrailsCli {
     }
 
     protected void populateContextLoader() {
-        def urls = new ListReadingCachedGradleOperation<URL>(projectContext, ".dependencies") {
-            @Override
-            protected URL createListEntry(String str) {
-                return new URL(str)
-            }
+        if(new File(BuildSettings.BASE_DIR, "build.gradle").exists()) {
 
-            @Override
-            List<URL> readFromGradle(ProjectConnection connection) {
-                EclipseProject project = connection.action(new ClasspathBuildAction()).run()
-                return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
-            }
-        }.call()
+            def urls = new ListReadingCachedGradleOperation<URL>(projectContext, ".dependencies") {
+                @Override
+                protected URL createListEntry(String str) {
+                    return new URL(str)
+                }
 
-        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
-        Thread.currentThread().contextClassLoader = classLoader
+                @Override
+                List<URL> readFromGradle(ProjectConnection connection) {
+                    EclipseProject project = connection.action(new ClasspathBuildAction()).run()
+                    return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
+                }
+            }.call()
+
+            URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+            Thread.currentThread().contextClassLoader = classLoader
+        }
     }
 
 
@@ -319,6 +323,12 @@ class GrailsCli {
         File applicationYml = new File("grails-app/conf/application.yml")
         if(applicationYml.exists()) {
             config.loadYml(applicationYml)
+        }
+        else {
+            applicationYml = new File("application.yml")
+            if(applicationYml.exists()) {
+                config.loadYml(applicationYml)
+            }
         }
         config
     }

@@ -222,7 +222,7 @@ class BuildSettings {
     /**
      * Whether the application is running inside the development environment or deployed
      */
-    public static final boolean IS_DEPLOYED = !new File(BASE_DIR, "grails-app").exists()
+    public static final boolean IS_DEPLOYED = !new File(BASE_DIR, "grails-app").exists() && !new File(BASE_DIR, "Application.groovy").exists()
 
     /**
      * The target directory of the project, null outside of the development environment

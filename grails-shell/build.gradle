@@ -20,6 +20,8 @@ dependencies {
     compile "org.eclipse.jgit:org.eclipse.jgit:3.5.2.201411120430-r"
     compile "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
 
+    compile("org.springframework.boot:spring-boot-cli:$springBootVersion")
+
     testCompile "net.sf.expectit:expectit-core:0.5.0"
     testCompile "com.github.jnr:jnr-posix:3.0.6"
 

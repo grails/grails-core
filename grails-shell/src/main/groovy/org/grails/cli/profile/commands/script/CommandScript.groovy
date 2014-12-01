@@ -20,6 +20,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
+import org.grails.cli.boot.SpringInvoker
 import org.grails.cli.gradle.GradleInvoker
 import org.grails.cli.profile.CommandArgument
 import org.grails.cli.profile.CommandDescription
@@ -49,6 +50,7 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
     @Delegate FileSystemInteraction fileSystemInteraction
 
     GradleInvoker gradle
+    SpringInvoker spring = SpringInvoker.getInstance()
     AntBuilder ant = new AntBuilder()
 
     /**
