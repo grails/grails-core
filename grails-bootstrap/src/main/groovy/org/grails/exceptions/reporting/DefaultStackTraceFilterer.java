@@ -34,7 +34,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
 
     private static final String[] DEFAULT_INTERNAL_PACKAGES = new String[] {
         "org.grails.plugin.resource.DevMode",
-        "org.codehaus.groovy.grails.",
+        "org.grails.",
         "gant.",
         "org.codehaus.groovy.runtime.",
         "org.codehaus.groovy.reflection.",

@@ -23,6 +23,7 @@ import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeResolver
 import grails.web.http.HttpHeaders
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.Assert
 import org.springframework.web.servlet.handler.AbstractHandlerMapping
@@ -66,23 +67,36 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
 
         String version = findRequestedVersion(webRequest)
 
-
-        def infos = urlMappingsHolder.matchAll(uri, request.getMethod(), version != null ? version : UrlMapping.ANY_VERSION)
-
-        for(UrlMappingInfo info in infos) {
-            if(info) {
-                if(info.redirectInfo) return info
-
-                webRequest.resetParams()
-                info.configure(webRequest)
-                if(info instanceof GrailsControllerUrlMappingInfo) {
-                   return info
-                }
-                else if(info.viewName || info.URI) return info
+        def errorStatus = request.getAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE)
+        if(errorStatus) {
+            def exception = request.getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE)
+            if(exception instanceof Throwable) {
+                return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger(), (Throwable)exception)
+            }
+            else {
+                return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
             }
         }
+        else {
 
-        return null
+            def infos = urlMappingsHolder.matchAll(uri, request.getMethod(), version != null ? version : UrlMapping.ANY_VERSION)
+
+            for(UrlMappingInfo info in infos) {
+                if(info) {
+                    if(info.redirectInfo) return info
+
+                    webRequest.resetParams()
+                    info.configure(webRequest)
+                    if(info instanceof GrailsControllerUrlMappingInfo) {
+                        return info
+                    }
+                    else if(info.viewName || info.URI) return info
+                }
+            }
+
+            return null
+        }
+
     }
 
     protected String findRequestedVersion(GrailsWebRequest currentRequest) {

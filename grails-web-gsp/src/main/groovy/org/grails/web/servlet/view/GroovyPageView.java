@@ -15,6 +15,7 @@
  */
 package org.grails.web.servlet.view;
 
+import grails.util.GrailsUtil;
 import groovy.text.Template;
 
 import java.io.IOException;
@@ -91,7 +92,10 @@ public class GroovyPageView extends AbstractGrailsView {
     protected void handleException(Exception exception,
             GroovyPagesTemplateEngine engine)  {
 
-        LOG.debug("Error processing GroovyPageView: " + exception.getMessage(), exception);
+        GrailsUtil.deepSanitize(exception);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Error processing GroovyPageView: " + exception.getMessage(), exception);
+        }
         if (exception instanceof GroovyPagesException) {
             throw (GroovyPagesException) exception;
         }
