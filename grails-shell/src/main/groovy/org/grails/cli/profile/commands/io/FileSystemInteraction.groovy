@@ -144,6 +144,7 @@ class FileSystemInteraction {
      */
     File file(Object path) {
         if(path instanceof File) return (File)path
+        else if(path instanceof Resource) return ((Resource)path).file
         else {
             def baseDir = executionContext.baseDir
             new File(baseDir ?: new File("."), path.toString())
