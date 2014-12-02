@@ -42,7 +42,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     }
 
     CodeGenConfig(CodeGenConfig copyOf) {
-        this(copyOf.asMap())
+        this((Map<String, Object> )copyOf.configMap)
     }
 
     CodeGenConfig(Map<String, Object> copyOf) {
@@ -202,18 +202,14 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     public boolean asBoolean() {
         return !configMap.isEmpty()
     }
-    
-    public Map<String, Object> asMap() {
-        (Map<String,Object>)clone().configMap
-    }
-    
+
     public Object asType(Class type) {
         if(type==Boolean || type==boolean) {
             return asBoolean()
         } else if (type==String) {
             return toString()
         } else if (type==Map) {
-            return asMap()
+            return this
         } else if (type==CodeGenConfig) {
             return new CodeGenConfig(this)
         } else {
