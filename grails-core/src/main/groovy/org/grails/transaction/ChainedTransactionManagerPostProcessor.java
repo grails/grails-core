@@ -1,7 +1,6 @@
 package org.grails.transaction;
 
 import grails.config.Config;
-import groovy.util.ConfigObject;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;

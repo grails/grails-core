@@ -16,6 +16,7 @@
 package org.grails.cli.profile;
 
 import grails.build.logging.GrailsConsole;
+import grails.config.ConfigMap;
 
 import java.io.File;
 
@@ -36,6 +37,11 @@ public interface ProjectContext {
      * @return The base directory of the project
      */
     File getBaseDir();
+
+    /**
+     * @return The codegen config
+     */
+    ConfigMap getConfig();
 
     /**
      * Obtains a value from the codegen configuration

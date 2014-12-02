@@ -6,7 +6,7 @@ import org.grails.core.cfg.DeprecatedGrailsConfig
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link grails.config.CodeGenConfig} instead
+ * @deprecated Use {@link org.grails.config.CodeGenConfig} instead
  */
 @CompileStatic
 @Deprecated

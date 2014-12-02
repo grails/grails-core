@@ -17,7 +17,6 @@ package org.grails.core.cfg;
 
 import grails.config.Config;
 import grails.config.Settings;
-import groovy.util.ConfigObject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

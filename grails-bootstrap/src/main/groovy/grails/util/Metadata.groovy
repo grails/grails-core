@@ -15,7 +15,7 @@
  */
 package grails.util
 
-import grails.config.CodeGenConfig
+import org.grails.config.CodeGenConfig
 import groovy.transform.CompileStatic
 
 import java.lang.ref.Reference;

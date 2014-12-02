@@ -17,8 +17,6 @@ package org.grails.spring.context.support;
 
 import grails.config.Config;
 import grails.config.Settings;
-import org.grails.core.cfg.DeprecatedGrailsConfig;
-import groovy.util.ConfigObject;
 
 import java.io.IOException;
 import java.util.Properties;

@@ -24,31 +24,7 @@ import org.springframework.core.env.PropertyResolver
  * @author Graeme Rocher
  * @since 3.0
  */
-public interface Config extends PropertyResolver, Iterable<Map.Entry<String, Object>>, Map<String, Object> {
-
-    /**
-     * Enables the object[foo] syntax
-     *
-     * @param key The key
-     * @return The value or null
-     */
-    def getAt(Object key)
-
-    /**
-     * Enables the object[foo] = 'stuff' syntax
-     *
-     * @param key The key
-     * @param value The value
-     */
-    void setAt(Object key, Object value)
-
-    /**
-     * Gets a value for the given key
-     *
-     * @param key They key
-     * @return The value
-     */
-    def get(Object key)
+public interface Config extends PropertyResolver, ConfigMap {
 
     /**
      * @return The flat version of the config
@@ -61,14 +37,6 @@ public interface Config extends PropertyResolver, Iterable<Map.Entry<String, Obj
      * @return The properties
      */
     Properties toProperties()
-
-    /**
-     * Navigate the map for the given path
-     *
-     * @param path The path
-     * @return
-     */
-    Object navigate(String... path)
 
     /**
      * Merge another config and return this config

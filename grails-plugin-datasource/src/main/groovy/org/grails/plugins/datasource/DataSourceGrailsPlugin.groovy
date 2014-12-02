@@ -17,7 +17,6 @@ package org.grails.plugins.datasource
 
 import grails.config.Config
 import grails.core.support.GrailsApplicationAware
-import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata

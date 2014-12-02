@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import grails.config.Config;
 import grails.util.Metadata;
-import groovy.util.ConfigObject;
 
 import java.io.IOException;
 import java.util.HashMap;

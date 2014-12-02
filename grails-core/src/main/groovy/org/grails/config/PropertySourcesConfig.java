@@ -16,7 +16,6 @@
 package org.grails.config;
 
 import grails.config.Config;
-import grails.config.ConfigMap;
 import grails.util.*;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.convert.ConversionException;
@@ -31,14 +30,14 @@ import java.util.*;
  * @author Graeme Rocher
  * @since 3.0
  */
-public class PropertySourcesConfig implements Config, Map<String,Object> {
+public class PropertySourcesConfig implements Config {
 
     protected PropertySources propertySources;
     protected PropertySourcesPropertyResolver propertySourcesPropertyResolver;
     protected ClassLoader classLoader = getClass().getClassLoader();
     protected ConfigurableConversionService conversionService = new DefaultConversionService();
 
-    protected ConfigMap configMap = new ConfigMap();
+    protected NavigableMap configMap = new NavigableMap();
 
     public PropertySourcesConfig(PropertySources propertySources) {
         this.propertySources = propertySources;

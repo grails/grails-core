@@ -16,6 +16,7 @@
 package org.grails.cli.profile.commands.io
 
 import grails.build.logging.GrailsConsole
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.ExecutionContext
 import org.grails.io.support.DefaultResourceLoader
@@ -48,6 +49,7 @@ class FileSystemInteraction {
         this.resourceLocator.setSearchLocation(executionContext.baseDir.absolutePath)
         this.resourcePatternResolver = new PathMatchingResourcePatternResolver(resourceLoader)
     }
+
 
     /**
      * Makes a directory
@@ -149,6 +151,27 @@ class FileSystemInteraction {
             def baseDir = executionContext.baseDir
             new File(baseDir ?: new File("."), path.toString())
         }
+    }
+
+    /**
+     * @return The target build directory
+     */
+    File getBuildDir() {
+        BuildSettings.TARGET_DIR
+    }
+
+    /**
+     * @return The directory where resources are processed to
+     */
+    File getResourcesDir() {
+        BuildSettings.RESOURCES_DIR
+    }
+
+    /**
+     * @return The directory where classes are compiled to
+     */
+    File getClassesDir() {
+        BuildSettings.CLASSES_DIR
     }
 
     /**

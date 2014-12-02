@@ -2,7 +2,7 @@ package org.grails.cli
 
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
-import grails.config.CodeGenConfig
+import org.grails.config.CodeGenConfig
 import grails.io.SystemOutErrCapturer
 
 import java.lang.reflect.Field

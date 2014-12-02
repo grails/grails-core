@@ -17,7 +17,6 @@ package org.grails.web.pages;
 
 import grails.config.Config;
 import grails.config.Settings;
-import groovy.util.ConfigObject;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;

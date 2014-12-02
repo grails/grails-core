@@ -1,24 +1,51 @@
-package grails.config
-import groovy.transform.Canonical
-import groovy.transform.CompileStatic
+/*
+ * Copyright 2014 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.grails.config
 
+import grails.config.ConfigMap
+import groovy.transform.Canonical
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import org.yaml.snakeyaml.Yaml
 
+
+/**
+ * A {@link ConfigMap} implementation used at codegen time
+ *
+ * @author Lari Hotari
+ * @author Graeme Rocher
+ *
+ * @since 3.0
+ */
 @CompileStatic
 @Canonical
-class CodeGenConfig implements Cloneable {
-    final ConfigMap configMap
+class CodeGenConfig implements Cloneable, ConfigMap {
+    final NavigableMap configMap
 
     CodeGenConfig() {
-        configMap = new ConfigMap()
+        configMap = new NavigableMap()
     }
 
     CodeGenConfig(CodeGenConfig copyOf) {
-        this(copyOf.@configMap)
+        this(copyOf.asMap())
     }
 
-    CodeGenConfig(Map copyOf) {
+    CodeGenConfig(Map<String, Object> copyOf) {
         this()
         mergeMap(copyOf)
     }
@@ -27,13 +54,82 @@ class CodeGenConfig implements Cloneable {
         new CodeGenConfig(this)
     }
 
+    @Override
+    int size() {
+        configMap.size()
+    }
+
+    @Override
+    boolean isEmpty() {
+        configMap.isEmpty()
+    }
+
+    @Override
+    boolean containsKey(Object key) {
+        configMap.containsKey(key)
+    }
+
+    @Override
+    boolean containsValue(Object value) {
+        configMap.containsValue(value)
+    }
+
+    @Override
+    Object get(Object key) {
+        configMap.get(key)
+    }
+
+    @Override
+    Object put(String key, Object value) {
+        configMap.put(key, value)
+    }
+
+    @Override
+    Object remove(Object key) {
+        throw new UnsupportedOperationException("Config cannot be mutated")
+    }
+
+    @Override
+    void putAll(Map<? extends String, ?> m) {
+        throw new UnsupportedOperationException("Config cannot be mutated")
+    }
+
+    @Override
+    void clear() {
+        throw new UnsupportedOperationException("Config cannot be mutated")
+    }
+
+    @Override
+    Set<String> keySet() {
+        return configMap.keySet()
+    }
+
+    @Override
+    Collection<Object> values() {
+        return configMap.values()
+    }
+
+    @Override
+    Set<Map.Entry<String, Object>> entrySet() {
+        configMap.entrySet()
+    }
+
+    @Override
+    def <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
+        def value = getProperty(key, targetType)
+        if(value == null) {
+            throw new IllegalStateException("Property [$key] not found")
+        }
+        return value
+    }
+
     void loadYml(File ymlFile) {
         ymlFile.withInputStream { InputStream input ->
             loadYml(input)
         }
     }
 
-    @groovy.transform.CompileDynamic // fails with CompileStatic!
+    @CompileDynamic // fails with CompileStatic!
     void loadYml(InputStream input) {
         Yaml yaml = new Yaml()
         for(Object yamlObject : yaml.loadAll(input)) {
@@ -59,7 +155,7 @@ class CodeGenConfig implements Cloneable {
     }
     
     protected <T> T convertToType(Object value, Class<T> requiredType) {
-        if(value instanceof ConfigMap.NullSafeNavigator) {
+        if(value instanceof NavigableMap.NullSafeNavigator) {
             return null
         }
         else if(requiredType.isInstance(value)) {
@@ -108,7 +204,7 @@ class CodeGenConfig implements Cloneable {
     }
     
     public Map<String, Object> asMap() {
-        new CodeGenConfig(this).@configMap
+        (Map<String,Object>)clone().configMap
     }
     
     public Object asType(Class type) {
@@ -143,6 +239,11 @@ class CodeGenConfig implements Cloneable {
         if ("configMap".equals(name))
             return this.configMap
         return configMap.getProperty(name)
+    }
+
+    @Override
+    public Iterator<Map.Entry<String, Object>> iterator() {
+        return DefaultGroovyMethods.iterator(configMap);
     }
 
     public <T> T getProperty(String name, Class<T> requiredType) {

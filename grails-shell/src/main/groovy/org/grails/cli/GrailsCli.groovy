@@ -16,7 +16,8 @@
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
-import grails.config.CodeGenConfig
+import org.grails.config.CodeGenConfig
+import grails.config.ConfigMap
 import grails.io.SystemStreamsRedirector
 import grails.util.BuildSettings
 import grails.util.Environment
@@ -35,8 +36,6 @@ import org.grails.cli.interactive.completers.RegexCompletor
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.commands.CommandRegistry
-import org.grails.cli.profile.commands.CreateAppCommand
-import org.grails.cli.profile.commands.CreatePluginCommand
 
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -465,6 +464,11 @@ class GrailsCli {
         @Override
         public String navigateConfig(String... path) {
             grailsConfig.navigate(path)
+        }
+
+        @Override
+        ConfigMap getConfig() {
+            return grailsConfig
         }
 
         @Override

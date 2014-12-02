@@ -16,9 +16,7 @@
 package grails.core;
 
 import grails.config.Config;
-import grails.util.Environment;
 import grails.util.Metadata;
-import groovy.util.ConfigObject;
 
 import java.util.Map;
 

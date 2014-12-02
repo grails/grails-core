@@ -1,5 +1,6 @@
 package org.grails.web.sitemesh;
 
+import grails.config.Config;
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.util.GrailsWebMockUtil;
@@ -29,8 +30,6 @@ import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.GroovyPageViewResolver;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertySource;
-import org.springframework.core.env.PropertySources;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
@@ -38,14 +37,13 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
-    private GrailsWebRequest buildMockRequest(grails.config.Config config) throws Exception {
+    private GrailsWebRequest buildMockRequest(Config config) throws Exception {
         MockApplicationContext appCtx = new MockApplicationContext();
         appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService());
 
@@ -103,7 +101,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         request.setRequestURI("orders/list");
         ServletContext context = webRequest.getServletContext();
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-        Config c = new Config(new MockServletConfig(context));
+        com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
         m.init(c, null, null);
         HTMLPageParser parser = new HTMLPageParser();
         String html = "<html><head><title>Test title</title><meta name=\"layout\" content=\"test\"></meta></head><body>here is the body</body></html>";
@@ -128,7 +126,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         ServletContext context = webRequest.getServletContext();
 
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-        Config c = new Config(new MockServletConfig(context));
+        com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
         m.init(c, null, null);
         HTMLPageParser parser = new HTMLPageParser();
         String html = "<html><head><title>Foo title</title></head><body>here is the body</body></html>";
@@ -160,7 +158,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-        Config c = new Config(new MockServletConfig(context));
+        com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
         m.init(c, null, null);
         HTMLPageParser parser = new HTMLPageParser();
         String html = "<html><head><title>Foo title</title></head><body>here is the body</body></html>";
@@ -197,7 +195,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
             request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
             GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-            Config c = new Config(new MockServletConfig(context));
+            com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
             m.init(c, null, null);
             HTMLPageParser parser = new HTMLPageParser();
             String html = "<html><head><title>Foo title</title></head><body>here is the body</body></html>";
@@ -229,7 +227,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-        Config c = new Config(new MockServletConfig(context));
+        com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
         m.init(c, null, null);
         HTMLPageParser parser = new HTMLPageParser();
         String html = "<html><head><title>Test title</title></head><body>here is the body</body></html>";
@@ -260,7 +258,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         "}").newInstance();
 
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);        GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-        Config c = new Config(new MockServletConfig(context));
+        com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
         m.init(c, null, null);
         HTMLPageParser parser = new HTMLPageParser();
         String html = "<html><head><title>Test title</title></head><body>here is the body</body></html>";
@@ -294,7 +292,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
-        Config c = new Config(new MockServletConfig(context));
+        com.opensymphony.module.sitemesh.Config c = new com.opensymphony.module.sitemesh.Config(new MockServletConfig(context));
         m.init(c, null, null);
         HTMLPageParser parser = new HTMLPageParser();
         String html = "<html><head><title>Test title</title></head><body>here is the body</body></html>";

@@ -16,7 +16,7 @@
 package org.grails.plugins;
 
 import grails.artefact.Enhanced;
-import grails.config.ConfigMap;
+import org.grails.config.NavigableMap;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.GrailsVersionUtils;
@@ -158,9 +158,9 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                     return new LegacyGrailsApplication(source);
                 }
             });
-            converterRegistry.addConverter(new Converter<ConfigMap.NullSafeNavigator, Object>() {
+            converterRegistry.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
                 @Override
-                public Object convert(ConfigMap.NullSafeNavigator source) {
+                public Object convert(NavigableMap.NullSafeNavigator source) {
                     return null;
                 }
             });

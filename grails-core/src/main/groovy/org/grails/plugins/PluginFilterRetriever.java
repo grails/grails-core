@@ -18,11 +18,9 @@ package org.grails.plugins;
 import grails.config.Config;
 import grails.config.Settings;
 import grails.plugins.PluginFilter;
-import groovy.util.ConfigObject;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
