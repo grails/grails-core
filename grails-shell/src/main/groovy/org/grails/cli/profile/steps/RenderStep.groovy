@@ -59,9 +59,8 @@ class RenderStep extends AbstractStep {
             }
 
             String relPath = relativePath(context.baseDir, destination)
-            context.console.updateStatus("Creating $relPath")
             renderToDestination(destination, variableResolver.variables)
-            context.console.addStatus("Generated $relPath")
+            context.console.addStatus("Created $relPath")
 
             return true
         } catch (Throwable e) {
