@@ -72,7 +72,7 @@ public class GrailsApplicationCompilerAutoConfiguration extends CompilerAutoConf
         new SpringMvcCompilerAutoConfiguration().applyDependencies(dependencies);
     }
 
-    private AnnotationNode createGrabAnnotation(String group, String module,
+    public static AnnotationNode createGrabAnnotation(String group, String module,
                                                 String version, String classifier, String type, boolean transitive) {
         AnnotationNode annotationNode = new AnnotationNode(new ClassNode(Grab.class));
         annotationNode.addMember("group", new ConstantExpression(group));
