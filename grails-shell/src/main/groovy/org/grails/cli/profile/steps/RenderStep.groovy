@@ -45,23 +45,29 @@ class RenderStep extends AbstractStep {
     public boolean handle(ExecutionContext context) {
         String nameAsArgument = context.getCommandLine().getRemainingArgs()[0]
         String artifactName
-        String artifactPackage 
+        String artifactPackage
         (artifactName, artifactPackage) = resolveNameAndPackage(context, nameAsArgument)
-
         def variableResolver = new ArtefactVariableResolver(artifactName, artifactPackage)
 
         File destination = variableResolver.resolveFile(parameters.destination, context)
-        if(destination.exists()) {
-            context.console.error("${destination.canonicalPath} already exists.")
+
+        try {
+
+            if(destination.exists()) {
+                context.console.error("${destination.canonicalPath} already exists.")
+                return false
+            }
+
+            String relPath = relativePath(context.baseDir, destination)
+            context.console.updateStatus("Creating $relPath")
+            renderToDestination(destination, variableResolver.variables)
+            context.console.updateStatus("Generated $relPath")
+
+            return true
+        } catch (Throwable e) {
+            GrailsConsole.instance.error("Failed to render template to destination: ${e.message}", e)
             return false
         }
-
-        String relPath = relativePath(context.baseDir, destination)
-        context.console.info("Creating $relPath")
-        
-        renderToDestination(destination, variableResolver.variables)
-        
-        return true
     }
 
     protected renderToDestination(File destination, Map variables) {

@@ -970,6 +970,7 @@ public class GrailsConsole implements ConsoleLogger {
         return ansi();
     }
 
+    @Override
     public void error(String label, String message) {
         verifySystemOut();
         if (message == null) {
