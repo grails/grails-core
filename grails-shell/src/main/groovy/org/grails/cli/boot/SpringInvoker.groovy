@@ -17,6 +17,7 @@
 package org.grails.cli.boot
 
 import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
 import org.springframework.boot.cli.command.CommandFactory
 import org.springframework.boot.cli.command.CommandRunner
 
@@ -51,8 +52,50 @@ class SpringInvoker {
 
             List<String> argList = [name]
             argList.addAll( ((Object[])args).collect() { it.toString() } )
-            return runner.runAndHandleErrors(argList as String[])
+
+            def currentThread = Thread.currentThread()
+            def existing = currentThread.contextClassLoader
+            try {
+                currentThread.contextClassLoader = new Slf4jBindingAwareClassLoader()
+                return runner.runAndHandleErrors(argList as String[])
+            } finally {
+                currentThread.contextClassLoader = existing
+            }
         }
         return null
+    }
+
+    @InheritConstructors
+    static class Slf4jBindingAwareClassLoader extends URLClassLoader {
+        @Override
+        Enumeration<URL> getResources(String name) throws IOException {
+            if("org/slf4j/impl/StaticLoggerBinder.class" == name) {
+                def resources = super.getResources(name)
+                def oneRes = (URL)resources.find() { URL url -> !url.toString().contains('slf4j-simple') }
+                if(oneRes) {
+
+                    return new Enumeration<URL>() {
+                        URL current = oneRes
+                        @Override
+                        boolean hasMoreElements() {
+                            current != null
+                        }
+
+                        @Override
+                        URL nextElement() {
+                            URL i = current
+                            current = null
+                            return i
+                        }
+                    }
+                }
+                else {
+                    return resources
+                }
+            }
+            else {
+                return super.getResources(name)
+            }
+        }
     }
 }
