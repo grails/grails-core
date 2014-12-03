@@ -15,10 +15,12 @@
  */
 package org.grails.cli.profile.steps
 
+import org.gradle.tooling.BuildException
 import org.gradle.tooling.BuildLauncher
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.*
+import org.grails.exceptions.ExceptionUtils
 
 /**
  * A {@link org.grails.cli.profile.Step} that invokes Gradle
@@ -44,9 +46,15 @@ class GradleStep extends AbstractStep {
 
     @Override
     public boolean handle(ExecutionContext context) {
-        GradleUtil.runBuildWithConsoleOutput(context) { BuildLauncher buildLauncher ->
-            buildLauncher.forTasks(tasks as String[])
-            fillArguments(context, buildLauncher)
+        try {
+            GradleUtil.runBuildWithConsoleOutput(context) { BuildLauncher buildLauncher ->
+                buildLauncher.forTasks(tasks as String[])
+                fillArguments(context, buildLauncher)
+            }
+        } catch (BuildException e) {
+            def cause = ExceptionUtils.getRootCause(e)
+            context.console.error("Gradle build terminated with error: ${cause.message}", cause)
+            return false
         }
         return true;
     }

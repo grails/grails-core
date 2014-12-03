@@ -51,7 +51,7 @@ import org.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.grails.core.exceptions.DefaultErrorsPrinter;
 import org.grails.web.pages.exceptions.GroovyPagesException;
 import org.grails.web.support.ResourceAwareTemplateEngine;
-import org.grails.web.errors.ExceptionUtils;
+import org.grails.exceptions.ExceptionUtils;
 import org.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
 import org.grails.web.pages.discovery.GroovyPageLocator;

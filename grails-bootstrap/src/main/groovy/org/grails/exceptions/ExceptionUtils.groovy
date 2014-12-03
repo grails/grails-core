@@ -1,10 +1,9 @@
-package org.grails.web.errors
+package org.grails.exceptions
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage
-import org.grails.web.util.WebUtils
 
 /**
  * Utility methods for dealing with exception
@@ -15,7 +14,7 @@ import org.grails.web.util.WebUtils
 @CompileStatic
 class ExceptionUtils {
 
-    public static final String EXCEPTION_ATTRIBUTE = WebUtils.EXCEPTION_ATTRIBUTE;
+    public static final String EXCEPTION_ATTRIBUTE = "exception";
 
 
     static RuntimeException getFirstRuntimeException(Throwable e) {

@@ -29,7 +29,7 @@ import org.grails.encoder.Encoder;
 import org.grails.web.encoder.OutputEncodingStack;
 import org.grails.web.encoder.OutputEncodingStackAttributes;
 import org.grails.web.encoder.WithCodecHelper;
-import org.grails.web.errors.ExceptionUtils;
+import org.grails.exceptions.ExceptionUtils;
 import org.grails.web.pages.exceptions.GroovyPagesException;
 import org.grails.web.pages.ext.jsp.JspTag;
 import org.grails.web.pages.ext.jsp.JspTagLib;

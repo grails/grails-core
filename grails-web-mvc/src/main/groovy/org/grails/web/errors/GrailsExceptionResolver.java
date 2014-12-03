@@ -38,7 +38,7 @@ import org.grails.core.exceptions.GrailsRuntimeException;
 import org.grails.exceptions.reporting.StackTraceFilterer;
 import grails.core.support.GrailsApplicationAware;
 import grails.web.mapping.UrlMappingInfo;
-import org.grails.web.errors.ExceptionUtils;
+import org.grails.exceptions.ExceptionUtils;
 import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
 import grails.web.util.GrailsApplicationAttributes;

@@ -26,7 +26,7 @@ import org.grails.buffer.StreamCharBuffer
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import org.grails.web.errors.ErrorsViewStackTracePrinter
-import org.grails.web.errors.ExceptionUtils
+import org.grails.exceptions.ExceptionUtils
 import org.grails.web.pages.GroovyPageParser
 import org.grails.web.pages.GroovyPageTemplate
 import org.grails.web.pages.GroovyPagesTemplateEngine
