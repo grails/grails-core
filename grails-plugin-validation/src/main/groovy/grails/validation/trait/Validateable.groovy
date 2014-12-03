@@ -68,7 +68,7 @@ trait Validateable {
             if(!defaultNullable()) {
                 def methods = this.getDeclaredMethods()
                 for(Method method : methods) {
-                    if(!Modifier.isStatic(method.modifiers) && method.parameterCount == 0) {
+                    if(!Modifier.isStatic(method.modifiers) && !method.parameterTypes) {
                         def methodName = method.name
                         if(methodName ==~ /get[A-Z].*/) {
                             def propertyName = GrailsNameUtils.getPropertyName(methodName[3..-1])
