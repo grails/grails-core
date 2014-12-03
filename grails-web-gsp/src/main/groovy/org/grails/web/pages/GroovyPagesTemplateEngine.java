@@ -16,6 +16,7 @@
 package org.grails.web.pages;
 
 import grails.config.Settings;
+import grails.io.IOUtils;
 import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
@@ -52,7 +53,6 @@ import grails.core.GrailsClass;
 
 import org.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.grails.core.exceptions.DefaultErrorsPrinter;
-import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.grails.web.pages.exceptions.GroovyPagesException;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.grails.web.errors.ExceptionUtils;
@@ -579,7 +579,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-        	String gspSource = GrailsIOUtils.toString(inputStream, GroovyPageParser.getGspEncoding());
+        	String gspSource = IOUtils.toString(inputStream, GroovyPageParser.getGspEncoding());
             parser = new GroovyPageParser(name, path, path, decorateGroovyPageSource(new StringBuilder(gspSource)).toString());
 
             if (grailsApplication != null) {

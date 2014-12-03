@@ -1239,7 +1239,7 @@ public class GroovyPageParser implements Tokens {
         if (gspEncoding == null) {
         	gspEncoding  = getGspEncoding();
         }
-        return GrailsIOUtils.toString(in, gspEncoding);
+        return IOUtils.toString(in, gspEncoding);
     }
 
     static String getGspEncoding(){
