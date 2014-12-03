@@ -10,7 +10,17 @@ import org.codehaus.groovy.ast.AnnotatedNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.MethodNode
+import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.ConstantExpression
+import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.GStringExpression
+import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.stmt.BlockStatement
+import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.ASTTransformation
@@ -20,12 +30,15 @@ import org.grails.io.support.MainClassFinder
 import org.grails.test.context.junit4.GrailsJunit4ClassRunner
 import org.grails.test.context.junit4.GrailsTestConfiguration
 import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.IntegrationTest
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.util.ClassUtils
+
+import java.lang.reflect.Modifier
 
 /*
  * Copyright 2014 original authors
@@ -104,6 +117,7 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
                 contextConfigAnn.addMember("classes", new ClassExpression(applicationClassNode))
                 classNode.addAnnotation(contextConfigAnn)
 
+                enhanceGebSpecWithPort(classNode)
 
             }
             else {
@@ -130,6 +144,24 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
 
         }
 
+    }
+
+    protected void enhanceGebSpecWithPort(ClassNode classNode) {
+        if (GrailsASTUtils.isSubclassOf(classNode, "geb.spock.GebSpec")) {
+            def integerClassNode = ClassHelper.make(Integer)
+            def param = new Parameter(integerClassNode, "port")
+            def setterBody = new BlockStatement()
+            def systemClassExpression = new ClassExpression(ClassHelper.make(System))
+            def args = new ArgumentListExpression()
+            args.addExpression(new ConstantExpression("geb.build.baseUrl"))
+            args.addExpression(new GStringExpression('http://localhost:${port}', [new ConstantExpression("http://localhost:"), new ConstantExpression("")], [new VariableExpression(param)] as List<Expression>))
+            setterBody.addStatement(new ExpressionStatement(new MethodCallExpression(systemClassExpression, "setProperty", args)))
+            def method = new MethodNode("setPort", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [param] as Parameter[], null, setterBody)
+            def valueAnnotation = new AnnotationNode(ClassHelper.make(Value))
+            valueAnnotation.setMember("value", new ConstantExpression('${local.server.port}'))
+            method.addAnnotation(valueAnnotation)
+            classNode.addMethod(method)
+        }
     }
 
 }
