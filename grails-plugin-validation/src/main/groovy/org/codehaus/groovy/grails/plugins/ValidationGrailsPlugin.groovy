@@ -41,10 +41,13 @@ class ValidationGrailsPlugin {
 
     def doWithDynamicMethods = { ApplicationContext ctx ->
         // grab all of the classes specified in the application config
-        application.config?.grails?.validateable?.classes?.each { validateableClass ->
-            if (validateableClass instanceof Class) {
-                log.debug "Making Class Validateable: ${validateableClass.name}"
-                addValidationMethods(application, validateableClass, ctx)
+        if(application.config?.grails?.validateable?.classes) {
+            log.warn "The grails.validateable.classes configuration property has been deprecated and will be removed from Grails 3."
+            application.config.grails.validateable.classes.each { validateableClass ->
+                if (validateableClass instanceof Class) {
+                    log.debug "Making Class Validateable: ${validateableClass.name}"
+                    addValidationMethods(application, validateableClass, ctx)
+                }
             }
         }
     }
