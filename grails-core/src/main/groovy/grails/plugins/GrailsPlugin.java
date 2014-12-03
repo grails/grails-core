@@ -15,6 +15,7 @@
  */
 package grails.plugins;
 
+import grails.config.Config;
 import grails.util.BuildScope;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
@@ -267,16 +268,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      */
     String getDependentVersion(String name);
 
-    /**
-     * When called this method checks for any changes to the plug-ins watched resources
-     * and reloads appropriately
-     *
-     * @return Returns true when the plug-in itself changes in some way, as oppose to plug-in resources
-     *
-     * @deprecated Plugins themselves no longer check for changes
-     */
-    @Deprecated
-    boolean checkForChanges();
 
     /**
      * Refreshes this Grails plugin reloading any watched resources as necessary
@@ -423,4 +414,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * @param descriptor The descriptor
      */
     void setDescriptor(Resource descriptor);
+
+    /**
+     * The plugin's default configuration settings which can be overridden by the application
+     *
+     * @return The plugin Config
+     */
+    Config getPluginConfig();
 }

@@ -16,6 +16,7 @@
 package org.grails.plugins
 
 import grails.config.Settings
+import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
@@ -24,13 +25,11 @@ import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
-import grails.core.GrailsApplication
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.grails.core.io.DefaultResourceLocator
-import grails.core.support.GrailsApplicationAware
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 import org.grails.spring.beans.PluginManagerAwareBeanPostProcessor
 import org.grails.core.support.ClassEditor
@@ -50,14 +49,13 @@ import org.springframework.util.ClassUtils
  * @author Graeme Rocher
  * @since 0.4
  */
-class CoreGrailsPlugin implements GrailsApplicationAware {
+class CoreGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def watchedResources = ["file:./grails-app/conf/spring/resources.xml","file:./grails-app/conf/spring/resources.groovy"]
 
-    GrailsApplication grailsApplication
-
-    def doWithSpring = {
+    @Override
+    Closure doWithSpring() { {->
         xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
         def application = grailsApplication
@@ -73,8 +71,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         legacyGrailsApplication(LegacyGrailsApplication, application)
 
         // replace AutoProxy advisor with Groovy aware one
-        def grailsConfig = application.flatConfig
-        if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !grailsConfig.get(Settings.SPRING_DISABLE_ASPECTJ)) {
+        if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
         }
         else {
@@ -86,8 +83,8 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
 
         def packagesToScan = []
 
-        def beanPackages = grailsConfig.get(Settings.SPRING_BEAN_PACKAGES)
-        if (beanPackages instanceof List) {
+        def beanPackages = config.getProperty(Settings.SPRING_BEAN_PACKAGES, List)
+        if (beanPackages) {
             packagesToScan += beanPackages
         }
 
@@ -96,12 +93,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         }
 
         grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
-
-        if (getParentCtx()?.containsBean('pluginManager')) {
-            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor, ref('pluginManager'))
-        } else {
-            pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
-        }
+        pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
 
         classLoader(MethodInvokingFactoryBean) {
             targetObject = ref("grailsApplication")
@@ -110,7 +102,7 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
 
         // add shutdown hook if not running in war deployed mode
         final warDeployed = Environment.isWarDeployed()
-        final devMode = !warDeployed && Environment.currentEnvironment == Environment.DEVELOPMENT
+        final devMode = !warDeployed && environment == Environment.DEVELOPMENT
         if (devMode && ClassUtils.isPresent('jline.Terminal', application.classLoader)) {
             shutdownHook(DevelopmentShutdownHook)
         }
@@ -127,9 +119,10 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         }
 
         proxyHandler(DefaultProxyHandler)
-    }
+    }}
 
-    def doWithDynamicMethods = {
+    @Override
+    void doWithDynamicMethods() {
         MetaClassRegistry registry = GroovySystem.metaClassRegistry
 
         def metaClass = registry.getMetaClass(Class)
@@ -160,18 +153,19 @@ class CoreGrailsPlugin implements GrailsApplicationAware {
         }
     }
 
-    def onChange = { event ->
+    @Override
+    void onChange(Map<String, Object> event) {
         if (event.source instanceof Resource) {
             def xmlBeans = new OptimizedAutowireCapableBeanFactory()
             new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(event.source)
             xmlBeans.beanDefinitionNames.each { name ->
-                event.ctx.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))
+                applicationContext.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))
             }
         }
         else if (event.source instanceof Class) {
             RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, event.source)
-            springConfig.registerBeansWithContext(event.ctx)
+            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, event.source)
+            springConfig.registerBeansWithContext(applicationContext)
         }
     }
 }

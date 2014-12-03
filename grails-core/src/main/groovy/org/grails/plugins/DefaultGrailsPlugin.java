@@ -16,6 +16,7 @@
 package org.grails.plugins;
 
 import grails.plugins.GrailsPlugin;
+import grails.plugins.Plugin;
 import grails.spring.BeanBuilder;
 import grails.util.BuildScope;
 import grails.util.CollectionUtils;
@@ -149,7 +150,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private void initialisePlugin(Class<?> clazz) {
         pluginGrailsClass = new GrailsPluginClass(clazz);
         plugin = (GroovyObject)pluginGrailsClass.newInstance();
-        if(plugin instanceof GrailsApplicationAware) {
+        if(plugin instanceof Plugin) {
+            Plugin p = (Plugin)plugin;
+            p.setApplicationContext(applicationContext);
+            p.setPlugin(this);
+            p.setGrailsApplication(((LegacyGrailsApplication)application).getGrailsApplication());
+            p.setPluginManager(manager);
+        }
+        else if(plugin instanceof GrailsApplicationAware) {
             ((GrailsApplicationAware)plugin).setGrailsApplication(((LegacyGrailsApplication)this.application).getGrailsApplication());
         }
         pluginBean = new BeanWrapperImpl(plugin);
@@ -475,8 +483,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithApplicationContext(ApplicationContext ctx) {
-        Object[] args = {ctx};
-        invokePluginHook(DO_WITH_APPLICATION_CONTEXT, args, ctx);
+        if(plugin instanceof Plugin) {
+            ((Plugin)plugin).doWithApplicationContext();
+        }
+        else {
+            Object[] args = {ctx};
+            invokePluginHook(DO_WITH_APPLICATION_CONTEXT, args, ctx);
+        }
     }
 
     private void invokePluginHook(String methodName, Object[] args, ApplicationContext ctx) {
@@ -495,26 +508,37 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
 
-        if (!pluginBean.isReadableProperty(DO_WITH_SPRING)) {
-            return;
+        if(plugin instanceof Plugin) {
+            Closure c = ((Plugin) plugin).doWithSpring();
+            if(c != null) {
+                BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
+                bb.invokeMethod("beans", new Object[]{c});
+            }
+        }
+        else {
+
+            if (!pluginBean.isReadableProperty(DO_WITH_SPRING)) {
+                return;
+            }
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Plugin " + this + " is participating in Spring configuration...");
+            }
+
+            Closure c = (Closure)plugin.getProperty(DO_WITH_SPRING);
+            BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
+            Binding b = new Binding();
+            b.setVariable("application", application);
+            b.setVariable(GrailsApplication.APPLICATION_ID, application);
+            b.setVariable("manager", getManager());
+            b.setVariable("plugin", this);
+            b.setVariable("parentCtx", getParentCtx());
+            b.setVariable("resolver", getResolver());
+            bb.setBinding(b);
+            c.setDelegate(bb);
+            bb.invokeMethod("beans", new Object[]{c});
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Plugin " + this + " is participating in Spring configuration...");
-        }
-
-        Closure c = (Closure)plugin.getProperty(DO_WITH_SPRING);
-        BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
-        Binding b = new Binding();
-        b.setVariable("application", application);
-        b.setVariable(GrailsApplication.APPLICATION_ID, application);
-        b.setVariable("manager", getManager());
-        b.setVariable("plugin", this);
-        b.setVariable("parentCtx", getParentCtx());
-        b.setVariable("resolver", getResolver());
-        bb.setBinding(b);
-        c.setDelegate(bb);
-        bb.invokeMethod("beans", new Object[]{c});
     }
 
     @Override
@@ -684,12 +708,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithDynamicMethods(ApplicationContext ctx) {
-        Object[] args = {ctx};
-        invokePluginHook(DO_WITH_DYNAMIC_METHODS, args, ctx);
+        if(plugin instanceof Plugin) {
+            ((Plugin)plugin).doWithDynamicMethods();
+        }
+        else {
+            Object[] args = {ctx};
+            invokePluginHook(DO_WITH_DYNAMIC_METHODS, args, ctx);
+        }
     }
 
     public boolean isEnabled() {
-        return STATUS_ENABLED.equals(status);
+        if(plugin instanceof  Plugin) {
+            return ((Plugin)plugin).isEnabled();
+        }
+        else {
+            return STATUS_ENABLED.equals(status);
+        }
     }
 
     public String[] getObservedPluginNames() {
@@ -713,15 +747,31 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
         switch (eventKind) {
             case EVENT_ON_CHANGE:
-                notifyOfEvent(event);
+                if(plugin instanceof Plugin) {
+                    ((Plugin)plugin).onChange(event);
+                }
+                else {
+                    notifyOfEvent(event);
+                }
                 getManager().informObservers(getName(), event);
                 break;
             case EVENT_ON_SHUTDOWN:
-                invokeOnShutdownEventListener(event);
+                if(plugin instanceof Plugin) {
+                    ((Plugin)plugin).onShutdown(event);
+                }
+                else {
+                    invokeOnShutdownEventListener(event);
+                }
                 break;
 
             case EVENT_ON_CONFIG_CHANGE:
-                invokeOnConfigChangeListener(event);
+                if(plugin instanceof Plugin) {
+                    ((Plugin)plugin).onConfigChange(event);
+                }
+                else {
+
+                    invokeOnConfigChangeListener(event);
+                }
                 break;
             default:
                 notifyOfEvent(event);
@@ -773,7 +823,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             return;
         }
 
-        List l = (List)plugin.getProperty(ARTEFACTS);
+
+        List l;
+        if(plugin instanceof Plugin) {
+            l = ((Plugin)plugin).getArtefacts();
+        }
+        else {
+
+            l = (List)plugin.getProperty(ARTEFACTS);
+        }
         for (Object artefact : l) {
             if (artefact instanceof Class) {
                 Class artefactClass = (Class) artefact;
