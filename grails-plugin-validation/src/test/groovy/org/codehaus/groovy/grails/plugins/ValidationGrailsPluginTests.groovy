@@ -25,7 +25,7 @@ class ValidationGrailsPluginTests extends GroovyTestCase {
         application.config.grails.validateable = [:]
         application.config.grails.validateable.classes = [SomeValidateableClass, SomeValidateableSubclass]
         ValidationGrailsPlugin.metaClass.getApplication = { application }
-        ValidationGrailsPlugin.metaClass.getLog = { [debug: {}] }
+        ValidationGrailsPlugin.metaClass.getLog = { [debug: {}, warn: {}] }
 
         new ValidationGrailsPlugin().doWithDynamicMethods(mockCtx)
     }
