@@ -1,15 +1,16 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact;
+import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.validation.trait.Validateable
+import grails.web.mapping.LinkGenerator
+import grails.web.mime.MimeUtility
 
 import javax.servlet.http.HttpServletResponse
 
 import org.grails.plugins.testing.GrailsMockMultipartFile
-import grails.web.mapping.LinkGenerator
-import grails.web.mime.MimeUtility
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -603,8 +604,7 @@ class SubController extends TestController {
     }
 }
 
-@grails.validation.Validateable
-class SomeValidateableThing {
+class SomeValidateableThing implements Validateable {
     String name
     String email
 

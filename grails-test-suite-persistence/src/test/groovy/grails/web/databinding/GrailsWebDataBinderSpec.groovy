@@ -14,23 +14,22 @@
  */
 package grails.web.databinding
 
-import grails.databinding.DataBindingSource;
-import grails.databinding.SimpleMapDataBindingSource;
-import grails.databinding.errors.BindingError;
-import grails.databinding.events.DataBindingListenerAdapter;
+import grails.databinding.BindUsing
+import grails.databinding.BindingFormat
+import grails.databinding.DataBindingSource
+import grails.databinding.SimpleMapDataBindingSource
+import grails.databinding.errors.BindingError
+import grails.databinding.events.DataBindingListenerAdapter
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
-import grails.validation.Validateable
-import grails.web.databinding.DataBindingUtils
-import grails.web.databinding.GrailsWebDataBinder;
+import grails.validation.trait.Validateable
 
 import org.apache.commons.lang.builder.CompareToBuilder
-import grails.databinding.BindUsing
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
-import grails.databinding.BindingFormat
+
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -1548,8 +1547,7 @@ class ObjectId {
     }
 }
 
-@Validateable
-class PrimitiveContainer {
+class PrimitiveContainer implements Validateable {
     boolean someBoolean
     byte someByte
     char someChar
@@ -1560,8 +1558,7 @@ class PrimitiveContainer {
     double someDouble
 }
 
-@Validateable
-class SomeValidateableClass {
+class SomeValidateableClass implements Validateable {
     Integer someNumber
 }
 
@@ -1665,7 +1662,6 @@ class AlbumHolder {
     }
 }
 
-@Validateable
-class ListCommand { 
+class ListCommand implements Validateable { 
     List<Long> myLongList 
 }
