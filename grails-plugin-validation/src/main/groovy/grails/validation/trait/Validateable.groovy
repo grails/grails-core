@@ -35,7 +35,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils
  * @author Jeff Brown
  */
 trait Validateable {
-    private static BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper()
+    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper()
     private static Map constraintsMapInternal
     Errors errors
 
