@@ -60,7 +60,7 @@ abstract class Plugin implements GrailsApplicationAware, ApplicationContextAware
     /**
      * @return The {@link Config} instance for this plugin
      */
-    Config getConfig() { this.plugin.pluginConfig }
+    Config getConfig() { this.plugin?.pluginConfig ?: grailsApplication.config }
     /**
      * The {@link GrailsPluginManager} instance
      */

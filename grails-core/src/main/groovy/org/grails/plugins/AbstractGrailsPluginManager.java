@@ -212,7 +212,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             if (pluginDependencies.length > 0) {
                 doRuntimeConfigurationForDependencies(pluginDependencies, springConfig);
             }
-            if(!current.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
+            if(isPluginDisabledForProfile(current)) continue;
             current.doWithRuntimeConfiguration(springConfig);
         }
     }
@@ -223,7 +223,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void doPostProcessing(ApplicationContext ctx) {
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
-            if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
+            if(isPluginDisabledForProfile(plugin)) continue;
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 plugin.doWithApplicationContext(ctx);
             }
@@ -301,6 +301,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
+                if(isPluginDisabledForProfile(plugin)) continue;
                 for (Class<?> artefact : plugin.getProvidedArtefacts()) {
                     String shortName = GrailsNameUtils.getShortName(artefact);
                     if (!isAlreadyRegistered(app, artefact, shortName)) {
@@ -318,11 +319,15 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void doArtefactConfiguration() {
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
-            if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
+            if(isPluginDisabledForProfile(plugin)) continue;
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 plugin.doArtefactConfiguration();
             }
         }
+    }
+
+    protected boolean isPluginDisabledForProfile(GrailsPlugin plugin) {
+        return applicationContext != null && !plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles());
     }
 
     public void shutdown() {

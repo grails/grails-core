@@ -13,6 +13,7 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
         def gspSiteMeshPage = new GSPSitemeshPage()
         webRequest.currentRequest.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, gspSiteMeshPage)
         def result = applyTemplate(template, [:])
+        println "RESULT IS $result"
         assertEquals 'this is the captured content', gspSiteMeshPage.getContentBuffer('page.testtag').toString()
     }
 

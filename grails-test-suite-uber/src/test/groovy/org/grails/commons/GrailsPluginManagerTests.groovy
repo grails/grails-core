@@ -8,6 +8,7 @@ import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.beans.propertyeditors.ClassEditor
 import org.springframework.context.ApplicationContext
+import org.springframework.core.env.StandardEnvironment
 import org.springframework.web.servlet.i18n.CookieLocaleResolver
 
 class GrailsPluginManagerTests extends AbstractGrailsMockTests {
@@ -185,7 +186,7 @@ hibernate {
 
     void testShutdownCalled() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin] as Class[], ga)
-        manager.applicationContext = [getBeansOfType: { Class c -> [:] } ] as ApplicationContext
+        manager.applicationContext = [getBeansOfType: { Class c -> [:] }, getEnvironment: {-> new StandardEnvironment() } ] as ApplicationContext
 
         manager.loadPlugins()
 

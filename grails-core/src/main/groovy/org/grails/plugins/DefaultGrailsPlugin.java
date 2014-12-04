@@ -288,7 +288,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     @SuppressWarnings("unchecked")
     private void evaluateProvidedArtefacts() {
-        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PROFILES);
+        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, PROVIDED_ARTEFACTS);
         if (result instanceof Collection) {
             final Collection artefactList = (Collection) result;
             providedArtefacts = (Class<?>[])artefactList.toArray(new Class[artefactList.size()]);
@@ -296,7 +296,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     private void evaluateProfiles() {
-        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PROFILES);
+        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, PROFILES);
         if (result instanceof Collection) {
             profiles =  (Collection) result;
         }
@@ -309,7 +309,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     private void evaluateObservedPlugins() {
         if (pluginBean.isReadableProperty(OBSERVE)) {
-            Object observeProperty = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, OBSERVE);
+            Object observeProperty = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, OBSERVE);
             if (observeProperty instanceof Collection) {
                 Collection observeList = (Collection)observeProperty;
                 observedPlugins = new String[observeList.size()];
