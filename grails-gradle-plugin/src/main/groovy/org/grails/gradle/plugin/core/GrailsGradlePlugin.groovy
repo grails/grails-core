@@ -10,6 +10,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
@@ -25,7 +26,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
     void apply(Project project) {
         super.apply(project)
         project.extensions.create("grails", GrailsExtension)
+        def providedConfig = project.configurations.create("provided")
 
+        project.sourceSets {
+            def providedFiles = project.files(providedConfig)
+            main {
+                compileClasspath += providedFiles
+            }
+            test {
+                compileClasspath += providedFiles
+                runtimeClasspath += providedFiles
+            }
+        }
 
         registerFindMainClassTask(project)
 

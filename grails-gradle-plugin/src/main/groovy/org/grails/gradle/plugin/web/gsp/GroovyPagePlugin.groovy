@@ -2,6 +2,8 @@ package org.grails.gradle.plugin.web.gsp
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.FileCollection
 import org.grails.gradle.plugin.util.SourceSets
 
 /**
@@ -26,18 +28,23 @@ class GroovyPagePlugin implements Plugin<Project> {
 
         def destDir = mainSourceSet?.output?.classesDir ?: new File(project.buildDir, "main/classes")
 
+        def providedConfig = project.configurations.findByName('provided')
+        def allClasspath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
+        if(providedConfig) {
+            allClasspath += providedConfig
+        }
         project.tasks.create("compileGroovyPages", GroovyPageCompileTask) {
             destinationDir = destDir
             source = project.file("${project.projectDir}/grails-app/views")
             serverpath = "/WEB-INF/grails-app/views/"
-            classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
+            classpath = allClasspath
         }
 
         project.tasks.create("compileWebappGroovyPages", GroovyPageCompileTask) {
             destinationDir = destDir
             source = project.file("${project.projectDir}/src/main/webapp")
             serverpath = "/"
-            classpath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
+            classpath = allClasspath
         }
 
 
