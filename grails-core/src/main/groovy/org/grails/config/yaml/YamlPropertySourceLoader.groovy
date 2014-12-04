@@ -16,6 +16,7 @@
 package org.grails.config.yaml
 
 import groovy.transform.CompileStatic
+import org.grails.config.NavigableMap
 import org.springframework.beans.factory.config.YamlProcessor
 import org.springframework.boot.env.PropertySourceLoader
 import org.springframework.boot.yaml.SpringProfileDocumentMatcher
@@ -50,10 +51,11 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
                 setDocumentMatchers(new SpringProfileDocumentMatcher(profile))
             }
             resources = [resource] as Resource[]
-            def propertySource = new LinkedHashMap<>()
+            def propertySource = new NavigableMap()
             process { Properties properties, Map<String, Object> map ->
-                propertySource.putAll(properties)
-                propertySource.putAll(map)
+                propertySource.merge(map, true)
+                propertySource.merge(properties, false)
+                propertySource.putAll( propertySource.toFlatConfig() )
             }
             if (!propertySource.isEmpty()) {
                 return new MapPropertySource(name, propertySource);

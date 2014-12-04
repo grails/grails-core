@@ -83,7 +83,7 @@ public class PropertySourcesConfig extends NavigableMapConfig {
             }
         }
 
-        configMap.merge(map, true);
+        configMap.putAll(map);
     }
 
     public void setClassLoader(ClassLoader classLoader) {
