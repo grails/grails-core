@@ -50,4 +50,9 @@ interface ProfileRepository {
      * @return The {@link Profile} and its dependencies
      */
     List<Profile> getProfileAndDependencies(Profile profile)
+
+    /**
+     * @return All the available profiles in the repository
+     */
+    List<Profile> getAllProfiles()
 }

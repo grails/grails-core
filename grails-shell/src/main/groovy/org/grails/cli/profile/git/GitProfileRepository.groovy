@@ -64,7 +64,13 @@ class GitProfileRepository implements ProfileRepository{
             return null
         }
     }
-    
+
+    @Override
+    List<Profile> getAllProfiles() {
+        def allDirectories = new File(profilesDirectory, "profiles").listFiles()?.findAll() { File f -> f.isDirectory() && !f.isHidden() && !f.name.startsWith('.') }
+        return allDirectories.collect() { File f -> getProfile(f.name) }
+    }
+
     /**
      * Returns the given profile with all dependencies in topological order where
      * given profile is last in the order.

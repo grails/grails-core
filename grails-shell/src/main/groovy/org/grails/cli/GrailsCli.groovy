@@ -135,7 +135,7 @@ class GrailsCli {
         File grailsAppDir=new File("grails-app")
         File applicationGroovy =new File("Application.groovy")
         if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
-            if(!mainCommandLine || !mainCommandLine.commandName || !mainCommandLine.getRemainingArgs()) {
+            if(!mainCommandLine || !mainCommandLine.commandName) {
                 System.err.println USAGE_MESSAGE
                 return 1
             }
