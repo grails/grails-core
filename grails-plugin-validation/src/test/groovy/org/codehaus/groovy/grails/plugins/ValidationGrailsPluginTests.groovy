@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.grails.plugins.validation.ValidationGrailsPlugin;
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
 
@@ -26,7 +25,7 @@ class ValidationGrailsPluginTests extends GroovyTestCase {
         application.config.grails.validateable = [:]
         application.config.grails.validateable.classes = [SomeValidateableClass, SomeValidateableSubclass]
         ValidationGrailsPlugin.metaClass.getApplication = { application }
-        ValidationGrailsPlugin.metaClass.getLog = { [debug: {}] }
+        ValidationGrailsPlugin.metaClass.getLog = { [debug: {}, warn: {}] }
 
         new ValidationGrailsPlugin().doWithDynamicMethods(mockCtx)
     }

@@ -4,8 +4,7 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.validation.Validateable
-import grails.web.databinding.GrailsWebDataBinder;
+import grails.validation.trait.Validateable
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -134,8 +133,7 @@ class GrailsWebDataBinderBindingXmlSpec extends Specification {
     }
 }
 
-@Validateable
-class CommandObject {
+class CommandObject implements Validateable {
     List<Something> somethings
 }
 

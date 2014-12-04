@@ -16,9 +16,11 @@
 package org.grails.web.pages;
 
 import grails.config.Settings;
+import grails.io.IOUtils;
 import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
+import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 
@@ -27,8 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -124,6 +128,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
     private ServletContext servletContext;
 
+    private List<GroovyPageSourceDecorator> groovyPageSourceDecorators = new ArrayList();
+
     static {
         String dirPath = System.getProperty("grails.dump.gsp.line.numbers.to.dir");
         if (dirPath != null) {
@@ -136,18 +142,18 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 
 	private class GroovyPagesTemplateEngineCacheEntry extends CacheEntry<GroovyPageMetaInfo>{
 		private final String pageName;
-		
+
 		public GroovyPagesTemplateEngineCacheEntry(String pageName){
 			this.pageName = pageName;
 		}
-		
+
 		 @Override
          protected boolean hasExpired(long timeout, Object cacheRequestObject) {
              GroovyPageMetaInfo meta = getValue();
              Resource resource = (Resource)cacheRequestObject;
              return meta == null || isGroovyPageReloadable(resource, meta);
          }
-         
+
          @Override
          protected GroovyPageMetaInfo updateValue(GroovyPageMetaInfo oldValue, Callable<GroovyPageMetaInfo> updater, Object cacheRequestObject)
                  throws Exception {
@@ -160,9 +166,9 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 	}
 
 	private static class GroovyPagesTemplateEngineCallable implements Callable<CacheEntry<GroovyPageMetaInfo>> {
-		
+
 		private final CacheEntry<GroovyPageMetaInfo> cacheEntry;
-		
+
 		public GroovyPagesTemplateEngineCallable(CacheEntry<GroovyPageMetaInfo> cacheEntry){
 			this.cacheEntry = cacheEntry;
 		}
@@ -171,7 +177,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 		public CacheEntry<GroovyPageMetaInfo> call() throws Exception {
 			return cacheEntry;
 		}
-		
+
 	}
 
     public GroovyPagesTemplateEngine() {
@@ -185,6 +191,14 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     @Deprecated
     public GroovyPagesTemplateEngine(ServletContext servletContext) {
         this.servletContext = servletContext;
+    }
+
+    public void setGroovyPageSourceDecorators(List<GroovyPageSourceDecorator> groovyPageSourceDecorators){
+    	this.groovyPageSourceDecorators = groovyPageSourceDecorators;
+    }
+
+    public List<GroovyPageSourceDecorator> getGroovyPageSourceDecorators(){
+    	return groovyPageSourceDecorators;
     }
 
     public void setGroovyPageLocator(GroovyPageLocator groovyPageLocator) {
@@ -263,7 +277,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         }
         return lineNumber;
     }
-    
+
     /**
      * Creates a Template for the given Spring Resource instance
      *
@@ -488,6 +502,13 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         }
     }
 
+    private StringBuilder decorateGroovyPageSource(StringBuilder source) throws IOException {
+    	for(GroovyPageSourceDecorator groovyPageSourceDecorator : groovyPageSourceDecorators){
+    		source = groovyPageSourceDecorator.decorate(source);
+    	}
+    	return source;
+    }
+
     /**
      * Establishes whether a Groovy page is reloadable. A GSP is only reloadable in the development environment.
      *
@@ -558,7 +579,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-            parser = new GroovyPageParser(name, path, path, inputStream, null, null);
+        	String gspSource = IOUtils.toString(inputStream, GroovyPageParser.getGspEncoding());
+            parser = new GroovyPageParser(name, path, path, decorateGroovyPageSource(new StringBuilder(gspSource)).toString());
 
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
@@ -866,5 +888,16 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         if(beanClassLoader != null && this.classLoader == null) {
             this.classLoader = beanClassLoader;
         }
+    }
+
+    public String getGspEncoding() {
+    	Map<?, ?> config = Holders.getFlatConfig();
+        if (config != null) {
+            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
+            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                return gspEnc.toString();
+            }
+        }
+        return System.getProperty("file.encoding", "us-ascii");
     }
 }

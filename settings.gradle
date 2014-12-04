@@ -47,7 +47,6 @@ include 'grails-aether',
         'grails-plugin-services',
         'grails-plugin-testing',
         'grails-plugin-url-mappings',
-        'grails-plugin-validation',
 
         // Test Suite
         'grails-test-suite-base',

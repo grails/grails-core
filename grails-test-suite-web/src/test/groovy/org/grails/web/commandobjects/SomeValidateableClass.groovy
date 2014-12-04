@@ -1,9 +1,8 @@
 package org.grails.web.commandobjects
 
-import grails.validation.Validateable
+import grails.validation.trait.Validateable
 
-@Validateable
-class SomeValidateableClass {
+class SomeValidateableClass implements Validateable {
     String name
 
     static constraints = {
