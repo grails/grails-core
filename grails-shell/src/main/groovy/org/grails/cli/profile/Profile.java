@@ -16,8 +16,10 @@
 package org.grails.cli.profile;
 
 import jline.console.completer.Completer;
+import org.grails.config.NavigableMap;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * A Profile defines an active code generation and command execution policy. For example the "web" profile allows
@@ -27,6 +29,11 @@ import java.io.File;
  * @author Lari Hotari
  */
 public interface Profile {
+    /**
+     * @return The profiles configuration
+     */
+    NavigableMap getConfiguration();
+
     /**
      * @return The directory where the profile is located locally
      */

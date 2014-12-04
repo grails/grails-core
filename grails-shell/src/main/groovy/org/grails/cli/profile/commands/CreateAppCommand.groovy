@@ -69,9 +69,11 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             initializeVariables(profileInstance, groupAndAppName)
             targetDirectory = new File(appname)
             File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
-            for(Profile p : profileRepository.getProfileAndDependencies(profileInstance)) {
+
+            def profiles = profileRepository.getProfileAndDependencies(profileInstance)
+            for(Profile p : profiles) {
                 String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.text : null
-                copySkeleton(profileRepository.getProfileDirectory(p.getName()))
+                copySkeleton(profileInstance, profileRepository.getProfileDirectory(p.getName()))
 
                 if(!applicationYmlFile.exists()) {
                     applicationYmlFile = new File('application.yml')
@@ -89,7 +91,11 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     }
 
     protected String evaluateProfileName(CommandLine mainCommandLine) {
-        mainCommandLine.optionValue('profile')?.toString() ?: ProfileRepository.DEFAULT_PROFILE_NAME
+        mainCommandLine.optionValue('profile')?.toString() ?: getDefaultProfile()
+    }
+
+    protected String getDefaultProfile() {
+        ProfileRepository.DEFAULT_PROFILE_NAME
     }
 
 
@@ -140,12 +146,18 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    private void copySkeleton(File profileDirectory) {
+    private void copySkeleton(Profile profile, File profileDirectory) {
+
+        def excludes = profile.configuration.navigate("skeleton", "excludes") ?: []
+
         AntBuilder ant = new AntBuilder()
         File srcDir = new File(profileDirectory, "skeleton")
         ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
             fileSet(dir: srcDir, casesensitive: false) {
                 exclude(name: '**/.gitkeep')
+                for(exc in excludes) {
+                    exclude name: exc
+                }
                 binaryFileExtensions.each { ext ->
                     exclude(name: "**/*.${ext}")
                 }
@@ -167,6 +179,9 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             fileSet(dir: srcDir, casesensitive: false) {
                 binaryFileExtensions.each { ext ->
                     include(name: "**/*.${ext}")
+                }
+                for(exc in excludes) {
+                    exclude name: exc
                 }
             }
             mapper {

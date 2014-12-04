@@ -22,6 +22,7 @@ import jline.console.completer.Completer
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.config.NavigableMap
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -36,12 +37,18 @@ class DefaultProfile implements Profile {
     final File profileDir
     final String name
     List<Profile> parentProfiles
-    Map<String, Object> profileConfig
+    private Map<String, Object> profileConfig
     private Map<String, Command> commandsByName
+    private NavigableMap navigableConfig = new NavigableMap()
 
     private DefaultProfile(String name, File profileDir) {
         this.name = name
         this.profileDir = profileDir
+    }
+
+    @Override
+    NavigableMap getConfiguration() {
+        navigableConfig
     }
 
     public static Profile create(ProfileRepository repository, String name, File profileDir) {
@@ -90,9 +97,11 @@ class DefaultProfile implements Profile {
     Iterable<Command> getCommands(ProjectContext context) {
         if(commandsByName == null) {
             commandsByName = [:]
+            List excludes = []
             def registerCommand = { Command command ->
-                if(!commandsByName.containsKey(command.name)) {
-                    commandsByName[command.name] = command
+                def name = command.name
+                if(!commandsByName.containsKey(name) && !excludes.contains(name)) {
+                    commandsByName[name] = command
                     def desc = command.description
                     def synonyms = desc.synonyms
                     if(synonyms) {
@@ -107,6 +116,7 @@ class DefaultProfile implements Profile {
             }
             CommandRegistry.findCommands(this).each(registerCommand)
             if(parentProfiles) {
+                excludes = (List)configuration.navigate("command", "excludes") ?: []
                 for(parent in parentProfiles) {
                     parent.getCommands(context).each(registerCommand)
                 }
@@ -138,6 +148,7 @@ class DefaultProfile implements Profile {
             profileConfig = (Map<String, Object>)profileYml.withInputStream { InputStream it ->
                 new Yaml().loadAs(it, Map)
             }
+            navigableConfig.merge(profileConfig)
             String[] extendsProfiles = profileConfig.get("extends")?.toString()?.split(/\s*,\s*/)
             if(extendsProfiles) {
                 parentProfiles = extendsProfiles.collect { String profileName ->

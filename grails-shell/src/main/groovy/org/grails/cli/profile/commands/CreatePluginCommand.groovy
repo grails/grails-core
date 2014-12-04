@@ -36,5 +36,5 @@ class CreatePluginCommand extends CreateAppCommand {
     String getName() { NAME }
 
     @Override
-    protected String evaluateProfileName(CommandLine mainCommandLine) { "plugin" }
+    protected String getDefaultProfile() { "web-plugin" }
 }
