@@ -19,6 +19,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
+import org.grails.cli.interactive.completers.ClassNameCompleter
 import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.commands.templates.SimpleTemplate
@@ -53,12 +54,12 @@ class RenderStep extends AbstractStep {
 
         try {
 
+            String relPath = relativePath(context.baseDir, destination)
             if(destination.exists()) {
-                context.console.error("${destination.canonicalPath} already exists.")
+                context.console.error("${relPath} already exists.")
                 return false
             }
 
-            String relPath = relativePath(context.baseDir, destination)
             renderToDestination(destination, variableResolver.variables)
             context.console.addStatus("Created $relPath")
 
@@ -69,10 +70,11 @@ class RenderStep extends AbstractStep {
         }
     }
 
-    protected renderToDestination(File destination, Map variables) {
+    protected void renderToDestination(File destination, Map variables) {
         File profileDir = command.profile.profileDir
         File templateFile = new File(profileDir, parameters.template)
         destination.text = new SimpleTemplate(templateFile.text).render(variables)
+        ClassNameCompleter.refreshAll()
     }
 
     protected List<String> resolveNameAndPackage(ExecutionContext context, String nameAsArgument) {

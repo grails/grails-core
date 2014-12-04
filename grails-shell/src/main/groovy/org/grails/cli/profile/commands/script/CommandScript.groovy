@@ -20,6 +20,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
+import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.cli.boot.SpringInvoker
 import org.grails.cli.gradle.GradleInvoker
 import org.grails.cli.profile.CommandArgument
@@ -51,7 +52,7 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
 
     GradleInvoker gradle
     SpringInvoker spring = SpringInvoker.getInstance()
-    AntBuilder ant = new AntBuilder()
+    AntBuilder ant = new GrailsConsoleAntBuilder()
 
     /**
      * The location of the user.home directory

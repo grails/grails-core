@@ -20,6 +20,7 @@ import groovy.text.GStringTemplateEngine
 import groovy.text.Template
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.grails.cli.interactive.completers.ClassNameCompleter
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.io.support.DefaultResourceLoader
@@ -228,5 +229,6 @@ class TemplateRenderer  {
             w.flush()
         }
 
+        ClassNameCompleter.refreshAll()
     }
 }

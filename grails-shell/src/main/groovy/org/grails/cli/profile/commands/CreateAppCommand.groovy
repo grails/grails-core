@@ -19,6 +19,7 @@ package org.grails.cli.profile.commands
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.CommandDescription
@@ -82,6 +83,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                     appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
                 }
             }
+            executionContext.console.addStatus("Application created at $targetDirectory.absolutePath")
             return true
         }
         else {
@@ -150,7 +152,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
         def excludes = profile.configuration.navigate("skeleton", "excludes") ?: []
 
-        AntBuilder ant = new AntBuilder()
+        AntBuilder ant = new GrailsConsoleAntBuilder()
         File srcDir = new File(profileDirectory, "skeleton")
         ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
             fileSet(dir: srcDir, casesensitive: false) {

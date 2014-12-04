@@ -19,6 +19,8 @@ import groovy.transform.CompileStatic
 import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
 
+import java.util.concurrent.ConcurrentLinkedQueue
+
 
 /**
  * A completer that completes class names
@@ -29,8 +31,11 @@ import org.grails.io.support.Resource
 @CompileStatic
 class ClassNameCompleter extends StringsCompleter {
 
-        static Map<String, SortedSet<String>> RESOURCE_SCAN_CACHE = [:]
+        private static Map<String, SortedSet<String>> RESOURCE_SCAN_CACHE = [:]
+        private static Collection<ClassNameCompleter> allCompeters = new ConcurrentLinkedQueue<>()
         PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
+
+        private File[] baseDirs
 
         ClassNameCompleter(File baseDir) {
                 initialize(baseDir)
@@ -40,8 +45,26 @@ class ClassNameCompleter extends StringsCompleter {
                 initialize(baseDirs)
         }
 
+        static void refreshAll() {
+                Thread.start {
+                        RESOURCE_SCAN_CACHE.clear()
+                        Collection<ClassNameCompleter> competers = new ArrayList<>(allCompeters)
+                        for (ClassNameCompleter completer : competers) {
+                                completer.refresh()
+                        }
+                }
+        }
+
+        private void refresh() {
+                if(!baseDirs) return
+                initialize(baseDirs)
+        }
+
         private void initialize(File... baseDirs) {
                 if(!baseDirs) return
+                this.baseDirs = baseDirs
+                if(!allCompeters.contains(this))
+                        allCompeters << this
                 SortedSet<String> allStrings = new TreeSet<>()
                 for(File baseDir in baseDirs) {
                         def pattern = "file:${baseDir}/**/*.groovy".toString()

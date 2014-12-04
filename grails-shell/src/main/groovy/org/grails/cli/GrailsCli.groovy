@@ -440,7 +440,17 @@ class GrailsCli {
     @Canonical
     private static class ExecutionContextImpl implements ExecutionContext {
         CommandLine commandLine
-        @Delegate ProjectContext projectContext
+        @Delegate(excludes = 'getConsole') ProjectContext projectContext
+        GrailsConsole console = GrailsConsole.getInstance()
+
+        ExecutionContextImpl(CommandLine commandLine, ProjectContext projectContext) {
+            this.commandLine = commandLine
+            this.projectContext = projectContext
+            if(projectContext?.console) {
+                console = projectContext.console
+            }
+        }
+
         private List<CommandCancellationListener> cancelListeners=[]
         
         @Override
@@ -462,7 +472,7 @@ class GrailsCli {
     
     @Canonical
     private static class ProjectContextImpl implements ProjectContext {
-        GrailsConsole console
+        GrailsConsole console = GrailsConsole.getInstance()
         File baseDir
         CodeGenConfig grailsConfig
 
