@@ -110,6 +110,8 @@ class GradleUtil {
     public static wireCancellationSupport(ExecutionContext context, BuildLauncher buildLauncher) {
         DefaultCancellationTokenSource cancellationTokenSource = new DefaultCancellationTokenSource()
         buildLauncher.withCancellationToken(cancellationTokenSource.token())
-        context.addCancelledListener({ cancellationTokenSource.cancel() })
+        context.addCancelledListener({
+            cancellationTokenSource.cancel()
+        })
     }
 }

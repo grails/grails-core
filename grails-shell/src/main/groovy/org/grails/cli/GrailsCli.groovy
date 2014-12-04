@@ -16,6 +16,7 @@
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
+import org.gradle.tooling.BuildCancelledException
 import org.grails.config.CodeGenConfig
 import grails.config.ConfigMap
 import grails.io.SystemStreamsRedirector
@@ -238,7 +239,9 @@ class GrailsCli {
                         handleCommand( cliParser.parseString(commandLine))
                     }
                 }
-            } catch (UserInterruptException e) {
+            } catch (BuildCancelledException cancelledException) {
+                console.updateStatus("Build stopped.")
+            }catch (UserInterruptException e) {
                 exitInteractiveMode()
             } catch (Exception e) {
                 console.error "Caught exception ${e.message}", e
@@ -261,6 +264,8 @@ class GrailsCli {
                         // read peeked character from buffer
                         nonBlockingInput.read(1L)
                         if(peeked == KEYPRESS_CTRL_C || peeked == KEYPRESS_ESC) {
+                            executionContext.console.log('  ')
+                            executionContext.console.updateStatus("Stopping build. Please wait...")
                             executionContext.cancel()
                         }
                     }
