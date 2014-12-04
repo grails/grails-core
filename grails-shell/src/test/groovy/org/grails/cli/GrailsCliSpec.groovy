@@ -200,7 +200,7 @@ class GrailsCliSpec extends Specification {
         def msg = bytesOut.toString()
         then:
         retval == 1
-        msg == 'Cannot find profile no_such_profile\n'
+        msg.contains 'Cannot find profile no_such_profile\n'
     }
     
     def "should start and exit interactive mode"() {
