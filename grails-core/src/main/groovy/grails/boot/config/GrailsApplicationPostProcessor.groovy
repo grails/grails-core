@@ -1,6 +1,6 @@
 package grails.boot.config
 
-
+import grails.config.Settings
 import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
@@ -83,8 +83,13 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @Override
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        pluginManager.setApplicationContext(applicationContext)
+        grailsApplication.setMainContext(applicationContext)
+
         if(applicationContext instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this)
+            def configurable = (ConfigurableApplicationContext) applicationContext
+            configurable.addApplicationListener(this)
+            configurable.environment.addActiveProfile( grailsApplication.getConfig().getProperty(Settings.PROFILE, String, "web"))
         }
     }
 

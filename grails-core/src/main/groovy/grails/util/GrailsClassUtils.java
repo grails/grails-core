@@ -845,6 +845,10 @@ public class GrailsClassUtils {
      */
     public static Object getPropertyOrStaticPropertyOrFieldValue(Object obj, String name) throws BeansException {
         BeanWrapper ref = new BeanWrapperImpl(obj);
+        return getPropertyOrStaticPropertyOrFieldValue(ref, obj, name);
+    }
+
+    public static Object getPropertyOrStaticPropertyOrFieldValue(BeanWrapper ref, Object obj, String name) {
         if (ref.isReadableProperty(name)) {
             return ref.getPropertyValue(name);
         }

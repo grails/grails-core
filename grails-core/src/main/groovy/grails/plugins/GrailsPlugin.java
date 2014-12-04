@@ -149,6 +149,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String PROVIDED_ARTEFACTS = "providedArtefacts";
 
     /**
+     * The profiles for which this plugin is active
+     */
+    String PROFILES = "profiles";
+
+    /**
      * The name of the property that provides a list of plugins this plugin should load before
      */
     String PLUGIN_LOAD_BEFORE_NAMES = "loadBefore";
@@ -305,6 +310,13 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * @return Whether the plugin is enabled or not
      */
     boolean isEnabled();
+
+    /**
+     * Check whether the plugin is enabled for the given profile
+     * @param activeProfiles
+     * @return True if it is
+     */
+    boolean isEnabled(String[] activeProfiles);
 
     /**
      * Retrieve the plugin names that this plugin is observing for changes

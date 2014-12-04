@@ -167,7 +167,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         }
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
-            if (plugin.supportsCurrentScopeAndEnvironment()) {
+            if (plugin.supportsCurrentScopeAndEnvironment() && plugin.isEnabled(context.getEnvironment().getActiveProfiles())) {
                 plugin.doWithRuntimeConfiguration(springConfig);
             }
         }
@@ -186,6 +186,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         if (!plugin.supportsCurrentScopeAndEnvironment()) {
             return;
         }
+
+        if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) return;
 
         String[] dependencyNames = plugin.getDependencyNames();
         doRuntimeConfigurationForDependencies(dependencyNames, springConfig);
@@ -210,6 +212,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             if (pluginDependencies.length > 0) {
                 doRuntimeConfigurationForDependencies(pluginDependencies, springConfig);
             }
+            if(!current.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
             current.doWithRuntimeConfiguration(springConfig);
         }
     }
@@ -220,6 +223,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void doPostProcessing(ApplicationContext ctx) {
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
+            if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 plugin.doWithApplicationContext(ctx);
             }
@@ -267,8 +271,10 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                 ExpandoMetaClass emc = new ExpandoMetaClass(c, true, true);
                 emc.initialize();
             }
+            ApplicationContext ctx = applicationContext;
             for (GrailsPlugin plugin : pluginList) {
-                plugin.doWithDynamicMethods(applicationContext);
+                if(!plugin.isEnabled(ctx.getEnvironment().getActiveProfiles())) continue;
+                plugin.doWithDynamicMethods(ctx);
             }
         }
     }
@@ -312,6 +318,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void doArtefactConfiguration() {
         checkInitialised();
         for (GrailsPlugin plugin : pluginList) {
+            if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 plugin.doArtefactConfiguration();
             }
@@ -322,6 +329,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         checkInitialised();
         try {
             for (GrailsPlugin plugin : pluginList) {
+                if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) continue;
                 if (plugin.supportsCurrentScopeAndEnvironment()) {
                     plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_SHUTDOWN, plugin);
                 }
@@ -362,6 +370,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
         GrailsPlugin plugin = getGrailsPlugin(pluginName);
         if (plugin != null) {
+            if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) return;
             plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, aClass);
         }
     }

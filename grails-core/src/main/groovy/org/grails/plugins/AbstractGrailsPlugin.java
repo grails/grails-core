@@ -113,6 +113,11 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
     }
 
+    @Override
+    public boolean isEnabled(String[] profiles) {
+        return true;
+    }
+
     protected Resource readPluginConfiguration(Class<?> pluginClass) {
         String path = pluginClass.getResource("").toString();
         int i = path.indexOf("jar!");

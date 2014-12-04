@@ -102,6 +102,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private Closure onConfigChangeListener;
     private Closure onShutdownListener;
     private Class<?>[] providedArtefacts = {};
+    private Collection profiles = null;
     private Map pluginScopes;
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
@@ -117,6 +118,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         resolver = new PathMatchingResourcePatternResolver();
 
         initialisePlugin(pluginClass);
+    }
+
+    @Override
+    public boolean isEnabled(String[] activeProfiles) {
+        if(profiles == null) return true;
+        else {
+            for (String activeProfile : activeProfiles) {
+                if(profiles.contains(activeProfile)) return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -276,12 +288,20 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     @SuppressWarnings("unchecked")
     private void evaluateProvidedArtefacts() {
-        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PROVIDED_ARTEFACTS);
+        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PROFILES);
         if (result instanceof Collection) {
             final Collection artefactList = (Collection) result;
             providedArtefacts = (Class<?>[])artefactList.toArray(new Class[artefactList.size()]);
         }
     }
+
+    private void evaluateProfiles() {
+        Object result = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PROFILES);
+        if (result instanceof Collection) {
+            profiles =  (Collection) result;
+        }
+    }
+
 
     public DefaultGrailsPlugin(Class<?> pluginClass, GrailsApplication application) {
         this(pluginClass, null, application);
@@ -417,7 +437,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             return;
         }
 
-        List pluginsToEvict = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, EVICT);
+        List pluginsToEvict = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, EVICT);
         if (pluginsToEvict == null) {
             return;
         }
@@ -432,13 +452,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     @SuppressWarnings("unchecked")
     private void evaluatePluginLoadAfters() {
         if (pluginBean.isReadableProperty(PLUGIN_LOAD_AFTER_NAMES)) {
-            List loadAfterNamesList = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PLUGIN_LOAD_AFTER_NAMES);
+            List loadAfterNamesList = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, PLUGIN_LOAD_AFTER_NAMES);
             if (loadAfterNamesList != null) {
                 loadAfterNames = (String[])loadAfterNamesList.toArray(new String[loadAfterNamesList.size()]);
             }
         }
         if (pluginBean.isReadableProperty(PLUGIN_LOAD_BEFORE_NAMES)) {
-            List loadBeforeNamesList = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PLUGIN_LOAD_BEFORE_NAMES);
+            List loadBeforeNamesList = (List) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, PLUGIN_LOAD_BEFORE_NAMES);
             if (loadBeforeNamesList != null) {
                 loadBeforeNames = (String[])loadBeforeNamesList.toArray(new String[loadBeforeNamesList.size()]);
             }
@@ -451,7 +471,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             return;
         }
 
-        dependencies = (Map) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, DEPENDS_ON);
+        dependencies = (Map) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(pluginBean, plugin, DEPENDS_ON);
         dependencyNames = dependencies.keySet().toArray(new String[dependencies.size()]);
     }
 
