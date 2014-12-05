@@ -44,7 +44,7 @@ class FileSystemCommandResourceResolver implements CommandResourceResolver {
 
     @Override
     Collection<Resource> findCommandResources(Profile profile) {
-        File commandsDir = new File(profile.profileDir, "commands")
+        File commandsDir = getCommandsDirectory(profile)
         if(commandsDir.isDirectory()) {
             Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
                 file.isFile() && file.name ==~ fileNamePatternRegex
@@ -54,5 +54,9 @@ class FileSystemCommandResourceResolver implements CommandResourceResolver {
         } else {
             return []
         }
+    }
+
+    protected File getCommandsDirectory(Profile profile) {
+        new File(profile.profileDir, "commands")
     }
 }

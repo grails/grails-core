@@ -60,6 +60,13 @@ public interface Profile {
     Iterable<Command> getCommands(ProjectContext context);
 
     /**
+     * Whether a command executes for the given context and name
+     * @param context The {@link org.grails.cli.profile.ProjectContext}
+     * @param name The command name
+     * @return True if the command does exist
+     */
+    boolean hasCommand(ProjectContext context, String name);
+    /**
      * Obtains a {@link Command}
      *
      * @return True if the command was handled

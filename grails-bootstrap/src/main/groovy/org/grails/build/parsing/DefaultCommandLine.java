@@ -58,6 +58,16 @@ public class DefaultCommandLine implements CommandLine {
         declaredOptions.put(name, so);
     }
 
+    @Override
+    public CommandLine parseNew(String[] args) {
+        DefaultCommandLine defaultCommandLine = new DefaultCommandLine();
+        defaultCommandLine.systemProperties.putAll(systemProperties);
+        defaultCommandLine.undeclaredOptions.putAll(undeclaredOptions);
+        defaultCommandLine.declaredOptions.putAll(declaredOptions);
+        CommandLineParser parser = new CommandLineParser();
+        return parser.parse(defaultCommandLine, args);
+    }
+
     public void setEnvironment(String environment) {
         this.environment = environment;
         System.setProperty(Environment.KEY, environment);

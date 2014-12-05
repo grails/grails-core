@@ -17,6 +17,7 @@
 
 package org.grails.cli.gradle.commands
 
+import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.gradle.tooling.ProjectConnection
@@ -42,6 +43,7 @@ class ReadGradleTasks extends ListReadingCachedGradleOperation<String> {
 
     @Override
     List<String> readFromGradle(ProjectConnection connection) {
+        GrailsConsole.instance.updateStatus("Reading tasks from Gradle build. Please wait...")
         FetchAllTaskSelectorsBuildAction.AllTasksModel allTasksModel = (FetchAllTaskSelectorsBuildAction.AllTasksModel)connection.action(new FetchAllTaskSelectorsBuildAction(projectContext.getBaseDir())).run()
         Collection<String> allTaskSelectors=[]
 

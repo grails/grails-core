@@ -16,6 +16,7 @@
 
 package org.grails.cli.profile.commands.factory
 
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
@@ -61,7 +62,14 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
     }
 
     protected Collection<CommandResourceResolver> getCommandResolvers() {
-        return [ new FileSystemCommandResourceResolver(matchingFileExtensions), new ClasspathCommandResourceResolver(matchingFileExtensions) ]
+        def profileCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions)
+        def localCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions) {
+            @Override
+            protected File getCommandsDirectory(Profile profile) {
+                return new File(BuildSettings.BASE_DIR, "src/main/scripts")
+            }
+        }
+        return [profileCommandsResolver, localCommandsResolver, new ClasspathCommandResourceResolver(matchingFileExtensions) ]
     }
 
     protected abstract T readCommandFile(Resource resource)

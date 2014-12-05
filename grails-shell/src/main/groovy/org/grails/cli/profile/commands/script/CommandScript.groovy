@@ -21,6 +21,8 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.grails.build.logging.GrailsConsoleAntBuilder
+import org.grails.build.parsing.CommandLine
+import org.grails.cli.GrailsCli
 import org.grails.cli.boot.SpringInvoker
 import org.grails.cli.gradle.GradleInvoker
 import org.grails.cli.profile.CommandArgument
@@ -129,6 +131,28 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
             return ((Boolean)result)
         }
         return true
+    }
+
+    /**
+     * Method missing handler used to invoke other commands from a command script
+     *
+     * @param name The name of the command as a method name (for example 'run-app' would be runApp())
+     * @param args The arguments to the command
+     */
+    def methodMissing(String name, args) {
+        Object[] argsArray = (Object[])args
+        def commandName = GrailsNameUtils.getScriptName(name)
+        def context = executionContext
+        if(profile?.hasCommand(context, commandName )) {
+            def commandLine = context.commandLine
+            def newArgs = [commandName]
+            newArgs.addAll argsArray.collect() { it.toString() }
+            def newContext = new GrailsCli.ExecutionContextImpl(commandLine.parseNew(newArgs as String[]), context)
+            return profile.handleCommand(newContext)
+        }
+        else {
+            throw new MissingMethodException(name, getClass(), argsArray)
+        }
     }
 
     public void setExecutionContext(ExecutionContext executionContext) {

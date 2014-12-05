@@ -116,6 +116,10 @@ public class CommandLineParser {
      */
     public CommandLine parse(String... args) {
         DefaultCommandLine cl = createCommandLine();
+        return parse(cl, args);
+    }
+
+    public CommandLine parse(DefaultCommandLine cl, String[] args) {
         parseInternal(cl, args, true);
         return cl;
     }

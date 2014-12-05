@@ -102,4 +102,11 @@ public interface CommandLine {
     String lookupEnvironmentForCommand();
 
     void setCommand(String scriptName);
+
+    /**
+     * Parses a new {@link CommandLine} instance that combines this instance with the given arguments
+     * @param args The arguments
+     * @return A new {@link CommandLine} instance
+     */
+    CommandLine parseNew(String[] args);
 }

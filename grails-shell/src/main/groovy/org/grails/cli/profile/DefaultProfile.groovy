@@ -126,6 +126,12 @@ class DefaultProfile implements Profile {
     }
 
     @Override
+    boolean hasCommand(ProjectContext context, String name) {
+        getCommands(context) // ensure initialization
+        return commandsByName.containsKey(name)
+    }
+
+    @Override
     boolean handleCommand(ExecutionContext context) {
         getCommands(context) // ensure initialization
 
