@@ -35,11 +35,19 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         super.apply(project)
 
         def providedConfig = project.configurations.create("provided")
+        def sourceSets = project.sourceSets
+        def mainSourceSet = sourceSets.main
 
         project.sourceSets {
             def providedFiles = project.files(providedConfig)
+            ast {
+                groovy {
+                    srcDirs = ["${project.projectDir}/src/main/ast"]
+                    compileClasspath += project.configurations.compile + providedFiles
+                }
+            }
             main {
-                compileClasspath += providedFiles
+                compileClasspath += providedFiles + sourceSets.ast.output
             }
             test {
                 compileClasspath += providedFiles
@@ -87,6 +95,7 @@ withConfig(configuration) {
             rename "application.yml", "plugin.yml"
             exclude "logback.groovy"
             exclude "spring/resources.groovy"
+            from sourceSets.ast.output
         }
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
@@ -99,7 +108,7 @@ withConfig(configuration) {
 
         def sourcesJar = projectTasks.create("sourcesJar", Jar).configure {
             classifier = 'sources'
-            from project.sourceSets.main.allSource
+            from mainSourceSet.allSource
         }
 
     }

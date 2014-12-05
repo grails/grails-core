@@ -20,12 +20,10 @@ import grails.util.GrailsNameUtils;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.grails.io.support.Resource;
 
 import java.util.*;
@@ -69,13 +67,13 @@ class PluginAstReader {
                 final Expression expr = node.getField().getInitialExpression();
 
                 if (expr != null) {
-                    Object value;
+                    Object value = null;
                     if (expr instanceof ListExpression) {
                         final List<String> list = new ArrayList<String>();
-                        value = list;
                         for (Expression i : ((ListExpression)expr).getExpressions()) {
                             list.add(i.getText());
                         }
+                        value = DefaultGroovyMethods.join(((Iterable)list), ",");
                     }
                     else if (expr instanceof MapExpression) {
                         final Map<String, String> map = new LinkedHashMap<String, String>();
@@ -85,11 +83,14 @@ class PluginAstReader {
                         }
                     }
                     else {
-                        value = expr.getText();
+                        if(expr instanceof ConstantExpression)  {
+                            value = expr.getText();
+                        }
                     }
-
-                    pluginInfo.setProperty(name, value);
-                    super.visitProperty(node);
+                    if(value != null) {
+                        pluginInfo.setProperty(name, value);
+                        super.visitProperty(node);
+                    }
                 }
             }
 
