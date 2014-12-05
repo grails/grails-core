@@ -123,6 +123,12 @@ abstract class GroovyScriptCommmand extends Script implements ProfileCommand, Co
      */
     GrailsConsole getGrailsConsole() { executionContext.console }
 
+    /**
+     * Implementation of the handle method that runs the script
+     *
+     * @param executionContext The ExecutionContext
+     * @return True if the script succeeds, false otherwise
+     */
     @Override
     boolean handle(ExecutionContext executionContext) {
         setExecutionContext(executionContext)
