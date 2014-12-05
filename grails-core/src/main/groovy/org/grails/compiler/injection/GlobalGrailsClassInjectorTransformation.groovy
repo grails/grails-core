@@ -1,11 +1,11 @@
 package org.grails.compiler.injection
 
 import grails.artefact.Artefact
-import grails.boot.GrailsApp
 import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
+import grails.plugins.GrailsPluginInfo
 import grails.plugins.metadata.GrailsPlugin
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
@@ -42,8 +42,6 @@ import java.lang.reflect.Modifier
 @GroovyASTTransformation(phase= CompilePhase.CANONICALIZATION)
 @CompileStatic
 class GlobalGrailsClassInjectorTransformation implements ASTTransformation, CompilationUnitAware {
-
-    static Set<String> pendingPluginClasses = []
 
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
@@ -91,15 +89,16 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         }
 
         Set<String> transformedClasses = []
-        String pluginClassName = null
+        String pluginVersion = null
+        ClassNode pluginClassNode = null
 
         for (ClassNode classNode : classes) {
             def projectName = classNode.getNodeMetaData("projectName")
             def projectVersion = classNode.getNodeMetaData("projectVersion")
+            pluginVersion = projectVersion
 
             if(classNode.name.endsWith("GrailsPlugin")) {
-                pluginClassName = classNode.name
-
+                pluginClassNode = classNode
                 if(projectVersion && !classNode.getProperty('version')) {
                     classNode.addProperty(new PropertyNode('version', Modifier.PUBLIC, ClassHelper.make(Object), classNode, new ConstantExpression(projectVersion.toString()) , null, null))
                 }
@@ -148,26 +147,28 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
         pluginXmlFile.parentFile.mkdirs()
 
-        generatePluginXml(pluginClassName, transformedClasses, pluginXmlFile)
+        generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
     }
 
-    protected static void generatePluginXml(String pluginClassName, Set<String> transformedClasses, File pluginXmlFile) {
+    static Set<String> pendingPluginClasses = []
+
+    protected static void generatePluginXml(ClassNode pluginClassNode, String pluginVersion, Set<String> transformedClasses, File pluginXmlFile) {
         def pluginXmlExists = pluginXmlFile.exists()
         Set pluginClasses = []
         pluginClasses.addAll(transformedClasses)
         pluginClasses.addAll(pendingPluginClasses)
 
         // if the class being transformed is a *GrailsPlugin class then if it doesn't exist create it
-        if (pluginClassName) {
+        if (pluginClassNode) {
             if (!pluginXmlExists) {
-                writePluginXml(pluginClassName, pluginXmlFile, pluginClasses)
+                writePluginXml(pluginClassNode, pluginVersion, pluginXmlFile, pluginClasses)
             } else {
                 // otherwise if the file does exist, update it with the plugin name
-                updatePluginXml(pluginClassName, pluginXmlFile, pluginClasses)
+                updatePluginXml(pluginClassNode, pluginVersion, pluginXmlFile, pluginClasses)
             }
         } else if (pluginXmlExists) {
             // if the class isn't the *GrailsPlugin class then only update the plugin.xml if it already exists
-            updatePluginXml(null, pluginXmlFile, pluginClasses)
+            updatePluginXml(null, pluginVersion, pluginXmlFile,  pluginClasses)
         } else {
             // otherwise add it to a list of pending classes to populated when the plugin.xml is created
             pendingPluginClasses.addAll(transformedClasses)
@@ -175,14 +176,21 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
     }
 
     @CompileDynamic
-    static void writePluginXml(String pluginClassName, File pluginXml, Collection<String> artefactClasses) {
-        if(pluginClassName) {
+    static void writePluginXml(ClassNode pluginClassNode, String pluginVersion, File pluginXml, Collection<String> artefactClasses) {
+        if(pluginClassNode) {
+            PluginAstReader pluginAstReader = new PluginAstReader()
+            def info = pluginAstReader.readPluginInfo(pluginClassNode)
+
             pluginXml.withWriter( "UTF-8") { Writer writer ->
                 def mkp = new MarkupBuilder(writer)
-                def pluginName = GrailsNameUtils.getLogicalPropertyName(pluginClassName, "GrailsPlugin")
-                mkp.plugin(name:pluginName) {
-                    type(pluginClassName)
+                def pluginName = GrailsNameUtils.getLogicalPropertyName(pluginClassNode.name, "GrailsPlugin")
+                def grailsVersion = info.getProperties()['grailsVersion'] ?: getClass().getPackage().getImplementationVersion() + " > *"
+                mkp.plugin(name:pluginName, version: pluginVersion, grailsVersion: grailsVersion) {
+                    type(pluginClassNode.name)
 
+                    for(entry in info.getProperties()) {
+                        delegate."$entry.key"(entry.value)
+                    }
                     // if there are pending classes to add to the plugin.xml add those
                     if(artefactClasses) {
                         resources {
@@ -199,17 +207,26 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
     }
 
     @CompileDynamic
-    static void updatePluginXml(String pluginClassName, File pluginXmlFile, Collection<String> artefactClasses) {
-        if(!pluginClassName && !artefactClasses) return
+    static void updatePluginXml(ClassNode pluginClassNode, String pluginVersion, File pluginXmlFile, Collection<String> artefactClasses) {
+        if(!artefactClasses) return
 
         try {
             XmlSlurper xmlSlurper = IOUtils.createXmlSlurper()
 
             def pluginXml = xmlSlurper.parse(pluginXmlFile)
-            if(pluginClassName) {
-                def pluginName = GrailsNameUtils.getLogicalPropertyName(pluginClassName, "GrailsPlugin")
+            if(pluginClassNode) {
+                def pluginName = GrailsNameUtils.getLogicalPropertyName(pluginClassNode.name, "GrailsPlugin")
                 pluginXml.@name = pluginName
-                pluginXml.type = pluginClassName
+                pluginXml.@version = pluginVersion
+                pluginXml.type = pluginClassNode.name
+
+                PluginAstReader pluginAstReader = new PluginAstReader()
+                def info = pluginAstReader.readPluginInfo(pluginClassNode)
+                def grailsVersion = info.getProperties()['grailsVersion'] ?: getClass().getPackage().getImplementationVersion() + " > *"
+                pluginXml.@grailsVersion = grailsVersion
+                for(entry in info.getProperties()) {
+                    pluginXml."$entry.key" = entry.value
+                }
             }
 
             def resources = pluginXml.resources
@@ -235,7 +252,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         } catch (e) {
             // corrupt, recreate
-            writePluginXml(pluginClassName, pluginXmlFile, artefactClasses)
+            writePluginXml(pluginClassNode, pluginXmlFile, artefactClasses)
         }
     }
 
