@@ -1,3 +1,9 @@
+package org.grails.cli.profile.commands.templates
+
+import grails.codegen.model.Model
+import groovy.transform.CompileDynamic
+import org.grails.io.support.Resource
+
 /*
  * Copyright 2014 original authors
  *
@@ -13,38 +19,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.commands.templates
-
-import grails.codegen.model.Model
-import groovy.text.GStringTemplateEngine
-import groovy.text.Template
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
-import org.grails.cli.interactive.completers.ClassNameCompleter
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.commands.io.FileSystemInteraction
-import org.grails.io.support.DefaultResourceLoader
-import org.grails.io.support.Resource
-import org.grails.io.support.ResourceLoader
-
 
 /**
- * Interface for classes that can render templates
- *
- * @author Graeme Rocher
- * @since 3.0
+ * @author graemerocher
  */
-@CompileStatic
-class TemplateRenderer  {
-
-    ExecutionContext executionContext
-    @Delegate FileSystemInteraction fileSystemInteraction
-    private Map<String, Template> templatecCache = [:]
-
-    TemplateRenderer(ExecutionContext executionContext, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
-        this.executionContext = executionContext
-        this.fileSystemInteraction = new FileSystemInteraction(executionContext, resourceLoader)
-    }
+interface TemplateRenderer {
 
     /**
      * Render with the given named arguments
@@ -52,12 +31,7 @@ class TemplateRenderer  {
      * @param namedArguments The named arguments are 'template', 'destination' and 'model'
      */
     @CompileDynamic
-    void render(Map<String, Object> namedArguments) {
-        if(namedArguments?.template && namedArguments?.destination) {
-            render resource(namedArguments.template), file(namedArguments.destination), namedArguments.model, namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
-        }
-    }
-
+    void render(Map<String, Object> namedArguments)
     /**
      * Render the given template to the give destination for the given model
      *
@@ -65,9 +39,7 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(CharSequence template, File destination, Model model) {
-        render(template, destination, model.asMap())
-    }
+    void render(CharSequence template, File destination, Model model)
 
     /**
      * Render the given template to the given destination
@@ -76,25 +48,24 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(CharSequence template, File destination, Map model = Collections.emptyMap(), boolean overwrite = false) {
-        if(template && destination) {
-            if(destination.exists() && !overwrite) {
-                executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
-            }
-            else {
-                def templateEngine = new GStringTemplateEngine()
-                try {
-                    def t = templateEngine.createTemplate(template.toString())
-                    writeTemplateToDestination(t, model, destination)
-                } catch (e) {
-                    destination.delete()
-                    throw new TemplateException("Error rendering template to destination ${projectPath( destination )}: ${e.message}", e)
-                }
-            }
-        }
-    }
+    void render(CharSequence template, File destination )
 
-
+    /**
+     * Render the given template to the given destination
+     *
+     * @param template The contents of the template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(CharSequence template, File destination, Map model )
+    /**
+     * Render the given template to the given destination
+     *
+     * @param template The contents of the template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(CharSequence template, File destination, Map model, boolean overwrite)
 
     /**
      * Render the given template to the give destination for the given model
@@ -103,9 +74,8 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(File template, File destination, Model model) {
-        render(template, destination, model.asMap())
-    }
+    void render(File template, File destination, Model model)
+
     /**
      * Render the given template to the given destination
      *
@@ -113,31 +83,25 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(File template, File destination, Map model = Collections.emptyMap(), boolean overwrite = false) {
-        if(template && destination) {
-            if(destination.exists() && !overwrite) {
-                executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
-            }
-            else {
-                Template t = templatecCache[template.absolutePath]
-                if(t == null) {
-                    try {
-                        def templateEngine = new GStringTemplateEngine()
-                        t = templateEngine.createTemplate(template)
-                    } catch (e) {
-                        throw new TemplateException("Error rendering template [$template] to destination ${projectPath( destination )}: ${e.message}", e)
-                    }
-                }
-                try {
-                    writeTemplateToDestination(t, model, destination)
-                    executionContext.console.addStatus("Rendered template ${template.name} to destination ${projectPath( destination )}")
-                } catch (Throwable e) {
-                    destination.delete()
-                    throw new TemplateException("Error rendering template [$template] to destination ${projectPath( destination )}: ${e.message}", e)
-                }
-            }
-        }
-    }
+    void render(File template, File destination)
+
+    /**
+     * Render the given template to the given destination
+     *
+     * @param template The template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(File template, File destination, Map model )
+
+    /**
+     * Render the given template to the given destination
+     *
+     * @param template The template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(File template, File destination, Map model , boolean overwrite)
 
     /**
      * Render the given template to the give destination for the given model
@@ -146,9 +110,18 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(Resource template, File destination, Model model, boolean overwrite = false) {
-        render(template, destination, model.asMap(), overwrite)
-    }
+    void render(Resource template, File destination, Model model)
+
+
+    /**
+     * Render the given template to the give destination for the given model
+     *
+     * @param template The contents template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(Resource template, File destination, Model model, boolean overwrite)
+
     /**
      * Render the given template to the given destination
      *
@@ -156,43 +129,25 @@ class TemplateRenderer  {
      * @param destination The destination
      * @param model The model
      */
-    void render(Resource template, File destination, Map model = Collections.emptyMap(), boolean overwrite = false) {
-        if(template && destination) {
-            if(destination.exists() && !overwrite) {
-                executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
-            }
-            else {
-                Template t = templatecCache[template.filename]
-                if(t == null) {
+    void render(Resource template, File destination)
 
-                    try {
-                        def templateEngine = new GStringTemplateEngine()
-                        def reader = new InputStreamReader(template.inputStream, "UTF-8")
-                        try {
-                            t = templateEngine.createTemplate(reader)
-                        } finally {
-                            try {
-                                reader.close()
-                            } catch (e) {
-                                // ignore
-                            }
-                        }
-                    } catch (e) {
-                        throw new TemplateException("Error rendering template [$template.filename] to destination ${projectPath( destination )}: ${e.message}", e)
-                    }
-                }
-                if(t != null) {
-                    try {
-                        writeTemplateToDestination(t, model, destination)
-                        executionContext.console.addStatus("Rendered template ${template.filename} to destination ${projectPath( destination )}")
-                    } catch (Throwable e) {
-                        destination.delete()
-                        throw new TemplateException("Error rendering template [$template.filename] to destination ${projectPath( destination )}: ${e.message}", e)
-                    }
-                }
-            }
-        }
-    }
+    /**
+     * Render the given template to the given destination
+     *
+     * @param template The template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(Resource template, File destination, Map model)
+
+    /**
+     * Render the given template to the given destination
+     *
+     * @param template The template
+     * @param destination The destination
+     * @param model The model
+     */
+    void render(Resource template, File destination, Map model, boolean overwrite)
 
     /**
      * Find templates matching the given pattern
@@ -200,12 +155,7 @@ class TemplateRenderer  {
      * @param pattern The pattern
      * @return The available templates
      */
-    Iterable<Resource> templates(String pattern) {
-        Collection<Resource> resList = []
-        resList.addAll( resources(pattern) )
-        resList.addAll( resources("classpath*:META-INF/templates/$pattern"))
-        return resList.unique()
-    }
+    Iterable<Resource> templates(String pattern)
 
     /**
      * Find a template at the given location
@@ -213,22 +163,5 @@ class TemplateRenderer  {
      * @param location The location
      * @return The resource or null if it doesn't exist
      */
-    Resource template(Object location) {
-        File f = file("src/main/templates/$location")
-        if(!f?.exists()) {
-            return resource("classpath*:META-INF/templates/" + location)
-        }
-        return resource(f)
-    }
-
-
-    private static void writeTemplateToDestination(Template template, Map model, File destination) {
-        destination.parentFile.mkdirs()
-        destination.withWriter { Writer w ->
-            template.make(model).writeTo(w)
-            w.flush()
-        }
-
-        ClassNameCompleter.refreshAll()
-    }
+    Resource template(Object location)
 }

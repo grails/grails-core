@@ -21,7 +21,6 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.grails.build.logging.GrailsConsoleAntBuilder
-import org.grails.build.parsing.CommandLine
 import org.grails.cli.GrailsCli
 import org.grails.cli.boot.SpringInvoker
 import org.grails.cli.gradle.GradleInvoker
@@ -32,7 +31,9 @@ import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
 import org.grails.cli.profile.codegen.ModelBuilder
 import org.grails.cli.profile.commands.io.FileSystemInteraction
+import org.grails.cli.profile.commands.io.FileSystemInteractionImpl
 import org.grails.cli.profile.commands.templates.TemplateRenderer
+import org.grails.cli.profile.commands.templates.TemplateRendererImpl
 
 /**
  * A base class for Groovy scripts that implement commands
@@ -41,14 +42,13 @@ import org.grails.cli.profile.commands.templates.TemplateRenderer
  * @since 3.0
  */
 @CompileStatic
-abstract class CommandScript extends Script implements ProfileCommand, ConsoleLogger {
+abstract class GroovyScriptCommmand extends Script implements ProfileCommand, ConsoleLogger, ModelBuilder, FileSystemInteraction, TemplateRenderer {
 
     Profile profile
     String name = getClass().name.contains('-') ? getClass().name : GrailsNameUtils.getScriptName(getClass().name)
     CommandDescription description = new CommandDescription(name)
     @Delegate ExecutionContext executionContext
     @Delegate TemplateRenderer templateRenderer
-    @Delegate ModelBuilder modelBuilder = new ModelBuilder()
     @Delegate ConsoleLogger consoleLogger = GrailsConsole.getInstance()
     @Delegate FileSystemInteraction fileSystemInteraction
 
@@ -158,8 +158,8 @@ abstract class CommandScript extends Script implements ProfileCommand, ConsoleLo
     public void setExecutionContext(ExecutionContext executionContext) {
         this.executionContext = executionContext
         this.consoleLogger = executionContext.console
-        this.templateRenderer = new TemplateRenderer(executionContext)
-        this.fileSystemInteraction = new FileSystemInteraction(executionContext)
+        this.templateRenderer = new TemplateRendererImpl(executionContext)
+        this.fileSystemInteraction = new FileSystemInteractionImpl(executionContext)
         this.gradle = new GradleInvoker(executionContext)
     }
 

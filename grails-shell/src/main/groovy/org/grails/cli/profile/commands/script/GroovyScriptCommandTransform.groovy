@@ -36,11 +36,11 @@ import java.lang.reflect.Modifier
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 @CompileStatic
-class CommandScriptTransform implements ASTTransformation {
+class GroovyScriptCommandTransform implements ASTTransformation {
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
         for(ClassNode cNode in source.AST.classes) {
-            if(cNode.superClass.name == "org.grails.cli.profile.commands.script.CommandScript")
+            if(cNode.superClass.name == "org.grails.cli.profile.commands.script.GroovyScriptCommmand")
                 new CommandScriptTransformer(source, cNode).visitClass(cNode)
         }
     }

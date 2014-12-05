@@ -8,8 +8,8 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
-import org.grails.cli.profile.commands.script.CommandScript
-import org.grails.cli.profile.commands.script.CommandScriptTransform
+import org.grails.cli.profile.commands.script.GroovyScriptCommmand
+import org.grails.cli.profile.commands.script.GroovyScriptCommandTransform
 import org.grails.io.support.Resource
 
 /*
@@ -35,16 +35,16 @@ import org.grails.io.support.Resource
  * @since 3.0
  */
 @CompileStatic
-class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<CommandScript> {
+class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<GroovyScriptCommmand> {
 
     final Collection<String> matchingFileExtensions = ["groovy"]
     final String fileNamePattern = /^.*\.(groovy)$/
 
     @Override
-    protected CommandScript readCommandFile(Resource resource) {
+    protected GroovyScriptCommmand readCommandFile(Resource resource) {
         GroovyClassLoader classLoader = createGroovyScriptCommandClassLoader()
         try {
-            return (CommandScript) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
+            return (GroovyScriptCommmand) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
         } catch (Throwable e) {
             GrailsConsole.getInstance().error("Failed to compile ${resource.filename}: " + e.getMessage(), e)
         }
@@ -54,13 +54,13 @@ class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<Command
     public static GroovyClassLoader createGroovyScriptCommandClassLoader() {
         def configuration = new CompilerConfiguration()
         // TODO: Report bug, this fails with @CompileStatic with a ClassCastException
-        String baseClassName = CommandScript.class.getName()
+        String baseClassName = GroovyScriptCommmand.class.getName()
         return createClassLoaderForBaseClass(configuration, baseClassName)
     }
 
     private static GroovyClassLoader createClassLoaderForBaseClass(CompilerConfiguration configuration, String baseClassName) {
         configuration.setScriptBaseClass(baseClassName)
-        configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new CommandScriptTransform()))
+        configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new GroovyScriptCommandTransform()))
         def classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader, configuration)
         return classLoader
     }
@@ -72,7 +72,7 @@ class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<Command
     }
 
     @Override
-    protected Command createCommand(Profile profile, String commandName, Resource resource, CommandScript data) {
+    protected Command createCommand(Profile profile, String commandName, Resource resource, GroovyScriptCommmand data) {
         data.setProfile(profile)
         return data
     }

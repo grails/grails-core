@@ -31,7 +31,7 @@ import org.grails.io.support.Resource
  * @since 3.0
  */
 @CompileStatic
-class ModelBuilder {
+trait ModelBuilder {
 
     /**
      * A model for the given class name
