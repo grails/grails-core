@@ -2,6 +2,7 @@ package org.grails.gradle.plugin.core
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 
 /*
@@ -33,7 +34,21 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
-        def configScriptTask = project.tasks.create('configScript')
+        def providedConfig = project.configurations.create("provided")
+
+        project.sourceSets {
+            def providedFiles = project.files(providedConfig)
+            main {
+                compileClasspath += providedFiles
+            }
+            test {
+                compileClasspath += providedFiles
+                runtimeClasspath += providedFiles
+            }
+        }
+
+        def projectTasks = project.tasks
+        def configScriptTask = projectTasks.create('configScript')
 
         def configFile = project.file("$project.buildDir/config.groovy")
         configScriptTask.outputs.file(configFile)
@@ -54,7 +69,7 @@ withConfig(configuration) {
 """
         }
 
-        ProcessResources processResources = (ProcessResources)project.tasks.getByName('processResources')
+        ProcessResources processResources = (ProcessResources) projectTasks.getByName('processResources')
 
         def copyCommands = project.task(type:Copy, "copyCommands") {
             from "${project.projectDir}/src/main/scripts"
@@ -67,7 +82,7 @@ withConfig(configuration) {
         }
 
         processResources.dependsOn(copyCommands, copyTemplates)
-        project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
+        projectTasks.getByName('compileGroovy').dependsOn(configScriptTask)
         project.processResources {
             rename "application.yml", "plugin.yml"
             exclude "logback.groovy"
@@ -76,5 +91,16 @@ withConfig(configuration) {
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
         }
+
+        def javadocJar = projectTasks.create("javadocJar", Jar).configure {
+            classifier = 'javadoc'
+            from 'build/docs/javadoc'
+        }.dependsOn(projectTasks.findByName('javadoc'))
+
+        def sourcesJar = projectTasks.create("sourcesJar", Jar).configure {
+            classifier = 'sources'
+            from project.sourceSets.main.allSource
+        }
+
     }
 }

@@ -26,19 +26,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
     void apply(Project project) {
         super.apply(project)
         project.extensions.create("grails", GrailsExtension)
-        def providedConfig = project.configurations.create("provided")
-
-        project.sourceSets {
-            def providedFiles = project.files(providedConfig)
-            main {
-                compileClasspath += providedFiles
-            }
-            test {
-                compileClasspath += providedFiles
-                runtimeClasspath += providedFiles
-            }
-        }
-
         registerFindMainClassTask(project)
 
         def projectDir = project.projectDir
