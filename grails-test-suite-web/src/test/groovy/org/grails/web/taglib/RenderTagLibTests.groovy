@@ -15,22 +15,21 @@
  */
 package org.grails.web.taglib
 
+import com.opensymphony.module.sitemesh.RequestConstants
+import com.opensymphony.module.sitemesh.html.util.CharArray
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser
+import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 import grails.util.GrailsUtil
+import grails.web.util.GrailsApplicationAttributes
+import org.grails.buffer.FastStringWriter
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.core.io.MockStringResourceLoader
-import org.grails.buffer.FastStringWriter
-import org.grails.web.pages.GroovyPageBinding
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.gsp.GroovyPageBinding
 import org.grails.web.sitemesh.FactoryHolder
 import org.grails.web.sitemesh.GSPSitemeshPage
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
-import com.opensymphony.module.sitemesh.RequestConstants
-import com.opensymphony.module.sitemesh.html.util.CharArray
-import com.opensymphony.module.sitemesh.parser.HTMLPageParser
-import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 
 /**
  * Tests for the RenderTagLib.groovy file which contains tags for rendering.

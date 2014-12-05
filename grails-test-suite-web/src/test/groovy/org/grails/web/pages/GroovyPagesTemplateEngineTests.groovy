@@ -4,8 +4,10 @@ import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.util.GrailsUtil
 import grails.util.GrailsWebMockUtil
-
 import org.grails.core.io.MockStringResourceLoader
+import org.grails.gsp.GroovyPage
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.compiler.GroovyPageParser
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
 import org.springframework.mock.web.MockServletContext

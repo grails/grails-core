@@ -41,7 +41,7 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsTagLibClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.buffer.FastStringPrintWriter;
-import org.grails.web.pages.GroovyPage;
+import org.grails.gsp.GroovyPage;
 import org.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;

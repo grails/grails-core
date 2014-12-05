@@ -15,13 +15,11 @@
  */
 
 package grails.test.runtime
-
-import groovy.transform.CompileStatic
-import org.grails.web.pages.GroovyPageBinding
-import org.grails.web.taglib.WebRequestTemplateVariableBinding
 import grails.web.util.GrailsApplicationAttributes
+import groovy.transform.CompileStatic
+import org.grails.gsp.GroovyPageBinding
 import org.grails.web.servlet.mvc.GrailsWebRequest
-
+import org.grails.web.taglib.WebRequestTemplateVariableBinding
 /**
  * a TestPlugin for TestRuntime for supporting GSP tests
  * 

@@ -1,8 +1,7 @@
 package org.grails.web.pages
 
 import grails.util.Environment
-
-import org.grails.web.pages.exceptions.GroovyPagesException
+import org.grails.gsp.GroovyPagesException
 import org.grails.web.taglib.AbstractGrailsTagTests
 
 /**

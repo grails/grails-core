@@ -25,12 +25,12 @@ import org.grails.buffer.FastStringWriter
 import org.grails.buffer.StreamCharBuffer
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
+import org.grails.gsp.GroovyPageTemplate
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.GroovyPagesTemplateRenderer
+import org.grails.gsp.compiler.GroovyPageParser
 import org.grails.web.errors.ErrorsViewStackTracePrinter
 import org.grails.web.errors.ExceptionUtils
-import org.grails.web.pages.GroovyPageParser
-import org.grails.web.pages.GroovyPageTemplate
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.GroovyPagesTemplateRenderer
 import org.grails.web.sitemesh.*
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput

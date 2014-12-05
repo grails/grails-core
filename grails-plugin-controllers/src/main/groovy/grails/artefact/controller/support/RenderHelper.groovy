@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package grails.artefact.controller.support
-
-import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*
 import grails.async.Promise
 import grails.converters.JSON
 import grails.io.IOUtils
@@ -31,16 +29,12 @@ import grails.web.util.GrailsApplicationAttributes
 import groovy.text.Template
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
+import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.SpringIOUtils
 import org.grails.web.converters.Converter
-import org.grails.web.pages.GroovyPageTemplate
 import org.grails.web.servlet.mvc.ActionResultTransformer
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
@@ -56,6 +50,10 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.View
 
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.*
 /**
  * 
  * @author Jeff Brown

@@ -1,7 +1,7 @@
 package org.grails.web.pages
 
+import org.grails.gsp.GroovyPagesMetaUtils
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.grails.web.pages.GroovyPagesMetaUtils
 import org.springframework.web.context.request.RequestContextHolder
 
 class GroovyPageMethodDispatchWithNamespaceTests extends AbstractGrailsControllerTests {
@@ -37,7 +37,7 @@ class Test1TagLib {
 class Test2TagLib {
     Closure tag2 = { attrs, body -> out << attrs.test }
 }
-class MyPage extends org.grails.web.pages.GroovyPage {
+class MyPage extends org.grails.gsp.GroovyPage {
     String getGroovyPageFileName() { "test" }
     def run() {
         setBodyClosure(1) {

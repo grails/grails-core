@@ -1,15 +1,14 @@
 package org.grails.web.pages
 
-import org.grails.web.pages.GroovyPagesServlet
-import org.grails.web.pages.GroovyPagesTemplateEngine
+import org.grails.gsp.GroovyPagesTemplateEngine
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.grails.support.MockApplicationContext
 import org.grails.core.io.SimpleMapResourceLoader
-import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.grails.web.pages.discovery.GroovyPageScriptSource
+import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockHttpServletRequest
