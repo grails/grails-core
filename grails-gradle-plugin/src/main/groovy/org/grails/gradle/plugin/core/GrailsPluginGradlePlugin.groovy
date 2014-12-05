@@ -89,13 +89,17 @@ withConfig(configuration) {
             into "${processResources.destinationDir}/META-INF/templates"
         }
 
+        def copyAstClasses = project.task(type:Copy, "copyAstClasses") {
+            from sourceSets.ast.output
+            into mainSourceSet.output.classesDir
+        }
         processResources.dependsOn(copyCommands, copyTemplates)
         projectTasks.getByName('compileGroovy').dependsOn(configScriptTask)
+        projectTasks.getByName('classes').dependsOn(copyAstClasses)
         project.processResources {
             rename "application.yml", "plugin.yml"
             exclude "logback.groovy"
             exclude "spring/resources.groovy"
-            from sourceSets.ast.output
         }
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
