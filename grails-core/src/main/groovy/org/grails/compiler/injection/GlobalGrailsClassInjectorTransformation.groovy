@@ -108,7 +108,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
 
             if(projectName && projectVersion) {
-                GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: projectName, version:projectVersion])
+                GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(projectName.toString()), version:projectVersion])
             }
 
             for(ArtefactHandler handler in artefactHandlers) {
