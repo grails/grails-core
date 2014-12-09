@@ -87,7 +87,11 @@ trait Validateable {
         this.constraintsMapInternal
     }
 
-    boolean validate(List fieldsToValidate = null) {
+    boolean validate() {
+        validate((List)null)
+    }
+    
+    boolean validate(List fieldsToValidate) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
         def constraints = getConstraintsMap()

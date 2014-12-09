@@ -1028,6 +1028,16 @@ class MockUtils {
             }
             setErrorsFor(errorsMap, delegate, errors)
         }
+        def originalGetErrorsMethod = emc.getMetaMethod('getErrors', [] as Object[])
+        emc.getErrors = { ->
+            def result = originalGetErrorsMethod.invoke(delegate, [] as Object[])
+            if(result && !(result instanceof GrailsMockErrors)) {
+                def mockErrors = new GrailsMockErrors(delegate)
+                mockErrors.addAllErrors result
+                result = mockErrors
+            }
+            result
+        }
         emc.clearErrors = {-> clearErrorsFor(errorsMap, delegate) }
 
         // Finally add the "validate()" method, which can simply be
