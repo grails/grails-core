@@ -31,22 +31,21 @@ import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.*;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.ClassUtils;
 
-public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware {
+public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, ApplicationListener<ApplicationEvent> {
     protected ClassLoader classLoader;
     protected Config config;
     @SuppressWarnings("rawtypes")
     protected Map flatConfig = Collections.emptyMap();
     protected ApplicationContext parentContext;
-    protected ApplicationContext mainContext;
     protected Metadata applicationMeta = Metadata.getCurrent();
-    
+    protected boolean contextInitialized;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         org.springframework.core.env.Environment environment = applicationContext.getEnvironment();
@@ -59,6 +58,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
             this.config = newConfig;
         }
         this.parentContext = applicationContext;
+        ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this);
     }
 
     @Override
@@ -131,27 +131,21 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     }    
     
     public ApplicationContext getMainContext() {
-        return mainContext;
+        return parentContext;
     }
 
     public void setMainContext(ApplicationContext context) {
-        mainContext = context;
-        if (mainContext == null) {
-            return;
-        }
-        if (!mainContext.containsBean("pluginManager")) {
-            return;
-        }
-        if (mainContext instanceof ConfigurableApplicationContext) {
-            if (!((ConfigurableApplicationContext) mainContext).isActive()) {
-                // unrefreshed context - plugin manager will get the context from GrailsRuntimeConfiguration
-                return;
-            }
-        }
-        mainContext.getBean("pluginManager", GrailsPluginManager.class).setApplicationContext(context);
+        this.parentContext = context;
     }
 
     public ApplicationContext getParentContext() {
         return parentContext;
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if(event instanceof ContextRefreshedEvent) {
+            this.contextInitialized = true;
+        }
     }
 }
