@@ -73,7 +73,7 @@ class PluginAstReader {
                         for (Expression i : ((ListExpression)expr).getExpressions()) {
                             list.add(i.getText());
                         }
-                        value = DefaultGroovyMethods.join(((Iterable)list), ",");
+                        value = list;
                     }
                     else if (expr instanceof MapExpression) {
                         final Map<String, String> map = new LinkedHashMap<String, String>();

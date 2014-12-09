@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest
 @CompileStatic
 class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
 
+    static final String MATCHED_REQUEST = "org.grails.url.match.info"
 
     protected UrlMappingsHolder urlMappingsHolder
     protected UrlPathHelper urlHelper = new UrlPathHelper();
@@ -59,6 +60,9 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
 
     @Override
     protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
+
+        def matchedInfo = request.getAttribute(MATCHED_REQUEST)
+        if(matchedInfo != null) return matchedInfo
 
         String uri = urlHelper.getPathWithinApplication(request);
         def webRequest = GrailsWebRequest.lookup(request)
@@ -88,6 +92,7 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
                     webRequest.resetParams()
                     info.configure(webRequest)
                     if(info instanceof GrailsControllerUrlMappingInfo) {
+                        request.setAttribute(MATCHED_REQUEST, info)
                         return info
                     }
                     else if(info.viewName || info.URI) return info

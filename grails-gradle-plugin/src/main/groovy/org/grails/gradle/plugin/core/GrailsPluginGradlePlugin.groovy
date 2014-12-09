@@ -42,7 +42,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             def providedFiles = project.files(providedConfig)
             ast {
                 groovy {
-                    srcDirs = ["${project.projectDir}/src/main/ast"]
                     compileClasspath += project.configurations.compile + providedFiles
                 }
             }
@@ -50,7 +49,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
                 compileClasspath += providedFiles + sourceSets.ast.output
             }
             test {
-                compileClasspath += providedFiles
+                compileClasspath += providedFiles + sourceSets.ast.output
                 runtimeClasspath += providedFiles
             }
         }
