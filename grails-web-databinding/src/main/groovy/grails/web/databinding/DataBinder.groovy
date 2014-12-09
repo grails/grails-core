@@ -17,45 +17,51 @@ package grails.web.databinding
 
 import grails.databinding.CollectionDataBindingSource
 import groovy.transform.CompileStatic
+import org.springframework.validation.BindingResult
 
 /**
  *
+ * Methods added to enable binding data (typically incoming request parameters) to objects and collections
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  *
  */
 @CompileStatic
 trait DataBinder {
-    def bindData(target, bindingSource, Map includeExclude) {
+
+    BindingResult bindData(target, bindingSource, Map includeExclude) {
         bindData target, bindingSource, includeExclude, null
     }
 
-    def bindData(target, bindingSource, Map includeExclude, String filter) {
+    BindingResult bindData(target, bindingSource) {
+        bindData target, bindingSource, Collections.EMPTY_MAP, null
+    }
+
+    BindingResult bindData(target, bindingSource, String filter) {
+        bindData target, bindingSource, Collections.EMPTY_MAP, filter
+    }
+
+    BindingResult bindData(target, bindingSource, List excludes) {
+        bindData target, bindingSource, [exclude: excludes], null
+    }
+
+    BindingResult bindData(target, bindingSource, List excludes, String filter) {
+        bindData target, bindingSource, [exclude: excludes], filter
+    }
+
+    BindingResult bindData(target, bindingSource, Map includeExclude, String filter) {
         def include = includeExclude?.include
         def exclude = includeExclude?.exclude
         List includeList = include instanceof String ? [include]: (List)include
         List excludeList = exclude instanceof String ? [exclude]: (List)exclude
         DataBindingUtils.bindObjectToInstance target, bindingSource, includeList, excludeList, filter
-        this
-    }
-
-    def bindData(target, bindingSource) {
-        bindData target, bindingSource, Collections.EMPTY_MAP, null
-    }
-
-    def bindData(target, bindingSource, String filter) {
-        bindData target, bindingSource, Collections.EMPTY_MAP, filter
     }
 
     void bindData(Class targetType, Collection collectionToPopulate, CollectionDataBindingSource collectionBindingSource) {
         DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
     }
 
-    def bindData(target, bindingSource, List excludes) {
-        bindData target, bindingSource, [exclude: excludes], null
-    }
-
-    def bindData(target, bindingSource, List excludes, String filter) {
-        bindData target, bindingSource, [exclude: excludes], filter
-    }
 }

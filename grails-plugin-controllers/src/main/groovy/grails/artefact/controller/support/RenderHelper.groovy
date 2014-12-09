@@ -428,7 +428,7 @@ class RenderHelper {
         actionResultTransformers
     }
     
-    public invokeRender(target, Object... arguments) {
+    public void invokeRender(target, Object... arguments) {
         if (arguments.length == 0) {
             throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments)
         }

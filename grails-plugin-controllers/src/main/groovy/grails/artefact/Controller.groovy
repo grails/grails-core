@@ -15,6 +15,8 @@
  */
 package grails.artefact
 
+import org.grails.web.servlet.mvc.TokenResponseHandler
+
 import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.DEFAULT_ENCODING
 import grails.artefact.controller.TempControllerServletApi
 import grails.artefact.controller.support.ResponseRenderer
@@ -55,7 +57,10 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
  *
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  *
  */
@@ -64,11 +69,11 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
 
     private ForwardMethod forwardMethod = new ForwardMethod()
     private WithFormMethod withFormMethod = new WithFormMethod()
-    
     private Collection<RedirectEventListener> redirectListeners
-    LinkGenerator grailsLinkGenerator
     private RequestDataValueProcessor requestDataValueProcessor
+
     boolean useJessionId = false
+    LinkGenerator grailsLinkGenerator
     String gspEncoding = DEFAULT_ENCODING
 
     /**
@@ -114,6 +119,15 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
      */
     void setModelAndView(ModelAndView mav) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
+    }
+
+    @Autowired(required=false)
+    void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
+        this.redirectListeners = redirectListeners
+    }
+
+    void setLinkGenerator(LinkGenerator linkGenerator) {
+        grailsLinkGenerator = linkGenerator
     }
 
     @SuppressWarnings("unchecked")
@@ -199,7 +213,7 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
      * @param args The arguments
      * @return Result of the redirect call
      */
-    def chain(Map args) {
+    void chain(Map args) {
         ChainMethod.invoke this, args
     }
     
@@ -219,26 +233,18 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
      * @param callable The closure to execute
      * @return The result of the closure execution
      */
-    def withForm(Closure callable) {
+    TokenResponseHandler withForm(Closure callable) {
         withFormMethod.withForm getWebRequest(), callable
     }
 
-    @Autowired(required=false)
-    void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
-        this.redirectListeners = redirectListeners
-    }
-     
-    void setLinkGenerator(LinkGenerator linkGenerator) {
-        grailsLinkGenerator = linkGenerator
-    }
- 
+
      /**
       * Redirects for the given arguments.
       *
       * @param argMap The arguments
       * @return null
       */
-     def redirect(Map argMap) {
+     void redirect(Map argMap) {
  
          if (argMap.isEmpty()) {
              throw new MissingMethodException("redirect",this.getClass(), [ argMap ] as Object[])
@@ -274,7 +280,6 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
          redirector.setRequestDataValueProcessor initRequestDataValueProcessor()
          redirector.setUseJessionId useJessionId
          redirector.redirect webRequest.getRequest(), webRequest.getResponse(), argMap
-         null
      }
  
      /**
@@ -284,7 +289,7 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
       * @return null
       */
      @SuppressWarnings("unchecked")
-     def redirect(object) {
+     void redirect(object) {
          if(object != null) {
  
              Class<?> objectClass = object.getClass()
@@ -295,53 +300,13 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
                      def args = [:]
                      args.put LinkGenerator.ATTRIBUTE_RESOURCE, object
                      args.put LinkGenerator.ATTRIBUTE_METHOD, HttpMethod.GET.toString()
-                     return redirect(args)
+                     redirect(args)
                  }
              }
          }
          throw new CannotRedirectException("Cannot redirect for object [${object}] it is not a domain or has no identifier. Use an explicit redirect instead ")
      }
  
-     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
-         if (grailsLinkGenerator == null) {
-             ApplicationContext applicationContext = webRequest.getApplicationContext()
-             if (applicationContext != null) {
-                 grailsLinkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator)
-             }
-         }
-         grailsLinkGenerator
-     }
- 
-     /*
-      * Figures out the action name from the specified action reference (either a string or closure)
-      */
-     private String establishActionName(actionRef, target) {
-         String actionName
-         if (actionRef instanceof String) {
-             actionName = actionRef
-         }
-         else if (actionRef instanceof CharSequence) {
-             actionName = actionRef.toString()
-         }
-         else if (actionRef instanceof Closure) {
-             GrailsUtil.deprecated("Using a closure reference in the 'action' argument of the 'redirect' method is deprecated. Please change to use a String.")
-             actionName = GrailsClassUtils.findPropertyNameForValue(target, actionRef)
-         }
-         actionName
-     }
- 
-     /**
-      * getter to obtain RequestDataValueProcessor from
-      */
-     private RequestDataValueProcessor initRequestDataValueProcessor() {
-         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
-         ApplicationContext applicationContext = webRequest.getApplicationContext()
-         if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")) {
-             requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor", RequestDataValueProcessor)
-         }
-         requestDataValueProcessor
-     }
-     
      public static ApplicationContext getStaticApplicationContext() {
          RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes()
          if (!(requestAttributes instanceof GrailsWebRequest)) {
@@ -358,4 +323,44 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
      GrailsParameterMap getParams() {
          currentRequestAttributes().getParams()
      }
+
+    private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
+        if (grailsLinkGenerator == null) {
+            ApplicationContext applicationContext = webRequest.getApplicationContext()
+            if (applicationContext != null) {
+                grailsLinkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator)
+            }
+        }
+        grailsLinkGenerator
+    }
+
+    /*
+     * Figures out the action name from the specified action reference (either a string or closure)
+     */
+    private String establishActionName(actionRef, target) {
+        String actionName
+        if (actionRef instanceof String) {
+            actionName = actionRef
+        }
+        else if (actionRef instanceof CharSequence) {
+            actionName = actionRef.toString()
+        }
+        else if (actionRef instanceof Closure) {
+            GrailsUtil.deprecated("Using a closure reference in the 'action' argument of the 'redirect' method is deprecated. Please change to use a String.")
+            actionName = GrailsClassUtils.findPropertyNameForValue(target, actionRef)
+        }
+        actionName
+    }
+
+    /**
+     * getter to obtain RequestDataValueProcessor from
+     */
+    private RequestDataValueProcessor initRequestDataValueProcessor() {
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
+        ApplicationContext applicationContext = webRequest.getApplicationContext()
+        if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")) {
+            requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor", RequestDataValueProcessor)
+        }
+        requestDataValueProcessor
+    }
 }

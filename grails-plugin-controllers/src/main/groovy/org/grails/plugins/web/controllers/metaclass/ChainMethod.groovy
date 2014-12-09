@@ -35,7 +35,7 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
  */
 class ChainMethod {
 
-    static invoke(target, Map args = [:]) {
+    static void invoke(target, Map args = [:]) {
         def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(
             target.getClass().name, ControllerArtefactHandler.TYPE)
         def action = args.action

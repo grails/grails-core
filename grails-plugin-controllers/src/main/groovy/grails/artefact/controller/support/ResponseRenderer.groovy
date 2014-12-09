@@ -20,33 +20,35 @@ import groovy.transform.CompileStatic
 /**
  * 
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  */
 @CompileStatic
 trait ResponseRenderer {
     private RenderHelper helper = new RenderHelper()
     
-    def render(o) {
+    void render(o) {
         helper.invokeRender this, o.inspect()
     }
 
-    def render(CharSequence txt) {
+    void render(CharSequence txt) {
         helper.invokeRender this, txt
     }
 
-    def render(Map args) {
+    void render(Map args) {
         helper.invokeRender this, args
     }
 
-    def render(Closure c) {
+    void render(Closure c) {
         helper.invokeRender this, c
     }
 
-    def render(Map args, Closure c) {
+    void render(Map args, Closure c) {
         helper.invokeRender this, args, c
     }
 
-    def render(Map args, CharSequence body) {
+    void render(Map args, CharSequence body) {
         helper.invokeRender this, args, body
     }
 }
