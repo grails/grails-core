@@ -3,6 +3,7 @@ package org.grails.gradle.plugin.core
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 
@@ -105,6 +106,9 @@ withConfig(configuration) {
             groovyOptions.configurationScript = configFile
         }
 
+        project.tasks.withType(JavaExec) {
+            classpath += project.configurations.provided + sourceSets.ast.output
+        }
 
         def javadocTask = projectTasks.findByName('javadoc')
         if(javadocTask) {
