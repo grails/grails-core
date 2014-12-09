@@ -22,7 +22,8 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.cli.GrailsCli
-import org.grails.cli.boot.SpringInvoker
+import org.grails.cli.profile.commands.spring.GrailsApplicationLauncher
+import org.grails.cli.profile.commands.spring.SpringInvoker
 import org.grails.cli.gradle.GradleInvoker
 import org.grails.cli.profile.CommandArgument
 import org.grails.cli.profile.CommandDescription
@@ -52,8 +53,17 @@ abstract class GroovyScriptCommmand extends Script implements ProfileCommand, Co
     @Delegate ConsoleLogger consoleLogger = GrailsConsole.getInstance()
     @Delegate FileSystemInteraction fileSystemInteraction
 
+    /**
+     * Allows invoking of Gradle commands
+     */
     GradleInvoker gradle
+    /**
+     * Allows invoking of Spring Boot's CLI
+     */
     SpringInvoker spring = SpringInvoker.getInstance()
+    /**
+     * Access to Ant via AntBuilder
+     */
     AntBuilder ant = new GrailsConsoleAntBuilder()
 
     /**
