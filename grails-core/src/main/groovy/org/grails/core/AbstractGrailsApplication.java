@@ -58,7 +58,9 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
             this.config = newConfig;
         }
         this.parentContext = applicationContext;
-        ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this);
+        if(applicationContext instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this);
+        }
     }
 
     @Override
