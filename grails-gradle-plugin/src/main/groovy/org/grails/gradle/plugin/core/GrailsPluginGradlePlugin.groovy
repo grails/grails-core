@@ -1,6 +1,7 @@
 package org.grails.gradle.plugin.core
 
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -104,10 +105,17 @@ withConfig(configuration) {
             groovyOptions.configurationScript = configFile
         }
 
-        def javadocJar = projectTasks.create("javadocJar", Jar).configure {
-            classifier = 'javadoc'
-            from 'build/docs/javadoc'
-        }.dependsOn(projectTasks.findByName('javadoc'))
+
+        def javadocTask = projectTasks.findByName('javadoc')
+        if(javadocTask) {
+            projectTasks.create("javadocJar", Jar).configure {
+                classifier = 'javadoc'
+                from 'build/docs/javadoc'
+            }.dependsOn(javadocTask)
+            javadocTask.configure {
+                classpath += project.configurations.provided + sourceSets.ast.output
+            }
+        }
 
         def sourcesJar = projectTasks.create("sourcesJar", Jar).configure {
             classifier = 'sources'
