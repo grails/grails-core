@@ -1,9 +1,3 @@
-package org.grails.cli.profile.steps
-
-import org.grails.cli.profile.Command
-import org.grails.cli.profile.ProfileCommand
-import org.grails.cli.profile.Step
-
 /*
  * Copyright 2014 original authors
  *
@@ -19,6 +13,12 @@ import org.grails.cli.profile.Step
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.cli.profile.steps
+
+import groovy.transform.CompileStatic
+import org.grails.cli.profile.Command
+import org.grails.cli.profile.ProfileCommand
+import org.grails.cli.profile.Step
 
 /**
  * Dynamic creation of {@link Step} instances
@@ -26,21 +26,20 @@ import org.grails.cli.profile.Step
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class DefaultStepFactory implements StepFactory {
+
+    Map<String, Class<? extends Step>> steps = [
+            render: RenderStep,
+            gradle: GradleStep,
+            execute: ExecuteStep,
+            mkdir: MkdirStep
+    ]
+
     @Override
     Step createStep(String name, Command command, Map parameters) {
         if(command instanceof ProfileCommand) {
-            switch(name) {
-                case 'render':
-                    return new RenderStep((ProfileCommand)command, parameters)
-                case 'gradle':
-                    return new GradleStep((ProfileCommand)command, parameters)
-                case 'execute':
-                    return new ExecuteStep((ProfileCommand)command, parameters)
-                case 'mkdir':
-                    return new MkdirStep((ProfileCommand)command, parameters)
-            }
+            return steps[name]?.newInstance(command, parameters)
         }
-
     }
 }

@@ -22,8 +22,7 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.cli.GrailsCli
-import org.grails.cli.profile.commands.spring.GrailsApplicationLauncher
-import org.grails.cli.profile.commands.spring.SpringInvoker
+import org.grails.cli.boot.SpringInvoker
 import org.grails.cli.gradle.GradleInvoker
 import org.grails.cli.profile.CommandArgument
 import org.grails.cli.profile.CommandDescription
