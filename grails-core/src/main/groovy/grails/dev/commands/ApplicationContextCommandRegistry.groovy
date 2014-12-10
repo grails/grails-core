@@ -39,6 +39,10 @@ class ApplicationContextCommandRegistry {
         }
     }
 
+    static Collection<ApplicationContextCommand> findCommands() {
+        commands.values()
+    }
+
     static ApplicationContextCommand findCommand(String name) {
         commands[name]
     }

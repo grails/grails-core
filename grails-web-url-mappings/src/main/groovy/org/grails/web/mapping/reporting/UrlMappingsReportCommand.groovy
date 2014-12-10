@@ -20,6 +20,7 @@ import grails.dev.commands.ApplicationContextCommand
 import grails.web.mapping.UrlMappings
 import grails.web.mapping.reporting.UrlMappingsRenderer
 import groovy.transform.CompileStatic
+import groovy.transform.EqualsAndHashCode
 import org.springframework.context.ConfigurableApplicationContext
 
 
@@ -31,7 +32,11 @@ import org.springframework.context.ConfigurableApplicationContext
  * @since 3.0
  */
 @CompileStatic
+@EqualsAndHashCode
 class UrlMappingsReportCommand implements ApplicationContextCommand {
+
+    final String name = "url-mappings-report"
+
     @Override
     boolean handle(ConfigurableApplicationContext applicationContext) {
         try {
@@ -44,10 +49,5 @@ class UrlMappingsReportCommand implements ApplicationContextCommand {
             GrailsConsole.instance.error("Failed to render URL mappings: ${e.message}", e)
             return false
         }
-    }
-
-    @Override
-    String getName() {
-        "url-mappings-report"
     }
 }
