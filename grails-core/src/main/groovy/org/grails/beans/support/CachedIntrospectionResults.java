@@ -253,13 +253,7 @@ public class CachedIntrospectionResults {
      */
     private CachedIntrospectionResults(Class<?> beanClass) throws BeansException {
         try {
-            BeanInfo beanInfo = null;
-            for (BeanInfoFactory beanInfoFactory : beanInfoFactories) {
-                beanInfo = beanInfoFactory.getBeanInfo(beanClass);
-                if (beanInfo != null) {
-                    break;
-                }
-            }
+            BeanInfo beanInfo = new ExtendedBeanInfo(Introspector.getBeanInfo(beanClass));
             if (beanInfo == null) {
                 // If none of the factories supported the class, fall back to the default
                 beanInfo = (shouldIntrospectorIgnoreBeaninfoClasses ?
@@ -463,22 +457,10 @@ public class CachedIntrospectionResults {
                 return false;
             }
             GenericTypeAwarePropertyDescriptor otherPd = (GenericTypeAwarePropertyDescriptor) other;
-            return (getBeanClass().equals(otherPd.getBeanClass()) && equals(this, otherPd));
+            return (getBeanClass().equals(otherPd.getBeanClass()) && CachedIntrospectionResults.equals(this, otherPd));
         }
 
-        /**
-         * Compare the given {@code PropertyDescriptors} and return {@code true} if
-         * they are equivalent, i.e. their read method, write method, property type,
-         * property editor and flags are equivalent.
-         * @see java.beans.PropertyDescriptor#equals(Object)
-         */
-        public boolean equals(PropertyDescriptor pd, PropertyDescriptor otherPd) {
-            return (ObjectUtils.nullSafeEquals(pd.getReadMethod(), otherPd.getReadMethod()) &&
-                    ObjectUtils.nullSafeEquals(pd.getWriteMethod(), otherPd.getWriteMethod()) &&
-                    ObjectUtils.nullSafeEquals(pd.getPropertyType(), otherPd.getPropertyType()) &&
-                    ObjectUtils.nullSafeEquals(pd.getPropertyEditorClass(), otherPd.getPropertyEditorClass()) &&
-                    pd.isBound() == otherPd.isBound() && pd.isConstrained() == otherPd.isConstrained());
-        }
+
 
         @Override
         public int hashCode() {
@@ -488,5 +470,19 @@ public class CachedIntrospectionResults {
             return hashCode;
         }
 
+    }
+
+    /**
+     * Compare the given {@code PropertyDescriptors} and return {@code true} if
+     * they are equivalent, i.e. their read method, write method, property type,
+     * property editor and flags are equivalent.
+     * @see java.beans.PropertyDescriptor#equals(Object)
+     */
+    public static boolean equals(PropertyDescriptor pd, PropertyDescriptor otherPd) {
+        return (ObjectUtils.nullSafeEquals(pd.getReadMethod(), otherPd.getReadMethod()) &&
+                ObjectUtils.nullSafeEquals(pd.getWriteMethod(), otherPd.getWriteMethod()) &&
+                ObjectUtils.nullSafeEquals(pd.getPropertyType(), otherPd.getPropertyType()) &&
+                ObjectUtils.nullSafeEquals(pd.getPropertyEditorClass(), otherPd.getPropertyEditorClass()) &&
+                pd.isBound() == otherPd.isBound() && pd.isConstrained() == otherPd.isConstrained());
     }
 }
