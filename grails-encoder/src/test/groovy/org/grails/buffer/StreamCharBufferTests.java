@@ -273,7 +273,7 @@ public class StreamCharBufferTests extends TestCase {
         writer.write("Hello world!");
         writer.close();
         //assertEquals(0, charBuffer.filledChunkCount());
-        String str=charBuffer.readAsString();
+        String str=charBuffer.toString();
         assertEquals("Hello world!", str);
 
         assertEquals(12, charBuffer.size());
@@ -281,7 +281,7 @@ public class StreamCharBufferTests extends TestCase {
 
     public void testToCharArray() throws IOException {
         StreamCharBuffer charBuffer = createTestInstance();
-        char[] result = charBuffer.readAsCharArray();
+        char[] result = charBuffer.toCharArray();
         assertTrue(Arrays.equals(testbuffer, result));
 
         assertEquals(testbuffer.length, charBuffer.size());

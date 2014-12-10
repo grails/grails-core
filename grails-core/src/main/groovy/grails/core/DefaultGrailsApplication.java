@@ -176,6 +176,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      *
      * @see grails.core.ArtefactHandler
      */
+    @SuppressWarnings( "deprecation" )
     protected void initArtefactHandlers() {
 
         List<org.codehaus.groovy.grails.commons.ArtefactHandler> legacyArtefactHandlers = GrailsFactoriesLoader.loadFactories(org.codehaus.groovy.grails.commons.ArtefactHandler.class, getClassLoader());

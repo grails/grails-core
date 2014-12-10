@@ -16,21 +16,17 @@
 package grails.core;
 
 import groovy.lang.Closure;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URI;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
 import org.grails.io.support.UrlResource;
+
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.net.URI;
 
 /**
  * Adapter for the {@link grails.core.ArtefactHandler} interface
@@ -39,6 +35,7 @@ import org.grails.io.support.UrlResource;
  * @author Graeme Rocher
  * @since 1.0
  */
+@SuppressWarnings( "deprecation" )
 public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.groovy.grails.commons.ArtefactHandler {
 
     protected String type;
