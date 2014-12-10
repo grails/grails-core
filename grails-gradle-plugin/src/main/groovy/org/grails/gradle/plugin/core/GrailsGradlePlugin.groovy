@@ -19,6 +19,7 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
+import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.run.FindMainClassTask
 
 class GrailsGradlePlugin extends GroovyPlugin {
@@ -120,7 +121,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def consoleTask = (JavaExec) tasks.findByName('console')
 
         findMainClass.doLast {
-            consoleTask.args project.properties.get("mainClassName")
+            def mainClassName = project.properties.get("mainClassName")
+            consoleTask.args mainClassName
+            project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
+                task.args mainClassName
+            }
         }
 
         consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)

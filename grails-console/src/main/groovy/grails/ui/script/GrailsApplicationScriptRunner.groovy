@@ -15,14 +15,9 @@
  */
 package grails.ui.script
 
-import grails.boot.GrailsApp
-import grails.build.logging.GrailsConsole
-import grails.ui.support.DevelopmentWebApplicationContext
+import grails.ui.support.DevelopmentGrailsApplication
 import groovy.transform.CompileStatic
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.util.ClassUtils
-import org.springframework.web.context.support.GenericWebApplicationContext
-
 /**
  * Used to run Grails scripts within the context of a Grails application
  *
@@ -30,22 +25,12 @@ import org.springframework.web.context.support.GenericWebApplicationContext
  * @since 3.0
  */
 @CompileStatic
-class GrailsApplicationScriptRunner extends GrailsApp {
+class GrailsApplicationScriptRunner extends DevelopmentGrailsApplication {
     File script
 
     private GrailsApplicationScriptRunner(File script, Object... sources) {
         super(sources)
         this.script = script
-        configureApplicationContextClass()
-    }
-
-    public configureApplicationContextClass() {
-        if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-            setApplicationContextClass(DevelopmentWebApplicationContext)
-        }
-        else {
-            setApplicationContextClass(GenericWebApplicationContext)
-        }
     }
 
     @Override
@@ -54,7 +39,7 @@ class GrailsApplicationScriptRunner extends GrailsApp {
         try {
             ctx = super.run(args)
         } catch (Throwable e) {
-            GrailsConsole.getInstance().error("Context failed to load: $e.message", e)
+            System.err.println("Context failed to load: $e.message")
             System.exit(1)
         }
 
@@ -63,7 +48,7 @@ class GrailsApplicationScriptRunner extends GrailsApp {
         try {
             new GroovyShell(binding).evaluate(script)
         } catch (Throwable e) {
-            GrailsConsole.getInstance().error("Script execution error: $e.message", e)
+            System.err.println("Script execution error: $e.message")
             System.exit(1)
         }
         finally {
@@ -85,7 +70,7 @@ class GrailsApplicationScriptRunner extends GrailsApp {
             def applicationClass = Thread.currentThread().contextClassLoader.loadClass(args[0])
             File script = new File(args[1]);
             if(script.exists()) {
-                new GrailsApplicationScriptRunner(script, applicationClass).run(args[1..-1])
+                new GrailsApplicationScriptRunner(script, applicationClass).run(args[1..-1] as String[])
             }
             else {
                 System.err.println("Specified script [$script] does not exist")

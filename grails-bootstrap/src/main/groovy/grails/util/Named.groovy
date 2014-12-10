@@ -13,30 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile
+package grails.util
 
-import grails.util.Named
+
 
 /**
- * An interface that represents a command to be executed by the Grails command line. Commands are by default global,
- * however a command can be made specific to a particular {@link Profile} by implementation the {@link ProfileCommand} interface.
+ * A interface for objects that have been assigned a name
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-interface Command extends Named {
-
+interface Named {
     /**
-     * @return The description of the command
+     * @return The name of the object
      */
-    CommandDescription getDescription()
-
-    /**
-     * run the command
-     *
-     * @param executionContext The {@link ExecutionContext}
-     *
-     * @return Whether the command should continue
-     */
-    boolean handle(ExecutionContext executionContext)
+    String getName()
 }

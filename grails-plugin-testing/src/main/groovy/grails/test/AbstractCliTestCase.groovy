@@ -15,6 +15,7 @@
  */
 package grails.test
 
+import grails.core.GrailsApplication
 import grails.util.BuildSettings
 import grails.util.Metadata
 
@@ -42,12 +43,12 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
 
     private String commandOutput
     private String grailsHome = BuildSettings.GRAILS_HOME
-    private String grailsVersion = Metadata.current.grailsVersion
+    private String grailsVersion = GrailsApplication.getPackage().getImplementationVersion()
     private File workDir = new File(System.getProperty("grails.cli.work.dir") ?: ".")
     private Process process
     private boolean streamsProcessed
 
-    File outputDir = new File(BuildSettingsHolder.settings?.projectTargetDir ?: new File("target"), "cli-output")
+    File outputDir = new File(BuildSettings.TARGET_DIR ?: new File("target"), "cli-output")
     long timeout = 2 * 60 * 1000 // min * sec/min * ms/sec
 
     /**

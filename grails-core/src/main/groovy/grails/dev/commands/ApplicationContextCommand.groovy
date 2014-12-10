@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile
+package grails.dev.commands
 
 import grails.util.Named
+import org.springframework.context.ConfigurableApplicationContext
+
+
 
 /**
- * An interface that represents a command to be executed by the Grails command line. Commands are by default global,
- * however a command can be made specific to a particular {@link Profile} by implementation the {@link ProfileCommand} interface.
+ * Represents a command that is run against the {@link org.springframework.context.ApplicationContext}
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-interface Command extends Named {
+interface ApplicationContextCommand extends Named {
 
     /**
-     * @return The description of the command
+     * Handles the command
+     *
+     * @param applicationContext The {@link org.springframework.context.ApplicationContext} instance
+     * @return True if the command was successful
      */
-    CommandDescription getDescription()
+    boolean handle(ConfigurableApplicationContext applicationContext)
 
-    /**
-     * run the command
-     *
-     * @param executionContext The {@link ExecutionContext}
-     *
-     * @return Whether the command should continue
-     */
-    boolean handle(ExecutionContext executionContext)
 }
