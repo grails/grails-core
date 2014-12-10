@@ -17,6 +17,7 @@ package org.grails.cli
 
 import grails.build.logging.GrailsConsole
 import org.gradle.tooling.BuildCancelledException
+import org.grails.cli.profile.CommandArgument
 import org.grails.config.CodeGenConfig
 import grails.config.ConfigMap
 import grails.io.SystemStreamsRedirector
@@ -128,6 +129,14 @@ class GrailsCli {
             System.setProperty("grails.show.stacktrace", "true")
         }
 
+        if(mainCommandLine.hasOption(CommandLine.VERSION_ARGUMENT)) {
+            def console = GrailsConsole.instance
+            console.addStatus("Grails Version: ${GrailsCli.getPackage().implementationVersion}")
+            console.addStatus("Groovy Version: ${GroovySystem.version}")
+            console.addStatus("JVM Version: ${System.getProperty('java.version')}")
+            System.exit(0)
+        }
+
         if(mainCommandLine.environmentSet) {
             System.setProperty(Environment.KEY, mainCommandLine.environment)
         }
@@ -141,7 +150,19 @@ class GrailsCli {
             }
             def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
             if(cmd) {
-                return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
+                def arguments = cmd.description.arguments
+                def requiredArgs = arguments.count { CommandArgument arg -> arg.required }
+                if(mainCommandLine.remainingArgs.size() < requiredArgs) {
+                    def console = GrailsConsole.instance
+                    console.error("Command $cmd.name is missing required arguments:")
+                    for(CommandArgument arg in arguments.findAll { CommandArgument ca -> ca.required }) {
+                        console.log("* $arg.name - $arg.description")
+                    }
+                    return 1
+                }
+                else {
+                    return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
+                }
             }
             else {
                 System.err.println USAGE_MESSAGE
