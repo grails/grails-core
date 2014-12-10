@@ -16,6 +16,8 @@
 package grails.ui.console
 
 import grails.boot.GrailsApp
+import grails.ui.console.support.GroovyConsoleApplicationContext
+import grails.ui.console.support.GroovyConsoleWebApplicationContext
 import groovy.transform.CompileStatic
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.io.ResourceLoader

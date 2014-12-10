@@ -1,9 +1,13 @@
-package grails.ui.console
+package grails.ui.console.support
 
 import grails.core.GrailsApplication
+import grails.ui.support.DevelopmentWebApplicationContext
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
-import org.springframework.context.support.GenericApplicationContext
+import org.springframework.mock.web.MockServletConfig
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.support.GenericWebApplicationContext
 
 /*
  * Copyright 2014 original authors
@@ -22,14 +26,14 @@ import org.springframework.context.support.GenericApplicationContext
  */
 
 /**
- * An {@link org.springframework.context.ApplicationContext} that loads the GroovyConsole and makes the ApplicationContext and Grails environment available to the console
+ * A {@org.springframework.web.context.WebApplicationContext} for use in the embedded Grails console
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-@CompileStatic
 @InheritConstructors
-class GroovyConsoleApplicationContext extends GenericApplicationContext {
+@CompileStatic
+class GroovyConsoleWebApplicationContext extends DevelopmentWebApplicationContext {
 
     @Override
     protected void finishRefresh() {
@@ -42,14 +46,16 @@ class GroovyConsoleApplicationContext extends GenericApplicationContext {
         binding.setVariable("ctx", this)
         binding.setVariable(GrailsApplication.APPLICATION_ID, getBean(GrailsApplication.class))
 
-        final GroovyConsoleApplicationContext self = this
+        final GroovyConsoleWebApplicationContext self = this
         groovy.ui.Console groovyConsole = new groovy.ui.Console(binding) {
             @Override
             void exit(EventObject evt) {
                 super.exit(evt)
                 self.close()
+                System.exit(0)
             }
         }
+
         groovyConsole.run()
 
     }
