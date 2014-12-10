@@ -31,10 +31,14 @@ import org.grails.cli.profile.Profile
 class ApplicationContextCommandFactory implements CommandFactory {
     @Override
     Collection<Command> findCommands(Profile profile) {
-        def classLoader = Thread.currentThread().contextClassLoader
-        def registry = classLoader.loadClass("grails.dev.commands.ApplicationContextCommandRegistry")
-        def commands = registry.findCommands()
+        try {
+            def classLoader = Thread.currentThread().contextClassLoader
+            def registry = classLoader.loadClass("grails.dev.commands.ApplicationContextCommandRegistry")
+            def commands = registry.findCommands()
 
-        return commands.collect() { Named named -> new GradleTaskCommandAdapter(profile, named) }
+            return commands.collect() { Named named -> new GradleTaskCommandAdapter(profile, named) }
+        } catch (Throwable e) {
+            return []
+        }
     }
 }
