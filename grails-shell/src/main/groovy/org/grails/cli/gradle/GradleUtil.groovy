@@ -67,13 +67,11 @@ class GradleUtil {
     }
 
     public static ProjectConnection openGradleConnection(File baseDir) {
-        SystemOutErrCapturer.withNullOutput {
-            GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
-            if(System.getenv("GRAILS_GRADLE_HOME")) {
-                gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
-            }
-            gradleConnector.connect()
+        GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
+        if(System.getenv("GRAILS_GRADLE_HOME")) {
+            gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
         }
+        gradleConnector.connect()
     }
     
     public static <T> T withProjectConnection(File baseDir, boolean suppressOutput=true, Closure<T> closure) {

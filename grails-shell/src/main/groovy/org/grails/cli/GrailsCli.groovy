@@ -311,7 +311,6 @@ class GrailsCli {
 
                 @Override
                 List<URL> readFromGradle(ProjectConnection connection) {
-                    GrailsConsole.instance.updateStatus("Resolving dependencies from Gradle build. Please wait...")
                     EclipseProject project = connection.action(new ClasspathBuildAction()).run()
                     return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
                 }

@@ -18,6 +18,7 @@
 package org.grails.cli.gradle.commands
 
 import grails.build.logging.GrailsConsole
+import grails.io.SystemOutErrCapturer
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.gradle.tooling.ProjectConnection
@@ -43,20 +44,21 @@ class ReadGradleTasks extends ListReadingCachedGradleOperation<String> {
 
     @Override
     List<String> readFromGradle(ProjectConnection connection) {
-        GrailsConsole.instance.updateStatus("Reading tasks from Gradle build. Please wait...")
-        FetchAllTaskSelectorsBuildAction.AllTasksModel allTasksModel = (FetchAllTaskSelectorsBuildAction.AllTasksModel)connection.action(new FetchAllTaskSelectorsBuildAction(projectContext.getBaseDir())).run()
-        Collection<String> allTaskSelectors=[]
+        SystemOutErrCapturer.withNullOutput {
+            FetchAllTaskSelectorsBuildAction.AllTasksModel allTasksModel = (FetchAllTaskSelectorsBuildAction.AllTasksModel)connection.action(new FetchAllTaskSelectorsBuildAction(projectContext.getBaseDir())).run()
+            Collection<String> allTaskSelectors=[]
 
-        if (allTasksModel.currentProject) {
-            allTaskSelectors.addAll(allTasksModel.allTaskSelectors.get(allTasksModel.currentProject))
-        }
-
-        allTasksModel.projectPaths.each { String projectName, String projectPath ->
-            allTasksModel.allTasks.get(projectName).each { String taskName ->
-                allTaskSelectors.add(taskNameFormatter(projectPath, taskName))
+            if (allTasksModel.currentProject) {
+                allTaskSelectors.addAll(allTasksModel.allTaskSelectors.get(allTasksModel.currentProject))
             }
-        }
 
-        allTaskSelectors.unique().toList()
+            allTasksModel.projectPaths.each { String projectName, String projectPath ->
+                allTasksModel.allTasks.get(projectName).each { String taskName ->
+                    allTaskSelectors.add(taskNameFormatter(projectPath, taskName))
+                }
+            }
+
+            allTaskSelectors.unique().toList()
+        }
     }
 }
