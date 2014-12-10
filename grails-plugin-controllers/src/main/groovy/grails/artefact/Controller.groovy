@@ -301,6 +301,7 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, TempCon
                      args.put LinkGenerator.ATTRIBUTE_RESOURCE, object
                      args.put LinkGenerator.ATTRIBUTE_METHOD, HttpMethod.GET.toString()
                      redirect(args)
+                     return
                  }
              }
          }

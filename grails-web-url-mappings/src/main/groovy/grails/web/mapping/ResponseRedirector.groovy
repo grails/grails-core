@@ -83,8 +83,10 @@ class ResponseRedirector {
      * Redirects the response the the given URI
      */
     private void redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
-        log.debug "Dynamic method [redirect] forwarding request to [$actualUri]"
-        log.debug "Executing redirect with response [$response]"
+        if(log.isDebugEnabled()) {
+            log.debug "Method [redirect] forwarding request to [$actualUri]"
+            log.debug "Executing redirect with response [$response]"
+        }
 
         String processedActualUri = processedUrl(actualUri, request);
         String absoluteURL = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri
