@@ -37,7 +37,6 @@ import org.grails.core.DefaultGrailsTagLibClass;
 */
 public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
 
-    private static Log LOG = LogFactory.getLog(TagLibArtefactHandler.class);
     public static final String PLUGIN_NAME = "groovyPages";
     public static final String TYPE = "TagLib";
 
@@ -71,7 +70,7 @@ public class TagLibArtefactHandler extends ArtefactHandlerAdapter {
                 else {
                     GrailsTagLibClass current = tag2libMap.get(tagName);
                     if (!taglibClass.equals(current)) {
-                        LOG.info("There are conflicting tags: " + taglibClass.getFullName() + "." +
+                        LogFactory.getLog(TagLibArtefactHandler.class).info("There are conflicting tags: " + taglibClass.getFullName() + "." +
                                 tagName + " vs. " + current.getFullName() + "." + tagName +
                                 ". The former will take precedence.");
                         tag2libMap.put(tagName, taglibClass);

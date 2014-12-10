@@ -28,9 +28,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import grails.util.GrailsClassUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
+import org.grails.beans.support.CachedIntrospectionResults;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -47,7 +45,6 @@ import org.springframework.util.StringUtils;
  */
 public class ClassPropertyFetcher {
 
-    private final Log log = LogFactory.getLog(getClass());
     private final Class<?> clazz;
     final Map<String, PropertyFetcher> staticFetchers = new HashMap<String, PropertyFetcher>();
     final Map<String, PropertyFetcher> instanceFetchers = new HashMap<String, PropertyFetcher>();
@@ -74,7 +71,13 @@ public class ClassPropertyFetcher {
 
                     public Object getReferenceInstance() {
                         if (o == null) {
-                            o = BeanUtils.instantiate(c);
+                            try {
+                                o = c.newInstance();
+                            } catch (InstantiationException e) {
+                                throw new RuntimeException("Could not instantiate instance: " + e.getMessage(), e);
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException("Could not instantiate instance: " + e.getMessage(), e);
+                            }
                         }
                         return o;
                     }
@@ -191,7 +194,7 @@ public class ClassPropertyFetcher {
             }
         }
 
-        propertyDescriptors = BeanUtils.getPropertyDescriptors(clazz);
+        propertyDescriptors = getPropertyDescriptors(clazz);
         for (PropertyDescriptor desc : propertyDescriptors) {
             Method readMethod = desc.getReadMethod();
             if (readMethod != null) {
@@ -205,6 +208,10 @@ public class ClassPropertyFetcher {
                 }
             }
         }
+    }
+
+    private PropertyDescriptor[] getPropertyDescriptors(Class<?> clazz) {
+        return CachedIntrospectionResults.forClass(clazz).getPropertyDescriptors();
     }
 
     private List<Class<?>> resolveAllClasses(Class<?> c) {
@@ -249,7 +256,7 @@ public class ClassPropertyFetcher {
                 return fetcher.get(referenceInstanceCallback);
             }
             catch (Exception e) {
-                log.warn("Error fetching property's " + name + " value from class " + clazz.getName(), e);
+                // ignore
             }
         }
         return null;

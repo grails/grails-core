@@ -44,8 +44,6 @@ class GrailsFactoriesLoader {
     /** The location to look for the factories. Can be present in multiple JAR files. */
     static final String FACTORIES_RESOURCE_LOCATION = "META-INF/grails.factories"
 
-    private static final Log logger = LogFactory.getLog(GrailsFactoriesLoader)
-
     private static ConcurrentMap<Integer, Map<String,String[]>> loadedPropertiesForClassLoader = new ConcurrentHashMap<Integer, Map<String,String[]>>()
     
     private static final Object[] NO_ARGUMENTS = [] as Object[]
@@ -86,9 +84,6 @@ class GrailsFactoriesLoader {
         Assert.notNull factoryClass, "'factoryClass' must not be null"
         
         def factoryNames = loadFactoryNames(factoryClass, classLoader)
-        if (logger.traceEnabled) {
-            logger.trace("Loaded [$factoryClass.name] names: $factoryNames" )
-        }
 
         List<Class<T>> result = []
         for (String factoryName in factoryNames) {
@@ -146,7 +141,7 @@ class GrailsFactoriesLoader {
             return (Class<? extends T>) instanceClass
         }
         catch (Throwable ex) {
-            logger.error "Cannot instantiate class: $instanceClassName", ex
+            throw new RuntimeException("Cannot instantiate class: $instanceClassName", ex)
         }
     }
 

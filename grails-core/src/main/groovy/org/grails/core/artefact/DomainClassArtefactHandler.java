@@ -95,7 +95,6 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
      */
     @Override
     public void initialize(ArtefactInfo artefacts) {
-        log.debug("Configuring domain class relationships");
         GrailsDomainConfigurationUtil.configureDomainClassRelationships(
                 artefacts.getGrailsClasses(),
                 artefacts.getGrailsClassesByName());

@@ -46,7 +46,6 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
     protected Class<?> grailsClassImpl;
     protected boolean allowAbstract;
 
-    protected Log log = LogFactory.getLog(ArtefactHandlerAdapter.class);
     protected String artefactSuffix;
 
     public ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
@@ -122,15 +121,9 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
         }
 
         if (isArtefactClass(aClass)) {
-            if (log.isDebugEnabled()) {
-                log.debug("[" + aClass.getName() + "] is a " + type + " class.");
-            }
             return true;
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("[" + aClass.getName() + "] is not a " + type + " class.");
-        }
         return false;
     }
 
