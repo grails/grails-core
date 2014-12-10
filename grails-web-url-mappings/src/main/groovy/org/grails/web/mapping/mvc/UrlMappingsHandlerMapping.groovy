@@ -24,8 +24,11 @@ import grails.web.mime.MimeTypeResolver
 import grails.web.http.HttpHeaders
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContextAware
 import org.springframework.util.Assert
+import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.handler.AbstractHandlerMapping
 import org.springframework.web.util.UrlPathHelper
 
@@ -38,7 +41,7 @@ import javax.servlet.http.HttpServletRequest
  * @since 3.0
  */
 @CompileStatic
-class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
+class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
 
     static final String MATCHED_REQUEST = "org.grails.url.match.info"
 
@@ -111,5 +114,10 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping{
             version = mimeType.version
         }
         return version
+    }
+
+    @Autowired
+    void setHandlerInterceptors(HandlerInterceptor[] handlerInterceptors) {
+        setInterceptors(handlerInterceptors)
     }
 }
