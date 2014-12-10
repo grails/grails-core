@@ -213,7 +213,8 @@ class GrailsCliSpec extends Specification {
         then:
         retval == 0
     }
-    
+
+    @Ignore
     def "should provide help for all commands in interactive mode"() {
         when:
         def helpContent
@@ -250,7 +251,6 @@ detailed usage with help [command]
 '''
     }
 
-    @Ignore
     def "should provide detailed help commands in interactive mode"() {
         when:
         def helpContent
