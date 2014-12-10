@@ -49,6 +49,10 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
     final CommandDescription description = new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
 
+    CreateAppCommand() {
+        description.argument(name:"Plugin Name", description:"The name of the plugin to create.")
+    }
+
     @Override
     String getName() {
         return NAME
