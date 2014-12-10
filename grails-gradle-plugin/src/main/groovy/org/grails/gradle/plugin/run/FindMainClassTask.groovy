@@ -22,25 +22,39 @@ class FindMainClassTask extends DefaultTask {
     void setMainClassProperty() {
         Project project = this.project
         if ( !project.property("mainClassName") ) {
-            project.setProperty "mainClassName", findMainClass()
+            def mainClass = findMainClass()
+            project.setProperty "mainClassName", mainClass
         }
     }
 
     protected String findMainClass() {
         Project project = this.project
 
-        // Try the SpringBoot extension setting
-        def bootExtension = project.extensions.findByType( SpringBootPluginExtension )
-        if(bootExtension?.mainClass) {
-            return bootExtension.mainClass
+        def buildDir = project.buildDir
+        buildDir.mkdirs()
+        def mainClassFile = new File(buildDir, ".mainClass")
+        if(mainClassFile.exists()) {
+            return mainClassFile.text
+        }
+        else {
+
+            // Try the SpringBoot extension setting
+            def bootExtension = project.extensions.findByType( SpringBootPluginExtension )
+            if(bootExtension?.mainClass) {
+                return bootExtension.mainClass
+            }
+
+            SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
+
+            if(!mainSourceSet) return null
+
+            MainClassFinder mainClassFinder = createMainClassFinder()
+
+            def mainClass = mainClassFinder.findMainClass(mainSourceSet.output.classesDir)
+            mainClassFile.text = mainClass
+            return mainClass
         }
 
-        SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
-
-        if(!mainSourceSet) return null
-
-        MainClassFinder mainClassFinder = createMainClassFinder()
-        return mainClassFinder.findMainClass(mainSourceSet.output.classesDir)
     }
 
     protected MainClassFinder createMainClassFinder() {
