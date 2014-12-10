@@ -1,5 +1,7 @@
 package org.grails.cli
 
+import spock.lang.Ignore
+
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
 import org.grails.config.CodeGenConfig
@@ -247,7 +249,8 @@ war\tCreates a WAR file for deployment to a container (like Tomcat)
 detailed usage with help [command]
 '''
     }
-    
+
+    @Ignore
     def "should provide detailed help commands in interactive mode"() {
         when:
         def helpContent
