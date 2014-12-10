@@ -44,7 +44,7 @@ class GradleTaskCommandAdapter implements ProfileCommand {
 
     @Override
     CommandDescription getDescription() {
-        return new CommandDescription(adapted.name)
+        return new CommandDescription(adapted.name, "")
     }
 
     @Override

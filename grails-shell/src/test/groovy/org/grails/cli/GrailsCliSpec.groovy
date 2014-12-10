@@ -242,6 +242,7 @@ open\tOpens a file in the project
 package\tPackages a Grails application
 run-app\tRuns the application
 test-groovy\tTests out a Groovy script
+url-mappings-report\t
 war\tCreates a WAR file for deployment to a container (like Tomcat)
 detailed usage with help [command]
 '''
