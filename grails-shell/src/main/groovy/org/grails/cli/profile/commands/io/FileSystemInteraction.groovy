@@ -112,6 +112,15 @@ interface FileSystemInteraction {
      * @return The relative path
      */
     String projectPath(Object path)
+
+    /**
+     * The class name of the given resource
+     *
+     * @param resource The resource
+     * @return The class name
+     */
+    String className(Resource resource)
+    
     /**
      * Get files matching the given pattern
      *

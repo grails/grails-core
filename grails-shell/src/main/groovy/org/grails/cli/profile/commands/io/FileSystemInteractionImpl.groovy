@@ -21,6 +21,7 @@ import groovy.transform.CompileStatic
 import org.grails.cli.profile.ExecutionContext
 import org.grails.io.support.DefaultResourceLoader
 import org.grails.io.support.FileSystemResource
+import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
 import org.grails.io.support.ResourceLoader
@@ -192,6 +193,16 @@ class FileSystemInteractionImpl implements FileSystemInteraction {
     @Override
     Resource source(String className) {
         resourceLocator.findResourceForClassName(className)
+    }
+
+    /**
+     * The class name of the given resource
+     *
+     * @param resource The resource
+     * @return The class name
+     */
+    String className(Resource resource) {
+        GrailsResourceUtils.getClassName(resource)
     }
 
     /**

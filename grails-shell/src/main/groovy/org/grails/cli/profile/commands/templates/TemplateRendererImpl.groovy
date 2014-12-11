@@ -58,7 +58,8 @@ class TemplateRendererImpl implements TemplateRenderer {
         if(namedArguments?.template && namedArguments?.destination) {
             def templateArg = namedArguments.template
             def template = templateArg instanceof Resource ? templateArg : template(templateArg)
-            render template, file(namedArguments.destination), namedArguments.model ?: [:], namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
+            boolean overwrite = namedArguments.overwrite as Boolean ?: false
+            render template, file(namedArguments.destination), namedArguments.model ?: [:], overwrite
         }
     }
 

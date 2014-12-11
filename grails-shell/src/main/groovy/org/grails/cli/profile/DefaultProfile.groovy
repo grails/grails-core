@@ -77,7 +77,15 @@ class DefaultProfile implements Profile {
                completers << new ArgumentCompleter(commandNameCompleter, (Completer)cmd)
            }else {
                if(description.completer) {
-                   completers  << new ArgumentCompleter(commandNameCompleter, description.completer)
+                   if(description.flags) {
+                       completers  << new ArgumentCompleter(commandNameCompleter,
+                                                            description.completer,
+                                                            new StringsCompleter(description.flags.collect() { CommandArgument arg -> "-$arg.name".toString() }))
+                   }
+                   else {
+                       completers  << new ArgumentCompleter(commandNameCompleter, description.completer)
+                   }
+
                }
                else {
                    if(description.flags) {
