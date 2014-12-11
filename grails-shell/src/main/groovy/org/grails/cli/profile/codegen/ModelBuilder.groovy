@@ -19,6 +19,7 @@ package org.grails.cli.profile.codegen
 import grails.codegen.model.Model
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.runtime.MetaClassHelper
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.Resource
@@ -32,6 +33,8 @@ import org.grails.io.support.Resource
  */
 @CompileStatic
 trait ModelBuilder {
+
+    String defaultPackage
 
     /**
      * A model for the given class name
@@ -49,7 +52,12 @@ trait ModelBuilder {
      * @return The {@link Model} instance
      */
     Model model(String className) {
-        return new ModelImpl(className)
+        if(defaultPackage && !className.contains('.')) {
+            return new ModelImpl("${defaultPackage}.$className")
+        }
+        else {
+            return new ModelImpl(className)
+        }
     }
 
     /**
@@ -70,7 +78,7 @@ trait ModelBuilder {
      */
     Model model(Resource resource) {
         def className = GrailsResourceUtils.getClassName(resource)
-        return new ModelImpl(className)
+        model(className)
     }
 
     @CompileStatic
@@ -84,7 +92,7 @@ trait ModelBuilder {
         final String packagePath
 
         ModelImpl(String className) {
-            this.className = GrailsNameUtils.getShortName(className)
+            this.className = MetaClassHelper.capitalize(GrailsNameUtils.getShortName(className))
             this.fullName = className
             this.propertyName = GrailsNameUtils.getPropertyName(className)
             this.packageName = GrailsNameUtils.getPackageName(className)
