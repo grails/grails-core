@@ -40,7 +40,7 @@ class TemplateRendererImpl implements TemplateRenderer {
 
     ExecutionContext executionContext
     @Delegate FileSystemInteraction fileSystemInteraction
-    private Map<String, Template> templatecCache = [:]
+    private Map<String, Template> templateCache = [:]
 
     TemplateRendererImpl(ExecutionContext executionContext, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
         this.executionContext = executionContext
@@ -56,7 +56,9 @@ class TemplateRendererImpl implements TemplateRenderer {
     @CompileDynamic
     void render(Map<String, Object> namedArguments) {
         if(namedArguments?.template && namedArguments?.destination) {
-            render template(namedArguments.template), file(namedArguments.destination), namedArguments.model ?: [:], namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
+            def templateArg = namedArguments.template
+            def template = templateArg instanceof Resource ? templateArg : template(templateArg)
+            render template, file(namedArguments.destination), namedArguments.model ?: [:], namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
         }
     }
 
@@ -122,7 +124,7 @@ class TemplateRendererImpl implements TemplateRenderer {
                 executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
             }
             else {
-                Template t = templatecCache[template.absolutePath]
+                Template t = templateCache[template.absolutePath]
                 if(t == null) {
                     try {
                         def templateEngine = new GStringTemplateEngine()
@@ -164,8 +166,11 @@ class TemplateRendererImpl implements TemplateRenderer {
             if(destination.exists() && !overwrite) {
                 executionContext.console.warn("Destination file ${projectPath( destination )} already exists, skipping...")
             }
+            else if(!template?.exists()) {
+                throw new TemplateException("Template [$template.filename] not found.")
+            }
             else {
-                Template t = templatecCache[template.filename]
+                Template t = templateCache[template.filename]
                 if(t == null) {
 
                     try {
