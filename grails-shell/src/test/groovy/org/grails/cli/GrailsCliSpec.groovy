@@ -1,6 +1,7 @@
 package org.grails.cli
 
 import spock.lang.Ignore
+import spock.lang.IgnoreIf
 
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
@@ -24,6 +25,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Shared
 import spock.lang.Specification
 
+@IgnoreIf({ !System.getenv('TRAVIS') })
 class GrailsCliSpec extends Specification {
     static int EXPECT_TIMEOUT_SECONDS = System.getenv('TRAVIS') == 'true' ? 120 : 20
     
