@@ -153,11 +153,7 @@ class GrailsCli {
                 def arguments = cmd.description.arguments
                 def requiredArgs = arguments.count { CommandArgument arg -> arg.required }
                 if(mainCommandLine.remainingArgs.size() < requiredArgs) {
-                    def console = GrailsConsole.instance
-                    console.error("Command $cmd.name is missing required arguments:")
-                    for(CommandArgument arg in arguments.findAll { CommandArgument ca -> ca.required }) {
-                        console.log("* $arg.name - $arg.description")
-                    }
+                    outputMissingArgumentsMessage cmd
                     return 1
                 }
                 else {
@@ -189,6 +185,14 @@ class GrailsCli {
             }
         }
         return 0
+    }
+
+    protected void outputMissingArgumentsMessage(Command cmd) {
+        def console = GrailsConsole.instance
+        console.error("Command $cmd.name is missing required arguments:")
+        for (CommandArgument arg in cmd.description.arguments.findAll { CommandArgument ca -> ca.required }) {
+            console.log("* $arg.name - $arg.description")
+        }
     }
 
     ExecutionContext createExecutionContext(CommandLine commandLine) {
