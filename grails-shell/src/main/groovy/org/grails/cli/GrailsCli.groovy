@@ -38,6 +38,7 @@ import org.grails.cli.interactive.completers.RegexCompletor
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.exceptions.ExceptionUtils
 
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -107,7 +108,13 @@ class GrailsCli {
      */
     public static void main(String[] args) {
         GrailsCli cli=new GrailsCli()
-        System.exit(cli.execute(args))
+        try {
+            System.exit(cli.execute(args))
+        } catch (Throwable e) {
+            e = ExceptionUtils.getRootCause(e)
+            GrailsConsole.instance.error("Error occurred running Grails CLI: $e.message", e)
+            System.exit(1)
+        }
     }
 
     static boolean isInteractiveModeActive() {
@@ -326,23 +333,29 @@ class GrailsCli {
     }
 
     protected void populateContextLoader() {
-        if(new File(BuildSettings.BASE_DIR, "build.gradle").exists()) {
+        try {
+            if(new File(BuildSettings.BASE_DIR, "build.gradle").exists()) {
 
-            def urls = new ListReadingCachedGradleOperation<URL>(projectContext, ".dependencies") {
-                @Override
-                protected URL createListEntry(String str) {
-                    return new URL(str)
-                }
+                def urls = new ListReadingCachedGradleOperation<URL>(projectContext, ".dependencies") {
+                    @Override
+                    protected URL createListEntry(String str) {
+                        return new URL(str)
+                    }
 
-                @Override
-                List<URL> readFromGradle(ProjectConnection connection) {
-                    EclipseProject project = connection.action(new ClasspathBuildAction()).run()
-                    return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
-                }
-            }.call()
+                    @Override
+                    List<URL> readFromGradle(ProjectConnection connection) {
+                        EclipseProject project = connection.action(new ClasspathBuildAction()).run()
+                        return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
+                    }
+                }.call()
 
-            URLClassLoader classLoader = new URLClassLoader(urls as URL[])
-            Thread.currentThread().contextClassLoader = classLoader
+                URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+                Thread.currentThread().contextClassLoader = classLoader
+            }
+        } catch (Throwable e) {
+            e = ExceptionUtils.getRootCause(e)
+            GrailsConsole.instance.error("Error initializing classpath: $e.message", e)
+            System.exit(1)
         }
     }
 
