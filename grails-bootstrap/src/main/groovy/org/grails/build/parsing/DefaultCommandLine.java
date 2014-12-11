@@ -37,6 +37,7 @@ public class DefaultCommandLine implements CommandLine {
     List<String> remainingArgs = new ArrayList<String>();
     private String environment;
     private String commandName;
+    private String[] rawArguments;
 
     public void addDeclaredOption(String name, Option option) {
         addDeclaredOption(name, option, Boolean.TRUE);
@@ -189,6 +190,15 @@ public class DefaultCommandLine implements CommandLine {
             setEnvironment(value);
         }
         systemProperties.put(name, value);
+    }
+
+    public void setRawArguments(String[] args) {
+        this.rawArguments = args;
+    }
+
+    @Override
+    public String[] getRawArguments() {
+        return rawArguments;
     }
 
     public static class SpecifiedOption {

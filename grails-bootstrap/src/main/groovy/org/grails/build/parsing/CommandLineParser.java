@@ -125,6 +125,7 @@ public class CommandLineParser {
     }
 
     private void parseInternal(DefaultCommandLine cl, String[] args, boolean firstArgumentIsCommand) {
+        cl.setRawArguments(args);
         for (String arg : args) {
             if (arg == null) continue;
             String trimmed = arg.trim();

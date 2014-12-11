@@ -109,4 +109,6 @@ public interface CommandLine {
      * @return A new {@link CommandLine} instance
      */
     CommandLine parseNew(String[] args);
+
+    String[] getRawArguments();
 }

@@ -381,7 +381,7 @@ class GrailsCli {
         def commandName = commandLine.commandName
 
         if(commandName && commandName.size()>1 && commandName.startsWith('!')) {
-            return executeProcess(context, commandName)
+            return executeProcess(context, commandLine.rawArguments)
         }
         else {
             switch(commandName) {
@@ -423,10 +423,10 @@ class GrailsCli {
         return false
     }
 
-    protected boolean executeProcess(ExecutionContext context, String cmd) {
+    protected boolean executeProcess(ExecutionContext context, String[] args) {
         def console = context.console
         try {
-            def args = cmd[1..-1].split(ARG_SPLIT_PATTERN).collect { String it -> unescape(it) }
+            args[0] = args[0].substring(1)
             def process = new ProcessBuilder(args).redirectErrorStream(true).start()
             console.log process.inputStream.getText('UTF-8')
             return true
