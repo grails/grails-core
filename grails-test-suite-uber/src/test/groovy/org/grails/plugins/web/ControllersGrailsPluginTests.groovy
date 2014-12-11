@@ -139,7 +139,7 @@ class FormTagLib {
                 }
             }
             plugin.grailsApplication.initialise()
-            def beans = plugin.doWithSpring
+            def beans = plugin.doWithSpring()
             def bb = new BeanBuilder()
             bb.setBinding(new Binding(manager:mockManager))
             bb.beans(beans)

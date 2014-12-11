@@ -14,26 +14,15 @@
  * limitations under the License.
  */
 package org.grails.plugins.web.controllers
-
-import grails.artefact.Enhanced
 import grails.config.Settings
 import grails.core.GrailsApplication
-import grails.core.GrailsClass
+import grails.core.GrailsControllerClass
 import grails.core.support.GrailsApplicationAware
+import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
-import grails.util.GrailsWebUtil
-import groovy.transform.CompileStatic
-
-import javax.servlet.MultipartConfigElement
-import javax.servlet.Servlet
-import javax.servlet.ServletContext
-import javax.servlet.ServletException
-
+import groovy.util.logging.Commons
 import org.grails.core.artefact.ControllerArtefactHandler
-import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.plugins.web.controllers.api.ControllersDomainBindingApi
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
 import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
@@ -42,24 +31,24 @@ import org.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.grails.web.servlet.mvc.TokenResponseActionResultTransformer
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
-import org.springframework.boot.context.embedded.ServletContextInitializer
 import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
-import org.springframework.web.filter.DelegatingFilterProxy
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
+import javax.servlet.MultipartConfigElement
 /**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
-class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplicationAware{
+@Commons
+class ControllersGrailsPlugin extends Plugin implements GrailsApplicationAware{
 
     def watchedResources = [
         "file:./grails-app/controllers/**/*Controller.groovy",
@@ -71,20 +60,57 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
 
     GrailsApplication grailsApplication
 
-    def doWithSpring = {
+    @Override
+    Closure doWithSpring(){ { ->
         def application = grailsApplication
+        def config = application.config
+        def defaultScope = config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
+        def gspEnc = config.getProperty(Settings.GSP_VIEW_ENCODING, "")
+        boolean useJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
+        def uploadTmpDir = config.getProperty(Settings.CONTROLLERS_UPLOAD_LOCATION, System.getProperty("java.io.tmpdir"))
+        def filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
+        boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
+
+
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
         simpleControllerHandlerAdapter(UrlMappingsInfoHandlerAdapter)
 
-        characterEncodingFilter(CharacterEncodingFilter) {
-            encoding = application.flatConfig.get('grails.filter.encoding') ?: 'utf-8'
+        def catchAllMapping = ['/*']
+
+        characterEncodingFilter(FilterRegistrationBean) {
+            filter = bean(CharacterEncodingFilter) {
+                encoding = filtersEncoding
+            }
+            urlPatterns = catchAllMapping
         }
+
+        hiddenHttpMethodFilter(FilterRegistrationBean) {
+            filter = bean(HiddenHttpMethodFilter)
+            urlPatterns = catchAllMapping
+        }
+
+        grailsWebRequestFilter(FilterRegistrationBean) {
+            filter = bean(GrailsWebRequestFilter)
+            urlPatterns = catchAllMapping
+        }
+
+
+        if(dbConsoleEnabled && ClassUtils.isPresent('org.h2.server.web.WebServlet', application.classLoader)) {
+            String urlPattern = config.getProperty('grails.dbconsole.urlRoot', "/dbconsole") + '/*'
+            dbConsoleServlet(ServletRegistrationBean) {
+                servlet = bean(application.classLoader.loadClass('org.h2.server.web.WebServlet'))
+                loadOnStartup = 2
+                urlMappings = [urlPattern]
+                initParameters = ['-webAllowOthers':'true']
+            }
+        }
+
         exceptionHandler(GrailsExceptionResolver) {
             exceptionMappings = ['java.lang.Exception': '/error']
         }
 
         multipartResolver(StandardServletMultipartResolver)
-        multipartConfigElement(MultipartConfigElement, System.getProperty("java.io.tmpdir"))
+        multipartConfigElement(MultipartConfigElement, uploadTmpDir)
 
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
         def interceptorsClosure = {
@@ -105,14 +131,7 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
             stripLeadingSlash = false
         }
 
-        def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
-        final pluginManager = manager
-        
-        def flatConfig = application.getFlatConfig()
-        def gspEnc = flatConfig.get("grails.views.gsp.encoding")
-        def useJsessionId = flatConfig.get(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID)
-
-        for (controller in application.controllerClasses) {
+        for (controller in application.getArtefacts(ControllerArtefactHandler.TYPE)) {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
                 "${controller.fullName}"(controller.clazz) { bean ->
@@ -122,65 +141,25 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
                     if (beanScope == 'prototype') {
                         bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
                     }
-                    if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                        gspEncoding = gspEnc.toString()
+                    if (gspEnc.trim()) {
+                        gspEncoding = gspEnc
                     }
-                    if (useJsessionId instanceof Boolean) {
+                    if (useJsessionId) {
                         useJessionId = useJsessionId
                     }
                 }
             }
         }
-    }
+    } }
 
-    @CompileStatic
-    def doWithDynamicMethods(ApplicationContext ctx) {
-        def application = grailsApplication
-        def enhancer = new MetaClassEnhancer()
-
-        for (GrailsClass controller in application.getArtefacts(ControllerArtefactHandler.TYPE)) {
-            def controllerClass = controller
-            def mc = controllerClass.metaClass
-            if (controllerClass.clazz.getAnnotation(Enhanced)==null) {
-                enhancer.enhance mc
-            }
-            finalizeEnhancement(ctx, controllerClass, mc)
-        }
-
-        for (GrailsClass domainClass in application.getArtefacts(DomainClassArtefactHandler.TYPE)) {
-            enhanceDomainWithBinding(domainClass, domainClass.metaClass)
-        }
-    }
-
-    private void finalizeEnhancement(ctx, GrailsClass controllerClass, MetaClass mc) {
-        mc.constructor = { -> ctx.getBean(controllerClass.fullName) }
-        controllerClass.initialize()
-    }
-
-    @CompileStatic
-    static void enhanceDomainWithBinding(GrailsClass dc, MetaClass mc) {
-        if (dc.abstract) {
-            return
-        }
-
-        def enhancer = new MetaClassEnhancer()
-        enhancer.addApi(new ControllersDomainBindingApi())
-        enhancer.enhance mc
-    }
-
-    def onChange = {event ->
+    @Override
+    void onChange( Map<String, Object> event) {
         if (!(event.source instanceof Class)) {
             return
         }
-
-        if (application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) {
-            def dc = application.getDomainClass(event.source.name)
-            enhanceDomainWithBinding(event.ctx, dc, GroovySystem.metaClassRegistry.getMetaClass(event.source))
-            return
-        }
-
+        def application = grailsApplication
         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            ApplicationContext context = event.ctx
+            ApplicationContext context = applicationContext
             if (!context) {
                 if (log.isDebugEnabled()) {
                     log.debug("Application context not found. Can't reload")
@@ -188,9 +167,9 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
                 return
             }
 
-            def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
+            def defaultScope = application.config.getProperty('grails.controllers.defaultScope', 'prototype')
 
-            def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
+            GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
             def beanDefinitions = beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     def beanScope = controllerClass.getPropertyValue("scope") ?: defaultScope
@@ -203,56 +182,11 @@ class ControllersGrailsPlugin implements ServletContextInitializer, GrailsApplic
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
             // register the necessary beans with the given app ctx
-            beanDefinitions.registerBeans(event.ctx)
+            beanDefinitions.registerBeans(applicationContext)
             controllerClass.initialize()
         }
     }
 
-    @Override
-    @CompileStatic
-    void onStartup(ServletContext servletContext) throws ServletException {
-        def application = GrailsWebUtil.lookupApplication(servletContext)
-        def proxy = new DelegatingFilterProxy("characterEncodingFilter")
-        proxy.targetFilterLifecycle = true
-        FilterRegistrationBean charEncoder = new FilterRegistrationBean(proxy)
-
-        def catchAllMapping = ['/*']
-        charEncoder.urlPatterns = catchAllMapping
-        charEncoder.onStartup(servletContext)
-
-        def hiddenHttpFilter = new FilterRegistrationBean(new HiddenHttpMethodFilter())
-        hiddenHttpFilter.urlPatterns = catchAllMapping
-        hiddenHttpFilter.onStartup(servletContext)
-
-        def webRequestFilter = new FilterRegistrationBean(new GrailsWebRequestFilter())
-
-        // TODO: Add ERROR dispatcher type
-        webRequestFilter.urlPatterns = catchAllMapping
-        webRequestFilter.onStartup(servletContext)
-
-        if(application != null) {
-            def dbConsoleEnabled = application?.flatConfig?.get('grails.dbconsole.enabled')
-
-            if (!(dbConsoleEnabled instanceof Boolean)) {
-                dbConsoleEnabled = Environment.current == Environment.DEVELOPMENT
-            }
-
-            if(!dbConsoleEnabled) return
-
-
-            def classLoader = Thread.currentThread().contextClassLoader
-            if(ClassUtils.isPresent('org.h2.server.web.WebServlet', classLoader)) {
-
-                String urlPattern = (application?.flatConfig?.get('grails.dbconsole.urlRoot') ?: "/dbconsole").toString() + '/*'
-                ServletRegistrationBean dbConsole = new ServletRegistrationBean(classLoader.loadClass('org.h2.server.web.WebServlet').newInstance() as Servlet, urlPattern)
-                dbConsole.loadOnStartup = 2
-                dbConsole.initParameters = ['-webAllowOthers':'true']
-                dbConsole.onStartup(servletContext)
-            }
-
-        }
-
-    }
 
 
 }
