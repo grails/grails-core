@@ -56,7 +56,7 @@ class TemplateRendererImpl implements TemplateRenderer {
     @CompileDynamic
     void render(Map<String, Object> namedArguments) {
         if(namedArguments?.template && namedArguments?.destination) {
-            render resource(namedArguments.template), file(namedArguments.destination), namedArguments.model, namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
+            render template(namedArguments.template), file(namedArguments.destination), namedArguments.model ?: [:], namedArguments.containsKey('overwrite') ? namedArguments.ovewrite : false
         }
     }
 
