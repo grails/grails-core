@@ -110,7 +110,12 @@ class GrailsCli {
         GrailsCli cli=new GrailsCli()
         try {
             System.exit(cli.execute(args))
-        } catch (Throwable e) {
+        }
+        catch(BuildCancelledException e) {
+            GrailsConsole.instance.addStatus("Build stopped.")
+            System.exit(0)
+        }
+        catch (Throwable e) {
             e = ExceptionUtils.getRootCause(e)
             GrailsConsole.instance.error("Error occurred running Grails CLI: $e.message", e)
             System.exit(1)
