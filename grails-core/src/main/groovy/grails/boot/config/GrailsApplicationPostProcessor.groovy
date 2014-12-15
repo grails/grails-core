@@ -42,6 +42,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     final GrailsApplication grailsApplication
     final GrailsPluginManager pluginManager
     final GrailsApplicationLifeCycle lifeCycle
+    protected ApplicationContext applicationContext
 
 
     GrailsApplicationPostProcessor(Class...classes) {
@@ -54,6 +55,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
+        this.applicationContext = applicationContext
         grailsApplication = new DefaultGrailsApplication(classes as Class[])
         grailsApplication.applicationContext = applicationContext
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
@@ -103,6 +105,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @Override
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext
         pluginManager.setApplicationContext(applicationContext)
         grailsApplication.setMainContext(applicationContext)
 
@@ -127,7 +130,9 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         }
         else if(event instanceof ContextClosedEvent) {
             pluginManager.shutdown()
-            lifeCycle?.onShutdown(source:pluginManager)
+            Map<String,Object> eventMap = [:]
+            eventMap.put('source', pluginManager)
+            lifeCycle?.onShutdown(eventMap)
             ShutdownOperations.runOperations()
             Holders.clear()
             if(RELOADING_ENABLED) {
