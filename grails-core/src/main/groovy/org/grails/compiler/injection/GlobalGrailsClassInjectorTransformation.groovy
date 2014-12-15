@@ -118,34 +118,16 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 continue
             }
 
-            if(GrailsASTUtils.isSubclassOf(classNode, ARTEFACT_HANDLER_CLASS)) {
-                // generate META-INF/grails.factories
-                def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
-                factoriesFile.parentFile.mkdirs()
-                def props = new Properties()
-                if(factoriesFile.exists()) {
-                    // update
-                    factoriesFile.withInputStream { InputStream input ->
-                        props.load(input)
-                    }
-                    def existing = props.getProperty(ARTEFACT_HANDLER_CLASS)
-                    if(existing != classNodeName) {
-                        props.put(ARTEFACT_HANDLER_CLASS, [existing, classNodeName].join(','))
-                    }
-                }
-                else {
-                    props.put(ARTEFACT_HANDLER_CLASS, classNodeName)
-                }
-                factoriesFile.withObjectOutputStream { OutputStream out ->
-                    props.store(out, "Grails Factories File")
-                }
+
+            if(updateGrailsFactoriesWithType(classNode, ARTEFACT_HANDLER_CLASS, compilationTargetDirectory)) {
                 continue
             }
-
 
             if(projectName && projectVersion) {
                 GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(projectName.toString()), version:projectVersion])
             }
+
+            classNode.getModule().addImport("Autowired", ClassHelper.make("org.springframework.beans.factory.annotation.Autowired"))
 
             for(ArtefactHandler handler in artefactHandlers) {
                 if(handler.isArtefact(classNode)) {
@@ -182,6 +164,33 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         pluginXmlFile.parentFile.mkdirs()
 
         generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
+    }
+
+    protected boolean updateGrailsFactoriesWithType(ClassNode classNode, String superType, File compilationTargetDirectory) {
+        if (GrailsASTUtils.isSubclassOf(classNode, superType)) {
+            def classNodeName = classNode.name
+            // generate META-INF/grails.factories
+            def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
+            factoriesFile.parentFile.mkdirs()
+            def props = new Properties()
+            if (factoriesFile.exists()) {
+                // update
+                factoriesFile.withInputStream { InputStream input ->
+                    props.load(input)
+                }
+                def existing = props.getProperty(superType)
+                if (existing != classNodeName) {
+                    props.put(superType, [existing, classNodeName].join(','))
+                }
+            } else {
+                props.put(superType, classNodeName)
+            }
+            factoriesFile.withObjectOutputStream { OutputStream out ->
+                props.store(out, "Grails Factories File")
+            }
+            return true
+        }
+        return false
     }
 
     static Set<String> pendingPluginClasses = []
