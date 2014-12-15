@@ -17,8 +17,7 @@
 
 package org.grails.cli.gradle.commands
 
-import grails.build.logging.GrailsConsole
-import grails.io.SystemOutErrCapturer
+import grails.io.support.SystemOutErrCapturer
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.gradle.tooling.ProjectConnection

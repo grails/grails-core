@@ -1,4 +1,4 @@
-package grails.io
+package grails.io.support
 
 import groovy.transform.CompileStatic
 import groovy.transform.ToString

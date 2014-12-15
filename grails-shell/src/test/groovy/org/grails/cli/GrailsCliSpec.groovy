@@ -6,7 +6,7 @@ import spock.lang.IgnoreIf
 import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
 import org.grails.config.CodeGenConfig
-import grails.io.SystemOutErrCapturer
+import grails.io.support.SystemOutErrCapturer
 
 import java.lang.reflect.Field
 import java.util.concurrent.TimeUnit

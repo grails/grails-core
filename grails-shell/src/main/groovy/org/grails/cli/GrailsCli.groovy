@@ -20,7 +20,7 @@ import org.gradle.tooling.BuildCancelledException
 import org.grails.cli.profile.CommandArgument
 import org.grails.config.CodeGenConfig
 import grails.config.ConfigMap
-import grails.io.SystemStreamsRedirector
+import grails.io.support.SystemStreamsRedirector
 import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.Canonical

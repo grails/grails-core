@@ -16,8 +16,8 @@
 package org.grails.cli.gradle
 
 import grails.build.logging.GrailsConsole
-import grails.io.SystemOutErrCapturer
-import grails.io.SystemStreamsRedirector
+import grails.io.support.SystemOutErrCapturer
+import grails.io.support.SystemStreamsRedirector
 import groovy.transform.CompileStatic
 
 import org.gradle.tooling.*
