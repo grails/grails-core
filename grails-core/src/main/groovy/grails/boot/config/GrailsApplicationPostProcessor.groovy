@@ -1,21 +1,20 @@
 package grails.boot.config
-
 import grails.config.Settings
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.core.GrailsApplicationLifeCycle
+import grails.plugins.DefaultGrailsPluginManager
+import grails.plugins.GrailsPluginManager
 import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
+import groovy.util.logging.Commons
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
-import grails.plugins.DefaultGrailsPluginManager
-import grails.plugins.GrailsPluginManager
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.springframework.beans.BeansException
-import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
@@ -26,9 +25,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
-
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
  *
@@ -36,6 +33,7 @@ import org.springframework.util.ClassUtils
  * @since 3.0
  */
 @CompileStatic
+@Commons
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
 
     static final boolean RELOADING_ENABLED = Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)
@@ -78,7 +76,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
         if(beanResources.exists()) {
             def gcl = new GroovyClassLoader(application.classLoader)
-            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
+            try {
+                RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
+            } catch (Throwable e) {
+                log.error("Error loading spring/resources.groovy file: ${e.message}", e)
+                throw e
+            }
         }
         pluginManager.doRuntimeConfiguration(springConfig)
 
