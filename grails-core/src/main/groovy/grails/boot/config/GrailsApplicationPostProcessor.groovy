@@ -13,6 +13,7 @@ import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import grails.plugins.DefaultGrailsPluginManager
 import grails.plugins.GrailsPluginManager
+import org.grails.spring.RuntimeSpringConfigUtilities
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -76,10 +77,9 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         def application = grailsApplication
         def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
         if(beanResources.exists()) {
-            def bb = new BeanBuilder(null, springConfig, application.classLoader)
-            bb.loadBeans(beanResources)
+            def gcl = new GroovyClassLoader(application.classLoader)
+            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
         }
-        springConfig.setBeanFactory((ListableBeanFactory) registry)
         pluginManager.doRuntimeConfiguration(springConfig)
 
         if(lifeCycle) {
