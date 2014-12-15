@@ -18,6 +18,7 @@ package grails.plugins
 import grails.config.Config
 import grails.core.ArtefactHandler
 import grails.core.GrailsApplication
+import grails.core.GrailsApplicationLifeCycle
 import grails.core.support.GrailsApplicationAware
 import grails.util.Environment
 import groovy.transform.CompileStatic
@@ -33,7 +34,7 @@ import org.springframework.context.ApplicationContextAware
  * @since 3.0
  */
 @CompileStatic
-abstract class Plugin implements GrailsApplicationAware, ApplicationContextAware, PluginManagerAware {
+abstract class Plugin implements GrailsApplicationLifeCycle, GrailsApplicationAware, ApplicationContextAware, PluginManagerAware {
 
     /**
      * The {@link GrailsApplication} instance
@@ -81,11 +82,13 @@ abstract class Plugin implements GrailsApplicationAware, ApplicationContextAware
      *
      * @return A closure that defines beans to be executed by Spring
      */
+    @Override
     Closure doWithSpring() { null }
 
     /**
      * Invoked in a phase where plugins can add dynamic methods. Subclasses should override
      */
+    @Override
     void doWithDynamicMethods() {
         // no-op
     }
@@ -93,6 +96,7 @@ abstract class Plugin implements GrailsApplicationAware, ApplicationContextAware
     /**
      * Invokes once the {@link ApplicationContext} has been refreshed and after {#doWithDynamicMethods()} is invoked. Subclasses should override
      */
+    @Override
     void doWithApplicationContext() {
         // no-op
     }
@@ -111,15 +115,17 @@ abstract class Plugin implements GrailsApplicationAware, ApplicationContextAware
      *
      * @param event The event
      */
+    @Override
     void onConfigChange(Map<String, Object> event) {
         // no-op
     }
 
     /**
-     * Invokes when the {@link ApplicationContext} is closed
+     * Invoked when the {@link ApplicationContext} is closed
      *
      * @param event The event
      */
+    @Override
     void onShutdown(Map<String, Object> event) {
         // no-op
     }

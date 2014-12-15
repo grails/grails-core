@@ -58,7 +58,9 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * @author Graeme Rocher
  * @since 0.3
+ * @deprecated Replaced with {@link grails.boot.config.GrailsApplicationPostProcessor}. Do not use.
  */
+@Deprecated
 public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
     public static final String BEAN_ID = "grailsConfigurator";

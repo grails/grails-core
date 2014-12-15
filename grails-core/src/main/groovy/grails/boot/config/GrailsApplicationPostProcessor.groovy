@@ -1,6 +1,8 @@
 package grails.boot.config
 
 import grails.config.Settings
+import grails.core.GrailsApplicationLifeCycle
+import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
@@ -23,6 +25,7 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 
 /**
@@ -38,16 +41,19 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     final GrailsApplication grailsApplication
     final GrailsPluginManager pluginManager
+    final GrailsApplicationLifeCycle lifeCycle
 
 
     GrailsApplicationPostProcessor(Class...classes) {
-        grailsApplication = new DefaultGrailsApplication(classes as Class[])
-        pluginManager = new DefaultGrailsPluginManager(grailsApplication)
-        pluginManager.loadPlugins()
-        performGrailsInitializationSequence()
+        this(null, classes)
     }
 
     GrailsApplicationPostProcessor(ApplicationContext applicationContext, Class...classes) {
+        this(null, applicationContext, classes)
+    }
+
+    GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
+        this.lifeCycle = lifeCycle
         grailsApplication = new DefaultGrailsApplication(classes as Class[])
         grailsApplication.applicationContext = applicationContext
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
@@ -65,10 +71,24 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     @Override
     void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         def springConfig = new DefaultRuntimeSpringConfiguration()
+        def application = grailsApplication
+        def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
+        if(beanResources.exists()) {
+            def bb = new BeanBuilder(null, springConfig, application.classLoader)
+            bb.loadBeans(beanResources)
+        }
         springConfig.setBeanFactory((ListableBeanFactory) registry)
         pluginManager.doRuntimeConfiguration(springConfig)
-        springConfig.registerBeansWithRegistry(registry)
 
+        if(lifeCycle) {
+            def withSpring = lifeCycle.doWithSpring()
+            if(withSpring) {
+                def bb = new BeanBuilder(null, springConfig, application.classLoader)
+                bb.beans withSpring
+            }
+        }
+
+        springConfig.registerBeansWithRegistry(registry)
     }
 
     @Override
@@ -100,11 +120,14 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if(event instanceof ContextRefreshedEvent) {
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
+            lifeCycle?.doWithDynamicMethods()
             pluginManager.doPostProcessing(context)
+            lifeCycle?.doWithApplicationContext()
             Holders.pluginManager = pluginManager
         }
         else if(event instanceof ContextClosedEvent) {
             pluginManager.shutdown()
+            lifeCycle?.onShutdown(source:pluginManager)
             ShutdownOperations.runOperations()
             Holders.clear()
             if(RELOADING_ENABLED) {

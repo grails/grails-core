@@ -1,6 +1,7 @@
 package grails.boot.config
 
 import grails.config.Settings
+import grails.core.GrailsApplicationLifeCycle
 import groovy.transform.CompileStatic
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.springframework.context.ApplicationContext
@@ -22,7 +23,7 @@ import org.springframework.util.ClassUtils
  *
  */
 @CompileStatic
-class GrailsAutoConfiguration implements ResourceLoaderAware, ApplicationContextAware {
+class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoaderAware, ApplicationContextAware {
 
     ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
     ApplicationContext applicationContext
@@ -32,7 +33,7 @@ class GrailsAutoConfiguration implements ResourceLoaderAware, ApplicationContext
      */
     @Bean
     GrailsApplicationPostProcessor grailsApplicationPostProcessor() {
-        return new GrailsApplicationPostProcessor( applicationContext, classes() as Class[])
+        return new GrailsApplicationPostProcessor( this, applicationContext, classes() as Class[])
     }
 
     /**
@@ -95,5 +96,27 @@ class GrailsAutoConfiguration implements ResourceLoaderAware, ApplicationContext
         return classes
     }
 
+    @Override
+    Closure doWithSpring() { null }
+
+    @Override
+    void doWithDynamicMethods() {
+        // no-op
+    }
+
+    @Override
+    void doWithApplicationContext() {
+        // no-op
+    }
+
+    @Override
+    void onConfigChange(Map<String, Object> event) {
+        // no-op
+    }
+
+    @Override
+    void onShutdown(Map<String, Object> event) {
+        // no-op
+    }
 }
 
