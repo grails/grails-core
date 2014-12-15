@@ -41,12 +41,12 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
      */
     Collection<Class> classes() {
         def readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver)
-        def packages = packages()
+        def packages = packageNames().unique()
         Collection<Class> classes = [] as Set
         for (pkg in packages) {
             if(pkg == null) continue
             String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
-                    ClassUtils.convertClassNameToResourcePath(pkg.name) + Settings.CLASS_RESOURCE_PATTERN;
+                    ClassUtils.convertClassNameToResourcePath(pkg) + Settings.CLASS_RESOURCE_PATTERN;
 
             classes.addAll scanUsingPattern(pattern, readerFactory)
         }
@@ -72,6 +72,13 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
      */
     Collection<Package> packages() {
         [ getClass().package ]
+    }
+
+    /**
+     * @return The package names to scan. Delegates to {@link #packages()} by default
+     */
+    Collection<String> packageNames() {
+        packages().collect { Package p -> p.name }
     }
 
     @Override
