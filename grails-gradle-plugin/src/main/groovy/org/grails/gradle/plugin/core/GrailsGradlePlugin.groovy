@@ -87,7 +87,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
-            task.systemProperty Environment.KEY, Environment.current.name
+            task.systemProperty Environment.KEY, Environment.current.name ?: Environment.DEVELOPMENT.name
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
         }
 

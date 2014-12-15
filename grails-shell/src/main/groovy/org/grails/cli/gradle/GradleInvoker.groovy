@@ -50,7 +50,7 @@ class GradleInvoker {
         GradleUtil.runBuildWithConsoleOutput(executionContext) { BuildLauncher buildLauncher ->
             buildLauncher.forTasks(name.split(' '))
             List<String> arguments = []
-            arguments << "-Dgrails.env=${System.getProperty(Environment.KEY)}".toString()
+            arguments << "-Dgrails.env=${Environment.current.name}".toString()
 
 
             def commandLine = executionContext.commandLine
