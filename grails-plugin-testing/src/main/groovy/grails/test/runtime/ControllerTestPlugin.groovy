@@ -16,6 +16,7 @@
 
 package grails.test.runtime
 
+import grails.config.Settings
 import grails.core.GrailsApplication
 import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
 import grails.test.mixin.support.LazyTagLibraryLookup
@@ -80,11 +81,11 @@ class ControllerTestPlugin implements TestPlugin {
         def config = grailsApplication.config
         defineBeans(runtime) {
             rendererRegistry(DefaultRendererRegistry) {
-                modelSuffix = config.flatten().get('grails.scaffolding.templates.domainSuffix') ?: ''
+                modelSuffix = config.getProperty('grails.scaffolding.templates.domainSuffix', '')
             }
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
 
-            def urlConverterType = config?.grails?.web?.url?.converter
+            String urlConverterType = config.getProperty(Settings.WEB_URL_CONVERTER)
             "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
@@ -124,7 +125,7 @@ class ControllerTestPlugin implements TestPlugin {
             
             localeResolver(SessionLocaleResolver)
         }
-        defineBeans(runtime, new CodecsGrailsPlugin().doWithSpring)
+        defineBeans(runtime, new CodecsGrailsPlugin().doWithSpring())
     }
     
     protected void applicationInitialized(TestRuntime runtime, GrailsApplication grailsApplication) {

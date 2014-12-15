@@ -98,7 +98,7 @@ class SomeClass {
     }
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @Validateable'() {
+    void 'Test compiling @grails.artefact.Validateable'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -122,7 +122,7 @@ class SomeClass {
     }
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @Validateable which contains unrelated type checking error'() {
+    void 'Test compiling @grails.artefact.Validateable which contains unrelated type checking error'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -151,7 +151,7 @@ class SomeClass {
     }
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @Validateable which attempts to constrain a non existent property'() {
+    void 'Test compiling @grails.artefact.Validateable which attempts to constrain a non existent property'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -178,7 +178,7 @@ class SomeClass {
     
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @Validateable which attempts to constrain an inherited property'() {
+    void 'Test compiling @grails.artefact.Validateable which attempts to constrain an inherited property'() {
         given:
         def gcl = new GroovyClassLoader()
 

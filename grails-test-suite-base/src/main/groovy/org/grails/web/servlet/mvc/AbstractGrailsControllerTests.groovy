@@ -142,9 +142,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         request = new GrailsMockHttpServletRequest(characterEncoding: "utf-8")
         response = new GrailsMockHttpServletResponse()
         webRequest = GrailsWebMockUtil.bindMockWebRequest(appCtx, request, response)
-        domainClasses.each { c -> 
-            addValidationMethods c
-        }
     }
 
     protected setCurrentController(controller) {
@@ -209,11 +206,4 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         app
     }
     
-    public void addValidationMethods(Class clazz) {
-        addValidationMethods((GrailsDomainClass)ga.getDomainClass(clazz.name))
-    }
-    
-    public void addValidationMethods(GrailsDomainClass dc) {
-        DomainClassGrailsPlugin.addValidationMethods(ga, dc, appCtx)
-    }
 }

@@ -13,30 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.validation.trait
+package grails.artefact
 
-import grails.util.GrailsNameUtils
+import grails.util.GrailsClassUtils
+
 import grails.util.Holders
 import grails.validation.ConstrainedProperty
 import grails.validation.ConstraintsEvaluator
 import grails.validation.ValidationErrors
+import groovy.transform.CompileStatic
+import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.datastore.gorm.support.BeforeValidateHelper
+import org.grails.datastore.mapping.reflect.NameUtils
+import org.grails.validation.DefaultConstraintEvaluator
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.context.ApplicationContext
+import org.springframework.context.MessageSource
+import org.springframework.validation.Errors
+import org.springframework.validation.FieldError
 
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
-import org.grails.datastore.gorm.support.BeforeValidateHelper
-import org.springframework.beans.factory.BeanFactory
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
-import org.springframework.web.context.support.WebApplicationContextUtils
-
 /**
+ * A trait that can be applied to make any object Validateable
+ *
  * @since 3.0
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
  */
 trait Validateable {
     private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper()
-    private static Map constraintsMapInternal
+    private static Map<String, ConstrainedProperty> constraintsMapInternal
     Errors errors
 
     Errors getErrors() {
@@ -59,22 +68,24 @@ trait Validateable {
         }
     }
 
-    static Map getConstraintsMap() {
+    static Map<String, ConstrainedProperty> getConstraintsMap() {
         if(this.constraintsMapInternal == null) {
-            BeanFactory ctx = Holders.applicationContext
-            ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
+            ConstraintsEvaluator evaluator = findConstraintsEvaluator()
             this.constraintsMapInternal = evaluator.evaluate this, defaultNullable()
 
             if(!defaultNullable()) {
                 def methods = this.getDeclaredMethods()
+                def ignoredProperties = ['metaClass', 'errors']
+                if(DomainClassArtefactHandler.isDomainClass(this)) {
+                    ignoredProperties << 'id' << 'version'
+                }
                 for(Method method : methods) {
                     if(!Modifier.isStatic(method.modifiers) && !method.parameterTypes) {
                         def methodName = method.name
-                        if(methodName ==~ /get[A-Z].*/) {
-                            def propertyName = GrailsNameUtils.getPropertyName(methodName[3..-1])
-                            if(propertyName != 'metaClass' &&
-                            propertyName != 'errors' &&
-                            !this.constraintsMapInternal.containsKey(propertyName)) {
+                        if(GrailsClassUtils.isGetter(methodName, method.parameterTypes)) {
+                            def propertyName = NameUtils.getPropertyNameForGetterOrSetter(methodName)
+                            if( !ignoredProperties.contains(propertyName) &&
+                                !this.constraintsMapInternal.containsKey(propertyName)) {
                                 def cp = new ConstrainedProperty(this, propertyName, method.returnType)
                                 cp.applyConstraint 'nullable', false
                                 this.constraintsMapInternal.put propertyName, cp
@@ -87,19 +98,28 @@ trait Validateable {
         this.constraintsMapInternal
     }
 
-    boolean validate(List fieldsToValidate = null) {
+    @CompileStatic
+    private static ConstraintsEvaluator findConstraintsEvaluator() {
+        try {
+            BeanFactory ctx = Holders.applicationContext
+            ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
+            return evaluator
+        } catch (Throwable e) {
+            return new DefaultConstraintEvaluator()
+        }
+    }
+
+    boolean validate() {
+        validate(null)
+    }
+
+    boolean validate(List fieldsToValidate) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
         def constraints = getConstraintsMap()
+
         if (constraints) {
-            def ctx
-
-            def sch = Holders.servletContext
-            if (sch) {
-                ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
-            }
-
-            def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
+            Object messageSource = findMessageSource()
             def localErrors = new ValidationErrors(this, this.class.name)
             def originalErrors = getErrors()
             for (originalError in originalErrors.allErrors) {
@@ -116,7 +136,9 @@ trait Validateable {
                     def fieldError = originalErrors.getFieldError(prop.propertyName)
                     if(fieldError == null || !fieldError.bindingFailure) {
                         prop.messageSource = messageSource
-                        prop.validate(this, this.getProperty(prop.propertyName), localErrors)
+
+                        def value = getPropertyValue(prop)
+                        prop.validate(this, value, localErrors)
                     }
                 }
             }
@@ -124,6 +146,20 @@ trait Validateable {
         }
 
         return !errors.hasErrors()
+    }
+
+    private Object getPropertyValue(ConstrainedProperty prop) {
+        this.getProperty(prop.propertyName)
+    }
+
+    private MessageSource findMessageSource() {
+        try {
+            ApplicationContext ctx = Holders.applicationContext
+            MessageSource messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource', MessageSource) : null
+            return messageSource
+        } catch (Throwable e) {
+            return null
+        }
     }
 
     static boolean defaultNullable() {

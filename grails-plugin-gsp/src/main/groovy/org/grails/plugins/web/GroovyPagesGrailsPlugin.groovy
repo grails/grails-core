@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 package org.grails.plugins.web
-
+import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
-import grails.core.support.GrailsApplicationAware
 import grails.gsp.PageRenderer
 import grails.plugins.GrailsPluginManager
-import grails.plugins.PluginManagerAware
+import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.pages.GroovyPagesUriService
 import grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
+import groovy.util.logging.Commons
 import org.grails.buffer.StreamCharBufferMetaUtils
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.plugins.web.api.ControllerTagLibraryApi
@@ -40,27 +40,28 @@ import org.grails.web.pages.*
 import org.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
-import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.servlet.view.GroovyPageViewResolver
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.config.PropertiesFactoryBean
-import org.springframework.boot.context.embedded.ServletContextInitializer
-import org.springframework.context.ApplicationContext
+import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
-
-import javax.servlet.ServletContext
-import javax.servlet.ServletException
-
 /**
  * Sets up and configures the GSP and GSP tag library support in Grails.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
-class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplicationAware, PluginManagerAware{
+@Commons
+class GroovyPagesGrailsPlugin extends Plugin {
+
+    public static final String GSP_RELOAD_INTERVAL = "grails.gsp.reload.interval"
+    public static final String GSP_VIEWS_DIR = 'grails.gsp.view.dir'
+    public static final String GSP_VIEW_LAYOUT_RESOLVER_ENABLED = 'grails.gsp.view.layoutViewResolver'
+    public static final String SITEMESH_DEFAULT_LAYOUT = 'grails.sitemesh.default.layout'
+    public static final String SITEMESH_ENABLE_NONGSP = 'grails.sitemesh.enable.nongsp'
 
     def watchedResources = ["file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
                             "file:./grails-app/taglib/**/*TagLib.groovy"]
@@ -90,34 +91,48 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
      * Clear the page cache with the ApplicationContext is loaded
      */
     @CompileStatic
-    def doWithApplicationContext(ApplicationContext ctx) {
-        ctx.getBean("groovyPagesTemplateEngine", GroovyPagesTemplateEngine).clearPageCache()
+    @Override
+    void doWithApplicationContext() {
+        applicationContext.getBean("groovyPagesTemplateEngine", GroovyPagesTemplateEngine).clearPageCache()
     }
 
     /**
      * Configures the various Spring beans required by GSP
      */
-    def doWithSpring = {
-        RuntimeSpringConfiguration spring = springConfig
+    Closure doWithSpring() {{->
         def application = grailsApplication
+        Config config = application.config
+        boolean developmentMode = !application.warDeployed
+        Environment env = Environment.current
+
+        boolean enableReload = env.isReloadEnabled() ||
+                                config.getProperty(GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD, Boolean, false) ||
+                                    (developmentMode && env == Environment.DEVELOPMENT)
+        boolean warDeployedWithReload = application.warDeployed && enableReload
+
+        long gspCacheTimeout = config.getProperty(GSP_RELOAD_INTERVAL, Long,  (developmentMode && env == Environment.DEVELOPMENT) ? 0L : 5000L)
+        boolean enableCacheResources = !config.getProperty(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES, Boolean, false)
+        String viewsDir = config.getProperty(GSP_VIEWS_DIR, '')
+        def disableLayoutViewResolver = config.getProperty(GSP_VIEW_LAYOUT_RESOLVER_ENABLED, Boolean, true)
+        String defaultDecoratorNameSetting = config.getProperty(SITEMESH_DEFAULT_LAYOUT, '')
+        def sitemeshEnableNonGspViews = config.getProperty(SITEMESH_ENABLE_NONGSP, Boolean, false)
+
+
+
+        RuntimeSpringConfiguration spring = springConfig
+
+
+
         // resolves JSP tag libraries
         jspTagLibraryResolver(TagLibraryResolverImpl)
         // resolves GSP tag libraries
         gspTagLibraryLookup(TagLibraryLookup)
 
-        boolean developmentMode = !application.warDeployed
-        Environment env = Environment.current
-        boolean enableReload = env.isReloadEnabled() ||
-            GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) ||
-            (developmentMode && env == Environment.DEVELOPMENT)
-        long gspCacheTimeout = Long.getLong("grails.gsp.reload.interval", (developmentMode && env == Environment.DEVELOPMENT) ? 0L : 5000L)
-        boolean warDeployedWithReload = application.warDeployed && enableReload
-        boolean enableCacheResources = !(application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES) == true)
 
         boolean customResourceLoader = false
         // If the development environment is used we need to load GSP files relative to the base directory
         // as oppose to in WAR deployment where views are loaded from /WEB-INF
-        def viewsDir = application.config.grails.gsp.view.dir
+
         if (viewsDir) {
             log.info "Configuring GSP views directory as '${viewsDir}'"
             customResourceLoader = true
@@ -197,8 +212,8 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
             gspReloadEnabled = enableReload
-            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: null
-            enableNonGspViews = application.flatConfig['grails.sitemesh.enable.nongsp'] ?: false
+            defaultDecoratorName = defaultDecoratorNameSetting ?: null
+            enableNonGspViews = sitemeshEnableNonGspViews
         }
 
         // Setup the GroovyPagesUriService
@@ -226,7 +241,8 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
         
         // "grails.gsp.view.layoutViewResolver=false" can be used to disable GrailsLayoutViewResolver
         // containsKey check must be made to check existence of boolean false values in ConfigObject
-        if(!(application.config.grails.gsp.view.containsKey('layoutViewResolver') && application.config.grails.gsp.view.layoutViewResolver==false)) {
+
+        if(disableLayoutViewResolver) {
             grailsLayoutViewResolverPostProcessor(GrailsLayoutViewResolverPostProcessor)
         }
 
@@ -249,10 +265,16 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
 
         errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
 
-        javascriptLibraryHandlerInterceptor(JavascriptLibraryHandlerInterceptor, ref('grailsApplication'))
+        javascriptLibraryHandlerInterceptor(JavascriptLibraryHandlerInterceptor, application)
 
-        filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
-    }
+        filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, application)
+
+        groovyPagesServlet(ServletRegistrationBean, new GroovyPagesServlet(), "*.gsp") {
+            if(Environment.isDevelopmentMode()) {
+                initParameters = [showSource:"1"]
+            }
+        }
+    }}
 
     static String transformToValidLocation(String location) {
         if (location == '.') return location
@@ -265,22 +287,24 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
      * Sets up dynamic methods required by the GSP implementation including dynamic tag method dispatch
      */
     @CompileStatic
-    def doWithDynamicMethods(ApplicationContext ctx) {
+    @Override
+    void doWithDynamicMethods() {
         StreamCharBufferMetaUtils.registerStreamCharBufferMetaClass()
 
-        TagLibraryLookup gspTagLibraryLookup = ctx.getBean('gspTagLibraryLookup',TagLibraryLookup)
+        TagLibraryLookup gspTagLibraryLookup = applicationContext.getBean('gspTagLibraryLookup',TagLibraryLookup)
 
         for(GrailsClass cls in grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE)) {
             TagLibraryMetaUtils.enhanceTagLibMetaClass((GrailsTagLibClass)cls, gspTagLibraryLookup)
         }
     }
 
-    def onChange = { event ->
+    @Override
+    void onChange(Map<String, Object> event) {
         def application = grailsApplication
-        def ctx = event.ctx ?: application.mainContext
+        def ctx = applicationContext
 
         if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
-            GrailsClass taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
+            GrailsTagLibClass taglibClass = (GrailsTagLibClass)application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
             if (taglibClass) {
                 // replace tag library bean
                 def beanName = taglibClass.fullName
@@ -293,28 +317,18 @@ class GroovyPagesGrailsPlugin implements ServletContextInitializer, GrailsApplic
 
                 // The tag library lookup class caches "tag -> taglib class"
                 // so we need to update it now.
-                def lookup = event.ctx.gspTagLibraryLookup
+                def lookup = applicationContext.getBean('gspTagLibraryLookup', TagLibraryLookup)
                 lookup.registerTagLib(taglibClass)
-
-                TagLibraryMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.gspTagLibraryLookup)
+                TagLibraryMetaUtils.enhanceTagLibMetaClass(taglibClass, lookup)
             }
         }
         // clear uri cache after changes
         ctx.getBean('groovyPagesUriService',GroovyPagesUriService).clear()
     }
 
-    def onConfigChange = { event ->
-        def ctx = event.ctx ?: application.mainContext
-        ctx.filteringCodecsByContentTypeSettings.initialize(application)
+    @CompileStatic
+    void onConfigChange(Map<String, Object> event) {
+        applicationContext.getBean('filteringCodecsByContentTypeSettings', FilteringCodecsByContentTypeSettings).initialize(grailsApplication)
     }
 
-    @Override
-    @CompileStatic
-    void onStartup(ServletContext servletContext) throws ServletException {
-        def gspServlet = servletContext.addServlet("gsp", GroovyPagesServlet)
-        gspServlet.addMapping("*.gsp")
-        if(Environment.isDevelopmentMode()) {
-            gspServlet.setInitParameter("showSource", "1")
-        }
-    }
 }

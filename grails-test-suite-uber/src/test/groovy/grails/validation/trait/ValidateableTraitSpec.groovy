@@ -1,5 +1,9 @@
 package grails.validation.trait
 
+import grails.artefact.Validateable
+
+
+
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 

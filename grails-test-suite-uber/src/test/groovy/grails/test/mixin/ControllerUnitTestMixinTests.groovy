@@ -4,7 +4,7 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
-import grails.validation.trait.Validateable
+import grails.artefact.Validateable
 import grails.web.mapping.LinkGenerator
 import grails.web.mime.MimeUtility
 

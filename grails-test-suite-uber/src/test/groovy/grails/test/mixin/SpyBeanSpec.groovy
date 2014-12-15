@@ -17,7 +17,9 @@ import spock.lang.Specification
 class SpyBeanSpec extends Specification {
     def myAddressValueConverter=Spy(MyAddressValueConverter)
     def doWithSpring = {
-        def otherClosure=new DataBindingGrailsPlugin().doWithSpring.clone()
+        def plugin = new DataBindingGrailsPlugin()
+        plugin.grailsApplication = delegate.application
+        def otherClosure= plugin.doWithSpring().clone()
         otherClosure.delegate=delegate
         otherClosure.call()
         myAddressValueConverter(InstanceFactoryBean, myAddressValueConverter, MyAddressValueConverter)

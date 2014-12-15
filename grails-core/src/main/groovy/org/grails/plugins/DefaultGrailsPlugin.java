@@ -504,7 +504,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     public void doWithApplicationContext(ApplicationContext ctx) {
         if(plugin instanceof Plugin) {
-            ((Plugin)plugin).doWithApplicationContext();
+            Plugin pluginObject = (Plugin) plugin;
+            pluginObject.setApplicationContext(ctx);
+            pluginObject.doWithApplicationContext();
         }
         else {
             Object[] args = {ctx};

@@ -179,8 +179,7 @@ public class GrailsConfigUtils {
      * @return true if the Config parameter is true or the System property with the same name is true
      */
     public static boolean isConfigTrue(GrailsApplication application, String propertyName) {
-        return ((application != null && application.getFlatConfig() != null && DefaultTypeTransformation.castToBoolean(application.getFlatConfig().get(propertyName))) ||
-                Boolean.getBoolean(propertyName));
+        return application.getConfig().getProperty(propertyName, Boolean.class, false);
     }
 
     // support GrailsApplication mocking, see ControllersGrailsPluginTests

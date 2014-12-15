@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.databinding
 
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
@@ -31,39 +32,46 @@ import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter
 import org.grails.databinding.converters.web.LocaleAwareNumberConverter
 
 /**
+ * Plugin for configuring the data binding features of Grails
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 2.3
  */
-class DataBindingGrailsPlugin {
+class DataBindingGrailsPlugin extends Plugin {
+
+    public static final String TRIM_STRINGS = 'grails.databinding.trimStrings'
+    public static final String CONVERT_EMPTY_STRINGS_TO_NULL = 'grails.databinding.convertEmptyStringsToNull'
+    public static final String AUTO_GROW_COLLECTION_LIMIT = 'grails.databinding.autoGrowCollectionLimit'
+    public static final String DATE_FORMATS = 'grails.databinding.dateFormats'
 
     def version = GrailsUtil.getGrailsVersion()
 
-    def doWithSpring = {
-        def databindingConfig
+    @Override
+    Closure doWithSpring() {{->
+        def application = grailsApplication
+        def config = application.config
+        boolean trimStringsSetting = config.getProperty(TRIM_STRINGS, Boolean, true)
+        boolean convertEmptyStringsToNullSetting = config.getProperty(CONVERT_EMPTY_STRINGS_TO_NULL, Boolean, true)
+        Integer autoGrowCollectionLimitSetting = config.getProperty(AUTO_GROW_COLLECTION_LIMIT, Integer, 256)
+        List dateFormats = config.getProperty(DATE_FORMATS, List, [])
 
-        databindingConfig = application?.config?.grails?.databinding
 
-        def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
-
-        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, ref('grailsApplication')) {
-
+        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, grailsApplication) {
             // trimStrings defaults to TRUE
-            trimStrings = !Boolean.FALSE.equals(databindingConfig?.trimStrings)
-
+            trimStrings = trimStringsSetting
             // convertEmptyStringsToNull defaults to TRUE
-            convertEmptyStringsToNull = !Boolean.FALSE.equals(databindingConfig?.convertEmptyStringsToNull)
-
+            convertEmptyStringsToNull = convertEmptyStringsToNullSetting
             // autoGrowCollectionLimit defaults to 256
-            if(autoGrowCollectionLimitSetting instanceof Integer) {
-                autoGrowCollectionLimit = autoGrowCollectionLimitSetting
-            }
+            autoGrowCollectionLimit = autoGrowCollectionLimitSetting
         }
 
         timeZoneConverter(TimeZoneConverter)
 
         defaultDateConverter(DateConversionHelper) {
-            if(databindingConfig?.dateFormats instanceof List) {
-                formatStrings = databindingConfig.dateFormats
+            if(dateFormats) {
+                formatStrings = dateFormats
             }
         }
         [Short,   Short.TYPE,
@@ -90,5 +98,5 @@ class DataBindingGrailsPlugin {
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
 
         defaultCurrencyConverter CurrencyValueConverter
-    }
+    }}
 }

@@ -58,7 +58,10 @@ public class CoreBeansTestPlugin implements TestPlugin {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
-        defineBeans(runtime, new DataBindingGrailsPlugin().doWithSpring)
+        def plugin = new DataBindingGrailsPlugin()
+        plugin.grailsApplication = grailsApplicationParam
+        plugin.applicationContext = grailsApplicationParam.mainContext
+        defineBeans(runtime, plugin.doWithSpring())
 
         defineBeans(runtime) {
             xmlns context:"http://www.springframework.org/schema/context"

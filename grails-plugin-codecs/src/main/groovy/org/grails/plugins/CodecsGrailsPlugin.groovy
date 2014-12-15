@@ -15,6 +15,8 @@
  */
 package org.grails.plugins
 
+import grails.core.GrailsApplication
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.commons.CodecArtefactHandler
@@ -41,7 +43,7 @@ import org.grails.plugins.codecs.XMLCodec
  * @author Jeff Brown
  * @since 0.4
  */
-class CodecsGrailsPlugin {
+class CodecsGrailsPlugin extends Plugin {
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
     def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
@@ -64,14 +66,17 @@ class CodecsGrailsPlugin {
         RawCodec
     ]
 
-    def onChange = { event ->
+    @Override
+    void onChange(Map<String, Object> event) {
+        def application = grailsApplication
         if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
-            def codecClass = application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-            event.ctx.codecLookup.reInitialize()
+            application.addArtefact(CodecArtefactHandler.TYPE, event.source)
+            applicationContext.getBean('codecLookup', DefaultCodecLookup).reInitialize()
         }
     }
 
-    def doWithSpring = {
+    @Override
+    Closure doWithSpring() {{ ->
         codecLookup(DefaultCodecLookup)
-    }
+    }}
 }

@@ -4,7 +4,7 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.validation.trait.Validateable
+import grails.artefact.Validateable
 import spock.lang.Issue
 import spock.lang.Specification
 
