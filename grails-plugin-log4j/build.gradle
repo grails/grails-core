@@ -1,6 +1,0 @@
-dependencies {
-    compile 'log4j:log4j:1.2.17'
-    compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
-
-    compile project(':grails-logging')
-}
