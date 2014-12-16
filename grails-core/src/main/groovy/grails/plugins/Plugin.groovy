@@ -20,10 +20,13 @@ import grails.core.ArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.GrailsApplicationLifeCycle
 import grails.core.support.GrailsApplicationAware
+import grails.spring.BeanBuilder
 import grails.util.Environment
 import groovy.transform.CompileStatic
+import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ConfigurableApplicationContext
 
 
 /**
@@ -40,10 +43,6 @@ abstract class Plugin implements GrailsApplicationLifeCycle, GrailsApplicationAw
      * The {@link GrailsApplication} instance
      */
     GrailsApplication grailsApplication
-    /**
-     * The {@link ApplicationContext} instance
-     */
-    ApplicationContext applicationContext
     /**
      * The {@link GrailsPlugin} definition for this plugin
      */
@@ -77,7 +76,21 @@ abstract class Plugin implements GrailsApplicationLifeCycle, GrailsApplicationAw
      */
     final List<ArtefactHandler> artefacts = []
 
+
     /**
+     * The {@link ApplicationContext} instance
+     */
+    private ApplicationContext applicationContext
+
+    ConfigurableApplicationContext getApplicationContext() {
+        return (ConfigurableApplicationContext)applicationContext
+    }
+
+    @Override
+    void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext
+    }
+/**
      * Sub classes should override to provide implementations
      *
      * @return A closure that defines beans to be executed by Spring
@@ -128,5 +141,17 @@ abstract class Plugin implements GrailsApplicationLifeCycle, GrailsApplicationAw
     @Override
     void onShutdown(Map<String, Object> event) {
         // no-op
+    }
+
+    /**
+     * Allows a plugin to define beans
+     *
+     * @param beanDefinitions The bean definitions
+     * @return The BeanBuilder instance
+     */
+    BeanBuilder beans(Closure beanDefinitions) {
+        def bb = new BeanBuilder(null, grailsApplication.classLoader)
+        bb.beans beanDefinitions
+        return bb
     }
 }

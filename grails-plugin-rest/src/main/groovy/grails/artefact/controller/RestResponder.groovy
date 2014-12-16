@@ -15,6 +15,8 @@
  */
 package grails.artefact.controller
 
+import groovy.transform.CompileDynamic
+
 import java.util.List;
 
 import grails.artefact.Controller
@@ -31,7 +33,6 @@ import groovy.transform.TypeCheckingMode
 
 import javax.servlet.http.HttpServletResponse
 
-import org.grails.plugins.web.api.ResponseMimeTypesApi;
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -57,8 +58,6 @@ trait RestResponder {
     @Autowired(required = false)
     ProxyHandler proxyHandler
     
-    @Autowired(required=false)
-    ResponseMimeTypesApi responseMimeTypesApi
 
     /**
      * Same as {@link RestResponder#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
@@ -196,9 +195,9 @@ trait RestResponder {
         return getDefaultResponseFormats(value)
     }
 
+    @CompileDynamic
     private MimeType[] getResponseFormat(HttpServletResponse response) {
-        Assert.notNull(responseMimeTypesApi, "No configured ResponseMimeTypesApi instance")
-        responseMimeTypesApi.getMimeTypesFormatAware(response)
+        response.mimeTypesFormatAware
     }
     
     @CompileStatic(TypeCheckingMode.SKIP)

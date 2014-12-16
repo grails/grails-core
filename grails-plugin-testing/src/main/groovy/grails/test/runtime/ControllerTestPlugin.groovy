@@ -24,7 +24,6 @@ import grails.test.mixin.web.ControllerUnitTestMixin
 import grails.util.GrailsWebMockUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
-import grails.web.mime.MimeType
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -37,9 +36,6 @@ import org.grails.plugins.converters.ConvertersGrailsPlugin
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.api.ControllerTagLibraryApi
-import org.grails.plugins.web.api.RequestMimeTypesApi
-import org.grails.plugins.web.api.ResponseMimeTypesApi
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.web.mapping.DefaultLinkGenerator
@@ -50,7 +46,6 @@ import org.grails.web.pages.GroovyPagesTemplateRenderer
 import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
@@ -76,7 +71,7 @@ class ControllerTestPlugin implements TestPlugin {
         Map<String, String> groovyPages = [:]
         runtime.putValue("groovyPages", groovyPages)
         
-        defineBeans(runtime, new MimeTypesGrailsPlugin().doWithSpring)
+        defineBeans(runtime, new MimeTypesGrailsPlugin().doWithSpring())
         defineBeans(runtime, new ConvertersGrailsPlugin().doWithSpring)
         def config = grailsApplication.config
         defineBeans(runtime) {
@@ -153,8 +148,7 @@ class ControllerTestPlugin implements TestPlugin {
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest((ServletContext)runtime.getValue("servletContext"))
         request.setAttribute(DispatcherServlet.LOCALE_RESOLVER_ATTRIBUTE, grailsApplication.mainContext.getBean('localeResolver'))
         request.method = 'GET'
-        request.requestMimeTypesApi = new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext)
-        GrailsMockHttpServletResponse response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
+        GrailsMockHttpServletResponse response = new GrailsMockHttpServletResponse()
         GrailsWebRequest webRequest = GrailsWebMockUtil.bindMockWebRequest(applicationContext, request, response)
         runtime.putValue("webRequest", webRequest)
     }
@@ -207,32 +201,7 @@ class ControllerTestPlugin implements TestPlugin {
     }
 }
 
-@CompileStatic
-class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
 
-    ApplicationContext applicationContext
 
-    @Override
-    MimeType[] getMimeTypes() {
-        loadConfig()
-        def factory = new MimeTypesFactoryBean()
-        factory.applicationContext = applicationContext
-        return factory.getObject()
-    }
-    
-    
-}
 
-@CompileStatic
-class TestRequestMimeTypesApi extends RequestMimeTypesApi {
-
-    ApplicationContext applicationContext
-
-    @Override
-    MimeType[] getMimeTypes() {
-        def factory = new MimeTypesFactoryBean()
-        factory.applicationContext = applicationContext
-        return factory.getObject()
-    }
-}
 

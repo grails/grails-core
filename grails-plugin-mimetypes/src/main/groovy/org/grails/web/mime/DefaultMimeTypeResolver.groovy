@@ -17,11 +17,7 @@ package org.grails.web.mime
 
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeResolver
-import groovy.transform.CompileStatic
-import org.grails.plugins.web.api.RequestMimeTypesApi
-import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * Resolves the {@link grails.web.mime.MimeType} instance for a request
@@ -29,11 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * @author Graeme Rocher
  * @since 2.3
  */
-@CompileStatic
 class DefaultMimeTypeResolver implements MimeTypeResolver, org.codehaus.groovy.grails.web.mime.MimeTypeResolver {
-
-    @Autowired ResponseMimeTypesApi responseMimeTypesApi
-    @Autowired RequestMimeTypesApi requestMimeTypesApi
 
     /**
      * Resolve the {@link grails.web.mime.MimeType} to be used for the response, typically established from the ACCEPT header
@@ -44,7 +36,7 @@ class DefaultMimeTypeResolver implements MimeTypeResolver, org.codehaus.groovy.g
     @Override
     MimeType resolveResponseMimeType(GrailsWebRequest webRequest= GrailsWebRequest.lookup()) {
         if (webRequest != null) {
-            return responseMimeTypesApi.getMimeTypeForRequest(webRequest)
+            return webRequest.response.mimeType
         }
         return null
     }
@@ -58,7 +50,7 @@ class DefaultMimeTypeResolver implements MimeTypeResolver, org.codehaus.groovy.g
     @Override
     MimeType resolveRequestMimeType(GrailsWebRequest webRequest = GrailsWebRequest.lookup()) {
         if (webRequest != null) {
-            final allMimeTypes = requestMimeTypesApi.getMimeTypes(webRequest.request)
+            final allMimeTypes = webRequest.request.mimeTypes
             if(allMimeTypes) {
                 return allMimeTypes[0]
             }

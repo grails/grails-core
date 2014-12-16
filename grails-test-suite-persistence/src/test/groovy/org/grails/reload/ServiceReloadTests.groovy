@@ -28,9 +28,7 @@ class NonTransactionalService {
         def newGcl = new GroovyClassLoader()
         def event = [source:newGcl.parseClass(service1), ctx:appCtx]
         def plugin = mockManager.getGrailsPlugin("services")
-        def eventHandler = plugin.instance.onChange
-        eventHandler.delegate = plugin
-        eventHandler.call(event)
+        plugin.instance.onChange(event)
 
         def newService = ga.getServiceClass("NonTransactionalService").newInstance()
         assertEquals "foo", newService.myMethod()

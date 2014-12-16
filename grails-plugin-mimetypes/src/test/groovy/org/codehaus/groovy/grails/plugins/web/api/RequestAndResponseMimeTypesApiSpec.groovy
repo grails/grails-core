@@ -2,61 +2,43 @@ package org.codehaus.groovy.grails.plugins.web.api
 
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.util.GrailsWebMockUtil
+import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
+import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.web.mime.HttpServletResponseExtension
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
-import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.plugins.web.api.RequestMimeTypesApi
-import org.grails.plugins.web.api.ResponseMimeTypesApi
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.support.GenericWebApplicationContext
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
-
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
 /**
- * Tests for {@link org.grails.plugins.web.api.RequestMimeTypesApi}
+ * Tests for mime type resolution
  */
 class RequestAndResponseMimeTypesApiSpec extends Specification{
-    def requestMimeTypesApiInstance
     def responseMimeTypesApiInstance
     def application
     
     void setup() {
         application = new DefaultGrailsApplication()
         application.config = testConfig
-        responseMimeTypesApiInstance = responseMimeTypesApi
-        requestMimeTypesApiInstance = requestMimeTypesApi
-        registerRequestAndResponseMimeTypesApi()
-    }
-    
-    void registerRequestAndResponseMimeTypesApi() {
-        MetaClassEnhancer requestEnhancer = new MetaClassEnhancer()
-        requestEnhancer.addApi requestMimeTypesApiInstance
-        requestEnhancer.enhance HttpServletRequest.metaClass
-
-        MetaClassEnhancer responseEnhancer = new MetaClassEnhancer()
-        responseEnhancer.addApi responseMimeTypesApiInstance
-        responseEnhancer.enhance HttpServletResponse.metaClass
     }
     
     void cleanup() {
-        GroovySystem.metaClassRegistry.removeMetaClass(HttpServletRequest)
-        GroovySystem.metaClassRegistry.removeMetaClass(MockHttpServletRequest)
-        GroovySystem.metaClassRegistry.removeMetaClass(HttpServletResponse)
-        GroovySystem.metaClassRegistry.removeMetaClass(MockHttpServletResponse)
+        ShutdownOperations.runOperations()
     }
 
     void "Test format property is valid for CONTENT_TYPE header only"() {
         when: "The request CONTENT_TYPE header is 'text/xml'"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
             request.contentType = "text/xml"
@@ -68,9 +50,19 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             response.format == 'all'
     }
 
+    private GrailsWebRequest boundMimeTypeRequest() {
+        def servletContext = new MockServletContext()
+        def ctx = new GenericWebApplicationContext(servletContext)
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
+        ctx.beanFactory.registerSingleton(MimeType.BEAN_NAME, buildMimeTypes())
+        ctx.beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, application)
+        ctx.refresh()
+        GrailsWebMockUtil.bindMockWebRequest(ctx)
+    }
+
     void "Test format property is valid for CONTENT_TYPE and Accept header"() {
         when: "The request CONTENT_TYPE header is 'text/xml'"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             MockHttpServletRequest request = webRequest.currentRequest
             def response = webRequest.currentResponse
             request.contentType = "text/xml"
@@ -85,7 +77,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
    void "Test format property is valid for Accept header only"() {
         when: "The request CONTENT_TYPE header is 'text/xml'"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             MockHttpServletRequest request = webRequest.currentRequest
             def response = webRequest.currentResponse
             request.addHeader('Accept', 'text/json')
@@ -99,7 +91,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void "Test withFormat method with CONTENT_TYPE header only"() {
         when: "The request CONTENT_TYPE header is 'text/xml' and withFormat is used"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
 
@@ -122,7 +114,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void "Test withFormat method with Accept header only"() {
         when: "The request Accept header is 'text/xml' and withFormat is used"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
 
@@ -144,7 +136,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             responseResult == 'got xml'
 
         when:"The Accept header is JSON and there is a catch-all"
-            webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            webRequest = boundMimeTypeRequest()
             request = webRequest.currentRequest
             response = webRequest.currentResponse
             request.addHeader('Accept', "application/json")
@@ -161,7 +153,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
     @Issue("GRAILS-10973")
     void "request.withFormat should choose wildcard choice when format == all"() {
         when:
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
             def requestResult = request.withFormat {
@@ -177,7 +169,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void "Test withFormat returns first block if no format provided"() {
         when: "No Accept header, URI extension or format param"
-        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        final webRequest = boundMimeTypeRequest()
         def request = webRequest.currentRequest
         def response = webRequest.currentResponse
 
@@ -192,7 +184,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void "Test withFormat method when Accept header contains the all (*/*) and non-matching formats"() {
         setup: "The request Acept header is 'application/xml, text/csv, */*' and withFormat is used"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
             request.addHeader('Accept', acceptHeader)
@@ -223,8 +215,9 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             }
             application.setConfig(config)
             println "$userAgent - $additionalConfig - ${application.flatConfig.get('grails.mime.disable.accept.header.userAgents')}"
-            responseMimeTypesApiInstance.loadConfig()
-            println "disableForUserAgents: ${responseMimeTypesApiInstance.disableForUserAgents}"
+            HttpServletResponseExtension.loadMimeTypeConfig(config)
+//            responseMimeTypesApiInstance.loadMimeTypeConfig()
+//            println "disableForUserAgents: ${responseMimeTypesApiInstance.disableForUserAgents}"
             final webRequest = GrailsWebMockUtil.bindMockWebRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
@@ -251,16 +244,12 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
     }
 
     
-    private RequestMimeTypesApi getRequestMimeTypesApi() {
-        def mimeTypesFactory = new MimeTypesFactoryBean()
-        mimeTypesFactory.grailsApplication = application
-        return new RequestMimeTypesApi(application, mimeTypesFactory.getObject())
-    }
 
-    private ResponseMimeTypesApi getResponseMimeTypesApi() {
+    private MimeType[] buildMimeTypes() {
         def mimeTypesFactory = new MimeTypesFactoryBean()
         mimeTypesFactory.grailsApplication = application
-        return new ResponseMimeTypesApi(application, mimeTypesFactory.getObject())
+        def mimeTypes = mimeTypesFactory.getObject()
+        mimeTypes
     }
 
     String applicationConfigText = '''

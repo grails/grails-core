@@ -15,19 +15,12 @@
  */
 package org.grails.plugins.web.mime
 
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import org.grails.web.mime.DefaultMimeTypeResolver
 import grails.web.mime.MimeTypeResolver
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
-import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.plugins.web.api.RequestMimeTypesApi
-import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.mime.DefaultMimeUtility
 import grails.web.mime.MimeType
-import org.springframework.context.ApplicationContext
 
 /**
  * Provides content negotiation capabilities to Grails via a new withFormat method on controllers
@@ -36,30 +29,17 @@ import org.springframework.context.ApplicationContext
  * @author Graeme Rocher
  * @since 1.0
  */
-class MimeTypesGrailsPlugin {
+class MimeTypesGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version, controllers:version]
     def observe = ['controllers']
 
-    def doWithSpring = {
+    Closure doWithSpring() {{->
         "${MimeType.BEAN_NAME}"(MimeTypesFactoryBean)
         final mimeTypesBeanRef = ref(MimeType.BEAN_NAME)
-        final grailsAppBeanRef = ref("grailsApplication")
 
         grailsMimeUtility(DefaultMimeUtility, mimeTypesBeanRef)
-        requestMimeTypesApi(RequestMimeTypesApi, grailsAppBeanRef, mimeTypesBeanRef)
-        responseMimeTypesApi(ResponseMimeTypesApi, grailsAppBeanRef, mimeTypesBeanRef)
         "${MimeTypeResolver.BEAN_NAME}"(DefaultMimeTypeResolver)
-    }
-
-    def doWithDynamicMethods(ApplicationContext ctx) {
-        MetaClassEnhancer requestEnhancer = new MetaClassEnhancer()
-        requestEnhancer.addApi ctx.getBean("requestMimeTypesApi", RequestMimeTypesApi)
-        requestEnhancer.enhance HttpServletRequest.metaClass
-
-        MetaClassEnhancer responseEnhancer = new MetaClassEnhancer()
-        responseEnhancer.addApi ctx.getBean("responseMimeTypesApi", ResponseMimeTypesApi)
-        responseEnhancer.enhance HttpServletResponse.metaClass
-    }
+    }}
 }

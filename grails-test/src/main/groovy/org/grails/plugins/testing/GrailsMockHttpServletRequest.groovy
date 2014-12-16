@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Part
 
-import org.grails.plugins.web.api.RequestMimeTypesApi
 import grails.web.mime.MimeType
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -49,8 +48,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest
  * and methods normally injected by the "servlets" plugin.
  */
 class GrailsMockHttpServletRequest extends MockHttpServletRequest implements MultipartHttpServletRequest{
-
-    @ApiDelegate(HttpServletRequest) RequestMimeTypesApi requestMimeTypesApi = new RequestMimeTypesApi()
 
     boolean invalidToken
     MultiValueMap multipartFiles = new LinkedMultiValueMap<String, MultipartFile>()

@@ -15,15 +15,21 @@
  */
 package org.grails.web.mime
 
+import grails.web.http.HttpHeaders
+import grails.web.mime.MimeType
 import grails.web.util.GrailsApplicationAttributes
+import org.springframework.web.context.support.WebApplicationContextUtils
 
 import javax.servlet.http.HttpServletRequest
 
 import org.grails.plugins.web.api.MimeTypesApiSupport
 
 /**
- * 
+ * An extension that adds methods to the {@link HttpServletRequest} object for mime types
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  * 
  */
@@ -48,6 +54,26 @@ class HttpServletRequestExtension {
         if (!result) {
             result = request.getMimeTypes()[0].extension
             request.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, result)
+        }
+        result
+    }
+
+    /**
+     * Obtains a list of configured {@link grails.web.mime.MimeType} instances for the request
+     *
+     * @param request The request
+     * @return A list of configured mime types
+     */
+    static MimeType[] getMimeTypes(HttpServletRequest request) {
+        MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
+        if (!result) {
+            def context = WebApplicationContextUtils.getRequiredWebApplicationContext(request.servletContext)
+            def parser = new DefaultAcceptHeaderParser((MimeType[])context.getBean(MimeType.BEAN_NAME))
+            def header = request.contentType
+            if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
+            result = parser.parse(header, header ? new MimeType(header) : MimeType.HTML)
+
+            request.setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, result)
         }
         result
     }

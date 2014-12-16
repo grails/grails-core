@@ -53,6 +53,13 @@ public class PropertySourcesConfig extends NavigableMapConfig {
         this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
     }
 
+    public PropertySourcesConfig(Map<String, Object> mapPropertySource) {
+        MutablePropertySources mutablePropertySources = new MutablePropertySources();
+        mutablePropertySources.addFirst(new MapPropertySource("test", mapPropertySource));
+        this.propertySources = mutablePropertySources;
+        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
+    }
+
     public void refresh() {
         initializeFromPropertySources(propertySources);
     }

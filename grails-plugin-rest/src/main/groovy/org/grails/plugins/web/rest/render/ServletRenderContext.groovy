@@ -17,7 +17,6 @@ package org.grails.plugins.web.rest.render
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.grails.plugins.web.api.ResponseMimeTypesApi
 import grails.web.mime.MimeType
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -39,7 +38,6 @@ class ServletRenderContext extends AbstractRenderContext{
 
     GrailsWebRequest webRequest
     Map<String, Object> arguments
-    ResponseMimeTypesApi responseMimeTypesApi
     private String resourcePath
 
     ServletRenderContext(GrailsWebRequest webRequest) {

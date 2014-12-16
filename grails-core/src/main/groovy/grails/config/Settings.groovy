@@ -112,4 +112,9 @@ interface Settings {
      * The URL of the server
      */
     String SERVER_URL = 'grails.serverURL'
+
+    /**
+     * The suffix used during scaffolding for the domain
+     */
+    String SCAFFOLDING_DOMAIN_SUFFIX = 'grails.scaffolding.templates.domainSuffix'
 }

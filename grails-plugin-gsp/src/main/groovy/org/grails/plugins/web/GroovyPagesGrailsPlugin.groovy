@@ -84,8 +84,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
         SitemeshTagLib
     ]
 
-    GrailsApplication grailsApplication
-    GrailsPluginManager pluginManager
 
     /**
      * Clear the page cache with the ApplicationContext is loaded

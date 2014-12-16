@@ -18,7 +18,8 @@ package org.grails.web.servlet
 import javax.servlet.ServletContext
 
 /**
- * 
+ * An extension that adds methods to the {@link ServletContext} interface
+ *
  * @author Jeff Brown
  * @since 3.0
  */

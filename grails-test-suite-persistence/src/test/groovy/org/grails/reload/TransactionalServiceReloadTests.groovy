@@ -33,9 +33,7 @@ class TransactionalService {
 
         def plugin = mockManager.getGrailsPlugin("services")
 
-        def eventHandler = plugin.instance.onChange
-        eventHandler.delegate = plugin
-        eventHandler.call(event)
+        plugin.instance.onChange(event)
 
         def newService = ga.getServiceClass("TransactionalService").newInstance()
 

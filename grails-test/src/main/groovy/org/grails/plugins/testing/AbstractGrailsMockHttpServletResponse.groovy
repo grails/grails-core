@@ -15,14 +15,11 @@
  */
 package org.grails.plugins.testing
 
-import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import groovy.util.slurpersupport.GPathResult
 
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
-import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.json.JSONElement
 import grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -36,7 +33,6 @@ import org.grails.io.support.SpringIOUtils
  */
 abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResponse {
 
-    @ApiDelegate(HttpServletResponse) ResponseMimeTypesApi responseMimeTypesApi = new ResponseMimeTypesApi()
 
     /**
      * Sets the response format

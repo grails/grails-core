@@ -21,8 +21,6 @@ import grails.web.util.GrailsApplicationAttributes
 
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.plugins.web.api.RequestMimeTypesApi
-import org.grails.plugins.web.api.ResponseMimeTypesApi
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
@@ -46,14 +44,7 @@ class GrailsTestRequestEnvironmentInterceptor {
      */
     void init(String controllerName = DEFAULT_CONTROLLER_NAME) {
         def request = new GrailsMockHttpServletRequest()
-        if(applicationContext.containsBean("requestMimeTypesApi")) {
-            request.requestMimeTypesApi = applicationContext.getBean("requestMimeTypesApi", RequestMimeTypesApi)
-        }
         def response = new GrailsMockHttpServletResponse()
-        if(applicationContext.containsBean("responseMimeTypesApi")) {
-            response.responseMimeTypesApi = applicationContext.getBean("responseMimeTypesApi", ResponseMimeTypesApi)
-        }
-
         GrailsWebRequest webRequest = GrailsWebMockUtil.bindMockWebRequest(applicationContext, request, response)
         Holders.servletContext = webRequest.servletContext
         Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(webRequest.servletContext));

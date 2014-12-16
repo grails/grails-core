@@ -15,8 +15,7 @@
  */
 package org.grails.plugins.services
 
-import grails.core.GrailsApplication
-import grails.core.support.GrailsApplicationAware
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 
@@ -37,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional
  * @author Graeme Rocher
  * @since 0.4
  */
-class ServicesGrailsPlugin implements GrailsApplicationAware {
+class ServicesGrailsPlugin extends Plugin  {
 
     def version = GrailsUtil.getGrailsVersion()
     def loadAfter = ['hibernate', 'hibernate4']
@@ -46,9 +45,7 @@ class ServicesGrailsPlugin implements GrailsApplicationAware {
     def watchedResources = ["file:./grails-app/services/**/*Service.groovy",
                             "file:./plugins/*/grails-app/services/**/*Service.groovy"]
 
-    GrailsApplication grailsApplication
-
-    def doWithSpring = {
+    Closure doWithSpring() {{->
         xmlns tx:"http://www.springframework.org/schema/tx"
         tx.'annotation-driven'('transaction-manager':'transactionManager')
 
@@ -112,7 +109,7 @@ class ServicesGrailsPlugin implements GrailsApplicationAware {
         }
 
         serviceBeanAliasPostProcessor(ServiceBeanAliasPostProcessor)
-    }
+    }}
 
     @CompileStatic
     boolean shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
@@ -130,24 +127,26 @@ class ServicesGrailsPlugin implements GrailsApplicationAware {
         }
     }
 
-    def onChange = { event ->
-        if (!event.source || !event.ctx) {
+    void onChange(Map<String,Object> event) {
+        if (!event.source || !applicationContext) {
             return
         }
 
         if (event.source instanceof Class) {
+            def application = grailsApplication
+            def ctx = applicationContext
 
             Class javaClass = event.source
             // do nothing for abstract classes
             if (Modifier.isAbstract(javaClass.modifiers)) return
-            def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
+            def serviceClass = (GrailsServiceClass) application.addArtefact(ServiceArtefactHandler.TYPE, (Class) event.source)
             def serviceName = "${serviceClass.propertyName}"
             def scope = serviceClass.getPropertyValue("scope")
 
             String datasourceName = serviceClass.datasource
             String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
 
-            if (shouldCreateTransactionalProxy(serviceClass) && event.ctx.containsBean("transactionManager$suffix")) {
+            if (shouldCreateTransactionalProxy(serviceClass) && ctx.containsBean("transactionManager$suffix")) {
 
                 def props = new Properties()
                 String attributes = 'PROPAGATION_REQUIRED'
@@ -158,7 +157,7 @@ class ServicesGrailsPlugin implements GrailsApplicationAware {
 
                 def beans = beans {
                     "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
-                        targetObject = ref("grailsApplication", true)
+                        targetObject = application
                         targetMethod = "getArtefact"
                         arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
                     }
@@ -175,7 +174,7 @@ class ServicesGrailsPlugin implements GrailsApplicationAware {
                         transactionManager = ref("transactionManager$suffix")
                     }
                 }
-                beans.registerBeans(event.ctx)
+                beans.registerBeans(applicationContext)
             }
             else {
                 def beans = beans {
