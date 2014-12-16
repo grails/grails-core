@@ -1,8 +1,7 @@
 package org.grails.web.servlet;
 
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 
 import org.grails.core.artefact.ControllerArtefactHandler;
@@ -12,9 +11,7 @@ import grails.core.GrailsClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 
 public class GrailsApplicationAttributesTests extends TestCase {
@@ -45,34 +42,6 @@ public class GrailsApplicationAttributesTests extends TestCase {
 
         assertEquals("/WEB-INF/grails-app/views/test/aView.gsp",attrs.getViewUri("aView", request));
         assertEquals("/WEB-INF/grails-app/views/shared.gsp",attrs.getViewUri("/shared", request));
-    }
-
-    public void testGetTagLibForTag() throws Exception {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-        gcl.parseClass("class TestController {\n" +
-                                                    "def list = {\n" +
-                                                    "}\n" +
-                                                    "}\n" +
-                         "class FirstTagLib {\n" +
-                                      "Closure firstTag = {\n" +
-                                      "}\n" +
-                         "}\n" +
-                         "class SecondTagLib {\n" +
-                             "Closure secondTag = {\n" +
-                         "}\n" +
-                "}");
-
-        GrailsApplicationAttributes attrs = getAttributesForClasses(gcl.getLoadedClasses(),gcl);
-        assertNotNull(attrs);
-        assertNotNull(attrs.getApplicationContext());
-        assertNotNull(attrs.getGrailsApplication());
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        GroovyObject controller = (GroovyObject)attrs.getApplicationContext().getBean("TestController");
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
-        GroovyObject tagLib1 = attrs.getTagLibraryForTag(request,response,"firstTag");
-        assertNotNull(tagLib1);
     }
 
     private GrailsApplicationAttributes getAttributesForClasses(Class<?>[] classes, GroovyClassLoader gcl) {

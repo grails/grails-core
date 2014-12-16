@@ -20,7 +20,7 @@ import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.buffer.FastStringWriter
 import org.grails.web.pages.GroovyPageBinding
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.sitemesh.FactoryHolder
 import org.grails.web.sitemesh.GSPSitemeshPage
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper

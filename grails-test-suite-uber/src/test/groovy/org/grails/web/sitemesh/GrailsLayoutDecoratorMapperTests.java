@@ -6,7 +6,7 @@ import grails.core.GrailsApplication;
 import grails.util.GrailsWebMockUtil;
 import grails.util.Holders;
 import grails.web.pages.GroovyPagesUriService;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;

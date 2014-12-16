@@ -39,7 +39,7 @@ import org.grails.core.exceptions.GrailsException;
 import org.grails.exceptions.reporting.SourceCodeAware;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.grails.buffer.FastStringPrintWriter;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;

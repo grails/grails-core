@@ -16,9 +16,6 @@
 package grails.artefact.controller
 
 import groovy.transform.CompileDynamic
-
-import java.util.List;
-
 import grails.artefact.Controller
 import grails.artefact.controller.support.ResponseRenderer
 import grails.core.GrailsDomainClassProperty
@@ -27,7 +24,7 @@ import grails.rest.Resource
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.web.mime.MimeType
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -39,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import org.springframework.util.Assert
 
 /**
  *

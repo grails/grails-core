@@ -1,6 +1,6 @@
 package org.grails.plugins.web.filters
 
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.web.util.WebUtils
 import org.springframework.web.servlet.HandlerInterceptor

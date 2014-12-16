@@ -22,6 +22,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.artefact.Controller;
 import org.grails.plugins.web.controllers.metaclass.ForwardMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

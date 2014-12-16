@@ -19,7 +19,7 @@ package grails.test.runtime
 import groovy.transform.CompileStatic
 import org.grails.web.pages.GroovyPageBinding
 import org.grails.web.taglib.WebRequestTemplateVariableBinding
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**

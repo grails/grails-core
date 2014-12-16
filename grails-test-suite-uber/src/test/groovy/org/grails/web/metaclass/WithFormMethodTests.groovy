@@ -15,10 +15,10 @@
 
 package org.grails.web.metaclass
 
+import grails.artefact.Controller
 import grails.util.GrailsWebMockUtil
 
 import org.grails.core.exceptions.GrailsRuntimeException
-import org.grails.plugins.web.controllers.metaclass.WithFormMethod
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -267,3 +267,5 @@ class WithFormMethodTests extends GroovyTestCase {
         }
     }
 }
+
+class WithFormMethod implements Controller {}

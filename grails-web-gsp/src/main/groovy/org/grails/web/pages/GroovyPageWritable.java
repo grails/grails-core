@@ -16,7 +16,7 @@
 package org.grails.web.pages;
 
 import grails.util.Environment;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.Binding;
 import groovy.lang.Writable;
 import org.apache.commons.logging.Log;

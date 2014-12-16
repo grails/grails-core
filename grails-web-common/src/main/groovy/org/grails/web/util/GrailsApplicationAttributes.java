@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.web.util;
+package org.grails.web.util;
 
 import grails.web.mvc.FlashScope;
 import groovy.lang.GroovyObject;
@@ -150,31 +150,6 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes, org.
      */
     ResourceAwareTemplateEngine getPagesTemplateEngine();
 
-    /**
-     * Retrieves a Grails tag library from the request for the named tag in
-     * the default namespace GroovyPage.DEFAULT_NAMESPACE
-     *
-     * @param request the request instance
-     * @param response the response instancte
-     * @param tagName The name of the tag that contains the tag library
-     *
-     * @return An instance of the tag library or null if not found
-     */
-    GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response, String tagName);
-
-    /**
-     * Retrieves a Grails tag library from the request for the named tag in a
-     * given namespace.
-     *
-     * @param request the request instance
-     * @param response the response instancte
-     * @param tagName The name of the tag that contains the tag library
-     * @param namespace The namespace of the tag
-     *
-     * @return An instance of the tag library or null if not found
-     */
-    GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,
-            String tagName, String namespace);
 
     /**
      * Holds the current response write for the request
@@ -189,7 +164,13 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes, org.
      */
     void setOut(HttpServletRequest currentRequest, Writer out2);
 
+    /**
+     * @return The GroovyPageUriService instance
+     */
     GroovyPagesUriService getGroovyPagesUriService();
 
+    /**
+     * @return The MessageSource instance
+     */
     MessageSource getMessageSource();
 }

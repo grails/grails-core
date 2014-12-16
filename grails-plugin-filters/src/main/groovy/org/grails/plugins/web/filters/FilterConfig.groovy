@@ -20,7 +20,7 @@ import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils
 import grails.web.mvc.FlashScope
 import grails.web.servlet.mvc.GrailsParameterMap
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest

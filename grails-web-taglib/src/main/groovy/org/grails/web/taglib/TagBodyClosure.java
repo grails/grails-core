@@ -15,7 +15,7 @@
  */
 package org.grails.web.taglib;
 
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import org.grails.web.encoder.OutputEncodingStack;

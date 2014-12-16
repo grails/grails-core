@@ -15,7 +15,6 @@
  */
 package org.grails.plugins.testing
 
-import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import grails.converters.XML
 
@@ -31,7 +30,7 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Part
 
 import grails.web.mime.MimeType
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpHeaders

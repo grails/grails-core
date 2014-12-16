@@ -1,7 +1,7 @@
 package org.grails.web.servlet.view;
 
 import grails.util.GrailsWebMockUtil
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 
 import javax.servlet.http.HttpServletRequest
 

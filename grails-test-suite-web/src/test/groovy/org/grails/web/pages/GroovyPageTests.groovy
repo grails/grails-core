@@ -2,7 +2,7 @@ package org.grails.web.pages
 
 import grails.core.GrailsApplication
 import org.grails.web.servlet.DefaultGrailsApplicationAttributes
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.buffer.GrailsPrintWriterAdapter;

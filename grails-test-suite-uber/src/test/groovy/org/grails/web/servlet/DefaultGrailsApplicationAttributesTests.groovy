@@ -1,6 +1,6 @@
 package org.grails.web.servlet
 
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.mock.web.MockHttpServletRequest
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.buffer.StreamCharBuffer

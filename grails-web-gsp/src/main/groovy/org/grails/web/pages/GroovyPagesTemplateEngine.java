@@ -63,7 +63,7 @@ import org.grails.web.pages.discovery.GroovyPageResourceScriptSource;
 import org.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.grails.web.pages.ext.jsp.TagLibraryResolver;
 
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.TagLibraryLookup;

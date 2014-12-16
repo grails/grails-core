@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.Holders
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.servlet.DelegatingApplicationAttributes

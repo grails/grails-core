@@ -17,7 +17,7 @@ package org.grails.web.mime
 
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 import javax.servlet.http.HttpServletRequest

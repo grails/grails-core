@@ -29,7 +29,7 @@ import grails.web.mime.MimeTypeResolver;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
 import org.grails.web.taglib.TemplateVariableBinding;
 import grails.web.pages.GroovyPagesUriService;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 

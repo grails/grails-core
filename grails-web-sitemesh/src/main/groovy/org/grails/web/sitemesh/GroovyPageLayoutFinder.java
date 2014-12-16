@@ -29,7 +29,7 @@ import grails.util.GrailsClassUtils;
 import grails.util.GrailsStringUtils;
 import org.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.view.AbstractGrailsView;
 import org.grails.web.servlet.view.GrailsViewResolver;
 import org.grails.web.servlet.view.LayoutViewResolver;

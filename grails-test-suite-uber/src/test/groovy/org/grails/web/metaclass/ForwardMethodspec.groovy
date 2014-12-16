@@ -1,6 +1,7 @@
 package org.grails.web.metaclass
 
-import org.grails.plugins.web.controllers.metaclass.ForwardMethod
+import grails.artefact.Controller
+import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.RequestDispatcher
 import javax.servlet.ServletContext
@@ -9,7 +10,7 @@ import javax.servlet.http.HttpServletResponse
  
 import grails.web.UrlConverter
  
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
  
@@ -17,7 +18,7 @@ import spock.lang.Specification
  
 class ForwardMethodSpec extends Specification {
  
-    ForwardMethod forwardMethod
+    ForwardMethodTest forwardMethod
     ApplicationContext appContext
     ServletContext servletContext
     HttpServletRequest request
@@ -27,7 +28,7 @@ class ForwardMethodSpec extends Specification {
     UrlConverter urlConverter
     
     def setup() {
-        forwardMethod = new ForwardMethod()
+        forwardMethod = new ForwardMethodTest()
         
         appContext = Mock(ApplicationContext)
         servletContext = Mock(ServletContext)
@@ -37,6 +38,7 @@ class ForwardMethodSpec extends Specification {
         urlConverter = Mock(UrlConverter)
  
         webRequest = new GrailsWebRequest(request, response, servletContext, appContext)
+        RequestContextHolder.setRequestAttributes(webRequest)
             
         dispatcher.forward(_,_) >> { }
         request.getAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE) >> { 'fooBar' }     
@@ -46,6 +48,10 @@ class ForwardMethodSpec extends Specification {
         def parameters = [:]
         request.getParameterMap() >> { parameters }
     }
+
+    void cleanup() {
+        RequestContextHolder.resetRequestAttributes()
+    }
     
     def 'Test forward request with controller and action params and url converter'() {
         setup:
@@ -53,7 +59,7 @@ class ForwardMethodSpec extends Specification {
             urlConverter.toUrlElement(_) >> { it[0]?.toLowerCase() }
             forwardMethod.urlConverter = urlConverter
         when:
-            def forwardUri = forwardMethod.forward(request, response, params)
+            def forwardUri = forwardMethod.forward(params)
         then:
             forwardUri == '/grails/foo/foobar.dispatch'     
     }
@@ -62,9 +68,9 @@ class ForwardMethodSpec extends Specification {
         setup:
             Map params = [controller : 'foo', action : 'fooBar', model : [param1 : 1, param2 : 2]]
             urlConverter.toUrlElement(_) >> { it[0]?.toLowerCase() }
-            appContext.getBean("grailsUrlConverter", UrlConverter) >> { urlConverter }  
+            forwardMethod.urlConverter = urlConverter
         when:
-            def forwardUri = forwardMethod.forward(request, response, params)
+            def forwardUri = forwardMethod.forward(params)
         then:
             forwardUri == '/grails/foo/foobar.dispatch'
     }
@@ -75,8 +81,9 @@ class ForwardMethodSpec extends Specification {
             appContext.getBean("grailsUrlConverter", UrlConverter) >> { null }
             forwardMethod.urlConverter = null
         when:
-            def forwardUri = forwardMethod.forward(request, response, params)
+            def forwardUri = forwardMethod.forward(params)
         then:
             forwardUri == '/grails/foo/fooBar.dispatch'
     }   
 }
+class ForwardMethodTest implements Controller {}

@@ -17,7 +17,7 @@ package grails.artefact
 
 import grails.util.Environment
 import grails.web.api.WebAttributes
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 

@@ -15,7 +15,7 @@
  */
 package grails.util
 
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
 import javax.servlet.ServletContext

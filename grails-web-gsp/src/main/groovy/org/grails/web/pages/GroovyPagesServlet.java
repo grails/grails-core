@@ -19,7 +19,7 @@ import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.util.GrailsStringUtils;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.text.Template;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.plugins.BinaryGrailsPlugin;

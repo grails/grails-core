@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import grails.core.GrailsApplication;
 import grails.util.GrailsStringUtils;
 import grails.web.mime.MimeType;
-import grails.web.util.GrailsApplicationAttributes;
 import grails.web.servlet.mvc.GrailsParameterMap;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;

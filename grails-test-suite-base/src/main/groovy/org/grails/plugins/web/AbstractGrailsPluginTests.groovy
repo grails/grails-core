@@ -16,7 +16,7 @@ import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.grails.support.MockApplicationContext
 import org.grails.core.io.MockResourceLoader
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver

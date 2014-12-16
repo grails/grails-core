@@ -8,11 +8,11 @@ import groovy.transform.CompileStatic
  */
 @Deprecated
 @CompileStatic
-class DelegatingApplicationAttributes implements GrailsApplicationAttributes, grails.web.util.GrailsApplicationAttributes {
+class DelegatingApplicationAttributes implements GrailsApplicationAttributes, org.grails.web.util.GrailsApplicationAttributes {
 
-    @Delegate grails.web.util.GrailsApplicationAttributes applicationAttributes
+    @Delegate org.grails.web.util.GrailsApplicationAttributes applicationAttributes
 
-    DelegatingApplicationAttributes(grails.web.util.GrailsApplicationAttributes applicationAttributes) {
+    DelegatingApplicationAttributes(org.grails.web.util.GrailsApplicationAttributes applicationAttributes) {
         this.applicationAttributes = applicationAttributes
     }
 }

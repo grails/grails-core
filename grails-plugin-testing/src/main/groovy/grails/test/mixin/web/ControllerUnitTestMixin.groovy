@@ -32,7 +32,7 @@ import grails.web.mime.MimeType
 import org.grails.web.pages.GroovyPageUtils
 import org.grails.plugins.support.WebMetaUtils
 import grails.web.mvc.FlashScope
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory

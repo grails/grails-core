@@ -26,7 +26,6 @@ import org.grails.encoder.Encoder;
 import org.grails.encoder.EncodingStateRegistry;
 import org.grails.buffer.FastStringWriter;
 import org.grails.web.encoder.OutputEncodingStack;
-import grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;

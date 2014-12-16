@@ -17,7 +17,7 @@ package org.grails.test.support
 
 import grails.util.GrailsWebMockUtil
 import grails.util.Holders
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse

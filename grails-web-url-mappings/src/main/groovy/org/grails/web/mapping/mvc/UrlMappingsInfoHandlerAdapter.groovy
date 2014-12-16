@@ -3,7 +3,7 @@ package org.grails.web.mapping.mvc
 import groovy.transform.CompileStatic
 import grails.core.GrailsControllerClass
 import grails.web.mapping.UrlMappingInfo
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.ActionResultTransformer
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext

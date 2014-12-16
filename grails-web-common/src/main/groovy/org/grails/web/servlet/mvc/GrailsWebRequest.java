@@ -43,7 +43,7 @@ import org.grails.encoder.EncodingStateRegistryLookupHolder;
 import org.grails.web.beans.PropertyEditorRegistryUtils;
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings;
 import grails.web.mvc.FlashScope;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;

@@ -5,14 +5,8 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
-import grails.web.util.GrailsApplicationAttributes
-import org.grails.core.io.MockStringResourceLoader
 import org.grails.plugins.web.taglib.ValidationTagLib
-import org.springframework.beans.factory.support.RootBeanDefinition
-import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.validation.Errors
-import org.springframework.validation.FieldError
 import spock.lang.Specification
 
 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet
+package org.grails.plugins.web.servlet.mvc
+
+import groovy.transform.CompileStatic
+import org.grails.web.servlet.mvc.AbstractTokenResponseHandler
+
 
 /**
- * @deprecated Use {@link org.grails.web.util.GrailsApplicationAttributes} instead
+ * Handles a valid token response. See {@link org.grails.web.servlet.mvc.TokenResponseHandler}
+ *
+ * @author Graeme Rocher
+ * @since 3.0
  */
-public interface GrailsApplicationAttributes extends org.grails.web.util.GrailsApplicationAttributes {
+@CompileStatic
+class ValidResponseHandler extends AbstractTokenResponseHandler {
 
+    def model
+
+    ValidResponseHandler(model) {
+        super(true)
+        this.model = model
+    }
+
+    protected Object invalidTokenInternal(Closure callable) { model }
 }

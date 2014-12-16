@@ -17,17 +17,18 @@ package grails.web.api
 
 import grails.core.GrailsApplication
 import grails.web.mvc.FlashScope
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.support.WebApplicationContextUtils
 
 /**
  *
+ * Common web attributes inherited by all controllers and tag libraries
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
  *
  * @since 3.0
  *

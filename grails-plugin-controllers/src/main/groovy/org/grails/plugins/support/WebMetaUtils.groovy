@@ -39,7 +39,9 @@ import java.lang.reflect.Method
  *
  * @author Graeme Rocher
  * @since 1.0
+ * @deprecated Will be removed in a future version of Grails
  */
+@Deprecated
 class WebMetaUtils {
 
     /**

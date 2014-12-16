@@ -15,17 +15,15 @@
  */
 package org.grails.plugins.web
 import grails.config.Config
-import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
 import grails.gsp.PageRenderer
-import grails.plugins.GrailsPluginManager
 import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.pages.GroovyPagesUriService
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import org.grails.buffer.StreamCharBufferMetaUtils

@@ -20,7 +20,7 @@ import org.grails.io.support.GrailsResourceUtils;
 import grails.plugins.GrailsPlugin;
 import org.grails.web.pages.GroovyPageBinding;
 import org.grails.web.taglib.TemplateVariableBinding;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestAttributes;

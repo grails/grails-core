@@ -27,7 +27,7 @@ import grails.web.JSONBuilder
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
 import grails.web.mime.MimeUtility
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.text.Template
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder

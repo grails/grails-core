@@ -40,7 +40,7 @@ import grails.plugins.PluginManagerAware;
 import org.grails.web.pages.GroovyPage;
 import org.grails.web.pages.GroovyPageBinding;
 import org.grails.web.taglib.TemplateVariableBinding;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

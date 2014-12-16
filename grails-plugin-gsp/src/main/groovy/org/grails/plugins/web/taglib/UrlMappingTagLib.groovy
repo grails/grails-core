@@ -2,7 +2,7 @@ package org.grails.plugins.web.taglib
 
 import grails.gsp.TagLib
 import grails.web.mapping.UrlMapping
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import grails.web.util.TypeConvertingMap
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods

@@ -20,7 +20,7 @@ import javax.servlet.jsp.PageContext as PC
 
 import org.grails.web.pages.GroovyPageBinding
 import org.grails.web.pages.GroovyPagesServlet
-import grails.web.util.GrailsApplicationAttributes as GAA
+import org.grails.web.util.GrailsApplicationAttributes as GAA
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 

@@ -20,7 +20,7 @@ import grails.config.Settings
 import grails.core.GrailsApplication
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.plugins.web.api.MimeTypesApiSupport

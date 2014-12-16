@@ -16,7 +16,7 @@
 package org.grails.web.servlet;
 
 import grails.web.mvc.FlashScope;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 

@@ -17,7 +17,7 @@ package grails.util;
 
 import grails.core.ApplicationAttributes;
 import grails.core.GrailsApplication;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
 

@@ -41,7 +41,7 @@ import grails.web.mapping.UrlMappingInfo;
 import org.grails.exceptions.ExceptionUtils;
 import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.exceptions.GrailsMVCException;
 import org.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.grails.web.util.WebUtils;

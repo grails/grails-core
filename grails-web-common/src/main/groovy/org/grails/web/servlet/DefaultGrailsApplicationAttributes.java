@@ -16,7 +16,7 @@
 package org.grails.web.servlet;
 
 import grails.web.mvc.FlashScope;
-import grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyObject;
 
 import java.io.Writer;
@@ -24,15 +24,12 @@ import java.io.Writer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
-import grails.core.GrailsTagLibClass;
-import org.grails.core.artefact.TagLibArtefactHandler;
 import grails.plugins.GrailsPluginManager;
 import org.grails.web.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -222,23 +219,6 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
             grailsApplication = fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
         }
         return grailsApplication;
-    }
-
-    public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName) {
-        return getTagLibraryForTag(request, response, tagName, DEFAULT_NAMESPACE);
-    }
-
-    public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace) {
-        String nonNullNamesapce = namespace == null ? DEFAULT_NAMESPACE : namespace;
-        String fullTagName = nonNullNamesapce + ":" + tagName;
-
-        GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(
-                TagLibArtefactHandler.TYPE, fullTagName);
-        if (tagLibClass == null) {
-            return null;
-        }
-
-        return (GroovyObject)getApplicationContext().getBean(tagLibClass.getFullName());
     }
 
     public Writer getOut(HttpServletRequest request) {

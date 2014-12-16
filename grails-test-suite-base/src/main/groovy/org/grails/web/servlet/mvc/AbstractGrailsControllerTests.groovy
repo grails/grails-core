@@ -2,7 +2,6 @@ package org.grails.web.servlet.mvc
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
-import grails.core.GrailsDomainClass
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebMockUtil
 import grails.util.Holders
@@ -12,14 +11,13 @@ import grails.web.UrlConverter
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import grails.web.pages.GroovyPagesUriService
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
-import org.grails.plugins.domain.DomainClassGrailsPlugin
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.support.MockApplicationContext

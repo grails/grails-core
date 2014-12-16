@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.grails.plugins.web.mime.FormatInterceptor
-import grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
@@ -36,12 +36,12 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 @CompileStatic
 class MimeTypesApiSupport {
 
-    def withFormat(HttpServletRequest request, Closure callable) {
-        return withFormatInternal(request, getDefinedFormats(callable))
+    def <T> T withFormat(HttpServletRequest request, Closure<T> callable) {
+        return (T)withFormatInternal(request, getDefinedFormats(callable))
     }
 
-    def withFormat(HttpServletResponse response, Closure callable) {
-        return withFormatInternal(response, getDefinedFormats(callable))
+    def <T> T withFormat(HttpServletResponse response, Closure<T> callable) {
+        return (T)withFormatInternal(response, getDefinedFormats(callable))
     }
 
     protected Object withFormatInternal(formatProvider, LinkedHashMap<String, Object> formats) {

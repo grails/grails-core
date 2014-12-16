@@ -15,14 +15,7 @@
  */
 package grails.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Collection utility methods.
@@ -65,5 +58,20 @@ public class CollectionUtils {
         }
 
         return new ArrayList<T>(Arrays.asList(values));
+    }
+
+    /**
+     * Gets a child map of the given parent map or returns an empty map if it doesn't exist
+     *
+     * @param parent The parent map
+     * @param key The key that holds the child map
+     * @return The child map
+     */
+    public static Map getOrCreateChildMap(Map parent, String key) {
+        Object o = parent.get(key);
+        if(o instanceof Map) {
+            return (Map)o;
+        }
+        return new LinkedHashMap();
     }
 }

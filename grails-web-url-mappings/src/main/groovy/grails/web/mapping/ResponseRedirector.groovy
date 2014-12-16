@@ -17,12 +17,12 @@ package grails.web.mapping
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
-import grails.web.util.GrailsApplicationAttributes
 import grails.web.http.HttpHeaders
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.util.Assert
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
