@@ -306,12 +306,11 @@ class GroovyPagesGrailsPlugin extends Plugin {
             if (taglibClass) {
                 // replace tag library bean
                 def beanName = taglibClass.fullName
-                def beans = beans {
+                beans {
                     "$beanName"(taglibClass.clazz) { bean ->
                         bean.autowire = true
                     }
                 }
-                beans.registerBeans(event.ctx)
 
                 // The tag library lookup class caches "tag -> taglib class"
                 // so we need to update it now.

@@ -16,20 +16,15 @@
 package org.grails.plugins.i18n
 
 import grails.config.Settings
-import grails.core.GrailsApplication
-import grails.core.support.GrailsApplicationAware
+import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.apache.commons.logging.LogFactory
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
-import org.grails.web.servlet.context.GrailsConfigUtils
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource
-import org.springframework.web.context.support.ServletContextResourcePatternResolver
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 /**
@@ -38,27 +33,29 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver
  * @author Graeme Rocher
  * @since 0.4
  */
-class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAware {
+class I18nGrailsPlugin extends Plugin {
 
     private static LOG = LogFactory.getLog(this)
+    public static final String I18N_CACHE_SECONDS = 'grails.i18n.cache.seconds'
+    public static final String I18N_FILE_CACHE_SECONDS = 'grails.i18n.filecache.seconds'
 
     String baseDir = "grails-app/i18n"
     String version = GrailsUtil.getGrailsVersion()
     String watchedResources = "file:./${baseDir}/**/*.properties".toString()
-    ApplicationContext applicationContext
-    GrailsApplication grailsApplication
 
-    def doWithSpring = {
+    @Override
+    Closure doWithSpring() {{->
         def application = grailsApplication
+        def config = application.config
+        boolean gspEnableReload = config.getProperty(Settings.GSP_ENABLE_RELOAD, Boolean, false)
 
         messageSource(PluginAwareResourceBundleMessageSource) {
             fallbackToSystemLocale = false
             pluginManager = manager
-            if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, Settings.GSP_ENABLE_RELOAD)) {
-                def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
-                cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
-                def fileCacheSecondsSetting = application?.flatConfig?.get('grails.i18n.filecache.seconds')
-                fileCacheSeconds = fileCacheSecondsSetting == null ? 5 : fileCacheSecondsSetting as Integer
+
+            if (Environment.current.isReloadEnabled() || gspEnableReload) {
+                cacheSeconds = config.getProperty(I18N_CACHE_SECONDS, Integer, 5)
+                fileCacheSeconds = config.getProperty(I18N_FILE_CACHE_SECONDS, Integer, 5)
             }
         }
 
@@ -67,7 +64,7 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
         }
 
         localeResolver(SessionLocaleResolver)
-    }
+    }}
 
 
 
@@ -93,18 +90,19 @@ class I18nGrailsPlugin implements GrailsApplicationAware, ApplicationContextAwar
     }
 
 
-    def onChange = { event ->
-        def ctx = event.ctx
+    @Override
+    void onChange(Map<String, Object> event) {
+        def ctx = applicationContext
+        def application = grailsApplication
         if (!ctx) {
             LOG.debug("Application context not found. Can't reload")
             return
         }
 
+        def nativeascii = application.config.getProperty('grails.enable.native2ascii', Boolean, true)
         def resourcesDir = BuildSettings.RESOURCES_DIR
         if (resourcesDir.exists() && event.source instanceof Resource) {
             def eventFile = event.source.file.canonicalFile
-            def nativeascii = event.application.config.grails.enable.native2ascii
-            nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
             def ant = new AntBuilder()
             File i18nDir = new File("${Environment.current.reloadLocation}/grails-app/i18n").canonicalFile
             if (isChildOfFile(eventFile, i18nDir)) {

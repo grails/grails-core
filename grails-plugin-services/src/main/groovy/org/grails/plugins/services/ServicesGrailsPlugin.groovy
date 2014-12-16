@@ -18,6 +18,8 @@ package org.grails.plugins.services
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
+import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
+import org.springframework.context.ConfigurableApplicationContext
 
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -155,7 +157,7 @@ class ServicesGrailsPlugin extends Plugin  {
                 }
                 props."*" = attributes
 
-                def beans = beans {
+                beans {
                     "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
                         targetObject = application
                         targetMethod = "getArtefact"
@@ -174,10 +176,10 @@ class ServicesGrailsPlugin extends Plugin  {
                         transactionManager = ref("transactionManager$suffix")
                     }
                 }
-                beans.registerBeans(applicationContext)
+
             }
             else {
-                def beans = beans {
+                beans {
                     "$serviceName"(serviceClass.getClazz()) { bean ->
                         bean.autowire =  true
                         if (scope) {
@@ -185,7 +187,7 @@ class ServicesGrailsPlugin extends Plugin  {
                         }
                     }
                 }
-                beans.registerBeans(event.ctx)
+
             }
         }
     }

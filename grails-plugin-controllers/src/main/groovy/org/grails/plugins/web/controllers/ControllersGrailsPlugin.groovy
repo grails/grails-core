@@ -170,7 +170,7 @@ class ControllersGrailsPlugin extends Plugin implements GrailsApplicationAware{
             def defaultScope = application.config.getProperty('grails.controllers.defaultScope', 'prototype')
 
             GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
-            def beanDefinitions = beans {
+            beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     def beanScope = controllerClass.getPropertyValue("scope") ?: defaultScope
                     bean.scope = beanScope
@@ -182,7 +182,6 @@ class ControllersGrailsPlugin extends Plugin implements GrailsApplicationAware{
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
             // register the necessary beans with the given app ctx
-            beanDefinitions.registerBeans(applicationContext)
             controllerClass.initialize()
         }
     }

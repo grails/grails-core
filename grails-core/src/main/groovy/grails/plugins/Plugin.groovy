@@ -23,7 +23,9 @@ import grails.core.support.GrailsApplicationAware
 import grails.spring.BeanBuilder
 import grails.util.Environment
 import groovy.transform.CompileStatic
+import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.springframework.beans.BeansException
+import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ConfigurableApplicationContext
@@ -144,14 +146,15 @@ abstract class Plugin implements GrailsApplicationLifeCycle, GrailsApplicationAw
     }
 
     /**
-     * Allows a plugin to define beans
+     * Allows a plugin to define beans at runtime. Used primarily for reloading in development mode
      *
      * @param beanDefinitions The bean definitions
      * @return The BeanBuilder instance
      */
-    BeanBuilder beans(Closure beanDefinitions) {
+    void beans(Closure beanDefinitions) {
         def bb = new BeanBuilder(null, grailsApplication.classLoader)
         bb.beans beanDefinitions
-        return bb
+        bb.registerBeans((BeanDefinitionRegistry)applicationContext)
+        new MapBasedSmartPropertyOverrideConfigurer(grailsApplication).postProcessBeanFactory(((ConfigurableApplicationContext)applicationContext).beanFactory)
     }
 }

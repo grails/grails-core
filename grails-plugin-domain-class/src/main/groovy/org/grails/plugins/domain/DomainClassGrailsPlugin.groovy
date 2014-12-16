@@ -124,7 +124,7 @@ class DomainClassGrailsPlugin extends Plugin {
             return
         }
 
-        def beans = beans {
+        beans {
             "${domainClass.fullName}"(domainClass.clazz) { bean ->
                 bean.singleton = false
                 bean.autowire = "byName"
@@ -147,7 +147,6 @@ class DomainClassGrailsPlugin extends Plugin {
                 application = ref("grailsApplication", true)
             }
         }
-        beans.registerBeans(event.ctx)
         enhanceDomainClasses(application, applicationContext)
         application.refreshConstraints()
     }
