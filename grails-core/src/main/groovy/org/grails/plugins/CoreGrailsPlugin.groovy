@@ -63,7 +63,7 @@ class CoreGrailsPlugin extends Plugin {
         grailsConfigurationClassPostProcessor ConfigurationClassPostProcessor
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
-        final springEnvironment = applicationContext.getEnvironment()
+        final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
         final placeholderConfigurer = new GrailsPlaceholderConfigurer(application)
         placeholderConfigurer.environment = springEnvironment
         addBeanFactoryPostProcessor(placeholderConfigurer)

@@ -61,13 +61,15 @@ class HttpServletRequestExtension {
     }
 
     static each(HttpServletRequest request, Closure c) {
-        for (String name in request.attributeNames) {
+        def attributeNames = request.getAttributeNames()
+        while(attributeNames.hasMoreElements()) {
+            String name = attributeNames.nextElement()
             switch (c.parameterTypes.length) {
                 case 0:
                     c.call()
                     break
                 case 1:
-                    c.call(key:name, value:request.getAttribute(name))
+                    c.call([key:name, value:request.getAttribute(name)])
                     break
                 default:
                     c.call(name, request.getAttribute(name))
@@ -75,16 +77,19 @@ class HttpServletRequestExtension {
         }
     }
 
-    static find(HttpServletRequest request, Closure c) {
+    static find(HttpServletRequest request, Closure<Boolean> c) {
         def result = [:]
-        for (String name in request.attributeNames) {
+
+        def attributeNames = request.getAttributeNames()
+        while(attributeNames.hasMoreElements()) {
+            String name = attributeNames.nextElement()
             boolean match = false
             switch (c.parameterTypes.length) {
                 case 0:
                     match = c.call()
                     break
                 case 1:
-                    match = c.call(key:name, value:request.getAttribute(name))
+                    match = c.call([key:name, value:request.getAttribute(name)])
                     break
                 default:
                     match =  c.call(name, request.getAttribute(name))
@@ -99,14 +104,17 @@ class HttpServletRequestExtension {
 
     static findAll(HttpServletRequest request, Closure c) {
         def results = [:]
-        for (String name in request.attributeNames) {
+        def attributeNames = request.getAttributeNames()
+        while(attributeNames.hasMoreElements()) {
+            String name = attributeNames.nextElement()
+
             boolean match = false
             switch (c.parameterTypes.length) {
                 case 0:
                     match = c.call()
                     break
                 case 1:
-                    match = c.call(key:name, value:request.getAttribute(name))
+                    match = c.call([key:name, value:request.getAttribute(name)])
                     break
                 default:
                     match =  c.call(name, request.getAttribute(name))

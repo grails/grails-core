@@ -53,7 +53,11 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
         mockManager = new MockGrailsPluginManager(ga)
         def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
-        dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
+        dependentPlugins.each{
+            mockManager.registerMockPlugin(it);
+            it.manager = mockManager
+            it.applicationContext = ctx
+        }
         mockManager.doArtefactConfiguration()
         ga.initialise()
         ga.setApplicationContext(ctx)
@@ -67,6 +71,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx.registerMockBean(GrailsRuntimeConfigurator.BEAN_ID, configurator)
 
         springConfig = new WebRuntimeSpringConfiguration(ctx)
+        springConfig.beanFactory = ctx.beanFactory
         servletContext = new MockServletContext(new MockResourceLoader())
         springConfig.servletContext = servletContext
         mockManager.registerProvidedArtefacts(ga)
