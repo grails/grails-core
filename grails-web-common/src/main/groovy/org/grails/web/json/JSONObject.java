@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.json;
+package org.grails.web.json;
 
 /*
 Copyright (c) 2002 JSON.org
@@ -44,7 +44,7 @@ import org.springframework.util.ClassUtils;
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its
  * external form is a string wrapped in curly braces with colons between the
- * names and values, and commas between the values and names. The internal form
+ * names and values, and commas between the values  and names. The internal form
  * is an object having <code>get</code> and <code>opt</code> methods for
  * accessing the values by name, and <code>put</code> methods for adding or
  * replacing values by name. The values can be any of these types:

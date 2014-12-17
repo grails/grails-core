@@ -29,7 +29,7 @@ import java.util.List;
 import org.grails.core.util.IncludeExcludeSupport;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
-import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.grails.web.json.JSONWriter;
 import org.springframework.beans.BeanUtils;
 
 /**

@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.time.FastDateFormat;
-import org.codehaus.groovy.grails.web.json.JSONException;
+import org.grails.web.json.JSONException;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 

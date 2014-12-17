@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.json;
+package org.grails.web.json;
 
 /*
 Copyright (c) 2002 JSON.org

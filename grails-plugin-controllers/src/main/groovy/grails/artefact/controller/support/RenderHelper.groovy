@@ -35,7 +35,7 @@ import groovy.xml.StreamingMarkupBuilder
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.web.json.JSONElement
+import org.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.SpringIOUtils

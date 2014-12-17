@@ -1,6 +1,6 @@
-package org.codehaus.groovy.grails.web.json;
+package org.grails.web.json;
 
-import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.*;
+import static org.grails.web.json.JSONWriter.Mode.*;
 
 import groovy.lang.Writable;
 

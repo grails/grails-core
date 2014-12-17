@@ -20,7 +20,7 @@ import groovy.util.slurpersupport.GPathResult
 
 import javax.servlet.http.HttpServletRequest
 
-import org.codehaus.groovy.grails.web.json.JSONElement
+import org.grails.web.json.JSONElement
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse

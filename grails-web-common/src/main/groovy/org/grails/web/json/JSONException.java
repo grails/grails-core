@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.json;
+package org.grails.web.json;
 
 /**
  * The JSONException is thrown by the JSON.org classes then things are amiss.

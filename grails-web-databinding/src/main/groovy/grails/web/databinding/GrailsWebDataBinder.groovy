@@ -43,7 +43,7 @@ import java.lang.annotation.Annotation
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
-import org.codehaus.groovy.grails.web.json.JSONObject
+import org.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty

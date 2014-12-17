@@ -1,9 +1,6 @@
 package org.grails.web.json
 
-import org.codehaus.groovy.grails.web.json.JSONWriter;
-
-import groovy.transform.CompileStatic;
-import spock.lang.Ignore
+import groovy.transform.CompileStatic
 import spock.lang.Issue
 import spock.lang.Specification
 

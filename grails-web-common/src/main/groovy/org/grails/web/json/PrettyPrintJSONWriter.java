@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.json;
+package org.grails.web.json;
 
-import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.ARRAY;
-import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.KEY;
-import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.OBJECT;
+import static org.grails.web.json.JSONWriter.Mode.ARRAY;
+import static org.grails.web.json.JSONWriter.Mode.KEY;
+import static org.grails.web.json.JSONWriter.Mode.OBJECT;
 import groovy.lang.Writable;
 
 import java.io.IOException;

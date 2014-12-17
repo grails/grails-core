@@ -46,7 +46,7 @@ import grails.core.support.proxy.DefaultProxyHandler;
 import grails.core.support.proxy.EntityProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
 
-import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.grails.web.json.JSONWriter;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 

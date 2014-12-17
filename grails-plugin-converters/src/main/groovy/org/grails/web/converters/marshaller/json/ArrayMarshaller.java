@@ -19,7 +19,7 @@ import grails.converters.JSON;
 
 import java.lang.reflect.Array;
 
-import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.grails.web.json.JSONWriter;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 

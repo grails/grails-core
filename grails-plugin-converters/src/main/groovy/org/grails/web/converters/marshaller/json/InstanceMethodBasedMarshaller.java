@@ -20,7 +20,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
 
-import org.codehaus.groovy.grails.web.json.JSONWriter;
+import org.grails.web.json.JSONWriter;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
 

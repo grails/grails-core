@@ -2,8 +2,7 @@ package org.grails.web.converters.marshaller.json
 
 import grails.converters.JSON
 
-import org.codehaus.groovy.grails.web.json.JSONWriter
-import org.grails.web.converters.marshaller.json.ValidationErrorsMarshaller;
+import org.grails.web.json.JSONWriter
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
 

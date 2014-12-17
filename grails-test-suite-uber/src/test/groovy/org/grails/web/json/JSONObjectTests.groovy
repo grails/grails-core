@@ -1,7 +1,4 @@
 package org.grails.web.json
-
-import org.codehaus.groovy.grails.web.json.JSONObject
-
 /**
  * @author Graeme Rocher
  * @since 1.0

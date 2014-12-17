@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.json;
+package org.grails.web.json;
 
 import java.util.Date;
 import java.util.regex.Matcher;

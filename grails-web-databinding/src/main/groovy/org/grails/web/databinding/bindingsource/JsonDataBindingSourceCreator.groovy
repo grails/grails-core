@@ -22,7 +22,7 @@ import groovy.transform.CompileStatic
 
 import java.util.regex.Pattern
 
-import org.codehaus.groovy.grails.web.json.JSONObject
+import org.grails.web.json.JSONObject
 
 import grails.web.mime.MimeType
 
