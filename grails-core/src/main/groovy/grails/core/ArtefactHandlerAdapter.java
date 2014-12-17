@@ -18,6 +18,7 @@ package grails.core;
 import groovy.lang.Closure;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
+import org.grails.core.exceptions.GrailsRuntimeException;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
 import org.grails.io.support.UrlResource;
@@ -153,16 +154,16 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
             return (GrailsClass) c.newInstance(new Object[] { artefactClass});
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new GrailsRuntimeException("Unable to locate constructor with Class parameter for "+artefactClass, e);
         }
         catch (IllegalAccessException e) {
-            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new GrailsRuntimeException("Unable to locate constructor with Class parameter for "+artefactClass, e);
         }
         catch (InvocationTargetException e) {
-            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new GrailsRuntimeException("Error instantiated artefact class [" + artefactClass + "] of type ["+grailsClassImpl+"]: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()), e);
         }
         catch (InstantiationException e) {
-            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new GrailsRuntimeException("Error instantiated artefact class [" + artefactClass + "] of type ["+grailsClassImpl+"]: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()), e);
         }
     }
 
