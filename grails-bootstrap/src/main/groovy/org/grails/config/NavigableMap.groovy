@@ -383,7 +383,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
     
         public String toString() {
-            return "null"
+            return null
         }
     
         public int hashCode() {
