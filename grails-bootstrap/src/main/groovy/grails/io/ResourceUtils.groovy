@@ -20,7 +20,6 @@ import groovy.transform.CompileStatic
 import org.grails.io.support.GrailsResourceUtils
 
 
-
 /**
  * Utility methods for interacting with resources
  *
@@ -36,17 +35,13 @@ class ResourceUtils extends GrailsResourceUtils {
      * @return The project package names
      */
     static Iterable<String> getProjectPackageNames() {
-        def baseDir = BuildSettings.BASE_DIR
-        if(baseDir) {
-            def rootDir = new File(baseDir, "grails-app")
-            return getProjectPackageNames(rootDir)
-        }
-        return []
+        return getProjectPackageNames(BuildSettings.BASE_DIR)
     }
 
-     static Iterable<String> getProjectPackageNames(File rootDir) {
+    static Iterable<String> getProjectPackageNames(File baseDir) {
+        File rootDir = baseDir ? new File(baseDir, "grails-app") : null
         Set<String> packageNames = []
-        if (rootDir.exists()) {
+        if (rootDir?.exists()) {
             rootDir.eachDir { File dir ->
                 def dirName = dir.name
                 if (!dir.hidden && !dirName.startsWith('.') && !['conf', 'i18n', 'assets', 'views'].contains(dirName)) {
@@ -54,7 +49,8 @@ class ResourceUtils extends GrailsResourceUtils {
                 }
             }
         }
-         return packageNames
+
+        return packageNames
     }
 
     protected static populatePackages(File rootDir, Collection<String> packageNames, String prefix) {
