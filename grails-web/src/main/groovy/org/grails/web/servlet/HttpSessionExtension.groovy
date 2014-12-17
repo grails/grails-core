@@ -15,15 +15,22 @@
  */
 package org.grails.web.servlet
 
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpSession
 
 
 /**
- * 
+ *
+ * Methods added to the {@link HttpSession} interface
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  * 
  */
+@CompileStatic
 class HttpSessionExtension {
     
     static getProperty(HttpSession session, String name) {

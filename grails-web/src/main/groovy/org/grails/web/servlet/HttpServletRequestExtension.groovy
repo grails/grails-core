@@ -15,16 +15,22 @@
  */
 package org.grails.web.servlet
 
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpServletRequest
 
 import org.grails.web.util.WebUtils
 
 /**
+ * An extension that adds methods to the {@link HttpServletRequest} object
+ *
  * 
  * @author Jeff Brown
+ * @author Graeme Rocher
  * @since 3.0
  * 
  */
+@CompileStatic
 class HttpServletRequestExtension {
 
     static String getForwardURI(HttpServletRequest request) {
@@ -41,7 +47,7 @@ class HttpServletRequestExtension {
     }
 
     static propertyMissing(HttpServletRequest request, String name, value) {
-        def mp = request.class.metaClass.getMetaProperty(name)
+        def mp = request.getClass().metaClass.getMetaProperty(name)
         if (mp) {
             mp.setProperty request, value
         }
@@ -55,7 +61,7 @@ class HttpServletRequestExtension {
     }
 
     static each(HttpServletRequest request, Closure c) {
-        for (name in request.attributeNames) {
+        for (String name in request.attributeNames) {
             switch (c.parameterTypes.length) {
                 case 0:
                     c.call()
@@ -71,7 +77,7 @@ class HttpServletRequestExtension {
 
     static find(HttpServletRequest request, Closure c) {
         def result = [:]
-        for (name in request.attributeNames) {
+        for (String name in request.attributeNames) {
             boolean match = false
             switch (c.parameterTypes.length) {
                 case 0:
@@ -93,7 +99,7 @@ class HttpServletRequestExtension {
 
     static findAll(HttpServletRequest request, Closure c) {
         def results = [:]
-        for (name in request.attributeNames) {
+        for (String name in request.attributeNames) {
             boolean match = false
             switch (c.parameterTypes.length) {
                 case 0:
