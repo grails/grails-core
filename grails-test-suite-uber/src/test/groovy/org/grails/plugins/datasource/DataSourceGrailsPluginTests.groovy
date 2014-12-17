@@ -244,6 +244,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
     void testMultipleDataSources() {
 
         def config = new ConfigSlurper().parse('''
+            dataSources {
               dataSource {
                     pooled = true
                     driverClassName = "com.oracle.jdbcDriver"
@@ -275,6 +276,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
               dataSource_jndi {
                     jndiName = "java:comp/env/myDataSource"
               }
+            }
         ''')
 
         def bb = createBeanBuilder(config)
@@ -369,6 +371,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
     void testProxying() {
 
         def config = new ConfigSlurper().parse('''
+            dataSources {
               dataSource {
                     pooled = true
                     driverClassName = "org.h2.Driver"
@@ -383,6 +386,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                     username = "sa"
                     password = ""
               }
+          }
         ''')
 
         def ctx = createBeanBuilder(config).createApplicationContext()
@@ -457,7 +461,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         application.config = new PropertySourcesConfig()
         application.config.merge(config)
         plugin.grailsApplication = application
-        bb.beans plugin.doWithSpring
+        bb.beans plugin.doWithSpring()
         return bb
     }
 }

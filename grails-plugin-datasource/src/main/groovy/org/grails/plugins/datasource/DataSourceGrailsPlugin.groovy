@@ -17,6 +17,7 @@ package org.grails.plugins.datasource
 
 import grails.config.Config
 import grails.core.support.GrailsApplicationAware
+import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
@@ -46,63 +47,53 @@ import org.springframework.util.ClassUtils
  * @author Graeme Rocher
  * @since 0.4
  */
-class DataSourceGrailsPlugin implements ApplicationContextAware, GrailsApplicationAware {
+class DataSourceGrailsPlugin extends Plugin {
 
     private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
+    public static
+    final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
+    public static final String TRANSACTION_MANAGER_BLACK_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern'
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version]
 
     def watchedResources = "file:./grails-app/conf/DataSource.groovy"
 
-    ApplicationContext applicationContext
-    GrailsApplication grailsApplication
-
-    def doWithSpring = {
-        Config config = grailsApplication.config
+    @Override
+    Closure doWithSpring() {{->
+        def application = grailsApplication
+        Config config = application.config
         if (!applicationContext?.containsBean('transactionManager')) {
-            def whitelistPattern=config.get('grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern')
-            def blacklistPattern=config.get('grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern')
+            def whitelistPattern=config.getProperty(TRANSACTION_MANAGER_WHITE_LIST_PATTERN, '')
+            def blacklistPattern=config.getProperty(TRANSACTION_MANAGER_BLACK_LIST_PATTERN,'')
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
         }
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
-        def dsConfigs = [:]
-        def defaultDataSource = config.getProperty('dataSource', Map)
-        if (!defaultDataSource && grailsApplication.domainClasses.size() == 0) {
-            log.info "No default data source or domain classes found. Default datasource configuration skipped"
-        }
-        else {
-            dsConfigs.dataSource = defaultDataSource
+        def dataSources = config.getProperty('dataSources', Map, [:])
+        if(!dataSources) {
+            def defaultDataSource = config.getProperty('dataSource', Map)
+            if(defaultDataSource) {
+                dataSources['dataSource'] = defaultDataSource
+            }
         }
 
-        for(Map.Entry<String, Object> entry in config.entrySet()) {
+        for(Map.Entry<String, Object> entry in dataSources.entrySet()) {
             def name = entry.key
             def value = entry.value
-            if (name.startsWith('dataSource_') && value instanceof Map) {
-                dsConfigs[name] = value
+
+            if(value instanceof Map) {
+                createDatasource delegate, name, (Map)value
             }
         }
 
-        dsConfigs.each { name, ds ->
-            if(ds) {
-                createDatasource delegate, name, ds
-            }
-        }
-        
         embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
 
-        this.registerTomcatJMXMBeans(application, delegate)
-    }
-
-    void registerTomcatJMXMBeans(application, beanBuilderDelegate) {
-        if(!(application.config?.dataSource?.containsKey('jmxExport') && !application.config.dataSource.jmxExport)) {
+        if(config.getProperty('dataSource.jmxExport', Boolean, false)) {
             try {
                 def jmxMBeanServer = JmxUtils.locateMBeanServer()
                 if(jmxMBeanServer) {
-                    beanBuilderDelegate.tomcatJDBCPoolMBeanExporter(TomcatJDBCPoolMBeanExporter) { bean ->
-                        if (application instanceof GrailsApplication) {
-                            grailsApplication = application
-                        }
+                    tomcatJDBCPoolMBeanExporter(TomcatJDBCPoolMBeanExporter) { bean ->
+                        delegate.grailsApplication = application
                         server = jmxMBeanServer
                     }
                 }
@@ -112,7 +103,7 @@ class DataSourceGrailsPlugin implements ApplicationContextAware, GrailsApplicati
                 }
             }
         }
-    }
+    }}
 
     protected void createDatasource(beanBuilder, String dataSourceName, Map dataSourceData ) {
         boolean isDefault = dataSourceName == 'dataSource'
@@ -256,8 +247,8 @@ class DataSourceGrailsPlugin implements ApplicationContextAware, GrailsApplicati
         }
     }
 
-
-    def onShutdown = { event ->
+    @Override
+    void onShutdown(Map<String, Object> event) {
         if (Metadata.getCurrent().isWarDeployed() || Environment.isFork()) {
             deregisterJDBCDrivers()
         }

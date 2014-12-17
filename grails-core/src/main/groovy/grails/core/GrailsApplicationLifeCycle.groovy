@@ -28,12 +28,12 @@ interface GrailsApplicationLifeCycle {
     /**
      * Sub classes should override to provide implementations
      *
-     * @return A closure that defines beans to be executed by Spring
+     * @return A closure that defines beans to be registered by Spring
      */
     Closure doWithSpring()
 
     /**
-     * Invoked in a phase where plugins can add dynamic methods. Subclasses should override
+     * Invoked once the {@link org.springframework.context.ApplicationContext} has been refreshed in a phase where plugins can add dynamic methods. Subclasses should override
      */
     void doWithDynamicMethods()
     /**

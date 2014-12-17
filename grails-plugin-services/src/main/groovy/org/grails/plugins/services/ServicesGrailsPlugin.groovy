@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.services
 
+import grails.config.Config
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
@@ -52,6 +53,7 @@ class ServicesGrailsPlugin extends Plugin  {
         tx.'annotation-driven'('transaction-manager':'transactionManager')
 
         def application = grailsApplication
+        Config config = application.config
 
         for (GrailsServiceClass serviceClass in application.serviceClasses) {
             def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
@@ -72,14 +74,15 @@ class ServicesGrailsPlugin extends Plugin  {
                 arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
             }
 
-            def hasDataSource = (application.config?.dataSource || application.domainClasses)
+
+            def hasDataSource = (config?.dataSources || application.domainClasses)
             if (hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
                 def props = new Properties()
 
                 String attributes = 'PROPAGATION_REQUIRED'
                 String datasourceName = serviceClass.datasource
                 String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
-                if (application.config["dataSource$suffix"].readOnly) {
+                if ( config.getProperty("dataSources.dataSource${suffix}.readOnly", Boolean, false) ) {
                     attributes += ',readOnly'
                 }
                 props."*" = attributes
