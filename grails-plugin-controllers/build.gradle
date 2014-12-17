@@ -4,6 +4,7 @@ dependencies {
             project(":grails-async"),
             project(':grails-plugin-converters'),
             project(':grails-plugin-mimetypes'),
+            project(':grails-plugin-validation'),
             project(':grails-plugin-domain-class')
 
     runtime project(':grails-plugin-i18n')
