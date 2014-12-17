@@ -36,10 +36,17 @@ class ResourceUtils extends GrailsResourceUtils {
      * @return The project package names
      */
     static Iterable<String> getProjectPackageNames() {
-        Set<String> packageNames = []
         def baseDir = BuildSettings.BASE_DIR
         if(baseDir) {
             def rootDir = new File(baseDir, "grails-app")
+            return getProjectPackageNames(rootDir)
+        }
+        return []
+    }
+
+     static Iterable<String> getProjectPackageNames(File rootDir) {
+        Set<String> packageNames = []
+        if (rootDir.exists()) {
             rootDir.eachDir { File dir ->
                 def dirName = dir.name
                 if (!dir.hidden && !dirName.startsWith('.') && !['conf', 'i18n', 'assets', 'views'].contains(dirName)) {
@@ -47,7 +54,7 @@ class ResourceUtils extends GrailsResourceUtils {
                 }
             }
         }
-        return packageNames
+         return packageNames
     }
 
     protected static populatePackages(File rootDir, Collection<String> packageNames, String prefix) {

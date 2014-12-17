@@ -38,6 +38,7 @@ import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
 import org.grails.core.artefact.ApplicationArtefactHandler
 import org.grails.io.support.GrailsResourceUtils
+import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
 import org.springframework.util.ClassUtils
 
@@ -91,9 +92,13 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                     def collectionClassNode = GrailsASTUtils.replaceGenericsPlaceholders(ClassHelper.make(Collection), [E: ClassHelper.make(String)])
 
                     def packageNamesBody = new BlockStatement()
-                    def packageNames = ResourceUtils.projectPackageNames.collect() { String str -> new ConstantExpression(str) }
-                    packageNamesBody.addStatement(new ReturnStatement(new ExpressionStatement(new ListExpression(packageNames.toList()))))
-                    classNode.addMethod("packageNames", Modifier.PUBLIC, collectionClassNode, ZERO_PARAMETERS, null, packageNamesBody)
+                    def grailsAppDir = GrailsResourceUtils.getAppDir(new UrlResource(source.getSource().URI))
+                    if(grailsAppDir.exists()) {
+
+                        def packageNames = ResourceUtils.getProjectPackageNames(grailsAppDir.file.parentFile).collect() { String str -> new ConstantExpression(str) }
+                        packageNamesBody.addStatement(new ReturnStatement(new ExpressionStatement(new ListExpression(packageNames.toList()))))
+                        classNode.addMethod("packageNames", Modifier.PUBLIC, collectionClassNode, ZERO_PARAMETERS, null, packageNamesBody)
+                    }
                 }
 
                 def classLoader = getClass().classLoader
