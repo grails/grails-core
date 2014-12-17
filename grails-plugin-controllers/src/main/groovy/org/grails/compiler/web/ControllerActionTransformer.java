@@ -21,6 +21,7 @@ import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
+import grails.artefact.controller.support.AllowedMethodsHelper;
 import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.GrailsArtefactClassInjector;
@@ -70,6 +71,7 @@ import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -495,7 +497,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         if(allowedMethodsField != null) {
             final Expression initialAllowedMethodsExpression = allowedMethodsField.getInitialExpression();
             if(initialAllowedMethodsExpression instanceof MapExpression) {
-                final List<String> allowedMethodNames = new ArrayList<String>();
+                boolean actionIsRestricted = false;
                 final MapExpression allowedMethodsMapExpression = (MapExpression) initialAllowedMethodsExpression;
                 final List<MapEntryExpression> allowedMethodsMapEntryExpressions = allowedMethodsMapExpression.getMapEntryExpressions();
                 for(MapEntryExpression allowedMethodsMapEntryExpression : allowedMethodsMapEntryExpressions) {
@@ -504,38 +506,20 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                         final ConstantExpression allowedMethodsMapKeyConstantExpression = (ConstantExpression) allowedMethodsMapEntryKeyExpression;
                         final Object allowedMethodsMapKeyValue = allowedMethodsMapKeyConstantExpression.getValue();
                         if(methodName.equals(allowedMethodsMapKeyValue)) {
-                            final Expression allowedMethodsMapEntryValueExpression = allowedMethodsMapEntryExpression.getValueExpression();
-                            if(allowedMethodsMapEntryValueExpression instanceof ListExpression) {
-                                final ListExpression allowedMethodsEntryListExpression = (ListExpression) allowedMethodsMapEntryValueExpression;
-                                final List<Expression> listExpressions = allowedMethodsEntryListExpression.getExpressions();
-                                for(Expression expression : listExpressions) {
-                                    if(expression instanceof ConstantExpression) {
-                                        final ConstantExpression constantListValue = (ConstantExpression) expression;
-                                        allowedMethodNames.add(constantListValue.getValue().toString());
-                                    }
-                                }
-                            } else if(allowedMethodsMapEntryValueExpression instanceof ConstantExpression) {
-                                final ConstantExpression contantValue = (ConstantExpression) allowedMethodsMapEntryValueExpression;
-                                allowedMethodNames.add(contantValue.getValue().toString());
-                            }
+                            actionIsRestricted = true;
                             break;
                         }
                     }
                 }
-                final int numberOfAllowedMethods = allowedMethodNames.size();
-                if(numberOfAllowedMethods > 0) {
+                if(actionIsRestricted) {
                     final PropertyExpression responsePropertyExpression = new PropertyExpression(new VariableExpression("this"), "response");
-                    final PropertyExpression requestMethodExpression = new PropertyExpression(requestPropertyExpression, "method");
-                    BooleanExpression isValidRequestMethod = new BooleanExpression(new MethodCallExpression(requestMethodExpression, 
-                                                                                                            "equalsIgnoreCase", 
-                                                                                                            new ConstantExpression(allowedMethodNames.get(0))));
-                    for(int x = 1; x < numberOfAllowedMethods; x++) {
-                        isValidRequestMethod = new BooleanExpression(new BinaryExpression(isValidRequestMethod, 
-                                                                                          Token.newSymbol(Types.LOGICAL_OR, 0, 0), 
-                                                                                          new MethodCallExpression(requestMethodExpression, 
-                                                                                                                   "equalsIgnoreCase", 
-                                                                                                                   new ConstantExpression(allowedMethodNames.get(x)))));
-                    }
+                    
+                    final ArgumentListExpression isAllowedArgumentList = new ArgumentListExpression();
+                    isAllowedArgumentList.addExpression(new ConstantExpression(methodName));
+                    isAllowedArgumentList.addExpression(new PropertyExpression(new VariableExpression("this"), "request"));
+                    isAllowedArgumentList.addExpression(new PropertyExpression(new VariableExpression("this"), DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY));
+                    final Expression isAllowedMethodCall = new StaticMethodCallExpression(ClassHelper.make(AllowedMethodsHelper.class), "isAllowed", isAllowedArgumentList);
+                    final BooleanExpression isValidRequestMethod = new BooleanExpression(isAllowedMethodCall);
                     final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
                     final ReturnStatement returnStatement = new ReturnStatement(new ConstantExpression(null));
                     final BlockStatement blockToSendError = new BlockStatement();
