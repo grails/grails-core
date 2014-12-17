@@ -16,6 +16,7 @@
 package org.grails.plugins;
 
 import grails.plugins.GrailsPlugin;
+import grails.plugins.GrailsPluginManager;
 import grails.plugins.Plugin;
 import grails.spring.BeanBuilder;
 import grails.util.BuildScope;
@@ -157,6 +158,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
         }
         return false;
+    }
+
+    @Override
+    public void setManager(GrailsPluginManager manager) {
+        super.setManager(manager);
+        if(plugin instanceof Plugin) {
+            ((Plugin)plugin).setPluginManager(manager);
+        }
     }
 
     private void initialisePlugin(Class<?> clazz) {
@@ -505,6 +514,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     public void doWithApplicationContext(ApplicationContext ctx) {
         if(plugin instanceof Plugin) {
             Plugin pluginObject = (Plugin) plugin;
+
             pluginObject.setApplicationContext(ctx);
             pluginObject.doWithApplicationContext();
         }
