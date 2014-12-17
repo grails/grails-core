@@ -141,7 +141,8 @@ class GrailsFactoriesLoader {
             return (Class<? extends T>) instanceClass
         }
         catch (Throwable ex) {
-            throw new RuntimeException("Cannot instantiate class: $instanceClassName", ex)
+            // not creatable in current context, ignore
+            return null
         }
     }
 
