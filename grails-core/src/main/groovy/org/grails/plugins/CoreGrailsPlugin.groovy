@@ -56,7 +56,6 @@ class CoreGrailsPlugin extends Plugin {
 
     @Override
     Closure doWithSpring() { {->
-        xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
         def application = grailsApplication
 
@@ -64,7 +63,7 @@ class CoreGrailsPlugin extends Plugin {
         grailsConfigurationClassPostProcessor ConfigurationClassPostProcessor
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
-        final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
+        final springEnvironment = applicationContext.getEnvironment()
         final placeholderConfigurer = new GrailsPlaceholderConfigurer(application)
         placeholderConfigurer.environment = springEnvironment
         addBeanFactoryPostProcessor(placeholderConfigurer)
@@ -77,9 +76,6 @@ class CoreGrailsPlugin extends Plugin {
         else {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
         }
-
-        // Allow the use of Spring annotated components
-        context.'annotation-config'()
 
         def packagesToScan = []
 
