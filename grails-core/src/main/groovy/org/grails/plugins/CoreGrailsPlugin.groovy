@@ -39,6 +39,7 @@ import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
+import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.annotation.ConfigurationClassPostProcessor
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
@@ -56,6 +57,7 @@ class CoreGrailsPlugin extends Plugin {
 
     @Override
     Closure doWithSpring() { {->
+        xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
         def application = grailsApplication
 
@@ -83,6 +85,12 @@ class CoreGrailsPlugin extends Plugin {
         if (beanPackages) {
             packagesToScan += beanPackages
         }
+
+        // Allow the use of Spring annotated components
+        if(!springConfig.unrefreshedApplicationContext.containsBeanDefinition(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME    )) {
+            context.'annotation-config'()
+        }
+
 
         if (packagesToScan) {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
