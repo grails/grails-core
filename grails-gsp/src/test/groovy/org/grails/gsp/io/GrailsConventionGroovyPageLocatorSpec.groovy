@@ -203,7 +203,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
 <plugin name='testBinary'>
   <class>TestBinaryGrailsPlugin</class>
   <resources>
-         <resource>org.codehaus.groovy.grails.plugins.TestBinaryResource</resource>
+         <resource>org.grails.gsp.io.TestBinaryResource</resource>
   </resources>
 </plugin>
 '''
@@ -236,6 +236,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
 class TestBinaryGrailsPlugin {
     def version = 1.0
 }
+class TestBinaryResource {}
 
 class TestController {}
 

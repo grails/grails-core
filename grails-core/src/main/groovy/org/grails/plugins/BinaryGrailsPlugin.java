@@ -15,6 +15,7 @@
  */
 package org.grails.plugins;
 
+import grails.plugins.exceptions.PluginException;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.util.slurpersupport.Node;
 
@@ -128,8 +129,8 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
                         final String className = ((Node)i.next()).text();
                         try {
                             artefacts.add(classLoader.loadClass(className));
-                        } catch (ClassNotFoundException e) {
-                            LOG.error("Class not found loading plugin resource [" + className + "]. Resource skipped.", e);
+                        } catch (Throwable e) {
+                            throw new PluginException("Failed to initialize class ["+className+"] from plugin ["+ getName()+ "] : " + e.getMessage(), e);
                         }
                     }
                 }

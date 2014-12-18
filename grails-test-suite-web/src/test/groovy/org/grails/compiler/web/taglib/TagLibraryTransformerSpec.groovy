@@ -49,7 +49,7 @@ class TagLibraryTransformerSpec extends Specification {
         expect:
         gcl.parseClass('''
         @groovy.transform.CompileStatic
-        class StaticallyCompiledTagLib {
+        class StaticallyCompiledTagLib implements grails.artefact.TagLibrary{
             def closureTagWithNoExplicitArgs = { }
             def closureTagWithOneArg = { attrs -> }
             def closureTagWithTwoArgs = { attrs, body -> }

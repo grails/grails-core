@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 
 import javax.annotation.PostConstruct
 
@@ -32,8 +33,8 @@ import org.springframework.util.ClassUtils
  *
  * @author Graeme Rocher
  */
-@Artefact("TagLibrary")
-class JavascriptTagLib implements ApplicationContextAware {
+@TagLib
+class JavascriptTagLib implements ApplicationContextAware, TagLibrary {
     ApplicationContext applicationContext
     /**
      * Mappings to the relevant files to be included for each library.

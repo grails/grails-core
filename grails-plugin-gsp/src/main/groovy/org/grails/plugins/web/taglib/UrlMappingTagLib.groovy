@@ -1,8 +1,7 @@
 package org.grails.plugins.web.taglib
-
+import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import grails.web.mapping.UrlMapping
-import org.grails.web.util.GrailsApplicationAttributes
 import grails.web.util.TypeConvertingMap
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
@@ -10,10 +9,9 @@ import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.UrlMappingUtils
-import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.support.RequestContextUtils
-
 /**
  * Tag library with tags that integration with the URL mappings API (paginate, include etc.)
  *
@@ -22,9 +20,8 @@ import org.springframework.web.servlet.support.RequestContextUtils
  */
 @CompileStatic
 @TagLib
-class UrlMappingTagLib {
+class UrlMappingTagLib implements TagLibrary{
 
-    TagLibraryLookup gspTagLibraryLookup
     CodecLookup codecLookup
 
     /**
@@ -327,6 +324,6 @@ class UrlMappingTagLib {
     }
 
     private callLink(Map attrs, Object body) {
-        TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'link', attrs, body, webRequest)
+        TagOutput.captureTagOutput(tagLibraryLookup, 'g', 'link', attrs, body, webRequest)
     }
 }

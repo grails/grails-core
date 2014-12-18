@@ -18,6 +18,8 @@ package org.grails.plugins.web.taglib
 import com.opensymphony.module.sitemesh.*
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
 import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import grails.web.util.TypeConvertingMap
 import groovy.text.Template
 import groovy.transform.CompileStatic
@@ -46,8 +48,8 @@ import javax.servlet.http.HttpServletRequest
  * @author Graeme Rocher
  */
 @CompileStatic
-@Artefact("TagLibrary")
-class RenderTagLib implements RequestConstants {
+@TagLib
+class RenderTagLib implements RequestConstants, TagLibrary {
     GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
     ErrorsViewStackTracePrinter errorsViewStackTracePrinter
     GroovyPagesTemplateEngine groovyPagesTemplateEngine

@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 
 import org.grails.encoder.CodecLookup
@@ -35,12 +36,12 @@ import com.opensymphony.module.sitemesh.RequestConstants
  * @author Graeme Rocher
  * @since 1.2
  */
-@Artefact("TagLibrary")
 @CompileStatic
-class SitemeshTagLib implements RequestConstants {
+@TagLib
+class SitemeshTagLib implements RequestConstants, TagLibrary {
     protected static final String GSP_SITEMESH_PAGE = 'org.grails.web.sitemesh.GrailsLayoutView.GSP_SITEMESH_PAGE'
 
-    static namespace = 'sitemesh'
+    static String namespace = 'sitemesh'
     CodecLookup codecLookup
 
     def captureTagContent(GrailsPrintWriter writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {

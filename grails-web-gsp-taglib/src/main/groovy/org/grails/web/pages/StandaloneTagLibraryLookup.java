@@ -3,10 +3,7 @@ package org.grails.web.pages;
 import grails.core.GrailsTagLibClass;
 import grails.gsp.TagLib;
 import org.grails.core.DefaultGrailsTagLibClass;
-import org.grails.plugins.web.taglib.RenderTagLib;
-import org.grails.plugins.web.taglib.SitemeshTagLib;
 import org.grails.web.taglib.TagLibraryLookup;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
@@ -19,8 +16,7 @@ import java.util.*;
  * @since 2.4.0
  */
 public class StandaloneTagLibraryLookup extends TagLibraryLookup implements ApplicationListener<ContextRefreshedEvent> {
-    public static final Class<?>[] DEFAULT_TAGLIB_CLASSES=new Class<?>[] { SitemeshTagLib.class, RenderTagLib.class };
-    Set<Object> tagLibInstancesSet; 
+    Set<Object> tagLibInstancesSet;
     
     private StandaloneTagLibraryLookup() {
         
@@ -63,7 +59,7 @@ public class StandaloneTagLibraryLookup extends TagLibraryLookup implements Appl
         if(tagLibInstancesSet==null) {
             tagLibInstancesSet = new LinkedHashSet<Object>();
         }
-        Collection<Object> detectedInstances = ((ListableBeanFactory)applicationContext).getBeansWithAnnotation(TagLib.class).values();
+        Collection<Object> detectedInstances = applicationContext.getBeansWithAnnotation(TagLib.class).values();
         for(Object instance : detectedInstances) {
             if(!tagLibInstancesSet.contains(instance)) {
                 tagLibInstancesSet.add(instance);

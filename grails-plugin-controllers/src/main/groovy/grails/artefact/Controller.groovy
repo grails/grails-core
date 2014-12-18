@@ -46,7 +46,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.DEFAULT_ENCODING
-import grails.artefact.controller.ServletAttributes
+import grails.web.api.ServletAttributes
 import grails.artefact.controller.support.ResponseRenderer
 import grails.core.GrailsControllerClass
 import grails.core.GrailsDomainClassProperty
@@ -251,15 +251,6 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, Servlet
      */
     Map getChainModel() {
         (Map)getFlash().get("chainModel")
-    }
-
-    /**
-     * Obtains the Grails parameter map
-     *
-     * @return The GrailsParameterMap instance
-     */
-    GrailsParameterMap getParams() {
-        currentRequestAttributes().getParams()
     }
 
 

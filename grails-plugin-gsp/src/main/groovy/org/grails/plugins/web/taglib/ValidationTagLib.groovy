@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 import groovy.xml.MarkupBuilder
 
@@ -40,8 +41,8 @@ import org.springframework.validation.Errors
  *
  * @author Graeme Rocher
  */
-@Artefact("TagLibrary")
-class ValidationTagLib {
+@TagLib
+class ValidationTagLib implements TagLibrary {
 
     static returnObjectForTags = ['message', 'fieldError', 'formatValue']
 

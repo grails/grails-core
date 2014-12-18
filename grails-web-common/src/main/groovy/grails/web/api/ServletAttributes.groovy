@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package grails.artefact.controller
+package grails.web.api
 
-import grails.web.api.WebAttributes
 import groovy.transform.CompileStatic
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.support.WebApplicationContextUtils
@@ -27,8 +26,10 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
 /**
- * This class is a temporary placeholder for Controller methods which in their current
- * implementation there are direct references to the servlet api.  This is temporary.
+ * A trait that adds attributes specific to the Servlet API
+ *
+ * @author Graeme Rocher
+ * @author Jeff Brown
  * 
  */
 @CompileStatic

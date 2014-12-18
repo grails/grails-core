@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 
 import java.math.RoundingMode
@@ -41,8 +42,8 @@ import org.springframework.util.StringUtils
  *
  * @since 0.6
  */
-@Artefact("TagLibrary")
-class FormatTagLib {
+@TagLib
+class FormatTagLib implements TagLibrary {
 
     static returnObjectForTags = ['formatBoolean','formatDate','formatNumber','encodeAs']
 

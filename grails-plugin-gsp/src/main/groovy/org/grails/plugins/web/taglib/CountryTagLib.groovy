@@ -15,7 +15,9 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
+
 
 /**
  * Tags for rendering country selection / display of country names.
@@ -24,8 +26,8 @@ import grails.artefact.Artefact
  *
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-@Artefact("TagLibrary")
-class CountryTagLib {
+@TagLib
+class CountryTagLib implements TagLibrary {
     static final ISO3166_3 = [
         "afg":"Afghanistan",
         "alb":"Albania",

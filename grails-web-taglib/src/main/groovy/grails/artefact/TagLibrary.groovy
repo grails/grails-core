@@ -15,14 +15,19 @@
  */
 package grails.artefact
 
+import grails.artefact.gsp.TagLibraryInvoker
+import grails.core.GrailsApplication
+import grails.core.GrailsTagLibClass
 import grails.util.Environment
+import grails.util.GrailsMetaClassUtils
+import grails.web.api.ServletAttributes
 import grails.web.api.WebAttributes
-import org.grails.web.util.GrailsApplicationAttributes
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.buffer.GrailsPrintWriter
+import org.grails.core.artefact.TagLibArtefactHandler
+import org.grails.encoder.Encoder
 import org.grails.web.encoder.OutputEncodingStack
 import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -32,19 +37,38 @@ import org.grails.web.taglib.TemplateVariableBinding
 import org.grails.web.taglib.WebRequestTemplateVariableBinding
 import org.grails.web.taglib.exceptions.GrailsTagException
 import org.grails.web.taglib.util.TagLibraryMetaUtils
-import org.springframework.beans.factory.annotation.Autowired
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestAttributes
 
+import javax.annotation.PostConstruct
+
 /**
+ * A trait that makes a class into a GSP tag library
+ *
  * @since 3.0
  * @author Jeff Brown
- *
+ * @author Graeme Rocher
  */
 @CompileStatic
-trait TagLibrary implements WebAttributes {
-    
-    TagLibraryLookup tagLibraryLookup
-    
+trait TagLibrary implements WebAttributes, ServletAttributes, TagLibraryInvoker {
+
+    private Encoder rawEncoder
+
+    @PostConstruct
+    void initializeTagLibrary() {
+        TagLibraryMetaUtils.enhanceTagLibMetaClass(GrailsMetaClassUtils.getExpandoMetaClass(getClass()), tagLibraryLookup, getTaglibNamespace())
+    }
+
+    @CompileDynamic
+    def raw(Object value) {
+        if (rawEncoder == null) {
+            rawEncoder = WithCodecHelper.lookupEncoder(grailsApplication, "Raw")
+            if(rawEncoder == null)
+                return InvokerHelper.invokeMethod(value, "encodeAsRaw", null)
+        }
+        return rawEncoder.encode(value)
+    }
+
     /**
      * Throws a GrailsTagException
      *
@@ -52,6 +76,13 @@ trait TagLibrary implements WebAttributes {
      */
     void throwTagError(String message) {
         throw new GrailsTagException(message)
+    }
+
+    String getTaglibNamespace() {
+        if(hasProperty('namespace')) {
+            return ((GroovyObject)this).getProperty('namespace')
+        }
+        return TagOutput.DEFAULT_NAMESPACE
     }
 
     /**
@@ -87,14 +118,7 @@ trait TagLibrary implements WebAttributes {
         OutputEncodingStack.currentStack().push(newOut,true)
     }
     
-    def withCodec(Object codecInfo, Closure<?> body) {
-        WithCodecHelper.withCodec(getGrailsApplication(), codecInfo, body)
-    }
-    
-    @CompileStatic(TypeCheckingMode.SKIP)
-    String getTaglibNamespace() {
-        getNamespace()
-    }
+
     /**
      * Property missing implementation that looks up tag library namespaces or tags in the default namespace
      *
@@ -103,13 +127,13 @@ trait TagLibrary implements WebAttributes {
      *
      * @throws MissingPropertyException When no tag namespace or tag is found
      */
-    public Object propertyMissing(String name) {
+    Object propertyMissing(String name) {
         TagLibraryLookup gspTagLibraryLookup = getTagLibraryLookup();
         if (gspTagLibraryLookup != null) {
 
             Object result = gspTagLibraryLookup.lookupNamespaceDispatcher(name);
             if (result == null) {
-                String namespace = getTaglibNamespace();
+                String namespace = getTaglibNamespace()
                 GroovyObject tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name);
                 if (tagLibrary == null) {
                     tagLibrary = gspTagLibraryLookup.lookupTagLibrary(TagOutput.DEFAULT_NAMESPACE, name);
@@ -124,7 +148,7 @@ trait TagLibrary implements WebAttributes {
             }
 
             if (result != null && !Environment.isDevelopmentMode()) {
-                MetaClass mc = InvokerHelper.getMetaClass(this);
+                MetaClass mc = GrailsMetaClassUtils.getExpandoMetaClass(getClass())
                 TagLibraryMetaUtils.registerPropertyMissingForTag(mc, name, result);
             }
 
@@ -135,13 +159,5 @@ trait TagLibrary implements WebAttributes {
 
         throw new MissingPropertyException(name, this.getClass());
     }
-    
-    @Autowired
-    void setGspTagLibraryLookup(TagLibraryLookup lookup) {
-        tagLibraryLookup = lookup;
-    }
 
-    void setTagLibraryLookup(TagLibraryLookup lookup) {
-        tagLibraryLookup = lookup;
-    }
 }

@@ -34,7 +34,6 @@ import org.grails.gsp.GroovyPagesTemplateRenderer
 import org.grails.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.grails.gsp.io.CachingGroovyPageStaticResourceLocator
 import org.grails.gsp.jsp.TagLibraryResolverImpl
-import org.grails.plugins.web.api.TagLibraryApi
 import org.grails.plugins.web.taglib.*
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.web.errors.ErrorsViewStackTracePrinter
@@ -249,7 +248,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
         }
 
         final pluginManager = manager
-        instanceTagLibraryApi(TagLibraryApi, pluginManager)
         // Now go through tag libraries and configure them in Spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
 
@@ -265,9 +263,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
         }
 
         errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
-
         javascriptLibraryHandlerInterceptor(JavascriptLibraryHandlerInterceptor, application)
-
         filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, application)
 
         groovyPagesServlet(ServletRegistrationBean, new GroovyPagesServlet(), "*.gsp") {
@@ -291,7 +287,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
     @Override
     void doWithDynamicMethods() {
         StreamCharBufferMetaUtils.registerStreamCharBufferMetaClass()
-
         TagLibraryLookup gspTagLibraryLookup = applicationContext.getBean('gspTagLibraryLookup',TagLibraryLookup)
 
         for(GrailsClass cls in grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE)) {

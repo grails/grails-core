@@ -17,13 +17,13 @@
 package grails.test.mixin.web
 
 import grails.artefact.Enhanced
+import grails.artefact.TagLibrary
 import groovy.text.Template
 
 import grails.util.GrailsMetaClassUtils
 import grails.core.GrailsTagLibClass
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.plugins.web.api.TagLibraryApi
 import org.grails.gsp.GroovyPagesTemplateEngine
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.buffer.GrailsPrintWriter
@@ -72,21 +72,6 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
         GrailsTagLibClass tagLib = grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibClass)
         final tagLookup = applicationContext.getBean(TagLibraryLookup)
 
-        if (!applicationContext.containsBean('instanceTagLibraryApi')) {
-            defineBeans(true) {
-                instanceTagLibraryApi(TagLibraryApi) { bean ->
-                    bean.autowire = true
-                }
-            }
-        }
-
-        if (!tagLibClass.getAnnotation(Enhanced)) {
-            MetaClassEnhancer enhancer = new MetaClassEnhancer()
-            enhancer.addApi(applicationContext.getBean('instanceTagLibraryApi'))
-            MetaClass mc = GrailsMetaClassUtils.getMetaClass(tagLib)
-            enhancer.enhance(mc)
-            TagLibraryMetaUtils.enhanceTagLibMetaClass(tagLib, tagLookup)
-        }
 
         defineBeans(true) {
             "${tagLib.fullName}"(tagLibClass) { bean ->
@@ -96,7 +81,12 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
 
         tagLookup.registerTagLib(tagLib)
 
-        return applicationContext.getBean(tagLib.fullName)
+        def taglibObject = applicationContext.getBean(tagLib.fullName)
+        if(taglibObject instanceof TagLibrary) {
+            ((TagLibrary)taglibObject).setTagLibraryLookup(tagLookup)
+        }
+
+        return taglibObject
     }
 
     /**

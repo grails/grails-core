@@ -19,6 +19,11 @@ class TagLibraryMetaUtils {
     static void enhanceTagLibMetaClass(final GrailsTagLibClass taglib, TagLibraryLookup gspTagLibraryLookup) {
         final MetaClass mc = taglib.getMetaClass()
         final String namespace = taglib.namespace ?: TagOutput.DEFAULT_NAMESPACE
+        enhanceTagLibMetaClass(mc, gspTagLibraryLookup, namespace)
+    }
+
+    @CompileStatic
+    public static void enhanceTagLibMetaClass(MetaClass mc, TagLibraryLookup gspTagLibraryLookup, String namespace) {
         registerTagMetaMethods(mc, gspTagLibraryLookup, namespace)
         registerNamespaceMetaProperties(mc, gspTagLibraryLookup)
     }

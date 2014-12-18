@@ -19,10 +19,10 @@ import grails.util.Environment
 import grails.util.GrailsMetaClassUtils
 import grails.web.api.WebAttributes
 import groovy.transform.CompileStatic
-import org.grails.gsp.GroovyPage
 import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.taglib.NamespacedTagDispatcher
 import org.grails.web.taglib.TagLibraryLookup
+import org.grails.web.taglib.TagOutput
 import org.grails.web.taglib.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -35,10 +35,27 @@ import org.springframework.beans.factory.annotation.Autowired
 @CompileStatic
 trait TagLibraryInvoker extends WebAttributes{
 
-    @Autowired
-    TagLibraryLookup tagLibraryLookup
 
+    private TagLibraryLookup tagLibraryLookup
     private boolean developmentMode = Environment.isDevelopmentMode();
+
+    @Autowired
+    void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
+        this.tagLibraryLookup = tagLibraryLookup
+    }
+
+    TagLibraryLookup getTagLibraryLookup() {
+        def lookup = this.tagLibraryLookup
+        if(lookup == null) {
+            lookup = getGrailsApplication()?.mainContext?.getBean(TagLibraryLookup)
+            setTagLibraryLookup(lookup)
+        }
+        return lookup
+    }
+
+    String getTaglibNamespace() {
+        TagOutput.DEFAULT_NAMESPACE
+    }
 
 
     /**
@@ -51,14 +68,20 @@ trait TagLibraryInvoker extends WebAttributes{
      */
     Object methodMissing(String methodName, Object argsObject) {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : [argsObject] as Object[]
-        if (shouldHandleMethodMissing(methodName, args)) {
+        if (!"render".equals(methodName)) {
             TagLibraryLookup lookup = tagLibraryLookup
             if (lookup) {
-                GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName)
+                def usedNamespace = getTaglibNamespace()
+                GroovyObject tagLibrary = lookup.lookupTagLibrary(usedNamespace, methodName)
+                if (tagLibrary == null) {
+                    tagLibrary = lookup.lookupTagLibrary(TagOutput.DEFAULT_NAMESPACE, methodName);
+                    usedNamespace = TagOutput.DEFAULT_NAMESPACE;
+                }
+
                 if (tagLibrary) {
                     if (!developmentMode) {
                         MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(this)
-                        TagLibraryMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName)
+                        TagLibraryMetaUtils.registerMethodMissingForTags(controllerMc, lookup, usedNamespace, methodName)
                     }
                     return tagLibrary.invokeMethod(methodName, args)
                 }
@@ -87,12 +110,12 @@ trait TagLibraryInvoker extends WebAttributes{
         throw new MissingPropertyException(propertyName, this.getClass())
     }
 
-    def <T> T withCodec(Object instance, Object codecInfo, Closure<T> body) {
+    /**
+     * @see {@link WithCodecHelper#withCodec(grails.core.GrailsApplication, java.lang.Object, groovy.lang.Closure)}
+     */
+    def <T> T withCodec(Object codecInfo, Closure<T> body) {
         return WithCodecHelper.withCodec(getGrailsApplication(), codecInfo, body)
     }
 
-    private boolean shouldHandleMethodMissing(String methodName, Object[] args) {
-        return !"render".equals(methodName);
-    }
 
 }

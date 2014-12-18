@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import grails.plugins.GrailsPluginManager
 
 /**
@@ -24,10 +25,10 @@ import grails.plugins.GrailsPluginManager
  * @author Graeme Rocher
  * @since 1.1
  */
-@Artefact("TagLibrary")
-class PluginTagLib {
+@TagLib
+class PluginTagLib implements TagLibrary {
 
-    static namespace = "plugin"
+    static String namespace = "plugin"
 
     GrailsPluginManager pluginManager
 

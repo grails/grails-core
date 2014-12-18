@@ -19,6 +19,7 @@ import grails.core.GrailsApplication
 import grails.core.GrailsControllerClass
 import grails.plugins.GrailsPluginManager
 import grails.web.mvc.FlashScope
+import grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
@@ -107,7 +108,14 @@ trait WebAttributes {
         currentRequestAttributes().getFlashScope()
     }
 
-
+    /**
+     * Obtains the Grails parameter map
+     *
+     * @return The GrailsParameterMap instance
+     */
+    GrailsParameterMap getParams() {
+        currentRequestAttributes().getParams()
+    }
     /**
      * Obtains the currently executing web request
      *

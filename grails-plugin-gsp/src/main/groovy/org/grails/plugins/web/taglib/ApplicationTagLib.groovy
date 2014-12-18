@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import grails.util.GrailsUtil
 import grails.util.Metadata
 import groovy.transform.CompileStatic
@@ -44,8 +45,8 @@ import javax.servlet.http.HttpServletResponse
  *
  * @author Graeme Rocher
  */
-@Artefact("TagLibrary")
-class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware {
+@TagLib
+class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware, TagLibrary {
     static returnObjectForTags = ['createLink', 'resource', 'createLinkTo', 'cookie', 'header', 'img', 'join', 'meta', 'set', 'applyCodec']
 
     ApplicationContext applicationContext

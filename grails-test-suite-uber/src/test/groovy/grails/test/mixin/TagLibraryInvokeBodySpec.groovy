@@ -1,6 +1,8 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
+import grails.artefact.TagLibrary
+import grails.gsp.TagLib
 import spock.lang.Specification
 
 @TestFor(SimpleTagLib)
@@ -20,8 +22,8 @@ class TagLibraryInvokeBodySpec extends Specification {
     }
 }
 
-@Artefact("TagLibrary")
-class SimpleTagLib {
+@TagLib
+class SimpleTagLib implements TagLibrary {
     def output = { attrs, body ->
         def param = attrs.param
         out << body(param: param)
