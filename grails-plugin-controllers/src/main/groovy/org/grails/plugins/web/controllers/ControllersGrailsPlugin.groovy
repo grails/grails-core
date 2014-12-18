@@ -49,7 +49,7 @@ import javax.servlet.MultipartConfigElement
  * @since 0.4
  */
 @Commons
-class ControllersGrailsPlugin extends Plugin implements GrailsApplicationAware{
+class ControllersGrailsPlugin extends Plugin {
 
     def watchedResources = [
         "file:./grails-app/controllers/**/*Controller.groovy",
@@ -58,8 +58,6 @@ class ControllersGrailsPlugin extends Plugin implements GrailsApplicationAware{
     def version = GrailsUtil.getGrailsVersion()
     def observe = ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
-
-    GrailsApplication grailsApplication
 
     @Override
     Closure doWithSpring(){ { ->

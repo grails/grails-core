@@ -46,15 +46,13 @@ import org.springframework.web.context.WebApplicationContext
  * @author Graeme Rocher
  * @since 0.4
  */
-class UrlMappingsGrailsPlugin extends Plugin implements GrailsApplicationAware {
+class UrlMappingsGrailsPlugin extends Plugin {
 
     def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
     def loadAfter = ['controllers']
-
-    GrailsApplication grailsApplication
 
     Closure doWithSpring() { {->
         def application = grailsApplication
