@@ -16,7 +16,6 @@
 package org.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
-import grails.build.logging.GrailsConsole;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
@@ -132,7 +131,7 @@ public class GrailsASTUtils {
 
     public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
         final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
-        GrailsConsole.getInstance().warning(warningMessage + "\n\n" + sample);
+        System.err.println("WARNING: " + warningMessage + "\n\n" + sample);
     }
 
     /**

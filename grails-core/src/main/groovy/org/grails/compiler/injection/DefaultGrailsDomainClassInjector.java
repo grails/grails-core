@@ -16,7 +16,6 @@
 package org.grails.compiler.injection;
 
 import grails.artefact.Artefact;
-import grails.build.logging.GrailsConsole;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -111,11 +110,11 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
                 if ((!(initialExpression instanceof MapExpression)) &&
                         (!(initialExpression instanceof ClassExpression))) {
                     if (name.equals(GrailsDomainClassProperty.HAS_ONE)) {
-                        final String message = "The hasOne property in class [" + classNode.getName() + "] should have an initial expression of type Map or Class.";
-                        GrailsConsole.getInstance().warn(message);
+                        final String message = "WARNING: The hasOne property in class [" + classNode.getName() + "] should have an initial expression of type Map or Class.";
+                        System.err.println(message);
                     } else if (!(initialExpression instanceof ListExpression)) {
-                        final String message = "The belongsTo property in class [" + classNode.getName() + "] should have an initial expression of type List, Map or Class.";
-                        GrailsConsole.getInstance().warn(message);
+                        final String message = "WARNING: The belongsTo property in class [" + classNode.getName() + "] should have an initial expression of type List, Map or Class.";
+                        System.err.println(message);
                     }
                 }
                 propertiesToAdd.addAll(createPropertiesForBelongsToOrHasOneExpression(initialExpression, classNode));

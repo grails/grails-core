@@ -15,7 +15,6 @@
  */
 package org.grails.compiler.injection;
 
-import grails.build.logging.GrailsConsole;
 import grails.compiler.ast.ClassInjector;
 import grails.compiler.ast.GrailsDomainClassInjector;
 import grails.persistence.Entity;
@@ -82,7 +81,7 @@ public class EntityASTTransformation implements ASTTransformation, CompilationUn
                 injector.performInjection(sourceUnit, classNode);
             } catch (RuntimeException e) {
                 try {
-                    GrailsConsole.getInstance().error("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage(), e);
+                    System.err.println("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage());
                 } catch (Throwable t) {
                     // ignore
                 }

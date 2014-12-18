@@ -15,12 +15,12 @@
  */
 package org.grails.web.mapping.reporting
 
-import grails.build.logging.GrailsConsole
 import grails.dev.commands.ApplicationContextCommand
 import grails.web.mapping.UrlMappings
 import grails.web.mapping.reporting.UrlMappingsRenderer
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
+import groovy.util.logging.Commons
 import org.springframework.context.ConfigurableApplicationContext
 
 
@@ -33,6 +33,7 @@ import org.springframework.context.ConfigurableApplicationContext
  */
 @CompileStatic
 @EqualsAndHashCode
+@Commons
 class UrlMappingsReportCommand implements ApplicationContextCommand {
 
     final String name = "url-mappings-report"
@@ -46,7 +47,7 @@ class UrlMappingsReportCommand implements ApplicationContextCommand {
             renderer.render(urlMappings.getUrlMappings().toList())
             return true
         } catch (Throwable e) {
-            GrailsConsole.instance.error("Failed to render URL mappings: ${e.message}", e)
+            log.error("Failed to render URL mappings: ${e.message}", e)
             return false
         }
     }
