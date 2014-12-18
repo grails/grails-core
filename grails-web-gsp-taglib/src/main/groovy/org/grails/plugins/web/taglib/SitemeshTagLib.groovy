@@ -17,18 +17,15 @@ package org.grails.plugins.web.taglib
 
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
+import com.opensymphony.module.sitemesh.RequestConstants
 import groovy.transform.CompileStatic
-
-import org.grails.encoder.CodecLookup
-import org.grails.encoder.Encoder
 import org.grails.buffer.FastStringWriter
-import SitemeshPreprocessor
-import org.grails.gsp.compiler.SitemeshPreprocessor
-import org.grails.web.sitemesh.GSPSitemeshPage
 import org.grails.buffer.GrailsPrintWriter
 import org.grails.buffer.StreamCharBuffer
-
-import com.opensymphony.module.sitemesh.RequestConstants
+import org.grails.encoder.CodecLookup
+import org.grails.encoder.Encoder
+import org.grails.gsp.compiler.SitemeshPreprocessor
+import org.grails.web.sitemesh.GSPSitemeshPage
 
 /**
  * Internal Sitemesh pre-processor tags.
