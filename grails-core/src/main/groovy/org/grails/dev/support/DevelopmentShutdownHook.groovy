@@ -15,10 +15,10 @@
  */
 package org.grails.dev.support
 
-import grails.build.logging.GrailsConsole
-
+import groovy.transform.CompileStatic
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ConfigurableApplicationContext
 
 /**
  * Registers a shutdown hook to close the application context when CTRL+C is hit in dev mode.
@@ -28,19 +28,18 @@ import org.springframework.context.ApplicationContextAware
  */
 class DevelopmentShutdownHook implements ApplicationContextAware {
 
-    def console = GrailsConsole.instance
+    public static final String INSTALLED = "grails.shutdown.hook.installed"
 
+    @CompileStatic
     void setApplicationContext(ApplicationContext applicationContext) {
-        if (System.getProperty("grails.shutdown.hook.installed")) {
+        if (System.getProperty(INSTALLED)) {
             return
         }
 
         Runtime.runtime.addShutdownHook {
-            console.verbose "Application context shutting down..."
-            applicationContext.close()
-            console.verbose "Application context shutdown."
+            ((ConfigurableApplicationContext)applicationContext).close()
         }
 
-        System.setProperty("grails.shutdown.hook.installed", "true")
+        System.setProperty(INSTALLED, "true")
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.gsp;
+package grails.compiler.traits
 
-public interface GroovyPageSourceDecorator {
-	StringBuilder decorate(StringBuilder source);
+import grails.artefact.gsp.TagLibraryInvoker
+import groovy.transform.CompileStatic
+
+
+
+/**
+ * A {@link TraitInjector} that adds the ability to invoke tag libraries from a controller
+ *
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+@CompileStatic
+class ControllerTagLibraryTraitInjector extends ControllerTraitInjector {
+
+    @Override
+    Class getTrait() {
+        TagLibraryInvoker
+    }
 }

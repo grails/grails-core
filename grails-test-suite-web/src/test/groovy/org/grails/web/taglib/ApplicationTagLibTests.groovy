@@ -11,6 +11,8 @@ import org.grails.web.taglib.exceptions.GrailsTagException
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 
+import javax.servlet.http.Cookie
+
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     @Override

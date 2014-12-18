@@ -15,12 +15,12 @@
  */
 package org.grails.gsp.io;
 
-import java.io.IOException;
-import java.net.URL;
-
 import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.support.ResourceScriptSource;
+
+import java.io.IOException;
+import java.net.URL;
 
 public class GroovyPageResourceScriptSource extends ResourceScriptSource implements GroovyPageScriptSource {
 

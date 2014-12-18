@@ -16,13 +16,13 @@
 package org.grails.gsp.compiler.transform;
 
 import grails.build.logging.GrailsConsole;
+import grails.compiler.ast.ClassInjector;
+import grails.compiler.ast.GroovyPageInjector;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.SourceUnit;
-import grails.compiler.ast.ClassInjector;
 import org.grails.compiler.injection.GrailsAwareInjectionOperation;
-import grails.compiler.ast.GroovyPageInjector;
 
 import java.util.ArrayList;
 import java.util.List;

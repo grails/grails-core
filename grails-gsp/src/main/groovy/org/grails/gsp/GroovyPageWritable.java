@@ -16,7 +16,6 @@
 package org.grails.gsp;
 
 import grails.util.Environment;
-import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.Binding;
 import groovy.lang.Writable;
 import org.apache.commons.logging.Log;
@@ -25,6 +24,7 @@ import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.TemplateVariableBinding;
 import org.grails.web.taglib.WebRequestTemplateVariableBinding;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;

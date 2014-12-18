@@ -16,17 +16,23 @@
 package grails.compiler.traits
 
 import grails.artefact.Controller
+import groovy.transform.CompileStatic
 
 import java.util.regex.Pattern
 
 import org.grails.io.support.GrailsResourceUtils
 
 /**
- * 
+ *
+ * A {@link TraitInjector} that injects controllers with the {@link Controller} trait
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  *
  */
+@CompileStatic
 class ControllerTraitInjector implements TraitInjector {
     
     static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +

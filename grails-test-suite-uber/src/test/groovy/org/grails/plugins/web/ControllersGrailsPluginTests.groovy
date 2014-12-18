@@ -52,6 +52,9 @@ class TagLibTestController {
 """
 
         gcl.parseClass """
+import grails.gsp.TagLib
+
+@TagLib
 class FormTagLib {
     Closure form = {  attrs, body ->
         out << 'dummy form tag'
@@ -166,7 +169,7 @@ class FormTagLib {
           </form>
         </body>
       </html>''', response.contentAsString) */
-        assertEquals("<html>  <head>    <title>Log in</title>  </head>  <body>    <h1>Hello</h1>    <form />  </body></html>".trim(),
+        assert ("<html>  <head>    <title>Log in</title>  </head>  <body>    <h1>Hello</h1>  </body></html>".trim() ==
                      webRequest.currentResponse.contentAsString.replaceAll('[\r\n]', '').trim())
     }
 

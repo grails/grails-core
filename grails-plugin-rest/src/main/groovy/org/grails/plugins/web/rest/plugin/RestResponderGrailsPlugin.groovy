@@ -50,6 +50,7 @@ class RestResponderGrailsPlugin extends Plugin {
         RestResponderGrailsPlugin.registryResourceControllers(application)
 
         rendererRegistry(DefaultRendererRegistry) { bean ->
+            bean.lazyInit = true
             modelSuffix = application.config.getProperty(Settings.SCAFFOLDING_DOMAIN_SUFFIX, '')
         }
     }}

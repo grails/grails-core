@@ -15,10 +15,10 @@
  */
 package org.grails.gsp.compiler;
 
+import org.grails.web.taglib.exceptions.GrailsTagException;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)

@@ -24,10 +24,10 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.grails.gsp.GroovyPage;
-import org.grails.buffer.GrailsPrintWriter;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.grails.buffer.GrailsPrintWriter;
+import org.grails.gsp.GroovyPage;
 
 import java.util.List;
 import java.util.Stack;

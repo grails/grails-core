@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package org.grails.plugins.web
+
 import grails.config.Config
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
@@ -23,7 +24,6 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.pages.GroovyPagesUriService
-import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import org.grails.buffer.StreamCharBufferMetaUtils
@@ -34,7 +34,6 @@ import org.grails.gsp.GroovyPagesTemplateRenderer
 import org.grails.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.grails.gsp.io.CachingGroovyPageStaticResourceLocator
 import org.grails.gsp.jsp.TagLibraryResolverImpl
-import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.api.TagLibraryApi
 import org.grails.plugins.web.taglib.*
 import org.grails.spring.RuntimeSpringConfiguration
@@ -43,15 +42,16 @@ import org.grails.web.filters.JavascriptLibraryHandlerInterceptor
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.grails.web.pages.GroovyPagesServlet
-import org.grails.web.servlet.context.GrailsConfigUtils
 import org.grails.web.servlet.view.GroovyPageViewResolver
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.util.TagLibraryMetaUtils
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
+
 /**
  * Sets up and configures the GSP and GSP tag library support in Grails.
  *
@@ -250,7 +250,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
 
         final pluginManager = manager
         instanceTagLibraryApi(TagLibraryApi, pluginManager)
-        instanceControllerTagLibraryApi(ControllerTagLibraryApi, pluginManager)
         // Now go through tag libraries and configure them in Spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
 

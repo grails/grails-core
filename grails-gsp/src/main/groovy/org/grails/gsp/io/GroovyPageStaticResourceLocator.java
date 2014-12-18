@@ -15,13 +15,13 @@
  */
 package org.grails.gsp.io;
 
-import org.grails.core.io.DefaultResourceLocator;
-import org.grails.io.support.GrailsResourceUtils;
 import grails.plugins.GrailsPlugin;
+import org.grails.core.io.DefaultResourceLocator;
 import org.grails.gsp.GroovyPageBinding;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.TemplateVariableBinding;
 import org.grails.web.util.GrailsApplicationAttributes;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestAttributes;
 

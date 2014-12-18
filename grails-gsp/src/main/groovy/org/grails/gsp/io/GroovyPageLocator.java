@@ -15,8 +15,6 @@
  */
 package org.grails.gsp.io;
 
-import org.grails.gsp.io.GroovyPageCompiledScriptSource;
-import org.grails.gsp.io.GroovyPageScriptSource;
 import org.grails.web.taglib.TemplateVariableBinding;
 import org.springframework.core.io.ResourceLoader;
 

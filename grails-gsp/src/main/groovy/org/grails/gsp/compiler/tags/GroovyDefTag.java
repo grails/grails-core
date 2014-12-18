@@ -15,9 +15,8 @@
  */
 package org.grails.gsp.compiler.tags;
 
-import grails.util.GrailsUtil;
-
 import grails.util.GrailsStringUtils;
+import grails.util.GrailsUtil;
 import org.grails.web.taglib.exceptions.GrailsTagException;
 
 /**

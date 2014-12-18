@@ -25,11 +25,11 @@ import org.apache.commons.logging.LogFactory;
 import org.grails.buffer.FastStringWriter;
 import org.grails.buffer.StreamByteBuffer;
 import org.grails.buffer.StreamCharBuffer;
-import org.grails.io.support.SpringIOUtils;
-import org.grails.web.encoder.OutputEncodingSettings;
+import org.grails.gsp.GroovyPage;
 import org.grails.gsp.compiler.tags.GrailsTagRegistry;
 import org.grails.gsp.compiler.tags.GroovySyntaxTag;
-import org.grails.gsp.GroovyPage;
+import org.grails.io.support.SpringIOUtils;
+import org.grails.web.encoder.OutputEncodingSettings;
 import org.grails.web.taglib.exceptions.GrailsTagException;
 
 import java.io.*;

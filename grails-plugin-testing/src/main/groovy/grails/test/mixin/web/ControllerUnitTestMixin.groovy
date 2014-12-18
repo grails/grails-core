@@ -27,7 +27,6 @@ import grails.util.GrailsMetaClassUtils
 import org.grails.core.metaclass.MetaClassEnhancer
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.plugins.web.api.ControllerTagLibraryApi
 import grails.web.mime.MimeType
 import org.grails.web.pages.GroovyPageUtils
 import org.grails.plugins.support.WebMetaUtils
@@ -192,13 +191,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     protected GrailsClass createAndEnhance(Class controllerClass) {
         final GrailsControllerClass controllerArtefact = (GrailsControllerClass)grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         controllerArtefact.initialize()
-        if (!controllerClass.getAnnotation(Enhanced)) {
-            MetaClassEnhancer enhancer = new MetaClassEnhancer()
-
-            enhancer.addApi(new ControllerTagLibraryApi())
-            enhancer.enhance(GrailsMetaClassUtils.getExpandoMetaClass(controllerClass))
-        }
-        controllerArtefact
+        return controllerArtefact
     }
     
     /**

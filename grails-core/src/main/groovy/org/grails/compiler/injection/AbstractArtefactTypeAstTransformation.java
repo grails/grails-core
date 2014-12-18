@@ -15,8 +15,6 @@
  */
 package org.grails.compiler.injection;
 
-import grails.build.logging.GrailsConsole;
-
 import java.util.List;
 
 import grails.compiler.ast.AllArtefactClassInjector;
@@ -51,7 +49,7 @@ public abstract class AbstractArtefactTypeAstTransformation implements ASTTransf
                 }
             }
         } catch (RuntimeException e) {
-            GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
+            System.err.println("Error occurred calling AST injector ["+getClass()+"]: " + e.getMessage());
             throw e;
         }
     }
