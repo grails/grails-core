@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping
 
+import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMapping
@@ -88,7 +89,7 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
     MappingContext mappingContext
 
     @Autowired
-    UrlConverter grailsUrlConverter
+    UrlConverter grailsUrlConverter = new CamelCaseUrlConverter()
 
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
         configuredServerBaseURL = serverBaseURL

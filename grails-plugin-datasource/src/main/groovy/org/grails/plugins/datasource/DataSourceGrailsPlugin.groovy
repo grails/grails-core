@@ -62,7 +62,7 @@ class DataSourceGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         def application = grailsApplication
         Config config = application.config
-        if (!applicationContext?.containsBean('transactionManager')) {
+        if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
             def whitelistPattern=config.getProperty(TRANSACTION_MANAGER_WHITE_LIST_PATTERN, '')
             def blacklistPattern=config.getProperty(TRANSACTION_MANAGER_BLACK_LIST_PATTERN,'')
             chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)

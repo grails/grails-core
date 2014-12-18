@@ -39,6 +39,7 @@ import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
+import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.annotation.ConfigurationClassPostProcessor
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
@@ -78,15 +79,18 @@ class CoreGrailsPlugin extends Plugin {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
         }
 
-        // Allow the use of Spring annotated components
-        context.'annotation-config'()
-
         def packagesToScan = []
 
         def beanPackages = config.getProperty(Settings.SPRING_BEAN_PACKAGES, List)
         if (beanPackages) {
             packagesToScan += beanPackages
         }
+
+        // Allow the use of Spring annotated components
+        if(!springConfig.unrefreshedApplicationContext.containsBeanDefinition(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME    )) {
+            context.'annotation-config'()
+        }
+
 
         if (packagesToScan) {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
