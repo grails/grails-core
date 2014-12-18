@@ -787,7 +787,7 @@ public class GrailsResourceUtils {
                 String basePath = baseDir != null ? baseDir.getCanonicalPath() : null;
                 if(basePath != null) {
                     String canonicalPath = new File(path).getCanonicalPath();
-                    return canonicalPath.substring(basePath.length());
+                    return canonicalPath.substring(basePath.length()+1);
                 }
             } catch (IOException e) {
                 // ignore
