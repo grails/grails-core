@@ -33,6 +33,10 @@ import java.lang.management.ManagementFactory
 @Commons
 class Support {
 
+
+    public static final String PROPERTY_RELOAD_AGENT_PATH = "reload.agent.path"
+    public static final String ENV_RELOAD_AGENT_PATH = "RELOAD_AGENT_PATH"
+
     /**
      * Enables the reloading agent at runtime if it isn't present
      */
@@ -42,7 +46,11 @@ class Support {
             def grailsHome = System.getenv(Environment.ENV_GRAILS_HOME)
 
             if(grailsHome) {
-                def file = new File(grailsHome, "lib/org.springframework/springloaded/jars/springloaded-1.2.1.RELEASE.jar")
+                def agentPath = System.getProperty(PROPERTY_RELOAD_AGENT_PATH)
+                if(!agentPath) {
+                    System.getenv(ENV_RELOAD_AGENT_PATH)
+                }
+                def file = agentPath ? new File(agentPath) : new File(grailsHome, "lib/org.springframework/springloaded/jars/springloaded-1.2.1.RELEASE.jar")
                 if(file.exists()) {
                     def runtimeMxBean = ManagementFactory.runtimeMXBean
                     def arguments = runtimeMxBean.inputArguments
