@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins.web.filters;
+package org.grails.plugins.web.filters
 
-import grails.core.InjectableGrailsClass;
-import org.grails.plugins.web.filters.FilterConfig;
+import grails.core.InjectableGrailsClass
 
-import java.util.List;
 
 /**
  * Interface that defines filter class which return a list of FilterConfig instances
- * @author mike
+ *
  * @author Graeme Rocher
  */
-public interface GrailsFiltersClass extends InjectableGrailsClass {
+interface GrailsFiltersClass extends InjectableGrailsClass {
 
     /**
      * @return  the FilterConfig instances

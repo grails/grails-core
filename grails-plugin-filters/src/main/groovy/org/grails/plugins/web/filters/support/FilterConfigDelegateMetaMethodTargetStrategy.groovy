@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins.web.filters.support;
+package org.grails.plugins.web.filters.support
 
-import org.grails.plugins.web.filters.support.DelegateMetaMethod.DelegateMetaMethodTargetStrategy;
-import org.grails.plugins.web.filters.FilterConfig;
+import groovy.transform.CompileStatic
+import org.grails.plugins.web.filters.FilterConfig
 
-public class FilterConfigDelegateMetaMethodTargetStrategy implements DelegateMetaMethodTargetStrategy {
+
+/**
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+@CompileStatic
+class FilterConfigDelegateMetaMethodTargetStrategy implements DelegateMetaMethod.DelegateMetaMethodTargetStrategy {
     public static final FilterConfigDelegateMetaMethodTargetStrategy instance =
-            new FilterConfigDelegateMetaMethodTargetStrategy();
+            new FilterConfigDelegateMetaMethodTargetStrategy()
 
     public Object getTargetInstance(Object filterConfig) {
-        return ((FilterConfig)filterConfig).getFiltersDefinition();
+        return ((FilterConfig)filterConfig).getFiltersDefinition()
     }
 }

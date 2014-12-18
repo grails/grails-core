@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.filters
 import grails.artefact.Controller
+import grails.core.GrailsClass
 import grails.util.GrailsClassUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -75,7 +76,7 @@ class FilterConfig implements Controller {
 
     def getWiredFiltersDefinition() {
         final webRequest = GrailsWebRequest.lookup()
-        final grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name) : null
+        final GrailsClass grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name) : null
         if (grailsFilter) {
             applicationContext.getBean(grailsFilter.fullName)
         } else {
@@ -106,8 +107,7 @@ class FilterConfig implements Controller {
         // if it's in the initialisation phase, the MME gets swallowed somewhere.
         if (!initialised) {
             throw new IllegalStateException(
-                    "Invalid filter definition in ${wiredFiltersDefinition.getClass().name} - trying "
-                            + "to call method '${methodName}' outside of an interceptor.")
+                    "Invalid filter definition in ${wiredFiltersDefinition.getClass().name} - trying to call method '${methodName}' outside of an interceptor.")
         }
 
         // The required method was not found on the parent filter definition either.
