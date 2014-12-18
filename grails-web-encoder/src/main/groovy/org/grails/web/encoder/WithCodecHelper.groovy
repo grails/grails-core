@@ -70,7 +70,7 @@ class WithCodecHelper {
      * @param closure the closure to execute
      * @return the return value of the closure
      */
-    static withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure closure) {
+    static <T> T withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure<T> closure) {
         OutputEncodingStack outputStack=OutputEncodingStack.currentStack()
         try {
             outputStack.push(createOutputStackAttributesBuilder(codecInfo, grailsApplication).build(), false)

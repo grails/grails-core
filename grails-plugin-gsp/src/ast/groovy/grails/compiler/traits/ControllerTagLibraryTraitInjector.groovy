@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,41 +15,22 @@
  */
 package grails.compiler.traits
 
-import grails.artefact.Controller
+import grails.artefact.gsp.TagLibraryInvoker
 import groovy.transform.CompileStatic
 
-import java.util.regex.Pattern
 
-import org.grails.io.support.GrailsResourceUtils
 
 /**
+ * A {@link TraitInjector} that adds the ability to invoke tag libraries from a controller
  *
- * A {@link TraitInjector} that injects controllers with the {@link Controller} trait
- *
- * @author Jeff Brown
  * @author Graeme Rocher
- *
  * @since 3.0
- *
  */
 @CompileStatic
-class ControllerTraitInjector implements TraitInjector {
-    
-    static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
-        GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
- 
+class ControllerTagLibraryTraitInjector extends ControllerTraitInjector {
+
     @Override
     Class getTrait() {
-        Controller
-    }
- 
-    @Override
-    boolean shouldInject(URL url) {
-        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
-    }
- 
-    @Override
-    String[] getArtefactTypes() {
-        ['Controller'] as String[]
+        TagLibraryInvoker
     }
 }

@@ -35,7 +35,6 @@ import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.plugins.converters.ConvertersGrailsPlugin
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.mime.MimeTypesGrailsPlugin
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.web.mapping.DefaultLinkGenerator
@@ -78,8 +77,6 @@ class ControllerTestPlugin implements TestPlugin {
             rendererRegistry(DefaultRendererRegistry) {
                 modelSuffix = config.getProperty('grails.scaffolding.templates.domainSuffix', '')
             }
-            instanceControllerTagLibraryApi(ControllerTagLibraryApi)
-
             String urlConverterType = config.getProperty(Settings.WEB_URL_CONVERTER)
             "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 

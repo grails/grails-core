@@ -28,7 +28,6 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import org.grails.buffer.StreamCharBufferMetaUtils
 import org.grails.core.artefact.TagLibArtefactHandler
-import org.grails.plugins.web.api.ControllerTagLibraryApi
 import org.grails.plugins.web.api.TagLibraryApi
 import org.grails.plugins.web.taglib.*
 import org.grails.spring.RuntimeSpringConfiguration
@@ -244,7 +243,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
 
         final pluginManager = manager
         instanceTagLibraryApi(TagLibraryApi, pluginManager)
-        instanceControllerTagLibraryApi(ControllerTagLibraryApi, pluginManager)
         // Now go through tag libraries and configure them in Spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
 
