@@ -4,14 +4,11 @@ import grails.util.GrailsUtil
 import grails.util.Holders
 import grails.util.Metadata
 import grails.util.MockRequestDataValueProcessor
-
-import javax.servlet.http.Cookie
-
+import org.grails.gsp.GroovyPageBinding
 import org.grails.plugins.web.taglib.ApplicationTagLib
 import org.grails.plugins.web.taglib.FormTagLib
-import org.grails.web.pages.GroovyPageBinding
-import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {

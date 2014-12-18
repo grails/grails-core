@@ -27,7 +27,7 @@ import org.grails.core.artefact.UrlMappingsArtefactHandler
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
-import org.grails.web.pages.GroovyPagesTemplateEngine
+import org.grails.gsp.GroovyPagesTemplateEngine
 
 /**
  * A mixin for testing URL mappings in Grails.

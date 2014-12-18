@@ -26,7 +26,7 @@ import grails.util.GrailsClassUtils;
 import grails.core.GrailsTagLibClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.plugins.web.GroovyPagesGrailsPlugin;
-import org.grails.web.pages.GroovyPage;
+import org.grails.gsp.GroovyPage;
 import org.grails.web.taglib.TagLibraryLookup;
 import org.grails.web.taglib.NamespacedTagDispatcher;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;

@@ -41,10 +41,10 @@ import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.GroovyPagesTemplateRenderer
-import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.grails.web.pages.ext.jsp.TagLibraryResolverImpl
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.GroovyPagesTemplateRenderer
+import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.gsp.jsp.TagLibraryResolverImpl
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.request.RequestContextHolder

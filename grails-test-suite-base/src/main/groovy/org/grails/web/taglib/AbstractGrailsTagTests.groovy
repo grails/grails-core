@@ -30,11 +30,11 @@ import org.grails.web.encoder.OutputEncodingStack
 import org.grails.web.encoder.WithCodecHelper
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.grails.web.pages.GSPResponseWriter
-import org.grails.web.pages.GroovyPage
-import org.grails.web.pages.GroovyPageMetaInfo
-import org.grails.web.pages.GroovyPageTemplate
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.SitemeshPreprocessor
+import org.grails.gsp.GroovyPage
+import org.grails.gsp.GroovyPageMetaInfo
+import org.grails.gsp.GroovyPageTemplate
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.compiler.SitemeshPreprocessor
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.sitemesh.GSPSitemeshPage

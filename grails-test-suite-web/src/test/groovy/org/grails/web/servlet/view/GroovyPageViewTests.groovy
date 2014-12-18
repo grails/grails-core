@@ -1,12 +1,11 @@
-package org.grails.web.servlet.view;
+package org.grails.web.servlet.view
 
-import grails.util.*
-
+import grails.util.GrailsWebMockUtil
 import org.grails.core.io.MockStringResourceLoader
+import org.grails.gsp.GroovyPagesTemplateEngine
 import org.grails.support.MockApplicationContext
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.springframework.mock.web.*
-import org.springframework.web.context.request.*
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
 
 @SuppressWarnings("unused")
 class GroovyPageViewTests extends GroovyTestCase {

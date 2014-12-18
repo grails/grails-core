@@ -1,11 +1,11 @@
 package org.grails.web.pages
 
+import org.grails.gsp.GroovyPagesException
 import org.grails.plugins.web.taglib.JavascriptTagLib
-import org.grails.web.pages.exceptions.GroovyPagesException
 import org.grails.web.taglib.AbstractGrailsTagTests
 import org.grails.web.taglib.TestProvider
 
- /**
+/**
  * @author Graeme Rocher
  * @since 1.0
  */

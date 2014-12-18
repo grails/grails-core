@@ -21,7 +21,7 @@ import grails.util.GrailsMetaClassUtils;
 import groovy.lang.*;
 import org.grails.web.api.CommonWebApi;
 import org.grails.web.encoder.WithCodecHelper;
-import org.grails.web.pages.GroovyPage;
+import org.grails.gsp.GroovyPage;
 import org.grails.web.taglib.NamespacedTagDispatcher;
 import org.grails.web.taglib.TagLibraryLookup;
 import org.grails.web.taglib.util.TagLibraryMetaUtils;

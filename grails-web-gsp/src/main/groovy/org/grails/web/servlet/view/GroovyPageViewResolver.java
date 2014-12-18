@@ -28,9 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.web.pages.GroovyPagesTemplateEngine;
-import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
-import org.grails.web.pages.discovery.GroovyPageScriptSource;
+import org.grails.gsp.GroovyPagesTemplateEngine;
+import org.grails.gsp.io.GrailsConventionGroovyPageLocator;
+import org.grails.gsp.io.GroovyPageScriptSource;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;

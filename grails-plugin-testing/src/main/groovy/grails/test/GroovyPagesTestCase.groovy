@@ -15,11 +15,9 @@
  */
 package grails.test
 
-import org.grails.web.pages.GroovyPagesTemplateEngine
 import org.grails.buffer.GrailsPrintWriter
-
+import org.grails.gsp.GroovyPagesTemplateEngine
 import org.springframework.web.context.request.RequestContextHolder
-
 /**
  * A test harness that eases testing of GSP and tag libraries for Grails.
  *
