@@ -33,6 +33,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
+import org.springframework.core.Ordered
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
@@ -82,16 +83,19 @@ class ControllersGrailsPlugin extends Plugin implements GrailsApplicationAware{
                 encoding = filtersEncoding
             }
             urlPatterns = catchAllMapping
+            order = Ordered.HIGHEST_PRECEDENCE + 10
         }
 
         hiddenHttpMethodFilter(FilterRegistrationBean) {
             filter = bean(HiddenHttpMethodFilter)
             urlPatterns = catchAllMapping
+            order = Ordered.HIGHEST_PRECEDENCE + 20
         }
 
         grailsWebRequestFilter(FilterRegistrationBean) {
             filter = bean(GrailsWebRequestFilter)
             urlPatterns = catchAllMapping
+            order = Ordered.HIGHEST_PRECEDENCE + 30
         }
 
 
