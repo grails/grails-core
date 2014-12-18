@@ -17,6 +17,7 @@ package org.grails.web.taglib.exceptions;
 
 import org.grails.core.exceptions.GrailsException;
 import org.grails.exceptions.reporting.SourceCodeAware;
+import org.grails.io.support.GrailsResourceUtils;
 
 /**
  * @author Graeme Rocher
@@ -40,14 +41,13 @@ public class GrailsTagException extends GrailsException implements SourceCodeAwa
     }
 
     public GrailsTagException(String message, String pageName, int lineNumber) {
-        super(message);
-        this.fileName = pageName;
-        this.lineNumber = lineNumber;
+        this(message, null, pageName, lineNumber);
     }
 
     public GrailsTagException(String message, Throwable cause, String fileName, int lineNumber) {
         super(message, cause);
-        this.fileName = fileName;
+        String path = GrailsResourceUtils.getPathFromBaseDir(fileName);
+        this.fileName = path != null ? path : fileName;
         this.lineNumber = lineNumber;
     }
 

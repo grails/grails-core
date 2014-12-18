@@ -15,6 +15,7 @@
  */
 package org.grails.io.support;
 
+import grails.util.BuildSettings;
 import groovy.util.ConfigObject;
 
 import java.io.File;
@@ -761,6 +762,35 @@ public class GrailsResourceUtils {
             Matcher m = COMPILER_ROOT_PATTERN.matcher(path);
             if (m.find()) {
                 return m.group(m.groupCount()-1);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the path relative to the project base directory.
+     *
+     * Input: /usr/joe/project/grails-app/conf/BootStrap.groovy
+     * Output: grails-app/conf/BootStrap.groovy
+     *
+     * @param path The path
+     * @return The path relative to the base directory or null if it can't be established
+     */
+    public static String getPathFromBaseDir(String path) {
+        int i = path.indexOf("grails-app/");
+        if(i > -1 ) {
+            return path.substring(i + 11);
+        }
+        else {
+            try {
+                File baseDir = BuildSettings.BASE_DIR;
+                String basePath = baseDir != null ? baseDir.getCanonicalPath() : null;
+                if(basePath != null) {
+                    String canonicalPath = new File(path).getCanonicalPath();
+                    return canonicalPath.substring(basePath.length());
+                }
+            } catch (IOException e) {
+                // ignore
             }
         }
         return null;

@@ -22,17 +22,21 @@ import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeResolver
 import grails.web.http.HttpHeaders
+import org.grails.exceptions.ExceptionUtils
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContextAware
 import org.springframework.util.Assert
+import org.springframework.web.servlet.HandlerExecutionChain
 import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.handler.AbstractHandlerMapping
 import org.springframework.web.util.UrlPathHelper
 
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 /**
  *
@@ -62,6 +66,14 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
     }
 
     @Override
+    protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
+        def chain = super.getHandlerExecutionChain(handler, request)
+
+        chain.addInterceptor(new ErrorHandlingHandler())
+        return chain
+    }
+
+    @Override
     protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
 
         def matchedInfo = request.getAttribute(MATCHED_REQUEST)
@@ -78,7 +90,14 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         if(errorStatus) {
             def exception = request.getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE)
             if(exception instanceof Throwable) {
-                return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger(), (Throwable)exception)
+                exception = ExceptionUtils.getRootCause(exception)
+                def exceptionSpecificMatch = urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger(), (Throwable) exception)
+                if(exceptionSpecificMatch) {
+                    return exceptionSpecificMatch
+                }
+                else {
+                    return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
+                }
             }
             else {
                 return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
@@ -119,5 +138,25 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
     @Autowired
     void setHandlerInterceptors(HandlerInterceptor[] handlerInterceptors) {
         setInterceptors(handlerInterceptors)
+    }
+
+    static class ErrorHandlingHandler implements HandlerInterceptor {
+
+        @Override
+        boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+            return true
+        }
+
+        @Override
+        void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+            // no-op
+        }
+
+        @Override
+        void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+            if(ex != null) {
+                request.removeAttribute(MATCHED_REQUEST)
+            }
+        }
     }
 }
