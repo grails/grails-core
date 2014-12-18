@@ -1,7 +1,10 @@
 package org.grails.web.pages
 
-import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.buffer.GrailsPrintWriter
+import org.grails.gsp.GroovyPage
+import org.grails.gsp.GroovyPageBinding
+import org.grails.gsp.GroovyPagesMetaUtils
+import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
 class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
@@ -10,7 +13,7 @@ class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
         gcl.parseClass(
 """
 import org.grails.web.taglib.*
-import org.grails.web.pages.*
+import org.grails.gsp.*
 import grails.gsp.*
 
 @grails.artefact.Artefact('Controller')

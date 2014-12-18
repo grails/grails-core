@@ -18,6 +18,8 @@ import junit.framework.TestCase;
 
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.config.PropertySourcesConfig;
+import org.grails.gsp.GroovyPage;
+import org.grails.gsp.compiler.GroovyPageParser;
 import org.grails.support.MockApplicationContext;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.exceptions.GrailsTagException;

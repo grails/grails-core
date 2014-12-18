@@ -1,6 +1,6 @@
 package org.grails.web.pages
 
-import org.grails.web.pages.SitemeshPreprocessor
+import org.grails.gsp.compiler.SitemeshPreprocessor
 
 class SitemeshPreprocessorTests extends GroovyTestCase {
 

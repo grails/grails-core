@@ -27,9 +27,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.web.pages.GSPResponseWriter;
-import org.grails.web.pages.GroovyPageTemplate;
-import org.grails.web.pages.GroovyPagesTemplateEngine;
-import org.grails.web.pages.exceptions.GroovyPagesException;
+import org.grails.gsp.GroovyPageTemplate;
+import org.grails.gsp.GroovyPagesTemplateEngine;
+import org.grails.gsp.GroovyPagesException;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.core.io.Resource;
@@ -45,7 +45,7 @@ import org.springframework.scripting.ScriptSource;
  * the GrailsWebRequestFilter.
  *
  * @see #getUrl()
- * @see org.grails.web.pages.GroovyPagesTemplateEngine
+ * @see org.grails.gsp.GroovyPagesTemplateEngine
  * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
  * @see org.springframework.web.context.request.RequestContextHolder
  *

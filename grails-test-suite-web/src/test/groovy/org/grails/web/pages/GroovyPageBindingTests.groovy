@@ -1,6 +1,6 @@
 package org.grails.web.pages
 
-import org.grails.web.pages.GroovyPageBinding
+import org.grails.gsp.GroovyPageBinding
 
 /**
  * @author Graeme Rocher

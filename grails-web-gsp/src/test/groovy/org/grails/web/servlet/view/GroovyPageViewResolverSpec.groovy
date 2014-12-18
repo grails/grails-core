@@ -1,18 +1,15 @@
-package org.grails.web.servlet.view;
+package org.grails.web.servlet.view
 
 import grails.util.GrailsWebMockUtil
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.util.GrailsApplicationAttributes
-
-import javax.servlet.http.HttpServletRequest
-
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.View
 import org.springframework.web.servlet.view.InternalResourceView
-
 import spock.lang.Specification
 
+import javax.servlet.http.HttpServletRequest
 
 class GroovyPageViewResolverSpec extends Specification {
     def "should use namespace as part of cache key"() {

@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 package grails.gsp
-
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
-import java.util.concurrent.ConcurrentHashMap
-
-import javax.servlet.ServletContext
-import javax.servlet.http.Cookie
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 import org.grails.buffer.FastStringWriter
-import org.grails.web.pages.GroovyPagesTemplateEngine
-import org.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.grails.web.pages.discovery.GroovyPageScriptSource
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.request.RequestContextHolder
 
+import javax.servlet.ServletContext
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
+import java.util.concurrent.ConcurrentHashMap
 /**
  * Simplified API for rendering GSP pages from services, jobs and other non-request classes.
  *

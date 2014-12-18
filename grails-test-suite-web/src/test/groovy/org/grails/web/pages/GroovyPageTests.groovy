@@ -1,11 +1,14 @@
 package org.grails.web.pages
 
 import grails.core.GrailsApplication
-import org.grails.web.servlet.DefaultGrailsApplicationAttributes
-import org.grails.web.util.GrailsApplicationAttributes
-import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import grails.web.servlet.mvc.GrailsParameterMap
-import org.grails.buffer.GrailsPrintWriterAdapter;
+import org.grails.buffer.GrailsPrintWriterAdapter
+import org.grails.gsp.GroovyPage
+import org.grails.gsp.GroovyPageBinding
+import org.grails.gsp.GroovyPagesMetaUtils
+import org.grails.web.servlet.DefaultGrailsApplicationAttributes
+import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.context.ApplicationContext
 
 /**
@@ -50,7 +53,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
     void testRunPage() {
 
-        String pageCode = "import org.grails.web.pages.GroovyPage\n" +
+        String pageCode = "import org.grails.gsp.GroovyPage\n" +
         "import org.grails.web.taglib.*\n"+
         "\n"+
         "class test_index_gsp extends GroovyPage {\n"+
@@ -94,7 +97,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
     void testInvokeBodyTag() {
 
-        String pageCode = "import org.grails.web.pages.GroovyPage\n" +
+        String pageCode = "import org.grails.gsp.GroovyPage\n" +
                 "import org.grails.web.taglib.*\n"+
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
@@ -112,7 +115,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
     void testInvokeBodyTagWithUnknownNamespace() throws Exception {
 
-        String pageCode = "import org.grails.web.pages.GroovyPage\n" +
+        String pageCode = "import org.grails.gsp.GroovyPage\n" +
                 "import org.grails.web.taglib.*\n"+
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
@@ -130,7 +133,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
     }
 
     void testInvokeBodyTagAsMethod() {
-        String pageCode = "import org.grails.web.pages.GroovyPage\n" +
+        String pageCode = "import org.grails.gsp.GroovyPage\n" +
                 "import org.grails.web.taglib.*\n"+
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+

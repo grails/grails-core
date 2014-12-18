@@ -15,7 +15,7 @@
 package org.grails.web.pages;
 
 import junit.framework.TestCase;
-import org.grails.web.pages.GroovyPageResourceLoader;
+import org.grails.gsp.GroovyPageResourceLoader;
 
 /**
  * Tests for the development ResourceLoader instance of Groovy Server Pages.

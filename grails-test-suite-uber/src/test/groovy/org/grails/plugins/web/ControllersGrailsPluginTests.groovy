@@ -117,7 +117,7 @@ class FormTagLib {
             bb.setBinding(new Binding(manager:mockManager))
             bb.beans(beans)
             def beanDef = bb.getBeanDefinition('groovyPageResourceLoader')
-            assertEquals "org.grails.web.pages.GroovyPageResourceLoader", beanDef.beanClassName
+            assertEquals "org.grails.gsp.GroovyPageResourceLoader", beanDef.beanClassName
             assertNotNull beanDef.getPropertyValues().getPropertyValue('baseResource')
 
             assertEquals "file:${new File(".").absolutePath}/".toString(), beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
