@@ -28,7 +28,6 @@ import org.springframework.web.servlet.ModelAndView
  * @author mike
  * @author Graeme Rocher
  */
-@CompileStatic
 class FilterConfig implements Controller {
     private static final long serialVersionUID = 4420245320722210200L;
     String name

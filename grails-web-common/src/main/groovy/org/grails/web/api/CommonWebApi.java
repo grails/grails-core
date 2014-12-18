@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import grails.core.GrailsApplication;
+import grails.core.GrailsControllerClass;
 import grails.plugins.GrailsPluginManager;
 import grails.core.support.GrailsApplicationAware;
 import org.grails.encoder.CodecLookupHelper;
@@ -210,7 +211,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * Obtains the currently executing controllerClass
      * @return The controller class
      */
-    public Object getControllerClass(Object instance) {
+    public GrailsControllerClass getControllerClass(Object instance) {
         return currentRequestAttributes().getControllerClass();
     }
 
