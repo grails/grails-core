@@ -101,8 +101,8 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
                 try {
                     final Class<?> viewClass = application.getClassLoader().loadClass(viewClassName);
                     precompiledViewMap.put(viewName, viewClass);
-                } catch (ClassNotFoundException e) {
-                    LOG.error("View not found loading precompiled view from binary plugin ["+this+"]: " + e.getMessage(), e);
+                } catch (Throwable e) {
+                    throw new PluginException("Failed to initialize view ["+viewName+"] from plugin ["+ getName()+ "] : " + e.getMessage(), e);
                 }
             }
         } catch (IOException e) {
