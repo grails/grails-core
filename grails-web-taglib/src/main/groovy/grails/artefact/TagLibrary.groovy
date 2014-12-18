@@ -16,8 +16,6 @@
 package grails.artefact
 
 import grails.artefact.gsp.TagLibraryInvoker
-import grails.core.GrailsApplication
-import grails.core.GrailsTagLibClass
 import grails.util.Environment
 import grails.util.GrailsMetaClassUtils
 import grails.web.api.ServletAttributes
@@ -26,7 +24,6 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.buffer.GrailsPrintWriter
-import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.encoder.Encoder
 import org.grails.web.encoder.OutputEncodingStack
 import org.grails.web.encoder.WithCodecHelper
@@ -41,7 +38,6 @@ import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestAttributes
 
 import javax.annotation.PostConstruct
-
 /**
  * A trait that makes a class into a GSP tag library
  *
