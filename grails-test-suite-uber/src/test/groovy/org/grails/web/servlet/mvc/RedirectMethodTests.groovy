@@ -1,8 +1,6 @@
 package org.grails.web.servlet.mvc
 
 import org.grails.web.servlet.mvc.alpha.NamespacedController
-import org.grails.plugins.web.controllers.api.ControllersApi
-import org.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import grails.web.http.HttpHeaders
 import grails.web.mapping.mvc.exceptions.CannotRedirectException

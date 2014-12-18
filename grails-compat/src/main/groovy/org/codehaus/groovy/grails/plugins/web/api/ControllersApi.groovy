@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 
 /**
  * @author Graeme Rocher
- * @deprecated Use {@link org.grails.plugins.web.controllers.api.ControllersApi} instead
+ * @deprecated Use {@link grails.artefact.Controller} instead
  */
 @Deprecated
 @CompileStatic

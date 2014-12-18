@@ -16,6 +16,8 @@
 package grails.web.api
 
 import grails.core.GrailsApplication
+import grails.core.GrailsControllerClass
+import grails.plugins.GrailsPluginManager
 import grails.web.mvc.FlashScope
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
@@ -57,6 +59,35 @@ trait WebAttributes {
      */
     String getControllerName() {
         currentRequestAttributes().getControllerName()
+    }
+
+    /**
+     * Obtains the currently executing controller namespace
+     * @return The controller name
+     */
+    String getControllerNamespace() {
+        currentRequestAttributes().getControllerNamespace()
+    }
+
+    /**
+     * Obtains the currently executing controller class
+     *
+     * @return The controller class
+     */
+    GrailsControllerClass getControllerClass() {
+        currentRequestAttributes().getControllerClass()
+    }
+
+    /**
+     * Obtains the pluginContextPath
+     *
+     * @param delegate The object the method is being invoked on
+     * @return The plugin context path
+     */
+    String getPluginContextPath() {
+        GrailsPluginManager manager = getGrailsApplication().getMainContext().getBean(GrailsPluginManager.class)
+        final String pluginPath = manager ? manager.getPluginPathForInstance(this) : null
+        return pluginPath ?: ""
     }
 
     /**

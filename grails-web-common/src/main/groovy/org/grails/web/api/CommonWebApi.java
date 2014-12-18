@@ -215,15 +215,6 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
     }
 
     /**
-     * Obtains the currently executing web request
-     *
-     * @return The GrailsWebRequest instance
-     */
-    public GrailsWebRequest getWebRequest(Object instance) {
-        return currentRequestAttributes();
-    }
-
-    /**
      * Obtains the pluginContextPath
      *
      * @param delegate The object the method is being invoked on
@@ -233,6 +224,15 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
         GrailsPluginManager manager = getPluginManagerInternal(delegate);
         final String pluginPath = manager != null ? manager.getPluginPathForInstance(delegate) : null;
         return pluginPath !=null ? pluginPath : "";
+    }
+
+    /**
+     * Obtains the currently executing web request
+     *
+     * @return The GrailsWebRequest instance
+     */
+    public GrailsWebRequest getWebRequest(Object instance) {
+        return currentRequestAttributes();
     }
 
     private GrailsPluginManager getPluginManagerInternal(Object delegate) {

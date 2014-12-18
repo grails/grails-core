@@ -304,8 +304,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
     /**
      * @return the controllerClass
      */
-    public Object getControllerClass() {
-        return getCurrentRequest().getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
+    public GrailsControllerClass getControllerClass() {
+        return (GrailsControllerClass)getCurrentRequest().getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
     }
 
     /**

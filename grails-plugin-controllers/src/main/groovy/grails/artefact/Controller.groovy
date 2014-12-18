@@ -94,10 +94,12 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, Servlet
     private Collection<RedirectEventListener> redirectListeners
     private RequestDataValueProcessor requestDataValueProcessor
     private UrlConverter urlConverter
+    private MimeTypesApiSupport mimeTypesSupport = new MimeTypesApiSupport()
 
     boolean useJessionId = false
     LinkGenerator grailsLinkGenerator
     String gspEncoding = DEFAULT_ENCODING
+
 
     @Autowired(required=false)
     void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
@@ -130,7 +132,6 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, Servlet
      * @return  The result of the closure execution selected
      */
     def <T> T withFormat(Closure<T> callable) {
-        MimeTypesApiSupport mimeTypesSupport = new MimeTypesApiSupport()
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         mimeTypesSupport.withFormat((HttpServletResponse)response, callable)
     }

@@ -14,34 +14,22 @@
  * limitations under the License.
  */
 package org.grails.plugins.web.filters
-
-import grails.artefact.controller.support.RenderHelper
-import grails.core.GrailsApplication
+import grails.artefact.Controller
 import grails.util.GrailsClassUtils
-import grails.web.mvc.FlashScope
-import grails.web.servlet.mvc.GrailsParameterMap
-import org.grails.web.util.GrailsApplicationAttributes
-
-import javax.servlet.ServletContext
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.HttpSession
-
-import org.grails.plugins.web.controllers.api.ControllersApi
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.grails.plugins.web.filters.support.DelegateMetaMethod
 import org.grails.plugins.web.filters.support.FilterConfigDelegateMetaMethodTargetStrategy
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
 import org.springframework.web.servlet.ModelAndView
-
 /**
  * @author mike
  * @author Graeme Rocher
  */
-class FilterConfig extends ControllersApi {
+@CompileStatic
+class FilterConfig implements Controller {
     private static final long serialVersionUID = 4420245320722210200L;
-    private RenderHelper renderHelper = new RenderHelper()
     String name
     Map scope = [:]
     Closure before
@@ -63,12 +51,6 @@ class FilterConfig extends ControllersApi {
     }
 
     /**
-     * Redirects attempt to access an 'errors' property, so we provide
-     * one here with a null value.
-     */
-    def errors = null
-
-    /**
      * This is the filters definition bean that declared the filter
      * config. Since it may contain injected services, etc., we
      * delegate any missing properties or methods to it.
@@ -79,11 +61,12 @@ class FilterConfig extends ControllersApi {
      * When the filter does not have a particular property, it passes
      * the request on to the filter definition class.
      */
+    @CompileDynamic
     def propertyMissing(String propertyName) {
         // Delegate to the parent definition if it has this property.
         if (wiredFiltersDefinition.metaClass.hasProperty(wiredFiltersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            metaClass."$getterName" = {-> delegate.wiredFiltersDefinition.getProperty(propertyName) }
+            metaClass."$getterName" = { -> delegate.wiredFiltersDefinition.getProperty(propertyName) }
             return wiredFiltersDefinition."$propertyName"
         }
 
@@ -95,8 +78,7 @@ class FilterConfig extends ControllersApi {
         final grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name) : null
         if (grailsFilter) {
             applicationContext.getBean(grailsFilter.fullName)
-        }
-        else {
+        } else {
             return filtersDefinition
         }
     }
@@ -105,12 +87,13 @@ class FilterConfig extends ControllersApi {
      * When the filter does not have a particular method, it passes
      * the call on to the filter definition class.
      */
+    @CompileDynamic
     def methodMissing(String methodName, args) {
         // Delegate to the parent definition if it has this method.
         List<MetaMethod> respondsTo = filtersDefinition.metaClass.respondsTo(filtersDefinition, methodName, args)
         if (respondsTo) {
             // Use DelegateMetaMethod to proxy calls to actual MetaMethod for subsequent calls to this method
-            DelegateMetaMethod dmm=new DelegateMetaMethod(respondsTo[0], FilterConfigDelegateMetaMethodTargetStrategy.instance)
+            DelegateMetaMethod dmm = new DelegateMetaMethod(respondsTo[0], FilterConfigDelegateMetaMethodTargetStrategy.instance)
             // register the metamethod to EMC
             metaClass.registerInstanceMethod(dmm)
 
@@ -124,170 +107,16 @@ class FilterConfig extends ControllersApi {
         if (!initialised) {
             throw new IllegalStateException(
                     "Invalid filter definition in ${wiredFiltersDefinition.getClass().name} - trying "
-                    + "to call method '${methodName}' outside of an interceptor.")
+                            + "to call method '${methodName}' outside of an interceptor.")
         }
 
         // The required method was not found on the parent filter definition either.
         throw new MissingMethodException(methodName, wiredFiltersDefinition.getClass(), args)
     }
 
-    String toString() {"FilterConfig[$name, scope=$scope]"}
+    String toString() { "FilterConfig[$name, scope=$scope]" }
 
-    String getActionUri() {
-        return super.getActionUri(this)
-    }
+    @Override
+    Errors getErrors() { null }
 
-    String getControllerUri() {
-        return super.getControllerUri(this)
-    }
-
-    String getTemplateUri(String name) {
-        return super.getTemplateUri(this, name)
-    }
-
-    String getViewUri(String name) {
-        return super.getViewUri(this, name)
-    }
-
-    void setErrors(Errors errors) {
-        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0)
-    }
-
-    Errors getErrors() {
-        currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0)
-    }
-
-    Map getChainModel() {
-        return super.getChainModel(this)
-    }
-
-    boolean hasErrors() {
-        final Errors errors = getErrors()
-        return errors != null && errors.hasErrors()
-    }
-
-    Object redirect(Map args) {
-        return super.redirect(this, args)
-    }
-
-    Object chain(Map args) {
-        return super.chain(this, args)
-    }
-
-    Object render(Object o) {
-        renderHelper.invokeRender this, o
-    }
-
-    Object render(String txt) {
-        renderHelper.invokeRender this, txt
-    }
-
-    Object render(Map args) {
-        renderHelper.invokeRender this, args
-    }
-
-    Object render(Closure c) {
-        renderHelper.invokeRender this, c
-    }
-
-    Object render(Map args, Closure c) {
-        renderHelper.invokeRender this, args, c
-    }
-
-    Object bindData(Object target, Object args) {
-        return super.bindData(this, target, args)
-    }
-
-    Object bindData(Object target, Object args, List disallowed) {
-        return super.bindData(this, target, args, disallowed)
-    }
-
-    Object bindData(Object target, Object args, List disallowed, String filter) {
-        return super.bindData(this, target, args, disallowed, filter)
-    }
-
-    Object bindData(Object target, Object args, Map includeExclude) {
-        return super.bindData(this, target, args, includeExclude)
-    }
-
-    Object bindData(Object target, Object args, Map includeExclude, String filter) {
-        return super.bindData(this, target, args, includeExclude, filter)
-    }
-
-    Object bindData(Object target, Object args, String filter) {
-        return super.bindData(this, target, args, filter)
-    }
-
-    void header(String headerName, Object headerValue) {
-        super.header(this, headerName, headerValue)
-    }
-
-    Object withForm(Closure callable) {
-        return super.withForm(this, callable)
-    }
-
-    String forward(Map params) {
-        return super.forward(this, params)
-    }
-
-    GrailsParameterMap getParams() {
-        return super.getParams(this)
-    }
-
-    FlashScope getFlash() {
-        return super.getFlash(this)
-    }
-
-    HttpSession getSession() {
-        return super.getSession(this)
-    }
-
-    HttpServletRequest getRequest() {
-        return super.getRequest(this)
-    }
-
-    ServletContext getServletContext() {
-        return super.getServletContext(this)
-    }
-
-    HttpServletResponse getResponse() {
-        return super.getResponse(this)
-    }
-
-    GrailsApplicationAttributes getGrailsAttributes() {
-        return super.getGrailsAttributes(this)
-    }
-
-    GrailsApplication getGrailsApplication() {
-        return super.getGrailsApplication(this)
-    }
-
-    ApplicationContext getApplicationContext() {
-        return super.getApplicationContext(this)
-    }
-
-    String getActionName() {
-        return super.getActionName(this)
-    }
-
-    String getControllerName() {
-        return super.getControllerName(this)
-    }
-
-    String getControllerNamespace() {
-        return super.getControllerNamespace(this)
-    }
-
-    Object getControllerClass() {
-        return super.getControllerClass(this)
-    }
-
-
-    GrailsWebRequest getWebRequest() {
-        return super.getWebRequest(this)
-    }
-
-    String getPluginContextPath() {
-        return super.getPluginContextPath(this)
-    }
 }

@@ -24,6 +24,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
+
 /**
  * This class is a temporary placeholder for Controller methods which in their current
  * implementation there are direct references to the servlet api.  This is temporary.
@@ -37,6 +39,10 @@ trait ServletAttributes implements WebAttributes {
 
     HttpServletRequest getRequest() {
         currentRequestAttributes().getCurrentRequest()
+    }
+
+    HttpSession getSession() {
+        return currentRequestAttributes().getSession()
     }
 
     /**
