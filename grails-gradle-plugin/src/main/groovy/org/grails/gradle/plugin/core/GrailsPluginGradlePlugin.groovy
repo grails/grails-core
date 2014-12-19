@@ -110,12 +110,21 @@ withConfig(configuration) {
         }
 
         def javadocTask = projectTasks.findByName('javadoc')
+        def groovydocTask = projectTasks.findByName('groovydoc')
         if(javadocTask) {
+            javadocTask.configure {
+                classpath += project.configurations.provided + sourceSets.ast.output
+            }
+        }
+
+
+        if(groovydocTask) {
             projectTasks.create("javadocJar", Jar).configure {
                 classifier = 'javadoc'
-                from 'build/docs/javadoc'
+                from groovydocTask.outputs
             }.dependsOn(javadocTask)
-            javadocTask.configure {
+
+            groovydocTask.configure {
                 classpath += project.configurations.provided + sourceSets.ast.output
             }
         }
