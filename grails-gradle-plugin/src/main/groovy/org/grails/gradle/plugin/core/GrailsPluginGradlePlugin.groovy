@@ -113,7 +113,8 @@ withConfig(configuration) {
         def groovydocTask = projectTasks.findByName('groovydoc')
         if(javadocTask) {
             javadocTask.configure {
-                classpath += project.configurations.provided + sourceSets.ast.output
+                source += sourceSets.ast.allJava
+                classpath += project.configurations.provided
             }
         }
 
@@ -125,7 +126,8 @@ withConfig(configuration) {
             }.dependsOn(javadocTask)
 
             groovydocTask.configure {
-                classpath += project.configurations.provided + sourceSets.ast.output
+                source += sourceSets.ast.allJava
+                classpath += project.configurations.provided
             }
         }
 

@@ -33,7 +33,6 @@ import org.yaml.snakeyaml.Yaml
  */
 class DocPublisher {
     static final String TOC_FILENAME = "toc.yml"
-    static final LOG = LogFactory.getLog(this)
 
     /** The source directory of the documentation */
     File src
@@ -51,6 +50,10 @@ class DocPublisher {
     File js
     /** The directory cotnaining any templates to use (will override defaults) **/
     File style
+    /**
+     * The properties fie to populate the engine properties from
+     */
+    File propertiesFile
     /** The AntBuilder instance to use */
     AntBuilder ant
     /** The language we're generating for (gets its own sub-directory). Defaults to '' */
@@ -90,7 +93,7 @@ class DocPublisher {
         this(null, null)
     }
 
-    DocPublisher(File src, File target, out = LOG) {
+    DocPublisher(File src, File target, out = LogFactory.getLog(DocPublisher)) {
         this.src = src
         this.target = target
         this.output = out
@@ -465,7 +468,23 @@ class DocPublisher {
             ant = new AntBuilder()
         }
         def metaProps = DocPublisher.metaClass.properties
-        def props = engineProperties
+        def props = engineProperties ?: new Properties()
+        if(propertiesFile?.exists()) {
+            if(propertiesFile.name.endsWith('.properties')) {
+                propertiesFile.withInputStream {
+                    props.load(it)
+                }
+            }
+            else if(propertiesFile.name.endsWith('.yml')) {
+                propertiesFile.withInputStream { input ->
+                    def yml = new Yaml().load(input)
+                    flattenKeys(props, yml,[], true)
+                }
+
+            }
+
+        }
+
         for (MetaProperty mp in metaProps) {
             if (mp.type == String) {
                 def value = props[mp.name]
@@ -479,7 +498,8 @@ class DocPublisher {
         initContext(context, "..")
 
         engine = new DocEngine(context)
-        engine.engineProperties = engineProperties
+
+        engine.engineProperties = props
         context.renderEngine = engine
 
         // Add any custom macros registered with this publisher to the engine.
@@ -488,6 +508,39 @@ class DocPublisher {
                 m.initialContext = context
             }
             engine.addMacro(m)
+        }
+    }
+
+    private void flattenKeys(Map<String, Object> flatConfig, Map currentMap, List<String> path, boolean forceStrings) {
+        currentMap.each { key, value ->
+            String stringKey = String.valueOf(key)
+            if(value != null) {
+                if(value instanceof Map) {
+                    flattenKeys(flatConfig, (Map)value, ((path + [stringKey]) as List<String>).asImmutable(), forceStrings)
+                } else {
+                    String fullKey
+                    if(path) {
+                        fullKey = path.join('.') + '.' + stringKey
+                    } else {
+                        fullKey = stringKey
+                    }
+                    if(value instanceof Collection) {
+                        if(forceStrings) {
+                            flatConfig.put(fullKey, ((Collection)value).join(","))
+                        } else {
+                            flatConfig.put(fullKey, value)
+                        }
+                        int index = 0
+                        for(Object item: (Collection)value) {
+                            String collectionKey = "${fullKey}[${index}]".toString()
+                            flatConfig.put(collectionKey, forceStrings ? String.valueOf(item) : item)
+                            index++
+                        }
+                    } else {
+                        flatConfig.put(fullKey, forceStrings ? String.valueOf(value) : value)
+                    }
+                }
+            }
         }
     }
 

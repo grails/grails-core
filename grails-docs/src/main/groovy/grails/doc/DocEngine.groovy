@@ -101,7 +101,10 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
                 def apiBase = initialContext.get(API_BASE_PATH)
                 if (apiBase) {
-                    def apiDocExists = [ "api", "gapi" ].any { dir -> new File("${apiBase}/${dir}/${ref}.html").exists() }
+                    def apiDocExists = [ "api", "gapi" ].any { dir ->
+                        def path = "${apiBase}/${dir}/${ref}.html"
+                        new File(path).exists()
+                    }
                     if (apiDocExists) return true
                 }
 
