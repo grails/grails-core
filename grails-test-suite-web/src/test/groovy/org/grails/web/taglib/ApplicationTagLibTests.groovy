@@ -496,24 +496,24 @@ app:
         assertOutputEquals 'http://www128.myhost.com:3495/testController/testAction?requestDataValueProcessorParamName=paramValue', template
     }
 
-    void testCreateLinkWithUseJSessionIdAndContextPapth() {
-        unRegisterRequestDataValueProcessor()
-        request.contextPath = "/foo"
-        def taglib = appCtx.getBean(ApplicationTagLib.name)
+//    void testCreateLinkWithUseJSessionIdAndContextPath() {
+//        unRegisterRequestDataValueProcessor()
+//        request.contextPath = "/foo"
+//        def taglib = appCtx.getBean(ApplicationTagLib.name)
+//
+//        taglib.useJsessionId = true
+//        def template = '<g:createLink action="testAction" controller="testController" />'
+//        assertOutputEquals '/foo/testController/testAction', template
+//    }
 
-        taglib.useJsessionId = true
-        def template = '<g:createLink action="testAction" controller="testController" />'
-        assertOutputEquals '/foo/testController/testAction', template
-    }
-
-    void testCreateLinkWithUseJSessionIdAndContextPapthAndRequestDataValueProcessor() {
-        request.contextPath = "/foo"
-        def taglib = appCtx.getBean(ApplicationTagLib.name)
-
-        taglib.useJsessionId = true
-        def template = '<g:createLink action="testAction" controller="testController" />'
-        assertOutputEquals '/foo/testController/testAction?requestDataValueProcessorParamName=paramValue', template
-    }
+//    void testCreateLinkWithUseJSessionIdAndContextPathAndRequestDataValueProcessor() {
+//        request.contextPath = "/foo"
+//        def taglib = appCtx.getBean(ApplicationTagLib.name)
+//
+//        taglib.useJsessionId = true
+//        def template = '<g:createLink action="testAction" controller="testController" />'
+//        assertOutputEquals '/foo/testController/testAction?requestDataValueProcessorParamName=paramValue', template
+//    }
 
     void testCreateLinkWithContextPath() {
         unRegisterRequestDataValueProcessor()

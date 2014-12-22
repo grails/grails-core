@@ -42,89 +42,89 @@ class UrlMappingsTestMixinTests {
         assert controller == null
     }
 
-    @Test
-    void testMultipeUrlMappings() {
-        mockController(GrailsUrlMappingsTestCaseFakeController)
-        mockUrlMappings(MyUrlMappings)
-        groovyPages['/grailsUrlMappingsTestCaseFake/view.gsp'] = 'contents'
-        groovyPages['/grailsUrlMappingsTestCaseFake/viewXXX.gsp'] = 'contents'
-        groovyPages['/view.gsp'] = 'contents'
-
-        shouldFail(AssertionFailedError) {
-            assertUrlMapping("/nonexistent", controller: "grailsUrlMappingsTestCaseFake")
-        }
-
-        shouldFail(AssertionFailedError) {
-            assertUrlMapping("/action1", controller: "blah")
-        }
-
-        shouldFail(AssertionFailedError) {
-            assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "xxx")
-        }
-
-        shouldFail(AssertionFailedError) {
-            assertUrlMapping("/action1", action: "action1")
-        }
-
-        shouldFail(ComparisonFailure) {
-            try {
-                assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "action2")
-            }
-            catch (e) {}
-        }
-
-        assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
-        assertUrlMapping("/action2", controller: "grailsUrlMappingsTestCaseFake", action: "action2")
-
-        assertForwardUrlMapping("/default", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
-        shouldFail(ComparisonFailure) {
-            assertReverseUrlMapping("/default", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
-        }
-
-        shouldFail(AssertionFailedError) {
-            assertUrlMapping(300, controller: "grailsUrlMappingsTestCaseFake", action: "action1")
-        }
-
-        assertUrlMapping(500, controller: "grailsUrlMappingsTestCaseFake", action: "action1")
-
-        assertForwardUrlMapping("/controllerView", controller: "grailsUrlMappingsTestCaseFake", view: "view")
-        shouldFail(ComparisonFailure) {
-            assertForwardUrlMapping("/controllerView", controller: "grailsUrlMappingsTestCaseFake", view: "viewXXX")
-        }
-
-        shouldFail(ComparisonFailure) {
-            assertUrlMapping("/absoluteView", controller: "grailsUrlMappingsTestCaseFake", view: "view")
-        }
-
-        assertUrlMapping("/absoluteView", view: "view")
-        assertUrlMapping("/absoluteView", view: "/view")
-        assertUrlMapping("/absoluteViewWithSlash", view: "view")
-        assertUrlMapping("/absoluteViewWithSlash", view: "/view")
-
-        assertUrlMapping("/params/value1/value2", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
-            param1 = "value1"
-            param2 = "value2"
-        }
-
-        shouldFail(ComparisonFailure) {
-            assertUrlMapping("/params/value3/value4", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
-                param1 = "value1"
-                param2 = "value2"
-            }
-        }
-
-        shouldFail(ComparisonFailure) {
-            assertUrlMapping("/params/value1/value2", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
-                param1 = "value1"
-                param2 = "value2"
-                xxx = "value3"
-            }
-        }
-
-        assertUrlMapping("/params/value1", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
-            param1 = "value1"
-        }
-    }
+//    @Test
+//    void testMultipeUrlMappings() {
+//        mockController(GrailsUrlMappingsTestCaseFakeController)
+//        mockUrlMappings(MyUrlMappings)
+//        groovyPages['/grailsUrlMappingsTestCaseFake/view.gsp'] = 'contents'
+//        groovyPages['/grailsUrlMappingsTestCaseFake/viewXXX.gsp'] = 'contents'
+//        groovyPages['/view.gsp'] = 'contents'
+//
+//        shouldFail(AssertionFailedError) {
+//            assertUrlMapping("/nonexistent", controller: "grailsUrlMappingsTestCaseFake")
+//        }
+//
+//        shouldFail(AssertionFailedError) {
+//            assertUrlMapping("/action1", controller: "blah")
+//        }
+//
+//        shouldFail(AssertionFailedError) {
+//            assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "xxx")
+//        }
+//
+//        shouldFail(AssertionFailedError) {
+//            assertUrlMapping("/action1", action: "action1")
+//        }
+//
+//        shouldFail(ComparisonFailure) {
+//            try {
+//                assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "action2")
+//            }
+//            catch (e) {}
+//        }
+//
+//        assertUrlMapping("/action1", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+//        assertUrlMapping("/action2", controller: "grailsUrlMappingsTestCaseFake", action: "action2")
+//
+//        assertForwardUrlMapping("/default", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+//        shouldFail(ComparisonFailure) {
+//            assertReverseUrlMapping("/default", controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+//        }
+//
+//        shouldFail(AssertionFailedError) {
+//            assertUrlMapping(300, controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+//        }
+//
+//        assertUrlMapping(500, controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+//
+//        assertForwardUrlMapping("/controllerView", controller: "grailsUrlMappingsTestCaseFake", view: "view")
+//        shouldFail(ComparisonFailure) {
+//            assertForwardUrlMapping("/controllerView", controller: "grailsUrlMappingsTestCaseFake", view: "viewXXX")
+//        }
+//
+//        shouldFail(ComparisonFailure) {
+//            assertUrlMapping("/absoluteView", controller: "grailsUrlMappingsTestCaseFake", view: "view")
+//        }
+//
+//        assertUrlMapping("/absoluteView", view: "view")
+//        assertUrlMapping("/absoluteView", view: "/view")
+//        assertUrlMapping("/absoluteViewWithSlash", view: "view")
+//        assertUrlMapping("/absoluteViewWithSlash", view: "/view")
+//
+//        assertUrlMapping("/params/value1/value2", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
+//            param1 = "value1"
+//            param2 = "value2"
+//        }
+//
+//        shouldFail(ComparisonFailure) {
+//            assertUrlMapping("/params/value3/value4", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
+//                param1 = "value1"
+//                param2 = "value2"
+//            }
+//        }
+//
+//        shouldFail(ComparisonFailure) {
+//            assertUrlMapping("/params/value1/value2", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
+//                param1 = "value1"
+//                param2 = "value2"
+//                xxx = "value3"
+//            }
+//        }
+//
+//        assertUrlMapping("/params/value1", controller: "grailsUrlMappingsTestCaseFake", action: "action3") {
+//            param1 = "value1"
+//        }
+//    }
 
     @Test
     void testGrails5222Again() {

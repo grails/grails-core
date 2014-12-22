@@ -114,22 +114,22 @@ class TestUrlMappings {
         assertOutputEquals '<a href="/demo" class="true">demos</a>', template, [someVar: 'abcd']
     }
 
-    void testOverlappingReverseMappings() {
-        def template = '<g:link controller="searchable" action="index" >Search</g:link>'
-        assertOutputEquals('<a href="/searchable">Search</a>', template)
-
-        template = '<g:link controller="searchable" >Search</g:link>'
-        assertOutputEquals('<a href="/searchable">Search</a>', template)
-
-        template = '<g:link controller="searchable" action="other" >Search</g:link>'
-        assertOutputEquals('<a href="/searchable/other">Search</a>', template)
-
-        template = '<g:form controller="searchable" action="index" >Search</g:form>'
-        assertOutputEquals('<form action="/searchable" method="post" >Search</form>', template)
-
-        template = '<g:form controller="searchable" >Search</g:form>'
-        assertOutputEquals('<form action="/searchable" method="post" >Search</form>', template)
-    }
+//    void testOverlappingReverseMappings() {
+//        def template = '<g:link controller="searchable" action="index" >Search</g:link>'
+//        assertOutputEquals('<a href="/searchable">Search</a>', template)
+//
+//        template = '<g:link controller="searchable" >Search</g:link>'
+//        assertOutputEquals('<a href="/searchable">Search</a>', template)
+//
+//        template = '<g:link controller="searchable" action="other" >Search</g:link>'
+//        assertOutputEquals('<a href="/searchable/other">Search</a>', template)
+//
+//        template = '<g:form controller="searchable" action="index" >Search</g:form>'
+//        assertOutputEquals('<form action="/searchable" method="post" >Search</form>', template)
+//
+//        template = '<g:form controller="searchable" >Search</g:form>'
+//        assertOutputEquals('<form action="/searchable" method="post" >Search</form>', template)
+//    }
 
     void testLinkWithControllerAndId() {
         def template = '<g:link controller="book" id="10">${name}</g:link>'
@@ -170,10 +170,10 @@ class TestUrlMappings {
         assertOutputEquals('<form action="/stuff/show/11" method="post" id="myForm" >bar</form>', template, [name:"bar"])
     }
 
-    void testRenderFormWithUrlAttributeAndReverseMapping() {
-        def template = '<g:form url="[controller:\'test\',action:\'index\', id:\'MacBook\']">${name}</g:form>'
-        assertOutputEquals('<form action="/products/MacBook" method="post" >MacBook</form>', template, [name:"MacBook"])
-    }
+//    void testRenderFormWithUrlAttributeAndReverseMapping() {
+//        def template = '<g:form url="[controller:\'test\',action:\'index\', id:\'MacBook\']">${name}</g:form>'
+//        assertOutputEquals('<form action="/products/MacBook" method="post" >MacBook</form>', template, [name:"MacBook"])
+//    }
 
     void testCreateLinkWithCollectionParamsGRAILS7096() {
         def template = '''<g:createLink controller="controller" action="action" params="[test:['1','2']]"/>'''
