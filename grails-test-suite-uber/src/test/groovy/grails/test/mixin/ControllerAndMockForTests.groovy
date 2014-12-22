@@ -1,6 +1,7 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
+import grails.test.runtime.DirtiesRuntime
 
 /**
  *
@@ -16,6 +17,7 @@ class ControllerAndMockForTests {
      * Leave this test in, and testIndexWithoutUsingMockForAgain will fail.
      * Comment this test out, and the other 2 tests will work
      */
+    @DirtiesRuntime
     void testIndexUsingMockFor() {
         def mockForUtilsControl = mockFor(MockForUtils)
         mockForUtilsControl.demand.static.isMockForWorking(1..1) {->
