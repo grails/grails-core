@@ -7,11 +7,14 @@ import org.junit.Test
 @TestMixin(DomainClassUnitTestMixin)
 class DomainClassWithDefaultConstraintsUnitTestMixinTests {
 
+    static doWithConfig(c) {
+        c.grails.gorm.default.constraints = {
+            '*'(nullable:true)
+        }
+    }
+
     @Test
     void testCreateDomainSingleLineWithConfigHavingNullableTrueForAllProperties() {
-        grailsApplication.config.grails.gorm.default.constraints = {
-           '*'(nullable:true)
-        }
         mockDomain(DomainWithDefaultConstraints)
         mockForConstraintsTests(DomainWithDefaultConstraints)
         assert new DomainWithDefaultConstraints(name:"My test").save(flush:true) != null
