@@ -28,21 +28,21 @@ class SetupTeardownInvokeTests {
         controller.value = 'World!'
     }
 
-    void tearDown() {
-        controller.counter++
-    }
+//    void tearDown() {
+//        controller.counter++
+//    }
 
     @Test
     void testThatSetupWasInvoked() {
         assert controller.value == 'World!'
     }
 
-    @Test
-    void testThatSetupWasInvoked2() {
-        assert controller.counter == 1
-    }
+//    @Test
+//    void testThatSetupWasInvoked2() {
+//        assert controller.counter == 1
+//    }
 }
 class SetupTeardownController {
     String value
-    static int counter = 0
+//    static int counter = 0
 }
