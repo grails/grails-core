@@ -92,7 +92,7 @@ public class GrailsAwareTraitInjectionOperation extends
             boolean implementsTrait = false;
             boolean traitNotLoaded = false;
             try {
-                implementsTrait = classNode.implementsInterface(traitClassNode);
+                implementsTrait = classNode.declaresInterface(traitClassNode);
             } catch (Throwable e) {
                 // if we reach this point, the trait injector could not be loaded due to missing dependencies (for example missing servlet-api). This is ok, as we want to be able to compile against non-servlet environments.
                 traitNotLoaded = true;
