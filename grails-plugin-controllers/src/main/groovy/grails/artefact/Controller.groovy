@@ -131,7 +131,7 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, Servlet
      * @param callable
      * @return  The result of the closure execution selected
      */
-    def <T> T withFormat(Closure<T> callable) {
+    def withFormat(Closure callable) {
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         mimeTypesSupport.withFormat((HttpServletResponse)response, callable)
     }
