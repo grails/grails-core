@@ -44,7 +44,7 @@ public @interface Resource {
     /**
      * @return The allowed response formats
      */
-    String[] formats() default ["xml", 'json']
+    String[] formats() default ['json', "xml"]
 
     /**
      * @return The URI of the resource. If specified a {@link grails.web.mapping.UrlMapping} will automatically be registered for the resource
