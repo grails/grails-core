@@ -13,26 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.support;
+package org.grails.gsp;
 
 import grails.io.IOUtils;
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.net.URL;
-
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.grails.buffer.StreamByteBuffer;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
+import org.grails.buffer.StreamByteBuffer;
 import org.springframework.core.io.Resource;
+
+import java.io.*;
+import java.net.URL;
 
 /**
  * An abstract TemplateEngine that extends the default Groovy TemplateEngine (@see groovy.text.TemplateEngine) and

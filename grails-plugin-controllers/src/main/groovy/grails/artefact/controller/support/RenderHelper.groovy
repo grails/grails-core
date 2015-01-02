@@ -42,7 +42,7 @@ import org.grails.web.servlet.view.GroovyPageView
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.sitemesh.GrailsLayoutView
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.grails.web.support.ResourceAwareTemplateEngine
+import org.grails.gsp.ResourceAwareTemplateEngine
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.context.ApplicationContext

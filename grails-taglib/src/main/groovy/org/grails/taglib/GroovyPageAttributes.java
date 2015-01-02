@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib;
+package org.grails.taglib;
+
+import grails.util.TypeConvertingMap;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import grails.web.util.TypeConvertingMap;
 
 /**
  * Defines attributes passed to a GSP tag. Mixes in TypeConvertingMap for ease of type conversion.

@@ -1,4 +1,4 @@
-package org.grails.gsp.io
+package org.grails.web.gsp.io
 
 import grails.core.DefaultGrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
@@ -7,6 +7,8 @@ import grails.util.GrailsUtil
 import grails.util.GrailsWebMockUtil
 import org.grails.core.io.SimpleMapResourceLoader
 import org.grails.gsp.compiler.GroovyPageParser
+import org.grails.gsp.io.GroovyPageCompiledScriptSource
+import org.grails.gsp.io.GroovyPageResourceScriptSource
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.BinaryGrailsPluginDescriptor
 import org.grails.plugins.CoreGrailsPlugin
@@ -203,7 +205,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
 <plugin name='testBinary'>
   <class>TestBinaryGrailsPlugin</class>
   <resources>
-         <resource>org.grails.gsp.io.TestBinaryResource</resource>
+         <resource>org.grails.web.gsp.io.TestBinaryResource</resource>
   </resources>
 </plugin>
 '''

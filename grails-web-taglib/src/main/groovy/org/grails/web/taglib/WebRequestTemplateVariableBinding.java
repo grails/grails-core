@@ -16,15 +16,16 @@
 package org.grails.web.taglib;
 
 import grails.util.Environment;
+import groovy.lang.Binding;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.grails.taglib.AbstractTemplateVariableBinding;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * Script binding to be used as the top-level binding in GSP evaluation.
@@ -101,8 +102,26 @@ public class WebRequestTemplateVariableBinding extends AbstractTemplateVariableB
         this.webRequest = webRequest;
     }
 
+    public Binding findBindingForVariable(String name) {
+        Binding binding = super.findBindingForVariable(name);
+        if(binding == null) {
+            if(webRequest.getCurrentRequest().getAttribute(name) != null) {
+                requestAttributeVariables.add(name);
+                binding = this;
+            }
+        }
+        if(binding == null && lazyRequestBasedValuesMap.containsKey(name)) {
+            binding = this;
+        }
+        return binding;
+    }
+
     public boolean isRequestAttributeVariable(String name) {
         return requestAttributeVariables.contains(name);
+    }
+
+    public boolean isVariableCachingAllowed(String name) {
+        return !isRequestAttributeVariable(name);
     }
 
     @Override

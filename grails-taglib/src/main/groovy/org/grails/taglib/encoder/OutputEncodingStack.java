@@ -22,50 +22,48 @@ import org.grails.buffer.GrailsLazyProxyPrintWriter;
 import org.grails.buffer.GrailsLazyProxyPrintWriter.DestinationFactory;
 import org.grails.buffer.GrailsWrappedWriter;
 import org.grails.encoder.*;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Stack;
 
 public final class OutputEncodingStack {
-
     public static final Log log = LogFactory.getLog(OutputEncodingStack.class);
 
     private static final String ATTRIBUTE_NAME_OUTPUT_STACK="org.grails.taglib.encoder.OUTPUT_ENCODING_STACK";
+
+    private final OutputContext outputContext;
 
     public static OutputEncodingStack currentStack() {
         return currentStack(true);
     }
 
-    public static OutputEncodingStack currentStack(GrailsWebRequest request) {
-        return currentStack(request, true);
+    public static OutputEncodingStack currentStack(OutputContext outputContext) {
+        return currentStack(outputContext, true);
     }
 
     public static OutputEncodingStack currentStack(boolean allowCreate) {
-        return currentStack(GrailsWebRequest.lookup(), allowCreate);
+        return currentStack(OutputContextLookupHelper.lookupOutputContext(), allowCreate);
     }
 
-    public static OutputEncodingStack currentStack(GrailsWebRequest request, boolean allowCreate) {
-        OutputEncodingStack outputStack = lookupStack(request);
+    public static OutputEncodingStack currentStack(OutputContext outputContext, boolean allowCreate) {
+        OutputEncodingStack outputStack = lookupStack(outputContext);
         if (outputStack == null && allowCreate) {
-            outputStack = currentStack(request, allowCreate, null, allowCreate, false);
+            outputStack = currentStack(outputContext, allowCreate, null, allowCreate, false);
         }
         return outputStack;
     }
 
     public static OutputEncodingStack currentStack(boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
-        return currentStack(GrailsWebRequest.lookup(), allowCreate, topWriter, autoSync, pushTop);
+        return currentStack(OutputContextLookupHelper.lookupOutputContext(), allowCreate, topWriter, autoSync, pushTop);
     }
 
-    public static OutputEncodingStack currentStack(GrailsWebRequest request, boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
-        return currentStack(new OutputEncodingStackAttributes.Builder().webRequest(request).allowCreate(allowCreate).topWriter(topWriter).autoSync(autoSync).pushTop(pushTop).build());
+    public static OutputEncodingStack currentStack(OutputContext outputContext, boolean allowCreate, Writer topWriter, boolean autoSync, boolean pushTop) {
+        return currentStack(new OutputEncodingStackAttributes.Builder().outputContext(outputContext).allowCreate(allowCreate).topWriter(topWriter).autoSync(autoSync).pushTop(pushTop).build());
     }
 
     public static OutputEncodingStack currentStack(OutputEncodingStackAttributes attributes) {
-        OutputEncodingStack outputStack = lookupStack(attributes.getWebRequest());
+        OutputEncodingStack outputStack = lookupStack(attributes.getOutputContext());
         if (outputStack != null) {
             if (attributes.isPushTop()) {
                 outputStack.push(attributes, false);
@@ -82,23 +80,16 @@ public final class OutputEncodingStack {
 
     private static final OutputEncodingStack createNew(OutputEncodingStackAttributes attributes) {
         if (attributes.getTopWriter() == null) {
-            attributes=new OutputEncodingStackAttributes.Builder(attributes).topWriter(lookupRequestWriter(attributes.getWebRequest())).build();
+            attributes=new OutputEncodingStackAttributes.Builder(attributes).topWriter(lookupCurrentWriter(attributes.getOutputContext())).build();
         }
         OutputEncodingStack instance = new OutputEncodingStack(attributes);
-        attributes.getWebRequest().setAttribute(
-                ATTRIBUTE_NAME_OUTPUT_STACK, instance, RequestAttributes.SCOPE_REQUEST);
+        attributes.getOutputContext().setCurrentOutputEncodingStack(instance);
         return instance;
     }
 
-    private static OutputEncodingStack lookupStack(GrailsWebRequest webRequest) {
-        OutputEncodingStack outputStack = (OutputEncodingStack) webRequest.getAttribute(
-                ATTRIBUTE_NAME_OUTPUT_STACK, RequestAttributes.SCOPE_REQUEST);
+    private static OutputEncodingStack lookupStack(OutputContext outputContext) {
+        OutputEncodingStack outputStack = (OutputEncodingStack) outputContext.getCurrentOutputEncodingStack();
         return outputStack;
-    }
-
-    public static final void removeCurrentInstance() {
-        RequestContextHolder.currentRequestAttributes().removeAttribute(
-                ATTRIBUTE_NAME_OUTPUT_STACK, RequestAttributes.SCOPE_REQUEST);
     }
 
     public static final Writer currentWriter() {
@@ -107,17 +98,17 @@ public final class OutputEncodingStack {
             return outputStack.getOutWriter();
         }
 
-        return lookupRequestWriter();
+        return lookupCurrentWriter();
     }
 
-    private static Writer lookupRequestWriter() {
-        GrailsWebRequest webRequest=GrailsWebRequest.lookup();
-        return lookupRequestWriter(webRequest);
+    private static Writer lookupCurrentWriter() {
+        OutputContext outputContext=OutputContextLookupHelper.lookupOutputContext();
+        return lookupCurrentWriter(outputContext);
     }
 
-    private static Writer lookupRequestWriter(GrailsWebRequest webRequest) {
-        if (webRequest != null) {
-            return webRequest.getOut();
+    private static Writer lookupCurrentWriter(OutputContext outputContext) {
+        if (outputContext != null) {
+            return outputContext.getCurrentWriter();
         }
         return null;
     }
@@ -251,7 +242,8 @@ public final class OutputEncodingStack {
         if (!autoSync) {
             applyWriterThreadLocals(outWriter);
         }
-        this.encodingStateRegistry = attributes.getWebRequest().getEncodingStateRegistry();
+        this.encodingStateRegistry = attributes.getOutputContext().getEncodingStateRegistry();
+        this.outputContext = attributes.getOutputContext() != null ?  attributes.getOutputContext() : OutputContextLookupHelper.lookupOutputContext();
     }
 
     private Writer unwrapTargetWriter(Writer targetWriter) {
@@ -418,13 +410,16 @@ public final class OutputEncodingStack {
     }
 
     private void applyWriterThreadLocals(Writer writer) {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if (webRequest != null) {
-            webRequest.setOut(writer);
+        if(outputContext != null) {
+            outputContext.setCurrentWriter(writer);
         }
     }
 
     public void flushActiveWriter() {
         writerGroup.flushActive();
+    }
+
+    public OutputContext getOutputContext() {
+        return outputContext;
     }
 }

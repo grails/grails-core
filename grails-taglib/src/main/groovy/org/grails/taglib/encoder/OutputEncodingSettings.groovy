@@ -106,11 +106,11 @@ class OutputEncodingSettings {
     }
 
     private Map getConfigForPrefix(String gspCodecsPrefix) {
-        Map codecSettings = (Map)flatConfig.inject([:]){ Map map, key, value ->
-            if(key instanceof CharSequence) {
-                String mapKey = key.toString()
+        Map codecSettings = (Map)flatConfig.inject([:]){ Map map, Map.Entry entry ->
+            if(entry.getKey() instanceof CharSequence) {
+                String mapKey = entry.getKey().toString()
                 if(mapKey.startsWith(gspCodecsPrefix)) {
-                    map.put(mapKey.substring(gspCodecsPrefix.length()), value)
+                    map.put(mapKey.substring(gspCodecsPrefix.length()), entry.getValue())
                 }
             }
             map

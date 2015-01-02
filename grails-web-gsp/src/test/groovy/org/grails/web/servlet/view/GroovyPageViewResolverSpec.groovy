@@ -2,7 +2,7 @@ package org.grails.web.servlet.view
 
 import grails.util.GrailsWebMockUtil
 import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.View

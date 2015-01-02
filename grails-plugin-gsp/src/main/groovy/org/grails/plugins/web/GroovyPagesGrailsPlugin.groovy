@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package org.grails.plugins.web
-
 import grails.config.Config
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
@@ -30,27 +29,26 @@ import org.grails.buffer.StreamCharBufferMetaUtils
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.gsp.GroovyPageResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.gsp.GroovyPagesTemplateRenderer
-import org.grails.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.grails.gsp.io.CachingGroovyPageStaticResourceLocator
 import org.grails.gsp.jsp.TagLibraryResolverImpl
 import org.grails.plugins.web.taglib.*
 import org.grails.spring.RuntimeSpringConfiguration
+import org.grails.taglib.TagLibraryLookup
+import org.grails.taglib.TagLibraryMetaUtils
 import org.grails.web.errors.ErrorsViewStackTracePrinter
 import org.grails.web.filters.JavascriptLibraryHandlerInterceptor
+import org.grails.web.gsp.GroovyPagesTemplateRenderer
+import org.grails.web.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.grails.web.pages.GroovyPagesServlet
 import org.grails.web.servlet.view.GroovyPageViewResolver
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.grails.web.taglib.TagLibraryLookup
-import org.grails.web.taglib.util.TagLibraryMetaUtils
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
-
 /**
  * Sets up and configures the GSP and GSP tag library support in Grails.
  *

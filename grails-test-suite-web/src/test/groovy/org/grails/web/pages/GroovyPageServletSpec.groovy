@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse
 
 import org.grails.support.MockApplicationContext
 import org.grails.core.io.SimpleMapResourceLoader
-import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.ByteArrayResource

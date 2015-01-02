@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.gsp.io;
+package org.grails.web.gsp.io;
 
 import grails.util.CacheEntry;
 import org.grails.gsp.GroovyPageBinding;
-import org.grails.web.taglib.TemplateVariableBinding;
+import org.grails.gsp.io.GroovyPageCompiledScriptSource;
+import org.grails.gsp.io.GroovyPageResourceScriptSource;
+import org.grails.gsp.io.GroovyPageScriptSource;
+import org.grails.taglib.TemplateVariableBinding;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.util.HashSet;

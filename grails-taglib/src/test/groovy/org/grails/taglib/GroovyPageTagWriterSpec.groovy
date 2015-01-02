@@ -1,5 +1,6 @@
-package org.grails.web.taglib
+package org.grails.taglib
 
+import org.grails.taglib.GroovyPageTagWriter
 import spock.lang.Issue
 import spock.lang.Specification
 

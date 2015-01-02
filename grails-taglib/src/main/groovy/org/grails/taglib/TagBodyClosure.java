@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib;
+package org.grails.taglib;
 
-import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import org.grails.taglib.encoder.OutputContext;
 import org.grails.taglib.encoder.OutputEncodingStack;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.util.Assert;
 
 import java.io.Writer;
@@ -39,18 +38,18 @@ public class TagBodyClosure extends Closure {
     private static final long serialVersionUID = 4396762064131558457L;
     private static final Class[] PARAMETER_TYPES = new Class[]{Map.class};
     private Closure<?> bodyClosure;
-    private GrailsWebRequest webRequest;
+    private OutputContext outputContext;
 
-    public TagBodyClosure(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure) {
-        this(owner, webRequest, bodyClosure, false);
+    public TagBodyClosure(Object owner, OutputContext outputContext, Closure<?> bodyClosure) {
+        this(owner, outputContext, bodyClosure, false);
     }
 
-    public TagBodyClosure(Object owner, GrailsWebRequest webRequest,
+    public TagBodyClosure(Object owner, OutputContext outputContext,
                           Closure<?> bodyClosure, boolean changeBodyClosureOwner) {
         super(owner);
 
         Assert.notNull(bodyClosure, "Argument [bodyClosure] cannot be null!");
-        Assert.notNull(webRequest, "Argument [webRequest] cannot be null!");
+        Assert.notNull(outputContext, "Argument [outputContext] cannot be null!");
 
         if (changeBodyClosureOwner && bodyClosure != null && !(bodyClosure instanceof TagOutput.ConstantClosure)) {
             this.bodyClosure = bodyClosure.rehydrate(bodyClosure.getDelegate(), owner, bodyClosure.getThisObject());
@@ -58,13 +57,12 @@ public class TagBodyClosure extends Closure {
         } else {
             this.bodyClosure = bodyClosure;
         }
-        this.webRequest = webRequest;
+        this.outputContext = outputContext;
     }
 
     private Object captureClosureOutput(Object args, boolean hasArgument) {
         final GroovyPageTagWriter capturedOut = new GroovyPageTagWriter();
-        Binding currentBinding = (Binding)webRequest.getCurrentRequest().getAttribute(
-                GrailsApplicationAttributes.PAGE_SCOPE);
+        Binding currentBinding = outputContext.getBinding();
         Map<String,Object> savedVariablesMap = null;
         Object originalIt = null;
         try {
@@ -178,8 +176,8 @@ public class TagBodyClosure extends Closure {
     }
 
     private void popCapturedOut() {
-        if (webRequest != null && webRequest.isActive()) {
-            OutputEncodingStack.currentStack(webRequest).pop();
+        if (outputContext != null) {
+            OutputEncodingStack.currentStack(outputContext).pop();
         }
         else {
             OutputEncodingStack.currentStack().pop();
@@ -187,8 +185,8 @@ public class TagBodyClosure extends Closure {
     }
 
     private void pushCapturedOut(GroovyPageTagWriter capturedOut) {
-        if (webRequest != null && webRequest.isActive()) {
-            OutputEncodingStack.currentStack(webRequest).push(capturedOut);
+        if (outputContext != null) {
+            OutputEncodingStack.currentStack(outputContext).push(capturedOut);
         }
         else {
             OutputEncodingStack.currentStack().push(capturedOut);

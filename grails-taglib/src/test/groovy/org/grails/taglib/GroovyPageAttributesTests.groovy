@@ -1,6 +1,4 @@
-package org.grails.web.taglib
-
-import org.grails.web.taglib.GroovyPageAttributes
+package org.grails.taglib
 
 class GroovyPageAttributesTests extends GroovyTestCase {
 

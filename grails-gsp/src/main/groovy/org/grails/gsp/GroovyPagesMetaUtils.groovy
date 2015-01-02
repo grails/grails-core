@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 package org.grails.gsp
-
 import grails.util.Environment
 import grails.util.GrailsMetaClassUtils
 import groovy.transform.CompileStatic
-import org.grails.web.taglib.TagLibraryLookup
-import org.grails.web.taglib.util.TagLibraryMetaUtils
+import org.grails.taglib.TagLibraryLookup
+import org.grails.taglib.TagLibraryMetaUtils
 
 @CompileStatic
 class GroovyPagesMetaUtils {

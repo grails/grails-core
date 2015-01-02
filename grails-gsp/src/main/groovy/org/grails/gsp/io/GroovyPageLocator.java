@@ -15,7 +15,7 @@
  */
 package org.grails.gsp.io;
 
-import org.grails.web.taglib.TemplateVariableBinding;
+import org.grails.taglib.TemplateVariableBinding;
 import org.springframework.core.io.ResourceLoader;
 
 /**

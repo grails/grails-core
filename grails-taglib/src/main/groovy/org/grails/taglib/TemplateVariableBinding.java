@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib;
+package org.grails.taglib;
 
 import groovy.lang.Binding;
 import org.apache.commons.logging.Log;
@@ -34,8 +34,6 @@ public class TemplateVariableBinding extends AbstractTemplateVariableBinding {
     private Binding parent;
     private Object owner;
     private Set<String> cachedParentVariableNames=new HashSet<String>();
-    private WebRequestTemplateVariableBinding pageRequestBinding;
-    private boolean pageRequestBindingInitialized=false;
     private boolean root;
 
     public TemplateVariableBinding() {
@@ -60,24 +58,6 @@ public class TemplateVariableBinding extends AbstractTemplateVariableBinding {
         return getVariable(property);
     }
 
-    private WebRequestTemplateVariableBinding findPageRequestBinding() {
-        if (!pageRequestBindingInitialized && parent != null) {
-            Binding nextParent = parent;
-            while(nextParent != null && pageRequestBinding==null) {
-                if (nextParent instanceof WebRequestTemplateVariableBinding) {
-                    pageRequestBinding = (WebRequestTemplateVariableBinding)nextParent;
-                }
-                if (nextParent instanceof TemplateVariableBinding) {
-                    nextParent = ((TemplateVariableBinding)nextParent).parent;
-                } else {
-                    nextParent = null;
-                }
-            }
-            pageRequestBindingInitialized=true;
-        }
-        return pageRequestBinding;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Object getVariable(String name) {
@@ -85,10 +65,11 @@ public class TemplateVariableBinding extends AbstractTemplateVariableBinding {
         if (val == null && !getVariablesMap().containsKey(name)) {
             if ("variables".equals(name)) return getVariables();
             if ("metaClass".equals(name)) return getMetaClass();
-            if (parent != null) {
-                val = parent.getVariable(name);
+            Binding variableBinding = findBindingForVariable(name);
+            if (variableBinding != null) {
+                val = variableBinding.getVariable(name);
                 if (val != null) {
-                    if (findPageRequestBinding() == null || !findPageRequestBinding().isRequestAttributeVariable(name)) {
+                    if (!(variableBinding instanceof AbstractTemplateVariableBinding) || ((AbstractTemplateVariableBinding)variableBinding).isVariableCachingAllowed(name)) {
                         // cache variable in this context since parent context cannot change during usage of this context
                         getVariablesMap().put(name, val);
                         cachedParentVariableNames.add(name);
@@ -110,10 +91,10 @@ public class TemplateVariableBinding extends AbstractTemplateVariableBinding {
      * @param name
      * @return The binding
      */
-    private Binding findBindingForVariable(String name) {
+    public Binding findBindingForVariable(String name) {
         if (cachedParentVariableNames.contains(name)) {
-            if (parent instanceof TemplateVariableBinding) {
-                return ((TemplateVariableBinding)parent).findBindingForVariable(name);
+            if (parent instanceof AbstractTemplateVariableBinding) {
+                return ((AbstractTemplateVariableBinding)parent).findBindingForVariable(name);
             }
             return parent;
         }
@@ -122,8 +103,8 @@ public class TemplateVariableBinding extends AbstractTemplateVariableBinding {
             return this;
         }
 
-        if (parent instanceof TemplateVariableBinding) {
-            return ((TemplateVariableBinding)parent).findBindingForVariable(name);
+        if (parent instanceof AbstractTemplateVariableBinding) {
+            return ((AbstractTemplateVariableBinding)parent).findBindingForVariable(name);
         }
 
         if (parent != null && parent.getVariables().containsKey(name)) {

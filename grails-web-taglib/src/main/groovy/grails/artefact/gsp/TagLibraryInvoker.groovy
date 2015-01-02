@@ -20,10 +20,10 @@ import grails.util.GrailsMetaClassUtils
 import grails.web.api.WebAttributes
 import groovy.transform.CompileStatic
 import org.grails.taglib.encoder.WithCodecHelper
-import org.grails.web.taglib.NamespacedTagDispatcher
-import org.grails.web.taglib.TagLibraryLookup
-import org.grails.web.taglib.TagOutput
-import org.grails.web.taglib.util.TagLibraryMetaUtils
+import org.grails.taglib.NamespacedTagDispatcher
+import org.grails.taglib.TagLibraryLookup
+import org.grails.taglib.TagOutput
+import org.grails.taglib.TagLibraryMetaUtils
 import org.springframework.beans.factory.annotation.Autowired
 
 /**

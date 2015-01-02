@@ -127,7 +127,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
         String pageName = (String)request.getAttribute(GrailsApplicationAttributes.GSP_TO_RENDER);
         if (GrailsStringUtils.isBlank(pageName)) {
-            pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
+            pageName = getCurrentRequestUri(request);
         }
 
         boolean isNotInclude = !WebUtils.isIncludeRequest(request) ;
@@ -149,6 +149,14 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
             renderPageWithEngine(groovyPagesTemplateEngine, request, response, scriptSource);
         }
+    }
+
+    protected String getCurrentRequestUri(HttpServletRequest request) {
+        Object includePath = request.getAttribute("javax.servlet.include.servlet_path");
+        if (includePath != null) {
+            return (String) includePath;
+        }
+        return request.getServletPath();
     }
 
     public GroovyPagesTemplateEngine getGroovyPagesTemplateEngine() {

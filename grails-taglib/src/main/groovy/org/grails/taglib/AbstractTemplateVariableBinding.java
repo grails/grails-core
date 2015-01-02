@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib;
+package org.grails.taglib;
 
 import groovy.lang.Binding;
 
@@ -66,6 +66,17 @@ public abstract class AbstractTemplateVariableBinding extends Binding {
 
     protected void internalSetVariable(String name, Object value) {
         setVariableDirectly(name, value);
+    }
+
+    public Binding findBindingForVariable(String name) {
+        if (getVariablesMap().containsKey(name)) {
+            return this;
+        }
+        return null;
+    }
+
+    public boolean isVariableCachingAllowed(String name) {
+        return true;
     }
 
     protected static final class TemplateVariableBindingMap implements Map {

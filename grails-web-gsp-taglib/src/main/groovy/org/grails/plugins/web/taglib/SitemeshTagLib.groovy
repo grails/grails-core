@@ -15,9 +15,9 @@
  */
 package org.grails.plugins.web.taglib
 
+import com.opensymphony.module.sitemesh.RequestConstants
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
-import com.opensymphony.module.sitemesh.RequestConstants
 import groovy.transform.CompileStatic
 import org.grails.buffer.FastStringWriter
 import org.grails.buffer.GrailsPrintWriter

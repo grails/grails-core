@@ -19,7 +19,7 @@ import grails.plugins.GrailsPlugin;
 import groovy.lang.Binding;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.web.taglib.TemplateVariableBinding;
+import org.grails.taglib.TemplateVariableBinding;
 
 import java.util.Map;
 

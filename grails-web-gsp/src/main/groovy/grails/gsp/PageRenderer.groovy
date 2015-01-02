@@ -16,7 +16,7 @@
 package grails.gsp
 import org.grails.buffer.FastStringWriter
 import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.gsp.io.GroovyPageScriptSource
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext

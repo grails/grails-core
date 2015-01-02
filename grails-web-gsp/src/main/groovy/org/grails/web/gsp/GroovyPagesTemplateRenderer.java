@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.gsp;
+package org.grails.web.gsp;
 
 import grails.core.GrailsDomainClass;
 import grails.util.CacheEntry;
@@ -28,14 +28,18 @@ import org.grails.encoder.EncodedAppenderWriterFactory;
 import org.grails.encoder.Encoder;
 import org.grails.encoder.StreamingEncoder;
 import org.grails.encoder.StreamingEncoderWriter;
-import org.grails.gsp.io.GrailsConventionGroovyPageLocator;
+import org.grails.gsp.GroovyPage;
+import org.grails.gsp.GroovyPageBinding;
+import org.grails.gsp.GroovyPageMetaInfo;
+import org.grails.gsp.GroovyPagesTemplateEngine;
 import org.grails.gsp.io.GroovyPageScriptSource;
 import org.grails.io.support.GrailsResourceUtils;
+import org.grails.taglib.GrailsTagException;
+import org.grails.taglib.TemplateVariableBinding;
 import org.grails.taglib.encoder.OutputEncodingSettings;
 import org.grails.taglib.encoder.WithCodecHelper;
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.TemplateVariableBinding;
-import org.grails.taglib.GrailsTagException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.Assert;

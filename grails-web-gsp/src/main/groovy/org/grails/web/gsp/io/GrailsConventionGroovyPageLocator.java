@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.gsp.io;
+package org.grails.web.gsp.io;
 
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
@@ -23,10 +23,12 @@ import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;
 import grails.web.pages.GroovyPagesUriService;
 import org.grails.core.artefact.ControllerArtefactHandler;
+import org.grails.gsp.io.DefaultGroovyPageLocator;
+import org.grails.gsp.io.GroovyPageScriptSource;
 import org.grails.io.support.GrailsResourceUtils;
+import org.grails.taglib.TemplateVariableBinding;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.TemplateVariableBinding;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -29,12 +29,13 @@ import org.grails.encoder.Encoder
 import org.grails.exceptions.ExceptionUtils
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.gsp.GroovyPagesTemplateRenderer
 import org.grails.gsp.compiler.GroovyPageParser
+import org.grails.taglib.TagLibraryLookup
+import org.grails.taglib.TagOutput
+import org.grails.taglib.encoder.OutputContextLookupHelper
 import org.grails.web.errors.ErrorsViewStackTracePrinter
+import org.grails.web.gsp.GroovyPagesTemplateRenderer
 import org.grails.web.sitemesh.*
-import org.grails.web.taglib.TagLibraryLookup
-import org.grails.web.taglib.TagOutput
 import org.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
@@ -98,7 +99,7 @@ class RenderTagLib implements RequestConstants, TagLibrary {
         }
         else if (attrs.action && attrs.controller) {
             def includeAttrs = [action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel]
-            content = TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'include', includeAttrs, null, webRequest)
+            content = TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'include', includeAttrs, null, OutputContextLookupHelper.lookupOutputContext())
         }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE)
@@ -106,10 +107,10 @@ class RenderTagLib implements RequestConstants, TagLibrary {
                 gspSiteMeshPage = new GSPSitemeshPage()
                 request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, gspSiteMeshPage)
                 if (attrs.view || attrs.template) {
-                    content = TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'render', attrs, null, webRequest)
+                    content = TagOutput.captureTagOutput(gspTagLibraryLookup, 'g', 'render', attrs, null, OutputContextLookupHelper.lookupOutputContext())
                 }
                 else {
-                    def bodyClosure = TagOutput.createOutputCapturingClosure(this, body, webRequest)
+                    def bodyClosure = TagOutput.createOutputCapturingClosure(this, body, OutputContextLookupHelper.lookupOutputContext())
                     content = bodyClosure()
                 }
                 if (content instanceof StreamCharBuffer) {

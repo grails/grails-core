@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib
+package org.grails.taglib
 
 import grails.core.GrailsApplication
 import grails.util.Environment
 import groovy.transform.CompileStatic
-import org.grails.web.taglib.util.TagLibraryMetaUtils
 
 /**
  * Allows dispatching to namespaced tag libraries and is used within controllers and tag libraries

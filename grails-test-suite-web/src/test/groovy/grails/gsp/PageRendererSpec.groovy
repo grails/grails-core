@@ -4,9 +4,9 @@ import grails.spring.BeanBuilder
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.core.io.SimpleMapResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.grails.plugins.web.taglib.ApplicationTagLib
-import org.grails.web.taglib.TagLibraryLookup
+import org.grails.taglib.TagLibraryLookup
+import org.grails.web.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.springframework.core.io.ByteArrayResource
 import spock.lang.Specification
 

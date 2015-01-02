@@ -19,11 +19,10 @@ import grails.plugins.GrailsPlugin;
 import org.grails.core.io.DefaultResourceLocator;
 import org.grails.gsp.GroovyPageBinding;
 import org.grails.io.support.GrailsResourceUtils;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.TemplateVariableBinding;
-import org.grails.web.util.GrailsApplicationAttributes;
+import org.grails.taglib.AbstractTemplateVariableBinding;
+import org.grails.taglib.encoder.OutputContext;
+import org.grails.taglib.encoder.OutputContextLookupHelper;
 import org.springframework.core.io.Resource;
-import org.springframework.web.context.request.RequestAttributes;
 
 /**
  * Extends the {@link DefaultResourceLocator} class with extra methods to evaluate static resources relative to the currently executing GSP page.
@@ -39,7 +38,7 @@ public class GroovyPageStaticResourceLocator extends DefaultResourceLocator {
     public Resource findResourceForURI(String uri) {
         Resource resource = super.findResourceForURI(uri);
         if (resource == null || !resource.exists()) {
-            TemplateVariableBinding binding = findBindingInWebRequest();
+            AbstractTemplateVariableBinding binding = findBindingInOutputContext();
             if (binding instanceof GroovyPageBinding) {
                 GrailsPlugin pagePlugin = ((GroovyPageBinding)binding).getPagePlugin();
                 if (pagePlugin != null && pluginManager != null) {
@@ -66,10 +65,10 @@ public class GroovyPageStaticResourceLocator extends DefaultResourceLocator {
         return resource;
     }
 
-    private TemplateVariableBinding findBindingInWebRequest() {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if (webRequest != null) {
-            return (TemplateVariableBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
+    protected AbstractTemplateVariableBinding findBindingInOutputContext() {
+        OutputContext outputContext = OutputContextLookupHelper.lookupOutputContext();
+        if (outputContext != null) {
+            return outputContext.getBinding();
         }
         return null;
     }

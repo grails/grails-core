@@ -15,32 +15,31 @@
  */
 package org.grails.web.servlet;
 
-import grails.web.mvc.FlashScope;
-import org.grails.web.util.GrailsApplicationAttributes;
-import groovy.lang.GroovyObject;
-
-import java.io.Writer;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.plugins.GrailsPluginManager;
-import org.grails.web.support.ResourceAwareTemplateEngine;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.grails.web.pages.DefaultGroovyPagesUriService;
+import grails.util.Holders;
+import grails.web.mvc.FlashScope;
 import grails.web.pages.GroovyPagesUriService;
+import groovy.lang.GroovyObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.grails.gsp.ResourceAwareTemplateEngine;
+import org.grails.web.pages.DefaultGroovyPagesUriService;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.io.Writer;
 
 /**
  * Holds knowledge about how to obtain certain attributes from either the ServletContext
@@ -72,6 +71,9 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         this.context = context;
         if (context != null) {
             appContext = (ApplicationContext)context.getAttribute(APPLICATION_CONTEXT);
+            if(appContext == null) {
+                appContext = Holders.findApplicationContext();
+            }
         }
     }
 
@@ -217,6 +219,9 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     public GrailsApplication getGrailsApplication() {
         if(grailsApplication==null) {
             grailsApplication = fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
+            if (grailsApplication == null) {
+                grailsApplication = Holders.findApplication();
+            }
         }
         return grailsApplication;
     }

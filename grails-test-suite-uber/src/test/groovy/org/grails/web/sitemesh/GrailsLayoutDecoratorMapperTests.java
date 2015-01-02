@@ -1,33 +1,28 @@
 package org.grails.web.sitemesh;
 
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 import grails.config.Config;
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.util.GrailsWebMockUtil;
 import grails.util.Holders;
 import grails.web.pages.GroovyPagesUriService;
-import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
-
-import java.util.Collections;
-import java.util.Map;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-
 import junit.framework.TestCase;
-
 import org.grails.config.PropertySourcesConfig;
+import org.grails.gsp.GroovyPagesTemplateEngine;
 import org.grails.plugins.codecs.DefaultCodecLookup;
 import org.grails.support.MockApplicationContext;
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
-import org.grails.gsp.GroovyPagesTemplateEngine;
-import org.grails.gsp.io.GrailsConventionGroovyPageLocator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.GroovyPageViewResolver;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -37,9 +32,10 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import java.util.Collections;
+import java.util.Map;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
@@ -55,7 +51,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         pageLocator.setApplicationContext(appCtx);
 
         GroovyPagesTemplateEngine gpte = new GroovyPagesTemplateEngine();
-        gpte.setServletContext(appCtx.getServletContext());
+        gpte.setResourceLoader(appCtx);
         gpte.setApplicationContext(appCtx);
         gpte.afterPropertiesSet();
 

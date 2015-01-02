@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib
-
+package org.grails.taglib
+import grails.core.GrailsApplication
 import grails.util.Environment
 import groovy.transform.CompileStatic
-
-import grails.core.GrailsApplication
-import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.taglib.encoder.OutputContextLookupHelper
 
 @CompileStatic
 class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
@@ -43,7 +41,7 @@ class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
     }
 
     protected callRender(Map attrs, Object body) {
-        TagOutput.captureTagOutput(lookup, TagOutput.DEFAULT_NAMESPACE, 'render', attrs, body, GrailsWebRequest.lookup())
+        TagOutput.captureTagOutput(lookup, TagOutput.DEFAULT_NAMESPACE, 'render', attrs, body, OutputContextLookupHelper.lookupOutputContext() )
     }
 
     protected Map argsToAttrs(String name, Object args) {

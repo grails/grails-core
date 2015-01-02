@@ -28,12 +28,12 @@ import org.grails.encoder.Encoder
 import org.grails.taglib.encoder.OutputEncodingStack
 import org.grails.taglib.encoder.WithCodecHelper
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.taglib.TagLibraryLookup
-import org.grails.web.taglib.TagOutput
-import org.grails.web.taglib.TemplateVariableBinding
+import org.grails.taglib.TagLibraryLookup
+import org.grails.taglib.TagOutput
+import org.grails.taglib.TemplateVariableBinding
 import org.grails.web.taglib.WebRequestTemplateVariableBinding
 import org.grails.taglib.GrailsTagException
-import org.grails.web.taglib.util.TagLibraryMetaUtils
+import org.grails.taglib.TagLibraryMetaUtils
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestAttributes
 

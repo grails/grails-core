@@ -1,14 +1,11 @@
-package org.grails.web.taglib.util
-
+package org.grails.taglib
 import grails.core.GrailsTagLibClass
 import grails.util.GrailsClassUtils
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.reflection.CachedMethod
 import org.codehaus.groovy.runtime.metaclass.MethodSelectionException
-import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.taglib.TagLibraryLookup
-import org.grails.web.taglib.TagOutput
+import org.grails.taglib.encoder.OutputContextLookupHelper
 import org.springframework.context.ApplicationContext
 
 class TagLibraryMetaUtils {
@@ -48,28 +45,28 @@ class TagLibraryMetaUtils {
         
         if(overrideMethods || !doesMethodExist(metaClass, name, [Map, Closure] as Class[])) {
             mc.setProperty(name) {Map attrs, Closure body ->
-                TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, GrailsWebRequest.lookup())
+                TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, OutputContextLookupHelper.lookupOutputContext())
             }
         }
         if(overrideMethods || !doesMethodExist(metaClass, name, [Map, CharSequence] as Class[])) {
             mc.setProperty(name) {Map attrs, CharSequence body ->
-                TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new TagOutput.ConstantClosure(body), GrailsWebRequest.lookup())
+                TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new TagOutput.ConstantClosure(body), OutputContextLookupHelper.lookupOutputContext())
             }
         }
         if(overrideMethods || !doesMethodExist(metaClass, name, [Map] as Class[])) {
             mc.setProperty(name) {Map attrs ->
-                TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, GrailsWebRequest.lookup())
+                TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, OutputContextLookupHelper.lookupOutputContext())
             }
         }
         if (addAll) {
             if(overrideMethods || !doesMethodExist(metaClass, name, [Closure] as Class[])) {
                 mc.setProperty(name) {Closure body ->
-                    TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, GrailsWebRequest.lookup())
+                    TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, OutputContextLookupHelper.lookupOutputContext())
                 }
             }
             if(overrideMethods || !doesMethodExist(metaClass, name, [] as Class[])) {
                 mc.setProperty(name) {->
-                    TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, GrailsWebRequest.lookup())
+                    TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, OutputContextLookupHelper.lookupOutputContext())
                 }
             }
         }
@@ -110,7 +107,7 @@ class TagLibraryMetaUtils {
         } catch (MethodSelectionException mse) {
             // the metamethod already exists with multiple signatures, must check if the exact method exists
             methodExists = mc.methods.contains { MetaMethod existingMethod ->
-                existingMethod.name == methodName && existingMethod.isStatic()==staticScope && (!onlyReal || isRealMethod(existingMethod)) && ((!parameterTypes && !existingMethod.parameterTypes) || parameterTypes==existingMethod.getNativeParameterTypes())
+                existingMethod.name == methodName && existingMethod.isStatic()==staticScope && (!onlyReal || isRealMethod(existingMethod)) && ((!parameterTypes && !existingMethod.parameterTypes) || Arrays.equals(parameterTypes, existingMethod.getNativeParameterTypes()))
             }
         }
     }

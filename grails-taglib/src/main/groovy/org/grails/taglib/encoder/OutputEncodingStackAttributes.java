@@ -15,10 +15,9 @@
  */
 package org.grails.taglib.encoder;
 
-import java.io.Writer;
-
 import org.grails.encoder.Encoder;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
+
+import java.io.Writer;
 
 public class OutputEncodingStackAttributes {
     private final Writer topWriter;
@@ -32,7 +31,7 @@ public class OutputEncodingStackAttributes {
     private final boolean autoSync;
     private final boolean inheritPreviousEncoders;
     private final boolean replaceOnly;
-    private final GrailsWebRequest webRequest;
+    private final OutputContext outputContext;
 
     public boolean isInheritPreviousEncoders() {
         return inheritPreviousEncoders;
@@ -78,8 +77,8 @@ public class OutputEncodingStackAttributes {
         return autoSync;
     }
 
-    public GrailsWebRequest getWebRequest() {
-        return webRequest;
+    public OutputContext getOutputContext() {
+        return outputContext;
     }
 
     public static class Builder {
@@ -92,7 +91,7 @@ public class OutputEncodingStackAttributes {
         private boolean allowCreate=true;
         private boolean pushTop=true;
         private boolean autoSync=true;
-        private GrailsWebRequest webRequest;
+        private OutputContext outputContext;
         private boolean inheritPreviousEncoders=false;
         private boolean replaceOnly=false;
 
@@ -109,7 +108,7 @@ public class OutputEncodingStackAttributes {
             this.allowCreate = attributes.allowCreate;
             this.pushTop = attributes.pushTop;
             this.autoSync = attributes.autoSync;
-            this.webRequest = attributes.webRequest;
+            this.outputContext = attributes.outputContext;
             this.inheritPreviousEncoders = attributes.inheritPreviousEncoders;
             this.replaceOnly = attributes.replaceOnly;
         }
@@ -169,8 +168,8 @@ public class OutputEncodingStackAttributes {
             return this;
         }
 
-        public Builder webRequest(GrailsWebRequest webRequest) {
-            this.webRequest = webRequest;
+        public Builder outputContext(OutputContext outputContext) {
+            this.outputContext = outputContext;
             return this;
         }
 
@@ -189,7 +188,7 @@ public class OutputEncodingStackAttributes {
         this.allowCreate = builder.allowCreate;
         this.pushTop = builder.pushTop;
         this.autoSync = builder.autoSync;
-        this.webRequest = builder.webRequest;
+        this.outputContext = builder.outputContext;
         this.inheritPreviousEncoders = builder.inheritPreviousEncoders;
         this.replaceOnly = builder.replaceOnly;
     }

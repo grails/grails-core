@@ -1,14 +1,13 @@
-package org.grails.web.taglib;
+package org.grails.taglib;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.grails.encoder.Encoder;
+import org.grails.taglib.encoder.OutputContext;
 import org.grails.taglib.encoder.OutputEncodingStack;
 import org.grails.taglib.encoder.OutputEncodingStackAttributes;
 import org.grails.taglib.encoder.WithCodecHelper;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.taglib.GrailsTagException;
 
 import java.io.Writer;
 import java.util.Map;
@@ -24,7 +23,7 @@ public class TagOutput {
 
     @SuppressWarnings("rawtypes")
     public final static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace,
-                                                String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
+                                                String tagName, Map attrs, Object body, OutputContext outputContext) {
 
         GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
@@ -36,19 +35,19 @@ public class TagOutput {
             attrs = new GroovyPageAttributes(attrs, false);
         }
         ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);
-        Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest);
+        Closure actualBody = createOutputCapturingClosure(tagLib, body, outputContext);
 
         final GroovyPageTagWriter tagOutput = new GroovyPageTagWriter();
         OutputEncodingStack outputStack = null;
         try {
-            outputStack = OutputEncodingStack.currentStack(webRequest, false);
+            outputStack = OutputEncodingStack.currentStack(outputContext, false);
             if (outputStack == null) {
-                outputStack = OutputEncodingStack.currentStack(webRequest, true, tagOutput, true, true);
+                outputStack = OutputEncodingStack.currentStack(outputContext, true, tagOutput, true, true);
             }
             Map<String, Object> defaultEncodeAs = gspTagLibraryLookup.getEncodeAsForTag(namespace, tagName);
             Map<String, Object> codecSettings = createCodecSettings(namespace, tagName, attrs, defaultEncodeAs);
 
-            OutputEncodingStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, webRequest.getAttributes().getGrailsApplication());
+            OutputEncodingStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, outputContext.getGrailsApplication());
             builder.topWriter(tagOutput);
             outputStack.push(builder.build());
 
@@ -115,7 +114,7 @@ public class TagOutput {
     }
 
     public final static Closure<?> createOutputCapturingClosure(Object wrappedInstance, final Object body1,
-                                                                final GrailsWebRequest webRequest) {
+                                                                final OutputContext outputContext) {
         if (body1 == null) {
             return EMPTY_BODY_CLOSURE;
         }
@@ -125,7 +124,7 @@ public class TagOutput {
         }
 
         if (body1 instanceof Closure) {
-            return new TagBodyClosure(wrappedInstance, webRequest, (Closure<?>) body1);
+            return new TagBodyClosure(wrappedInstance, outputContext, (Closure<?>) body1);
         }
 
         return new ConstantClosure(body1);

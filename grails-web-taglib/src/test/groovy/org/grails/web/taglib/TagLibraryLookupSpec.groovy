@@ -2,6 +2,8 @@ package org.grails.web.taglib
 
 import grails.core.DefaultGrailsApplication
 import grails.gsp.TagLib
+import org.grails.taglib.NamespacedTagDispatcher
+import org.grails.taglib.TagLibraryLookup
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse

@@ -41,8 +41,8 @@ import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.gsp.GroovyPagesTemplateRenderer
-import org.grails.gsp.io.GrailsConventionGroovyPageLocator
+import org.grails.web.gsp.GroovyPagesTemplateRenderer
+import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.gsp.jsp.TagLibraryResolverImpl
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.util.ClassUtils

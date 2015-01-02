@@ -15,23 +15,22 @@
  */
 package grails.test.mixin.support;
 
+import grails.core.GrailsTagLibClass;
+import grails.util.GrailsClassUtils;
 import groovy.lang.GroovyObject;
+import org.grails.core.artefact.TagLibArtefactHandler;
+import org.grails.gsp.GroovyPage;
+import org.grails.plugins.web.GroovyPagesGrailsPlugin;
+import org.grails.taglib.NamespacedTagDispatcher;
+import org.grails.taglib.TagLibraryLookup;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.context.support.GenericApplicationContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import grails.util.GrailsClassUtils;
-import grails.core.GrailsTagLibClass;
-import org.grails.core.artefact.TagLibArtefactHandler;
-import org.grails.plugins.web.GroovyPagesGrailsPlugin;
-import org.grails.gsp.GroovyPage;
-import org.grails.web.taglib.TagLibraryLookup;
-import org.grails.web.taglib.NamespacedTagDispatcher;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.context.support.GenericApplicationContext;
 
 /**
  * Lazy implementation of the tag library lookup class designed for testing purposes.

@@ -36,27 +36,18 @@ import org.grails.exceptions.ExceptionUtils;
 import org.grails.gsp.compiler.GroovyPageParser;
 import org.grails.gsp.io.*;
 import org.grails.gsp.jsp.TagLibraryResolver;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.support.ResourceAwareTemplateEngine;
-import org.grails.web.taglib.TagLibraryLookup;
-import org.grails.web.util.GrailsApplicationAttributes;
+import org.grails.taglib.TagLibraryLookup;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.*;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.util.Assert;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.support.ServletContextResource;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +75,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @since 0.1
  */
-public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent>, BeanClassLoaderAware {
+public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ResourceLoaderAware, ApplicationContextAware, InitializingBean, BeanClassLoaderAware {
 
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = Settings.GSP_DISABLE_CACHING_RESOURCES;
     public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = Settings.GSP_ENABLE_RELOAD;
@@ -107,7 +98,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 
     private GrailsApplication grailsApplication;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
-    private ServletContext servletContext;
 
     private List<GroovyPageSourceDecorator> groovyPageSourceDecorators = new ArrayList();
 
@@ -163,15 +153,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 
     public GroovyPagesTemplateEngine() {
         // default
-    }
-
-    /**
-     * @param servletContext The servlet context
-     * @deprecated here for compatibility
-     */
-    @Deprecated
-    public GroovyPagesTemplateEngine(ServletContext servletContext) {
-        this.servletContext = servletContext;
     }
 
     public void setGroovyPageSourceDecorators(List<GroovyPageSourceDecorator> groovyPageSourceDecorators){
@@ -232,11 +213,10 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      * to retrieve the actual line number within the GSP page if the line number within the
      * compiled GSP is known
      *
-     * @param context The ServletContext instance
      * @param url The URL of the page
      * @return An array where the index is the line number witin the compiled GSP and the value is the line number within the source
      */
-    public int[] calculateLineNumbersForPage(ServletContext context, String url) {
+    public int[] calculateLineNumbersForPage(String url) {
         try {
             Template t = createTemplate(url);
             if (t instanceof GroovyPageTemplate) {
@@ -252,7 +232,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     public int mapStackLineNumber(String url, int lineNumber) {
-        int[] lineNumbers = calculateLineNumbersForPage(null, url);
+        int[] lineNumbers = calculateLineNumbersForPage(url);
         if (lineNumber < lineNumbers.length) {
             lineNumber = lineNumbers[lineNumber - 1];
         }
@@ -280,8 +260,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     @Override
     public Template createTemplate(Resource resource, final boolean cacheable) {
         if (resource == null) {
-            GrailsWebRequest webRequest = getWebRequest();
-            throw new GroovyPagesException("No Groovy page found for URI: " + getCurrentRequestUri(webRequest.getCurrentRequest()));
+            throw new GroovyPagesException("Resource is null. No Groovy page found.");
         }
         //Yags: Because, "pageName" was sent as null originally, it is never go in pageCache, but will force to compile the String again and till the time this request
         // is getting executed, it will occupy space in PermGen space. So if there are 1000 request for the same resource at a particular instance, there will be 1000 instance
@@ -420,19 +399,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     /**
-     * Creates a Template for the currently executing Request
-     *
-     * @return The Template for the currently executing request
-     * @throws java.io.IOException    Thrown when an exception occurs Reading the Template
-     * @throws ClassNotFoundException  Thrown when the class of the template was not found
-     */
-    public Template createTemplate() {
-        GrailsWebRequest webRequest = getWebRequest();
-        String uri = getCurrentRequestUri(webRequest.getCurrentRequest());
-        return createTemplate(uri);
-    }
-
-    /**
      * Creates a Template for the given file
      *
      * @param file The File to use to construct the template with
@@ -534,7 +500,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         if (scriptSource != null && (scriptSource instanceof GroovyPageResourceScriptSource)) {
             return ((GroovyPageResourceScriptSource)scriptSource).getResource();
         }
-        return new ServletContextResource(servletContext, uri);
+        return null;
     }
 
     private GroovyPageScriptSource getResourceWithinContext(String uri) {
@@ -707,10 +673,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         return pageMeta;
     }
 
-    private GrailsWebRequest getWebRequest() {
-        return (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-    }
-
     /**
      * Establishes the name to use for the given resource
      *
@@ -761,19 +723,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     /**
-     * Return the page identifier.
-     * @param request The HttpServletRequest instance
-     * @return The page id
-     */
-    public String getCurrentRequestUri(HttpServletRequest request) {
-        Object includePath = request.getAttribute("javax.servlet.include.servlet_path");
-        if (includePath != null) {
-            return (String)includePath;
-        }
-        return request.getServletPath();
-    }
-
-    /**
      * Returns the path to the view of the relative URI within the Grails views directory
      *
      * @param relativeUri The relative URI
@@ -793,7 +742,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             tokens = new String[]{relativeUri};
         }
 
-        buf.append(GrailsApplicationAttributes.PATH_TO_VIEWS);
+        buf.append(DefaultGroovyPageLocator.PATH_TO_WEB_INF_VIEWS);
         for (String token : tokens) {
             buf.append('/').append(token);
         }
@@ -849,17 +798,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             }
         }
         return domainsWithoutPackage;
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        if(servletContext != null && servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)==null) {
-            servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, event.getApplicationContext());
-        }
     }
 
     @Override

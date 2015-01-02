@@ -16,18 +16,13 @@
  */
 package grails.test.mixin.web
 
-import grails.artefact.Enhanced
 import grails.artefact.TagLibrary
-import groovy.text.Template
-
-import grails.util.GrailsMetaClassUtils
 import grails.core.GrailsTagLibClass
-import org.grails.core.artefact.TagLibArtefactHandler
-import org.grails.core.metaclass.MetaClassEnhancer
-import org.grails.gsp.GroovyPagesTemplateEngine
-import org.grails.web.taglib.TagLibraryLookup
+import groovy.text.Template
 import org.grails.buffer.GrailsPrintWriter
-import org.grails.web.taglib.util.TagLibraryMetaUtils
+import org.grails.core.artefact.TagLibArtefactHandler
+import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.taglib.TagLibraryLookup
 import org.junit.Assert
 
 /**
@@ -36,7 +31,7 @@ import org.junit.Assert
  * {@link grails.test.mixin.domain.DomainClassUnitTestMixin} to support the testing of
  * tag libraries and GSPs</p>
  *
- * <p>Views and templates can be mocked via the {@link ControllerUnitTestMixin#groovyPages}
+ * <p>Views and templates can be mocked via the {@link ControllerUnitTestMixin#getGroovyPages()}
  * map where the keys are the names of the pages and the values are the contents of the GSP page</p>
  *
  * <p>Alternatively, within a Grails project the unit test will fallback to loading views and templates

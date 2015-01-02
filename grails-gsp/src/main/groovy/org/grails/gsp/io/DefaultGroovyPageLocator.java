@@ -26,17 +26,14 @@ import org.grails.gsp.GroovyPage;
 import org.grails.gsp.GroovyPageBinding;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.BinaryGrailsPlugin;
-import org.grails.web.taglib.TemplateVariableBinding;
-import org.grails.web.util.GrailsApplicationAttributes;
+import org.grails.taglib.TemplateVariableBinding;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.context.support.ServletContextResourceLoader;
 
-import javax.servlet.ServletContext;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.List;
@@ -54,10 +51,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletContextAware, ApplicationContextAware, PluginManagerAware {
+public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoaderAware, ApplicationContextAware, PluginManagerAware {
 
     private static final Log LOG = LogFactory.getLog(DefaultGroovyPageLocator.class);
-    private static final String PATH_TO_WEB_INF_VIEWS = GrailsApplicationAttributes.PATH_TO_VIEWS;
+    public static final String PATH_TO_WEB_INF_VIEWS = "/WEB-INF/grails-app/views";
     private static final String SLASHED_VIEWS_DIR_PATH = "/" + GrailsResourceUtils.VIEWS_DIR_PATH;
     private static final String PLUGINS_PATH = "/plugins/";
     private static final String BLANK = "";
@@ -338,10 +335,6 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
 
     private boolean isPrecompiledAvailable() {
         return precompiledGspMap != null && precompiledGspMap.size() > 0 && warDeployed;
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        addResourceLoader(new ServletContextResourceLoader(servletContext));
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

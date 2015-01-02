@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib;
+package org.grails.taglib;
 
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;

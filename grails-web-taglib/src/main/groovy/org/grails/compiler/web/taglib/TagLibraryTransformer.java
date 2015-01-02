@@ -31,9 +31,8 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.TagOutput;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.grails.taglib.TagOutput;
+import org.grails.taglib.encoder.OutputContextLookupHelper;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -71,9 +70,9 @@ public class TagLibraryTransformer implements GrailsArtefactClassInjector, Annot
     private static final ClassNode TAG_OUTPUT_CLASS_NODE = new ClassNode(TagOutput.class);
     private static final VariableExpression ATTRS_EXPRESSION = new VariableExpression(ATTRS_ARGUMENT);
     private static final VariableExpression BODY_EXPRESSION = new VariableExpression(BODY_ARGUMENT);
-    private static final MethodCallExpression CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL =
-        new MethodCallExpression(new ClassExpression(new ClassNode(RequestContextHolder.class)),
-                "currentRequestAttributes", ZERO_ARGS);
+    private static final MethodCallExpression CURRENT_OUTPUT_CONTEXT_METHOD_CALL =
+        new MethodCallExpression(new ClassExpression(new ClassNode(OutputContextLookupHelper.class)),
+                "lookupOutputContext", ZERO_ARGS);
     private static final Expression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String NAMESPACE_PROPERTY = "namespace";
     private static final ClassNode CLOSURE_CLASS_NODE = new ClassNode(Closure.class);
@@ -164,7 +163,7 @@ public class TagLibraryTransformer implements GrailsArtefactClassInjector, Annot
                  .addExpression(new ConstantExpression(tagName))
                  .addExpression(includeAttrs ? new CastExpression(ClassHelper.make(Map.class), ATTRS_EXPRESSION) : new MapExpression())
                  .addExpression(includeBody ? BODY_EXPRESSION : NULL_EXPRESSION)
-                 .addExpression(new CastExpression(ClassHelper.make(GrailsWebRequest.class), CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL));
+                 .addExpression(CURRENT_OUTPUT_CONTEXT_METHOD_CALL);
 
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(TAG_OUTPUT_CLASS_NODE),"captureTagOutput", arguments)));
 

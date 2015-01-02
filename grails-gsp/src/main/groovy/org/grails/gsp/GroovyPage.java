@@ -30,14 +30,12 @@ import org.grails.exceptions.ExceptionUtils;
 import org.grails.gsp.jsp.JspTag;
 import org.grails.gsp.jsp.JspTagLib;
 import org.grails.gsp.jsp.TagLibraryResolver;
+import org.grails.taglib.*;
+import org.grails.taglib.encoder.OutputContext;
 import org.grails.taglib.encoder.OutputEncodingStack;
 import org.grails.taglib.encoder.OutputEncodingStackAttributes;
 import org.grails.taglib.encoder.WithCodecHelper;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.*;
-import org.grails.taglib.GrailsTagException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Writer;
 import java.util.*;
 
@@ -58,42 +56,22 @@ public abstract class GroovyPage extends Script {
 
     private static final Log LOG = LogFactory.getLog(GroovyPage.class);
 
-    public static final String REQUEST = "request";
-    public static final String SERVLET_CONTEXT = "application";
-    public static final String RESPONSE = "response";
     public static final String OUT = "out";
     public static final String EXPRESSION_OUT = "expressionOut";
     public static final String EXPRESSION_OUT_STATEMENT = EXPRESSION_OUT; // "getCodecOut()";
     public static final String OUT_STATEMENT = OUT; // "getOut()";
     public static final String CODEC_VARNAME = "Codec";
-    public static final String ATTRIBUTES = "attributes";
-    public static final String APPLICATION_CONTEXT = "applicationContext";
-    public static final String SESSION = "session";
-    public static final String PARAMS = "params";
-    public static final String FLASH = "flash";
     public static final String PLUGIN_CONTEXT_PATH = "pluginContextPath";
     public static final String EXTENSION = ".gsp";
-    public static final String WEB_REQUEST = "webRequest";
     public static final String DEFAULT_NAMESPACE = "g";
     public static final String LINK_NAMESPACE = "link";
     public static final String TEMPLATE_NAMESPACE = "tmpl";
     public static final String PAGE_SCOPE = "pageScope";
-    public static final String CONTROLLER_NAME = "controllerName";
-    public static final String SUFFIX = ".gsp";
-    public static final String ACTION_NAME = "actionName";
 
     public static final Collection<String> RESERVED_NAMES = CollectionUtils.newSet(
-            REQUEST,
-            SERVLET_CONTEXT,
-            RESPONSE,
             OUT,
             EXPRESSION_OUT,
             CODEC_VARNAME,
-            ATTRIBUTES,
-            APPLICATION_CONTEXT,
-            SESSION,
-            PARAMS,
-            FLASH,
             PLUGIN_CONTEXT_PATH,
             PAGE_SCOPE);
 
@@ -109,9 +87,8 @@ public abstract class GroovyPage extends Script {
     private GrailsPrintWriter staticOut;
     private GrailsPrintWriter expressionOut;
     private OutputEncodingStack outputStack;
-    private GrailsWebRequest webRequest;
+    private OutputContext outputContext;
     private String pluginContextPath;
-    private HttpServletRequest request;
     private Encoder rawEncoder;
 
     private final List<Closure<?>> bodyClosures = new ArrayList<Closure<?>>(15);
@@ -136,7 +113,7 @@ public abstract class GroovyPage extends Script {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 
-    public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GroovyPageMetaInfo metaInfo) {
+    public void initRun(Writer target, OutputContext outputContext, GroovyPageMetaInfo metaInfo) {
         OutputEncodingStackAttributes.Builder attributesBuilder = new OutputEncodingStackAttributes.Builder();
         if (metaInfo != null) {
             setJspTags(metaInfo.getJspTags());
@@ -150,7 +127,7 @@ public abstract class GroovyPage extends Script {
             attributesBuilder.defaultTaglibEncoder(metaInfo.getTaglibEncoder());
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
-        attributesBuilder.webRequest(grailsWebRequest);
+        attributesBuilder.outputContext(outputContext);
         attributesBuilder.inheritPreviousEncoders(false);
         outputStack = OutputEncodingStack.currentStack(attributesBuilder.build());
 
@@ -158,11 +135,10 @@ public abstract class GroovyPage extends Script {
         staticOut = outputStack.getStaticWriter();
         expressionOut = outputStack.getExpressionWriter();
 
-        this.webRequest = grailsWebRequest;
-        if (grailsWebRequest != null) {
-            grailsWebRequest.setOut(out);
-            request = grailsWebRequest.getCurrentRequest();
-            GrailsApplication grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
+        this.outputContext = outputContext;
+        if (outputContext != null) {
+            outputContext.setCurrentWriter(out);
+            GrailsApplication grailsApplication = outputContext.getGrailsApplication();
             if (grailsApplication != null) {
                 rawEncoder = WithCodecHelper.lookupEncoder(grailsApplication, "Raw");
             }
@@ -427,7 +403,7 @@ public abstract class GroovyPage extends Script {
         try {
             Map<String, Object> codecSettings = TagOutput.createCodecSettings(tagNamespace, tagName, attrs, defaultEncodeAs);
             if (codecSettings != null) {
-                outputStack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, webRequest.getAttributes().getGrailsApplication()).build());
+                outputStack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, outputContext.getGrailsApplication()).build());
                 encodeAsPushedToStack=true;
             }
             Object tagresult = null;
@@ -522,8 +498,8 @@ public abstract class GroovyPage extends Script {
         return outputStack;
     }
 
-    public final HttpServletRequest getRequest() {
-        return request;
+    public OutputContext getOutputContext() {
+        return outputContext;
     }
 
     public final void registerSitemeshPreprocessMode() {
@@ -542,7 +518,7 @@ public abstract class GroovyPage extends Script {
     }
 
     public final void createTagBody(int bodyClosureIndex, Closure<?> bodyClosure) {
-        TagBodyClosure tagBody = new TagBodyClosure(this, webRequest, bodyClosure, true);
+        TagBodyClosure tagBody = new TagBodyClosure(this, outputContext, bodyClosure, true);
         setBodyClosure(bodyClosureIndex, tagBody);
     }
 

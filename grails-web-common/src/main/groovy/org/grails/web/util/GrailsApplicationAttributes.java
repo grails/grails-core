@@ -15,21 +15,18 @@
  */
 package org.grails.web.util;
 
+import grails.core.ApplicationAttributes;
 import grails.web.mvc.FlashScope;
+import grails.web.pages.GroovyPagesUriService;
 import groovy.lang.GroovyObject;
-
-import java.io.Writer;
+import org.grails.gsp.ResourceAwareTemplateEngine;
+import org.springframework.context.MessageSource;
+import org.springframework.validation.Errors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import grails.core.ApplicationAttributes;
-import org.grails.web.support.ResourceAwareTemplateEngine;
-import grails.web.pages.GroovyPagesUriService;
-import org.springframework.context.MessageSource;
-import org.springframework.validation.Errors;
+import java.io.Writer;
 
 /**
  * Defines the names of and methods to retrieve Grails specific request and servlet attributes.

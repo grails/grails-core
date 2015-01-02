@@ -19,22 +19,21 @@ import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 import groovy.xml.MarkupBuilder
-
-import java.beans.PropertyEditor
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-
 import org.apache.commons.lang.StringEscapeUtils
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
+import org.grails.taglib.GroovyPageAttributes
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.taglib.GroovyPageAttributes
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSource
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.support.DefaultMessageSourceResolvable
 import org.springframework.validation.Errors
+
+import java.beans.PropertyEditor
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 
 /**
  * Tags to handle validation and errors.

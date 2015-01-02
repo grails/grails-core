@@ -20,21 +20,16 @@ import groovy.lang.Binding;
 import groovy.lang.Writable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.web.servlet.WrappedResponseHolder;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.TemplateVariableBinding;
-import org.grails.web.taglib.WebRequestTemplateVariableBinding;
-import org.grails.web.util.GrailsApplicationAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.grails.taglib.AbstractTemplateVariableBinding;
+import org.grails.taglib.TemplateVariableBinding;
+import org.grails.taglib.encoder.OutputContext;
+import org.grails.taglib.encoder.OutputContextLookup;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Writes itself to the specified writer, typically the response writer.
@@ -45,31 +40,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class GroovyPageWritable implements Writable {
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
-    private static final String ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER = "org.codehaus.groovy.grails.web.pages.DEBUG_TEMPLATES_COUNTER";
     private static final String GSP_NONE_CODEC_NAME = "none";
-    private HttpServletResponse response;
-    private HttpServletRequest request;
     private GroovyPageMetaInfo metaInfo;
+    private OutputContextLookup outputContextLookup;
+    private boolean allowSettingContentType;
+    @SuppressWarnings("rawtypes")
+    private Map additionalBinding = new LinkedHashMap();
     private boolean showSource;
+
+    private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
+    public GroovyPageWritable(GroovyPageMetaInfo metaInfo, OutputContextLookup outputContextLookup, boolean allowSettingContentType) {
+        this.metaInfo = metaInfo;
+        this.outputContextLookup = outputContextLookup;
+        this.allowSettingContentType = allowSettingContentType;
+    }
+
+
+        /*
+    private static final String ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER = "org.codehaus.groovy.grails.web.pages.DEBUG_TEMPLATES_COUNTER";
+
+        TODO: implement debugging GSPs at development time
+
     private boolean debugTemplates;
     private AtomicInteger debugTemplatesIdCounter;
-    private GrailsWebRequest webRequest;
-    private boolean allowSettingContentType;
 
-    @SuppressWarnings("rawtypes")
-    private Map additionalBinding = new HashMap();
-    private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
-
-    public GroovyPageWritable(GroovyPageMetaInfo metaInfo, boolean allowSettingContentType) {
-        this.metaInfo = metaInfo;
-        this.allowSettingContentType = allowSettingContentType;
-        webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        if (webRequest != null) {
-            request = webRequest.getCurrentRequest();
-            HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
-            response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
-        }
-        showSource = shouldShowGroovySource();
         debugTemplates = shouldDebugTemplates();
         if (debugTemplates) {
             debugTemplatesIdCounter=(AtomicInteger)request.getAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER);
@@ -78,7 +72,6 @@ class GroovyPageWritable implements Writable {
                 request.setAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER, debugTemplatesIdCounter);
             }
         }
-    }
 
     private boolean shouldDebugTemplates() {
         return request != null && request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
@@ -89,6 +82,7 @@ class GroovyPageWritable implements Writable {
             (Environment.getCurrent() == Environment.DEVELOPMENT) &&
             metaInfo.getGroovySource() != null;
     }
+    */
 
     /**
      * This sets any additional variables that need to be placed in the Binding of the GSP page.
@@ -103,14 +97,6 @@ class GroovyPageWritable implements Writable {
     }
 
     /**
-     * Set to true if the generated source should be output instead
-     * @param showSource True if source output should be output
-     */
-    public void setShowSource(boolean showSource) {
-        this.showSource = showSource;
-    }
-
-    /**
      * Writes the template to the specified Writer
      *
      * @param out The Writer to write to, normally the HttpServletResponse
@@ -118,68 +104,62 @@ class GroovyPageWritable implements Writable {
      * @throws IOException
      */
     public Writer writeTo(Writer out) throws IOException {
+        OutputContext outputContext = outputContextLookup.lookupOutputContext();
         try {
-            return doWriteTo(out);
+            return doWriteTo(outputContext, out);
         } finally {
-            doCleanUp(out);
+            doCleanUp(outputContext, out);
         }
     }
 
-    protected void doCleanUp(Writer out) {
+    protected void doCleanUp(OutputContext outputContext, Writer out) {
         metaInfo.writeToFinished(out);
     }
 
-    protected Writer doWriteTo(Writer out) throws IOException {
-        if (showSource) {
+    protected Writer doWriteTo(OutputContext outputContext, Writer out) throws IOException {
+        if (shouldShowGroovySource(outputContext)) {
             // Set it to TEXT
-            response.setContentType(GROOVY_SOURCE_CONTENT_TYPE); // must come before response.getOutputStream()
+            outputContext.setContentType(GROOVY_SOURCE_CONTENT_TYPE); // must come before response.getOutputStream()
             writeGroovySourceToResponse(metaInfo, out);
         }
         else {
+            boolean debugTemplates = shouldDebugTemplates(outputContext);
+
             // Set it to HTML by default
             if (metaInfo.getCompilationException()!=null) {
                 throw metaInfo.getCompilationException();
             }
 
             // Set up the script context
-            TemplateVariableBinding parentBinding = null;
-            boolean hasRequest = request != null;
+            AbstractTemplateVariableBinding parentBinding = null;
+            boolean hasRequest = outputContext != null;
             boolean newParentCreated = false;
 
             if (hasRequest) {
-                parentBinding = (TemplateVariableBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                parentBinding = outputContext.getBinding();
                 if (parentBinding == null) {
-                    if (webRequest != null) {
-                        parentBinding = new TemplateVariableBinding(new WebRequestTemplateVariableBinding(webRequest));
-                        parentBinding.setRoot(true);
+                    if (outputContext != null) {
+                        parentBinding = outputContext.createAndRegisterRootBinding();
                         newParentCreated = true;
                     }
                 }
             }
 
-            if (allowSettingContentType && response != null) {
+            if (allowSettingContentType && hasRequest) {
                 // only try to set content type when evaluating top level GSP
-                boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+                boolean contentTypeAlreadySet = outputContext.isContentTypeAlreadySet();
                 if (!contentTypeAlreadySet) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+                        LOG.debug("Writing output with content type: " + metaInfo.getContentType());
                     }
-                    response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+                    outputContext.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
                 }
             }
 
             GroovyPageBinding binding = createBinding(parentBinding);
-            String previousGspCode = GSP_NONE_CODEC_NAME;
             if (hasRequest) {
-                request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
-                previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);
+                outputContext.setBinding(binding);
             }
-
-            makeLegacyCodecVariablesAvailable(hasRequest, binding);
-
-            binding.setVariableDirectly(GroovyPage.RESPONSE, response);
-            binding.setVariableDirectly(GroovyPage.REQUEST, request);
-            // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
 
             GroovyPage page = null;
             try {
@@ -190,12 +170,12 @@ class GroovyPageWritable implements Writable {
             page.setBinding(binding);
             binding.setOwner(page);
 
-            page.initRun(out, webRequest, metaInfo);
+            page.initRun(out, outputContext, metaInfo);
 
             int debugId = 0;
             long debugStartTimeMs = 0;
             if (debugTemplates) {
-                debugId = debugTemplatesIdCounter.incrementAndGet();
+                debugId = incrementAndGetDebugTemplatesIdCounter(outputContext);
                 out.write("<!-- GSP #");
                 out.write(String.valueOf(debugId));
                 out.write(" START template: ");
@@ -214,11 +194,10 @@ class GroovyPageWritable implements Writable {
                 page.cleanup();
                 if (hasRequest) {
                     if (newParentCreated) {
-                        request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                        outputContext.setBinding(null);
                     } else  {
-                        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
+                        outputContext.setBinding(parentBinding);
                     }
-                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, previousGspCode != null ? previousGspCode : GSP_NONE_CODEC_NAME);
                 }
             }
             if (debugTemplates) {
@@ -234,21 +213,28 @@ class GroovyPageWritable implements Writable {
         return out;
     }
 
-    private void makeLegacyCodecVariablesAvailable(boolean hasRequest, TemplateVariableBinding binding) {
-        if (metaInfo.getExpressionEncoder() != null) {
-            if (hasRequest) {
-                request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getExpressionEncoder().getCodecIdentifier().getCodecName());
-            }
-            binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getExpressionEncoder());
-        } else {
-            if (hasRequest) {
-                request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, GSP_NONE_CODEC_NAME);
-            }
-            binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
-        }
+    private int incrementAndGetDebugTemplatesIdCounter(OutputContext outputContext) {
+        //debugTemplatesIdCounter.incrementAndGet()
+        return 0;
+    }
+
+    private boolean shouldDebugTemplates(OutputContext outputContext) {
+        return false;
+    }
+
+    private boolean shouldShowGroovySource(OutputContext outputContext) {
+        return isShowSource() && Environment.getCurrent() == Environment.DEVELOPMENT && metaInfo.getGroovySource() != null;
     }
 
     private static final GspNoneCodec gspNoneCodeInstance = new GspNoneCodec();
+
+    public boolean isShowSource() {
+        return showSource;
+    }
+
+    public void setShowSource(boolean showSource) {
+        this.showSource = showSource;
+    }
 
     private static final class GspNoneCodec {
         @SuppressWarnings("unused")

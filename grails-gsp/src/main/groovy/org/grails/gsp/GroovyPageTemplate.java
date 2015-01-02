@@ -17,6 +17,8 @@ package org.grails.gsp;
 
 import groovy.lang.Writable;
 import groovy.text.Template;
+import org.grails.taglib.encoder.OutputContextLookup;
+import org.grails.taglib.encoder.OutputContextLookupHelper;
 
 import java.util.Map;
 
@@ -27,21 +29,26 @@ import java.util.Map;
  * @since 0.5
  */
 public class GroovyPageTemplate implements Template, Cloneable {
-
+    private final OutputContextLookup outputContextLookup;
     private GroovyPageMetaInfo metaInfo;
     private boolean allowSettingContentType = false;
 
     public GroovyPageTemplate(GroovyPageMetaInfo metaInfo) {
+        this(metaInfo, OutputContextLookupHelper.getOutputContextLookup());
+    }
+
+    public GroovyPageTemplate(GroovyPageMetaInfo metaInfo, OutputContextLookup outputContextLookup) {
         this.metaInfo = metaInfo;
+        this.outputContextLookup = outputContextLookup;
     }
 
     public Writable make() {
-        return new GroovyPageWritable(metaInfo, allowSettingContentType);
+        return new GroovyPageWritable(metaInfo, outputContextLookup, allowSettingContentType);
     }
 
     @SuppressWarnings("rawtypes")
     public Writable make(Map binding) {
-        GroovyPageWritable gptw = new GroovyPageWritable(metaInfo, allowSettingContentType);
+        GroovyPageWritable gptw = new GroovyPageWritable(metaInfo, outputContextLookup, allowSettingContentType);
         gptw.setBinding(binding);
         return gptw;
     }
