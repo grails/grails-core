@@ -22,7 +22,7 @@ import grails.core.support.GrailsApplicationAware;
 import groovy.lang.GroovyObject;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.core.exceptions.GrailsConfigurationException;
-import org.grails.web.encoder.WithCodecHelper;
+import org.grails.taglib.encoder.WithCodecHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;

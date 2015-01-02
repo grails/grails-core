@@ -1,6 +1,5 @@
 dependencies {
     compile( project(":grails-web-common") )
-    compile( project(":grails-web-encoder") )
     compile( project(":grails-taglib") )
 
     testRuntime( project(":grails-spring") )

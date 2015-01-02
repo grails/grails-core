@@ -19,7 +19,7 @@ import grails.util.Environment
 import grails.util.GrailsMetaClassUtils
 import grails.web.api.WebAttributes
 import groovy.transform.CompileStatic
-import org.grails.web.encoder.WithCodecHelper
+import org.grails.taglib.encoder.WithCodecHelper
 import org.grails.web.taglib.NamespacedTagDispatcher
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.encoder
+package org.grails.taglib.encoder
 
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
 
 import org.grails.encoder.CodecLookupHelper
 import org.grails.encoder.Encoder
-import org.grails.web.encoder.OutputEncodingStackAttributes.Builder
+import org.grails.taglib.encoder.OutputEncodingStackAttributes.Builder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

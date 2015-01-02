@@ -29,7 +29,7 @@ import org.grails.gsp.GroovyPage;
 import org.grails.gsp.compiler.tags.GrailsTagRegistry;
 import org.grails.gsp.compiler.tags.GroovySyntaxTag;
 import org.grails.io.support.SpringIOUtils;
-import org.grails.web.encoder.OutputEncodingSettings;
+import org.grails.taglib.encoder.OutputEncodingSettings;
 import org.grails.taglib.GrailsTagException;
 
 import java.io.*;

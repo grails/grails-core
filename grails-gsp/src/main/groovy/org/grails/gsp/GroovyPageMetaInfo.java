@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.grails.encoder.Encoder;
 import org.grails.gsp.compiler.GroovyPageParser;
 import org.grails.gsp.jsp.TagLibraryResolver;
-import org.grails.web.encoder.WithCodecHelper;
+import org.grails.taglib.encoder.WithCodecHelper;
 import org.grails.web.taglib.TagLibraryLookup;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.FileSystemResource;

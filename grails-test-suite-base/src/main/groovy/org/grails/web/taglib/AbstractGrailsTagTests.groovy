@@ -26,8 +26,8 @@ import org.grails.plugins.MockGrailsPluginManager
 import org.grails.support.MockApplicationContext
 import org.grails.validation.GrailsDomainClassValidator
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
-import org.grails.web.encoder.OutputEncodingStack
-import org.grails.web.encoder.WithCodecHelper
+import org.grails.taglib.encoder.OutputEncodingStack
+import org.grails.taglib.encoder.WithCodecHelper
 import org.grails.web.pages.DefaultGroovyPagesUriService
 import org.grails.web.pages.GSPResponseWriter
 import org.grails.gsp.GroovyPage

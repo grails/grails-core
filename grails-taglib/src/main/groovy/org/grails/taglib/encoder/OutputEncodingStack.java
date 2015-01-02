@@ -13,36 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.encoder;
+package org.grails.taglib.encoder;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.grails.buffer.CodecPrintWriter;
+import org.grails.buffer.GrailsLazyProxyPrintWriter;
+import org.grails.buffer.GrailsLazyProxyPrintWriter.DestinationFactory;
+import org.grails.buffer.GrailsWrappedWriter;
+import org.grails.encoder.*;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.grails.encoder.EncodedAppender;
-import org.grails.encoder.EncodedAppenderFactory;
-import org.grails.encoder.EncodedAppenderWriterFactory;
-import org.grails.encoder.Encoder;
-import org.grails.encoder.EncoderAware;
-import org.grails.encoder.EncodingStateRegistry;
-import org.grails.encoder.StreamingEncoder;
-import org.grails.encoder.StreamingEncoderWriter;
-import org.grails.web.encoder.OutputEncodingSettings;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.buffer.CodecPrintWriter;
-import org.grails.buffer.GrailsLazyProxyPrintWriter;
-import org.grails.buffer.GrailsLazyProxyPrintWriter.DestinationFactory;
-import org.grails.buffer.GrailsWrappedWriter;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-
 public final class OutputEncodingStack {
 
     public static final Log log = LogFactory.getLog(OutputEncodingStack.class);
 
-    private static final String ATTRIBUTE_NAME_OUTPUT_STACK="org.grails.web.encoder.OUTPUT_ENCODING_STACK";
+    private static final String ATTRIBUTE_NAME_OUTPUT_STACK="org.grails.taglib.encoder.OUTPUT_ENCODING_STACK";
 
     public static OutputEncodingStack currentStack() {
         return currentStack(true);

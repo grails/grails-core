@@ -25,8 +25,8 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.buffer.GrailsPrintWriter
 import org.grails.encoder.Encoder
-import org.grails.web.encoder.OutputEncodingStack
-import org.grails.web.encoder.WithCodecHelper
+import org.grails.taglib.encoder.OutputEncodingStack
+import org.grails.taglib.encoder.WithCodecHelper
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput

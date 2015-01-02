@@ -1,4 +1,4 @@
-package org.grails.web.encoder
+package org.grails.taglib.encoder
 
 import spock.lang.Specification
 

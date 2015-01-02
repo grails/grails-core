@@ -1,5 +1,0 @@
-dependencies {
-    compile( project(":grails-web-common") )
-
-    testRuntime( project(":grails-spring") )
-}

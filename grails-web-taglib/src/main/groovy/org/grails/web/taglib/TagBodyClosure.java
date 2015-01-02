@@ -18,7 +18,7 @@ package org.grails.web.taglib;
 import org.grails.web.util.GrailsApplicationAttributes;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
-import org.grails.web.encoder.OutputEncodingStack;
+import org.grails.taglib.encoder.OutputEncodingStack;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.util.Assert;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.encoder;
+package org.grails.taglib.encoder;
 
 import java.io.Writer;
 
