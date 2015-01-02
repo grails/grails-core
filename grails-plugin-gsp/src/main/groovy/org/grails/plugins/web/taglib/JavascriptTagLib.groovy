@@ -23,7 +23,7 @@ import javax.annotation.PostConstruct
 import grails.plugins.GrailsPluginManager
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.util.ClassUtils

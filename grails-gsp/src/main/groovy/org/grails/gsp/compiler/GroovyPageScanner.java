@@ -15,7 +15,7 @@
  */
 package org.grails.gsp.compiler;
 
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 
 import java.util.ArrayList;
 import java.util.List;

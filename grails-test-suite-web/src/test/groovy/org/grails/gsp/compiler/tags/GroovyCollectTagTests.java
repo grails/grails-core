@@ -3,7 +3,7 @@ package org.grails.gsp.compiler.tags;
 import junit.framework.TestCase;
 import org.grails.gsp.GroovyPage;
 import org.grails.gsp.compiler.GroovyPageParser;
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 
 import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;

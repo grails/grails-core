@@ -2,7 +2,7 @@ package org.grails.web.taglib
 
 import java.text.DecimalFormatSymbols
 
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 
 /**
  * Tests for the FormatTagLib.

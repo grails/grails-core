@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.web.taglib.exceptions;
+package org.grails.taglib;
 
 import org.grails.core.exceptions.GrailsException;
 import org.grails.exceptions.reporting.SourceCodeAware;

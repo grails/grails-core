@@ -27,7 +27,7 @@ import org.grails.gsp.GroovyPageBinding
 import org.grails.web.sitemesh.FactoryHolder
 import org.grails.web.sitemesh.GSPSitemeshPage
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 

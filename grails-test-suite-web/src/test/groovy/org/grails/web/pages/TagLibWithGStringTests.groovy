@@ -1,7 +1,7 @@
 package org.grails.web.pages
 
 import org.grails.web.taglib.AbstractGrailsTagTests
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 import org.grails.web.errors.GrailsExceptionResolver
 
 /**

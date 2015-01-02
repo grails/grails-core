@@ -30,7 +30,7 @@ import org.grails.gsp.compiler.tags.GrailsTagRegistry;
 import org.grails.gsp.compiler.tags.GroovySyntaxTag;
 import org.grails.io.support.SpringIOUtils;
 import org.grails.web.encoder.OutputEncodingSettings;
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 
 import java.io.*;
 import java.util.*;
@@ -121,7 +121,7 @@ public class GroovyPageParser implements Tokens {
         "grails.plugins.metadata.GrailsPlugin",
         "org.grails.gsp.GroovyPage",
         "org.grails.web.taglib.*",
-        "org.grails.web.taglib.exceptions.GrailsTagException",
+        "org.grails.taglib.GrailsTagException",
         "org.springframework.web.util.*",
         "grails.util.GrailsUtil"
     };

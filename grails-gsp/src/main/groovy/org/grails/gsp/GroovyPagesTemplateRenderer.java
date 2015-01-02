@@ -35,7 +35,7 @@ import org.grails.web.encoder.OutputEncodingSettings;
 import org.grails.web.encoder.WithCodecHelper;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.TemplateVariableBinding;
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.Assert;

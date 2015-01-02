@@ -1,6 +1,6 @@
 package org.grails.web.taglib
 
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 
 /**
  * Tests some of the core tags when rendering inside GSP.

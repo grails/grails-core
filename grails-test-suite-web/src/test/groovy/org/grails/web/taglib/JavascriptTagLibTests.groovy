@@ -6,7 +6,7 @@ import org.grails.core.io.MockStringResourceLoader
 import org.grails.gsp.GroovyPageBinding
 import org.grails.plugins.web.taglib.JavascriptProvider
 import org.grails.plugins.web.taglib.JavascriptTagLib
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.util.WebUtils
 

@@ -1,7 +1,7 @@
 package org.grails.web.taglib
 
 import org.grails.plugins.web.taglib.FormTagLib
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 

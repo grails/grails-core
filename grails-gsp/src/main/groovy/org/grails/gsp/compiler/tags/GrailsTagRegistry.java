@@ -15,7 +15,7 @@
  */
 package org.grails.gsp.compiler.tags;
 
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

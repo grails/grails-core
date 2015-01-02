@@ -22,7 +22,7 @@ import org.grails.gsp.GroovyPage;
 import org.grails.gsp.compiler.GroovyPageParser;
 import org.grails.support.MockApplicationContext;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 

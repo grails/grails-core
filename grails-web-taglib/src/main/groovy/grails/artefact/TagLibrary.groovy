@@ -32,7 +32,7 @@ import org.grails.web.taglib.TagLibraryLookup
 import org.grails.web.taglib.TagOutput
 import org.grails.web.taglib.TemplateVariableBinding
 import org.grails.web.taglib.WebRequestTemplateVariableBinding
-import org.grails.web.taglib.exceptions.GrailsTagException
+import org.grails.taglib.GrailsTagException
 import org.grails.web.taglib.util.TagLibraryMetaUtils
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestAttributes

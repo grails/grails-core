@@ -8,7 +8,7 @@ import org.grails.web.encoder.OutputEncodingStack;
 import org.grails.web.encoder.OutputEncodingStackAttributes;
 import org.grails.web.encoder.WithCodecHelper;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.taglib.exceptions.GrailsTagException;
+import org.grails.taglib.GrailsTagException;
 
 import java.io.Writer;
 import java.util.Map;
