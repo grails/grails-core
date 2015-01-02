@@ -2,7 +2,7 @@ package org.grails.plugins.web.taglib
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import grails.web.mapping.UrlMapping
-import grails.web.util.TypeConvertingMap
+import grails.util.TypeConvertingMap
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.encoder.CodecLookup

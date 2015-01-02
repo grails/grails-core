@@ -13,27 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.web.util;
+package grails.util;
 
-import grails.databinding.DataBinder;
+import grails.util.GrailsStringUtils;
 import groovy.lang.GroovyObjectSupport;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.util.HashCodeHelper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import grails.util.GrailsStringUtils;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.util.HashCodeHelper;
+import java.util.*;
 
 /**
  * An category for use with maps that want type conversion capabilities
@@ -47,6 +36,7 @@ import org.codehaus.groovy.util.HashCodeHelper;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport implements Map, Cloneable {
+    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
     protected Map wrappedMap;
 
     public AbstractTypeConvertingMap() {
@@ -360,10 +350,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     /**
      * Obtains a date for the parameter name using the default format
      * @param name
-     * @return The date (in the {@link org.grails.databinding.DataBinder#DEFAULT_DATE_FORMAT}) or null
+     * @return The date (in the {@link DEFAULT_DATE_FORMAT}) or null
      */
     public Date getDate(String name) {
-        return getDate(name, DataBinder.DEFAULT_DATE_FORMAT);
+        return getDate(name, DEFAULT_DATE_FORMAT);
     }
 
     /**

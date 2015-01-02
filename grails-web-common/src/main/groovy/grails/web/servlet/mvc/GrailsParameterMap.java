@@ -33,7 +33,7 @@ import grails.core.GrailsDomainClassProperty;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.binding.StructuredDateEditor;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import grails.web.util.TypeConvertingMap;
+import grails.util.TypeConvertingMap;
 import org.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.MessageSource;

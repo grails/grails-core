@@ -31,7 +31,7 @@ import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
-import grails.web.util.TypeConvertingMap;
+import grails.util.TypeConvertingMap;
 import groovy.lang.Closure;
 
 import java.io.File;

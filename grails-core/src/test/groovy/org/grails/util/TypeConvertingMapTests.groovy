@@ -1,6 +1,6 @@
-package org.grails.web.util
+package org.grails.util
 
-import grails.web.util.TypeConvertingMap
+import grails.util.TypeConvertingMap
 
 import groovy.transform.CompileStatic
 

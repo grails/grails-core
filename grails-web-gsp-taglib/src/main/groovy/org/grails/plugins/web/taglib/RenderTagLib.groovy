@@ -17,10 +17,9 @@ package org.grails.plugins.web.taglib
 
 import com.opensymphony.module.sitemesh.*
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
-import grails.artefact.Artefact
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
-import grails.web.util.TypeConvertingMap
+import grails.util.TypeConvertingMap
 import groovy.text.Template
 import groovy.transform.CompileStatic
 import org.grails.buffer.FastStringWriter
