@@ -120,7 +120,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                         } else {
                             returnType = alignReturnType(classNode, originalReturnType);
                         }
-                        promiseNode.setGenericsTypes( new GenericsType[]{ new GenericsType(returnType) });
+//                        promiseNode.setGenericsTypes( new GenericsType[]{ new GenericsType(returnType) });
                     }
                     final BlockStatement methodBody = new BlockStatement();
                     final BlockStatement promiseBody = new BlockStatement();
