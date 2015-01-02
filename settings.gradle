@@ -28,6 +28,7 @@ include 'grails-aether',
         'grails-web-sitemesh',
         'grails-web-jsp',
         'grails-gsp',
+        'grails-taglib',
         'grails-web-url-mappings',
         'grails-web-encoder',
 
