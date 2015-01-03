@@ -1,16 +1,14 @@
 package org.grails.web.pages
-
 import grails.core.GrailsApplication
-import grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.buffer.GrailsPrintWriterAdapter
 import org.grails.gsp.GroovyPage
 import org.grails.gsp.GroovyPageBinding
 import org.grails.gsp.GroovyPagesMetaUtils
+import org.grails.taglib.encoder.OutputContextLookupHelper
 import org.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.context.ApplicationContext
-
 /**
  * Tests the page execution environment, including how tags are invoked.
  *
@@ -24,7 +22,7 @@ import org.springframework.context.ApplicationContext
 class GroovyPageTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
-        String taglibCode = """import org.grails.web.taglib.*
+        String taglibCode = """import org.grails.taglib.*
         import grails.gsp.*
 
         @TagLib
@@ -40,21 +38,14 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
     }
 
     void testReservedNames() {
-        assertTrue GroovyPage.isReservedName(GroovyPage.REQUEST)
-        assertTrue GroovyPage.isReservedName(GroovyPage.RESPONSE)
-        assertTrue GroovyPage.isReservedName(GroovyPage.SESSION)
-        assertTrue GroovyPage.isReservedName(GroovyPage.SERVLET_CONTEXT)
-        assertTrue GroovyPage.isReservedName(GroovyPage.APPLICATION_CONTEXT)
-        assertTrue GroovyPage.isReservedName(GroovyPage.PARAMS)
         assertTrue GroovyPage.isReservedName(GroovyPage.OUT)
-        assertTrue GroovyPage.isReservedName(GroovyPage.FLASH)
         assertTrue GroovyPage.isReservedName(GroovyPage.PAGE_SCOPE)
     }
 
     void testRunPage() {
 
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
-        "import org.grails.web.taglib.*\n"+
+        "import org.grails.taglib.*\n"+
         "\n"+
         "class test_index_gsp extends GroovyPage {\n"+
         "String getGroovyPageFileName() { \"test\" }\n"+
@@ -79,7 +70,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
             GroovyPage gspScript = parseGroovyPage(pageCode)
             gspScript.binding = getBinding(pw)
-            gspScript.initRun(pw, webRequest, null)
+            gspScript.initRun(pw, OutputContextLookupHelper.lookupOutputContext(), null)
             gspScript.run()
             gspScript.cleanup()
             result =  sw.toString()
@@ -98,7 +89,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
     void testInvokeBodyTag() {
 
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
-                "import org.grails.web.taglib.*\n"+
+                "import org.grails.taglib.*\n"+
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
@@ -116,7 +107,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
     void testInvokeBodyTagWithUnknownNamespace() throws Exception {
 
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
-                "import org.grails.web.taglib.*\n"+
+                "import org.grails.taglib.*\n"+
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
@@ -134,7 +125,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
     void testInvokeBodyTagAsMethod() {
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
-                "import org.grails.web.taglib.*\n"+
+                "import org.grails.taglib.*\n"+
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
@@ -152,16 +143,8 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         // if there is no controller in the request configure using existing attributes, creating objects where necessary
         Binding binding = new GroovyPageBinding()
         GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext)
-        binding.setVariable(GroovyPage.REQUEST, request)
-        binding.setVariable(GroovyPage.RESPONSE, response)
-        binding.setVariable(GroovyPage.FLASH, attrs.getFlashScope(request))
-        binding.setVariable(GroovyPage.SERVLET_CONTEXT, servletContext)
         ApplicationContext appContext = attrs.applicationContext
-        binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appContext)
         binding.setVariable(GrailsApplication.APPLICATION_ID, appContext.getBean(GrailsApplication.APPLICATION_ID))
-        binding.setVariable(GroovyPage.SESSION, request.getSession())
-        binding.setVariable(GroovyPage.PARAMS, new GrailsParameterMap(request))
-        binding.setVariable(GroovyPage.WEB_REQUEST, webRequest)
         binding.setVariable(GroovyPage.OUT, out)
         webRequest.out = out
 

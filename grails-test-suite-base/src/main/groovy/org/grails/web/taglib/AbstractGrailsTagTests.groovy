@@ -24,6 +24,7 @@ import org.grails.plugins.MockGrailsPluginManager
 import org.grails.support.MockApplicationContext
 import org.grails.taglib.GroovyPageAttributes
 import org.grails.taglib.TagOutput
+import org.grails.taglib.encoder.OutputContextLookupHelper
 import org.grails.taglib.encoder.OutputEncodingStack
 import org.grails.taglib.encoder.WithCodecHelper
 import org.grails.validation.GrailsDomainClassValidator
@@ -136,7 +137,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
             appCtx.autowireCapableBeanFactory.autowireBeanProperties(go, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
             def gspTagLibraryLookup = appCtx.gspTagLibraryLookup
 
-            OutputEncodingStack stack=OutputEncodingStack.currentStack(webRequest, true)
+            OutputEncodingStack stack=OutputEncodingStack.currentStack(OutputContextLookupHelper.lookupOutputContext(), true)
 
             stack.push(out)
             try {

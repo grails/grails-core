@@ -62,7 +62,7 @@ class HttpServletResponseExtension {
             final webRequest = GrailsWebRequest.lookup()
 
             def context = webRequest.applicationContext
-            if(context) {
+            if(context && context.containsBean(MimeType.BEAN_NAME)) {
                 mimeTypes = (MimeType[]) context.getBean(MimeType.BEAN_NAME)
                 loadMimeTypeConfig(context.getBean(GrailsApplication).config)
             }

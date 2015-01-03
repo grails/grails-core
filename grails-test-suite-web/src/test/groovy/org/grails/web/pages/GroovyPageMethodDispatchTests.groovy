@@ -4,6 +4,7 @@ import org.grails.buffer.GrailsPrintWriter
 import org.grails.gsp.GroovyPage
 import org.grails.gsp.GroovyPageBinding
 import org.grails.gsp.GroovyPagesMetaUtils
+import org.grails.taglib.encoder.OutputContextLookupHelper
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -12,7 +13,7 @@ class GroovyPageMethodDispatchTests extends AbstractGrailsControllerTests {
     protected void onSetUp() {
         gcl.parseClass(
 """
-import org.grails.web.taglib.*
+import org.grails.taglib.*
 import org.grails.gsp.*
 import grails.gsp.*
 
@@ -53,7 +54,7 @@ class MyPage extends GroovyPage {
         if (tagResult != 'TEST') {
                 out << '<ERROR in tag3 output>' << tagResult
         }
-        out << "hello" + tag2(test:"test2", new TagBodyClosure(this, webRequest, {
+        out << "hello" + tag2(test:"test2", new TagBodyClosure(this, getOutputContext(), {
 
         }))
     }
@@ -78,7 +79,7 @@ class MyPage extends GroovyPage {
                                 out: webRequest.out ,
                                 webRequest:webRequest)
             script.binding = b
-            script.initRun(webRequest.out, webRequest, null)
+            script.initRun(webRequest.out, OutputContextLookupHelper.lookupOutputContext(), null)
             script.run()
             script.cleanup()
 

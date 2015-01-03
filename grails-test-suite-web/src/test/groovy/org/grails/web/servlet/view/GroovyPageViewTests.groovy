@@ -1,10 +1,8 @@
 package org.grails.web.servlet.view
-
 import grails.util.GrailsWebMockUtil
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
 import org.grails.support.MockApplicationContext
-import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 
 @SuppressWarnings("unused")
@@ -19,7 +17,7 @@ class GroovyPageViewTests extends GroovyTestCase {
 
         rl.registerMockResource(url, "<%='success'+foo%>")
 
-        def gpte = new GroovyPagesTemplateEngine(new MockServletContext(rl))
+        def gpte = new GroovyPagesTemplateEngine()
         gpte.afterPropertiesSet()
 
         gpte.groovyPageLocator.addResourceLoader(rl)

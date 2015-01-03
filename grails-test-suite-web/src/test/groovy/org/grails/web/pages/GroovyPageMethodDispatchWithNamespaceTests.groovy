@@ -1,6 +1,7 @@
 package org.grails.web.pages
 
 import org.grails.gsp.GroovyPagesMetaUtils
+import org.grails.taglib.encoder.OutputContextLookupHelper
 import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -9,7 +10,7 @@ class GroovyPageMethodDispatchWithNamespaceTests extends AbstractGrailsControlle
     void onSetUp() {
         gcl.parseClass(
 """
-import org.grails.web.taglib.*
+import org.grails.taglib.*
 import grails.gsp.*
 
 @grails.artefact.Artefact('Controller')
@@ -45,7 +46,7 @@ class MyPage extends org.grails.gsp.GroovyPage {
             ""
         }
         invokeTag("tag", "t1", -1, [attr1:"test"], 1)
-        out << "hello" + tag2(test:"test2", new TagBodyClosure(this, webRequest, {
+        out << "hello" + tag2(test:"test2", new TagBodyClosure(this, getOutputContext(), {
 
         }))
     }
@@ -71,7 +72,7 @@ class MyPage extends org.grails.gsp.GroovyPage {
                                 out: webRequest.out ,
                                 webRequest:webRequest)
             script.binding = b
-            script.initRun(webRequest.out, webRequest, null)
+            script.initRun(webRequest.out, OutputContextLookupHelper.lookupOutputContext(), null)
             script.run()
             script.cleanup()
 

@@ -9,8 +9,6 @@ import org.grails.web.taglib.AbstractGrailsTagTests
 class ReservedWordOverrideTests extends AbstractGrailsTagTests{
 
     void testCannotOverrideReservedWords() {
-        request.setAttribute "foo", "bar"
-
-        assertOutputEquals "bar", '${request.getAttribute("foo")}', [request:"bad"]
+        assertOutputNotContains "bad", '${pageScope}', [pageScope:"bad"]
     }
 }
