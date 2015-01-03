@@ -124,6 +124,6 @@ class GSPSitemeshPageTests extends AbstractGrailsTagTests {
     }
 
     void tearDown() {
-         RequestContextHolder.setRequestAttributes(null)
+         RequestContextHolder.resetRequestAttributes()
     }
 }

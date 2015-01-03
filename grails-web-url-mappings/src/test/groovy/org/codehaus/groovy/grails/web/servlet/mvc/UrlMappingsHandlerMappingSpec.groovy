@@ -49,7 +49,7 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
     }
 
     void cleanup() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 }
 

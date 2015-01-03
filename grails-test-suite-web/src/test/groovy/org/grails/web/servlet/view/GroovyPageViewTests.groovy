@@ -38,6 +38,6 @@ class GroovyPageViewTests extends GroovyTestCase {
     }
 
     void tearDown() {
-         RequestContextHolder.setRequestAttributes(null)
+         RequestContextHolder.resetRequestAttributes()
     }
 }

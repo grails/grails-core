@@ -17,7 +17,7 @@ class GroovyPagesPageContextTests extends GroovyTestCase {
     }
 
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes null
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void testPageContextState() {

@@ -53,7 +53,7 @@ class TagLibraryLookupSpec extends Specification {
 
 
         cleanup:"cleanup request context"
-            RequestContextHolder.setRequestAttributes(null)
+            RequestContextHolder.resetRequestAttributes()
 
     }
 }

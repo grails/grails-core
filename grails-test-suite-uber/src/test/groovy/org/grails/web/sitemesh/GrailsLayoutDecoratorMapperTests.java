@@ -302,6 +302,6 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     @Override
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes(null);
+        RequestContextHolder.resetRequestAttributes();
     }
 }

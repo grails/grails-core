@@ -32,6 +32,6 @@ class DefaultUrlCreatorTests extends GroovyTestCase {
     }
 
     void tearDown() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 }

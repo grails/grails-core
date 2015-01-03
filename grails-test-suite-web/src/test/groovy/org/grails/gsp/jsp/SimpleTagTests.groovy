@@ -26,7 +26,7 @@ class SimpleTagTests extends GroovyTestCase {
     }
 
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes null
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void testSimpleTagWithBodyUsage() {

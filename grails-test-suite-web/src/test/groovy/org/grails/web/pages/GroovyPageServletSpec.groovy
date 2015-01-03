@@ -29,10 +29,10 @@ class GroovyPageServletSpec extends Specification{
     private SimpleMapResourceLoader resourceLoader
 
     void setup() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
     void cleanup() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void "Test create response writer method"() {

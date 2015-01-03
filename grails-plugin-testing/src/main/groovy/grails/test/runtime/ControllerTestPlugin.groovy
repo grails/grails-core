@@ -152,7 +152,7 @@ class ControllerTestPlugin implements TestPlugin {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void clearGrailsWebRequest(TestRuntime runtime) {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
         runtime.getValue("groovyPages")?.clear()
         GrailsWebRequest webRequest = runtime.getValueIfExists("webRequest")
         def ctx = webRequest?.applicationContext

@@ -35,7 +35,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
     @Override
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes null
+        RequestContextHolder.resetRequestAttributes()
     }
 
     @Override

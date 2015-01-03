@@ -271,7 +271,7 @@ class LinkGeneratorSpec extends Specification {
     
     
     void cleanup() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 
     protected getGenerator(boolean cache=false) {

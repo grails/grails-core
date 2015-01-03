@@ -12,7 +12,7 @@ class ServletContextHolderSpec extends Specification {
 
     void cleanup() {
         ServletContextHolder.setServletContext(null)
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 
     def "Test get set servlet context"() {

@@ -39,7 +39,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
             def cal = new GregorianCalendar(1971,6,16)
             assert val == cal.time
         } finally {
-            RequestContextHolder.setRequestAttributes(null)
+            RequestContextHolder.resetRequestAttributes()
         }
     }
     void testDateMethodMultipleFormats() {

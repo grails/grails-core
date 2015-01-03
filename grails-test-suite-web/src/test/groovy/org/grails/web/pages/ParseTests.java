@@ -126,7 +126,7 @@ public class ParseTests extends TestCase {
             output = parseCode("myTest4", src);
         }
         finally {
-            RequestContextHolder.setRequestAttributes(null);
+            RequestContextHolder.resetRequestAttributes();
         }
         String expected = makeImports() +
             "\n" +

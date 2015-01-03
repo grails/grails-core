@@ -39,7 +39,7 @@ class WithFormMethodTests extends GroovyTestCase {
 
     @Override
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void testMissingToken() {

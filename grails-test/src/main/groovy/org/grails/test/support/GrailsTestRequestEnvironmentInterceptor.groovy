@@ -56,7 +56,7 @@ class GrailsTestRequestEnvironmentInterceptor {
      * Removes the mock request environment
      */
     void destroy() {
-        RequestContextHolder.requestAttributes = null
+        RequestContextHolder.resetRequestAttributes()
     }
 
     /**

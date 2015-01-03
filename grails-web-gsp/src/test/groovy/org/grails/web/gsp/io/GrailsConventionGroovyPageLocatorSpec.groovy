@@ -97,7 +97,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
             source == null
 
         cleanup:
-            RequestContextHolder.setRequestAttributes(null)
+            RequestContextHolder.resetRequestAttributes()
     }
 
     void "Test find view with controller instance and view name from plugin"() {

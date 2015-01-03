@@ -61,6 +61,6 @@ class ControllerActionTransformerClosureActionOverridingSpec extends Specificati
     }
 
     def cleanupSpec() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 }

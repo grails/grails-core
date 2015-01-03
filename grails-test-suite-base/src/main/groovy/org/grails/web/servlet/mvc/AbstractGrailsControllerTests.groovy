@@ -148,7 +148,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     
     protected void tearDown() {
         ga.mainContext.close()
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
         ExpandoMetaClass.disableGlobally()
 
         Holders.config = null
@@ -167,7 +167,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
             callable()
         }
         finally {
-            RequestContextHolder.setRequestAttributes(null)
+            RequestContextHolder.resetRequestAttributes()
 
         }
     }

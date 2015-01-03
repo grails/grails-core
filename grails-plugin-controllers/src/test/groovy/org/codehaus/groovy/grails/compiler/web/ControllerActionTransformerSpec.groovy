@@ -191,7 +191,7 @@ class ControllerActionTransformerSpec extends Specification {
 */
 
     def cleanup() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
         System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'false'
     }
 }

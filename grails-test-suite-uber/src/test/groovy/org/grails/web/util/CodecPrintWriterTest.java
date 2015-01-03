@@ -128,7 +128,7 @@ public class CodecPrintWriterTest {
         codecOut.flush();
 
         // clear thread local
-        RequestContextHolder.setRequestAttributes(null);
+        RequestContextHolder.resetRequestAttributes();
 
         assertEquals("-> hola <-123added-> too <-4-> A <--> B <-5-> C <-", target.getValue());
 

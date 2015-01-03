@@ -14,7 +14,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver
 class ParamsAwareLocaleChangeInterceptorTests extends GroovyTestCase {
 
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes null
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void testSwitchLocaleWithStringArrayParamsObject() {

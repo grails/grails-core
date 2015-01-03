@@ -17,7 +17,7 @@ class URLCodecTests extends GroovyTestCase {
     }
 
     protected void tearDown() {
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
     }
 
     void testEncode() {

@@ -92,7 +92,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
             callable()
         }
         finally {
-            RequestContextHolder.setRequestAttributes(null)
+            RequestContextHolder.resetRequestAttributes()
             Holders.config = null
         }
     }
@@ -316,7 +316,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         // static and likely to cause tests to interfere with each other.
         appCtx.groovyPagesTemplateEngine.clearPageCache()
 
-        RequestContextHolder.setRequestAttributes(null)
+        RequestContextHolder.resetRequestAttributes()
         GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler)
 
         onDestroy()
