@@ -1,12 +1,15 @@
 package grails.test.mixin
 
 import grails.test.mixin.support.GrailsUnitTestMixin
+import org.junit.FixMethodOrder
 import org.junit.Test
+import org.junit.runners.MethodSorters
 
 /**
  * @author Graeme Rocher
  */
 @TestMixin(GrailsUnitTestMixin)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class TestMixinSetupTeardownInvokeTests {
 
     def value
