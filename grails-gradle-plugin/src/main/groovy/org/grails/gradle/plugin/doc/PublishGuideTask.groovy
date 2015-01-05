@@ -36,10 +36,12 @@ class PublishGuideTask extends AbstractCompile {
     @Optional
     File propertiesFile
 
-    @InputDirectory
+//    @InputDirectory
+    @Optional
     File groovydocDir
 
-    @InputDirectory
+//    @InputDirectory
+    @Optional
     File javadocDir
 
     File srcDir
@@ -63,13 +65,17 @@ class PublishGuideTask extends AbstractCompile {
         def urls = getClasspath().files.collect() { File f -> f.toURI().toURL() }
         def classLoader = new URLClassLoader(urls as URL[])
         def docPublisher = classLoader.loadClass("grails.doc.DocPublisher").newInstance(srcDir, destinationDir, project.logger)
-        project.copy {
-            from groovydocDir
-            into "$destinationDir/gapi"
+        if(groovydocDir?.exists()) {
+            project.copy {
+                from groovydocDir
+                into "$destinationDir/gapi"
+            }
         }
-        project.copy {
-            from javadocDir
-            into "$destinationDir/api"
+        if(javadocDir?.exists()) {
+            project.copy {
+                from javadocDir
+                into "$destinationDir/api"
+            }
         }
         docPublisher.title = project.name
         docPublisher.version = project.version
