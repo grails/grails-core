@@ -73,6 +73,11 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         def springConfig = new DefaultRuntimeSpringConfiguration()
         def application = grailsApplication
+
+        // first register plugin beans
+        pluginManager.doRuntimeConfiguration(springConfig)
+
+        // now allow overriding via application
         def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
         if(beanResources.exists()) {
             def gcl = new GroovyClassLoader(application.classLoader)
@@ -83,7 +88,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                 throw e
             }
         }
-        pluginManager.doRuntimeConfiguration(springConfig)
 
         if(lifeCycle) {
             def withSpring = lifeCycle.doWithSpring()
