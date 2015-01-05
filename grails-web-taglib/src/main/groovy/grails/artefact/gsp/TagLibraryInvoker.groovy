@@ -68,7 +68,7 @@ trait TagLibraryInvoker extends WebAttributes{
      */
     Object methodMissing(String methodName, Object argsObject) {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : [argsObject] as Object[]
-        if (!"render".equals(methodName)) {
+        if (shouldHandleMethodMissing(methodName, args)) {
             TagLibraryLookup lookup = tagLibraryLookup
             if (lookup) {
                 def usedNamespace = getTaglibNamespace()
@@ -80,14 +80,25 @@ trait TagLibraryInvoker extends WebAttributes{
 
                 if (tagLibrary) {
                     if (!developmentMode) {
-                        MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(this)
-                        TagLibraryMetaUtils.registerMethodMissingForTags(controllerMc, lookup, usedNamespace, methodName)
+                        MetaClass thisMc = GrailsMetaClassUtils.getMetaClass(this)
+                        TagLibraryMetaUtils.registerMethodMissingForTags(thisMc, lookup, usedNamespace, methodName)
                     }
                     return tagLibrary.invokeMethod(methodName, args)
                 }
             }
         }
         throw new MissingMethodException(methodName, this.getClass(), args)
+    }
+
+    private boolean shouldHandleMethodMissing(String methodName, Object[] args) {
+        if("render".equals(methodName)) {
+            MetaClass thisMc = GrailsMetaClassUtils.getMetaClass(this)
+            boolean containsExistingRenderMethod = thisMc.getMetaMethods().any { MetaMethod mm -> mm.name == 'render' }
+            // don't add any new metamethod if an existing render method exists, see GRAILS-11581
+            return !containsExistingRenderMethod
+        } else {
+            return true
+        }
     }
 
     /**
