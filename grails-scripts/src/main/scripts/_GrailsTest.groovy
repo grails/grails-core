@@ -94,9 +94,9 @@ target(allTests: "Runs the project's tests.") {
             forkedTestRunner.configure(grailsSettings.forkSettings.test)
         }
         exitCode = forkedTestRunner.fork(argsMap)?.waitFor()
-        if(exitCode != null) {
-            exit(exitCode)    
-        }    
+        if(exitCode != null && exitCode != 0) {
+            exit(exitCode)
+        }
     }
     else {
         exitCode = projectTestRunner.runAllTests(argsMap) ? 0 : 1
