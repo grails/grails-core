@@ -93,7 +93,9 @@ trait TagLibraryInvoker extends WebAttributes{
     private boolean shouldHandleMethodMissing(String methodName, Object[] args) {
         if("render".equals(methodName)) {
             MetaClass thisMc = GrailsMetaClassUtils.getMetaClass(this)
-            boolean containsExistingRenderMethod = thisMc.getMetaMethods().any { MetaMethod mm -> mm.name == 'render' }
+            boolean containsExistingRenderMethod = thisMc.getMethods().any { MetaMethod mm ->
+                mm.name == 'render'
+            }
             // don't add any new metamethod if an existing render method exists, see GRAILS-11581
             return !containsExistingRenderMethod
         } else {
