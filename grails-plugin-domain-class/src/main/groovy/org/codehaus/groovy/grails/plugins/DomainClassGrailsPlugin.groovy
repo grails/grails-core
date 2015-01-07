@@ -18,16 +18,11 @@ package org.codehaus.groovy.grails.plugins
 import grails.artefact.Enhanced
 import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
-
-import org.codehaus.groovy.grails.commons.ComponentCapableDomainClass
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
@@ -107,7 +102,10 @@ class DomainClassGrailsPlugin {
         ConstraintEvalUtils.getDefaultConstraints(config)
     }
 
-    static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+    static PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+    static {
+        ShutdownOperations.addOperation({-> PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap() } as Runnable, true)
+    }
 
     def doWithDynamicMethods = { ApplicationContext ctx->
         enhanceDomainClasses(application, ctx)

@@ -31,12 +31,12 @@ class ValidationGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def loadAfter = ['hibernate', 'hibernate4', 'controllers']
 
-    static final ThreadLocal PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+    static ThreadLocal PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     static {
         ShutdownOperations.addOperation({
-            PROPERTY_INSTANCE_MAP.remove()
-        } as Runnable)
+            PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap();
+        } as Runnable, true)
     }
 
     def doWithDynamicMethods = { ApplicationContext ctx ->
