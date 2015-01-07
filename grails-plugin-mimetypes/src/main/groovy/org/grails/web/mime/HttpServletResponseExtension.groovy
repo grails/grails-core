@@ -76,7 +76,7 @@ class HttpServletResponseExtension {
                 loadMimeTypeConfig(context.getBean(GrailsApplication).config)
             }
             else {
-                mimeTypes = [] as MimeType[]
+                mimeTypes = MimeType.createDefaults()
             }
         }
 

@@ -49,7 +49,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             if (LOG.isDebugEnabled()) {
                 LOG.debug "No mime types configured, defaulting to 'text/html'"
             }
-            return MimeType.createDefaults()
+            mimeConfig = MimeType.createDefaults()
         }
 
         if (!header) {
