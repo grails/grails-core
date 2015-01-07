@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile
 
+import grails.util.CosineSimilarity
 import grails.util.Environment
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
@@ -163,6 +164,11 @@ class DefaultProfile implements Profile {
             }
             else {
                 context.console.error("Command not found ${context.commandLine.commandName}")
+                def mostSimilar = CosineSimilarity.mostSimilar(commandName, commandsByName.keySet())
+                List<String> topMatches = mostSimilar.subList(0, Math.min(3, mostSimilar.size()));
+                if(topMatches) {
+                    context.console.log("Did you mean: ${topMatches.join(' or ')}?")
+                }
                 return false
             }
 
