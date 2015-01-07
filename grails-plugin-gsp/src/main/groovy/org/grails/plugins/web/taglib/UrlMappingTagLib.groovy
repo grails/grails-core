@@ -50,10 +50,10 @@ class UrlMappingTagLib implements TagLibrary{
 
         if (attrs.controller || attrs.view) {
             def mapping = new ForwardUrlMappingInfo(controller: attrs.controller as String,
-                    action: attrs.action as String,
-                    view: attrs.view as String,
-                    id: attrs.id as String,
-                    params: attrs.params as Map)
+                action: attrs.action as String,
+                view: attrs.view as String,
+                id: attrs.id as String,
+                params: attrs.params as Map)
 
             if (attrs.namespace != null) {
                 mapping.namespace = attrs.namespace as String
@@ -242,6 +242,7 @@ class UrlMappingTagLib implements TagLibrary{
      * @attr titleKey title key to use for the column, resolved against the message source
      * @attr params a map containing request parameters
      * @attr action the name of the action to use in the link, if not specified the list action will be linked
+     * @attr namespace controller namespace (optional)
      * @attr params A map containing URL query parameters
      * @attr class CSS class name
      */
@@ -257,6 +258,7 @@ class UrlMappingTagLib implements TagLibrary{
 
         def property = attrs.remove("property")
         def action = attrs.action ? attrs.remove("action") : (actionName ?: "list")
+        def namespace = attrs.namespace ? attrs.remove("namespace") : ""
 
         def defaultOrder = attrs.remove("defaultOrder")
         if (defaultOrder != "desc") defaultOrder = "asc"
@@ -319,6 +321,7 @@ class UrlMappingTagLib implements TagLibrary{
         }
 
         linkAttrs.action = action
+        linkAttrs.namespace = namespace
 
         writer << callLink((Map)linkAttrs) {
             title

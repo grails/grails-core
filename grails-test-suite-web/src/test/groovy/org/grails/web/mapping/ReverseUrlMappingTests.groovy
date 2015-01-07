@@ -50,6 +50,10 @@ name showBooksWithAction: "/showSomeOtherBooks/$action" {
 
 "/$namespace/$controller/$action?"()
 
+"/grails/$controller/$action?" {
+    namespace = "grails"
+}
+
 "/invokePrimaryController" {
     controller = 'namespaced'
     namespace = 'primary'
@@ -109,7 +113,7 @@ class ProductController {
     void testPaginateWithNamedUrlMapping() {
         def template = '<g:paginate mapping="showBooks" total="15" max="5" />'
         assertOutputEquals '<span class="currentStep">1</span><a href="/showSomeBooks?offset=5&amp;max=5" class="step">2</a><a href="/showSomeBooks?offset=10&amp;max=5" class="step">3</a><a href="/showSomeBooks?offset=5&amp;max=5" class="nextLink">Next</a>', template
-   }
+    }
 
     void testSortableColumnWithNamedUrlMapping() {
         webRequest.controllerName = 'book'
@@ -119,5 +123,12 @@ class ProductController {
 
         def template2 = '<g:sortableColumn property="releaseDate" title="Release Date" mapping="showBooksWithAction" action="action_name"/>'
         assertOutputEquals '<th class="sortable" ><a href="/showSomeOtherBooks/action_name?sort=releaseDate&amp;order=asc">Release Date</a></th>', template2
-   }
+    }
+
+    void testSortableColumnWithNamespaceAttribute() {
+        webRequest.controllerName = 'book'
+
+        def template = '<g:sortableColumn property="id" title="ID" action="index" namespace="grails" />'
+        assertOutputEquals '<th class="sortable" ><a href="/grails/book/index?sort=id&amp;order=asc">ID</a></th>', template
+    }
 }
