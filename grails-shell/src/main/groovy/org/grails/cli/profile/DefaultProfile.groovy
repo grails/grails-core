@@ -20,6 +20,7 @@ import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
 import org.grails.build.parsing.CommandLine
+import org.grails.build.parsing.ScriptNameResolver
 import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.config.NavigableMap
@@ -153,8 +154,18 @@ class DefaultProfile implements Profile {
             return cmd.handle(context)
         }
         else {
-            context.console.error("Command not found ${context.commandLine.commandName}")
-            return false
+            // Apply command name expansion (rA for run-app, tA for test-app etc.)
+            cmd = commandsByName.values().find() { Command c ->
+                ScriptNameResolver.resolvesTo(commandName, c.name)
+            }
+            if(cmd) {
+                return cmd.handle(context)
+            }
+            else {
+                context.console.error("Command not found ${context.commandLine.commandName}")
+                return false
+            }
+
         }
     }
 

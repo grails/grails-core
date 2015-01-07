@@ -15,18 +15,23 @@
  */
 package org.grails.build.parsing
 
+import grails.util.GrailsNameUtils
+import groovy.transform.CompileStatic
+
 /**
  * @author Andres Almiray
  * @author Dierk Koenig
+ * @author Graeme Rocher
  */
+@CompileStatic
 class ScriptNameResolver {
     /**
      * Matches a camelCase scriptName to a potential scriptFileName in canonical form.<p>
      * The following scriptNames match FooBar: FB, FoB, FBa
      */
     static boolean resolvesTo(String scriptName, String scriptFileName) {
-        def scriptFileNameTokens = scriptFileName.findAll(/[A-Z][a-z]+/)
-        def scriptNameTokens = scriptName.findAll(/[A-Z][a-z]*/)
+        def scriptFileNameTokens = GrailsNameUtils.getNameFromScript( scriptFileName ).findAll(/[A-Z][a-z]+/)
+        def scriptNameTokens = GrailsNameUtils.getNameFromScript(scriptName).findAll(/[A-Z][a-z]*/)
 
         if (scriptFileNameTokens.size() != scriptNameTokens.size()) return false
         for (int i = 0; i < scriptNameTokens.size(); i++) {
