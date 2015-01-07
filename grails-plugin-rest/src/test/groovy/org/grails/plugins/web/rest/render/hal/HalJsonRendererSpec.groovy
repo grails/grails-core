@@ -64,6 +64,10 @@ import javax.xml.bind.DatatypeConverter
  */
 class HalJsonRendererSpec extends Specification{
 
+    void setupSpec() {
+        // ensure clean state
+        ShutdownOperations.runOperations()
+    }
 
     void cleanup() {
         ShutdownOperations.runOperations()
