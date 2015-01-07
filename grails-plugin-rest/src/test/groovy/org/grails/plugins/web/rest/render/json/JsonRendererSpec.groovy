@@ -3,7 +3,7 @@ package org.grails.plugins.web.rest.render.json
 import grails.core.DefaultGrailsApplication
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebMockUtil
-
+import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -24,6 +24,7 @@ class JsonRendererSpec extends Specification {
     void cleanup() {
         GroovySystem.metaClassRegistry.removeMetaClass(Album)
         ConvertersConfigurationHolder.clear()
+        ShutdownOperations.runOperations()
     }
 
     void "Test including properties with JsonRenderer via RenderContext"() {
