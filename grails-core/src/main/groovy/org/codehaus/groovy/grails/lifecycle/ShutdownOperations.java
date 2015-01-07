@@ -16,14 +16,12 @@
 package org.codehaus.groovy.grails.lifecycle;
 
 import grails.util.Holders;
-
-import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 /**
  * Operations that should be executed on shutdown.
@@ -32,10 +30,10 @@ import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
  * @since 2.0
  */
 public class ShutdownOperations {
-
     private static final Log LOG = LogFactory.getLog(ShutdownOperations.class);
 
-    private static final Collection<Runnable> shutdownOperations = new ConcurrentLinkedQueue<Runnable>();
+    private static final Collection<Runnable> shutdownOperations = new LinkedHashSet<Runnable>();
+    private static final Collection<Runnable> preservedShutdownOperations = new LinkedHashSet<Runnable>();
 
     public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
         public void run() {
@@ -47,14 +45,13 @@ public class ShutdownOperations {
     };
 
     static {
-        // default operations
-        shutdownOperations.add(DEFAULT_SHUTDOWN_OPERATION);
+        resetOperations();
     }
 
     /**
      * Runs the shutdown operations
      */
-    public static void runOperations() {
+    public static synchronized void runOperations() {
         try {
             for (Runnable shutdownOperation : shutdownOperations) {
                 try {
@@ -65,15 +62,37 @@ public class ShutdownOperations {
             }
         } finally {
             shutdownOperations.clear();
-            shutdownOperations.add(DEFAULT_SHUTDOWN_OPERATION);
+            shutdownOperations.addAll(preservedShutdownOperations);
         }
+    }
+
+    /**
+     * Adds a shutdown operation which will be run once for the next shutdown
+     * @param runnable The runnable operation
+     */
+    public static synchronized void addOperation(Runnable runnable) {
+        addOperation(runnable, false);
     }
 
     /**
      * Adds a shutdown operation
      * @param runnable The runnable operation
+     * @param preserveForNextShutdown should preserve the operation for subsequent shutdowns, useful in tests
      */
-    public static void addOperation(Runnable runnable) {
+    public static synchronized void addOperation(Runnable runnable, boolean preserveForNextShutdown) {
         shutdownOperations.add(runnable);
+        if(preserveForNextShutdown) {
+            preservedShutdownOperations.add(runnable);
+        }
+    }
+
+    /**
+     * Clears all shutdown operations without running them. Also clears operations that are kept after running operations.
+     */
+    public static synchronized void resetOperations() {
+        shutdownOperations.clear();
+        preservedShutdownOperations.clear();
+        // default operations
+        addOperation(DEFAULT_SHUTDOWN_OPERATION, true);
     }
 }

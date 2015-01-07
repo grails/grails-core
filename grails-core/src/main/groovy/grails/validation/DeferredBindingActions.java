@@ -36,9 +36,9 @@ public class DeferredBindingActions {
     static {
         ShutdownOperations.addOperation(new Runnable() {
             public void run() {
-                deferredBindingActions.remove();
+                deferredBindingActions = new ThreadLocal<List<Runnable>>();
             }
-        });
+        }, true);
     }
 
     public static void addBindingAction(Runnable runnable) {

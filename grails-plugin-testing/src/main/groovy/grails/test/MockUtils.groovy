@@ -17,6 +17,7 @@ package grails.test
 
 import grails.validation.ValidationException
 import groovy.xml.StreamingMarkupBuilder
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 
 import java.beans.Introspector
 import java.beans.PropertyDescriptor
@@ -71,7 +72,10 @@ class MockUtils {
     static final COMPARATORS_RE = COMPARATORS.join("|")
     static final DYNAMIC_FINDER_RE = /(\w+?)(${COMPARATORS_RE})?((And|Or)(\w+?)(${COMPARATORS_RE})?)?/
 
-    static final errorsObjects = new ThreadLocalMap()
+    static errorsObjects = new ThreadLocalMap()
+    static {
+        ShutdownOperations.addOperation({-> errorsObjects = new ThreadLocalMap() } as Runnable, true)
+    }
     static final Map<Class, Long> IDS = [:]
 
     /**

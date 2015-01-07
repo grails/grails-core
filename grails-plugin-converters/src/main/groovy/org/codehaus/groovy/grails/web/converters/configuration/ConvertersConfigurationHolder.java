@@ -42,7 +42,7 @@ public class ConvertersConfigurationHolder {
             public void run() {
                 clear();
             }
-        });
+        }, true);
     }
 
     private static ConvertersConfigurationHolder INSTANCE = new ConvertersConfigurationHolder();
