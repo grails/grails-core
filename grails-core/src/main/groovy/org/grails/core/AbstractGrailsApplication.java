@@ -17,18 +17,12 @@ package org.grails.core;
 import grails.config.Config;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
+import grails.core.support.GrailsConfigurationAware;
 import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.grails.config.PropertySourcesConfig;
-import grails.plugins.GrailsPluginManager;
-import grails.core.support.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.*;
@@ -36,6 +30,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.ClassUtils;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, ApplicationListener<ApplicationEvent> {
     protected ClassLoader classLoader;
@@ -55,7 +53,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
             if(this.config != null) {
                 newConfig.merge(this.config);
             }
-            this.config = newConfig;
+            setConfig(newConfig);
         }
         this.parentContext = applicationContext;
         if(applicationContext instanceof ConfigurableApplicationContext) {

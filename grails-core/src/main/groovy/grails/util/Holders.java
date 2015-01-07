@@ -16,21 +16,19 @@
 package grails.util;
 
 import grails.config.Config;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-
+import grails.core.GrailsApplication;
+import grails.plugins.GrailsPluginManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsApplication;
 import org.grails.core.io.support.GrailsFactoriesLoader;
-import grails.plugins.GrailsPluginManager;
 import org.grails.core.support.GrailsApplicationDiscoveryStrategy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.util.Assert;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Allows looking up key classes in a static context
@@ -200,6 +198,7 @@ public class Holders {
         setServletContext(null);
         setPluginManager(null);
         setPluginManagerInCreation(false);
+        setConfig(null);
     }
 
     private static <T> T get(Holder<T> holder, String type) {
