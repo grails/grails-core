@@ -42,8 +42,11 @@ import java.util.regex.Pattern
 @CompileStatic
 class HttpServletResponseExtension {
     // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
-    static Pattern disableForUserAgents = ~/(Gecko(?i)|WebKit(?i)|Presto(?i)|Trident(?i))/
+    static Pattern disableForUserAgents
     static boolean useAcceptHeader
+    static {
+        useDefaultConfig()
+    }
 
     static MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
@@ -52,7 +55,13 @@ class HttpServletResponseExtension {
     static {
         ShutdownOperations.addOperation({
             mimeTypes = null
-        })
+            useDefaultConfig()
+        }, true)
+    }
+
+    private static void useDefaultConfig() {
+        disableForUserAgents = ~/(Gecko(?i)|WebKit(?i)|Presto(?i)|Trident(?i))/
+        useAcceptHeader = true
     }
 
     @CompileStatic
@@ -203,7 +212,7 @@ class HttpServletResponseExtension {
         apiSupport.withFormat(response, callable)
     }
 
-    private static void loadMimeTypeConfig(Config config) {
+    public static void loadMimeTypeConfig(Config config) {
         useAcceptHeader = config.getProperty(Settings.MIME_USE_ACCEPT_HEADER, Boolean, true)
 
         if (config.containsKey(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS)) {
