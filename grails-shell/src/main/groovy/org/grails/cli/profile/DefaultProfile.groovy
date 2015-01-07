@@ -120,6 +120,9 @@ class DefaultProfile implements Profile {
                     if(command instanceof ProjectContextAware) {
                         ((ProjectContextAware)command).projectContext = context
                     }
+                    if(command instanceof ProfileCommand) {
+                        ((ProfileCommand)command).profile = this
+                    }
                 }
             }
             CommandRegistry.findCommands(this).each(registerCommand)

@@ -382,7 +382,6 @@ class GrailsCli {
 
     private boolean handleBuiltInCommands(ExecutionContext context) {
         CommandLine commandLine = context.commandLine
-        GrailsConsole console = context.console
         def commandName = commandLine.commandName
 
         if(commandName && commandName.size()>1 && commandName.startsWith('!')) {
@@ -390,28 +389,6 @@ class GrailsCli {
         }
         else {
             switch(commandName) {
-                case 'help':
-                    Collection<CommandDescription> allCommands=findAllCommands()
-                    String remainingArgs = commandLine.getRemainingArgsString()
-                    if(remainingArgs?.trim()) {
-                        CommandLine remainingArgsCommand = cliParser.parseString(remainingArgs)
-                        String helpCommandName = remainingArgsCommand.getCommandName()
-                        for (CommandDescription desc : allCommands) {
-                            if(desc.name == helpCommandName) {
-                                console.println "${desc.name}\t${desc.description}\n${desc.usage}"
-                                return true
-                            }
-                        }
-                        console.error "Help for command $helpCommandName not found"
-                        return false
-                    } else {
-                        for (CommandDescription desc : allCommands) {
-                            console.println "${desc.name}\t${desc.description}"
-                        }
-                        console.println("detailed usage with help [command]")
-                        return true
-                    }
-                    break
                 case '!':
                     return bang(context)
                 case 'exit':
@@ -472,14 +449,14 @@ class GrailsCli {
 
     private void exitInteractiveMode() {
         keepRunning = false
-        GradleAsyncInvoker.POOL.shutdownNow()
+        try {
+            GradleAsyncInvoker.POOL.shutdownNow()
+        } catch (Throwable e) {
+            // ignore
+        }
     }
 
-    private Collection<CommandDescription> findAllCommands() {
-        profile.getCommands(projectContext).collect() { Command cmd -> cmd.description }.sort(false) { CommandDescription itDesc ->  itDesc.name }
-    }
 
-    
     @Canonical
     public static class ExecutionContextImpl implements ExecutionContext {
         CommandLine commandLine
