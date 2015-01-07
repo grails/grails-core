@@ -42,7 +42,7 @@ class ResponseMimeTypesApi {
     MimeType[] mimeTypes
     // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
     protected Pattern disableForUserAgents = ~/(Gecko(?i)|WebKit(?i)|Presto(?i)|Trident(?i))/
-    protected boolean useAcceptHeader
+    protected boolean useAcceptHeader = true
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
