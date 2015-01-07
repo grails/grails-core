@@ -16,6 +16,7 @@
 package org.grails.plugins.web.taglib
 
 import grails.artefact.TagLibrary
+import grails.config.Settings
 import grails.gsp.TagLib
 import grails.util.GrailsUtil
 import grails.util.Metadata
@@ -70,10 +71,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     void afterPropertiesSet() {
         def config = grailsApplication.config
-        if (config.grails.views.enable.jsessionid instanceof Boolean) {
-            useJsessionId = config.grails.views.enable.jsessionid
-        }
 
+        useJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
         hasResourceProcessor = applicationContext.containsBean('grailsResourceProcessor')
 
         if (applicationContext.containsBean('requestDataValueProcessor')) {
