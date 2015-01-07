@@ -25,7 +25,28 @@ class DefaultProfileSpec extends Specification {
         when:
         def commands = profile.getCommands([:] as ProjectContext)
         then:
-        commands.size() == 18
-        commands*.name as Set == ['help', 'clean', 'compile', 'console', 'create-controller', 'create-domain-class', 'create-integration-test', 'create-script', 'create-service', 'create-taglib', 'create-unit-test', 'dependency-report', 'gradle', 'open', 'package', 'run-app', 'test-groovy', 'war'] as Set
+        commands.size() == 24
+        commands*.name as Set == ['clean',
+                                  'compile',
+                                  'console',
+                                  'create-controller',
+                                  'create-domain-class',
+                                  'create-integration-test',
+                                  'create-script',
+                                  'create-service',
+                                  'create-taglib',
+                                  'create-unit-test',
+                                  'dependency-report',
+                                  'gradle',
+                                  'help',
+                                  'install',
+                                  'list-plugins',
+                                  'open',
+                                  'package',
+                                  'plugin-info',
+                                  'run-app',
+                                  'test-app',
+                                  'test-groovy',
+                                  'war'] as Set
     }
 }
