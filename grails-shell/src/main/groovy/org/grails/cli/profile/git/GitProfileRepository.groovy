@@ -34,7 +34,7 @@ import org.grails.cli.profile.*
 @CompileStatic
 class GitProfileRepository implements ProfileRepository{
     File profilesDirectory = new File(new File(System.getProperty("user.home")), ".grails/repository")
-    String originUri = "https://github.com/grails-profiles/grails-profile-repository"
+    String originUri = "https://github.com/grails/grails-profile-repository"
     String gitBranch = 'master'
     // use fixed git revision, used in unit tests
     String gitRevision
