@@ -22,6 +22,7 @@ import groovy.transform.InheritConstructors
 import org.grails.cli.interactive.completers.ClassNameCompleter
 import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.templates.SimpleTemplate
 import org.grails.cli.profile.support.ArtefactVariableResolver
 
@@ -71,8 +72,16 @@ class RenderStep extends AbstractStep {
     }
 
     protected void renderToDestination(File destination, Map variables) {
-        File profileDir = command.profile.profileDir
+        Profile profile = command.profile
+        File profileDir = profile.profileDir
         File templateFile = new File(profileDir, parameters.template)
+        if(!templateFile.exists()) {
+            for(parent in profile.extends) {
+                templateFile = new File(parent.profileDir, parameters.template)
+                if(templateFile.exists()) break
+            }
+        }
+
         destination.text = new SimpleTemplate(templateFile.text).render(variables)
         ClassNameCompleter.refreshAll()
     }
