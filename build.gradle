@@ -139,6 +139,7 @@ subprojects { project ->
     }
 
     if(project.name == 'grails-dependencies') return
+    if(project.name == 'grails-bom') return
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     apply plugin: 'groovy'
     apply plugin: 'maven'

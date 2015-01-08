@@ -6,7 +6,6 @@ include 'grails-aether',
         'grails-console',
         'grails-core',
         'grails-databinding',
-        'grails-dependencies',
         'grails-docs',
         'grails-encoder',
         'grails-logging',
@@ -30,6 +29,10 @@ include 'grails-aether',
         'grails-gsp',
         'grails-taglib',
         'grails-web-url-mappings',
+
+        // POM / BOMs
+        'grails-dependencies',
+        'grails-bom',
 
         // Plugins
         'grails-plugin-async',

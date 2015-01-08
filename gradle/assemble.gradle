@@ -5,6 +5,7 @@ apply plugin: org.grails.gradle.GrailsBuildPlugin
 def libsConfigurations = []
 subprojects { subproject ->
     if(subproject.name == 'grails-dependencies') return
+    if(subproject.name == 'grails-bom') return
     configurations {
         libsConfigurations << libs {
             extendsFrom compile, runtime
@@ -114,39 +115,12 @@ task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) 
 // Can't use sync task here because this directory contains other things as well.
 task sourcesJars(type: Sync) {
     into homeSrcDir
-    from subprojects.findAll { !it.name.startsWith('grails-test-suite') && !it.name.startsWith('grails-dependencies') }.sourcesJar*.outputs*.files
+    from subprojects.findAll { !it.name.startsWith('grails-test-suite') && !it.name.startsWith('grails-dependencies') && !it.name.startsWith('grails-bom') }.sourcesJar*.outputs*.files
 
     // sourcesFor comes from GrailsBuildPlugin
     from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
 }
 
-task pluginsFromRepo {
-    ext.plugins = [
-        cache: "1.1.8",
-        'database-migration': "1.4.0",
-        hibernate4: "4.3.6.1",
-        jquery: "1.11.1",
-        'asset-pipeline': "1.9.9",
-        scaffolding: "2.1.2",
-        tomcat: "7.0.55",
-        webxml: "1.4.1"
-    ]
-
-    ext.dir = file("$buildDir/pluginsFromRepo")
-    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") || it.name.endsWith(".pom") } }
-    doFirst {
-        ant {
-            mkdir(dir: dir)
-            plugins.each { name, version ->
-                def versionTag = version.replaceAll(/\./, '_').toUpperCase()
-                get(src: "https://repo.grails.org/grails/plugins/org/grails/plugins/${name}/${version}/${name}-${version}.zip",
-                    dest: dir, verbose: true, usetimestamp: true)
-                get(src: "https://repo.grails.org/grails/plugins/org/grails/plugins/${name}/${version}/${name}-${version}.pom",
-                    dest: dir, verbose: true, usetimestamp: true)
-            }
-        }
-    }
-}
 
 task installResources(type: Copy) {
     into "$buildDir/home-dir" // not actually used, but has to be set to something
@@ -238,17 +212,8 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
             include 'bin/grails', 'bin/grails.bat', 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/", 'build.properties'
             exclude 'ant/bin', 'src/grails', 'src/war'
         }
-        from("grails-resources") {
-            include 'src/grails/**', 'src/war/**'
-            // this file is accounted for later with special handling to do some token replacement
-            exclude 'src/grails/grails-macros.xml'
-        }
         from(docs.destinationDir) {
             into "doc"
-        }
-        from(pluginsFromRepo.outputs.files) {
-            into "plugins"
-            rename { it - "grails-" }
         }
         from('grails-resources/src/grails/home/docs/README') {
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])

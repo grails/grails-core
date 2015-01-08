@@ -1,0 +1,111 @@
+import groovy.xml.MarkupBuilder
+import org.gradle.api.internal.project.IsolatedAntBuilder
+
+apply plugin: 'signing'
+
+configurations {
+    mavenAntTasks
+}
+dependencies {
+    mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
+}
+
+
+task generatePom << {
+    def pomFile = new File("$buildDir/pom.xml")
+    pomFile.parentFile.mkdirs()
+    def plugins = new Properties()
+    plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
+    pomFile.withWriter { Writer writer ->
+        def mkp = new MarkupBuilder(writer)
+
+        mkp.project( xmlns:"http://maven.apache.org/POM/4.0.0",
+                    'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",
+                    'xsi:schemaLocation':"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd") {
+            delegate.modelVersion '4.0.0'
+            delegate.groupId 'org.grails'
+            delegate.artifactId 'grails-bom'
+            delegate.version( grailsVersion )
+            delegate.packaging 'pom'
+            delegate.name "Grails BOM"
+            delegate.description "Grails default supported dependency definitions"
+            delegate.url 'http://grails.org'
+            delegate.licenses {
+                delegate.license {
+                    delegate.name "Apache License, Version 2.0"
+                    delegate.url 'http://www.apache.org/licenses/LICENSE-2.0'
+                }
+            }
+
+            dependencyManagement {
+                delegate.dependencies {
+                    for(sub in project.parent.subprojects) {
+                        if(sub.name == 'grails-bom') continue
+
+                        delegate.dependency {
+                            groupId sub.group
+                            artifactId sub.name
+                            delegate.version( sub.version )
+                            if(sub.name == 'grails-dependencies') {
+                                type 'pom'
+                            }
+                        }
+                    }
+
+                    for(plugin in plugins) {
+                        delegate.dependency {
+                            groupId 'org.grails.plugins'
+                            artifactId plugin.key
+                            delegate.version( plugin.value )
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+
+assemble.dependsOn(dependsOn:[generatePom])
+
+
+task install(dependsOn:assemble) << {
+    def antBuilder = services.get(IsolatedAntBuilder)
+    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
+        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
+
+        pom(file:"${buildDir}/pom.xml", id:"pom")
+
+        install(file:"${buildDir}/pom.xml") {
+            pom refid:"pom"
+        }
+
+    }
+}
+
+task uploadPublished(dependsOn:install) << {
+    def antBuilder = services.get(IsolatedAntBuilder)
+    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
+        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
+
+        pom(file:"${buildDir}/pom.xml", id:"pom")
+
+        def isSnapshot = version.endsWith("-SNAPSHOT")
+        def url = isSnapshot ? "https://repo.grails.org/grails/libs-snapshots-local" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        def repoId = isSnapshot ? "artifactory" : "sonatype-nexus-staging"
+
+        mvn(failonerror:true) {
+            arg value:"org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file"
+            arg value:"-Durl=${url}"
+            arg value:"-DrepositoryId=${repoId}"
+            arg value:"-DpomFile=${buildDir}/pom.xml"
+            arg value:"-Dfile=${buildDir}/pom.xml"
+            arg value:"-Dgpg.passphrase=${this.properties['signing.password']}"
+            arg value:"-Pgpg"
+        }
+
+    }
+}
+
+
