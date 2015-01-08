@@ -32,7 +32,7 @@ class ConstraintEvalUtils {
     static {
         ShutdownOperations.addOperation({
             clearDefaultConstraints()
-        } as Runnable)
+        } as Runnable, true)
     }
 
     private static defaultConstraintsMap

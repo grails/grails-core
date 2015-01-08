@@ -1,5 +1,4 @@
 package org.codehaus.groovy.grails.plugins.web.api
-
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
@@ -7,26 +6,29 @@ import grails.util.GrailsWebMockUtil
 import grails.web.mime.MimeType
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
-import org.grails.web.mime.HttpServletResponseExtension
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.support.GenericWebApplicationContext
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
-import org.springframework.mock.web.MockHttpServletRequest
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Tests for mime type resolution
  */
 class RequestAndResponseMimeTypesApiSpec extends Specification{
     def responseMimeTypesApiInstance
     def application
-    
+
+    void setupSpec() {
+        // ensure clean state
+        ShutdownOperations.runOperations()
+    }
+
     void setup() {
         application = new DefaultGrailsApplication()
         application.config = testConfig
@@ -215,10 +217,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             }
             application.setConfig(config)
             println "$userAgent - $additionalConfig - ${application.flatConfig.get('grails.mime.disable.accept.header.userAgents')}"
-            HttpServletResponseExtension.loadMimeTypeConfig(config)
-//            responseMimeTypesApiInstance.loadMimeTypeConfig()
-//            println "disableForUserAgents: ${responseMimeTypesApiInstance.disableForUserAgents}"
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
             request.addHeader('Accept', acceptHeader)

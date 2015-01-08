@@ -1,29 +1,26 @@
 package org.grails.cli
-
-import spock.lang.Ignore
-import spock.lang.IgnoreIf
-
-import static net.sf.expectit.matcher.Matchers.*
 import grails.build.logging.GrailsConsole
-import org.grails.config.CodeGenConfig
 import grails.io.support.SystemOutErrCapturer
-
-import java.lang.reflect.Field
-import java.util.concurrent.TimeUnit
-
 import jline.console.KeyMap
 import jnr.posix.POSIXFactory
 import net.sf.expectit.Expect
 import net.sf.expectit.ExpectBuilder
-
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.git.GitProfileRepository
+import org.grails.config.CodeGenConfig
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
-
+import spock.lang.Ignore
+import spock.lang.IgnoreIf
 import spock.lang.Shared
 import spock.lang.Specification
+
+import java.lang.reflect.Field
+import java.util.concurrent.TimeUnit
+
+import static net.sf.expectit.matcher.Matchers.anyString
+import static net.sf.expectit.matcher.Matchers.contains
 
 @IgnoreIf({ !System.getenv('TRAVIS') })
 class GrailsCliSpec extends Specification {
@@ -60,12 +57,16 @@ class GrailsCliSpec extends Specification {
             }
             profilesDirectory = tempProfilesDirectory
             // for development, comment out the following line. the latest commit in ~/.grails/repository master branch will be used by default in that case
-            gitRevision = '655eac53'
+            gitRevision = '554d6eb4'
         }
         // force profile initialization
         profileRepository.getProfile('web')
         // copy files used for testing profiles over the checked out profiles repository directory files
         File testProfilesRepository = new File(workingDir, 'src/test/resources/profiles-repository').absoluteFile
+        if(!testProfilesRepository.exists()) {
+            // IntelliJ workaround
+            testProfilesRepository = new File(new File(workingDir, 'grails-shell'), 'src/test/resources/profiles-repository').absoluteFile
+        }
         SystemOutErrCapturer.withNullOutput {
             new AntBuilder().copy(todir: profileRepository.profilesDirectory, overwrite: true, encoding: 'UTF-8') {
                 fileSet(dir: testProfilesRepository)
@@ -264,8 +265,15 @@ detailed usage with help [command]
         then:
         retval == 0
         helpContent == '''
-create-controller\tCreates a controller
+|Command: create-controller
+|Description:
+Creates a controller
+
+|Usage:
 create-controller [controller name]
+
+|Arguments:
+* Controller Name - The name of the controller (REQUIRED)
 '''
     }
     
@@ -318,16 +326,15 @@ class ShoppingBasketController {
             sleep(500)
             expect.send("\t")
             sleep(100)
-            message = expectAnyOutput(expect)
+            message = expectAnyOutput(expect).replaceAll(/\x08/,'').replaceAll(/\s+\n/,'\n')
         }
         then:
         retval == 0
-        message == '''  
-
-create-controller          create-integration-test    
-create-taglib              create-domain-class        
-create-script              create-service             
-create-unit-test           
+        message == '''
+create-controller          create-integration-test
+create-taglib              create-functional-test
+create-domain-class        create-script
+create-service             create-unit-test
 grails> create-'''
     }
     

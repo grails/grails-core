@@ -64,6 +64,10 @@ import javax.xml.bind.DatatypeConverter
  */
 class HalJsonRendererSpec extends Specification{
 
+    void setupSpec() {
+        // ensure clean state
+        ShutdownOperations.runOperations()
+    }
 
     void cleanup() {
         ShutdownOperations.runOperations()
@@ -772,7 +776,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.prettyPrint = true
 
         when:"A domain object is rendered"
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def webRequest = boundMimeTypeRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
         webRequest.request.addHeader("ACCEPT", "application/hal+json")
         def response = webRequest.response

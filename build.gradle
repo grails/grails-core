@@ -32,7 +32,7 @@ ext {
     datastoreVersion = "4.0.0.BUILD-SNAPSHOT"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.4.0-rc-1"
+    groovyVersion = "2.4.0-rc-2"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
     jlineVersion = "2.12"
@@ -41,7 +41,7 @@ ext {
 
     spockVersion = '0.7-groovy-2.0'
     springLoadedVersion = "1.2.1.RELEASE"
-    springBootVersion = "1.2.0.RELEASE"
+    springBootVersion = "1.2.1.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.1.4.RELEASE"
     ehcacheVersion = "2.4.6"
