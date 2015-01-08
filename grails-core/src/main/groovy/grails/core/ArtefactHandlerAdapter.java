@@ -118,8 +118,12 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
             return false;
         }
 
-        if (isArtefactClass(aClass)) {
-            return true;
+        try {
+            if (isArtefactClass(aClass)) {
+                return true;
+            }
+        } catch (Throwable t) {
+            throw new GrailsRuntimeException("Failed to introspect class: "+ aClass, t);
         }
 
         return false;
