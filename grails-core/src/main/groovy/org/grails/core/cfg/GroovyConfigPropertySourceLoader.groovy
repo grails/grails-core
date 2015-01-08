@@ -17,6 +17,7 @@ package org.grails.core.cfg
 
 import grails.util.BuildSettings
 import grails.util.Environment
+import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import org.springframework.boot.env.PropertySourceLoader
@@ -43,7 +44,9 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
         configSlurper.setBinding(userHome: System.getProperty('user.home'),
                                  grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
-                                 springProfile: profile)
+                                 springProfile: profile,
+                                 appName: Metadata.getCurrent().getApplicationName(),
+                                 appVersion: Metadata.getCurrent().getApplicationVersion() )
 
         if(resource.exists()) {
             try {
