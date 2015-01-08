@@ -88,6 +88,16 @@ class HelpCommand implements ProfileCommand, Completer, ProjectContextAware{
             console.error "Help for command $helpCommandName not found"
             return false
         } else {
+            console.log '''
+Usage (optionals marked with *):'
+grails [environment]* [target] [arguments]*'
+
+'''
+            console.addStatus("Examples:")
+            console.log('$ grails dev run-app')
+            console.log('$ grails create-app books')
+            console.log ''
+            console.addStatus('Available Commands (type grails help \'command-name\' for more info):')
             console.addStatus("${'Command Name'.padRight(37)} Command Description")
             console.println('-' * 100)
             for (CommandDescription desc : allCommands) {
