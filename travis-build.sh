@@ -14,7 +14,7 @@ if [[ $TRAVIS_BRANCH =~ ^master|2\.[34]\.x$ && $TRAVIS_REPO_SLUG == "grails/grai
     && $EXIT_STATUS -eq 0 && $grailsVersion == *-SNAPSHOT* 
     && -n "$ARTIFACTORY_PASSWORD" ]]; then
     echo "Publishing archives"
-    upload_skip_tasks="-x :grails-dependencies:assemble -x :grails-dependencies:install -x :grails-dependencies:uploadPublished"
+    upload_skip_tasks="-x :grails-dependencies:assemble -x :grails-dependencies:install -x :grails-dependencies:uploadPublished -x :grails-bom:assemble -x :grails-bom:install -x :grails-bom:uploadPublished"
     ./gradlew -PartifactoryPublishUsername=travis-grails-core $upload_skip_tasks upload || EXIT_STATUS=$?
 fi
 
