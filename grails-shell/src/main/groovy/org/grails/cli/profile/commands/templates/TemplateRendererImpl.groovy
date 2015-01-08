@@ -22,6 +22,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.grails.cli.interactive.completers.ClassNameCompleter
 import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.cli.profile.commands.io.FileSystemInteractionImpl
 import org.grails.io.support.DefaultResourceLoader
@@ -39,11 +40,19 @@ import org.grails.io.support.ResourceLoader
 class TemplateRendererImpl implements TemplateRenderer {
 
     ExecutionContext executionContext
+    Profile profile
     @Delegate FileSystemInteraction fileSystemInteraction
     private Map<String, Template> templateCache = [:]
 
     TemplateRendererImpl(ExecutionContext executionContext, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
         this.executionContext = executionContext
+        this.profile = profile
+        this.fileSystemInteraction = new FileSystemInteractionImpl(executionContext, resourceLoader)
+    }
+
+    TemplateRendererImpl(ExecutionContext executionContext, Profile profile, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
+        this.executionContext = executionContext
+        this.profile = profile
         this.fileSystemInteraction = new FileSystemInteractionImpl(executionContext, resourceLoader)
     }
 
@@ -225,7 +234,19 @@ class TemplateRendererImpl implements TemplateRenderer {
     Resource template(Object location) {
         File f = file("src/main/templates/$location")
         if(!f?.exists()) {
-            return resource("classpath*:META-INF/templates/" + location)
+            if(profile) {
+                def path = "templates/$location"
+                f = new File(profile.profileDir, path)
+                if(!f.exists()) {
+                    for(parent in profile.extends) {
+                        f = new File(parent.profileDir, path)
+                        if(f.exists()) break
+                    }
+                }
+            }
+            if(!f?.exists()) {
+                return resource("classpath*:META-INF/templates/" + location)
+            }
         }
         return resource(f)
     }
