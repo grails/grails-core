@@ -22,7 +22,7 @@ import static net.sf.expectit.matcher.Matchers.anyString
 import static net.sf.expectit.matcher.Matchers.contains
 
 class GrailsCliSpec extends Specification {
-    static int EXPECT_TIMEOUT_SECONDS = System.getenv('TRAVIS') == 'true' ? 120 : 20
+    static int EXPECT_TIMEOUT_SECONDS = (System.getenv('TRAVIS') == 'true' || System.getenv('BUILD_TAG')) ? 120 : 20
     
     @Rule
     TemporaryFolder tempFolder = new TemporaryFolder()
