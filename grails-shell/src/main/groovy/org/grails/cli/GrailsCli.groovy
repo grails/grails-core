@@ -265,6 +265,7 @@ class GrailsCli {
             try {
                 if(integrateGradle)
                     GradleUtil.prepareConnection(projectContext.baseDir)
+                console.addStatus("Enter a command name to run. Use TAB for completion:")
                 String commandLine = console.showPrompt()
                 if(commandLine==null) {
                     // CTRL-D was pressed, exit interactive mode
