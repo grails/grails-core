@@ -6,6 +6,7 @@ import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
@@ -18,6 +19,7 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.process.JavaForkOptions
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.run.FindMainClassTask
@@ -83,12 +85,20 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         configureConsoleTask(tasks, project)
 
-        def systemPropertyConfigurer = { task ->
+        boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
+
+        def systemPropertyConfigurer = { JavaForkOptions task ->
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
             task.systemProperty Environment.KEY, Environment.current.name ?: Environment.DEVELOPMENT.name
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
+            task.minHeapSize = "768m"
+            task.maxHeapSize = "768m"
+            if(!isJava8Compatible) {
+                task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+            }
+            task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
         }
 
         tasks.withType(Test).each systemPropertyConfigurer
