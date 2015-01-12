@@ -16,6 +16,7 @@
 package org.grails.cli.profile.git
 
 import grails.build.logging.GrailsConsole
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 
 import org.eclipse.jgit.api.Git
@@ -110,7 +111,24 @@ class GitProfileRepository implements ProfileRepository{
             Git git = Git.open(profilesDirectory)
             git.reset().setRef(gitRevision).setMode(gitRevisionResetMode).call()
         }
+        else {
+            checkoutTagForRelease()
+
+        }
         profilesDirectory
+    }
+
+    public void checkoutTagForRelease() {
+        def grailsVersion = BuildSettings.package.implementationVersion
+        // if this is not a snapshot version then checkout the tag for this release, otherwise use master
+        if (grailsVersion != null && !grailsVersion.endsWith('-SNAPSHOT')) {
+            try {
+                def git = Git.open(profilesDirectory)
+                git.checkout().setName("v$grailsVersion").call()
+            } catch (Throwable e) {
+                GrailsConsole.getInstance().error("Could not checkout tag for Grails release [$grailsVersion]: " + e.message, e)
+            }
+        }
     }
 
     public void fetchAndRebaseIfExpired() {
@@ -120,6 +138,7 @@ class GitProfileRepository implements ProfileRepository{
                 Git git = Git.open(profilesDirectory)
                 git.fetch()
                 git.rebase()
+                checkoutTagForRelease()
             } catch (Exception e) {
                 GrailsConsole.getInstance().error("Problem updating profiles from origin git repository", e)
             }
