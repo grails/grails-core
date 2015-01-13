@@ -19,8 +19,8 @@ import grails.async.Promise
 import grails.async.PromiseList
 import grails.async.factory.AbstractPromiseFactory
 import groovy.transform.CompileStatic
-import reactor.core.Environment
-import reactor.function.Consumer
+import reactor.Environment
+import reactor.fn.Consumer
 import reactor.rx.Promises
 
 import java.util.concurrent.TimeUnit
@@ -34,10 +34,18 @@ import java.util.concurrent.TimeUnit
  */
 @CompileStatic
 class ReactorPromiseFactory extends AbstractPromiseFactory {
+    static final boolean REACTOR_PRESENT
+    static {
+        try {
+            REACTOR_PRESENT = Thread.currentThread().contextClassLoader.loadClass("reactor.Environment") != null
+        } catch (Throwable e) {
+            REACTOR_PRESENT = false
+        }
+    }
 
     Environment environment
 
-    ReactorPromiseFactory(Environment environment) {
+    ReactorPromiseFactory(Environment environment = new Environment()) {
         this.environment = environment
     }
 
@@ -76,5 +84,9 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
         def newPromise = Promises.when(promises.collect() { ((ReactorPromise) it).internalPromise })
                                  .onError(callable as Consumer<Throwable>)
         return new ReactorPromise<List<T>>(newPromise)
+    }
+
+    static boolean isReactorAvailable() {
+        return REACTOR_PRESENT;
     }
 }

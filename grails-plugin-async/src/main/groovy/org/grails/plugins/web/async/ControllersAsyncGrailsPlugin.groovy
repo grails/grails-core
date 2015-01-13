@@ -16,10 +16,16 @@
 package org.grails.plugins.web.async
 
 import grails.async.Promises
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import reactor.Environment
+import reactor.bus.EventBus
+import reactor.spring.context.config.EnableReactor
 
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
@@ -28,15 +34,26 @@ import org.springframework.context.ApplicationContext
  * @author Graeme Rocher
  * @since 2.0
  */
-class ControllersAsyncGrailsPlugin {
+class ControllersAsyncGrailsPlugin extends Plugin {
     def version = GrailsUtil.getGrailsVersion()
     def loadAfter = ['controllers']
 
-    def doWithSpring = {
+    Closure doWithSpring() {{->
+        reactorConfiguration(GrailsReactorConfiguration)
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
+    }}
+
+    @Override
+    void doWithDynamicMethods() {
+        Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
     }
 
-    def doWithDynamicMethods(ApplicationContext appCtx) {
-        Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
+    @Configuration
+    @EnableReactor
+    static class GrailsReactorConfiguration {
+        @Bean
+        EventBus eventBus(Environment env) {
+            EventBus.create(env)
+        }
     }
 }

@@ -15,6 +15,7 @@
  */
 package grails.artefact
 
+import grails.events.Events
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
@@ -32,7 +33,7 @@ import org.springframework.web.context.request.RequestContextHolder
  *
  */
 @CompileStatic
-trait AsyncController {
+trait AsyncController extends Events {
 
     /**
      * Raw access to the Servlet 3.0 startAsync method

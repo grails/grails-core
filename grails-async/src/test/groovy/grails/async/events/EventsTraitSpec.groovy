@@ -1,8 +1,4 @@
-package grails.async
-
-import org.grails.async.factory.reactor.ReactorPromiseFactory
-import reactor.Environment
-import spock.lang.Specification
+package grails.async.events
 
 /*
  * Copyright 2014 original authors
@@ -23,16 +19,5 @@ import spock.lang.Specification
 /**
  * @author graemerocher
  */
-class ReactorPromiseFactorySpec extends Specification {
-
-    void "Test that the ReactoryPromiseFactory can create promises"() {
-        given:"A Reactor promise factory"
-            def promiseFactory = new ReactorPromiseFactory(new Environment())
-
-        when:"A promise is created"
-            def promise = promiseFactory.createPromise({ 1 })
-
-        then:"The value is returned"
-            promise.get() == 1
-    }
+class EventsTraitSpec {
 }

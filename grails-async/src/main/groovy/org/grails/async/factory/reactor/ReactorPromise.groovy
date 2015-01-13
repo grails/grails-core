@@ -17,9 +17,9 @@ package org.grails.async.factory.reactor
 
 import grails.async.Promise
 import groovy.transform.CompileStatic
-import reactor.core.Environment
-import reactor.function.Consumer
-import reactor.function.Supplier
+import reactor.Environment
+import reactor.fn.Consumer
+import reactor.fn.Supplier
 import reactor.rx.Promises
 
 import java.util.concurrent.TimeUnit
