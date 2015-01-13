@@ -1,4 +1,8 @@
-package grails.async.events
+package grails.events
+
+import reactor.Environment
+import reactor.bus.EventBus
+import spock.lang.Specification
 
 /*
  * Copyright 2014 original authors
@@ -19,5 +23,24 @@ package grails.async.events
 /**
  * @author graemerocher
  */
-class EventsTraitSpec {
+class EventsTraitSpec extends Specification {
+
+    void "test something"() {
+        when:"A new events class is created"
+
+            def defaultEventBus = EventBus.create(new Environment())
+            def f = new Foo(eventBus: defaultEventBus)
+            def result
+            f.on("test", {
+                result = it
+            })
+            f.notify("test", 1)
+            sleep 1000
+        then:"The event was consumed"
+            result == 1
+    }
+}
+
+class Foo implements Events {
+
 }

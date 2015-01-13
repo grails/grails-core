@@ -16,7 +16,8 @@
 package grails.events
 
 import groovy.transform.CompileStatic
-import org.grails.async.events.ClosureEventConsumer
+import org.grails.events.ClosureEventConsumer
+import org.springframework.beans.factory.annotation.Autowired
 import reactor.bus.Event
 import reactor.bus.EventBus
 import reactor.bus.Observable
@@ -36,6 +37,7 @@ import reactor.fn.Supplier
 @CompileStatic
 trait Events {
 
+    @Autowired
     EventBus eventBus
 
     /**
