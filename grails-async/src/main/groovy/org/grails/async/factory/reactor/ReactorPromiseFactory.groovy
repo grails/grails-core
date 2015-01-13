@@ -62,6 +62,12 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     }
 
     @Override
+    def <T> Promise<T> createBoundPromise(T value) {
+        final variable = Promises.success(environment, value)
+        return new ReactorPromise<T>(variable)
+    }
+
+    @Override
     def <T> List<T> waitAll(List<Promise<T>> promises) {
         waitAll(promises, -1, TimeUnit.SECONDS)
     }
