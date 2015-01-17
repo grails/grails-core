@@ -185,7 +185,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 }
 
                 if (pos == -1) {
-                    constraint.setNullable(true);
+                    constraint.setNullable(false);
                 }
                 else if (pos + shiftLength < token.length() && token.charAt(pos + shiftLength) == '?') {
                     constraint.setNullable(true);
@@ -739,7 +739,16 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         if (otherStaticTokenCount==0 && thisStaticTokenCount>0) {
             return 1;
         }
-        if (thisStaticTokenCount==0&&otherStaticTokenCount>0) {
+        if (thisStaticTokenCount==0 && otherStaticTokenCount>0) {
+            return -1;
+        }
+
+        final int thisStaticAndWildcardTokenCount = getStaticAndWildcardTokenCount(this);
+        final int otherStaticAndWildcardTokenCount = getStaticAndWildcardTokenCount(other);
+        if (otherStaticAndWildcardTokenCount==0 && thisStaticAndWildcardTokenCount>0) {
+            return 1;
+        }
+        if (thisStaticAndWildcardTokenCount==0 && otherStaticAndWildcardTokenCount>0) {
             return -1;
         }
 
@@ -818,6 +827,16 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
     private boolean isDoubleWildcard(String token) {
         return token.contains(DOUBLE_WILDCARD) || token.contains(CAPTURED_DOUBLE_WILDCARD);
+    }
+
+    private int getStaticAndWildcardTokenCount(UrlMapping mapping) {
+        String[] tokens = mapping.getUrlData().getTokens();
+        int count = 0;
+        for (String token : tokens) {
+            token = token.replace(OPTIONAL_EXTENSION_WILDCARD, "").replace(CAPTURED_DOUBLE_WILDCARD,"").replace(CAPTURED_WILDCARD,"");
+            if (!"".equals(token)) count++;
+        }
+        return count;
     }
 
     @Override
