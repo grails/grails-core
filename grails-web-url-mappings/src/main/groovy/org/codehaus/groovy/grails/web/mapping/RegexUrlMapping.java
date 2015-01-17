@@ -223,10 +223,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
             // Now replace "*" with "[^/]" and "**" with ".*".
             pattern = "^" + urlRoot
-                                    .replace("(\\.(*))", "\\.?([^/]+)?")
-                                    .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
-                                    .replaceAll("([^\\*])\\*$", "$1[^/]+")
-                                    .replaceAll("\\*\\*", ".*");
+                    .replace("(\\.(*))", "\\.?([^/]+)?")
+                    .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
+                    .replaceAll("([^\\*])\\*$", "$1[^/]+")
+                    .replaceAll("\\*\\*", ".*");
 
             if("/(*)(\\.(*))".equals(urlEnd)) {
                 // shortcut this common special case which will
@@ -235,13 +235,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 pattern += "/([^/]+)\\.([^/.]+)?";
             } else {
                 pattern += urlEnd
-                                .replace("(\\.(*))", "\\.?([^/]+)?")
-                                .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
-                                .replaceAll("([^\\*])\\*$", "$1[^/]+")
-                                .replaceAll("\\*\\*", ".*")
-                                .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
-                                .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
-                                ;
+                        .replace("(\\.(*))", "\\.?([^/]+)?")
+                        .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
+                        .replaceAll("([^\\*])\\*$", "$1[^/]+")
+                        .replaceAll("\\*\\*", ".*")
+                        .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
+                        .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
+                ;
             }
             pattern += "/??$";
             regex = Pattern.compile(pattern);
@@ -350,8 +350,8 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                     usedParams.add(propName);
                     if (value == null && !prop.isNullable()) {
                         throw new UrlMappingException("Unable to create URL for mapping [" + this +
-                            "] and parameters [" + paramValues + "]. Parameter [" +
-                            prop.getPropertyName() + "] is required, but was not specified!");
+                                "] and parameters [" + paramValues + "]. Parameter [" +
+                                prop.getPropertyName() + "] is required, but was not specified!");
                     }
                     else if (value == null) {
                         m.appendReplacement(buf, "");
@@ -388,7 +388,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 }
                 catch (UnsupportedEncodingException e) {
                     throw new ControllerExecutionException("Error creating URL for parameters [" +
-                        paramValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
+                            paramValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
                 }
             }
             else {
@@ -426,7 +426,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
     @SuppressWarnings("unchecked")
     private String createURLInternal(String controller, String action, String namespace, String pluginName, Map paramValues,
-            String encoding, boolean includeContextPath) {
+                                     String encoding, boolean includeContextPath) {
 
         if (paramValues == null) paramValues = new HashMap();
 
@@ -480,18 +480,18 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     }
 
     public String createRelativeURL(String controller, String action, String namespace, String pluginName, Map paramValues,
-            String encoding, String fragment) {
+                                    String encoding, String fragment) {
         final String url = createURLInternal(controller, action, namespace, pluginName, paramValues, encoding, false);
         return createUrlWithFragment(url, fragment, encoding);
     }
 
     public String createURL(String controller, String action, Map paramValues,
-            String encoding, String fragment) {
+                            String encoding, String fragment) {
         return createURL(controller, action, null, null, paramValues, encoding, fragment);
     }
 
     public String createURL(String controller, String action, String namespace, String pluginName, Map paramValues,
-            String encoding, String fragment) {
+                            String encoding, String fragment) {
         String url = createURL(controller, action, namespace, pluginName, paramValues, encoding);
         return createUrlWithFragment(url, fragment, encoding);
     }
@@ -567,7 +567,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     private void appendValueToURI(String encoding, StringBuilder uri, String name, Object value) {
         try {
             uri.append(URLEncoder.encode(name, encoding)).append('=')
-               .append(URLEncoder.encode(value != null ? value.toString() : "", encoding));
+                    .append(URLEncoder.encode(value != null ? value.toString() : "", encoding));
         }
         catch (UnsupportedEncodingException e) {
             throw new ControllerExecutionException("Error redirecting request for url [" + name + ":" +
