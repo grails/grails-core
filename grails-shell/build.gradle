@@ -7,7 +7,7 @@ repositories {
 }
 
 ext {
-    gradleToolingApiVersion = "2.3-20141120230022+0000" // gradle.gradleVersion
+    gradleToolingApiVersion = "2.3-20141218230037+0000" // gradle.gradleVersion
 }
 
 dependencies {
