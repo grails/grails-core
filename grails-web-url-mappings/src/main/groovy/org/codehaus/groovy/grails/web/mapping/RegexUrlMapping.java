@@ -184,10 +184,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                     }
                 }
 
-                if (pos == -1) {
-                    constraint.setNullable(false);
-                }
-                else if (pos + shiftLength < token.length() && token.charAt(pos + shiftLength) == '?') {
+                if (pos != -1 && pos + shiftLength < token.length() && token.charAt(pos + shiftLength) == '?') {
                     constraint.setNullable(true);
                 }
 
