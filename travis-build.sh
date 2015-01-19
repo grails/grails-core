@@ -7,7 +7,8 @@ grailsVersion="${grailsVersion//[[:blank:]\'\"]/}"
 echo "Project Version: '$grailsVersion'"
 
 EXIT_STATUS=0
-./gradlew test || EXIT_STATUS=$?
+./gradlew --stop
+./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
 
 if [[ $TRAVIS_BRANCH =~ ^master|2\.[34]\.x$ && $TRAVIS_REPO_SLUG == "grails/grails-core" 
 	&& $TRAVIS_PULL_REQUEST == 'false' 
