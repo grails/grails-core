@@ -665,7 +665,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
-            out.println "<select name=\"${name}_day\" id=\"${id}_day\" aria-label=\"${id}_day\""
+            out.println "<select name=\"${name}_day\" id=\"${id}_day\" aria-labelledby=\"${name}\""
             if (attrs.disabled) {
                 out << ' disabled="disabled"'
             }
@@ -689,7 +689,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         // create month select
         if (precision >= PRECISION_RANKINGS["month"]) {
-            out.println "<select name=\"${name}_month\" id=\"${id}_month\" aria-label=\"${id}_month\""
+            out.println "<select name=\"${name}_month\" id=\"${id}_month\" aria-labelledby=\"${name}\""
             if (attrs.disabled) {
                 out << ' disabled="disabled"'
             }
@@ -715,7 +715,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         // create year select
         if (precision >= PRECISION_RANKINGS["year"]) {
-            out.println "<select name=\"${name}_year\" id=\"${id}_year\" aria-label=\"${id}_year\""
+            out.println "<select name=\"${name}_year\" id=\"${id}_year\" aria-labelledby=\"${name}\""
             if (attrs.disabled) {
                 out << ' disabled="disabled"'
             }
@@ -739,7 +739,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         // do hour select
         if (precision >= PRECISION_RANKINGS["hour"]) {
-            out.println "<select name=\"${name}_hour\" id=\"${id}_hour\" aria-label=\"${id}_hour\""
+            out.println "<select name=\"${name}_hour\" id=\"${id}_hour\" aria-labelledby=\"${name}\""
             if (attrs.disabled) {
                 out << ' disabled="disabled"'
             }
@@ -770,7 +770,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         // do minute select
         if (precision >= PRECISION_RANKINGS["minute"]) {
-            out.println "<select name=\"${name}_minute\" id=\"${id}_minute\" aria-label=\"${id}_minute\""
+            out.println "<select name=\"${name}_minute\" id=\"${id}_minute\" aria-labelledby=\"${name}\""
             if (attrs.disabled) {
                 out << 'disabled="disabled"'
             }

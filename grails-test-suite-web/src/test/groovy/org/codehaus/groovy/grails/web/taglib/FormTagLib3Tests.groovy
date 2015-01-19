@@ -513,10 +513,10 @@ Radio 3 <input type="radio" name="myGroup" value="3" />
         def template = '<g:datePicker name="myDate" value="${new Date()}"/>'
         def result = applyTemplate(template)
         
-        assertTrue result.contains('<select name="myDate_year" id="myDate_year" aria-label="myDate_year"')
-        assertTrue result.contains('<select name="myDate_month" id="myDate_month" aria-label="myDate_month"')
-        assertTrue result.contains('<select name="myDate_day" id="myDate_day" aria-label="myDate_day"')
-        assertTrue result.contains('<select name="myDate_hour" id="myDate_hour" aria-label="myDate_hour"')
-        assertTrue result.contains('<select name="myDate_minute" id="myDate_minute" aria-label="myDate_minute"')
+        assertTrue result.contains('<select name="myDate_year" id="myDate_year" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_month" id="myDate_month" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_day" id="myDate_day" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_hour" id="myDate_hour" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_minute" id="myDate_minute" aria-labelledby="myDate"')
     }
 }
