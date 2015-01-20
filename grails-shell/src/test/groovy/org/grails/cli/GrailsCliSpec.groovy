@@ -23,6 +23,10 @@ import static net.sf.expectit.matcher.Matchers.contains
 
 class GrailsCliSpec extends Specification {
     static int EXPECT_TIMEOUT_SECONDS = (System.getenv('TRAVIS') == 'true' || System.getenv('BUILD_TAG')) ? 120 : 20
+
+    // we use a fixed profile repository revision so that the tests don't break after minor changes to the profile repository
+    // set to empty string if you want to use most recent commit in the profile repository (for development)
+    static String FIXED_GRAILS_PROFILE_REPOSITORY_GIT_REVISION = 'dd1f71b2'
     
     @Rule
     TemporaryFolder tempFolder = new TemporaryFolder()
@@ -54,8 +58,9 @@ class GrailsCliSpec extends Specification {
                 originUri = profilesDirectory.getAbsolutePath()
             }
             profilesDirectory = tempProfilesDirectory
-            // for development, comment out the following line. the latest commit in ~/.grails/repository master branch will be used by default in that case
-            gitRevision = '554d6eb4'
+            if(FIXED_GRAILS_PROFILE_REPOSITORY_GIT_REVISION) {
+                gitRevision = FIXED_GRAILS_PROFILE_REPOSITORY_GIT_REVISION
+            }
         }
         // force profile initialization
         profileRepository.getProfile('web')
