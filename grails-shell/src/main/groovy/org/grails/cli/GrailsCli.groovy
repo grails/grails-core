@@ -14,53 +14,37 @@
  * limitations under the License.
  */
 package org.grails.cli
-
 import grails.build.logging.GrailsConsole
-import org.gradle.tooling.BuildCancelledException
-import org.grails.cli.profile.CommandArgument
-import org.grails.config.CodeGenConfig
 import grails.config.ConfigMap
 import grails.io.support.SystemStreamsRedirector
 import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+import jline.UnixTerminal
+import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
+import jline.internal.NonBlockingInputStream
+import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.ExternalDependency
 import org.gradle.tooling.model.eclipse.EclipseProject
+import org.grails.build.parsing.CommandLine
+import org.grails.build.parsing.CommandLineParser
 import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleAsyncInvoker
 import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.gradle.cache.ListReadingCachedGradleOperation
 import org.grails.cli.interactive.completers.EscapingFileNameCompletor
 import org.grails.cli.interactive.completers.RegexCompletor
-import org.grails.cli.profile.Command
-import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.interactive.completers.SortedAggregateCompleter
+import org.grails.cli.profile.*
 import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.cli.profile.git.GitProfileRepository
+import org.grails.config.CodeGenConfig
 import org.grails.exceptions.ExceptionUtils
 
-import java.util.concurrent.Callable
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-
-import jline.UnixTerminal
-import jline.console.UserInterruptException
-import jline.console.completer.AggregateCompleter
-import jline.internal.NonBlockingInputStream
-
-import org.grails.build.parsing.CommandLine
-import org.grails.build.parsing.CommandLineParser
-import org.grails.cli.profile.CommandCancellationListener
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.git.GitProfileRepository
-import org.grails.cli.profile.ProjectContext
-
-
+import java.util.concurrent.*
 /**
  * Main class for the Grails command line. Handles interactive mode and running Grails commands within the context of a profile
  *
@@ -91,7 +75,7 @@ class GrailsCli {
         }
     }
 
-    AggregateCompleter aggregateCompleter=new AggregateCompleter()
+    SortedAggregateCompleter aggregateCompleter=new SortedAggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
     boolean keepRunning = true
     Boolean ansiEnabled = null
