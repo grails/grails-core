@@ -31,6 +31,7 @@ import org.grails.cli.profile.*
  */
 @CompileStatic
 class CreateAppCommand implements Command, ProfileRepositoryAware {
+    private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='3.0.0.BUILD-SNAPSHOT'
     public static final String NAME = "create-app"
     ProfileRepository profileRepository
     Map<String, String> variables = [:]
@@ -133,7 +134,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         variables['grails.codegen.projectNaturalName'] = GrailsNameUtils.getNaturalName(projectClassName)
         variables['grails.codegen.projectName'] = GrailsNameUtils.getScriptName(projectClassName)
         variables['grails.profile'] = profile.name
-        variables['grails.version'] = Environment.getPackage().getImplementationVersion()
+        variables['grails.version'] = Environment.getPackage().getImplementationVersion() ?: GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS
         variables['grails.app.name'] = appname
         variables['grails.app.group'] = groupname
     }
