@@ -15,21 +15,13 @@
  */
 
 package org.grails.cli.profile.commands
-
+import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
-import org.grails.cli.profile.Command
-import org.grails.cli.profile.CommandDescription
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileRepository
-import org.grails.cli.profile.ProfileRepositoryAware
-import org.grails.cli.profile.git.GitProfileRepository
-
-
+import org.grails.cli.profile.*
 /**
  * Command for creating Grails applications
  *
@@ -141,7 +133,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         variables['grails.codegen.projectNaturalName'] = GrailsNameUtils.getNaturalName(projectClassName)
         variables['grails.codegen.projectName'] = GrailsNameUtils.getScriptName(projectClassName)
         variables['grails.profile'] = profile.name
-        variables['grails.version'] = this.getClass().getPackage().getImplementationVersion()
+        variables['grails.version'] = Environment.getPackage().getImplementationVersion()
         variables['grails.app.name'] = appname
         variables['grails.app.group'] = groupname
     }
