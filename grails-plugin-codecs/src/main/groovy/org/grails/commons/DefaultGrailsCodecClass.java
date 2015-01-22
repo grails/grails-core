@@ -36,6 +36,7 @@ import org.grails.encoder.EncodingStateRegistryLookup;
 import org.grails.encoder.EncodingStateRegistryLookupHolder;
 import org.grails.encoder.StreamingEncoder;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.Ordered;
 import org.springframework.util.ReflectionUtils;
 
@@ -43,33 +44,39 @@ import org.springframework.util.ReflectionUtils;
  * @author Jeff Brown
  * @since 0.4
  */
-public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements GrailsCodecClass, Ordered {
+public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements InitializingBean, GrailsCodecClass, Ordered {
     public static final String CODEC = CodecArtefactHandler.TYPE;
     private Encoder encoder;
     private Decoder decoder;
     private static int instantionCounter=0;
     private int order = 100 + instantionCounter++;
+    private boolean initialized = false;
 
     public DefaultGrailsCodecClass(Class<?> clazz) {
         super(clazz, CODEC);
+    }
+
+    public void afterPropertiesSet() {
         initializeCodec();
     }
 
     private void initializeCodec() {
+        if (initialized) return;
+        initialized = true;
         Integer orderSetting = getPropertyOrStaticPropertyOrFieldValue("order", Integer.class);
         if (orderSetting != null) {
             order = orderSetting;
         }
         if (Encoder.class.isAssignableFrom(getClazz())) {
             encoder = (Encoder)getReferenceInstance();
-            autowireCodecBean(encoder);
+            encoder = (Encoder)autowireCodecBean(encoder);
             if (encoder instanceof Ordered) {
                 order = ((Ordered)encoder).getOrder();
             }
         }
         if (Decoder.class.isAssignableFrom(getClazz())) {
             decoder = (Decoder)getReferenceInstance();
-            autowireCodecBean(decoder);
+            decoder = (Decoder)autowireCodecBean(decoder);
             if (decoder instanceof Ordered) {
                 order = ((Ordered)decoder).getOrder();
             }
@@ -78,11 +85,11 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             CodecFactory codecFactory=null;
             if (CodecFactory.class.isAssignableFrom(getClazz())) {
                 codecFactory=(CodecFactory)getReferenceInstance();
-                autowireCodecBean(codecFactory);
+                codecFactory=(CodecFactory)autowireCodecBean(codecFactory);
             }
             if (codecFactory==null) {
                 codecFactory=getPropertyOrStaticPropertyOrFieldValue("codecFactory", CodecFactory.class);
-                autowireCodecBean(codecFactory);
+                codecFactory=(CodecFactory)autowireCodecBean(codecFactory);
             }
             if (codecFactory==null) {
                 codecFactory=new ClosureCodecFactory();
@@ -102,11 +109,14 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         }
     }
 
-    protected void autowireCodecBean(Object existingBean) {
+    protected Object autowireCodecBean(Object existingBean) {
         if (existingBean != null && grailsApplication != null && grailsApplication.getMainContext() != null) {
-            grailsApplication.getMainContext().getAutowireCapableBeanFactory().autowireBeanProperties(
+            AutowireCapableBeanFactory beanFactory = grailsApplication.getMainContext().getAutowireCapableBeanFactory();
+            beanFactory.autowireBeanProperties(
                     existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+            existingBean = beanFactory.initializeBean(existingBean, "codec");
         }
+        return existingBean;
     }
 
     private class ClosureCodecFactory implements CodecFactory {
@@ -303,6 +313,10 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
 
     public void configureCodecMethods() {
+        // for compatibility. Not everything (especially unit tests written by existing Grails applications) call afterPropertiesSet(), but everything calls
+        // configureCodecMethods() at least once
+        initializeCodec();
+
         new CodecMetaClassSupport().configureCodecMethods(this);
     }
 

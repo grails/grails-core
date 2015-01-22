@@ -151,8 +151,12 @@ class MockGrailsApplication implements GrailsApplication {
     private Map<String, DefaultGrailsCodecClass> mockCodecArtefacts = new HashMap<String, DefaultGrailsCodecClass>();
 
     MockGrailsApplication() {
-        mockCodecArtefacts.put(HTMLCodec.class.getName(), new DefaultGrailsCodecClass(HTMLCodec.class));
-        mockCodecArtefacts.put(CodecWithClosureProperties.class.getName(), new DefaultGrailsCodecClass(CodecWithClosureProperties.class));
+        DefaultGrailsCodecClass htmlCodec = new DefaultGrailsCodecClass(HTMLCodec.class);
+        htmlCodec.afterPropertiesSet();
+        mockCodecArtefacts.put(HTMLCodec.class.getName(), htmlCodec);
+        DefaultGrailsCodecClass codecWithClosureProperties = new DefaultGrailsCodecClass(CodecWithClosureProperties.class);
+        codecWithClosureProperties.afterPropertiesSet();
+        mockCodecArtefacts.put(CodecWithClosureProperties.class.getName(), codecWithClosureProperties);
     }
 
     public GrailsClass getArtefact(String artefactType, String name) {
