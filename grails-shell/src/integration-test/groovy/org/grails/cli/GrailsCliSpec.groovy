@@ -132,7 +132,7 @@ class GrailsCliSpec extends Specification {
     }
     
     private ExpectBuilder createExpectsBuilderWithSystemInOut() {
-        PipedInputStream emulatedSystemIn = new PipedInputStream()
+        PipedInputStream emulatedSystemIn = new PipedInputStream(1)
         expectCommandsPipe = new PipedOutputStream(emulatedSystemIn)
         System.setIn(emulatedSystemIn)
 
