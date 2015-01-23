@@ -104,8 +104,9 @@ class GitProfileRepository implements ProfileRepository{
                                  .setDirectory(profilesDirectory)
                                  .setBranch(gitBranch)
                                 .call()
-        } else if (!gitRevision) {
-            fetchAndRebaseIfExpired()
+        } else {
+            boolean hasGitRevision = gitRevision
+            fetchAndRebaseIfExpired(hasGitRevision)
         }
         if (gitRevision) {
             Git git = Git.open(profilesDirectory)
@@ -131,14 +132,13 @@ class GitProfileRepository implements ProfileRepository{
         }
     }
 
-    public void fetchAndRebaseIfExpired() {
+    public void fetchAndRebaseIfExpired(boolean forceUpdate = false) {
         File fetchHead = new File(profilesDirectory, ".git/FETCH_HEAD")
-        if(!fetchHead.exists() || fetchHead.lastModified() < System.currentTimeMillis() - updateInterval) {
+        if(forceUpdate || !fetchHead.exists() || fetchHead.lastModified() < System.currentTimeMillis() - updateInterval) {
             try {
                 Git git = Git.open(profilesDirectory)
                 git.fetch()
                 git.rebase()
-                checkoutTagForRelease()
             } catch (Exception e) {
                 GrailsConsole.getInstance().error("Problem updating profiles from origin git repository", e)
             }
