@@ -45,3 +45,5 @@ test {
     // execute in single thread
     maxParallelForks = 1
 }
+
+apply from: "../gradle/integration-test.gradle"
