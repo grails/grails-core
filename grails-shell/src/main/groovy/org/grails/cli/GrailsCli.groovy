@@ -64,7 +64,6 @@ class GrailsCli {
     private static ExecutionContext currentExecutionContext = null
 
     private static boolean interactiveModeActive
-    private static PrintStream originalOut = System.out
     static {
         try {
             Runtime.addShutdownHook {
@@ -338,7 +337,7 @@ class GrailsCli {
 
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
-                        originalOut.println "Resolving dependencies. Please wait..."
+                        originalStreams.out.println "Resolving dependencies. Please wait..."
                         EclipseProject project = connection.action(new ClasspathBuildAction()).run()
                         return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
                     }

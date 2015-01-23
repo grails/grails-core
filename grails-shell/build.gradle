@@ -7,7 +7,7 @@ repositories {
 }
 
 ext {
-    gradleToolingApiVersion = "2.3-20141218230037+0000" // gradle.gradleVersion
+    gradleToolingApiVersion = "2.3-20150115093000+0000" // gradle.gradleVersion
 }
 
 dependencies {
@@ -45,3 +45,5 @@ test {
     // execute in single thread
     maxParallelForks = 1
 }
+
+apply from: "../gradle/integration-test.gradle"
