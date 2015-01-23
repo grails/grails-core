@@ -168,7 +168,7 @@ class SomeClass {
     }
     
     @Issue('GRAILS-11242')
-    void 'Test compiling @Validateable'() {
+    void 'Test compiling Validateable'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -179,8 +179,7 @@ package grails.compiler
 import groovy.transform.TypeCheckingMode
 
 @GrailsCompileStatic
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
     static constraints = {
         name matches: /[A-Z].*/
@@ -192,7 +191,7 @@ class SomeClass {
     }
     
     @Issue('GRAILS-11242')
-    void 'Test compiling @Validateable which contains unrelated type checking error'() {
+    void 'Test compiling Validateable which contains unrelated type checking error'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -201,8 +200,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsCompileStatic
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
 
     def someMethod() {
@@ -221,7 +219,7 @@ class SomeClass {
     }
     
     @Issue('GRAILS-11242')
-    void 'Test compiling @Validateable which attempts to constrain a non existent property'() {
+    void 'Test compiling Validateable which attempts to constrain a non existent property'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -230,8 +228,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsCompileStatic
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
 
     static constraints = {
@@ -248,7 +245,7 @@ class SomeClass {
     
     
     @Issue('GRAILS-11242')
-    void 'Test compiling @Validateable which attempts to constrain an inherited property'() {
+    void 'Test compiling Validateable which attempts to constrain an inherited property'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -257,14 +254,12 @@ class SomeClass {
 package grails.compiler
 
 @GrailsCompileStatic
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
 }
 
 @GrailsCompileStatic
-@grails.validation.Validateable
-class SomeSubClass extends SomeClass {
+class SomeSubClass extends SomeClass implements grails.artefact.Validateable {
     static constraints = {
         name matches: /[A-Z].*/
     }

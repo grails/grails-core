@@ -98,7 +98,7 @@ class SomeClass {
     }
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @grails.artefact.Validateable'() {
+    void 'Test compiling Validateable'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -109,8 +109,7 @@ package grails.compiler
 import groovy.transform.TypeCheckingMode
 
 @GrailsTypeChecked
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
     static constraints = {
         name matches: /[A-Z].*/
@@ -122,7 +121,7 @@ class SomeClass {
     }
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @grails.artefact.Validateable which contains unrelated type checking error'() {
+    void 'Test compiling Validateable which contains unrelated type checking error'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -131,8 +130,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsTypeChecked
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
 
     def someMethod() {
@@ -151,7 +149,7 @@ class SomeClass {
     }
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @grails.artefact.Validateable which attempts to constrain a non existent property'() {
+    void 'Test compiling Validateable which attempts to constrain a non existent property'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -160,8 +158,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsTypeChecked
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
 
     static constraints = {
@@ -178,7 +175,7 @@ class SomeClass {
     
     
     @Issue(['GRAILS-11056', 'GRAILS-11204'])
-    void 'Test compiling @grails.artefact.Validateable which attempts to constrain an inherited property'() {
+    void 'Test compiling Validateable which attempts to constrain an inherited property'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -187,8 +184,7 @@ class SomeClass {
 package grails.compiler
 
 @GrailsTypeChecked
-@grails.validation.Validateable
-class SomeClass {
+class SomeClass implements grails.artefact.Validateable {
     String name
 }
 

@@ -719,7 +719,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             @SuppressWarnings("unchecked")
             boolean argumentIsValidateable = GrailsASTUtils.hasAnyAnnotations(
                     commandObjectNode,
-                    grails.validation.Validateable.class,
                     grails.persistence.Entity.class,
                     javax.persistence.Entity.class) ||
                     commandObjectNode.implementsInterface(ClassHelper.make(grails.artefact.Validateable.class));
@@ -766,7 +765,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 
                 final String warningMessage = "The [" + actionName + "] action accepts a parameter of type [" +
                         commandObjectNode.getName() +
-                        "] which has not been marked with @grails.validation.Validateable and does not implement grails.artefact.Validateable.  Data binding will still be applied " +
+                        "] which has not been marked with does not implement grails.artefact.Validateable.  Data binding will still be applied " +
                         "to this command object but the instance will not be validateable.";
                 GrailsASTUtils.warning(source, actionNode, warningMessage);
             }
