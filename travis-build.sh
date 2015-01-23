@@ -12,7 +12,7 @@ echo "Executing tests"
 ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
 echo "Done."
 echo "Executing integration tests"
-./gradlew --no-daemon --stacktrace integrationTest || EXIT_STATUS=$?
+./gradlew --no-daemon --stacktrace --info integrationTest || EXIT_STATUS=$?
 echo "Done."
 
 if [[ $TRAVIS_BRANCH =~ ^master|2\.[34]\.x$ && $TRAVIS_REPO_SLUG == "grails/grails-core" 
