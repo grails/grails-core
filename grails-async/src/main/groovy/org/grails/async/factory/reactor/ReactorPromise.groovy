@@ -23,6 +23,7 @@ import reactor.fn.Supplier
 import reactor.rx.Promises
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 
 /**
@@ -34,10 +35,10 @@ import java.util.concurrent.TimeUnit
 @CompileStatic
 class ReactorPromise<T> implements Promise<T> {
 
-    reactor.rx.Promise internalPromise
+    reactor.rx.Promise<T> internalPromise
 
     ReactorPromise(Closure<T> callable, Environment environment) {
-        this.internalPromise = Promises.task(environment, callable as Supplier<T>)
+        this.internalPromise = Promises.task(environment, Environment.sharedDispatcher(), callable as Supplier<T>)
     }
 
     ReactorPromise(reactor.rx.Promise promise) {
@@ -52,7 +53,13 @@ class ReactorPromise<T> implements Promise<T> {
 
     @Override
     T get(long timeout, TimeUnit units) throws Throwable {
-        internalPromise.await timeout, units
+        T res = (T)internalPromise.await(timeout, units)
+        if(!internalPromise.success) {
+            throw new TimeoutException()
+        }
+        else {
+            return res
+        }
     }
 
     @Override
