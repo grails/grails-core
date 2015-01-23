@@ -8,6 +8,7 @@ echo "Project Version: '$grailsVersion'"
 
 EXIT_STATUS=0
 ./gradlew --stop
+echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 echo "Executing tests"
 ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
 echo "Done."
