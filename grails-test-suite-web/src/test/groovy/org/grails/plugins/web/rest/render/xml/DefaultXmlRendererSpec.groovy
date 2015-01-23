@@ -1,24 +1,28 @@
 package org.grails.plugins.web.rest.render.xml
 
 import grails.converters.XML
+import grails.core.DefaultGrailsApplication
+import grails.persistence.Entity
+import grails.test.mixin.TestFor
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
-import grails.core.DefaultGrailsApplication
+import grails.web.mime.MimeType
+
+import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
-import grails.web.mime.MimeType
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.plugins.web.rest.render.ServletRenderContext
-import org.grails.plugins.web.rest.render.html.Book
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
+
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
+@TestFor(XmlBook)
 class DefaultXmlRendererSpec extends Specification {
 
     void setup() {
@@ -35,7 +39,7 @@ class DefaultXmlRendererSpec extends Specification {
 
     void "Test that XML renderer writes XML to the response for a domain instance"() {
         when:"A domain instance is rendered"
-            def renderer = new DefaultXmlRenderer(Book)
+            def renderer = new DefaultXmlRenderer(XmlBook)
             final response = new MockHttpServletResponse()
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
             webRequest.actionName = "test"
@@ -45,7 +49,7 @@ class DefaultXmlRendererSpec extends Specification {
                     MimeType.TEXT_XML
                 }
             }
-            final book = new Book(title: "The Stand")
+            final book = new XmlBook(title: "The Stand")
             renderer.render(book,renderContext)
 
 
@@ -62,7 +66,7 @@ class DefaultXmlRendererSpec extends Specification {
 
     void "Test that XML renderer sets a model and view correctly for an Error instance"() {
         when:"A domain instance is rendered"
-            def renderer = new DefaultXmlRenderer(Book)
+            def renderer = new DefaultXmlRenderer(XmlBook)
             final response = new MockHttpServletResponse()
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
             webRequest.actionName = "test"
@@ -72,7 +76,7 @@ class DefaultXmlRendererSpec extends Specification {
                     MimeType.TEXT_XML
                 }
             }
-            final book = new Book(title: "")
+            final book = new XmlBook(title: "")
             final errors = new ValidationErrors(book)
             book.errors = errors
             errors.rejectValue("title", "title.blank.error")
@@ -91,5 +95,13 @@ class DefaultXmlRendererSpec extends Specification {
 
         then:"It is correct"
             xml.error.@field.text() == 'title'
+    }
+}
+
+@Entity
+class XmlBook {
+    String title
+    static constraints = {
+        title blank:false
     }
 }
