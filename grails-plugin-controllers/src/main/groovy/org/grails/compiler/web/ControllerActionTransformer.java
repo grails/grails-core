@@ -765,7 +765,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 
                 final String warningMessage = "The [" + actionName + "] action accepts a parameter of type [" +
                         commandObjectNode.getName() +
-                        "] which has not been marked with does not implement grails.artefact.Validateable.  Data binding will still be applied " +
+                        "] which does not implement grails.artefact.Validateable.  Data binding will still be applied " +
                         "to this command object but the instance will not be validateable.";
                 GrailsASTUtils.warning(source, actionNode, warningMessage);
             }
