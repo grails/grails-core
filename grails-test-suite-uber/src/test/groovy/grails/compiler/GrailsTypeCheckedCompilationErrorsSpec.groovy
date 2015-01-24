@@ -189,8 +189,7 @@ class SomeClass implements grails.artefact.Validateable {
 }
 
 @GrailsTypeChecked
-@grails.validation.Validateable
-class SomeSubClass extends SomeClass {
+class SomeSubClass extends SomeClass implements grails.artefact.Validateable {
     static constraints = {
         name matches: /[A-Z].*/
     }
