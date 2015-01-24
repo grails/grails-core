@@ -337,9 +337,11 @@ class GrailsCli {
 
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
-                        originalStreams.out.println "Resolving dependencies. Please wait..."
+                        originalStreams.out.print "Resolving dependencies. Please wait... "
                         EclipseProject project = connection.action(new ClasspathBuildAction()).run()
-                        return project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
+                        List<URL> classpathUrls = project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
+                        originalStreams.out.println "Done."
+                        return classpathUrls
                     }
                 }.call()
 
