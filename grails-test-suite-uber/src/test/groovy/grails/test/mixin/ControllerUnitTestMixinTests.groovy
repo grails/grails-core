@@ -1,12 +1,10 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-import grails.artefact.Controller
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
-import grails.artefact.Validateable
-import grails.web.mapping.LinkGenerator
+import grails.validation.Validateable
 import grails.web.mime.MimeUtility
 
 import javax.servlet.http.HttpServletResponse

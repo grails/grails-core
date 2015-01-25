@@ -28,6 +28,7 @@ import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
 import grails.validation.DefaultASTValidateableHelper;
+import grails.validation.Validateable;
 import grails.web.Action;
 import grails.web.RequestParameter;
 import grails.web.controllers.ControllerMethod;
@@ -721,7 +722,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     commandObjectNode,
                     grails.persistence.Entity.class,
                     javax.persistence.Entity.class) ||
-                    commandObjectNode.implementsInterface(ClassHelper.make(grails.artefact.Validateable.class));
+                    commandObjectNode.implementsInterface(ClassHelper.make(Validateable.class));
 
             if (!argumentIsValidateable) {
                 final ModuleNode commandObjectModule = commandObjectNode.getModule();
@@ -765,7 +766,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 
                 final String warningMessage = "The [" + actionName + "] action accepts a parameter of type [" +
                         commandObjectNode.getName() +
-                        "] which does not implement grails.artefact.Validateable.  Data binding will still be applied " +
+                        "] which does not implement grails.validation.Validateable.  Data binding will still be applied " +
                         "to this command object but the instance will not be validateable.";
                 GrailsASTUtils.warning(source, actionNode, warningMessage);
             }

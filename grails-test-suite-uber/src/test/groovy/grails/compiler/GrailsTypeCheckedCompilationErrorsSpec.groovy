@@ -109,7 +109,7 @@ package grails.compiler
 import groovy.transform.TypeCheckingMode
 
 @GrailsTypeChecked
-class SomeClass implements grails.artefact.Validateable {
+class SomeClass implements grails.validation.Validateable {
     String name
     static constraints = {
         name matches: /[A-Z].*/
@@ -130,7 +130,7 @@ class SomeClass implements grails.artefact.Validateable {
 package grails.compiler
 
 @GrailsTypeChecked
-class SomeClass implements grails.artefact.Validateable {
+class SomeClass implements grails.validation.Validateable {
     String name
 
     def someMethod() {
@@ -158,7 +158,7 @@ class SomeClass implements grails.artefact.Validateable {
 package grails.compiler
 
 @GrailsTypeChecked
-class SomeClass implements grails.artefact.Validateable {
+class SomeClass implements grails.validation.Validateable {
     String name
 
     static constraints = {
@@ -184,12 +184,12 @@ class SomeClass implements grails.artefact.Validateable {
 package grails.compiler
 
 @GrailsTypeChecked
-class SomeClass implements grails.artefact.Validateable {
+class SomeClass implements grails.validation.Validateable {
     String name
 }
 
 @GrailsTypeChecked
-class SomeSubClass extends SomeClass implements grails.artefact.Validateable {
+class SomeSubClass extends SomeClass implements grails.validation.Validateable {
     static constraints = {
         name matches: /[A-Z].*/
     }
