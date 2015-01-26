@@ -23,6 +23,27 @@ if [[ ( $TRAVIS_BRANCH == 'master' ) && $TRAVIS_REPO_SLUG == "grails/grails-core
 
     if [[ -n $TRAVIS_TAG ]]; then
         ./gradlew bintrayUpload || EXIT_STATUS=$?
+        ./gradlew assemble || EXIT_STATUS=$?
+
+        version="$TRAVIS_TAG"
+        version=${version:1}
+        zipName = "grails-$TRAVIS_TAG"
+        zipName = ${zipName}.zip
+
+        github-release release \
+            --user grails \
+            --repo grails-core \
+            --tag $TRAVIS_TAG \
+            --name "Grails $TRAVIS_TAG" \
+            --description "The Grails Web Framework $TRAVIS_TAG" \
+            --pre-release
+
+        github-release upload \
+            --user grails \
+            --repo grails-core \
+            --tag $TRAVIS_TAG \
+            --name $zipName \
+            --file "build/distributions/$zipName"
     else
         ./gradlew publish || EXIT_STATUS=$?
     fi
