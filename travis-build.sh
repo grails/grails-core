@@ -8,7 +8,13 @@ echo "Project Version: '$grailsVersion'"
 
 EXIT_STATUS=0
 ./gradlew --stop
+echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+echo "Executing tests"
 ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
+echo "Done."
+echo "Executing integration tests"
+./gradlew --no-daemon --stacktrace --info integrationTest < /dev/null || EXIT_STATUS=$?
+echo "Done."
 
 
 if [[ ( $TRAVIS_BRANCH == 'master' ) && $TRAVIS_REPO_SLUG == "grails/grails-core" && $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then

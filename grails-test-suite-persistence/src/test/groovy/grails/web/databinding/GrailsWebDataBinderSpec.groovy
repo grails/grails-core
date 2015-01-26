@@ -25,7 +25,7 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
-import grails.artefact.Validateable
+import grails.validation.Validateable
 
 import org.apache.commons.lang.builder.CompareToBuilder
 import org.grails.databinding.BindingFormat as LegacyBindingFormat

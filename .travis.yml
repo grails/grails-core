@@ -17,7 +17,7 @@ env:
   - secure: F2/ezAm2pX3CDjU+/L8vC+fTAU8Qu6We2aLmKh0Mzi0hGmu0paEy/ixDl9twai0lGxWB1S8q7m0+bw87elFr4UYTlMs1kvONzChbXZj2D0Es46m//mirVzADSVAo/Fnpe4I6fqeaF7ggxMRZ3rY2xQ8TFsaoFWodNymEU8KIih8=
   - secure: dDI9zb22/GhVryGod9bhcSNeTrgZOpea65Wqg/RlXWczFNqI0B9evsJTD/kDMdwZP242SSXCnFMGERWQpd3IdEQ6XqpZvhaQRtQCLhWOVhtBWJqMNbUVMfKYoiWHCnODWOUZqJ4UjqemICEw+Wmu8vFkuNoaq9TxNmrptOVHRS8=
   - secure: olcrCPn3vcm9xKHWZAtDDPQogZVsoWHum+41YzfNPbXWHRdJ1g2JQ8Y/SpuS9fK+QBwaN5Xt/CF+A6fKPHeUr1xrDfqTfPEEr3fQyHFMZi09gMQmXwhEUyxpzYhrf3efJrGIL2I7Gh2Q7lc3iBwYwll1tRBBnk9fOSIpsfLgCko=
-before_script: ./gradlew populateDependencies testClasses
+before_script: ./gradlew populateDependencies testClasses install
 script: ./travis-build.sh
 install: /bin/true
 after_failure: ./travis-after-failure.sh

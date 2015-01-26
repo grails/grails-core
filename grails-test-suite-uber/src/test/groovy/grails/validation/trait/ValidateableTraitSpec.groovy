@@ -1,6 +1,6 @@
 package grails.validation.trait
 
-import grails.artefact.Validateable
+import grails.validation.Validateable
 
 
 

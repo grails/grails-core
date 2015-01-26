@@ -13,7 +13,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
 
     private void parseDomainTestClasses() {
         gcl.parseClass('''
-            class Person implements grails.artefact.Validateable{
+            class Person implements grails.validation.Validateable{
                 Long id
                 Long version
                 String firstName
