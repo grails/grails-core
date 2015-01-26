@@ -1,64 +1,85 @@
-import groovy.xml.MarkupBuilder
-import org.gradle.api.internal.project.IsolatedAntBuilder
 
-apply plugin: 'signing'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
-configurations {
-    mavenAntTasks
-}
-dependencies {
-    mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
-}
+publishing {
 
-
-task generatePom << {
-    def pomFile = new File("$buildDir/pom.xml")
-    pomFile.parentFile.mkdirs()
-    def plugins = new Properties()
-    plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
-    pomFile.withWriter { Writer writer ->
-        def mkp = new MarkupBuilder(writer)
-
-        mkp.project( xmlns:"http://maven.apache.org/POM/4.0.0",
-                    'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",
-                    'xsi:schemaLocation':"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd") {
-            delegate.modelVersion '4.0.0'
-            delegate.groupId 'org.grails'
-            delegate.artifactId 'grails-bom'
-            delegate.version( grailsVersion )
-            delegate.packaging 'pom'
-            delegate.name "Grails BOM"
-            delegate.description "Grails default supported dependency definitions"
-            delegate.url 'http://grails.org'
-            delegate.licenses {
-                delegate.license {
-                    delegate.name "Apache License, Version 2.0"
-                    delegate.url 'http://www.apache.org/licenses/LICENSE-2.0'
+    if(isBuildSnapshot) {
+        repositories {
+            maven {
+                credentials {
+                    def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                    def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                    username = u
+                    password = p
                 }
+                url  "https://repo.grails.org/grails/libs-snapshots-local"
             }
+        }
+    }
 
-            dependencyManagement {
-                delegate.dependencies {
-                    for(sub in project.parent.subprojects) {
-                        if(sub.name == 'grails-bom') continue
+    publications {
+        maven(MavenPublication) {
+            pom.withXml {
+                def xml = asNode()
+                def plugins = new Properties()
+                plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
 
-                        delegate.dependency {
-                            groupId sub.group
-                            artifactId sub.name
-                            delegate.version( sub.version )
-                            if(sub.name == 'grails-dependencies') {
-                                type 'pom'
+                xml.children().last() + {
+                    delegate.name "Grails BOM"
+                    delegate.description "Grails default supported dependency definitions"
+                    delegate.url 'http://grails.org'
+                    delegate.licenses {
+                        delegate.license {
+                            delegate.name "Apache License, Version 2.0"
+                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0'
+                        }
+                    }
+                    delegate.scm {
+                        delegate.url 'scm:git@github.com:grails/grails-core.git'
+                        delegate.connection 'scm:git@github.com:grails/grails-core.git'
+                        delegate.developerConnection 'scm:git@github.com:grails/grails-core.git'
+                    }
+
+                    delegate.developers {
+                        delegate.developer {
+                            delegate.id 'graemerocher'
+                            delegate.name 'Graeme Rocher'
+                        }
+                        delegate.developer {
+                            delegate.id 'jeffscottbrown'
+                            delegate.name 'Jeff Brown'
+                        }
+                        delegate.developer {
+                            delegate.id 'burtbeckwith'
+                            delegate.name 'Burt Beckwith'
+                        }
+                    }
+
+                    delegate.dependencyManagement {
+                        delegate.dependencies {
+                            for(sub in project.parent.subprojects) {
+                                if(sub.name == 'grails-bom') continue
+
+                                delegate.dependency {
+                                    delegate.groupId sub.group
+                                    delegate.artifactId sub.name
+                                    delegate.version( sub.version )
+                                    if(sub.name == 'grails-dependencies') {
+                                        delegate.type 'pom'
+                                    }
+                                }
+                            }
+
+                            for(plugin in plugins) {
+                                delegate.dependency {
+                                    delegate.groupId 'org.grails.plugins'
+                                    delegate.artifactId plugin.key
+                                    delegate.version( plugin.value )
+                                }
                             }
                         }
                     }
-
-                    for(plugin in plugins) {
-                        delegate.dependency {
-                            groupId 'org.grails.plugins'
-                            artifactId plugin.key
-                            delegate.version( plugin.value )
-                        }
-                    }
                 }
             }
 
@@ -67,44 +88,39 @@ task generatePom << {
 }
 
 
-assemble.dependsOn(dependsOn:[generatePom])
+bintray {
+    def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+    def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
 
+    user = u
+    key = p
+    publications = ['maven']
+    publish = true
+    pkg {
+        repo = 'grails-core'
+        userOrg = 'grails'
+        name = 'org.grails'
+        desc = 'Grails Framework'
+        websiteUrl = 'http://grails.org'
+        issueTrackerUrl = 'http://jira.grails.org/browse/GRAILS'
+        vcsUrl = 'http://jira.grails.org/browse/GRAILS'
+        licenses = ['Apache-2.0']
+        publicDownloadNumbers = true
+        version {
+            name = project.version
+            gpg {
+                sign = true
+                passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
+            }
+            mavenCentralSync {
+                sync = false
+                def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+                def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+                user = ossUser
+                password = ossPass
+            }
 
-task install(dependsOn:assemble) << {
-    def antBuilder = services.get(IsolatedAntBuilder)
-    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
-        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
-
-        pom(file:"${buildDir}/pom.xml", id:"pom")
-
-        install(file:"${buildDir}/pom.xml") {
-            pom refid:"pom"
         }
-
-    }
-}
-
-task uploadPublished(dependsOn:install) << {
-    def antBuilder = services.get(IsolatedAntBuilder)
-    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
-        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
-
-        pom(file:"${buildDir}/pom.xml", id:"pom")
-
-        def isSnapshot = version.endsWith("-SNAPSHOT")
-        def url = isSnapshot ? "https://repo.grails.org/grails/libs-snapshots-local" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-        def repoId = isSnapshot ? "artifactory" : "sonatype-nexus-staging"
-
-        mvn(failonerror:true) {
-            arg value:"org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file"
-            arg value:"-Durl=${url}"
-            arg value:"-DrepositoryId=${repoId}"
-            arg value:"-DpomFile=${buildDir}/pom.xml"
-            arg value:"-Dfile=${buildDir}/pom.xml"
-            arg value:"-Dgpg.passphrase=${this.properties['signing.password']}"
-            arg value:"-Pgpg"
-        }
-
     }
 }
 

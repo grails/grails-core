@@ -198,7 +198,8 @@ class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateSt
     }
 }
 
-task install(dependsOn: [populateDependencies, installResources, grailsCreateStartScripts] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }*.install)
+task install(dependsOn: [populateDependencies, installResources, grailsCreateStartScripts] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }
+                                                                                                        *.collect { Project p -> p.tasks.withType(PublishToMavenLocal)})
 
 task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
     destinationDir = "${buildDir}/distributions" as File

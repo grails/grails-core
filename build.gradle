@@ -2,12 +2,11 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        maven { url "https://repo.grails.org/grails/core" }
-	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
+        jcenter()
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
-        //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
     }
 }
 
@@ -133,6 +132,8 @@ apply from: "gradle/idea.gradle"
 subprojects { project ->
     version = grailsVersion
     group = "org.grails"
+    ext.isTestSuite = project.name.startsWith("grails-test-suite")
+    ext.isCiBuild = project.hasProperty("isCiBuild")
 
     if(!project.hasProperty("artifactoryPublishPassword") && System.getenv("ARTIFACTORY_PASSWORD")) {
         project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
@@ -140,21 +141,18 @@ subprojects { project ->
 
     if(project.name == 'grails-dependencies') return
     if(project.name == 'grails-bom') return
-    ext.isTestSuite = project.name.startsWith("grails-test-suite")
+
     apply plugin: 'groovy'
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
-    if(!isTestSuite)
-        apply plugin: 'signing'
-    //apply plugin: 'duplicates'
 
     sourceCompatibility = "1.7"
     targetCompatibility = "1.7"
-//    archivesBaseName = 'grails'
 
-    ext.isCiBuild = project.hasProperty("isCiBuild")
+
 
     jar{
         manifest.mainAttributes(
@@ -288,116 +286,158 @@ subprojects { project ->
             }
         }
 
-        signing {
-            sign configurations.archives
-            required { !isBuildSnapshot && gradle.taskGraph.hasTask(uploadPublished) }
-        }
-
-        ext {
-            poms = [project.install.repositories.mavenInstaller.pom]
-            pomModifications = []
-            modifyPom = { Closure modification -> project.pomModifications << modification }
-        }
 
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
             repositories {
-                project.poms << mavenDeployer {
-                    repository(url: distInstallDir.toURL())
-                    uniqueVersion = false
-                    pom.artifactId = project.name
-                }.pom
+
+                flatDir name: 'libs', dirs: distInstallDir
+//                project.poms << mavenDeployer {
+//                    repository(url: distInstallDir.toURL())
+//                    uniqueVersion = false
+//                    pom.artifactId = project.name
+//                }.pom
             }
         }
 
-        install.dependsOn installToHomeDist
-        install.doLast {
-            ant.copy(todir:homeDistDir, flatten:true, includeEmptyDirs:false) {
-                fileset dir:distInstallDir
+        publishing {
+
+            if(isBuildSnapshot) {
+                repositories {
+                    maven {
+                        credentials {
+                            def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                            def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                            username = u
+                            password = p
+                        }
+                        url  "https://repo.grails.org/grails/libs-snapshots-local"
+                    }
+                }
             }
-        }
 
-        uploadPublished {
-            repositories {
-                project.poms << mavenDeployer {
-                    if(!isBuildSnapshot) {
-                    beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+            publications {
+                maven(MavenPublication) {
+                    from components.java
+
+                    artifact sourcesJar {
+                        classifier "sources"
+                    }
+                    artifact javadocJar {
+                        classifier "javadoc"
                     }
 
-                    if(project.hasProperty("sonatypeUsername")) {
-                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                        authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
-                                        password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
-                    }
-                    }
-                    if(project.hasProperty("artifactoryPublishUsername")) {
-                        snapshotRepository(url: "https://repo.grails.org/grails/libs-snapshots-local") {
-                        authentication(userName: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null,
-                            password: project.hasProperty("artifactoryPublishPassword") ?  project.artifactoryPublishPassword : null)
+                    pom.withXml {
+                        def xml = asNode()
+                        // respect 'optional' and 'provided' dependencies
+                        optionalDeps.each { dep ->
+                            xml.dependencies.find { it.artifactId == dep.name }?.optional = true
+                        }
+                        providedDeps.each { dep ->
+                            xml.dependencies.find { it.artifactId == dep.name }?.scope = 'provided'
+
+                        }
+
+                        configurations.runtime.allDependencies.each { dependency ->
+                            if (dependency.hasProperty("notInPom") && dependency.notInPom) {
+                                xml.dependencies.removeAll { it.groupId == dependency.group && it.artifactId == dependency.name }
+                            }
+                        }
+
+                        xml.children().last() + {
+                            delegate.name 'Grails'
+                            delegate.description 'Grails Web Application Framework'
+                            delegate.url 'http://grails.org/'
+
+                            delegate.licenses {
+                                delegate.license {
+                                    delegate.name 'The Apache Software License, Version 2.0'
+                                    delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                    delegate.distribution 'repo'
+                                }
+                            }
+
+                            delegate.scm {
+                                delegate.url 'scm:git@github.com:grails/grails-core.git'
+                                delegate.connection 'scm:git@github.com:grails/grails-core.git'
+                                delegate.developerConnection 'scm:git@github.com:grails/grails-core.git'
+                            }
+
+
+
+                            delegate.developers {
+                                delegate.developer {
+                                    delegate.id 'graemerocher'
+                                    delegate.name 'Graeme Rocher'
+                                }
+                                delegate.developer {
+                                    delegate.id 'jeffscottbrown'
+                                    delegate.name 'Jeff Brown'
+                                }
+                                delegate.developer {
+                                    delegate.id 'burtbeckwith'
+                                    delegate.name 'Burt Beckwith'
+                                }
+                            }
+
                         }
                     }
 
-
-                }.pom
-            }
-        }
-
-        modifyPom { pom ->
-            pom.project {
-                name 'Grails'
-                packaging 'jar'
-                description 'Grails Web Application Framework'
-                delegate.url 'http://grails.org/'
-
-                scm {
-                    delegate.url 'scm:git@github.com:grails/grails-core.git'
-                    connection 'scm:git@github.com:grails/grails-core.git'
-                    developerConnection 'scm:git@github.com:grails/grails-core.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'graemerocher'
-                        name 'Graeme Rocher'
-                    }
-                    developer {
-                        id 'jeffscottbrown'
-                        name 'Jeff Brown'
-                    }
                 }
             }
         }
 
-        // Remove any dependencies that shouldn't be included in the POM
-        modifyPom { pom ->
-            // respect 'optional' and 'provided' dependencies
-            optionalDeps.each { dep ->
-                pom.dependencies.find { it.artifactId == dep.name }?.optional = true
-            }
-            providedDeps.each { dep ->
-                pom.dependencies.find { it.artifactId == dep.name }?.scope = 'provided'
 
-            }
+        bintray {
+            def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+            def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
 
-            configurations.runtime.allDependencies.each { dependency ->
-                if (dependency.hasProperty("notInPom") && dependency.notInPom) {
-                    pom.dependencies.removeAll { it.groupId == dependency.group && it.artifactId == dependency.name }
+            user = u
+            key = p
+            publications = ['maven']
+            publish = true
+            pkg {
+                repo = 'grails-core'
+                userOrg = 'grails'
+                name = 'org.grails'
+                desc = 'Grails Framework'
+                websiteUrl = 'http://grails.org'
+                issueTrackerUrl = 'http://jira.grails.org/browse/GRAILS'
+                vcsUrl = 'http://jira.grails.org/browse/GRAILS'
+                licenses = ['Apache-2.0']
+                publicDownloadNumbers = true
+                version {
+                    name = project.version
+                    gpg {
+                        sign = true
+                        passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
+                    }
+                    mavenCentralSync {
+                        sync = true
+                        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+                        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+                        user = ossUser
+                        password = ossPass
+                    }
+
                 }
             }
         }
 
-        poms*.whenConfigured { pomModifications*.call(it) }
+        project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
+            t.dependsOn installToHomeDist
+            t.doLast {
+                ant.copy(todir: homeDistDir, flatten: true, includeEmptyDirs: false) {
+                    fileset dir: distInstallDir
+                }
+            }
+        }
+
     }
 
 }
+
+
 
 task clean(type: Delete) {
     delete buildDir,

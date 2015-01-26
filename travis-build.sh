@@ -10,13 +10,17 @@ EXIT_STATUS=0
 ./gradlew --stop
 ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
 
-if [[ $TRAVIS_BRANCH =~ ^master|2\.[34]\.x$ && $TRAVIS_REPO_SLUG == "grails/grails-core" 
-	&& $TRAVIS_PULL_REQUEST == 'false' 
-    && $EXIT_STATUS -eq 0 && $grailsVersion == *-SNAPSHOT* 
-    && -n "$ARTIFACTORY_PASSWORD" ]]; then
+
+if [[ ( $TRAVIS_BRANCH == 'master' ) && $TRAVIS_REPO_SLUG == "grails/grails-core" && $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
+
     echo "Publishing archives"
-    upload_skip_tasks="-x :grails-dependencies:assemble -x :grails-dependencies:install -x :grails-dependencies:uploadPublished -x :grails-bom:assemble -x :grails-bom:install -x :grails-bom:uploadPublished"
-    ./gradlew -PartifactoryPublishUsername=travis-grails-core $upload_skip_tasks upload || EXIT_STATUS=$?
+
+    if [[ -n $TRAVIS_TAG ]]; then
+        ./gradlew bintrayUpload || EXIT_STATUS=$?
+    else
+        ./gradlew publish || EXIT_STATUS=$?
+    fi
+
 fi
 
 exit $EXIT_STATUS
