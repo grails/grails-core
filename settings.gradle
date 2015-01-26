@@ -32,6 +32,7 @@ include 'grails-aether',
 
         // POM / BOMs
         'grails-dependencies',
+        'grails-bom',
 
         // Plugins
         'grails-plugin-async',
