@@ -6,10 +6,6 @@ repositories {
     jcenter()
 }
 
-ext {
-    gradleToolingApiVersion = "2.3-20150115093000+0000" // gradle.gradleVersion
-}
-
 dependencies {
     compile project(":grails-bootstrap")
     compile "org.apache.ant:ant:$antVersion"
@@ -18,7 +14,7 @@ dependencies {
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile "jline:jline:$jlineVersion"
     compile "org.eclipse.jgit:org.eclipse.jgit:3.5.2.201411120430-r"
-    compile "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
+    compile gradleApi()
 
     compile("org.springframework.boot:spring-boot-cli:$springBootVersion")
 
