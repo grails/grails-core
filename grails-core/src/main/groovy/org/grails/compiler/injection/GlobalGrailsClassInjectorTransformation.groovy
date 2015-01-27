@@ -329,7 +329,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             def antPathMatcher = new AntPathMatcher()
             pluginXml.resources.resource.each { res ->
                 if (pluginExcludes.any() { String exc -> antPathMatcher.match(exc, res.text().replace('.','/')) }) {
-                    res.replaceNdoe {}
+                    res.replaceNode {}
                 }
             }
         }
