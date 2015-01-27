@@ -17,7 +17,7 @@ echo "Executing integration tests"
 echo "Done."
 
 
-if [[ ( $TRAVIS_BRANCH == 'master' ) && $TRAVIS_REPO_SLUG == "grails/grails-core" && $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
+if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
     echo "Publishing archives"
 
@@ -28,22 +28,7 @@ if [[ ( $TRAVIS_BRANCH == 'master' ) && $TRAVIS_REPO_SLUG == "grails/grails-core
         version="$TRAVIS_TAG"
         version=${version:1}
         zipName = "grails-$TRAVIS_TAG"
-        zipName = ${zipName}.zip
-
-        github-release release \
-            --user grails \
-            --repo grails-core \
-            --tag $TRAVIS_TAG \
-            --name "Grails $TRAVIS_TAG" \
-            --description "The Grails Web Framework $TRAVIS_TAG" \
-            --pre-release
-
-        github-release upload \
-            --user grails \
-            --repo grails-core \
-            --tag $TRAVIS_TAG \
-            --name $zipName \
-            --file "build/distributions/$zipName"
+        export RELEASE_FILE = "${zipName}.zip"
     else
         ./gradlew publish || EXIT_STATUS=$?
     fi

@@ -26,6 +26,6 @@ deploy:
   provider: releases
   api_key:
     secure: DZw5jbbopmowRUhMjXOqosGLuyXQDHlXsT2BEH0sf08TxNJHvroCyoSy18Rl00AFEvkl1nyUf7Wsol9TRNAr+uqRdhGe3HCeOVYDEc8oKtsMQpHnrXBS1hBp6Bkb9DuKvbseUPs3k1CLreuZR3z48uhdQzKoQnn2ZXWcVRjJPl4=
-  file: "build/distributions/grails-${TRAVIS_TAG:1}.zip"
+  file: "build/distributions/$RELEASE_FILE"
   on:
     repo: grails/grails-core
