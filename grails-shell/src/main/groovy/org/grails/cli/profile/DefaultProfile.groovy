@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 package org.grails.cli.profile
+
 import grails.util.CosineSimilarity
-import groovy.transform.CompileDynamic
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
+import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.ScriptNameResolver
 import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.config.NavigableMap
-import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.Yaml;
+
 /**
  * Simple disk based implementation of the {@link Profile} interface
  *
@@ -172,7 +175,6 @@ class DefaultProfile implements Profile {
         }
     }
 
-    @CompileDynamic
     private void initialize(ProfileRepository repository) {
         parentProfiles = []
         File profileYml = new File(profileDir, "profile.yml")
