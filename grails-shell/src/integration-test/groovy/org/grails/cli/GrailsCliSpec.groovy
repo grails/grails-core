@@ -26,7 +26,7 @@ class GrailsCliSpec extends Specification {
 
     // we use a fixed profile repository revision so that the tests don't break after minor changes to the profile repository
     // set to empty string if you want to use most recent commit in the profile repository (for development)
-    static String FIXED_GRAILS_PROFILE_REPOSITORY_GIT_REVISION = '9459567'
+    static String FIXED_GRAILS_PROFILE_REPOSITORY_GIT_REVISION = '16011f54'
     
     @Rule
     TemporaryFolder tempFolder = new TemporaryFolder()
