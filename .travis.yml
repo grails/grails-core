@@ -18,8 +18,14 @@ env:
   - secure: dDI9zb22/GhVryGod9bhcSNeTrgZOpea65Wqg/RlXWczFNqI0B9evsJTD/kDMdwZP242SSXCnFMGERWQpd3IdEQ6XqpZvhaQRtQCLhWOVhtBWJqMNbUVMfKYoiWHCnODWOUZqJ4UjqemICEw+Wmu8vFkuNoaq9TxNmrptOVHRS8=
   - secure: olcrCPn3vcm9xKHWZAtDDPQogZVsoWHum+41YzfNPbXWHRdJ1g2JQ8Y/SpuS9fK+QBwaN5Xt/CF+A6fKPHeUr1xrDfqTfPEEr3fQyHFMZi09gMQmXwhEUyxpzYhrf3efJrGIL2I7Gh2Q7lc3iBwYwll1tRBBnk9fOSIpsfLgCko=
 before_script:
-  - go get github.com/aktau/github-release
-  - ./gradlew populateDependencies testClasses install
+- ./gradlew populateDependencies testClasses install
 script: ./travis-build.sh
 install: /bin/true
 after_failure: ./travis-after-failure.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: DZw5jbbopmowRUhMjXOqosGLuyXQDHlXsT2BEH0sf08TxNJHvroCyoSy18Rl00AFEvkl1nyUf7Wsol9TRNAr+uqRdhGe3HCeOVYDEc8oKtsMQpHnrXBS1hBp6Bkb9DuKvbseUPs3k1CLreuZR3z48uhdQzKoQnn2ZXWcVRjJPl4=
+  file: "build/distributions/grails-${TRAVIS_TAG:1}.zip"
+  on:
+    repo: grails/grails-core
