@@ -27,7 +27,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
         version="$TRAVIS_TAG"
         version=${version:1}
-        zipName="grails-$TRAVIS_TAG"
+        zipName="grails-$version"
         export RELEASE_FILE="${zipName}.zip"
     else
         ./gradlew publish || EXIT_STATUS=$?
