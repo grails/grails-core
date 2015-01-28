@@ -1,6 +1,7 @@
 package org.grails.plugins.domain.support
 
 import groovy.util.logging.Commons
+import org.grails.datastore.gorm.GormEntity
 
 import java.lang.reflect.Modifier
 
@@ -37,7 +38,21 @@ class GrailsDomainClassCleaner implements ApplicationListener<ContextClosedEvent
 
     protected clearAllStaticApiInstances() {
         for (dc in grailsApplication.domainClasses) {
-            clearStaticApiInstances(dc.clazz)
+            def clz = dc.clazz
+            if(GormEntity.isAssignableFrom(clz)) {
+                try {
+                    clz.initInternalApi null
+                } catch (e) {
+                    log.warn("Error clearing instance api property in ${clz.name}", e)
+                }
+                try {
+                    clz.initInternalStaticApi null
+                } catch (e) {
+                    log.warn("Error clearing static api property in ${clz.name}", e)
+                }
+            } else {
+                clearStaticApiInstances(clz)
+            }
         }
     }
 
