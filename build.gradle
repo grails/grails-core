@@ -17,7 +17,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
-    grailsVersion = '3.0.0.M1'
+    grailsVersion = '3.0.0.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -143,8 +143,10 @@ subprojects { project ->
     if(project.name == 'grails-bom') return
 
     apply plugin: 'groovy'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
+    if(!isTestSuite) {
+        apply plugin: 'maven-publish'
+        apply plugin: 'com.jfrog.bintray'
+    }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
@@ -413,7 +415,7 @@ subprojects { project ->
                         passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
                     }
                     mavenCentralSync {
-                        sync = true
+                        sync = false
                         def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
                         def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
                         user = ossUser
