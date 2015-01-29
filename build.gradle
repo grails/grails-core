@@ -397,7 +397,7 @@ subprojects { project ->
             user = u
             key = p
             publications = ['maven']
-            publish = true
+            publish = false
             pkg {
                 repo = 'grails-core'
                 userOrg = 'grails'
