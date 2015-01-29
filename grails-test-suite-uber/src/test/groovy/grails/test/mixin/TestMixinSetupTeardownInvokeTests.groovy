@@ -23,11 +23,13 @@ class TestMixinSetupTeardownInvokeTests {
 
     @Test
     void testThatSetupWasInvoked() {
+        println "invoked 1"
         assert value == 'World!'
     }
 
     @Test
     void testThatSetupWasInvoked2() {
+        println "invoked 2"
         assert System.getProperty(TestMixinSetupTeardownInvokeTests.name) == 'invoked'
     }
 }
