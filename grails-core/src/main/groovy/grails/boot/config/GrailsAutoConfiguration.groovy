@@ -71,7 +71,8 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
      * @return The packages to scan
      */
     Collection<Package> packages() {
-        [ getClass().package ]
+        def thisPackage = getClass().package
+        thisPackage ? [ thisPackage ] : []
     }
 
     /**
