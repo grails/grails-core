@@ -2,6 +2,7 @@ package org.grails.web.binding.hal.xml
 
 import grails.persistence.Entity
 import grails.test.mixin.TestFor
+import grails.web.Controller
 import spock.lang.Specification
 
 @TestFor(BindingController)
@@ -36,6 +37,7 @@ class HalXmlBindingSpec extends Specification {
     }
 }
 
+@Controller
 class BindingController {
     def createPerson() {
         def person = new Person()
