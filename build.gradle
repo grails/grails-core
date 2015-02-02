@@ -7,6 +7,7 @@ buildscript {
     dependencies {
         classpath "commons-io:commons-io:2.2"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
+        classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
     }
 }
 
@@ -457,6 +458,13 @@ apply {
     from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
+}
+
+apply plugin: "com.github.adrianbk.tcitrigger"
+
+
+tciTrigger {
+    gitHubRepo 'grails/grails3-functional-tests'
 }
 
 task wrapper(type: Wrapper) {

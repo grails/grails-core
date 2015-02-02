@@ -35,4 +35,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
 fi
 
+if [[ $EXIST_STATUS == 0 ]]; then
+    ./gradlew travisciTrigger -i
+fi
+
 exit $EXIT_STATUS
