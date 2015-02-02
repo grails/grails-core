@@ -3,6 +3,7 @@ package org.grails.web.binding
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+import grails.web.Controller
 import org.junit.Test
 
 @TestFor(NestedXmlController)
@@ -129,6 +130,7 @@ class NestedXmlBindingTests {
         assert p.locations.size() == 2
     }
 }
+@Controller
 class NestedXmlController {
     def bind() {
         def person = new Person()
