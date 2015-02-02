@@ -26,56 +26,73 @@ publishing {
                 plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
 
                 xml.children().last() + {
-                    delegate.name "Grails BOM"
-                    delegate.description "Grails default supported dependency definitions"
-                    delegate.url 'http://grails.org'
-                    delegate.licenses {
-                        delegate.license {
-                            delegate.name "Apache License, Version 2.0"
-                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0'
+                    def mkp = delegate
+                    mkp.name "Grails BOM"
+                    mkp.description "Grails default supported dependency definitions"
+                    mkp.url 'http://grails.org'
+                    mkp.licenses {
+                        mkp.license {
+                            mkp.name "Apache License, Version 2.0"
+                            mkp.url 'http://www.apache.org/licenses/LICENSE-2.0'
                         }
                     }
-                    delegate.scm {
-                        delegate.url 'scm:git@github.com:grails/grails-core.git'
-                        delegate.connection 'scm:git@github.com:grails/grails-core.git'
-                        delegate.developerConnection 'scm:git@github.com:grails/grails-core.git'
-                    }
-
-                    delegate.developers {
-                        delegate.developer {
-                            delegate.id 'graemerocher'
-                            delegate.name 'Graeme Rocher'
-                        }
-                        delegate.developer {
-                            delegate.id 'jeffscottbrown'
-                            delegate.name 'Jeff Brown'
-                        }
-                        delegate.developer {
-                            delegate.id 'burtbeckwith'
-                            delegate.name 'Burt Beckwith'
-                        }
+                    mkp.scm {
+                        mkp.url 'scm:git@github.com:grails/grails-core.git'
+                        mkp.connection 'scm:git@github.com:grails/grails-core.git'
+                        mkp.developerConnection 'scm:git@github.com:grails/grails-core.git'
                     }
 
-                    delegate.dependencyManagement {
-                        delegate.dependencies {
+                    mkp.developers {
+                        mkp.developer {
+                            mkp.id 'graemerocher'
+                            mkp.name 'Graeme Rocher'
+                        }
+                        mkp.developer {
+                            mkp.id 'jeffscottbrown'
+                            mkp.name 'Jeff Brown'
+                        }
+                        mkp.developer {
+                            mkp.id 'burtbeckwith'
+                            mkp.name 'Burt Beckwith'
+                        }
+                    }
+
+                    mkp.dependencyManagement {
+                        mkp.dependencies {
                             for(sub in project.parent.subprojects) {
                                 if(sub.name == 'grails-bom') continue
 
-                                delegate.dependency {
-                                    delegate.groupId sub.group
-                                    delegate.artifactId sub.name
-                                    delegate.version( sub.version )
+                                mkp.dependency {
+                                    mkp.groupId sub.group
+                                    mkp.artifactId sub.name
+                                    mkp.version( sub.version )
                                     if(sub.name == 'grails-dependencies') {
-                                        delegate.type 'pom'
+                                        mkp.type 'pom'
                                     }
                                 }
                             }
 
+                            ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'xml','nio'].each { name ->
+                                mkp.dependency {
+                                    mkp.groupId 'org.codehaus.groovy'
+                                    mkp.artifactId name ? "groovy-$name" : "groovy"
+                                    mkp.version( groovyVersion )
+                                }
+                            }
+
+                            ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc','jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket'].each { name ->
+                                mkp.dependency {
+                                    mkp.groupId 'org.springframework'
+                                    mkp.artifactId "spring-$name"
+                                    mkp.version( springVersion )
+                                }
+                            }
+
                             for(plugin in plugins) {
-                                delegate.dependency {
-                                    delegate.groupId 'org.grails.plugins'
-                                    delegate.artifactId plugin.key
-                                    delegate.version( plugin.value )
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails.plugins'
+                                    mkp.artifactId plugin.key
+                                    mkp.version( plugin.value )
                                 }
                             }
                         }
