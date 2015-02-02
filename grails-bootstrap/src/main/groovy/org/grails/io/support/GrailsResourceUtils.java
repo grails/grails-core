@@ -159,7 +159,6 @@ public class GrailsResourceUtils {
 
     public static final Pattern[] patterns = new Pattern[]{
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH,
-        GRAILS_RESOURCE_PATTERN_SECOND_MATCH,
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH,
         GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH,
         GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH,
@@ -169,6 +168,15 @@ public class GrailsResourceUtils {
         GRAILS_RESOURCE_PATTERN_NINTH_MATCH,
         GRAILS_RESOURCE_PATTERN_TENTH_MATCH,
         GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH
+    };
+
+    public static final Pattern[] grailsAppResourcePatterns = new Pattern[]{
+            GRAILS_RESOURCE_PATTERN_FIRST_MATCH,
+            GRAILS_RESOURCE_PATTERN_THIRD_MATCH,
+            GRAILS_RESOURCE_PATTERN_FOURTH_MATCH,
+            GRAILS_RESOURCE_PATTERN_FIFTH_MATCH,
+            GRAILS_RESOURCE_PATTERN_SIXTH_MATCH,
+            GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH
     };
 
     private static String createGrailsResourcePattern(String separator, String base) {
@@ -627,8 +635,8 @@ public class GrailsResourceUtils {
      * @return true if it is a Grails path
      */
     public static boolean isGrailsPath(String path) {
-        for (Pattern pattern : patterns) {
-            Matcher m = pattern.matcher(path);
+        for (Pattern grailsAppResourcePattern : grailsAppResourcePatterns) {
+            Matcher m = grailsAppResourcePattern.matcher(path);
             if (m.find()) {
                 return true;
             }
@@ -636,6 +644,12 @@ public class GrailsResourceUtils {
         return false;
     }
 
+    /**
+     * Checks whether the specific resources is a Grails resource. A Grails resource is a Groovy or Java class under the grails-app directory
+     *
+     * @param r The resource to check
+     * @return True if it is a Grails resource
+     */
     public static boolean isGrailsResource(Resource r) {
         try {
             String file = r.getURL().getFile();

@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile
 /**
  * @author graemerocher
  */
+@grails.web.Controller
 class AnotherController  {
 
     def handleCommand = { TestCommand test ->

@@ -5,6 +5,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
 import grails.validation.Validateable
+import grails.web.Controller
 import grails.web.mime.MimeUtility
 
 import javax.servlet.http.HttpServletResponse
@@ -452,6 +453,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 }
 
+@Controller
 class TestController  {
 
     static allowedMethods = [action2: 'POST', action3: ['POST', 'PUT', 'PATCH'], method2: 'POST', method3: ['POST', 'PUT', 'PATCH']]

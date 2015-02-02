@@ -1,5 +1,7 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
+import grails.web.Controller
 import org.junit.Test
 
 @TestFor(FirstController)
@@ -15,10 +17,12 @@ class ControllerTestForWithMockedFiltersTests {
     }
 }
 
+@Controller
 class FirstController {
     def list = {}
 }
 
+@Artefact("Filters")
 class RedirectingFilters {
     def filters = {
         all(controller: 'first', action: 'list') {
