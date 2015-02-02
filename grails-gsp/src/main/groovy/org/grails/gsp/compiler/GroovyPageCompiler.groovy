@@ -97,7 +97,8 @@ class GroovyPageCompiler {
             packageDir += generateJavaName(relPackagePath)
         }
 
-        def className = packageDir.replace('/','_')
+        def className = generateJavaName(packageDir.replace('/','_'))
+
         className += generateJavaName(gspfile.name)
         // using default package because of GRAILS-5022
         packageDir = ''

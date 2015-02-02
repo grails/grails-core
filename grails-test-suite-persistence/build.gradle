@@ -8,7 +8,8 @@ dependencies {
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services'),
                 project(':grails-plugin-controllers'),
-                project(':grails-bootstrap')
+                project(':grails-bootstrap'),
+                project(':grails-spring')
 
     testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
@@ -28,6 +29,7 @@ dependencies {
         exclude group: 'org.grails', module:'grails-web'
         exclude group: 'org.grails', module:'grails-test'
         exclude group: 'org.grails', module:'grails-async'
+        exclude group: 'org.grails', module:'grails-spring'
         exclude group: 'commons-collections', module:'commons-collections'
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassit', module:'javassist'
