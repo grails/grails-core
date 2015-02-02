@@ -24,6 +24,8 @@ import org.grails.cli.profile.CommandDescription
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
+import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.cli.profile.ProjectCommand
 import org.grails.cli.profile.ProjectContext
 import org.grails.cli.profile.ProjectContextAware
@@ -32,13 +34,14 @@ import org.grails.cli.profile.ProjectContextAware
 /**
  * @author Graeme Rocher
  */
-class HelpCommand implements ProfileCommand, Completer, ProjectContextAware{
+class HelpCommand implements ProfileCommand, Completer, ProjectContextAware, ProfileRepositoryAware{
 
     public static final String NAME = "help"
 
     final CommandDescription description = new CommandDescription(NAME, "Prints help information for a specific command", "help [COMMAND NAME]")
 
     Profile profile
+    ProfileRepository profileRepository
     ProjectContext projectContext
 
     CommandLineParser cliParser = new CommandLineParser()
@@ -128,8 +131,17 @@ grails [environment]* [target] [arguments]*'
     }
 
 
-    private Collection<CommandDescription> findAllCommands() {
-        profile.getCommands(projectContext).collect() { Command cmd -> cmd.description }.sort(false) { CommandDescription itDesc ->  itDesc.name }
+    protected Collection<CommandDescription> findAllCommands() {
+        Iterable<Command> commands
+        if(profile) {
+            commands = profile.getCommands(projectContext)
+        }
+        else {
+            commands = CommandRegistry.findCommands(profileRepository).findAll() { Command cmd ->
+                !(cmd instanceof ProjectCommand)
+            }
+        }
+        return commands.collect() { Command cmd -> cmd.description }.sort(false) { CommandDescription itDesc ->  itDesc.name }
     }
 
 

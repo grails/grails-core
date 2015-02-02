@@ -15,6 +15,8 @@
  */
 
 package org.grails.cli.profile.commands
+
+import grails.build.logging.GrailsConsole
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
@@ -40,10 +42,15 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     File targetDirectory
     List<String> binaryFileExtensions = ['png','gif','jpg','jpeg','ico','icns','pdf','zip','jar','class']
 
-    final CommandDescription description = new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
+    CommandDescription description = new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
 
     CreateAppCommand() {
-        description.argument(name:"Plugin Name", description:"The name of the plugin to create.")
+        populateDescription()
+    }
+
+    protected void populateDescription() {
+        description.argument(name: "Application Name", description: "The name of the application to create.", required: false)
+        description.flag(name: "inplace", description: "Used to create an application using the current directory")
     }
 
     @Override
@@ -59,13 +66,14 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
         def mainCommandLine = executionContext.commandLine
         def profileName = evaluateProfileName(mainCommandLine)
-        String groupAndAppName = mainCommandLine.getRemainingArgs()[0]
 
         Profile profileInstance = profileRepository.getProfile(profileName)
         if(profileInstance) {
 
-            initializeVariables(profileInstance, groupAndAppName)
-            targetDirectory = new File(appname)
+            if( !initializeVariables(profileInstance, mainCommandLine) ) {
+                return false
+            }
+            targetDirectory = mainCommandLine.hasOption('inplace') ? new File(".").canonicalFile : new File(appname)
             File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
@@ -111,18 +119,48 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         }
     }
     
-    protected initializeVariables(Profile profile, String groupAndAppName) {
+    protected boolean initializeVariables(Profile profile, CommandLine commandLine) {
         String defaultPackage
-        List<String> parts = groupAndAppName.split(/\./) as List
-        if(parts.size() == 1) {
-            appname = parts[0]
-            defaultPackage = createValidPackageName()
-            groupname = defaultPackage
-        } else {
-            appname = parts[-1]
-            groupname = parts[0..-2].join('.')
-            defaultPackage = groupname
+
+        def args = commandLine.getRemainingArgs()
+        boolean inPlace = commandLine.hasOption('inplace')
+
+        if(!args && !inPlace) {
+            GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")
+            return false
         }
+        String groupAndAppName = args ? args[0] : null
+
+
+
+        if(inPlace) {
+            appname = new File(".").canonicalFile.name
+            if(groupAndAppName) {
+                groupname = groupAndAppName
+                defaultPackage = groupname
+            }
+            else {
+                defaultPackage = createValidPackageName()
+                groupname = defaultPackage
+            }
+        }
+        else {
+            if(!groupAndAppName) {
+                GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")
+                return false
+            }
+            List<String> parts = groupAndAppName.split(/\./) as List
+            if(parts.size() == 1) {
+                appname = parts[0]
+                defaultPackage = createValidPackageName()
+                groupname = defaultPackage
+            } else {
+                appname = parts[-1]
+                groupname = parts[0..-2].join('.')
+                defaultPackage = groupname
+            }
+        }
+
 
         variables.APPNAME = appname
 

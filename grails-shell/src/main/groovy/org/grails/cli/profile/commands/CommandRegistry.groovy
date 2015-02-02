@@ -68,6 +68,15 @@ class CommandRegistry {
         return command
     }
 
+    static Collection<Command> findCommands( ProfileRepository repository ) {
+        registeredCommands.values().collect() { Command cmd ->
+            if(cmd instanceof ProfileRepositoryAware) {
+                ((ProfileRepositoryAware)cmd).profileRepository = repository
+            }
+            return cmd
+        }
+    }
+
     static Collection<Command> findCommands( Profile profile ) {
         Collection<Command> commands = []
 

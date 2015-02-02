@@ -32,9 +32,21 @@ class CreatePluginCommand extends CreateAppCommand {
 
     public static final String NAME = "create-plugin"
 
+    CreatePluginCommand() {
+        description.description = "Creates a plugin"
+        description.usage = "create-plugin [NAME]"
+    }
+
+    @Override
+    protected void populateDescription() {
+        // no-op
+    }
+
     @Override
     String getName() { NAME }
 
     @Override
     protected String getDefaultProfile() { "web-plugin" }
+
+
 }

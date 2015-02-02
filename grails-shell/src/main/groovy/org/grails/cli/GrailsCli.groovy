@@ -133,6 +133,12 @@ class GrailsCli {
             System.exit(0)
         }
 
+        if(mainCommandLine.hasOption(CommandLine.HELP_ARGUMENT) || mainCommandLine.hasOption('h')) {
+            def cmd = CommandRegistry.getCommand("help", profileRepository)
+            cmd.handle(createExecutionContext(mainCommandLine))
+            System.exit(0)
+        }
+
         if(mainCommandLine.environmentSet) {
             System.setProperty(Environment.KEY, mainCommandLine.environment)
         }
@@ -142,6 +148,7 @@ class GrailsCli {
         if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
             if(!mainCommandLine || !mainCommandLine.commandName) {
                 System.err.println USAGE_MESSAGE
+                System.err.println("Type 'grails help' for more information" )
                 return 1
             }
             def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
@@ -158,6 +165,7 @@ class GrailsCli {
             }
             else {
                 System.err.println USAGE_MESSAGE
+                System.err.println("Type 'grails help' for more information" )
                 return 1
             }
 
