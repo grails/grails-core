@@ -76,19 +76,17 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     void initGrailsApplication(final TestRuntime runtime, final Map callerInfo) {
         ServletContext servletContext = createServletContext(runtime, callerInfo)
         runtime.putValue("servletContext", servletContext)
-        
+
         DefaultGrailsApplication grailsApplication = createGrailsApplication(runtime, callerInfo)
         runtime.putValue("grailsApplication", grailsApplication)
-        addGrailsApplicationHolder(grailsApplication)
-        
+        Holders.setGrailsApplication(grailsApplication)
+
         GrailsWebApplicationContext mainContext = createMainContext(runtime, callerInfo, grailsApplication, servletContext)
 
-        applicationInitialized(runtime, grailsApplication)
-    }
+        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
+        grailsApplication.initialise()
 
-    protected addGrailsApplicationHolder(DefaultGrailsApplication grailsApplication) {
-        Holders.setGrailsApplication(grailsApplication)
-        Holders.config = grailsApplication.config
+        applicationInitialized(runtime, grailsApplication)
     }
 
     protected GrailsWebApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final GrailsApplication grailsApplication, final ServletContext servletContext) {
@@ -108,13 +106,17 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         boolean loadExternalBeans = resolveTestCallback(callerInfo, "loadExternalBeans")
         
         GrailsWebApplicationContext mainContext = (GrailsWebApplicationContext)runtimeConfigurator.configure(servletContext, loadExternalBeans)
-        
+
+
         if(servletContext != null) {
             Holders.setServletContext(servletContext);
             Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
             GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication, runtimeConfigurator.getPluginManager(), mainContext)
         }
-        
+
+        grailsApplication.mainContext = mainContext
+        grailsApplication.applicationContext = mainContext
+
         return mainContext
     }
 
@@ -129,8 +131,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
         }
-        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
-        grailsApplication.initialise()
         return grailsApplication
     }
 
@@ -164,8 +164,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             configClosure(grailsApplication.config)
             // reset flatConfig
             grailsApplication.configChanged() 
-            Holders.config = grailsApplication.config
         }
+        Holders.config = grailsApplication.config
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
