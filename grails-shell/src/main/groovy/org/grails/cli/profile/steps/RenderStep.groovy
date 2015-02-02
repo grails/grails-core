@@ -49,8 +49,7 @@ class RenderStep extends AbstractStep {
         String artifactName
         String artifactPackage
         (artifactName, artifactPackage) = resolveNameAndPackage(context, nameAsArgument)
-        def variableResolver = new ArtefactVariableResolver(artifactName, artifactPackage)
-
+        def variableResolver = new ArtefactVariableResolver(artifactName, (String) parameters.convention,artifactPackage)
         File destination = variableResolver.resolveFile(parameters.destination, context)
 
         try {

@@ -1,10 +1,3 @@
-package org.grails.cli.profile.support
-
-import grails.util.GrailsNameUtils
-import groovy.transform.CompileStatic
-import org.grails.cli.profile.ExecutionContext
-import org.grails.cli.profile.commands.templates.SimpleTemplate
-
 /*
  * Copyright 2014 original authors
  *
@@ -20,6 +13,14 @@ import org.grails.cli.profile.commands.templates.SimpleTemplate
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.cli.profile.support
+
+import grails.util.GrailsNameUtils
+import groovy.transform.CompileStatic
+import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.commands.templates.SimpleTemplate
+
+
 
 /**
  * @author Graeme Rocher
@@ -27,12 +28,24 @@ import org.grails.cli.profile.commands.templates.SimpleTemplate
  */
 @CompileStatic
 class ArtefactVariableResolver {
+    /**
+     * The artifact name and package
+     */
     String artifactPackage, artifactName
+    /**
+     * The suffix used as a convention for the file
+     */
+    String convention
     Map<String, String> variables = [:]
 
     ArtefactVariableResolver(String artifactName, String artifactPackage = null) {
+        this(artifactName, null, artifactPackage)
+    }
+
+    ArtefactVariableResolver(String artifactName, String convention, String artifactPackage) {
         this.artifactPackage = artifactPackage
         this.artifactName = artifactName
+        this.convention = convention
         createVariables()
     }
 
@@ -41,6 +54,9 @@ class ArtefactVariableResolver {
             variables['artifact.package.name'] = artifactPackage
             variables['artifact.package.path'] = artifactPackage?.replace('.','/')
             variables['artifact.package'] = "package $artifactPackage\n".toString()
+        }
+        if(convention && artifactName.endsWith(convention)) {
+            artifactName = artifactName.substring(0, artifactName.length() - convention.length())
         }
         variables['artifact.name'] = artifactName
         variables['artifact.propertyName'] = GrailsNameUtils.getPropertyName(artifactName)
