@@ -123,6 +123,11 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
     }
 
     @Override
+    void onStartup(Map<String, Object> event) {
+        // no-op
+    }
+
+    @Override
     void onShutdown(Map<String, Object> event) {
         // no-op
     }

@@ -23,6 +23,7 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.util.logging.Commons
 import org.grails.core.artefact.ControllerArtefactHandler
+import org.grails.plugins.web.servlet.context.BootStrapClassRunner
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
 import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
@@ -71,6 +72,7 @@ class ControllersGrailsPlugin extends Plugin {
         boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
 
 
+        bootStrapClassRunner(BootStrapClassRunner)
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
         simpleControllerHandlerAdapter(UrlMappingsInfoHandlerAdapter)
 
@@ -160,7 +162,7 @@ class ControllersGrailsPlugin extends Plugin {
             return
         }
         def application = grailsApplication
-        if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
+        if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, (Class)event.source)) {
             ApplicationContext context = applicationContext
             if (!context) {
                 if (log.isDebugEnabled()) {
@@ -169,9 +171,9 @@ class ControllersGrailsPlugin extends Plugin {
                 return
             }
 
-            def defaultScope = application.config.getProperty('grails.controllers.defaultScope', 'prototype')
+            def defaultScope = application.config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
 
-            GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
+            GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, (Class)event.source)
             beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     def beanScope = controllerClass.getPropertyValue("scope") ?: defaultScope

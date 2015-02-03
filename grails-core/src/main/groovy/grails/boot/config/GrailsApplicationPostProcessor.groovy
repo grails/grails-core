@@ -127,19 +127,32 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     void onApplicationEvent(ApplicationContextEvent event) {
         def context = event.applicationContext
 
+        def lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
         if(event instanceof ContextRefreshedEvent) {
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
-            lifeCycle?.doWithDynamicMethods()
+            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                lifeCycle.doWithDynamicMethods()
+            }
             pluginManager.doPostProcessing(context)
-            lifeCycle?.doWithApplicationContext()
+            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                lifeCycle.doWithApplicationContext()
+            }
             Holders.pluginManager = pluginManager
+            Map<String,Object> eventMap = [:]
+            eventMap.put('source', pluginManager)
+
+            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                lifeCycle.onStartup(eventMap)
+            }
         }
         else if(event instanceof ContextClosedEvent) {
             pluginManager.shutdown()
             Map<String,Object> eventMap = [:]
             eventMap.put('source', pluginManager)
-            lifeCycle?.onShutdown(eventMap)
+            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                lifeCycle.onShutdown(eventMap)
+            }
             ShutdownOperations.runOperations()
             Holders.clear()
             if(RELOADING_ENABLED) {

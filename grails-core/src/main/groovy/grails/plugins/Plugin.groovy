@@ -135,6 +135,10 @@ abstract class Plugin implements GrailsApplicationLifeCycle, GrailsApplicationAw
         // no-op
     }
 
+    @Override
+    void onStartup(Map<String, Object> event) {
+        // no-op
+    }
     /**
      * Invoked when the {@link ApplicationContext} is closed
      *

@@ -47,6 +47,13 @@ interface GrailsApplicationLifeCycle {
      * @param event The event
      */
     void onConfigChange(Map<String, Object> event)
+
+    /**
+     * Invoked once all prior initialization hooks: {@link GrailsApplicationLifeCycle#doWithSpring()}, {@link GrailsApplicationLifeCycle#doWithDynamicMethods()} and {@link GrailsApplicationLifeCycle#doWithApplicationContext()}
+     *
+     * @param event The event
+     */
+    void onStartup(Map<String, Object> event)
     /**
      * Invoked when the {@link org.springframework.context.ApplicationContext} is closed
      *

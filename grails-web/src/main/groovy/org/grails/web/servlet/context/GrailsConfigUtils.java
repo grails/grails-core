@@ -15,28 +15,17 @@
  */
 package org.grails.web.servlet.context;
 
-import java.lang.reflect.Constructor;
+import grails.core.ApplicationAttributes;
+import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
+import grails.persistence.support.PersistenceContextInterceptor;
+import grails.plugins.GrailsPluginManager;
+import grails.web.servlet.bootstrap.GrailsBootstrapClass;
+import org.grails.web.servlet.boostrap.BootstrapArtefactHandler;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContext;
-
-import grails.util.Holders;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import grails.core.ApplicationAttributes;
-import org.grails.web.servlet.boostrap.BootstrapArtefactHandler;
-import grails.core.GrailsApplication;
-import grails.web.servlet.bootstrap.GrailsBootstrapClass;
-import grails.core.GrailsClass;
-import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator;
-import grails.plugins.GrailsPluginManager;
-import grails.persistence.support.PersistenceContextInterceptor;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.util.ClassUtils;
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * A common class where shared configurational methods can reside.
@@ -45,7 +34,6 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class GrailsConfigUtils {
 
-    private static final Log LOG = LogFactory.getLog(GrailsConfigUtils.class);
 
     /**
      * Executes Grails bootstrap classes
@@ -87,48 +75,7 @@ public class GrailsConfigUtils {
         }
     }
 
-    public static WebApplicationContext configureWebApplicationContext(final ServletContext servletContext, WebApplicationContext parent) {
-        Holders.setServletContext(servletContext);
-        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
-        GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[GrailsContextLoader] Configuring Grails Application");
-        }
-
-        if (application.getParentContext() == null) {
-            application.setApplicationContext(parent);
-        }
-
-        GrailsRuntimeConfigurator configurator = null;
-        if (parent.containsBean(GrailsRuntimeConfigurator.BEAN_ID)) {
-            // get configurator from parent application context
-            configurator = (GrailsRuntimeConfigurator)parent.getBean(GrailsRuntimeConfigurator.BEAN_ID);
-        }
-        else {
-            // get configurator from servlet context
-            configurator = determineGrailsRuntimeConfiguratorFromServletContext(application, servletContext, parent);
-        }
-
-        if (configurator == null) {
-            // no configurator, use default
-            configurator = new GrailsRuntimeConfigurator(application,parent);
-            if (parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
-                GrailsPluginManager pluginManager = (GrailsPluginManager)parent.getBean(GrailsPluginManager.BEAN_NAME);
-                configurator.setPluginManager(pluginManager);
-            }
-        }
-
-        final GrailsPluginManager pluginManager = configurator.getPluginManager();
-
-        // return a context that obeys grails' settings
-        WebApplicationContext webContext = configurator.configure(servletContext);
-        pluginManager.setApplicationContext(webContext);
-
-        configureServletContextAttributes(servletContext, application, pluginManager, webContext);
-        LOG.info("[GrailsContextLoader] Grails application loaded.");
-        return webContext;
-    }
 
     public static void configureServletContextAttributes(ServletContext servletContext, GrailsApplication application, GrailsPluginManager pluginManager, WebApplicationContext webContext) {
         servletContext.setAttribute(ApplicationAttributes.PLUGIN_MANAGER, pluginManager);
@@ -140,36 +87,7 @@ public class GrailsConfigUtils {
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, webContext);
     }
 
-    public static GrailsRuntimeConfigurator determineGrailsRuntimeConfiguratorFromServletContext(
-            GrailsApplication application, ServletContext servletContext, ApplicationContext parent) {
-        GrailsRuntimeConfigurator configurator = null;
 
-        if (servletContext.getInitParameter(GrailsRuntimeConfigurator.BEAN_ID + "Class") != null) {
-            // try to load configurator class as specified in servlet context
-            String configuratorClassName = servletContext.getInitParameter(
-                    GrailsRuntimeConfigurator.BEAN_ID + "Class").toString();
-            Class<?> configuratorClass = null;
-            try {
-                configuratorClass = ClassUtils.forName(configuratorClassName, application.getClassLoader());
-            }
-            catch (Exception e) {
-                String msg = "failed to create Grails runtime configurator as specified in web.xml: " + configuratorClassName;
-                LOG.error("[GrailsContextLoader] " + msg, e);
-                throw new IllegalArgumentException(msg);
-            }
-
-            if (!GrailsRuntimeConfigurator.class.isAssignableFrom(configuratorClass)) {
-                throw new IllegalArgumentException("class " + configuratorClassName +
-                        " is not assignable to " + GrailsRuntimeConfigurator.class.getName());
-            }
-            Constructor<?> constr = ClassUtils.getConstructorIfAvailable(
-                    configuratorClass, GrailsApplication.class, ApplicationContext.class);
-            configurator = (GrailsRuntimeConfigurator) BeanUtils.instantiateClass(
-                    constr, application, parent);
-        }
-
-        return configurator;
-    }
 
     /**
      * Checks if a Config parameter is true or a System property with the same name is true
