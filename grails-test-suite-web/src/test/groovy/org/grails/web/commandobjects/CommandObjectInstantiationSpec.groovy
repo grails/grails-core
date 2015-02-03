@@ -61,6 +61,32 @@ class CommandObjectInstantiationSpec extends Specification {
         model.commandObject.name == "Name for POST request with no id"
     }
 
+    @Issue('GRAILS-11712')
+    void 'Test domain command object instantiation for POST request with empty id'() {
+        when:
+        request.method = 'POST'
+        params.name = "Name for POST request with empty id"
+        params.id = ''
+        controller.domainCommandObject()
+
+        then:
+        response.status == HttpServletResponse.SC_OK
+        model.commandObject.name == "Name for POST request with empty id"
+    }
+
+    @Issue('GRAILS-11712')
+    void 'Test domain command object instantiation for POST request with blank id'() {
+        when:
+        request.method = 'POST'
+        params.name = "Name for POST request with blank id"
+        params.id = '  '
+        controller.domainCommandObject()
+
+        then:
+        response.status == HttpServletResponse.SC_OK
+        model.commandObject.name == "Name for POST request with blank id"
+    }
+
     @Unroll
     @Issue('GRAILS-11247')
     void 'Test domain command object instantiation for #requestMethod request with id'() {
