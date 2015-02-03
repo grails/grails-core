@@ -48,16 +48,13 @@ public class CoreBeansTestPlugin implements TestPlugin {
     int ordinal = 0
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerParentBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
-        defineParentBeans(runtime) {
+    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
+        defineBeans(runtime) {
             grailsApplication(InstanceFactoryBean, grailsApplicationParam, GrailsApplication)
             pluginManager(NoOpGrailsPluginManager)
             conversionService(ConversionServiceFactoryBean)
         }
-    }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         def plugin = new DataBindingGrailsPlugin()
         plugin.grailsApplication = grailsApplicationParam
         plugin.applicationContext = grailsApplicationParam.mainContext
@@ -82,17 +79,10 @@ public class CoreBeansTestPlugin implements TestPlugin {
         runtime.publishEvent("defineBeans", [closure: closure])
     }
 
-    void defineParentBeans(TestRuntime runtime, Closure closure) {
-        runtime.publishEvent("defineParentBeans", [closure: closure])
-    }
-
     public void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'registerBeans':
                 registerBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
-                break
-            case 'registerParentBeans':
-                registerParentBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
                 break
         }
     }
