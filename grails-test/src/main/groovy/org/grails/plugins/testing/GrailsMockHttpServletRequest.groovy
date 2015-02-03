@@ -23,6 +23,7 @@ import javax.servlet.AsyncEvent
 import javax.servlet.AsyncListener
 import javax.servlet.DispatcherType
 import javax.servlet.ServletContext
+import javax.servlet.ServletInputStream
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
@@ -62,8 +63,9 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     private cachedXml
     DispatcherType dispatcherType
     AsyncContext asyncContext
-    
-    
+    private ServletInputStream cachedInputStream
+
+
     public GrailsMockHttpServletRequest() {
         super();
         method = 'GET'
@@ -433,6 +435,14 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     boolean isAsyncStarted() { asyncContext != null }
 
     boolean isAsyncSupported() { true }
+
+    @Override
+    public ServletInputStream getInputStream() {
+        if (cachedInputStream == null) {
+            cachedInputStream = super.getInputStream()
+        }
+        cachedInputStream
+    }
 }
 
 class MockPart implements Part {
