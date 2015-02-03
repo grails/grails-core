@@ -1,5 +1,4 @@
 package grails.boot
-
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.BuildSettings
@@ -15,12 +14,16 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
+import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.util.ReflectionUtils
 
+import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentLinkedQueue
-
 /**
  * Extends the {@link SpringApplication} with reloading behavior and other Grails features
  *
@@ -46,6 +49,22 @@ class GrailsApp extends SpringApplication {
         printRunStatus(applicationContext)
 
         return applicationContext
+    }
+
+    @Override
+    protected ConfigurableApplicationContext createApplicationContext() {
+        ConfigurableApplicationContext applicationContext = super.createApplicationContext()
+        applyAutowireByNamePerformanceOptimization(applicationContext)
+        return applicationContext
+    }
+
+    // SPR-11864 workaround
+    protected void applyAutowireByNamePerformanceOptimization(ConfigurableApplicationContext configurableApplicationContext) {
+        if(configurableApplicationContext instanceof GenericApplicationContext) {
+            Field beanFactoryField = ReflectionUtils.findField(GenericApplicationContext, "beanFactory", DefaultListableBeanFactory)
+            ReflectionUtils.makeAccessible(beanFactoryField)
+            ReflectionUtils.setField(beanFactoryField, configurableApplicationContext, new OptimizedAutowireCapableBeanFactory())
+        }
     }
 
     @Override
