@@ -103,8 +103,11 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
                         bd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
                         ((GenericApplicationContext)applicationContext).getDefaultListableBeanFactory().registerBeanDefinition(tagLibraryClassName, bd);
                         resolveTagLibraries.put(tagKey, tagLib.getFullName());
-                        return (GroovyObject) applicationContext.getBean(tagLibraryClassName);
+                        return applicationContext.getBean(tagLibraryClassName, GroovyObject.class);
                     }
+                } else {
+                    resolveTagLibraries.put(tagKey, tagLib.getFullName());
+                    return applicationContext.getBean(tagLibraryClassName, GroovyObject.class);
                 }
             }
         }
