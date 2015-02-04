@@ -22,6 +22,8 @@ import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 
+import org.springframework.beans.factory.InitializingBean;
+
 /**
  * Encodes and decodes strings to and from HTML.
  *
@@ -29,9 +31,10 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
  * @author Lari Hotari
  * @since 1.1
  */
-public final class HTMLCodec implements CodecFactory, GrailsApplicationAware {
+public final class HTMLCodec implements CodecFactory, GrailsApplicationAware, InitializingBean {
     public static final String CONFIG_PROPERTY_GSP_HTMLCODEC = "grails.views.gsp.htmlcodec";
     static final String CODEC_NAME = "HTML";
+    private GrailsApplication grailsApplication;
     private Encoder encoder;
     static final Encoder xml_encoder = new HTMLEncoder();
     static final Encoder html4_encoder = new HTML4Encoder() {
@@ -60,6 +63,10 @@ public final class HTMLCodec implements CodecFactory, GrailsApplicationAware {
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
+
+    public void afterPropertiesSet() {
         if (grailsApplication == null || grailsApplication.getFlatConfig() == null) {
             return;
         }
