@@ -16,13 +16,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.GroovyObject;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
@@ -36,6 +29,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.*;
 
 /**
  * Looks up tag library instances.
@@ -73,7 +68,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         }
     }
 
-    private void registerNamespaceDispatcher(String namespace) {
+    protected void registerNamespaceDispatcher(String namespace) {
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
     }
 
