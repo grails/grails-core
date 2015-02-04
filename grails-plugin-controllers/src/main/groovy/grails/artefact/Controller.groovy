@@ -385,7 +385,7 @@ trait Controller implements ResponseRenderer, DataBinder, WebAttributes, Servlet
 
              // if there are errors add it to the list of errors
              Errors controllerErrors = getErrorsInternal(webRequest)
-             Errors errors = (Errors)argMap.get(ControllerDynamicMethods.ERRORS_PROPERTY)
+             Errors errors = (Errors)argMap.get(GrailsDomainClassProperty.ERRORS)
              if (controllerErrors != null && errors != null) {
                  controllerErrors.addAllErrors errors
              }
