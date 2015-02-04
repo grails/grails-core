@@ -42,6 +42,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     protected GrailsPluginManager pluginManager
     protected ApplicationContext applicationContext
     boolean loadExternalBeans = true
+    boolean reloadingEnabled = RELOADING_ENABLED
 
     GrailsApplicationPostProcessor() {
         this(null, null, [] as Class[])
@@ -117,7 +118,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
         beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
 
-        if(RELOADING_ENABLED) {
+        if(reloadingEnabled) {
             GrailsSpringLoadedPlugin.register(pluginManager)
         }
     }
@@ -167,7 +168,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             }
             ShutdownOperations.runOperations()
             Holders.clear()
-            if(RELOADING_ENABLED) {
+            if(reloadingEnabled) {
                 GrailsSpringLoadedPlugin.unregister()
             }
         }

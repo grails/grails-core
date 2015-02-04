@@ -142,7 +142,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         constructorArgumentValues.addIndexedArgumentValue(1, null)
         constructorArgumentValues.addIndexedArgumentValue(2, null)
         beandef.setConstructorArgumentValues(constructorArgumentValues)
-        beandef.setPropertyValues(new MutablePropertyValues().add("loadExternalBeans", resolveTestCallback(callerInfo, "loadExternalBeans") as boolean))
+        beandef.setPropertyValues(new MutablePropertyValues().add("loadExternalBeans", resolveTestCallback(callerInfo, "loadExternalBeans") as boolean).add("reloadingEnabled", false))
         beandef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         beanFactory.registerBeanDefinition("grailsApplicationPostProcessor", beandef);
     }
