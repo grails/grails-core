@@ -65,7 +65,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         }
     }
 
-    private void registerNamespaceDispatcher(String namespace) {
+    protected void registerNamespaceDispatcher(String namespace) {
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, null, grailsApplication, this));
     }
 
