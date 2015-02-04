@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package grails.test.runtime;
-
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-import grails.core.GrailsApplication
-
-import org.grails.spring.beans.factory.InstanceFactoryBean
-import org.grails.spring.context.support.GrailsPlaceholderConfigurer
-import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
-import org.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
-import org.grails.validation.DefaultConstraintEvaluator;
+package grails.test.runtime
 
 import grails.core.support.proxy.DefaultProxyHandler
+import grails.util.Holders
 import grails.validation.ConstraintsEvaluator
-
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+import org.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
+import org.grails.spring.context.support.GrailsPlaceholderConfigurer
+import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
+import org.grails.validation.DefaultConstraintEvaluator
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
-
 /**
  * a TestPlugin for TestRuntime that adds some generic beans that are
  * required in Grails applications
@@ -48,16 +43,16 @@ public class CoreBeansTestPlugin implements TestPlugin {
     int ordinal = 0
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
+    protected void registerBeans(TestRuntime runtime) {
         defineBeans(runtime) {
-            grailsApplication(InstanceFactoryBean, grailsApplicationParam, GrailsApplication)
-            pluginManager(NoOpGrailsPluginManager)
             conversionService(ConversionServiceFactoryBean)
         }
 
+        def grailsApplication = Holders.grailsApplication
+
         def plugin = new DataBindingGrailsPlugin()
-        plugin.grailsApplication = grailsApplicationParam
-        plugin.applicationContext = grailsApplicationParam.mainContext
+        plugin.grailsApplication = grailsApplication
+        plugin.applicationContext = grailsApplication.mainContext
         defineBeans(runtime, plugin.doWithSpring())
 
         defineBeans(runtime) {
@@ -69,9 +64,9 @@ public class CoreBeansTestPlugin implements TestPlugin {
             proxyHandler(DefaultProxyHandler)
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
-            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
-            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplicationParam)
-            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplicationParam)
+            grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplication)
+            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplication)
+            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplication)
         }
     }
 
@@ -82,7 +77,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
     public void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'registerBeans':
-                registerBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
+                registerBeans(event.runtime)
                 break
         }
     }

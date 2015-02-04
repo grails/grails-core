@@ -86,10 +86,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
         GenericWebApplicationContext mainContext = createMainContext(runtime, callerInfo, servletContext)
 
-        GrailsApplication grailsApplication = mainContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
-        customizeGrailsApplication(grailsApplication, runtime, callerInfo)
-        runtime.putValue("grailsApplication", grailsApplication)
-        Holders.setGrailsApplication(grailsApplication)
+        GrailsApplication grailsApplication = Holders.grailsApplication
 
         if(servletContext != null) {
             Holders.setServletContext(servletContext);
@@ -127,8 +124,12 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     @CompileDynamic
     protected void registerGrailsAppPostProcessorBean(ConfigurableApplicationContext applicationContext, DefaultListableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
         def doWithSpringClosure = {
+            GrailsApplication grailsApplication = Holders.grailsApplication
+            customizeGrailsApplication(grailsApplication, runtime, callerInfo)
+            runtime.putValue("grailsApplication", grailsApplication)
+
             startQueuingDefineBeans(runtime)
-            registerBeans(runtime)
+            registerBeans(runtime, grailsApplication)
             finishQueuingDefineBeans(runtime, springConfig)
 
             startQueuingDefineBeans(runtime)

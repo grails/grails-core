@@ -59,6 +59,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
         grailsApplication = new DefaultGrailsApplication(classes?:[] as Class[])
+        pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
             initializeGrailsApplication(applicationContext)
         }
@@ -68,7 +69,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         this.applicationContext = applicationContext
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
-        pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         pluginManager.loadPlugins()
         pluginManager.applicationContext = applicationContext
         performGrailsInitializationSequence()
@@ -83,18 +83,19 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     @Override
     void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         def springConfig = new DefaultRuntimeSpringConfiguration()
-        def application = grailsApplication
+
+        Holders.setGrailsApplication(grailsApplication)
 
         // first register plugin beans
         pluginManager.doRuntimeConfiguration(springConfig)
 
         if(loadExternalBeans) {
             // now allow overriding via application
-            def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
+            def beanResources = grailsApplication.mainContext.getResource("classpath:spring/resources.groovy")
             if (beanResources.exists()) {
-                def gcl = new GroovyClassLoader(application.classLoader)
+                def gcl = new GroovyClassLoader(grailsApplication.classLoader)
                 try {
-                    RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
+                    RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, gcl.parseClass(beanResources.inputStream, beanResources.filename))
                 } catch (Throwable e) {
                     log.error("Error loading spring/resources.groovy file: ${e.message}", e)
                     throw e
@@ -105,7 +106,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if(lifeCycle) {
             def withSpring = lifeCycle.doWithSpring()
             if(withSpring) {
-                def bb = new BeanBuilder(null, springConfig, application.classLoader)
+                def bb = new BeanBuilder(null, springConfig, grailsApplication.classLoader)
                 bb.beans withSpring
             }
         }
