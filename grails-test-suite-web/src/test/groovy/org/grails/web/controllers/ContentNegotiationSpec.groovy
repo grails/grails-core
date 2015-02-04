@@ -6,9 +6,9 @@ import grails.converters.XML
 import grails.test.mixin.TestFor
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Unroll
 
 @TestFor(ContentNegotiationController)
 class ContentNegotiationSpec extends Specification {
@@ -50,17 +50,29 @@ class ContentNegotiationSpec extends Specification {
         grailsApplication.config = config
     }
     
-    @Issue("GRAILS-10897")
-    void "test index json content negotiation"() {
+    @Unroll
+    @Issue(["GRAILS-10897", "GRAILS-11954"])
+    void "test render as #converter returns response with content-type '#contentType'"() {
         given:
             def title = "This controller title"
             controller.params.title = title
+
         when: 'the request is set to json'
-            request.addHeader "Accept", "text/json"
+            request.addHeader "Accept", acceptType
             controller.index()
+
         then:
-            'json' == controller.response.format
-            controller.response.contentAsString == """{"title":"$title"}"""
+            controller.response.format == responseFormat
+            controller.response.contentAsString == contentAsString
+            controller.response.contentType.tokenize(/;/)[0] == contentType
+
+        where:
+            acceptType         || responseFormat || contentType        || contentAsString
+            "text/json"        || 'json'         || "application/json" || /{"title":"This controller title"}/  //defaults to application/json
+            "application/json" || 'json'         || "application/json" || /{"title":"This controller title"}/
+            "application/xml"  || 'xml'          || "application/xml"  || '''<?xml version="1.0" encoding="UTF-8"?><map><entry key="title">This controller title</entry></map>'''
+
+            converter = responseFormat.toUpperCase()
     }
 }
 
