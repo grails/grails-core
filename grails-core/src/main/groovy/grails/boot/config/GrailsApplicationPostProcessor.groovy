@@ -41,6 +41,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     final GrailsApplicationLifeCycle lifeCycle
     protected GrailsPluginManager pluginManager
     protected ApplicationContext applicationContext
+    boolean loadExternalBeans = true
 
     GrailsApplicationPostProcessor() {
         this(null, null, [] as Class[])
@@ -86,15 +87,17 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         // first register plugin beans
         pluginManager.doRuntimeConfiguration(springConfig)
 
-        // now allow overriding via application
-        def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
-        if(beanResources.exists()) {
-            def gcl = new GroovyClassLoader(application.classLoader)
-            try {
-                RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
-            } catch (Throwable e) {
-                log.error("Error loading spring/resources.groovy file: ${e.message}", e)
-                throw e
+        if(loadExternalBeans) {
+            // now allow overriding via application
+            def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
+            if (beanResources.exists()) {
+                def gcl = new GroovyClassLoader(application.classLoader)
+                try {
+                    RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
+                } catch (Throwable e) {
+                    log.error("Error loading spring/resources.groovy file: ${e.message}", e)
+                    throw e
+                }
             }
         }
 
