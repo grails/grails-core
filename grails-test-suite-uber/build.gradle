@@ -63,7 +63,8 @@ test {
          "**/UrlMappingsTestMixinTests.class",
          "**/WebUtilsTests.class",
          "**/RestfulControllerSpec.class",
-         "**/ResourceAnnotationRestfulControllerSpec.class"
+         "**/ResourceAnnotationRestfulControllerSpec.class",
+         "**/TestingValidationSpec.class"
      ]
 }
 
@@ -94,7 +95,7 @@ task isolatedDefaultGrailsControllerClassTests(type: Test) {
 }
 
 task isolatedPersonTests(type: Test) {
-    includes = ['**/grails/test/PersonTests.class']
+    includes = ['**/grails/test/PersonTests.class', "**/TestingValidationSpec.class"]
 }
 
 task isolatedRestfulControllerTests(type:Test) {
