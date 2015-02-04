@@ -15,7 +15,6 @@
  */
 
 package grails.test.runtime
-
 import grails.async.Promises
 import grails.boot.config.GrailsApplicationPostProcessor
 import grails.core.DefaultGrailsApplication
@@ -57,7 +56,6 @@ import org.springframework.web.context.support.GenericWebApplicationContext
 
 import javax.servlet.ServletContext
 import java.lang.reflect.Modifier
-
 /**
  * A TestPlugin for TestRuntime that builds the GrailsApplication instance for tests
  * 
@@ -87,7 +85,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
         GenericWebApplicationContext mainContext = createMainContext(runtime, callerInfo, servletContext)
 
-        GrailsApplication grailsApplication = Holders.grailsApplication
+        GrailsApplication grailsApplication = (GrailsApplication)runtime.getValueIfExists("grailsApplication")
 
         if(servletContext != null) {
             Holders.setServletContext(servletContext);
@@ -123,10 +121,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     @CompileDynamic
     protected void registerGrailsAppPostProcessorBean(ConfigurableApplicationContext applicationContext, DefaultListableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
-        def doWithSpringClosure = {
-            GrailsApplication grailsApplication = Holders.grailsApplication
-            customizeGrailsApplication(grailsApplication, runtime, callerInfo)
-            runtime.putValue("grailsApplication", grailsApplication)
+        Closure doWithSpringClosure = {
+            GrailsApplication grailsApplication = (GrailsApplication)runtime.getValueIfExists("grailsApplication")
 
             startQueuingDefineBeans(runtime)
             registerBeans(runtime, grailsApplication)
@@ -137,13 +133,16 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             finishQueuingDefineBeans(runtime, springConfig)
         }
 
-        RootBeanDefinition beandef = new RootBeanDefinition(GrailsApplicationPostProcessor.class);
+        Closure customizeGrailsApplicationClosure = { grailsApplication ->
+            customizeGrailsApplication(grailsApplication, runtime, callerInfo)
+            runtime.putValue("grailsApplication", grailsApplication)
+        }
+
+        RootBeanDefinition beandef = new RootBeanDefinition(TestRuntimeGrailsApplicationPostProcessor.class);
         ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues()
-        constructorArgumentValues.addIndexedArgumentValue(0, [doWithSpring: { -> doWithSpringClosure }] as GrailsApplicationLifeCycle)
-        constructorArgumentValues.addIndexedArgumentValue(1, null)
-        constructorArgumentValues.addIndexedArgumentValue(2, null)
+        constructorArgumentValues.addIndexedArgumentValue(0, doWithSpringClosure)
         beandef.setConstructorArgumentValues(constructorArgumentValues)
-        beandef.setPropertyValues(new MutablePropertyValues().add("loadExternalBeans", resolveTestCallback(callerInfo, "loadExternalBeans") as boolean).add("reloadingEnabled", false))
+        beandef.setPropertyValues(new MutablePropertyValues().add("loadExternalBeans", resolveTestCallback(callerInfo, "loadExternalBeans") as boolean).add("customizeGrailsApplicationClosure", customizeGrailsApplicationClosure))
         beandef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         beanFactory.registerBeanDefinition("grailsApplicationPostProcessor", beandef);
     }
@@ -359,4 +358,20 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     public void close(TestRuntime runtime) {
         
     }
+
+    static class TestRuntimeGrailsApplicationPostProcessor extends GrailsApplicationPostProcessor {
+        Closure customizeGrailsApplicationClosure
+
+        TestRuntimeGrailsApplicationPostProcessor(Closure doWithSpringClosure) {
+            super([doWithSpring: { -> doWithSpringClosure }] as GrailsApplicationLifeCycle, null, null)
+            loadExternalBeans = false
+            reloadingEnabled = false
+        }
+
+        @Override
+        protected void customizeGrailsApplication(GrailsApplication grailsApplication) {
+            customizeGrailsApplicationClosure?.call(grailsApplication)
+        }
+    }
 }
+

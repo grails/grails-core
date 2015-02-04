@@ -15,9 +15,8 @@
  */
 
 package grails.test.runtime
-
+import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
-import grails.util.Holders
 import grails.validation.ConstraintsEvaluator
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
@@ -43,16 +42,14 @@ public class CoreBeansTestPlugin implements TestPlugin {
     int ordinal = 0
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerBeans(TestRuntime runtime) {
+    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         defineBeans(runtime) {
             conversionService(ConversionServiceFactoryBean)
         }
 
-        def grailsApplication = Holders.grailsApplication
-
         def plugin = new DataBindingGrailsPlugin()
-        plugin.grailsApplication = grailsApplication
-        plugin.applicationContext = grailsApplication.mainContext
+        plugin.grailsApplication = grailsApplicationParam
+        plugin.applicationContext = grailsApplicationParam.mainContext
         defineBeans(runtime, plugin.doWithSpring())
 
         defineBeans(runtime) {
@@ -64,9 +61,9 @@ public class CoreBeansTestPlugin implements TestPlugin {
             proxyHandler(DefaultProxyHandler)
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
-            grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplication)
-            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplication)
-            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplication)
+            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
+            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplicationParam)
+            mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplicationParam)
         }
     }
 
@@ -77,7 +74,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
     public void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'registerBeans':
-                registerBeans(event.runtime)
+                registerBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
                 break
         }
     }
