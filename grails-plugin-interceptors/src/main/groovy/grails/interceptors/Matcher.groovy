@@ -1,0 +1,71 @@
+/*
+ * Copyright 2015 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package grails.interceptors
+
+import grails.artefact.Interceptor
+import grails.web.mapping.UrlMappingInfo
+
+
+/**
+ * A Matcher is used to configure matching for {@link grails.artefact.Interceptor} instances
+ *
+ * @see grails.artefact.Interceptor#match(java.util.Map)
+ *
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+interface Matcher {
+
+    /**
+     * Checks whether the given {@link UrlMappingInfo} matches
+     *
+     * @param info The {@link UrlMappingInfo} to check
+     * @return True if it does match
+     */
+    boolean doesMatch(String uri, UrlMappingInfo info)
+
+    /**
+     * Defines the match for the given arguments
+     *
+     * @param arguments A named argument map including one or more of the controller name, action name, namespace and method
+     * @return This matcher
+     */
+    Matcher matches(Map arguments)
+
+    /**
+     * Indicate that this matcher should match all requests
+     *
+     * @return This matcher
+     */
+    Matcher matchAll()
+
+    /**
+     * Adds an exclusion for the given arguments
+     *
+     * @param arguments A named argument map including one or more of the controller name, action name, namespace and method
+     *
+     * @return This matcher
+     */
+    Matcher excludes(Map arguments)
+
+    /**
+     * Adds an exclusion that is calculated by the given closure
+     *
+     * @param condition The condition, a closure which has full access to the properties of the {@link Interceptor}
+     * @return This matcher
+     */
+    Matcher excludes(@DelegatesTo(Interceptor) Closure<Boolean> condition)
+}
