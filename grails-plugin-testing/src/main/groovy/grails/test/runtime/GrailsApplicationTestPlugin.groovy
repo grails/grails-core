@@ -36,6 +36,7 @@ import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.core.util.ClassPropertyFetcher
 import org.grails.plugins.testing.GrailsMockErrors
 import org.grails.spring.RuntimeSpringConfiguration
+import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
@@ -101,7 +102,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
 
     protected GenericWebApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final ServletContext servletContext) {
-        GenericWebApplicationContext context = new GenericWebApplicationContext(servletContext);
+        GenericWebApplicationContext context = new GenericWebApplicationContext(new OptimizedAutowireCapableBeanFactory(), servletContext);
         DefaultListableBeanFactory beanFactory = context.getDefaultListableBeanFactory()
 
         prepareContext(context, beanFactory, runtime, callerInfo);
