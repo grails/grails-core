@@ -95,7 +95,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication,  mainContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager), mainContext)
         }
 
-        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
         grailsApplication.initialise()
 
         applicationInitialized(runtime, grailsApplication)
@@ -162,6 +161,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
         }
+        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
     }
 
     protected ClassLoader resolveClassLoader() {
