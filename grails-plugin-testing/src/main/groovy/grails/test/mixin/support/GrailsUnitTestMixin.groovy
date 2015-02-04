@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 package grails.test.mixin.support
-
 import grails.config.Config
+import grails.core.GrailsApplication
 import grails.test.GrailsMock
 import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
-
-import grails.core.GrailsApplication
-import grails.web.servlet.context.GrailsWebApplicationContext
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.springframework.context.MessageSource
-
+import org.springframework.web.context.support.GenericWebApplicationContext
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
  *
@@ -136,13 +133,13 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
     void defineBeans(boolean immediateDelivery = true, Closure<?> closure) {
         runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: immediateDelivery])
     }
-    
-    GrailsWebApplicationContext getApplicationContext() {
+
+    GenericWebApplicationContext getApplicationContext() {
         getMainContext()
     }
-    
-    GrailsWebApplicationContext getMainContext() {
-        (GrailsWebApplicationContext)grailsApplication.mainContext
+
+    GenericWebApplicationContext getMainContext() {
+        (GenericWebApplicationContext)grailsApplication.mainContext
     }
     
     GrailsApplication getGrailsApplication() {

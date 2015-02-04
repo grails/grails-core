@@ -15,6 +15,7 @@
  */
 package org.grails.compiler.injection.test;
 
+import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
 import grails.test.mixin.services.ServiceUnitTestMixin;
@@ -26,60 +27,33 @@ import grails.test.mixin.web.UrlMappingsUnitTestMixin;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import groovy.util.GroovyTestCase;
-
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.IfStatement;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.transform.GroovyASTTransformation;
+import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.compiler.logging.LoggingTransformer;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.core.artefact.ServiceArtefactHandler;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
-import grails.web.servlet.context.GrailsWebApplicationContext;
-import org.grails.compiler.injection.GrailsASTUtils;
-import grails.compiler.ast.GrailsArtefactClassInjector;
-import org.grails.compiler.logging.LoggingTransformer;
 import org.grails.core.io.DefaultResourceLocator;
 import org.grails.core.io.ResourceLocator;
-import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.FileSystemResource;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.filters.FiltersConfigArtefactHandler;
-import org.codehaus.groovy.syntax.Token;
-import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * Transformation used by the {@link grails.test.mixin.TestFor} annotation to signify the
@@ -462,7 +436,7 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     private IfStatement getAutowiringIfStatement(ClassExpression targetClass, VariableExpression fieldExpression, BinaryExpression testTargetAssignment) {
-        VariableExpression appCtxVar = new VariableExpression("applicationContext", ClassHelper.make(GrailsWebApplicationContext.class));
+        VariableExpression appCtxVar = new VariableExpression("applicationContext", ClassHelper.make(ApplicationContext.class));
 
         BooleanExpression applicationContextCheck = new BooleanExpression(
                 new BinaryExpression(
