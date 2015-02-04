@@ -35,14 +35,16 @@ import org.springframework.util.ClassUtils
 @CompileStatic
 @Commons
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
-
     static final boolean RELOADING_ENABLED = Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)
 
     final GrailsApplication grailsApplication
-    final GrailsPluginManager pluginManager
     final GrailsApplicationLifeCycle lifeCycle
+    protected GrailsPluginManager pluginManager
     protected ApplicationContext applicationContext
 
+    GrailsApplicationPostProcessor() {
+        this(null, null, [] as Class[])
+    }
 
     GrailsApplicationPostProcessor(Class...classes) {
         this(null, classes)
@@ -54,9 +56,16 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
+        grailsApplication = new DefaultGrailsApplication(classes?:[] as Class[])
+        if(applicationContext != null) {
+            initializeGrailsApplication(applicationContext)
+        }
+    }
+
+    protected void initializeGrailsApplication(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
-        grailsApplication = new DefaultGrailsApplication(classes as Class[])
         grailsApplication.applicationContext = applicationContext
+        grailsApplication.mainContext = applicationContext
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         pluginManager.loadPlugins()
         pluginManager.applicationContext = applicationContext
@@ -112,9 +121,9 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @Override
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext
-        pluginManager.setApplicationContext(applicationContext)
-        grailsApplication.setMainContext(applicationContext)
+        if(this.applicationContext != applicationContext) {
+            initializeGrailsApplication(applicationContext)
+        }
 
         if(applicationContext instanceof ConfigurableApplicationContext) {
             def configurable = (ConfigurableApplicationContext) applicationContext
