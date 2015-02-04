@@ -16,6 +16,7 @@
 package grails.artefact.controller.support
 
 import groovy.transform.CompileStatic
+import org.grails.web.converters.Converter
 
 /**
  * 
@@ -50,5 +51,9 @@ trait ResponseRenderer {
 
     void render(Map args, CharSequence body) {
         helper.invokeRender this, args, body
+    }
+
+    void render(Converter<?> converter) {
+        helper.invokeRender this, converter
     }
 }
