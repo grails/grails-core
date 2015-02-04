@@ -16,22 +16,17 @@
 package grails.test.mixin.support;
 
 import groovy.lang.GroovyObject;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.DefaultGrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
-import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Lazy implementation of the tag library lookup class designed for testing purposes.
@@ -39,81 +34,49 @@ import org.springframework.context.support.GenericApplicationContext;
  * @author Graeme Rocher
  * @since 2.0
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
-public class LazyTagLibraryLookup extends TagLibraryLookup{
-
-    private Map<String, String> resolveTagLibraries = new HashMap<String, String>();
-    private Map<String, List<Class>> tagClassesByNamespace = new HashMap<String, List<Class>>();
-    private Map<Class, GrailsTagLibClass> tagClassToTagLibMap= new HashMap<Class, GrailsTagLibClass>();
+@SuppressWarnings({"unchecked", "rawtypes"})
+public class LazyTagLibraryLookup extends TagLibraryLookup {
+    List<Class> tagLibClasses = (List<Class>) new GroovyPagesGrailsPlugin().getProvidedArtefacts();
+    private Map<String, GrailsTagLibClass> lazyLoadableTagLibs = new HashMap<String, GrailsTagLibClass>();
 
     @Override
     protected void registerTagLibraries() {
-        List<Class> providedArtefacts = (List<Class>) new GroovyPagesGrailsPlugin().getProvidedArtefacts();
+        super.registerTagLibraries();
+        for (Class providedArtefact : tagLibClasses) {
+            registerLazyLoadableTagLibClass(providedArtefact);
+        }
+    }
 
-        tagClassesByNamespace.put(GrailsTagLibClass.DEFAULT_NAMESPACE, new ArrayList<Class>());
-        namespaceDispatchers.put(GrailsTagLibClass.DEFAULT_NAMESPACE, new NamespacedTagDispatcher(GrailsTagLibClass.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this));
-        for (Class providedArtefact : providedArtefacts) {
-            if (!grailsApplication.isArtefactOfType(TagLibArtefactHandler.TYPE, providedArtefact)) continue;
-            Object value = GrailsClassUtils.getStaticPropertyValue(providedArtefact, GrailsTagLibClass.NAMESPACE_FIELD_NAME);
-            if (value != null) {
-
-                String namespace = value.toString();
-                List<Class> classes = tagClassesByNamespace.get(namespace);
-                if (classes == null) {
-                    classes = new ArrayList<Class>();
-                    tagClassesByNamespace.put(namespace, classes);
-                }
-                classes.add(providedArtefact);
-
-                namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
-            }
-            else {
-                tagClassesByNamespace.get(GrailsTagLibClass.DEFAULT_NAMESPACE).add(providedArtefact);
-            }
+    public void registerLazyLoadableTagLibClass(Class tagLibClass) {
+        GrailsTagLibClass grailsTagLibClass = new DefaultGrailsTagLibClass(tagLibClass);
+        if (!hasNamespace(grailsTagLibClass.getNamespace())) {
+            registerNamespaceDispatcher(grailsTagLibClass.getNamespace());
+        }
+        for (String tagName : grailsTagLibClass.getTagNames()) {
+            String tagKey = tagNameKey(grailsTagLibClass.getNamespace(), tagName);
+            lazyLoadableTagLibs.put(tagKey, grailsTagLibClass);
         }
     }
 
     @Override
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
-        String tagKey = tagNameKey(namespace, tagName);
-
-        if (resolveTagLibraries.containsKey(tagKey)) {
-            return applicationContext.getBean(resolveTagLibraries.get(tagKey), GroovyObject.class);
-        }
-
-        List<Class> tagLibraryClasses = tagClassesByNamespace.get(namespace);
-        if (tagLibraryClasses != null) {
-            for (Class tagLibraryClass : tagLibraryClasses) {
-
-                GrailsTagLibClass tagLib = tagClassToTagLibMap.get(tagLibraryClass);
-                if (tagLib == null) {
-                    tagLib = (GrailsTagLibClass) grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibraryClass);
-                    tagClassToTagLibMap.put(tagLibraryClass, tagLib);
+        GroovyObject tagLibrary = super.lookupTagLibrary(namespace, tagName);
+        if (tagLibrary == null) {
+            String tagKey = tagNameKey(namespace, tagName);
+            GrailsTagLibClass taglibClass = lazyLoadableTagLibs.get(tagKey);
+            if (taglibClass != null) {
+                if (!applicationContext.containsBean(taglibClass.getFullName())) {
+                    GenericBeanDefinition bd = new GenericBeanDefinition();
+                    bd.setBeanClass(taglibClass.getClazz());
+                    bd.setAutowireCandidate(true);
+                    bd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
+                    ((GenericApplicationContext) applicationContext).getDefaultListableBeanFactory().registerBeanDefinition(taglibClass.getFullName(), bd);
                 }
-                String tagLibraryClassName = tagLibraryClass.getName();
-                if (tagLib == null || !tagLib.hasTag(tagName)) {
-                    continue;
-                }
-
-                if (!applicationContext.containsBean(tagLibraryClassName)) {
-                    registerTagLib(tagLib);
-                    if (tagLib.hasTag(tagName)) {
-                        GenericBeanDefinition bd = new GenericBeanDefinition();
-                        bd.setBeanClass(tagLibraryClass);
-                        bd.setAutowireCandidate(true);
-                        bd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
-                        ((GenericApplicationContext)applicationContext).getDefaultListableBeanFactory().registerBeanDefinition(tagLibraryClassName, bd);
-                        resolveTagLibraries.put(tagKey, tagLib.getFullName());
-                        return applicationContext.getBean(tagLibraryClassName, GroovyObject.class);
-                    }
-                } else {
-                    resolveTagLibraries.put(tagKey, tagLib.getFullName());
-                    return applicationContext.getBean(tagLibraryClassName, GroovyObject.class);
-                }
+                registerTagLib(taglibClass);
+                tagLibrary = super.lookupTagLibrary(namespace, tagName);
             }
         }
-
-        return null;
+        return tagLibrary;
     }
 
     protected String tagNameKey(String namespace, String tagName) {
@@ -122,18 +85,8 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
 
     @Override
     protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib) {
-        tags.put(name, taglib.getFullName());
-    }
-
-    @Override
-    public void registerTagLib(GrailsTagLibClass taglib) {
-        super.registerTagLib(taglib);
-
-        String ns = taglib.getNamespace();
-
-        for (String tagName : taglib.getTagNames()) {
-            String key = tagNameKey(ns, tagName);
-            resolveTagLibraries.put(key, taglib.getFullName());
+        if (applicationContext.containsBean(taglib.getFullName())) {
+            super.putTagLib(tags, name, taglib);
         }
     }
 }
