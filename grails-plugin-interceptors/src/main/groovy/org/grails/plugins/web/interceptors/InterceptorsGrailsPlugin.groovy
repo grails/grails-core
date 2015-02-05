@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.interceptors
 
+import grails.artefact.Interceptor
 import grails.config.Settings
 import grails.core.GrailsClass
 import grails.plugins.Plugin
@@ -33,6 +34,7 @@ import groovy.transform.CompileStatic
 class InterceptorsGrailsPlugin extends Plugin {
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [controllers:version, urlMappings:version]
+    def watchedResources = "file:./grails-app/controllers/**/*Interceptor.groovy"
 
     @Override
     @CompileDynamic
@@ -53,6 +55,37 @@ class InterceptorsGrailsPlugin extends Plugin {
                     if (enableJsessionId) {
                         useJessionId = enableJsessionId
                     }
+                }
+            }
+        }
+    }
+
+    @Override
+    void onChange(Map<String, Object> event) {
+
+        def source = event.source
+        if(source instanceof Class) {
+            def enableJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
+            def gspEnc = config.getProperty(Settings.GSP_VIEW_ENCODING, "")
+
+            def interceptorClass = (Class) source
+            def grailsClass = grailsApplication.addArtefact(InterceptorArtefactHandler.TYPE, interceptorClass)
+            defineInterceptorBean(grailsClass, interceptorClass, gspEnc, enableJsessionId)
+            applicationContext.getBean(GrailsInterceptorHandlerInterceptorAdapter).setInterceptors(
+                    applicationContext.getBeansOfType(Interceptor).values() as Interceptor[]
+            )
+        }
+    }
+
+    @CompileDynamic
+    private defineInterceptorBean(GrailsClass grailsClass, interceptorClass, gspEnc, enableJsessionId) {
+        beans {
+            "${grailsClass.propertyName}"(interceptorClass) {
+                if (gspEnc.trim()) {
+                    gspEncoding = gspEnc
+                }
+                if (enableJsessionId) {
+                    useJessionId = enableJsessionId
                 }
             }
         }
