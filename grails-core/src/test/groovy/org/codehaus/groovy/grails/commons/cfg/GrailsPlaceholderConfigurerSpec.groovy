@@ -22,7 +22,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
             application.config.foo.bar="test"
             def bb = new BeanBuilder()
             bb.beans {
-                addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
+                addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer('${', application.config.toProperties()))
                 testBean(TestBean) {
                     name = '${foo.bar}'
                 }
@@ -42,7 +42,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
         application.config.more.stuff='another ${place.holder}'
         def bb = new BeanBuilder()
         bb.beans {
-            addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
+            addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer('${', application.config.toProperties()))
             testBean(TestBean) {
                 name = '${foo.bar}'
             }
@@ -62,7 +62,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
         application.setConfig(application.config)
         def bb = new BeanBuilder()
         bb.beans {
-            addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
+            addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer('£{', application.config.toProperties()))
             testBean(TestBean) {
                 name = '£{foo.bar}'
             }
