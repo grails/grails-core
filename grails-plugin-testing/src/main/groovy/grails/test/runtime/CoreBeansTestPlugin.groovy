@@ -62,7 +62,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
-            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, grailsApplicationParam)
+            grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, '${', grailsApplicationParam.config.toProperties())
             mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer, grailsApplicationParam)
         }
     }
