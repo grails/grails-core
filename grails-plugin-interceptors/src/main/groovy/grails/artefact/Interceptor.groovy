@@ -45,6 +45,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
+import javax.servlet.http.HttpServletRequest
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.regex.Pattern
 
@@ -60,6 +61,8 @@ import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.D
 @CompileStatic
 trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, ServletAttributes, Ordered {
 
+    public static final String THROWABLE = "org.grails.interceptors.THROWABLE"
+
     private Collection<RedirectEventListener> redirectListeners
     private RequestDataValueProcessor requestDataValueProcessor
     private UrlConverter urlConverter
@@ -69,16 +72,21 @@ trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, Servle
     @Autowired
     LinkGenerator grailsLinkGenerator
     String gspEncoding = DEFAULT_ENCODING
-    int order = HIGHEST_PRECEDENCE
+    int order = 0
 
 
     Collection<Matcher> matchers = new ConcurrentLinkedQueue<>()
-
 
     /**
      * @return Whether the current interceptor does match
      */
     boolean doesMatch() {
+        doesMatch(request)
+    }
+    /**
+     * @return Whether the current interceptor does match
+     */
+    boolean doesMatch(HttpServletRequest request) {
 
         if(matchers.isEmpty()) {
             // default to map just the controller by convention
@@ -100,6 +108,7 @@ trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, Servle
 
         return false
     }
+
 
     /**
      * Matches all requests
@@ -158,6 +167,17 @@ trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, Servle
     }
 
     /**
+     * Obtains the exception thrown by an action execution
+     *
+     * @param t The exception or null if none was thrown
+     */
+    Throwable getThrowable() {
+        def request = currentRequestAttributes()
+
+        (Throwable)request.getAttribute(THROWABLE, 0)
+    }
+
+    /**
      * Used to define a match. Example: match(controller:'book', action:'*')
      *
      * @param arguments The match arguments
@@ -190,7 +210,7 @@ trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, Servle
      *
      * @param t The exception instance if an exception was thrown, null otherwise
      */
-    void afterView(Throwable t) {}
+    void afterView() {}
 
 
     @Autowired(required=false)

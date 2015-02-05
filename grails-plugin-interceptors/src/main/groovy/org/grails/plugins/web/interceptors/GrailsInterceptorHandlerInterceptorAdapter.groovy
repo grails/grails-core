@@ -80,10 +80,11 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     @Override
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        request.setAttribute(Interceptor.THROWABLE, ex)
         if(interceptors) {
             for(i in interceptors) {
-                if(i.doesMatch()) {
-                    i.afterView(ex)
+                if(i.doesMatch(request)) {
+                    i.afterView()
                 }
             }
         }
