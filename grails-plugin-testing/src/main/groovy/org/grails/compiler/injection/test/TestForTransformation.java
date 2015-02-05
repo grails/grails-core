@@ -73,9 +73,10 @@ public class TestForTransformation extends TestMixinTransformation {
     static {
         artefactTypeToTestMap.put(ControllerArtefactHandler.TYPE, ControllerUnitTestMixin.class);
         artefactTypeToTestMap.put(TagLibArtefactHandler.TYPE, GroovyPageUnitTestMixin.class);
-        artefactTypeToTestMap.put(FiltersConfigArtefactHandler.getTYPE().toString(), FiltersUnitTestMixin.class);
+        artefactTypeToTestMap.put(FiltersConfigArtefactHandler.TYPE, FiltersUnitTestMixin.class);
         artefactTypeToTestMap.put(UrlMappingsArtefactHandler.TYPE, UrlMappingsUnitTestMixin.class);
         artefactTypeToTestMap.put(ServiceArtefactHandler.TYPE, ServiceUnitTestMixin.class);
+
     }
 
     public static final String DOMAIN_TYPE = "Domain";
