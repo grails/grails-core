@@ -100,9 +100,9 @@ trait Events {
     }
 
     /**
-     * @see reactor.bus.Observable#notify(java.lang.Object, reactor.bus.Event)
+     * @see reactor.bus.Observable#notify(java.lang.Object, java.lang.Object)
      */
-    public <E extends Event<?>> Observable notify(Object key, E ev) {
+    public Observable notify(Object key, Event<?> ev) {
         if(eventBus == null) throw new IllegalStateException("EventBus not present. Event notification attempted outside of application context.")
         if(ev.replyTo) {
             eventBus.send key, ev
@@ -126,6 +126,24 @@ trait Events {
         if(eventBus == null) throw new IllegalStateException("EventBus not present. Event notification attempted outside of application context.")
         eventBus.notify key, supplier as Supplier<E>
     }
+
+    /**
+     * @see EventBus#sendAndReceive(java.lang.Object, reactor.bus.Event, reactor.fn.Consumer)
+     */
+    public Observable sendAndReceive(Object key, data, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+            value = ClosureEventConsumer.ReplyDecorator) Closure reply) {
+        eventBus.sendAndReceive key, Event.wrap(data), new ClosureEventConsumer(reply)
+    }
+
+    /**
+     * @see EventBus#sendAndReceive(java.lang.Object, reactor.fn.Supplier, reactor.fn.Consumer)
+     */
+    public <E extends Event<?>> Observable sendAndReceive(Object key, Closure<E> supplier, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+            value = ClosureEventConsumer.ReplyDecorator) Closure reply) {
+        eventBus.sendAndReceive key, supplier as Supplier<E>, new ClosureEventConsumer(reply)
+    }
+
+
 
     /**
      * Creates an {@link Event} for the given data

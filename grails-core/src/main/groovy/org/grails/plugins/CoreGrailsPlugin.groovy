@@ -15,6 +15,7 @@
  */
 package org.grails.plugins
 
+import grails.config.Config
 import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.BuildSettings
@@ -25,6 +26,7 @@ import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
@@ -61,12 +63,18 @@ class CoreGrailsPlugin extends Plugin {
         xmlns grailsContext:"http://grails.org/schema/context"
         def application = grailsApplication
 
+        // Grails config as properties
+        def config = application.config
+        def configProperties = config.toProperties()
+        def placeHolderPrefix = config.getProperty(Settings.SPRING_PLACEHOLDER_PREFIX, '${')
+        grailsConfigProperties(InstanceFactoryBean, configProperties, Properties)
+
         // enable post-processing of @Configuration beans defined by plugins
         grailsConfigurationClassPostProcessor ConfigurationClassPostProcessor
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
         final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
-        final placeholderConfigurer = new GrailsPlaceholderConfigurer(application)
+        final placeholderConfigurer = new GrailsPlaceholderConfigurer(placeHolderPrefix, configProperties)
         placeholderConfigurer.environment = springEnvironment
         addBeanFactoryPostProcessor(placeholderConfigurer)
         legacyGrailsApplication(LegacyGrailsApplication, application)

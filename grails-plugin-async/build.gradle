@@ -1,6 +1,5 @@
 dependencies {
     compile 'javax.servlet:javax.servlet-api:3.0.1', provided
     compile 'javax:javaee-web-api:6.0', provided
-    compile 'io.projectreactor.spring:reactor-spring-context:2.0.0.M2'
-    compile project(':grails-plugin-controllers'), project(':grails-async')
+    compile project(':grails-plugin-controllers'), project(':grails-plugin-events')
 }

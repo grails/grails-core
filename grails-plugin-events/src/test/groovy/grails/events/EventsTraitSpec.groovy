@@ -25,7 +25,7 @@ import spock.lang.Specification
  */
 class EventsTraitSpec extends Specification {
 
-    void "test something"() {
+    void "Test event notification"() {
         when:"A new events class is created"
 
             def defaultEventBus = EventBus.create(new Environment())
