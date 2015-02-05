@@ -26,13 +26,17 @@ import spock.lang.Specification
 class ReactorPromiseFactorySpec extends Specification {
 
     void "Test that the ReactoryPromiseFactory can create promises"() {
-        given:"A Reactor promise factory"
-            def promiseFactory = new ReactorPromiseFactory(new Environment())
+        setup:
+            def env = Environment.initialize()
+            def promiseFactory = new ReactorPromiseFactory(env)
 
         when:"A promise is created"
             def promise = promiseFactory.createPromise({ 1 })
 
         then:"The value is returned"
             promise.get() == 1
+        cleanup:
+            env.shutdown()
+
     }
 }
