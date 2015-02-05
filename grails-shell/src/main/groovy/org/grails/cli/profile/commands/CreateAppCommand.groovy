@@ -229,5 +229,6 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                 }
             }
         }
+        ant.chmod(file: "${targetDirectory}/gradlew", perm: 'u+x')
     }
 }

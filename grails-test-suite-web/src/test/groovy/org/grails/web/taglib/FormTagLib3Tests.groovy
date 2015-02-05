@@ -508,4 +508,15 @@ Radio 3 <input type="radio" name="myGroup" value="3" />
         assertEquals(-1, result.indexOf("""<option value="${currentYear + 6}">${currentYear + 6}</option>"""))
         assertEquals(-1, result.indexOf("""<option value="${currentYear + 7}">${currentYear + 7}</option>"""))
     }
+    
+    void testDatePickerAriaLabel() {
+        def template = '<g:datePicker name="myDate" value="${new Date()}"/>'
+        def result = applyTemplate(template)
+        
+        assertTrue result.contains('<select name="myDate_year" id="myDate_year" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_month" id="myDate_month" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_day" id="myDate_day" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_hour" id="myDate_hour" aria-labelledby="myDate"')
+        assertTrue result.contains('<select name="myDate_minute" id="myDate_minute" aria-labelledby="myDate"')
+    }
 }

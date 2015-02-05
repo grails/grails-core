@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package grails.test.runtime;
-
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
+package grails.test.runtime
 import grails.core.GrailsApplication
-
-import org.grails.spring.beans.factory.InstanceFactoryBean
-import org.grails.spring.context.support.GrailsPlaceholderConfigurer
-import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
-import org.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
-import org.grails.validation.DefaultConstraintEvaluator;
-
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.validation.ConstraintsEvaluator
-
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+import org.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
+import org.grails.spring.context.support.GrailsPlaceholderConfigurer
+import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
+import org.grails.validation.DefaultConstraintEvaluator
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
-
 /**
  * a TestPlugin for TestRuntime that adds some generic beans that are
  * required in Grails applications
@@ -48,16 +42,11 @@ public class CoreBeansTestPlugin implements TestPlugin {
     int ordinal = 0
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerParentBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
-        defineParentBeans(runtime) {
-            grailsApplication(InstanceFactoryBean, grailsApplicationParam, GrailsApplication)
-            pluginManager(NoOpGrailsPluginManager)
+    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
+        defineBeans(runtime) {
             conversionService(ConversionServiceFactoryBean)
         }
-    }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         def plugin = new DataBindingGrailsPlugin()
         plugin.grailsApplication = grailsApplicationParam
         plugin.applicationContext = grailsApplicationParam.mainContext
@@ -82,17 +71,10 @@ public class CoreBeansTestPlugin implements TestPlugin {
         runtime.publishEvent("defineBeans", [closure: closure])
     }
 
-    void defineParentBeans(TestRuntime runtime, Closure closure) {
-        runtime.publishEvent("defineParentBeans", [closure: closure])
-    }
-
     public void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'registerBeans':
                 registerBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
-                break
-            case 'registerParentBeans':
-                registerParentBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
                 break
         }
     }

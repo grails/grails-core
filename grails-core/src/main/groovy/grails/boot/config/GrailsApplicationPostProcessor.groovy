@@ -35,14 +35,18 @@ import org.springframework.util.ClassUtils
 @CompileStatic
 @Commons
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
-
     static final boolean RELOADING_ENABLED = Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)
 
     final GrailsApplication grailsApplication
-    final GrailsPluginManager pluginManager
     final GrailsApplicationLifeCycle lifeCycle
+    protected GrailsPluginManager pluginManager
     protected ApplicationContext applicationContext
+    boolean loadExternalBeans = true
+    boolean reloadingEnabled = RELOADING_ENABLED
 
+    GrailsApplicationPostProcessor() {
+        this(null, null, [] as Class[])
+    }
 
     GrailsApplicationPostProcessor(Class...classes) {
         this(null, classes)
@@ -54,13 +58,25 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
-        this.applicationContext = applicationContext
-        grailsApplication = new DefaultGrailsApplication(classes as Class[])
-        grailsApplication.applicationContext = applicationContext
+        grailsApplication = new DefaultGrailsApplication(classes?:[] as Class[])
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
+        if(applicationContext != null) {
+            initializeGrailsApplication(applicationContext)
+        }
+    }
+
+    protected void initializeGrailsApplication(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext
+        grailsApplication.applicationContext = applicationContext
+        grailsApplication.mainContext = applicationContext
+        customizeGrailsApplication(grailsApplication)
         pluginManager.loadPlugins()
         pluginManager.applicationContext = applicationContext
         performGrailsInitializationSequence()
+    }
+
+    protected void customizeGrailsApplication(GrailsApplication grailsApplication) {
+
     }
 
     protected void performGrailsInitializationSequence() {
@@ -72,27 +88,30 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     @Override
     void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         def springConfig = new DefaultRuntimeSpringConfiguration()
-        def application = grailsApplication
+
+        Holders.setGrailsApplication(grailsApplication)
 
         // first register plugin beans
         pluginManager.doRuntimeConfiguration(springConfig)
 
-        // now allow overriding via application
-        def beanResources = application.mainContext.getResource("classpath:spring/resources.groovy")
-        if(beanResources.exists()) {
-            def gcl = new GroovyClassLoader(application.classLoader)
-            try {
-                RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, application, gcl.parseClass(beanResources.inputStream, beanResources.filename))
-            } catch (Throwable e) {
-                log.error("Error loading spring/resources.groovy file: ${e.message}", e)
-                throw e
+        if(loadExternalBeans) {
+            // now allow overriding via application
+            def beanResources = grailsApplication.mainContext.getResource("classpath:spring/resources.groovy")
+            if (beanResources.exists()) {
+                def gcl = new GroovyClassLoader(grailsApplication.classLoader)
+                try {
+                    RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, gcl.parseClass(beanResources.inputStream, beanResources.filename))
+                } catch (Throwable e) {
+                    log.error("Error loading spring/resources.groovy file: ${e.message}", e)
+                    throw e
+                }
             }
         }
 
         if(lifeCycle) {
             def withSpring = lifeCycle.doWithSpring()
             if(withSpring) {
-                def bb = new BeanBuilder(null, springConfig, application.classLoader)
+                def bb = new BeanBuilder(null, springConfig, grailsApplication.classLoader)
                 bb.beans withSpring
             }
         }
@@ -105,16 +124,16 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
         beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
 
-        if(RELOADING_ENABLED) {
+        if(reloadingEnabled) {
             GrailsSpringLoadedPlugin.register(pluginManager)
         }
     }
 
     @Override
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext
-        pluginManager.setApplicationContext(applicationContext)
-        grailsApplication.setMainContext(applicationContext)
+        if(this.applicationContext != applicationContext) {
+            initializeGrailsApplication(applicationContext)
+        }
 
         if(applicationContext instanceof ConfigurableApplicationContext) {
             def configurable = (ConfigurableApplicationContext) applicationContext
@@ -155,7 +174,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             }
             ShutdownOperations.runOperations()
             Holders.clear()
-            if(RELOADING_ENABLED) {
+            if(reloadingEnabled) {
                 GrailsSpringLoadedPlugin.unregister()
             }
         }

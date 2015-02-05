@@ -77,7 +77,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
             else {
                 project.processResources {
-                    from "${project.buildDir}/assetCompile"
+                    from("${project.buildDir}/assetCompile") {
+                        into "META-INF"
+                    }
                 }
             }
         }
