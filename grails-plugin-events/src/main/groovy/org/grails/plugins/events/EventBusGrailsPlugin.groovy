@@ -39,7 +39,9 @@ class EventBusGrailsPlugin extends Plugin {
     Closure doWithSpring() {
         {->
             reactorConfigurationReader(GrailsReactorConfigurationReader, grailsApplication.config, ref("grailsConfigProperties"))
-            reactorEnv(Environment, ref("reactorConfigurationReader"))
+            reactorEnv(Environment, ref("reactorConfigurationReader")) { bean ->
+                bean.destroyMethod = "shutdown"
+            }
 
             eventBus(MethodInvokingFactoryBean) { bean ->
                 targetClass = EventBus
