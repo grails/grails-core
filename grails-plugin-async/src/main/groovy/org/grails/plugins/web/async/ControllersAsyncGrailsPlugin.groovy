@@ -16,10 +16,20 @@
 package org.grails.plugins.web.async
 
 import grails.async.Promises
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
-
+import groovy.transform.CompileStatic
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import reactor.Environment
+import reactor.bus.EventBus
+import reactor.core.Dispatcher
+import reactor.spring.context.config.ConsumerBeanAutoConfiguration
+import reactor.spring.context.config.EnableReactor
+import reactor.spring.factory.CreateOrReuseFactoryBean
 
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
@@ -28,15 +38,19 @@ import org.springframework.context.ApplicationContext
  * @author Graeme Rocher
  * @since 2.0
  */
-class ControllersAsyncGrailsPlugin {
+class ControllersAsyncGrailsPlugin extends Plugin {
     def version = GrailsUtil.getGrailsVersion()
     def loadAfter = ['controllers']
 
-    def doWithSpring = {
+    Closure doWithSpring() {{->
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
-    }
 
-    def doWithDynamicMethods(ApplicationContext appCtx) {
+    }}
+
+    @Override
+    @CompileStatic
+    void doWithDynamicMethods() {
         Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
     }
+
 }

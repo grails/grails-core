@@ -15,14 +15,10 @@
  */
 package org.grails.spring.context.support;
 
-import grails.config.Config;
-import grails.config.Settings;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.io.IOException;
 import java.util.Properties;
-
-import grails.core.GrailsApplication;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
  * Uses Grails' ConfigObject for place holder values.
@@ -32,20 +28,19 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
  */
 public class GrailsPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer {
 
-    private GrailsApplication grailsApplication;
 
-    public GrailsPlaceholderConfigurer(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
-        Config config = grailsApplication.getConfig();
-        setPlaceholderPrefix(config.getProperty(Settings.SPRING_PLACEHOLDER_PREFIX, "${"));
+    private final Properties properties;
+
+    public GrailsPlaceholderConfigurer(String placeHolderPrefix, Properties properties) {
+        this.properties = properties;
+        setPlaceholderPrefix(placeHolderPrefix);
         setIgnoreUnresolvablePlaceholders(true);
     }
 
     @Override
     protected void loadProperties(Properties props) throws IOException {
-        Config config = grailsApplication.getConfig();
-        if (config != null) {
-            props.putAll(config.toProperties());
+        if (properties != null) {
+            props.putAll(properties);
         }
     }
 }

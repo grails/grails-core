@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import grails.async.decorator.PromiseDecorator;
 import org.grails.async.factory.SynchronousPromiseFactory;
 import org.grails.async.factory.gpars.GparsPromiseFactory;
+import org.grails.async.factory.reactor.ReactorPromiseFactory;
 
 /**
  * Factory class for working with {@link Promise} instances
@@ -37,12 +38,12 @@ public class Promises {
     static PromiseFactory promiseFactory;
 
     static {
-        if (GparsPromiseFactory.isGparsAvailable()) {
+        if (ReactorPromiseFactory.isReactorAvailable()) {
+            promiseFactory = new ReactorPromiseFactory();
+        }
+        else if (GparsPromiseFactory.isGparsAvailable()) {
             promiseFactory = new GparsPromiseFactory();
         }
-        /*else if (ReactorPromiseFactory.isReactorAvailable()) {
-            promiseFactory = new ReactorPromiseFactory()
-        }*/
         else {
             promiseFactory = new SynchronousPromiseFactory();
         }

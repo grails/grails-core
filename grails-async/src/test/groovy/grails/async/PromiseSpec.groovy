@@ -16,6 +16,7 @@
 package grails.async
 
 import grails.async.decorator.PromiseDecorator
+import reactor.Environment
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
@@ -26,6 +27,11 @@ import java.util.concurrent.TimeoutException
  * @since 2.3
  */
 class PromiseSpec extends Specification {
+
+    void setup() {
+        Environment.initializeIfEmpty()
+    }
+
 
     void "Test add promise decorator"() {
         when:"A decorator is added"
@@ -42,7 +48,10 @@ class PromiseSpec extends Specification {
     }
     void "Test promise timeout handling"() {
         when:"a promise that takes a while is created"
-            def p = Promises.createPromise { sleep 1000 }
+            def p = Promises.createPromise {
+                sleep 1000
+                println 'completed op'
+            }
             def result = p.get(100, TimeUnit.MILLISECONDS)
 
         then:"A timeout error occurs"
