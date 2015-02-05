@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 package org.grails.events.reactor
-
 import grails.config.Config
-import grails.core.support.GrailsConfigurationAware
 import groovy.transform.CompileStatic
-import org.grails.config.PrefixedConfig
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
+import groovy.util.logging.Commons
 import reactor.Environment
 import reactor.core.config.ConfigurationReader
 import reactor.core.config.DispatcherConfiguration
@@ -29,11 +25,14 @@ import reactor.core.config.ReactorConfiguration
 
 
 /**
+ * Configures Reactor within a Grails application
+ *
  * @author Graeme Rocher
  * @since 3.0
  */
 @CompileStatic
-class GrailsReactorConfigurationReader implements ConfigurationReader, GrailsConfigurationAware {
+@Commons
+class GrailsReactorConfigurationReader implements ConfigurationReader {
 
     public static final String DEFAULT_DISPATCHER = 'reactor.dispatchers.default'
     public static final int DEFAULT_BACKLOG = 2048
@@ -41,11 +40,12 @@ class GrailsReactorConfigurationReader implements ConfigurationReader, GrailsCon
     public static final int DEFAULT_RINGBUFFER_BACKLOG = 8192
 
     Config configuration
+    Properties configurationProperties = new Properties()
 
-    @Autowired
-    @Qualifier("grailsConfigProperties")
-    Properties configurationProperties
-
+    GrailsReactorConfigurationReader(Config configuration, Properties configurationProperties) {
+        this.configuration = configuration
+        this.configurationProperties = configurationProperties
+    }
 
     @Override
     ReactorConfiguration read() {
@@ -57,23 +57,52 @@ class GrailsReactorConfigurationReader implements ConfigurationReader, GrailsCon
             def dispatcherConfigs = config.getProperty('reactor.dispatchers', Map, Collections.emptyMap())
             if(dispatcherConfigs) {
                 for(dispatcherName in dispatcherConfigs.keySet()) {
-                    def dispatcherType = config.getProperty("reactor.dispatchers.${dispatcherName}.type", String)
+                    if('default' == dispatcherName) continue
+                    def dispatcherType = getType( config.getProperty("reactor.dispatchers.${dispatcherName}.type", String) )
                     if(dispatcherType) {
                         dispatcherConfigurations << new DispatcherConfiguration(dispatcherName.toString(),
-                                                                                DispatcherType.valueOf(dispatcherType),
+                                                                                dispatcherType,
                                                                                 config.getProperty("reactor.dispatchers.${dispatcherName}.backlog", Integer, DEFAULT_BACKLOG),
                                                                                 config.getProperty("reactor.dispatchers.${dispatcherName}.size", Integer, DEFAULT_SIZE))
                     }
                 }
             }
             else {
-                dispatcherConfigurations << new DispatcherConfiguration(Environment.THREAD_POOL, DispatcherType.THREAD_POOL_EXECUTOR, DEFAULT_BACKLOG, DEFAULT_SIZE)
-                dispatcherConfigurations << new DispatcherConfiguration(Environment.DISPATCHER_GROUP, DispatcherType.DISPATCHER_GROUP, DEFAULT_BACKLOG, DEFAULT_SIZE)
-                dispatcherConfigurations << new DispatcherConfiguration(Environment.SHARED, DispatcherType.RING_BUFFER, DEFAULT_RINGBUFFER_BACKLOG, DEFAULT_SIZE)
-                dispatcherConfigurations << new DispatcherConfiguration(Environment.WORK_QUEUE, DispatcherType.WORK_QUEUE, DEFAULT_BACKLOG, DEFAULT_SIZE)
+                populateDefaultDispatchers(dispatcherConfigurations)
             }
 
             return new ReactorConfiguration(dispatcherConfigurations, defaultDispatcher, configurationProperties)
+        }
+        else {
+            List<DispatcherConfiguration> dispatcherConfigurations = []
+            populateDefaultDispatchers(dispatcherConfigurations)
+
+            return new ReactorConfiguration(dispatcherConfigurations, Environment.THREAD_POOL, configurationProperties )
+        }
+    }
+
+    protected void populateDefaultDispatchers(List<DispatcherConfiguration> dispatcherConfigurations) {
+        dispatcherConfigurations << new DispatcherConfiguration(Environment.THREAD_POOL, DispatcherType.THREAD_POOL_EXECUTOR, DEFAULT_BACKLOG, DEFAULT_SIZE)
+        dispatcherConfigurations << new DispatcherConfiguration(Environment.DISPATCHER_GROUP, DispatcherType.DISPATCHER_GROUP, DEFAULT_BACKLOG, DEFAULT_SIZE)
+        dispatcherConfigurations << new DispatcherConfiguration(Environment.SHARED, DispatcherType.RING_BUFFER, DEFAULT_RINGBUFFER_BACKLOG, DEFAULT_SIZE)
+        dispatcherConfigurations << new DispatcherConfiguration(Environment.WORK_QUEUE, DispatcherType.WORK_QUEUE, DEFAULT_BACKLOG, DEFAULT_SIZE)
+    }
+
+    private DispatcherType getType(String type) {
+        if("dispatcherGroup".equals(type)) {
+            return DispatcherType.DISPATCHER_GROUP
+        } else if("mpsc".equals(type)) {
+            return DispatcherType.MPSC
+        } else if("ringBuffer".equals(type)) {
+            return DispatcherType.RING_BUFFER
+        } else if("synchronous".equals(type)) {
+            return DispatcherType.SYNCHRONOUS
+        } else if("threadPoolExecutor".equals(type)) {
+            return DispatcherType.THREAD_POOL_EXECUTOR
+        } else if("workQueue".equals(type)) {
+            return DispatcherType.WORK_QUEUE
+        } else {
+            log.warn("The type '$type' of Dispatcher is not recognized")
         }
     }
 }

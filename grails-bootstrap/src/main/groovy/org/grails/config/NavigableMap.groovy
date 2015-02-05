@@ -164,7 +164,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         } else if (path.length == 1) {
             return map.get(path[0])
         } else {
-            return navigateMap((Map<String, Object>)map.get(path[0]), path.tail())
+            def submap = map.get(path[0])
+            if(submap instanceof Map) {
+                return navigateMap((Map<String, Object>) submap, path.tail())
+            }
+            return submap
         }
     }
     

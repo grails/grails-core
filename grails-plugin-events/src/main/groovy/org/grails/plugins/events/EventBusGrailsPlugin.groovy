@@ -38,8 +38,8 @@ class EventBusGrailsPlugin extends Plugin {
     @Override
     Closure doWithSpring() {
         {->
-            reactorConfigurationReader(GrailsReactorConfigurationReader)
-            reactorEnv(Environment, reactorConfigurationReader)
+            reactorConfigurationReader(GrailsReactorConfigurationReader, grailsApplication.config, ref("grailsConfigProperties"))
+            reactorEnv(Environment, ref("reactorConfigurationReader"))
 
             eventBus(MethodInvokingFactoryBean) { bean ->
                 targetClass = EventBus
@@ -47,7 +47,6 @@ class EventBusGrailsPlugin extends Plugin {
                 arguments = [reactorEnv]
             }
             consumerBeanAutoConfiguration(ConsumerBeanAutoConfiguration)
-
         }
     }
 }

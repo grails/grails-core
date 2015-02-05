@@ -38,10 +38,7 @@ public class Promises {
     static PromiseFactory promiseFactory;
 
     static {
-        if (ReactorPromiseFactory.isReactorAvailable()) {
-            promiseFactory = new ReactorPromiseFactory();
-        }
-        else if (GparsPromiseFactory.isGparsAvailable()) {
+        if (GparsPromiseFactory.isGparsAvailable()) {
             promiseFactory = new GparsPromiseFactory();
         }
         else {

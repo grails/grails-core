@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 package org.grails.plugins.web.async
-
 import grails.async.Promises
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
+import org.grails.async.factory.reactor.ReactorPromiseFactory
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.context.ApplicationContext
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import reactor.Environment
-import reactor.bus.EventBus
-import reactor.core.Dispatcher
-import reactor.spring.context.config.ConsumerBeanAutoConfiguration
-import reactor.spring.context.config.EnableReactor
-import reactor.spring.factory.CreateOrReuseFactoryBean
-
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
  * by the compile time transform.
@@ -50,6 +41,11 @@ class ControllersAsyncGrailsPlugin extends Plugin {
     @Override
     @CompileStatic
     void doWithDynamicMethods() {
+        try {
+            Promises.promiseFactory = new ReactorPromiseFactory(applicationContext.getBean(Environment))
+        } catch (NoSuchBeanDefinitionException e) {
+            // Reactor not configured
+        }
         Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
     }
 
