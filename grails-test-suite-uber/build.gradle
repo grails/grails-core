@@ -64,7 +64,8 @@ test {
          "**/WebUtilsTests.class",
          "**/RestfulControllerSpec.class",
          "**/ResourceAnnotationRestfulControllerSpec.class",
-         "**/TestingValidationSpec.class"
+         "**/TestingValidationSpec.class",
+         "**/CascadingErrorCountSpec"
      ]
 }
 
@@ -95,7 +96,10 @@ task isolatedDefaultGrailsControllerClassTests(type: Test) {
 }
 
 task isolatedPersonTests(type: Test) {
-    includes = ['**/grails/test/PersonTests.class', "**/TestingValidationSpec.class"]
+    includes = ['**/grails/test/PersonTests.class', 
+                "**/TestingValidationSpec.class",
+                "**/CascadingErrorCountSpec"
+                ]
 }
 
 task isolatedRestfulControllerTests(type:Test) {
