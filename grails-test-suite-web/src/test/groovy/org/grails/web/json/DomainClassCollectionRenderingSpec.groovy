@@ -1,19 +1,16 @@
 package org.grails.web.json
-
 import grails.persistence.Entity
 import grails.rest.render.json.JsonRenderer
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.util.GrailsWebMockUtil
-
+import grails.test.mixin.web.ControllerUnitTestMixin
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
-
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestMixin(DomainClassUnitTestMixin)
+@TestMixin(ControllerUnitTestMixin)
 @Mock([Album, Company])
 class DomainClassCollectionRenderingSpec extends Specification {
     void setup() {
@@ -28,11 +25,11 @@ class DomainClassCollectionRenderingSpec extends Specification {
             renderer.registerCustomConverter()
 
         when: 'a domain object with a reference to a collection of other domain objects is rendered'
-            final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            final webRequest = GrailsWebRequest.lookup()
             def undertow = new Album(title: 'Undertow')
             def lateralus = new Album(title: 'Lateralus')
             def company = new Company(name: 'Tool Inc.')
-            company.addToAlbums(undertow).addToAlbums(lateralus).save()
+            company.addToAlbums(undertow).addToAlbums(lateralus).save(flush:true, failOnError:true)
             renderer.render(undertow, new ServletRenderContext(webRequest, [includes:['title', 'companies']]))
 
         then: 'all of the nested elements have fully qualified class names'
