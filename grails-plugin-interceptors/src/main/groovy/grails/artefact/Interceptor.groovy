@@ -61,8 +61,6 @@ import static org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod.D
 @CompileStatic
 trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, ServletAttributes, Ordered {
 
-    public static final String THROWABLE = "org.grails.interceptors.THROWABLE"
-
     private Collection<RedirectEventListener> redirectListeners
     private RequestDataValueProcessor requestDataValueProcessor
     private UrlConverter urlConverter
@@ -174,7 +172,7 @@ trait Interceptor implements ResponseRenderer, DataBinder, WebAttributes, Servle
     Throwable getThrowable() {
         def request = currentRequestAttributes()
 
-        (Throwable)request.getAttribute(THROWABLE, 0)
+        (Throwable)request.getAttribute(Matcher.THROWABLE, 0)
     }
 
     /**

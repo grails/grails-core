@@ -16,6 +16,7 @@
 package org.grails.plugins.web.interceptors
 
 import grails.artefact.Interceptor
+import grails.interceptors.Matcher
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.grails.web.util.GrailsApplicationAttributes
@@ -80,7 +81,7 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     @Override
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        request.setAttribute(Interceptor.THROWABLE, ex)
+        request.setAttribute(Matcher.THROWABLE, ex)
         if(interceptors) {
             for(i in interceptors) {
                 if(i.doesMatch(request)) {
