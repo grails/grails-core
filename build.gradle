@@ -200,7 +200,11 @@ subprojects { project ->
     dependencies {
         compile groovyDependency
 
-        testCompile("org.codehaus.groovy:groovy-test:${groovyVersion}")
+        testCompile "org.codehaus.groovy:groovy-test:${groovyVersion}", {
+            exclude group:'junit', module: 'junit'
+            exclude group:'org.codehaus.groovy', module: 'groovy'
+            exclude group:'org.hamcrest', module: 'hamcrest-core'
+        }
 
         if (project.name != "grails-docs") {
             // Logging
