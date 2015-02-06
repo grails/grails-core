@@ -11,6 +11,7 @@ import org.junit.runners.MethodSorters
 @TestMixin(GrailsUnitTestMixin)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class TestMixinSetupTeardownInvokeTests {
+    static int counter=1
 
     def value
     void setUp() {
@@ -23,13 +24,13 @@ class TestMixinSetupTeardownInvokeTests {
 
     @Test
     void testThatSetupWasInvoked() {
-        println "invoked 1"
+        println "invoked 1 ${counter++} ${TestMixinSetupTeardownInvokeTests.class.hashCode()}"
         assert value == 'World!'
     }
 
     @Test
     void testThatSetupWasInvoked2() {
-        println "invoked 2"
+        println "invoked 2 ${counter++} ${TestMixinSetupTeardownInvokeTests.class.hashCode()}"
         assert System.getProperty(TestMixinSetupTeardownInvokeTests.name) == 'invoked'
     }
 }
