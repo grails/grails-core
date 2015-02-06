@@ -37,7 +37,7 @@ ext {
     jansiVersion = "1.11"
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
-    slf4jVersion = "1.7.9"
+    slf4jVersion = "1.7.10"
 
     spockVersion = '0.7-groovy-2.0'
     springLoadedVersion = "1.2.1.RELEASE"
