@@ -46,12 +46,8 @@ class InterceptorsGrailsPlugin extends Plugin {
             grailsInterceptorHandlerInterceptorAdapter(GrailsInterceptorHandlerInterceptorAdapter)
 
             def enableJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
-            def gspEnc = config.getProperty(Settings.GSP_VIEW_ENCODING, "")
             for(GrailsClass i in interceptors) {
                 "${i.propertyName}"(i.clazz) {
-                    if (gspEnc.trim()) {
-                        gspEncoding = gspEnc
-                    }
                     if (enableJsessionId) {
                         useJessionId = enableJsessionId
                     }
@@ -66,11 +62,10 @@ class InterceptorsGrailsPlugin extends Plugin {
         def source = event.source
         if(source instanceof Class) {
             def enableJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
-            def gspEnc = config.getProperty(Settings.GSP_VIEW_ENCODING, "")
 
             def interceptorClass = (Class) source
             def grailsClass = grailsApplication.addArtefact(InterceptorArtefactHandler.TYPE, interceptorClass)
-            defineInterceptorBean(grailsClass, interceptorClass, gspEnc, enableJsessionId)
+            defineInterceptorBean(grailsClass, interceptorClass, enableJsessionId)
             applicationContext.getBean(GrailsInterceptorHandlerInterceptorAdapter).setInterceptors(
                     applicationContext.getBeansOfType(Interceptor).values() as Interceptor[]
             )
@@ -78,12 +73,9 @@ class InterceptorsGrailsPlugin extends Plugin {
     }
 
     @CompileDynamic
-    private defineInterceptorBean(GrailsClass grailsClass, interceptorClass, gspEnc, enableJsessionId) {
+    private defineInterceptorBean(GrailsClass grailsClass, interceptorClass, enableJsessionId) {
         beans {
             "${grailsClass.propertyName}"(interceptorClass) {
-                if (gspEnc.trim()) {
-                    gspEncoding = gspEnc
-                }
                 if (enableJsessionId) {
                     useJessionId = enableJsessionId
                 }
