@@ -17,8 +17,11 @@ package org.grails.plugins.web.interceptors
 
 import grails.artefact.Interceptor
 import grails.interceptors.Matcher
+import grails.util.GrailsNameUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.OrderComparator
@@ -39,12 +42,20 @@ import javax.servlet.http.HttpServletResponse
 @CompileStatic
 class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
+    private static final Log LOG = LogFactory.getLog(Interceptor)
+
     List<Interceptor> interceptors = []
 
     @Autowired(required = false)
     @CompileDynamic
     void setInterceptors(Interceptor[] interceptors) {
         this.interceptors = interceptors.sort(new OrderComparator()) as List<Interceptor>
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Computed interceptor execution order:")
+            for(Interceptor i in interceptors) {
+                LOG.debug("- ${GrailsNameUtils.getLogicalPropertyName(i.getClass().name, "Interceptor")} (order: ${i.order}) ")
+            }
+        }
     }
 
     @Override
