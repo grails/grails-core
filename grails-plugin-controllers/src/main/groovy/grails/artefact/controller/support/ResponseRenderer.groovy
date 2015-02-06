@@ -111,19 +111,6 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     /**
-     * Render the given {@link JSONElement} to the response
-     *
-     * @param json The JSON to render
-     */
-    void render(JSONElement json) {
-        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
-        HttpServletResponse response = webRequest.currentResponse
-
-        response.contentType = GrailsWebUtil.getContentType("application/json", DEFAULT_ENCODING)
-        renderWritable json, response
-    }
-
-    /**
      * Use the given closure to render markup to the response. The markup is assumed to be HTML. Use {@link ResponseRenderer#render(java.util.Map, groovy.lang.Closure)} to change the content type.
      *
      * @param closure The markup to render
@@ -379,10 +366,10 @@ trait ResponseRenderer extends WebAttributes {
                 }
             }
             catch (GroovyRuntimeException gre) {
-                throw new ControllerExecutionException("Error rendering template [" + templateName + "]: " + gre.getMessage(), gre)
+                throw new ControllerExecutionException("Error rendering template [$templateName]: ${gre.message}", gre)
             }
             catch (IOException ioex) {
-                throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex)
+                throw new ControllerExecutionException("I/O error executing render method for arguments [$argMap]: ${ioex.message}" , ioex)
             }
         }
         else if (argMap.containsKey(ARGUMENT_FILE)) {
@@ -423,7 +410,7 @@ trait ResponseRenderer extends WebAttributes {
                     SpringIOUtils.copy input, response.getOutputStream()
                 } catch (IOException e) {
                     throw new ControllerExecutionException(
-                            "I/O error copying file to response: " + e.getMessage(), e)
+                            "I/O error copying file to response: ${e.message}", e)
                 }
                 finally {
                     if (input) {
@@ -438,12 +425,18 @@ trait ResponseRenderer extends WebAttributes {
         }
         else if( !statusSet ) {
             webRequest.renderView = false
-            applyContentType response, argMap, argMap
-            try {
-                response.writer.write argMap.inspect()
+            if(argMap instanceof JSONElement) {
+                response.contentType = GrailsWebUtil.getContentType(MimeType.JSON.name, DEFAULT_ENCODING)
+                renderWritable( (JSONElement)argMap, response )
             }
-            catch (IOException e) {
-                throw new ControllerExecutionException("I/O error obtaining response writer: " + e.getMessage(), e)
+            else {
+                applyContentType response, argMap, argMap
+                try {
+                    response.writer.write argMap.inspect()
+                }
+                catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error obtaining response writer: ${e.message}", e)
+                }
             }
         }
     }
