@@ -17,6 +17,7 @@ import org.grails.plugins.support.WatchPattern
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.context.config.ConfigFileApplicationListener
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
@@ -40,6 +41,7 @@ class GrailsApp extends SpringApplication {
     @Override
     ConfigurableApplicationContext run(String... args) {
         System.setProperty(BuildSettings.RUN_EXECUTED, "true")
+        System.setProperty(ConfigFileApplicationListener.CONFIG_NAME_PROPERTY, "plugin,application")
         def applicationContext = super.run(args)
 
         grails.util.Environment environment = grails.util.Environment.getCurrent()
