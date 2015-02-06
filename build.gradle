@@ -45,7 +45,7 @@ ext {
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.1.4.RELEASE"
     ehcacheVersion = "2.4.6"
-    junitVersion = "4.11"
+    junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
@@ -200,7 +200,11 @@ subprojects { project ->
     dependencies {
         compile groovyDependency
 
-        testCompile("org.codehaus.groovy:groovy-test:${groovyVersion}")
+        testCompile "org.codehaus.groovy:groovy-test:${groovyVersion}", {
+            exclude group:'junit', module: 'junit'
+            exclude group:'org.codehaus.groovy', module: 'groovy'
+            exclude group:'org.hamcrest', module: 'hamcrest-core'
+        }
 
         if (project.name != "grails-docs") {
             // Logging

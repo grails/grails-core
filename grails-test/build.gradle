@@ -3,11 +3,17 @@ dependencies {
     compile "org.springframework:spring-tx:${springVersion}"
 
     // Testing
-    compile "org.codehaus.groovy:groovy-test:$groovyVersion"
+    compile "org.codehaus.groovy:groovy-test:$groovyVersion", {
+        transitive = false
+        exclude group:'junit', module: 'junit'
+        exclude group:'org.codehaus.groovy', module: 'groovy'
+        exclude group:'org.hamcrest', module: 'hamcrest-core'
+    }
     compile "junit:junit:${junitVersion}", {
         exclude group:'org.hamcrest', module: 'hamcrest-core'
     }
     compile("org.spockframework:spock-core:${spockVersion}") {
+        transitive = false
         exclude group:'junit', module: 'junit-dep'
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }

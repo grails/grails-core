@@ -17,9 +17,12 @@ dependencies {
     }
     compile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
     compile("org.spockframework:spock-spring:${spockVersion}") {
+        transitive = false
+        exclude group:'junit', module: 'junit-dep'
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
     compile("org.spockframework:spock-core:${spockVersion}") {
+        transitive = false
         exclude group:'junit', module: 'junit-dep'
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
