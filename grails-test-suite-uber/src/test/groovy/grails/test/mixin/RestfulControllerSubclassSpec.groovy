@@ -3,6 +3,7 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.rest.RestfulController
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -100,7 +101,35 @@ class RestfulControllerSubclassSpec extends Specification {
         album.artist == 'King Crimson'
     }
 
+    @Ignore
+    @Issue('GRAILS-11958')
+    void 'test compiling a subclass of a subclass of RestfulController'() {
+        given:
+        def gcl = new GroovyClassLoader()
 
+        when: 'compiling a subclass of a subclass of RestfulController'
+        def c = gcl.parseClass('''
+import grails.test.mixin.Album
+import grails.rest.RestfulController
+import grails.artefact.Artefact
+
+@Artefact('Controller')
+class Middle<T> extends RestfulController<T> {
+    public Middle(Class c) {
+        super(c)
+    }
+}
+
+@Artefact('Controller')
+class Bottom extends Middle<Album> {
+    public Bottom() {
+        super(Album)
+    }
+}
+''')
+        then: 'no compilation errors occur'
+        c
+    }
 }
 
 @Entity
