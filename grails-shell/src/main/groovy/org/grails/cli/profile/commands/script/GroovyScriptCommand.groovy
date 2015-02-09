@@ -42,7 +42,7 @@ import org.grails.cli.profile.commands.templates.TemplateRendererImpl
  * @since 3.0
  */
 @CompileStatic
-abstract class GroovyScriptCommmand extends Script implements ProfileCommand, ConsoleLogger, ModelBuilder, FileSystemInteraction, TemplateRenderer {
+abstract class GroovyScriptCommand extends Script implements ProfileCommand, ConsoleLogger, ModelBuilder, FileSystemInteraction, TemplateRenderer {
 
     Profile profile
     String name = getClass().name.contains('-') ? getClass().name : GrailsNameUtils.getScriptName(getClass().name)
