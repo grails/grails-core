@@ -39,6 +39,8 @@ public class DomainValidatorTests extends TestCase {
         assertTrue("single-character domain label should validate", validator.isValid("z.com"));
 
         assertTrue("i.have.an-example.domain.name should validate", validator.isValid("i.have.an-example.domain.name"));
+
+        assertTrue("foo.london should validate", validator.isValid("foo.london"));
     }
 
     public void testInvalidDomains() {
