@@ -76,7 +76,7 @@ trait ResponseRenderer extends WebAttributes {
     private GroovyPageLayoutFinder groovyPageLayoutFinder
     private GrailsPluginManager pluginManager
 
-    @Autowired
+    @Autowired(required = false)
     void setGroovyPageLayoutFinder(GroovyPageLayoutFinder groovyPageLayoutFinder) {
         this.groovyPageLayoutFinder = groovyPageLayoutFinder
     }
@@ -320,7 +320,7 @@ trait ResponseRenderer extends WebAttributes {
 
                 View view = gspView
                 boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE))
-                if(renderWithLayout) {
+                if(renderWithLayout && groovyPageLayoutFinder) {
                     applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
                     try {
                         view = new GrailsLayoutView(groovyPageLayoutFinder, gspView)
