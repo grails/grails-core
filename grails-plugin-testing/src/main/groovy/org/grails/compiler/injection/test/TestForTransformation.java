@@ -255,7 +255,6 @@ public class TestForTransformation extends TestMixinTransformation implements Te
         ClassNode testTarget = value.getType();
         String className = testTarget.getName();
         MethodNode testForMethod = null;
-        System.out.println("artefactTypeToTestMap = " + artefactTypeToTestMap);
         for (String artefactType : artefactTypeToTestMap.keySet()) {
             if (className.endsWith(artefactType)) {
                 Class mixinClass = artefactTypeToTestMap.get(artefactType);
