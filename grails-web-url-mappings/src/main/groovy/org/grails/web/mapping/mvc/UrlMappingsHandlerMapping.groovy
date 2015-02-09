@@ -25,14 +25,15 @@ import grails.web.http.HttpHeaders
 import org.grails.exceptions.ExceptionUtils
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.WebUtils
-import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContextAware
 import org.springframework.util.Assert
+import org.springframework.web.context.request.WebRequestInterceptor
 import org.springframework.web.servlet.HandlerExecutionChain
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.handler.AbstractHandlerMapping
+import org.springframework.web.servlet.handler.MappedInterceptor
+import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter
 import org.springframework.web.util.UrlPathHelper
 
 import javax.servlet.http.HttpServletRequest
@@ -52,6 +53,7 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
     protected UrlMappingsHolder urlMappingsHolder
     protected UrlPathHelper urlHelper = new UrlPathHelper();
     protected MimeTypeResolver mimeTypeResolver
+    protected HandlerInterceptor[] webRequestHandlerInterceptors
 
     UrlMappingsHandlerMapping(UrlMappingsHolder urlMappingsHolder) {
         Assert.notNull(urlMappingsHolder, "Argument [urlMappingsHolder] cannot be null")
@@ -59,6 +61,17 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         setOrder(-5)
     }
 
+    @Autowired
+    void setHandlerInterceptors(HandlerInterceptor[] handlerInterceptors) {
+        setInterceptors(handlerInterceptors)
+    }
+
+    @Autowired
+    void setWebRequestInterceptors(WebRequestInterceptor[] webRequestInterceptors) {
+        webRequestHandlerInterceptors = webRequestInterceptors.collect( { WebRequestInterceptor wri ->
+             new WebRequestHandlerInterceptorAdapter(wri)
+         } ) as HandlerInterceptor[]
+    }
 
     @Autowired(required = false)
     void setMimeTypeResolver(MimeTypeResolver mimeTypeResolver) {
@@ -67,7 +80,19 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
 
     @Override
     protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
-        def chain = super.getHandlerExecutionChain(handler, request)
+        HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
+                (HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
+        chain.addInterceptors getAdaptedInterceptors()
+        if(webRequestHandlerInterceptors.length > 0) {
+            chain.addInterceptors webRequestHandlerInterceptors
+        }
+
+        String lookupPath = this.urlPathHelper.getLookupPathForRequest(request)
+        for (MappedInterceptor mappedInterceptor in getMappedInterceptors()) {
+            if (mappedInterceptor.matches(lookupPath, this.pathMatcher)) {
+                chain.addInterceptor(mappedInterceptor.interceptor)
+            }
+        }
 
         chain.addInterceptor(new ErrorHandlingHandler())
         return chain
@@ -135,10 +160,7 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         return version
     }
 
-    @Autowired
-    void setHandlerInterceptors(HandlerInterceptor[] handlerInterceptors) {
-        setInterceptors(handlerInterceptors)
-    }
+
 
     static class ErrorHandlingHandler implements HandlerInterceptor {
 
