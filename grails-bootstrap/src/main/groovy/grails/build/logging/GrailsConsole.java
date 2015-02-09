@@ -124,7 +124,7 @@ public class GrailsConsole implements ConsoleLogger {
         @Override
         public String toString() {
             if (size() == 1) return peek() + CATEGORY_SEPARATOR;
-            return DefaultGroovyMethods.join(this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
+            return DefaultGroovyMethods.join((Iterable)this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
         }
     };
 
