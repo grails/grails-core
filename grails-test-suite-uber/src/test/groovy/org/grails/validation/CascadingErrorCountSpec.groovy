@@ -3,6 +3,7 @@ package org.grails.validation
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+import org.springframework.validation.Errors
 import spock.lang.Specification
 
 /**
@@ -20,7 +21,7 @@ class CascadingErrorCountSpec extends Specification {
             println "ERRORS ARE ${person.errors}"
         then:"The error count is correct"
             person.hasErrors() == true
-            person.errors.allErrors.size() == 1
+            ((Errors)person.errors).getFieldError('names[0].name') != null
     }
 }
 
