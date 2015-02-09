@@ -17,6 +17,7 @@ class CascadingErrorCountSpec extends Specification {
             person.addToNames(new Name(name:null))
             person.validate()
 
+            println "ERRORS ARE ${person.errors}"
         then:"The error count is correct"
             person.hasErrors() == true
             person.errors.allErrors.size() == 1
