@@ -65,7 +65,6 @@ class ControllersGrailsPlugin extends Plugin {
         def application = grailsApplication
         def config = application.config
         def defaultScope = config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
-        def gspEnc = config.getProperty(Settings.GSP_VIEW_ENCODING, "")
         boolean useJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
         def uploadTmpDir = config.getProperty(Settings.CONTROLLERS_UPLOAD_LOCATION, System.getProperty("java.io.tmpdir"))
         def filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
@@ -144,9 +143,6 @@ class ControllersGrailsPlugin extends Plugin {
                     bean.autowire =  "byName"
                     if (beanScope == 'prototype') {
                         bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
-                    }
-                    if (gspEnc.trim()) {
-                        gspEncoding = gspEnc
                     }
                     if (useJsessionId) {
                         useJessionId = useJsessionId

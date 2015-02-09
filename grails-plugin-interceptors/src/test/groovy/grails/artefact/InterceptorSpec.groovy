@@ -121,7 +121,7 @@ class TestInterceptor implements Interceptor {
     }
 
     @Override
-    void afterView(Throwable t) {
+    void afterView() {
 
     }
 }

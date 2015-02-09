@@ -24,7 +24,7 @@ import grails.core.ArtefactHandlerAdapter
  * @author Graeme Rocher
  */
 class FiltersConfigArtefactHandler extends ArtefactHandlerAdapter {
-    static String TYPE = "Filters"
+    public static final String TYPE = "Filters"
 
     FiltersConfigArtefactHandler() {
         super(TYPE, GrailsFiltersClass, DefaultGrailsFiltersClass, TYPE)

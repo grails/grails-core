@@ -107,9 +107,9 @@ class MyInterceptor implements Interceptor {
     }
 
     @Override
-    void afterView(Throwable t) {
+    void afterView() {
        if(request.getAttribute("bar")) {
-           throw t
+           throw throwable
        }
     }
 }

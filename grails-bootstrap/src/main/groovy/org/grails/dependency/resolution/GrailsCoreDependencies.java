@@ -39,7 +39,7 @@ public class GrailsCoreDependencies {
     protected String servletApiVersion = "3.0.1";
     protected String spockVersion = "0.7-groovy-2.0";
     protected String cglibVersion = "2.2.2";
-    protected String junitVersion = "4.11";
+    protected String junitVersion = "4.12";
 
     public boolean java5compatible;
     protected Collection<Dependency> buildDependencies;
@@ -104,7 +104,7 @@ public class GrailsCoreDependencies {
         }
         else {
             testDependencies = Arrays.asList(
-                new Dependency("junit", "junit", "4.11", true),
+                new Dependency("junit", "junit", junitVersion, true),
                 new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true)
             );
         }

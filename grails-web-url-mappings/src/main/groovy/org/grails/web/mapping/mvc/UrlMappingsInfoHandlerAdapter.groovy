@@ -57,6 +57,9 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 Object controller = applicationContext ? applicationContext.getBean(controllerClass.fullName) : controllerClass.newInstance()
 
                 def action = controllerUrlMappingInfo.actionName ?: controllerClass.defaultAction
+                if (!webRequest.actionName) {
+                    webRequest.actionName = action
+                }
                 def result = controllerClass.invoke(controller, action)
 
                 if(actionResultTransformers) {

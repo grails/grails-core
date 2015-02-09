@@ -16,33 +16,38 @@
 
 package grails.test.mixin
 
+import org.junit.FixMethodOrder
 import org.junit.Test
-import org.junit.Before
-
+import org.junit.runners.MethodSorters
 /**
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @TestFor(SetupTeardownController)
 class SetupTeardownInvokeTests {
+    static int counter=1
 
     void setUp() {
         controller.value = 'World!'
     }
 
-//    void tearDown() {
-//        controller.counter++
-//    }
+    void tearDown() {
+        controller.counter++
+    }
 
     @Test
     void testThatSetupWasInvoked() {
+        println "invoked 1 ${counter++} ${SetupTeardownController.class.hashCode()}"
         assert controller.value == 'World!'
     }
 
-//    @Test
-//    void testThatSetupWasInvoked2() {
-//        assert controller.counter == 1
-//    }
+    @Test
+    void testThatSetupWasInvoked2() {
+        println "invoked 2 ${counter++} ${SetupTeardownController.class.hashCode()}"
+        assert controller.counter == 1
+    }
 }
+
 class SetupTeardownController {
     String value
-//    static int counter = 0
+    static int counter = 0
 }

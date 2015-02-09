@@ -25,6 +25,10 @@ import spock.lang.Specification
  */
 class ReactorPromiseFactorySpec extends Specification {
 
+    void setup() {
+        if(Environment.alive()) Environment.terminate()
+    }
+
     void "Test that the ReactoryPromiseFactory can create promises"() {
         setup:
             def env = Environment.initialize()

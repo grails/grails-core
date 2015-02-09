@@ -32,6 +32,9 @@ class PromiseSpec extends Specification {
         Environment.initializeIfEmpty()
     }
 
+    void cleanupSpec() {
+        Environment.terminate()
+    }
 
     void "Test add promise decorator"() {
         when:"A decorator is added"
