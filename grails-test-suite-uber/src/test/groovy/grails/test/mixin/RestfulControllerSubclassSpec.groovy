@@ -3,7 +3,6 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.rest.RestfulController
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -44,49 +43,49 @@ class RestfulControllerSubclassSpec extends Specification {
         request.json = '{"title":"Starless And Bible Black","artist":"King Crimson"}'
         controller.create()
         def album = model.album
-        
+
         then:
         album instanceof Album
         album.title == 'Starless And Bible Black'
         album.artist == 'King Crimson'
     }
-    
+
     @Issue('GRAILS-11462')
     void 'Test that update populates the instance with values from the request body'() {
         given:
         def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save()
-        
+
         when:
         request.method = 'PUT'
         request.JSON = '{"title": "Rapid Eye Movement"}'
         params.id = album.id
         controller.update()
         def updatedAlbum = model.album
-        
+
         then:
         updatedAlbum instanceof Album
         updatedAlbum.artist == 'Riverside'
         updatedAlbum.title == 'Rapid Eye Movement'
     }
-    
+
     @Issue('GRAILS-11462')
     void 'Test that update populates the instance with values from the request parameters'() {
         given:
         def album = new Album(artist: 'Riverside', title: 'Second Life Syndrome').save()
-        
+
         when:
         request.method = 'PUT'
         params.title = 'Out Of Myself'
         params.id = album.id
         controller.update()
         def updatedAlbum = model.album
-        
+
         then:
         updatedAlbum instanceof Album
         updatedAlbum.artist == 'Riverside'
         updatedAlbum.title == 'Out Of Myself'
     }
-    
+
     void 'Test that create populates the newly created instance with request parameters'() {
         when:
         request.method = 'POST'
