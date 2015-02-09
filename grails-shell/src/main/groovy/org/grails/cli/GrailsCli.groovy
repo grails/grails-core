@@ -179,7 +179,7 @@ class GrailsCli {
             if(ansiEnabled != null) {
                 console.ansiEnabled = ansiEnabled
             }
-            File baseDir = new File(".").absoluteFile
+            File baseDir = new File(".").canonicalFile
             projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
             initializeProfile()
             if(commandName) {
