@@ -20,6 +20,8 @@ import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
 import grails.test.mixin.services.ServiceUnitTestMixin;
 import grails.test.mixin.support.MixinMethod;
+import grails.test.mixin.support.TestMixinRegistrar;
+import grails.test.mixin.support.TestMixinRegistry;
 import grails.test.mixin.web.ControllerUnitTestMixin;
 import grails.test.mixin.web.FiltersUnitTestMixin;
 import grails.test.mixin.web.GroovyPageUnitTestMixin;
@@ -42,6 +44,7 @@ import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import org.grails.core.io.DefaultResourceLocator;
 import org.grails.core.io.ResourceLocator;
+import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.io.support.FileSystemResource;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.web.filters.FiltersConfigArtefactHandler;
@@ -64,19 +67,23 @@ import java.util.*;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 @SuppressWarnings("rawtypes")
-public class TestForTransformation extends TestMixinTransformation {
+public class TestForTransformation extends TestMixinTransformation implements TestMixinRegistry {
 
     private static final ClassNode MY_TYPE = new ClassNode(TestFor.class);
     private static final Token ASSIGN = Token.newSymbol("=", -1, -1);
 
     protected static final Map<String, Class> artefactTypeToTestMap = new HashMap<String, Class>();
     static {
-        artefactTypeToTestMap.put(ControllerArtefactHandler.TYPE, ControllerUnitTestMixin.class);
-        artefactTypeToTestMap.put(TagLibArtefactHandler.TYPE, GroovyPageUnitTestMixin.class);
-        artefactTypeToTestMap.put(FiltersConfigArtefactHandler.TYPE, FiltersUnitTestMixin.class);
-        artefactTypeToTestMap.put(UrlMappingsArtefactHandler.TYPE, UrlMappingsUnitTestMixin.class);
-        artefactTypeToTestMap.put(ServiceArtefactHandler.TYPE, ServiceUnitTestMixin.class);
-
+        List<TestMixinRegistrar> registrars = GrailsFactoriesLoader.loadFactories(TestMixinRegistrar.class);
+        TestMixinRegistry thisRegistry = new TestMixinRegistry() {
+            @Override
+            public void registerMixin(String artefactType, Class mixin) {
+                artefactTypeToTestMap.put(artefactType, mixin);
+            }
+        };
+        for(TestMixinRegistrar registrar : registrars) {
+            registrar.registerTestMixins(thisRegistry);
+        }
     }
 
     public static final String DOMAIN_TYPE = "Domain";
@@ -248,6 +255,7 @@ public class TestForTransformation extends TestMixinTransformation {
         ClassNode testTarget = value.getType();
         String className = testTarget.getName();
         MethodNode testForMethod = null;
+        System.out.println("artefactTypeToTestMap = " + artefactTypeToTestMap);
         for (String artefactType : artefactTypeToTestMap.keySet()) {
             if (className.endsWith(artefactType)) {
                 Class mixinClass = artefactTypeToTestMap.get(artefactType);
@@ -479,5 +487,10 @@ public class TestForTransformation extends TestMixinTransformation {
             args.addExpression(ce);
         }
         methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), "mock" + mockType + 's', args)));
+    }
+
+    @Override
+    public void registerMixin(String artefactType, Class mixin) {
+        artefactTypeToTestMap.put(artefactType, mixin);
     }
 }

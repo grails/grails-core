@@ -20,6 +20,7 @@ import grails.test.mixin.TestRuntimeAwareMixin
 import grails.test.mixin.UseTestPlugin
 import grails.test.mixin.support.MixinInstance
 import groovy.transform.CompileStatic
+import org.grails.core.io.support.GrailsFactoriesLoader
 
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -37,22 +38,15 @@ import org.springframework.util.ReflectionUtils
  * @since 2.4.0
  */
 @CompileStatic
+@Singleton
 class TestRuntimeFactory {
-    static TestRuntimeFactory INSTANCE=new TestRuntimeFactory()
-    Set<Class<? extends TestPlugin>> availablePluginClasses=[
-        GrailsApplicationTestPlugin,
-        CoreBeansTestPlugin,
-        MetaClassCleanerTestPlugin,
-        ControllerTestPlugin,
-        FiltersTestPlugin,
-        GroovyPageTestPlugin,
-        WebFlowTestPlugin,
-        DomainClassTestPlugin
-        ] as Set
+    private static Set<Class<? extends TestPlugin>> availablePluginClasses = new HashSet<>()
 
-    private TestRuntimeFactory() {
+    static {
+        def testPluginClasses = GrailsFactoriesLoader.loadFactoryClasses(TestPlugin)
+        availablePluginClasses.addAll(testPluginClasses)
     }
-    
+
     static TestRuntime getRuntimeForTestClass(Class<?> testClass) {
         Set<TestRuntimeAwareMixin> allInstances = [] as Set
         Set<String> allFeatures = [] as Set
@@ -78,9 +72,9 @@ class TestRuntimeFactory {
         SharedRuntime sharedRuntimeAnnotation = findSharedRuntimeAnnotation(testClass)
         TestRuntime runtime
         if(sharedRuntimeAnnotation==null) {
-            runtime = INSTANCE.findOrCreateRuntimeForTestClass(testClass, runtimeSettings)
+            runtime = TestRuntimeFactory.getInstance().findOrCreateRuntimeForTestClass(testClass, runtimeSettings)
         } else {
-            runtime = INSTANCE.findOrCreateSharedRuntime(sharedRuntimeAnnotation.value(), runtimeSettings)
+            runtime = TestRuntimeFactory.getInstance().findOrCreateSharedRuntime(sharedRuntimeAnnotation.value(), runtimeSettings)
         }
         allInstances.each { TestRuntimeAwareMixin testMixinInstance ->
             testMixinInstance.runtime = runtime
@@ -102,11 +96,11 @@ class TestRuntimeFactory {
      * @param pluginClass
      */
     static void addPluginClass(Class<? extends TestPlugin> pluginClass) {
-        INSTANCE.addTestPluginClass(pluginClass)
+        TestRuntimeFactory.getInstance().addTestPluginClass(pluginClass)
     }
 
     static void removePluginClass(Class<? extends TestPlugin> pluginClass) {
-        INSTANCE.removeTestPluginClass(pluginClass)
+        TestRuntimeFactory.getInstance().removeTestPluginClass(pluginClass)
     }
     
     private TestRuntime findOrCreateSharedRuntime(Class<? extends SharedRuntimeConfigurer> sharedRuntimeConfigurer, TestRuntimeSettings runtimeSettings) {
@@ -326,7 +320,7 @@ class TestRuntimeFactory {
     private Map<Class, TestRuntime> activeRuntimes=new HashMap<Class, TestRuntime>()
     
     static void removeRuntime(TestRuntime runtime) {
-        INSTANCE.removeTestRuntime(runtime)
+        TestRuntimeFactory.getInstance().removeTestRuntime(runtime)
     }
 
     private void removeTestRuntime(TestRuntime runtime) {

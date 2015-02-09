@@ -6,6 +6,7 @@ dependencies {
             project(':grails-plugin-domain-class'),
             project(':grails-plugin-gsp'),
             project(':grails-plugin-filters'),
+            project(':grails-plugin-interceptors'),
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-converters'),
             project(':grails-plugin-rest'),
