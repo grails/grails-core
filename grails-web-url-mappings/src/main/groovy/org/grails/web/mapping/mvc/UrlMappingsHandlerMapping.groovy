@@ -66,7 +66,7 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         setInterceptors(handlerInterceptors)
     }
 
-    @Autowired
+    @Autowired(required = false)
     void setWebRequestInterceptors(WebRequestInterceptor[] webRequestInterceptors) {
         webRequestHandlerInterceptors = webRequestInterceptors.collect( { WebRequestInterceptor wri ->
              new WebRequestHandlerInterceptorAdapter(wri)
