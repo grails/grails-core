@@ -1,5 +1,3 @@
-package grails.ui.shell.support
-
 /*
  * Copyright 2014 original authors
  *
@@ -15,9 +13,34 @@ package grails.ui.shell.support
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.ui.shell.support
+
+import grails.core.GrailsApplication
+import grails.ui.support.DevelopmentWebApplicationContext
+import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.IO
+import org.springframework.context.support.GenericApplicationContext
+
 
 /**
- * @author graemerocher
+ * @author Graeme Rocher
+ * @since 3.0
  */
-class GroovyshApplicationContext {
+class GroovyshApplicationContext extends GenericApplicationContext {
+
+    @Override
+    protected void finishRefresh() {
+        super.finishRefresh()
+        startConsole()
+    }
+
+    protected void startConsole() {
+        Binding binding = new Binding()
+        binding.setVariable("ctx", this)
+        binding.setVariable(GrailsApplication.APPLICATION_ID, getBean(GrailsApplication.class))
+
+        final GroovyshWebApplicationContext self = this
+
+        new Groovysh(binding, new IO()).run("")
+    }
 }
