@@ -173,7 +173,8 @@ class GrailsApp extends SpringApplication {
     @CompileDynamic
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
-            println("Grails application running at http://localhost:${applicationContext.embeddedServletContainer.port}")
+            def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
+            println("Grails application running at ${protocol}://localhost:${applicationContext.embeddedServletContainer.port}")
         } catch (e) {
             // ignore
         }

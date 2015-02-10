@@ -90,6 +90,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { JavaForkOptions task ->
+            def map = System.properties.findAll { entry ->
+                entry.key.startsWith("grails.")
+            }
+            for(key in map.keySet()) {
+                def value = map.get(key)
+                if(value) {
+                    def sysPropName = key.toString().substring(7)
+                    task.systemProperty(sysPropName, value.toString())
+                }
+            }
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
