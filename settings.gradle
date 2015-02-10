@@ -1,6 +1,6 @@
 rootProject.name = "grails.core.ROOT"
 
-include 'grails-aether',
+include (
         'grails-async',
         'grails-bootstrap',
         'grails-console',
@@ -65,3 +65,4 @@ include 'grails-aether',
 
         // Gradle Plugin
         'grails-gradle-plugin'
+)
