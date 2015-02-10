@@ -1,5 +1,4 @@
 package org.grails.gradle.plugin.core
-
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.Metadata
@@ -7,11 +6,10 @@ import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.JavaVersion
+import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
@@ -25,9 +23,12 @@ import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.run.FindMainClassTask
 
 class GrailsGradlePlugin extends GroovyPlugin {
+    List<Plugin<Project>> pluginInstancesToApply = [new IntegrationTestGradlePlugin()]
 
     void apply(Project project) {
         super.apply(project)
+        pluginInstancesToApply.each { it.apply(project) }
+
         project.extensions.create("grails", GrailsExtension)
         registerFindMainClassTask(project)
 
