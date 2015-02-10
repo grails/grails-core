@@ -594,6 +594,7 @@ class AetherDependencyManager implements DependencyManager {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.grails.dependency.resolution.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
         grailsDependency.extension = artifact.extension
+        grailsDependency.classifier = artifact.classifier
         if (configuration) {
             grailsDependency.transitive = configuration.transitive
             grailsDependency.exported = configuration.exported
