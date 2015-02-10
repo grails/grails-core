@@ -59,6 +59,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
                 task(type: Test, 'integrationTest') {
                     testClassesDir = sourceSets.integrationTest.output.classesDir
                     classpath = sourceSets.integrationTest.runtimeClasspath
+                    maxParallelForks = 1
                 }.shouldRunAfter test
 
                 check.dependsOn integrationTest
