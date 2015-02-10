@@ -22,8 +22,29 @@ class MainClassFinder {
 
     private static final String MAIN_METHOD_NAME = "main"
 
-
     static String mainClassName = null
+
+    static String searchMainClass() {
+        if(mainClassName) return mainClassName
+
+        def classesDir = BuildSettings.CLASSES_DIR
+        Collection<File> searchDirs
+        if (classesDir == null) {
+            def tokens = System.getProperty('java.class.path').split(System.getProperty('path.separator'))
+            def dirs = tokens.findAll() { String str -> !str.endsWith('.jar') }.collect() { String str -> new File(str) }
+            searchDirs = dirs.findAll() { File f -> f.isDirectory() }
+        } else {
+            searchDirs = [classesDir]
+        }
+
+        String mainClass = null
+
+        for (File dir in searchDirs) {
+            mainClass = findMainClass(dir)
+            if (mainClass) break
+        }
+        mainClass
+    }
 
     static String findMainClass(File rootFolder = BuildSettings.CLASSES_DIR) {
         if(mainClassName) return mainClassName

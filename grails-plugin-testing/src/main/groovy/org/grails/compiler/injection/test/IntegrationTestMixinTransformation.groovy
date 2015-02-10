@@ -1,7 +1,6 @@
 package org.grails.compiler.injection.test
 import grails.boot.config.GrailsApplicationContextLoader
 import grails.test.mixin.integration.Integration
-import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
@@ -70,27 +69,10 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             return
         }
 
-        ClassNode classNode = (ClassNode) parent
-        def classesDir = BuildSettings.CLASSES_DIR
-        Collection<File> searchDirs
-        if(classesDir == null) {
-            def tokens = System.getProperty('java.class.path').split(System.getProperty('path.separator'))
-            def dirs = tokens.findAll() { String str -> !str.endsWith('.jar')}.collect() { String str -> new File(str)}
-            searchDirs = dirs.findAll() { File f -> f.isDirectory() }
-
-        }
-        else {
-            searchDirs = [classesDir]
-        }
-
-        String mainClass = null
-
-        for(File dir in searchDirs) {
-            mainClass = MainClassFinder.findMainClass(dir)
-            if(mainClass) break
-        }
+        String mainClass = MainClassFinder.searchMainClass()
 
         if(mainClass) {
+            ClassNode classNode = (ClassNode) parent
             def applicationClassNode = ClassHelper.make(mainClass)
 
             if(TestMixinTransformation.isSpockTest(classNode)) {
