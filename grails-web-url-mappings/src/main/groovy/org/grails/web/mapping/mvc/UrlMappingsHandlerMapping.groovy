@@ -83,7 +83,7 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
                 (HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
         chain.addInterceptors getAdaptedInterceptors()
-        if(webRequestHandlerInterceptors.length > 0) {
+        if(webRequestHandlerInterceptors) {
             chain.addInterceptors webRequestHandlerInterceptors
         }
 
