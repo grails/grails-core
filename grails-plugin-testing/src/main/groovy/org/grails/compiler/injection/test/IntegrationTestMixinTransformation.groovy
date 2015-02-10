@@ -1,24 +1,10 @@
 package org.grails.compiler.injection.test
-
 import grails.boot.config.GrailsApplicationContextLoader
-import grails.test.mixin.TestMixin
 import grails.test.mixin.integration.Integration
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.AnnotatedNode
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.Parameter
-import org.codehaus.groovy.ast.expr.ArgumentListExpression
-import org.codehaus.groovy.ast.expr.ClassExpression
-import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.ast.expr.Expression
-import org.codehaus.groovy.ast.expr.GStringExpression
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.*
+import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.control.CompilePhase
@@ -32,14 +18,12 @@ import org.grails.test.context.junit4.GrailsTestConfiguration
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.IntegrationTest
-import org.springframework.boot.test.SpringApplicationConfiguration
+import org.springframework.boot.test.WebIntegrationTest
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.util.ClassUtils
 
 import java.lang.reflect.Modifier
-
 /*
  * Copyright 2014 original authors
  *
@@ -69,8 +53,8 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
     public static final ClassNode GRAILS_APPLICATION_CONTEXT_LOADER = ClassHelper.make(GrailsApplicationContextLoader)
     public static final ClassNode WEB_APP_CONFIGURATION = ClassHelper.make(WebAppConfiguration)
     public static final ClassNode INTEGRATION_TEST_CLASS_NODE = ClassHelper.make(IntegrationTest)
-    public static
-    final ClassNode SPRING_APPLICATION_CONFIGURATION_CLASS_NODE = ClassHelper.make(GrailsTestConfiguration)
+    public static final ClassNode WEB_INTEGRATION_TEST_CLASS_NODE = ClassHelper.make(WebIntegrationTest)
+    public static final ClassNode SPRING_APPLICATION_CONFIGURATION_CLASS_NODE = ClassHelper.make(GrailsTestConfiguration)
     public static final ClassNode RUN_WITH_ANNOTATION_NODE = ClassHelper.make(RunWith)
     public static final ClassNode SPRING_JUNIT4_CLASS_RUNNER = ClassHelper.make(GrailsJunit4ClassRunner)
 
@@ -136,9 +120,10 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             // now add integration test annotations
             // @WebAppConfiguration
             // @IntegrationTest
-
             if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-                classNode.addAnnotation(new AnnotationNode(WEB_APP_CONFIGURATION))
+                classNode.addAnnotation(new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE))
+            }
+            else {
                 classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
             }
 
