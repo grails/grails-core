@@ -101,12 +101,6 @@ publishing {
                             }
                         }
                         delegate.dependency {
-                            delegate.groupId "org.grails"
-                            delegate.artifactId "grails-resources"
-                            delegate.version( project.version )
-                            delegate.scope "runtime"
-                        }
-                        delegate.dependency {
                             delegate.groupId "com.h2database"
                             delegate.artifactId "h2"
                             delegate.version( "1.3.176" )
