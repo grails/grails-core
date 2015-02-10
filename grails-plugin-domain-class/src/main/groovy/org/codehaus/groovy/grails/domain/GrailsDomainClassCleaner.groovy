@@ -1,18 +1,16 @@
 package org.codehaus.groovy.grails.domain
 
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Commons
-
-import java.lang.reflect.Modifier
-
+import org.codehaus.groovy.grails.commons.ComponentCapableDomainClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.springframework.beans.BeansException
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextClosedEvent
 
+import java.lang.reflect.Modifier
 
 /**
  * Clears static Grails "instance api" instances from domain classes when 
@@ -34,6 +32,7 @@ class GrailsDomainClassCleaner implements ApplicationListener<ContextClosedEvent
     public void onApplicationEvent(ContextClosedEvent event) {
         if(event.applicationContext == this.applicationContext || this.applicationContext == null) {
             clearAllStaticApiInstances()
+            removeDomainClassMetaClasses()
         }
     }
 
@@ -53,6 +52,19 @@ class GrailsDomainClassCleaner implements ApplicationListener<ContextClosedEvent
                     log.warn("Error clearing static property ${metaProperty.name} in ${clazz.name}", e)
                 }
             }
+        }
+    }
+
+    // clear static state added by DomainClassGrailsPlugin.enhanceDomainClasses
+    protected removeDomainClassMetaClasses() {
+        for (dc in grailsApplication.domainClasses) {
+            def metaClassRegistry = GroovySystem.getMetaClassRegistry()
+            if (dc instanceof ComponentCapableDomainClass) {
+                for (GrailsDomainClass component in dc.getComponents()) {
+                    metaClassRegistry.removeMetaClass(component.clazz)
+                }
+            }
+            metaClassRegistry.removeMetaClass(dc.clazz)
         }
     }
 
