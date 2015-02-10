@@ -6,6 +6,7 @@ dependencies {
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'
     testRuntime 'jstl:jstl:1.1.2'
     testRuntime 'javax.el:el-api:1.0'
+    testRuntime 'com.h2database:h2:1.3.176'
 
     testCompile "commons-io:commons-io:${commonsIOVersion}"
     testCompile project(':grails-plugin-codecs'),
