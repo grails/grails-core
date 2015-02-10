@@ -100,10 +100,20 @@ class AetherDependencyManager implements DependencyManager {
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
     static final Map<String, List<String>> SCOPE_MAPPINGS = [compile: ['compile'],
-                                                             optional: ['optional'],
-                                                             runtime: ['compile', 'optional', 'runtime'],
-                                                             test: ['compile', 'provided', 'runtime', 'optional', 'test'],
-                                                             provided: ['provided']]
+        optional: ['optional'],
+        runtime: [
+            'compile',
+            'optional',
+            'runtime'
+        ],
+        test: [
+            'compile',
+            'provided',
+            'runtime',
+            'optional',
+            'test'
+        ],
+        provided: ['provided']]
 
 
     protected Dependency jvmAgent
@@ -112,12 +122,8 @@ class AetherDependencyManager implements DependencyManager {
     protected List<Dependency> managedDependencies = []
     protected Set<org.grails.dependency.resolution.Dependency> grailsPluginDependencies = []
     protected List<Dependency> buildDependencies = []
-    protected Map<String, List<org.grails.dependency.resolution.Dependency>> grailsDependenciesByScope = [:].withDefault {
-        []
-    }
-    protected Map<String, List<org.grails.dependency.resolution.Dependency>> grailsPluginDependenciesByScope = [:].withDefault {
-        []
-    }
+    protected Map<String, List<org.grails.dependency.resolution.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
+    protected Map<String, List<org.grails.dependency.resolution.Dependency>> grailsPluginDependenciesByScope = [:].withDefault { [] }
     protected List<org.grails.dependency.resolution.Dependency> grailsDependencies = []
     protected List<RemoteRepository> repositories = []
     String cacheDir
@@ -175,7 +181,7 @@ class AetherDependencyManager implements DependencyManager {
             session.setAuthenticationSelector(new DefaultAuthenticationSelector())
             DependencyGraphTransformer transformer =
                     new ConflictResolver(new ScopeAwareNearestVersionSelector(), new MultipleTopLevelJavaScopeSelector(),
-                            new SimpleOptionalitySelector(), new JavaScopeDeriver())
+                    new SimpleOptionalitySelector(), new JavaScopeDeriver())
 
             session.setDependencyGraphTransformer(new ChainedDependencyGraphTransformer(transformer, new JavaDependencyContextRefiner()))
 
@@ -220,11 +226,10 @@ class AetherDependencyManager implements DependencyManager {
         newDependencyManager.parseDependencies {
             dependencies {
                 compile group: "org.grails.plugins",
-                        name: pluginName,
-                        version: pluginVersion ?: 'RELEASE',
-                        classifier: "plugin",
-                        extension: 'xml'
-
+                name: pluginName,
+                version: pluginVersion ?: 'RELEASE',
+                classifier: "plugin",
+                extension: 'xml'
             }
         }
 
@@ -465,11 +470,11 @@ class AetherDependencyManager implements DependencyManager {
 
         session.setOffline(settings.offline)
         session.setTransferListener(new AbstractTransferListener() {
-            @Override
-            void transferStarted(TransferEvent event) throws TransferCancelledException {
-                GrailsConsole.instance.updateStatus("Downloading: $event.resource.resourceName")
-            }
-        })
+                    @Override
+                    void transferStarted(TransferEvent event) throws TransferCancelledException {
+                        GrailsConsole.instance.updateStatus("Downloading: $event.resource.resourceName")
+                    }
+                })
         session.setChecksumPolicy(checksumPolicy)
 
         LocalRepository localRepo = new LocalRepository(cacheDir ?: settings.localRepository ?: DEFAULT_CACHE)
@@ -521,7 +526,23 @@ class AetherDependencyManager implements DependencyManager {
         if(coreDependencies) {
 
             // ensure correct version of Spring is used
-            for (springDep in ['spring-orm', 'spring-beans', 'spring-core', 'spring-tx', 'spring-context', 'spring-context-support', 'spring-bean', 'spring-web', 'spring-webmvc', 'spring-jms', 'spring-aop', 'spring-jdbc', 'spring-expression', 'spring-jdbc', 'spring-test']) {
+            for (springDep in [
+                'spring-orm',
+                'spring-beans',
+                'spring-core',
+                'spring-tx',
+                'spring-context',
+                'spring-context-support',
+                'spring-bean',
+                'spring-web',
+                'spring-webmvc',
+                'spring-jms',
+                'spring-aop',
+                'spring-jdbc',
+                'spring-expression',
+                'spring-jdbc',
+                'spring-test'
+            ]) {
                 String id = "org.springframework:${springDep}:${coreDependencies.springVersion}"
                 registerManagedDependency(collectRequest, id, alreadyManagedArtefacts)
             }
@@ -530,7 +551,13 @@ class AetherDependencyManager implements DependencyManager {
             registerManagedDependency(collectRequest, "org.codehaus.groovy:groovy:${coreDependencies.groovyVersion}", alreadyManagedArtefacts)
 
             // ensure the correct versions of Grails jars are used
-            for (grailsDep in ['grails-core', 'grails-bootstrap', 'grails-web', 'grails-async', 'grails-test']) {
+            for (grailsDep in [
+                'grails-core',
+                'grails-bootstrap',
+                'grails-web',
+                'grails-async',
+                'grails-test'
+            ]) {
                 String id = "org.grails:${grailsDep}:${coreDependencies.grailsVersion}"
                 registerManagedDependency(collectRequest, id,alreadyManagedArtefacts)
             }
@@ -594,6 +621,7 @@ class AetherDependencyManager implements DependencyManager {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.grails.dependency.resolution.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
         grailsDependency.extension = artifact.extension
+        grailsDependency.classifier=artifact.classifier
         if (configuration) {
             grailsDependency.transitive = configuration.transitive
             grailsDependency.exported = configuration.exported
