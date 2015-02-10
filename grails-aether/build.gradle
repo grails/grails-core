@@ -4,6 +4,9 @@ ext {
     mavenVersion = "3.2.1"
 }
 
+configurations {
+    optional
+}
 dependencies {
     compile("org.eclipse.aether:aether-api:${aetherVersion}")
     compile("org.eclipse.aether:aether-util:${aetherVersion}")
@@ -17,9 +20,27 @@ dependencies {
     compile 'org.eclipse.sisu:org.eclipse.sisu.plexus:0.0.0.M5'
 
     compile project(":grails-bootstrap")
+    optional ("org.fusesource.jansi:jansi:$jansiVersion")
+    optional("jline:jline:$jlineVersion")
+    optional("net.java.dev.jna:jna:$jnaVersion")
+
+    // Ant
+    optional "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
     runtime "org.slf4j:slf4j-simple:$slf4jVersion"
 }
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
+}
+javadoc.classpath += files(configurations.optional)
+
 
 project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { Task t ->
 
