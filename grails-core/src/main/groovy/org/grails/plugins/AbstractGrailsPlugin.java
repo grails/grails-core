@@ -21,15 +21,21 @@ import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
+import org.grails.config.CompositeConfig;
+import org.grails.config.PropertySourcesConfig;
+import org.grails.config.yaml.YamlPropertySourceLoader;
 import org.grails.core.AbstractGrailsClass;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -82,6 +88,21 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
                 "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
         this.application = new LegacyGrailsApplication(application);
         this.pluginClass = pluginClass;
+        Resource resource = readPluginConfiguration(pluginClass);
+        if(resource != null && resource.exists()) {
+            YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
+            try {
+                PropertySource<?> propertySource = propertySourceLoader.load("plugin.yml", resource, null);
+                MutablePropertySources propertySources = new MutablePropertySources();
+                propertySources.addFirst(propertySource);
+                CompositeConfig composite = new CompositeConfig();
+                String prefix = "grails.plugins." + GrailsNameUtils.getLogicalPropertyName(pluginClass.getName(), TRAILING_NAME);
+                composite.addLast(new PropertySourcesConfig(propertySources));
+                composite.addLast(new PropertySourcesConfig(propertySources, prefix));
+                this.config = composite;
+            } catch (IOException e) {
+            }
+        }
     }
 
     @Override
