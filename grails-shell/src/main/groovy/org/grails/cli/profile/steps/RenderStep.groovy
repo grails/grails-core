@@ -19,6 +19,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
+import org.grails.build.parsing.CommandLine
 import org.grails.cli.interactive.completers.ClassNameCompleter
 import org.grails.cli.profile.AbstractStep
 import org.grails.cli.profile.ExecutionContext
@@ -45,7 +46,8 @@ class RenderStep extends AbstractStep {
 
     @Override
     public boolean handle(ExecutionContext context) {
-        String nameAsArgument = context.getCommandLine().getRemainingArgs()[0]
+        def commandLine = context.getCommandLine()
+        String nameAsArgument = commandLine.getRemainingArgs()[0]
         String artifactName
         String artifactPackage
         (artifactName, artifactPackage) = resolveNameAndPackage(context, nameAsArgument)
@@ -55,7 +57,7 @@ class RenderStep extends AbstractStep {
         try {
 
             String relPath = relativePath(context.baseDir, destination)
-            if(destination.exists()) {
+            if(destination.exists() && !flag(commandLine, 'force')) {
                 context.console.error("${relPath} already exists.")
                 return false
             }
@@ -69,6 +71,7 @@ class RenderStep extends AbstractStep {
             return false
         }
     }
+
 
     protected void renderToDestination(File destination, Map variables) {
         Profile profile = command.profile
