@@ -31,6 +31,7 @@ import org.gradle.tooling.model.ExternalDependency
 import org.gradle.tooling.model.eclipse.EclipseProject
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
+import org.grails.build.parsing.DefaultCommandLine
 import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleAsyncInvoker
 import org.grails.cli.gradle.GradleUtil
@@ -461,6 +462,10 @@ class GrailsCli {
         CommandLine commandLine
         @Delegate(excludes = 'getConsole') ProjectContext projectContext
         GrailsConsole console = GrailsConsole.getInstance()
+
+        ExecutionContextImpl(CodeGenConfig config) {
+            this(new DefaultCommandLine(), new ProjectContextImpl(GrailsConsole.instance, new File("."), config))
+        }
 
         ExecutionContextImpl(CommandLine commandLine, ProjectContext projectContext) {
             this.commandLine = commandLine

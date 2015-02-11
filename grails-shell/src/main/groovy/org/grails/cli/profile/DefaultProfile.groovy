@@ -131,7 +131,7 @@ class DefaultProfile implements Profile {
             if(parentProfiles) {
                 excludes = (List)configuration.navigate("command", "excludes") ?: []
                 for(parent in parentProfiles) {
-                    parent.getCommands(context).each(registerCommand)
+                    CommandRegistry.findCommands(parent, true).each registerCommand
                 }
             }
         }

@@ -16,6 +16,7 @@
 
 package org.grails.gradle.plugin.core
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -82,6 +83,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
         }
     }
 
+    @CompileStatic
     File[] findIntegrationTestSources(Project project) {
         project.file(sourceFolderName).listFiles({File file-> file.isDirectory() && !file.name.contains('.')} as FileFilter)
     }

@@ -20,6 +20,7 @@ import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
 
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentSkipListSet
 
 
 /**
@@ -65,7 +66,7 @@ class ClassNameCompleter extends StringsCompleter {
                 this.baseDirs = baseDirs
                 if(!allCompeters.contains(this))
                         allCompeters << this
-                SortedSet<String> allStrings = new TreeSet<>()
+                SortedSet<String> allStrings = new ConcurrentSkipListSet<>()
                 for(File baseDir in baseDirs) {
                         def pattern = "file:${baseDir}/**/*.groovy".toString()
                         SortedSet<String> strings = RESOURCE_SCAN_CACHE[pattern]

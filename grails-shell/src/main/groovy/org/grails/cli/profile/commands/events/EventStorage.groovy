@@ -13,28 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.profile.commands.factory
+
+package org.grails.cli.profile.commands.events
 
 import groovy.transform.CompileStatic
-import org.grails.cli.profile.Command
-import org.grails.cli.profile.Profile
-import org.grails.cli.profile.ProfileCommand
-
 
 
 /**
- * Uses the service registry pattern to locate commands
+ * Stores command line events
  *
  * @author Graeme Rocher
  * @since 3.0
  */
 @CompileStatic
-class ServiceCommandFactory implements CommandFactory {
-    @Override
-    Collection<Command> findCommands(Profile profile, boolean inherited) {
-        if(inherited) return Collections.emptyList()
-        ServiceLoader.load(Command).findAll() { Command cmd ->
-            cmd instanceof ProfileCommand
+class EventStorage {
+
+    private static Map<String, Collection<Closure>> eventListeners = [:].withDefault { [] }
+
+    static void registerEvent(String eventName, Closure callable) {
+        if(!eventListeners[eventName].contains(callable)) {
+            eventListeners[eventName] << callable
+        }
+    }
+
+    static void fireEvent(Object caller, String eventName, Object...args) {
+        def listeners = eventListeners[eventName]
+        for(listener in listeners) {
+            listener.delegate = caller
+            listener.call args
         }
     }
 }

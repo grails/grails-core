@@ -1,6 +1,7 @@
 package org.grails.cli.profile.commands
 
 import groovy.transform.CompileStatic
+import org.grails.cli.GrailsCli
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
@@ -8,6 +9,7 @@ import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.cli.profile.ProjectCommand
 import org.grails.cli.profile.commands.factory.CommandFactory
+import org.grails.config.CodeGenConfig
 
 /*
  * Copyright 2014 original authors
@@ -77,11 +79,18 @@ class CommandRegistry {
         }
     }
 
-    static Collection<Command> findCommands( Profile profile ) {
+    static Collection<Command> findCommands( Profile profile, boolean inherited = false ) {
         Collection<Command> commands = []
 
         for(CommandFactory cf in registeredCommandFactories) {
-            commands.addAll cf.findCommands( profile )
+            def factoryCommands = cf.findCommands(profile, inherited)
+            def condition = { Command c -> c.name == 'events' }
+            def eventCommands = factoryCommands.findAll(condition)
+            for(ec in eventCommands) {
+                ec.handle(new GrailsCli.ExecutionContextImpl(new CodeGenConfig(profile.configuration)))
+            }
+            factoryCommands.removeAll(condition)
+            commands.addAll factoryCommands
         }
 
         commands.addAll( registeredCommands.values()
