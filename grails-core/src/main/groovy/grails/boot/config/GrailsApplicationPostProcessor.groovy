@@ -13,6 +13,7 @@ import grails.util.Holders
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import org.grails.config.NavigableMap
+import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.dev.support.GrailsSpringLoadedPlugin
@@ -32,7 +33,9 @@ import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.env.EnumerablePropertySource
 import org.springframework.core.env.MapPropertySource
+import org.springframework.core.env.PropertySource
 import org.springframework.util.ClassUtils
 
 /**
@@ -110,11 +113,13 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             def propertySources = environment.getPropertySources()
             def plugins = pluginManager.allPlugins
             if(plugins) {
-                plugins.reverse().each { GrailsPlugin plugin ->
-                    def pluginConfig = plugin.pluginConfig
-                    if (pluginConfig) {
-                        def pluginConfigMap = new HashMap(pluginConfig)
-                        propertySources.addFirst new MapPropertySource(plugin.name, pluginConfigMap)
+                for(GrailsPlugin plugin in plugins.reverse()) {
+                    def pluginPropertySource = plugin.propertySource
+                    if(pluginPropertySource) {
+                        if(pluginPropertySource instanceof EnumerablePropertySource) {
+                            propertySources.addFirst( new PrefixedMapPropertySource( "grails.plugins.$plugin.name", (EnumerablePropertySource)pluginPropertySource ) )
+                        }
+                        propertySources.addFirst pluginPropertySource
                     }
                 }
             }

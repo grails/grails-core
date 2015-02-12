@@ -31,10 +31,14 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.Assert;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,15 +55,10 @@ import java.util.Map;
 public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements GrailsPlugin {
 
     public static final String PLUGIN_YML_PATH = "/plugin.yml";
-
-    /* (non-Javadoc)
-             * @see grails.plugins.GrailsPlugin#refresh()
-             */
-    public void refresh() {
-        // do nothing
-    }
-
+    private static Resource basePluginResource = null;
+    protected PropertySource<?> propertySource;
     protected org.codehaus.groovy.grails.commons.GrailsApplication application;
+    protected GrailsApplication grailsApplication;
     protected boolean isBase = false;
     protected String version = "1.0";
     protected Map<String, Object> dependencies = new HashMap<String, Object>();
@@ -85,25 +84,32 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         Assert.notNull(pluginClass, "Argument [pluginClass] cannot be null");
         Assert.isTrue(pluginClass.getName().endsWith(TRAILING_NAME),
                 "Argument [pluginClass] with value [" + pluginClass +
-                "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
+                        "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
         this.application = new LegacyGrailsApplication(application);
+        this.grailsApplication = application;
         this.pluginClass = pluginClass;
         Resource resource = readPluginConfiguration(pluginClass);
         if(resource != null && resource.exists()) {
             YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
             try {
-                PropertySource<?> propertySource = propertySourceLoader.load("plugin.yml", resource, null);
-                MutablePropertySources propertySources = new MutablePropertySources();
-                propertySources.addFirst(propertySource);
-                CompositeConfig composite = new CompositeConfig();
-                String prefix = "grails.plugins." + GrailsNameUtils.getLogicalPropertyName(pluginClass.getName(), TRAILING_NAME);
-                composite.addLast(new PropertySourcesConfig(propertySources));
-                composite.addLast(new PropertySourcesConfig(propertySources, prefix));
-                this.config = composite;
+                this.propertySource = propertySourceLoader.load("plugin.yml", resource, null);
             } catch (IOException e) {
             }
         }
     }
+
+    @Override
+    public PropertySource<?> getPropertySource() {
+        return propertySource;
+    }
+
+    /* (non-Javadoc)
+                 * @see grails.plugins.GrailsPlugin#refresh()
+                 */
+    public void refresh() {
+        // do nothing
+    }
+
 
     @Override
     public boolean isEnabled(String[] profiles) {
@@ -121,12 +127,21 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
                 // ignore
             }
         }
+        else {
+            // if the plugin is not inside a JAR file then we could be in a plugin project so scan for the
+            // plugin.yml in the compiled classes directory
+            URL resource = getClass().getResource(PLUGIN_YML_PATH);
+            if(resource != null) {
+                isBase = true;
+                return new UrlResource(resource);
+            }
+        }
         return null;
     }
 
     @Override
     public Config getPluginConfig() {
-        return this.config;
+        return grailsApplication.getConfig();
     }
 
     public String getFileSystemName() {

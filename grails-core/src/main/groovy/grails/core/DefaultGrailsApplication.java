@@ -24,8 +24,6 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaMethod;
-import groovy.util.ConfigObject;
-import groovy.util.ConfigSlurper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +51,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -284,7 +281,6 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     public Config getConfig() {
         if (config == null) {
             if(parentContext != null) {
-
                 org.springframework.core.env.Environment environment = parentContext.getEnvironment();
                 if(environment instanceof ConfigurableEnvironment) {
                     MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
@@ -293,14 +289,6 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
             }
             else {
                 this.config = new PropertySourcesConfig();
-                if(ClassUtils.isPresent("Config", classLoader)) {
-                    try {
-                        ConfigObject co = new ConfigSlurper().parse(ClassUtils.forName("Config", classLoader));
-                        this.config.merge(co);
-                    } catch (ClassNotFoundException e) {
-                        // ignore
-                    }
-                }
             }
 
             setConfig(this.config);
