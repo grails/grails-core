@@ -163,7 +163,15 @@ class DefaultProfile implements Profile {
         def commandName = commandLine.commandName
         def cmd = commandsByName[commandName]
         if(cmd) {
-            return cmd.handle(context)
+            def requiredArguments = cmd?.description?.arguments
+            int requiredArgumentCount = requiredArguments?.findAll() { CommandArgument ca -> ca.required }?.size() ?: 0
+            if(commandLine.remainingArgs.size() < requiredArgumentCount) {
+                context.console.error "Command [$commandName] missing required arguments: ${requiredArguments*.name}. Type 'grails help $commandName' for more info."
+                return false
+            }
+            else {
+                return cmd.handle(context)
+            }
         }
         else {
             // Apply command name expansion (rA for run-app, tA for test-app etc.)
