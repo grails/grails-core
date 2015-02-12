@@ -1,20 +1,16 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-
-import org.junit.*
+import org.junit.Test
 
 @TestFor(TimeTagLib)
+@Mock(TimeService)
 class TagLibWithServiceMockTests {
 
     @Test void canCallServiceMethod() {
-        def control = mockFor(TimeService)
-        control.demand.getCurrentTime(1) { -> "2011-12-02T11:19:00" }
-        tagLib.timeService = control.createMock()
-
         def content = applyTemplate( "<g:time />" )
 
-        assert content == "<time>2011-12-02T11:19:00</time>"
+        assert content == "<time>the time is now</time>"
     }
 }
 
@@ -34,6 +30,6 @@ class TimeTagLib {
 class TimeService {
 
     String getCurrentTime() {
-        new Date().format("yyyy-MM-dd'T'HH:mm:ss")
+        'the time is now'
     }
 }
