@@ -139,25 +139,34 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void configureConsoleTask(TaskContainer tasks, Project project) {
         def consoleConfiguration = project.configurations.create("console")
         def findMainClass = tasks.findByName('findMainClass')
-        createConsoleTask(project, tasks, consoleConfiguration)
-
-        def consoleTask = (JavaExec) tasks.findByName('console')
+        def consoleTask = createConsoleTask(project, tasks, consoleConfiguration)
+        def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
             def mainClassName = project.properties.get("mainClassName")
             consoleTask.args mainClassName
+            shellTask.args mainClassName
             project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
                 task.args mainClassName
             }
         }
 
         consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)
+        shellTask.dependsOn(tasks.findByName('classes'), findMainClass)
     }
 
     protected JavaExec createConsoleTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("console", JavaExec) {
             classpath = project.sourceSets.main.runtimeClasspath + configuration
             main = "grails.ui.console.GrailsSwingConsole"
+        }
+    }
+
+    protected JavaExec createShellTask(Project project, TaskContainer tasks, Configuration configuration) {
+        tasks.create("shell", JavaExec) {
+            classpath = project.sourceSets.main.runtimeClasspath + configuration
+            main = "grails.ui.shell.GrailsShell"
+            standardInput = System.in
         }
     }
 
