@@ -78,7 +78,7 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
             if(modelAndView != null) {
                 request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
             }
-            for(i in interceptors) {
+            for(i in interceptors.reverse()) {
                 if(i.doesMatch()) {
                     if( !i.after() ) {
                         modelAndView.setView(null)
@@ -94,7 +94,7 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         request.setAttribute(Matcher.THROWABLE, ex)
         if(interceptors) {
-            for(i in interceptors) {
+            for(i in interceptors.reverse()) {
                 if(i.doesMatch(request)) {
                     i.afterView()
                 }
