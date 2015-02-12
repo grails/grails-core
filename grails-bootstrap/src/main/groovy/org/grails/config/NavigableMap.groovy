@@ -390,8 +390,8 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             return null
         }
     
-        public int hashCode() {
-            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
-        }
+//        public int hashCode() {
+//            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
+//        }
     }
 }

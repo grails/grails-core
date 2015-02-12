@@ -16,25 +16,15 @@
 package org.grails.plugins;
 
 import grails.config.Config;
+import grails.core.GrailsApplication;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.grails.config.CompositeConfig;
-import org.grails.config.PrefixedConfig;
 import org.grails.config.PropertySourcesConfig;
 import org.grails.config.yaml.YamlPropertySourceLoader;
 import org.grails.core.AbstractGrailsClass;
-import grails.core.GrailsApplication;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
@@ -44,6 +34,14 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -99,18 +97,12 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
                 propertySources.addFirst(propertySource);
                 CompositeConfig composite = new CompositeConfig();
                 String prefix = "grails.plugins." + GrailsNameUtils.getLogicalPropertyName(pluginClass.getName(), TRAILING_NAME);
-                composite.addFirst(new PrefixedConfig(prefix, application.getConfig()));
                 composite.addLast(new PropertySourcesConfig(propertySources));
                 composite.addLast(new PropertySourcesConfig(propertySources, prefix));
                 this.config = composite;
             } catch (IOException e) {
-                this.config = application.getConfig();
             }
         }
-        else {
-            this.config = application.getConfig();
-        }
-
     }
 
     @Override

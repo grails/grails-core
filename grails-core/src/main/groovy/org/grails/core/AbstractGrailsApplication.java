@@ -27,8 +27,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.ClassUtils;
 
 import java.util.Collections;
@@ -46,15 +44,6 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        org.springframework.core.env.Environment environment = applicationContext.getEnvironment();
-        if(environment instanceof ConfigurableEnvironment) {
-            MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
-            PropertySourcesConfig newConfig = new PropertySourcesConfig(propertySources);
-            if(this.config != null) {
-                newConfig.merge(this.config);
-            }
-            setConfig(newConfig);
-        }
         this.parentContext = applicationContext;
         if(applicationContext instanceof ConfigurableApplicationContext) {
             ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this);

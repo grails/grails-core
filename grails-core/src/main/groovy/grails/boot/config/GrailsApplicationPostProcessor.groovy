@@ -1,15 +1,19 @@
 package grails.boot.config
+
 import grails.config.Settings
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.core.GrailsApplicationLifeCycle
 import grails.plugins.DefaultGrailsPluginManager
+import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
+import org.grails.config.NavigableMap
+import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
@@ -25,7 +29,12 @@ import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.core.convert.converter.Converter
+import org.springframework.core.env.AbstractEnvironment
+import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.env.MapPropertySource
 import org.springframework.util.ClassUtils
+
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
  *
@@ -69,9 +78,10 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         this.applicationContext = applicationContext
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
-        customizeGrailsApplication(grailsApplication)
         pluginManager.loadPlugins()
         pluginManager.applicationContext = applicationContext
+        loadApplicationConfig()
+        customizeGrailsApplication(grailsApplication)
         performGrailsInitializationSequence()
     }
 
@@ -83,6 +93,33 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         pluginManager.doArtefactConfiguration()
         grailsApplication.initialise()
         pluginManager.registerProvidedArtefacts(grailsApplication)
+    }
+
+    protected void loadApplicationConfig() {
+        org.springframework.core.env.Environment environment = applicationContext.getEnvironment()
+        if(environment instanceof ConfigurableEnvironment) {
+            if(environment instanceof AbstractEnvironment) {
+                def cs = environment.getConversionService()
+                cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
+                    @Override
+                    public String convert(NavigableMap.NullSafeNavigator source) {
+                        return null;
+                    }
+                });
+            }
+            def propertySources = environment.getPropertySources()
+            def plugins = pluginManager.allPlugins
+            if(plugins) {
+                plugins.reverse().each { GrailsPlugin plugin ->
+                    def pluginConfig = plugin.pluginConfig
+                    if (pluginConfig) {
+                        def pluginConfigMap = new HashMap(pluginConfig)
+                        propertySources.addFirst new MapPropertySource(plugin.name, pluginConfigMap)
+                    }
+                }
+            }
+            ((DefaultGrailsApplication)grailsApplication).config = new PropertySourcesConfig(propertySources)
+        }
     }
 
     @Override

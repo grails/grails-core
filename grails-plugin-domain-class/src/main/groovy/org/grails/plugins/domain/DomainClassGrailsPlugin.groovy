@@ -16,24 +16,19 @@
 package org.grails.plugins.domain
 
 import grails.config.Config
-import grails.core.ComponentCapableDomainClass
 import grails.core.GrailsApplication
-import grails.core.GrailsDomainClass
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.validation.ConstraintsEvaluator
-import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.plugins.domain.support.GrailsDomainClassCleaner
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.grails.validation.GrailsDomainClassValidator
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.context.ApplicationContext
+
 /**
  * Configures the domain classes in the spring context.
  *
@@ -100,11 +95,6 @@ class DomainClassGrailsPlugin extends Plugin {
     }
 
     @Override
-    void doWithDynamicMethods() {
-        enhanceDomainClasses(grailsApplication, applicationContext)
-    }
-
-    @Override
     void onChange(Map<String, Object> event) {
         def cls = event.source
         try {
@@ -147,7 +137,6 @@ class DomainClassGrailsPlugin extends Plugin {
                 application = ref("grailsApplication", true)
             }
         }
-        enhanceDomainClasses(application, applicationContext)
         application.refreshConstraints()
     }
 
@@ -162,42 +151,4 @@ class DomainClassGrailsPlugin extends Plugin {
         beans.registerBeans(applicationContext)
         grailsApplication.refreshConstraints()
     }
-
-
-    @CompileStatic
-    static void enhanceDomainClasses(org.codehaus.groovy.grails.commons.GrailsApplication application, ApplicationContext ctx) {
-        enhanceDomainClasses(((LegacyGrailsApplication)application).grailsApplication, ctx)
-    }
-
-    static void  enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
-        for (GrailsDomainClass dc in application.domainClasses) {
-            def domainClass = dc
-            if (dc instanceof ComponentCapableDomainClass) {
-                for (GrailsDomainClass component in dc.getComponents()) {
-                    if (!application.isDomainClass(component.clazz)) {
-                        registerConstraintsProperty(component.metaClass, component)
-                    }
-                }
-            }
-            MetaClass metaClass = domainClass.metaClass
-            registerConstraintsProperty(metaClass, domainClass)
-            metaClass.getDomainClass = {-> domainClass }
-            AutowireCapableBeanFactory autowireCapableBeanFactory = ctx.autowireCapableBeanFactory
-            int byName = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
-            metaClass.static.autowireDomain = { instance ->
-                autowireCapableBeanFactory.autowireBeanProperties(instance, byName, false)
-            }
-        }
-    }
-
-
-    /**
-     * Registers the constraints property for the given MetaClass and domainClass instance
-     */
-    static void registerConstraintsProperty(MetaClass metaClass, GrailsDomainClass domainClass) {
-        metaClass.static.getConstraints = { -> domainClass.constrainedProperties }
-
-        metaClass.getConstraints = {-> domainClass.constrainedProperties }
-    }
-
 }
