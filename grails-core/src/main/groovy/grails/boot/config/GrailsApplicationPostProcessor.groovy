@@ -78,9 +78,10 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         this.applicationContext = applicationContext
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
-        customizeGrailsApplication(grailsApplication)
         pluginManager.loadPlugins()
         pluginManager.applicationContext = applicationContext
+        loadApplicationConfig()
+        customizeGrailsApplication(grailsApplication)
         performGrailsInitializationSequence()
     }
 
@@ -92,7 +93,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         pluginManager.doArtefactConfiguration()
         grailsApplication.initialise()
         pluginManager.registerProvidedArtefacts(grailsApplication)
-        loadApplicationConfig()
     }
 
     protected void loadApplicationConfig() {
