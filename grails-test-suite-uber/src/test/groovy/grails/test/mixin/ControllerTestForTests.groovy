@@ -22,18 +22,6 @@ class ControllerTestForTests {
     }
 
     @Test
-    void testMockCollaborator() {
-        def mockService = mockFor(SimpleService)
-        mockService.demand.sayHello(1) {-> "goodbye" }
-
-        controller.simpleService = mockService.createMock()
-        controller.hello()
-
-        mockService.verify()
-        assert response.text == 'goodbye'
-    }
-    
-    @Test
     void testLocaleResolver() {
         def localeResolver = applicationContext.localeResolver
         request.addPreferredLocale(Locale.FRANCE)
@@ -55,19 +43,9 @@ class SimpleController {
     def total = {
         render "Total = ${Simple.count()}"
     }
-
-    def simpleService
-    def hello() {
-        render simpleService.sayHello()
-    }
 }
 class Simple {
     Long id
     Long version
     String name
-}
-class SimpleService {
-    String sayHello() {
-        "hello"
-    }
 }

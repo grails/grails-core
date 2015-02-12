@@ -1,7 +1,6 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact;
-
+import grails.artefact.Artefact
 import org.junit.Test
 
 /**
@@ -23,10 +22,7 @@ class ControllerWithMockCollabTests {
     private void executeCallTest() {
         //Prepare
         boolean called = false
-        def mockCallable = mockFor(MyCallable)
-        mockCallable.demand.callMe { -> called = true; println "called"}
-        def mockCallableInstance = mockCallable.createMock()
-        controller.myCallable = mockCallableInstance
+        controller.myCallable = [callMe: { called = true }]
 
         //Call
         controller.index()
@@ -34,7 +30,6 @@ class ControllerWithMockCollabTests {
         //Check
         assert response.status == 200
         assert called == true
-        mockCallable.verify()
     }
 }
 
@@ -46,8 +41,4 @@ class ControllerWithCollabController {
     def index() {
         myCallable.callMe()
     }
-}
-
-interface MyCallable {
-    void callMe()
 }

@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
 import grails.test.mixin.web.GroovyPageUnitTestMixin
 import org.junit.Test
 
@@ -22,4 +23,8 @@ class ControllerAndGroovyPageMixinTests {
 
         assert content == 'Id: 10'
     }
+}
+
+@Artefact("Controller")
+class MyController {
 }

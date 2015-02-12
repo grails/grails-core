@@ -16,7 +16,6 @@
 package grails.test.mixin.support
 import grails.config.Config
 import grails.core.GrailsApplication
-import grails.test.GrailsMock
 import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
@@ -51,18 +50,6 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
      */
     void mockForConstraintsTests(Class<?> clazz) {
         runtime.publishEvent("mockForConstraintsTests", [clazz: clazz])
-    }
-
-    /**
-     * Creates a new Grails mock for the given class. Use it as you
-     * would use MockFor and StubFor.
-     * @param clazz The class to mock.
-     * @param loose If <code>true</code>, the method returns a loose-
-     * expectation mock, otherwise it returns a strict one. The default
-     * is a strict mock.
-     */
-    GrailsMock mockFor(Class<?> clazz, boolean loose = false) {
-        return new GrailsMock(clazz, loose)
     }
 
     /**
