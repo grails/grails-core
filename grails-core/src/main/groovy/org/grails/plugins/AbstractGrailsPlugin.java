@@ -139,11 +139,6 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         return null;
     }
 
-    @Override
-    public Config getPluginConfig() {
-        return grailsApplication.getConfig();
-    }
-
     public String getFileSystemName() {
         return getFileSystemShortName() + '-' + getVersion();
     }

@@ -429,11 +429,4 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * @param descriptor The descriptor
      */
     void setDescriptor(Resource descriptor);
-
-    /**
-     * The plugin's default configuration settings which can be overridden by the application
-     *
-     * @return The plugin Config
-     */
-    Config getPluginConfig();
 }
