@@ -2,7 +2,6 @@ package org.grails.io.support
 
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
-import org.grails.io.support.GrailsResourceUtils
 import groovyjarjarasm.asm.ClassReader
 import groovyjarjarasm.asm.ClassVisitor
 import groovyjarjarasm.asm.MethodVisitor
@@ -36,6 +35,16 @@ class MainClassFinder {
         } else {
             searchDirs = [classesDir]
         }
+        def userDir = new File(System.getProperty('user.dir'))
+        if(new File(userDir, 'settings.gradle').exists()) {
+            userDir.eachDir { File dir ->
+                // looking for subproject build directories...
+                def mainClassesDir = new File(dir, 'build/classes/main')
+                if(mainClassesDir.exists()) {
+                    searchDirs << mainClassesDir
+                }
+            }
+        }
 
         String mainClass = null
 
@@ -64,8 +73,10 @@ class MainClassFinder {
             if (file.isFile()) {
                 InputStream inputStream = file.newInputStream()
                 try {
-                    if (isMainClass(inputStream)) {
-                        mainClassName = GrailsResourceUtils.getClassNameForClassFile(prefix, file.absolutePath)
+                    def classReader = new ClassReader(inputStream)
+
+                    if (isMainClass(classReader)) {
+                        mainClassName = classReader.getClassName().replace('/', '.').replace('\\', '.')
                         return mainClassName
                     }
                 } finally {
@@ -90,8 +101,7 @@ class MainClassFinder {
     }
 
 
-    protected static boolean isMainClass(InputStream inputStream) {
-        def classReader = new ClassReader(inputStream)
+    protected static boolean isMainClass(ClassReader classReader) {
         if(classReader.superName?.startsWith('grails/boot/config/')) {
             def mainMethodFinder = new MainMethodFinder()
             classReader.accept(mainMethodFinder, ClassReader.SKIP_CODE)
