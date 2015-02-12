@@ -128,14 +128,25 @@ class DefaultProfile implements Profile {
                 }
             }
             CommandRegistry.findCommands(this).each(registerCommand)
-            if(parentProfiles) {
+
+            def parents = parentProfiles
+            if(parents) {
                 excludes = (List)configuration.navigate("command", "excludes") ?: []
-                for(parent in parentProfiles) {
-                    CommandRegistry.findCommands(parent, true).each registerCommand
-                }
+                registerParentCommands(parents, registerCommand)
             }
         }
         return commandsByName.values()
+    }
+
+    protected void registerParentCommands(Iterable<Profile> parents, Closure<DefaultProfile> registerCommand) {
+        for (parent in parents) {
+            CommandRegistry.findCommands(parent, true).each registerCommand
+
+            def extended = parent.extends
+            if(extended) {
+                registerParentCommands extended, registerCommand
+            }
+        }
     }
 
     @Override
