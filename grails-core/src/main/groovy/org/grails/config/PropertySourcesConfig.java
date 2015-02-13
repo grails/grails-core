@@ -70,7 +70,9 @@ public class PropertySourcesConfig extends NavigableMapConfig {
     }
 
     protected void initializeFromPropertySources(PropertySources propertySources) {
-        for(PropertySource propertySource : propertySources) {
+        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources);
+        Collections.reverse(propertySourceList);
+        for(PropertySource propertySource : propertySourceList) {
             if(propertySource instanceof EnumerablePropertySource) {
                 EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
                 mergeEnumerablePropertySource(enumerablePropertySource);

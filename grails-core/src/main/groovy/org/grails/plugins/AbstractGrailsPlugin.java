@@ -92,7 +92,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         if(resource != null && resource.exists()) {
             YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
             try {
-                this.propertySource = propertySourceLoader.load("plugin.yml", resource, null);
+                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null);
             } catch (IOException e) {
             }
         }
