@@ -25,6 +25,7 @@ import jline.UnixTerminal
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
 import jline.internal.NonBlockingInputStream
+import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.ExternalDependency
@@ -346,8 +347,12 @@ class GrailsCli {
 
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
-                        originalStreams.out.print "Resolving dependencies. Please wait... "
-                        EclipseProject project = connection.action(new ClasspathBuildAction()).run()
+                        def buildAction = connection.action(new ClasspathBuildAction())
+                        buildAction.colorOutput = true
+                        buildAction.setStandardOutput(originalStreams.out)
+                        buildAction.setStandardError(originalStreams.err)
+                        EclipseProject project = buildAction.run()
+
                         List<URL> classpathUrls = project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
                         originalStreams.out.println "Done."
                         return classpathUrls
