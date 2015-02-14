@@ -58,9 +58,6 @@ class GradleInvoker {
                 arguments << '--stacktrace'
                 arguments << '-Dgrails.full.stacktrace=true'
             }
-            if (commandLine.remainingArgs || commandLine.undeclaredOptions) {
-                arguments << "-Pargs=${commandLine.remainingArgsWithOptionsString}".toString()
-            }
 
             arguments.addAll argArray.collect() { it.toString() }
             buildLauncher.withArguments( arguments as String[])
