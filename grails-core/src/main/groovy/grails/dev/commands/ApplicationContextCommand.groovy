@@ -32,8 +32,9 @@ interface ApplicationContextCommand extends Named {
      * Handles the command
      *
      * @param applicationContext The {@link org.springframework.context.ApplicationContext} instance
+     * @param args the command arguments
      * @return True if the command was successful
      */
-    boolean handle(ConfigurableApplicationContext applicationContext)
+    boolean handle(ConfigurableApplicationContext applicationContext, Object... args)
 
 }
