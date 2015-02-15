@@ -35,6 +35,6 @@ interface ApplicationContextCommand extends Named {
      * @param args the command arguments
      * @return True if the command was successful
      */
-    boolean handle(ConfigurableApplicationContext applicationContext, Object... args)
+    boolean handle(ConfigurableApplicationContext applicationContext, String... args)
 
 }
