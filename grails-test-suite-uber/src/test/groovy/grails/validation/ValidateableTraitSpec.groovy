@@ -1,14 +1,8 @@
-package grails.validation.trait
-
-import grails.validation.Validateable
-
-
+package grails.validation
 
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
-
 import org.springframework.validation.FieldError
-
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
