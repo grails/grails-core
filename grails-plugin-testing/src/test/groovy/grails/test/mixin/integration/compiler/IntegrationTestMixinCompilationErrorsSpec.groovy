@@ -1,10 +1,12 @@
 package grails.test.mixin.integration.compiler
 
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import spock.lang.Issue
 import spock.lang.Specification
 
 class IntegrationTestMixinCompilationErrorsSpec extends Specification {
 
+    @Issue('GROOVY-7305')
     void 'test applicationClass is an invalid type'() {
         given:
         def gcl = new GroovyClassLoader()
