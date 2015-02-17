@@ -61,7 +61,8 @@ class GrailsCli {
     public static final String DEFAULT_PROFILE_NAME = ProfileRepository.DEFAULT_PROFILE_NAME
     private static final int KEYPRESS_CTRL_C = 3
     private static final int KEYPRESS_ESC = 27
-    private static final String USAGE_MESSAGE = "Usage: create-app [NAME] --profile=web"
+    private static final String USAGE_MESSAGE = "create-app [NAME] --profile=web"
+    private static final String PLUGIN_USAGE_MESSAGE = "create-plugin [NAME] --profile=web-plugin"
     private final SystemStreamsRedirector originalStreams = SystemStreamsRedirector.original() // store original System.in, System.out and System.err
     private static ExecutionContext currentExecutionContext = null
 
@@ -111,6 +112,15 @@ class GrailsCli {
     static boolean isInteractiveModeActive() {
         return interactiveModeActive
     }
+
+    private int getBaseUsage() {
+        System.out.println "Usage: \n\t $USAGE_MESSAGE \n\t $PLUGIN_USAGE_MESSAGE \n\n"
+        this.execute "list-profiles"
+        System.out.println "\nType 'grails help' or 'grails -h' for more information."
+
+        return 1
+    }
+
     /**
      * Execute the given command
      *
@@ -127,7 +137,7 @@ class GrailsCli {
             System.setProperty("grails.show.stacktrace", "true")
         }
 
-        if(mainCommandLine.hasOption(CommandLine.VERSION_ARGUMENT)) {
+        if(mainCommandLine.hasOption(CommandLine.VERSION_ARGUMENT) || mainCommandLine.hasOption('v')) {
             def console = GrailsConsole.instance
             console.addStatus("Grails Version: ${GrailsCli.getPackage().implementationVersion}")
             console.addStatus("Groovy Version: ${GroovySystem.version}")
@@ -149,9 +159,7 @@ class GrailsCli {
         File applicationGroovy =new File("Application.groovy")
         if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
             if(!mainCommandLine || !mainCommandLine.commandName) {
-                System.err.println USAGE_MESSAGE
-                System.err.println("Type 'grails help' for more information" )
-                return 1
+                return getBaseUsage()
             }
             def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
             if(cmd) {
@@ -166,9 +174,7 @@ class GrailsCli {
                 }
             }
             else {
-                System.err.println USAGE_MESSAGE
-                System.err.println("Type 'grails help' for more information" )
-                return 1
+                return getBaseUsage()
             }
 
         } else {
