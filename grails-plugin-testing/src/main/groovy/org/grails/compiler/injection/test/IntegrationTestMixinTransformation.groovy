@@ -1,5 +1,6 @@
 package org.grails.compiler.injection.test
 import grails.boot.config.GrailsApplicationContextLoader
+import grails.boot.config.GrailsAutoConfiguration
 import grails.test.mixin.integration.Integration
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
@@ -69,11 +70,23 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             return
         }
 
-        String mainClass = MainClassFinder.searchMainClass()
+        ClassExpression applicationClassExpression = (ClassExpression)annotationNode.getMember('applicationClass')
 
-        if(mainClass) {
+        final applicationClassNode
+        if(applicationClassExpression) {
+            applicationClassNode = applicationClassExpression.getType()
+            if(!applicationClassNode.isDerivedFrom(ClassHelper.make(GrailsAutoConfiguration))) {
+                GrailsASTUtils.error(source, applicationClassExpression, "Invalid applicationClass attribute value [${applicationClassNode.getName()}].  The applicationClass attribute must specify a class which extends grails.boot.config.GrailsAutoConfiguration.", true)
+            }
+        } else {
+            String mainClass = MainClassFinder.searchMainClass()
+            if(mainClass) {
+                applicationClassNode = ClassHelper.make(mainClass)
+            }
+        }
+
+        if(applicationClassNode) {
             ClassNode classNode = (ClassNode) parent
-            def applicationClassNode = ClassHelper.make(mainClass)
 
             if(TestMixinTransformation.isSpockTest(classNode)) {
                 // first add context configuration

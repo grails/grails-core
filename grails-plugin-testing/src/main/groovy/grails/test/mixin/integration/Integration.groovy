@@ -31,4 +31,5 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
 @Target([ElementType.TYPE])
 @GroovyASTTransformationClass("org.grails.compiler.injection.test.IntegrationTestMixinTransformation")
 public @interface Integration {
+    Class applicationClass() default {}
 }
