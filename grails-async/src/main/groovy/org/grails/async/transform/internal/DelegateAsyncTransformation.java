@@ -66,6 +66,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
     private static final ArgumentListExpression NO_ARGS = new ArgumentListExpression();
     private static final String VOID = "void";
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
+    public static final ClassNode OBJECT_CLASS_NODE = new ClassNode(Object.class);
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         if (nodes.length != 2 || !(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
@@ -120,7 +121,9 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                         } else {
                             returnType = alignReturnType(classNode, originalReturnType);
                         }
-//                        promiseNode.setGenericsTypes( new GenericsType[]{ new GenericsType(returnType) });
+                        if(!OBJECT_CLASS_NODE.equals(returnType)) {
+                            promiseNode.setGenericsTypes(new GenericsType[]{new GenericsType(returnType)});
+                        }
                     }
                     final BlockStatement methodBody = new BlockStatement();
                     final BlockStatement promiseBody = new BlockStatement();
