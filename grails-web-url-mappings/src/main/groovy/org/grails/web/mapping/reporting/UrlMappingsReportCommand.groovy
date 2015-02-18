@@ -39,7 +39,7 @@ class UrlMappingsReportCommand implements ApplicationContextCommand {
     final String name = "url-mappings-report"
 
     @Override
-    boolean handle(ConfigurableApplicationContext applicationContext) {
+    boolean handle(ConfigurableApplicationContext applicationContext, String... args) {
         try {
             def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder", UrlMappings)
 

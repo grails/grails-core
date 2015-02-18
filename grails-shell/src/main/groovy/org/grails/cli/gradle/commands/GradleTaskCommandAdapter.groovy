@@ -52,7 +52,13 @@ class GradleTaskCommandAdapter implements ProfileCommand {
     boolean handle(ExecutionContext executionContext) {
         GradleInvoker invoker = new GradleInvoker(executionContext)
 
-        invoker."${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(adapted.name)}"()
+        def commandLine = executionContext.commandLine
+        if (commandLine.remainingArgs || commandLine.undeclaredOptions) {
+            invoker."${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(adapted.name)}"("-Pargs=${commandLine.remainingArgsWithOptionsString}")
+        } else {
+            invoker."${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(adapted.name)}"()
+        }
+
         return true
     }
 
