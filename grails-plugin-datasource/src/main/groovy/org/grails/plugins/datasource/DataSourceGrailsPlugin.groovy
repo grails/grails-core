@@ -107,7 +107,7 @@ class DataSourceGrailsPlugin extends Plugin {
 
     protected void createDatasource(beanBuilder, String dataSourceName, Map dataSourceData ) {
         boolean isDefault = dataSourceName == 'dataSource'
-        String suffix = isDefault ? '' : dataSourceName[10..-1]
+        String suffix = isDefault ? '' : dataSourceName
         String unproxiedName = "dataSourceUnproxied$suffix"
         String lazyName = "dataSourceLazy$suffix"
 
