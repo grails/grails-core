@@ -47,6 +47,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
 
     public static final String ARTEFACT_HANDLER_CLASS = "grails.core.ArtefactHandler"
+    public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationContextCommand"
+    public static final String TRAIT_INJECTOR_CLASS = "grails.compiler.traits.TraitInjector"
 
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
@@ -122,6 +124,13 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             if(updateGrailsFactoriesWithType(classNode, ARTEFACT_HANDLER_CLASS, compilationTargetDirectory)) {
                 continue
             }
+            if(updateGrailsFactoriesWithType(classNode, APPLICATION_CONTEXT_COMMAND_CLASS, compilationTargetDirectory)) {
+                continue
+            }
+            if(updateGrailsFactoriesWithType(classNode, TRAIT_INJECTOR_CLASS, compilationTargetDirectory)) {
+                continue
+            }
+
 
             if(projectName && projectVersion) {
                 GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(projectName.toString()), version:projectVersion])
