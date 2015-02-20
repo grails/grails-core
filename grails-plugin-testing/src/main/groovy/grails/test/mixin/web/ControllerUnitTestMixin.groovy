@@ -15,25 +15,21 @@
  */
 package grails.test.mixin.web
 
-import grails.artefact.Enhanced
-import grails.test.mixin.support.GrailsUnitTestMixin
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-
-import org.grails.core.artefact.ControllerArtefactHandler
 import grails.core.GrailsClass
 import grails.core.GrailsControllerClass
+import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.GrailsMetaClassUtils
-import org.grails.core.metaclass.MetaClassEnhancer
+import grails.web.mime.MimeType
+import grails.web.mvc.FlashScope
+import grails.web.servlet.mvc.GrailsParameterMap
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import grails.web.mime.MimeType
 import org.grails.web.pages.GroovyPageUtils
-import org.grails.plugins.support.WebMetaUtils
-import grails.web.mvc.FlashScope
-import org.grails.web.util.GrailsApplicationAttributes
-import grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
@@ -201,8 +197,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      * @return The instance
      */
     def mockCommandObject(Class commandClass) {
-        WebMetaUtils.enhanceCommandObject(applicationContext, commandClass)
-
         final instance = commandClass.newInstance()
         applicationContext.autowireCapableBeanFactory.autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         return instance

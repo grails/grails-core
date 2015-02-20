@@ -31,5 +31,15 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
 @Target([ElementType.TYPE])
 @GroovyASTTransformationClass("org.grails.compiler.injection.test.IntegrationTestMixinTransformation")
 public @interface Integration {
+
+    /**
+     *
+     * Specify the Application class which should be used for
+     * this functional test.  If unspecified the test runtime
+     * environment will attempt to locate a class in the project
+     * which extends grails.boot.config.GrailsAutoConfiguration
+     * which can be problematic in multi project builds where
+     * multiple Application classes may exist.
+     */
     Class applicationClass() default {}
 }

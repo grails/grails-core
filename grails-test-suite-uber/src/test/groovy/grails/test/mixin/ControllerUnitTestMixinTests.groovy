@@ -7,14 +7,13 @@ import grails.test.mixin.web.ControllerUnitTestMixin
 import grails.validation.Validateable
 import grails.web.Controller
 import grails.web.mime.MimeUtility
-
-import javax.servlet.http.HttpServletResponse
-
 import org.grails.plugins.testing.GrailsMockMultipartFile
 import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
+
+import javax.servlet.http.HttpServletResponse
 
 /**
  * Specification for the behavior of the ControllerUnitTestMixin
@@ -415,24 +414,6 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
     }
 
-    void testMockForConstraintsTestOnValidateableObject() {
-        mockForConstraintsTests(SomeValidateableThing)
-        def obj = new SomeValidateableThing()
-        assert !obj.validate()
-        assert 'nullable' == obj.errors['email']
-        assert 'nullable' == obj.errors['name']
-
-        obj.name = 'Jeffrey'
-        obj.email = 'foo'
-        assert !obj.validate()
-        assert 'email' == obj.errors['email']
-        assert 'no.odd.characters' == obj.errors['name']
-
-        obj.name = 'Jeff'
-        obj.email = 'foo@bar.com'
-        assert obj.validate()
-    }
-    
     void testContentTypeConstantsAreAddedToTheTest() {
         assert FORM_CONTENT_TYPE == 'application/x-www-form-urlencoded'
         assert MULTIPART_FORM_CONTENT_TYPE == 'multipart/form-data'

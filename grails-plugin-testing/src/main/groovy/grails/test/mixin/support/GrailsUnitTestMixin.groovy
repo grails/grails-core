@@ -44,15 +44,6 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
     }
     
     /**
-     * Mocks the given class (either a domain class or a command object)
-     * so that a "validate()" method is added. This can then be used
-     * to test the constraints on the class.
-     */
-    void mockForConstraintsTests(Class<?> clazz) {
-        runtime.publishEvent("mockForConstraintsTests", [clazz: clazz])
-    }
-
-    /**
      * Asserts that the given code closure fails when it is evaluated
      *
      * @param code
