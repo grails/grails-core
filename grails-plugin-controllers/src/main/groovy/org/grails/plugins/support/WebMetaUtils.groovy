@@ -16,8 +16,6 @@
 package org.grails.plugins.support
 
 import grails.core.GrailsApplication
-import grails.databinding.DataBindingSource
-import grails.databinding.SimpleMapDataBindingSource
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 
 /**
@@ -30,28 +28,6 @@ import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
  */
 @Deprecated
 class WebMetaUtils {
-
-    /**
-     * Return a DataBindingSource for a command object which has a parameter name matching the specified prefix.
-     * If params include something like widget.name=Thing and prefix is widget then the returned binding source
-     * will include name=thing, not widget.name=Thing.
-     * 
-     * @param prefix The parameter name for the command object
-     * @param params The original binding source associated with the request
-     * @return The binding source suitable for binding to a command object with a parameter name matching the specified prefix.
-     */
-    static DataBindingSource getCommandObjectBindingSourceForPrefix(String prefix, DataBindingSource params) {
-        def commandParams = params
-        if (params != null && prefix != null) {
-            def innerValue = params[prefix]
-            if(innerValue instanceof DataBindingSource) {
-                commandParams = innerValue
-            } else if(innerValue instanceof Map) {
-                commandParams = new SimpleMapDataBindingSource(innerValue)
-            }
-        }
-        commandParams
-    }
 
     /**
      * This creates the difference dynamic methods and properties on the controllers. Most methods
