@@ -450,7 +450,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
         if (params != null && prefix != null) {
             def innerValue = params[prefix]
             if(innerValue instanceof DataBindingSource) {
-                commandParams = innerValue
+                commandParams = (DataBindingSource)innerValue
             } else if(innerValue instanceof Map) {
                 commandParams = new SimpleMapDataBindingSource(innerValue)
             }
