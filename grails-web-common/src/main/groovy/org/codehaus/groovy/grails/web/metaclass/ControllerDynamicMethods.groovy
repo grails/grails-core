@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.web.metaclass
-
-import grails.core.GrailsApplication
-import org.springframework.web.context.request.RequestContextHolder;
-
 /**
  * Holds constants that refer to the names of dynamic methods and properties within controllers
  *
@@ -48,39 +44,4 @@ class ControllerDynamicMethods{
     public static final String CONTROLLER_NAME_PROPERTY = "controllerName";
     public static final String GET_VIEW_URI = "getViewUri";
     public static final String GET_TEMPLATE_URI = "getTemplateUri";
-
-    /**
-     * This creates the difference dynamic methods and properties on the controllers. Most methods
-     * are implemented by looking up the current request from the RequestContextHolder (RCH)
-     */
-    static void registerCommonWebProperties(MetaClass mc, GrailsApplication application) {
-        def paramsObject = {-> RequestContextHolder.currentRequestAttributes().params }
-        def flashObject = {-> RequestContextHolder.currentRequestAttributes().flashScope }
-        def sessionObject = {-> RequestContextHolder.currentRequestAttributes().session }
-        def requestObject = {-> RequestContextHolder.currentRequestAttributes().currentRequest }
-        def responseObject = {-> RequestContextHolder.currentRequestAttributes().currentResponse }
-        def servletContextObject = {-> RequestContextHolder.currentRequestAttributes().servletContext }
-        def grailsAttrsObject = {-> RequestContextHolder.currentRequestAttributes().attributes }
-
-        // the params object
-        mc.getParams = paramsObject
-        // the flash object
-        mc.getFlash = flashObject
-        // the session object
-        mc.getSession = sessionObject
-        // the request object
-        mc.getRequest = requestObject
-        // the servlet context
-        mc.getServletContext = servletContextObject
-        // the response object
-        mc.getResponse = responseObject
-        // The GrailsApplicationAttributes object
-        mc.getGrailsAttributes = grailsAttrsObject
-        // The GrailsApplication object
-        mc.getGrailsApplication = {-> RequestContextHolder.currentRequestAttributes().attributes.grailsApplication }
-
-        mc.getActionName = {-> RequestContextHolder.currentRequestAttributes().actionName }
-        mc.getControllerName = {-> RequestContextHolder.currentRequestAttributes().controllerName }
-        mc.getWebRequest = {-> RequestContextHolder.currentRequestAttributes() }
-    }
 }

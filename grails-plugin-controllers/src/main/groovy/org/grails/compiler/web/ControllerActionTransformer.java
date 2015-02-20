@@ -413,7 +413,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         return blockStatement;
     }
 
-    //See WebMetaUtils#isCommandObjectAction
     private boolean isCommandObjectAction(Parameter[] params) {
         return params != null && params.length > 0
                 && params[0].getType() != new ClassNode(Object[].class)
