@@ -16,6 +16,7 @@
 package grails.dev.commands
 
 import groovy.transform.CompileStatic
+import org.grails.core.io.support.GrailsFactoriesLoader
 
 
 /**
@@ -30,7 +31,7 @@ class ApplicationContextCommandRegistry {
     private static final Map<String, ApplicationContextCommand> commands = [:]
 
     static {
-        def registeredCommands = ServiceLoader.load(ApplicationContextCommand)
+        def registeredCommands = GrailsFactoriesLoader.loadFactories(ApplicationContextCommand)
 
         def iterator = registeredCommands.iterator()
         while(iterator.hasNext()) {
