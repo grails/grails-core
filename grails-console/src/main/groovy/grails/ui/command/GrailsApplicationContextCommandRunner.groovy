@@ -15,11 +15,13 @@
  */
 package grails.ui.command
 
+import grails.core.support.GrailsApplicationAware
 import grails.dev.commands.ApplicationContextCommandRegistry
 import grails.ui.support.DevelopmentGrailsApplication
 import groovy.transform.CompileStatic
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
+import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ConfigurableApplicationContext
 
 
@@ -52,6 +54,7 @@ class GrailsApplicationContextCommandRunner extends DevelopmentGrailsApplication
 
             try {
                 CommandLine commandLine = new CommandLineParser().parse(args)
+                ctx.autowireCapableBeanFactory.autowireBean(command)
                 def result = command.handle(ctx, commandLine)
                 result ? System.exit(0) : System.exit(1)
             } catch (Throwable e) {
