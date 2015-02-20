@@ -704,7 +704,25 @@ public class GrailsASTUtils {
      * @return true if the childClass is either equal to or a sub class of the specified superClass
      */
     public static boolean isAssignableFrom(ClassNode superClass, ClassNode childClass) {
-        return isSubclassOf(childClass, superClass.getName()) || implementsInterface(childClass, superClass.getName());
+        ClassNode currentSuper = childClass;
+        while (currentSuper != null)  {
+            if (currentSuper.equals(superClass)) {
+                return true;
+            }
+
+            currentSuper = currentSuper.getSuperClass();
+        }
+        return false;
+    }
+
+
+    public static boolean isSubclassOfOrImplementsInterface(ClassNode childClass, ClassNode superClass) {
+        String superClassName = superClass.getName();
+        return isSubclassOfOrImplementsInterface(childClass, superClassName);
+    }
+
+    public static boolean isSubclassOfOrImplementsInterface(ClassNode childClass, String superClassName) {
+        return isSubclassOf(childClass, superClassName) || implementsInterface(childClass, superClassName);
     }
 
     private static boolean implementsInterface(ClassNode classNode, String interfaceName) {
