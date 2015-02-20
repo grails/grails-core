@@ -68,7 +68,7 @@ class FactoriesLoaderSupport {
                     url.withInputStream { InputStream input ->
                         properties.load(input)
                     }
-                    allProperties << properties
+                    allProperties.add properties
                     allKeys.addAll((Set<String>) properties.keySet())
                 }
                 Map<String, String[]> mergedFactoryNames = [:]
