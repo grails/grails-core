@@ -17,11 +17,11 @@ package org.grails.build.parsing;
 
 import grails.util.Environment;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
-import org.apache.tools.ant.types.Commandline;
-import org.apache.tools.ant.BuildException;
 
 /**
  * Command line parser that parses arguments to the command line. Written as a
@@ -79,11 +79,74 @@ public class CommandLineParser {
     public CommandLine parseString(String string) {
         // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
         // Doesn't handle escape sequences with \
-        try {
-            return parse(Commandline.translateCommandline(string));
-        } catch (BuildException e) {
-            throw new ParseException(e); //Rethrow as an error that clients can expect.
+        return parse(translateCommandline(string));
+    }
+
+    /**
+     * Crack a command line.
+     * @param toProcess the command line to process.
+     * @return the command line broken into strings.
+     * An empty or null toProcess parameter results in a zero sized array.
+     */
+    public static String[] translateCommandline(String toProcess) {
+        if (toProcess == null || toProcess.length() == 0) {
+            //no command? no string
+            return new String[0];
         }
+        // parse with a simple finite state machine
+
+        final int normal = 0;
+        final int inQuote = 1;
+        final int inDoubleQuote = 2;
+        int state = normal;
+        final StringTokenizer tok = new StringTokenizer(toProcess, "\"\' ", true);
+        final ArrayList<String> result = new ArrayList<String>();
+        final StringBuilder current = new StringBuilder();
+        boolean lastTokenHasBeenQuoted = false;
+
+        while (tok.hasMoreTokens()) {
+            String nextTok = tok.nextToken();
+            switch (state) {
+                case inQuote:
+                    if ("\'".equals(nextTok)) {
+                        lastTokenHasBeenQuoted = true;
+                        state = normal;
+                    } else {
+                        current.append(nextTok);
+                    }
+                    break;
+                case inDoubleQuote:
+                    if ("\"".equals(nextTok)) {
+                        lastTokenHasBeenQuoted = true;
+                        state = normal;
+                    } else {
+                        current.append(nextTok);
+                    }
+                    break;
+                default:
+                    if ("\'".equals(nextTok)) {
+                        state = inQuote;
+                    } else if ("\"".equals(nextTok)) {
+                        state = inDoubleQuote;
+                    } else if (" ".equals(nextTok)) {
+                        if (lastTokenHasBeenQuoted || current.length() != 0) {
+                            result.add(current.toString());
+                            current.setLength(0);
+                        }
+                    } else {
+                        current.append(nextTok);
+                    }
+                    lastTokenHasBeenQuoted = false;
+                    break;
+            }
+        }
+        if (lastTokenHasBeenQuoted || current.length() != 0) {
+            result.add(current.toString());
+        }
+        if (state == inQuote || state == inDoubleQuote) {
+            throw new ParseException("unbalanced quotes in " + toProcess);
+        }
+        return result.toArray(new String[result.size()]);
     }
 
    /**
@@ -96,15 +159,11 @@ public class CommandLineParser {
     public CommandLine parseString(String commandName, String args) {
         // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
         // Doesn't handle escape sequences with \
-        try {
-            String[] argArray = Commandline.translateCommandline(args);
-            DefaultCommandLine cl = createCommandLine();
-            cl.setCommandName(commandName);
-            parseInternal(cl, argArray, false);
-            return cl;
-        } catch (BuildException e) {
-            throw new ParseException(e); //Rethrow as an error that clients can expect.
-        }
+        String[] argArray = translateCommandline(args);
+        DefaultCommandLine cl = createCommandLine();
+        cl.setCommandName(commandName);
+        parseInternal(cl, argArray, false);
+        return cl;
     }
     /**
      * Parses the given list of command line arguments. Arguments starting with -D become system properties,
