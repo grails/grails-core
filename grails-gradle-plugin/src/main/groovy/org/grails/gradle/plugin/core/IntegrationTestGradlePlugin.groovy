@@ -67,7 +67,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
 
                 if(ideaIntegration) {
                     project.afterEvaluate {
-                        if(project.getPluginManager().hasPlugin("idea")) {
+                        if(project.convention.findByName('idea')) {
                             // IDE integration for IDEA. Eclipse plugin already handles all source folders.
                             idea {
                                 module {
