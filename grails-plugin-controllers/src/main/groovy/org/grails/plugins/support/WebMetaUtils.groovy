@@ -15,23 +15,10 @@
  */
 package org.grails.plugins.support
 
-import grails.databinding.DataBindingSource;
-import grails.databinding.SimpleMapDataBindingSource;
-import grails.validation.ValidationErrors
 import grails.core.GrailsApplication
-import grails.util.GrailsClassUtils
-
-import org.grails.plugins.domain.DomainClassPluginSupport
-
-import grails.validation.ConstraintsEvaluator
-
+import grails.databinding.DataBindingSource
+import grails.databinding.SimpleMapDataBindingSource
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
-import org.grails.validation.DefaultConstraintEvaluator;
-import org.springframework.context.ApplicationContext
-import org.springframework.validation.Errors
-import org.springframework.web.context.request.RequestContextHolder as RCH
-
-import java.lang.reflect.Method
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -43,54 +30,6 @@ import java.lang.reflect.Method
  */
 @Deprecated
 class WebMetaUtils {
-
-    /**
-     * Prepares a command object binding action for usage
-     *
-     * @param action The binding action
-     * @param originalAction The original action to be replacec
-     * @param actionName The action name
-     * @param controller The controller
-     * @return The new binding action
-     */
-    static Closure prepareCommandObjectBindingAction(Closure action, Closure originalAction,
-                                                     String actionName, Object controller, ApplicationContext ctx) {
-        def commandObjectAction = action.curry(originalAction, actionName)
-        controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = {->
-            def actionDelegate = commandObjectAction.clone()
-            actionDelegate.delegate = delegate
-            actionDelegate
-        }
-        for (type in originalAction.parameterTypes) {
-            enhanceCommandObject ctx, type
-        }
-        commandObjectAction.delegate = controller
-        return commandObjectAction
-    }
-
-    /**
-     * Prepares a command object binding action for usage
-     *
-     * @param action The binding action
-     */
-    @SuppressWarnings("rawtypes")
-    static void prepareCommandObjectBindingAction(Method action, Class[] commandObjectClasses, ApplicationContext ctx) {
-        for (type in commandObjectClasses) {
-            enhanceCommandObject ctx, type
-        }
-    }
-
-    /**
-     * Use getCommandObjectBindingSourceForPrefix instead.  
-     * 
-     * @see #getCommandObjectBindingSourceForPrefix(String, DataBindingSource)
-     * @deprecated
-     */
-    @Deprecated
-    static DataBindingSource getCommandObjectBindingSource(Class commandObjectClass, DataBindingSource params) {
-        def commandParamsKey = convertTypeNameToParamsPrefix(commandObjectClass)
-        getCommandObjectBindingSourceForPrefix commandParamsKey, params
-    }
 
     /**
      * Return a DataBindingSource for a command object which has a parameter name matching the specified prefix.
@@ -112,70 +51,6 @@ class WebMetaUtils {
             }
         }
         commandParams
-    }
-    private static String convertTypeNameToParamsPrefix(Class clazz) {
-        def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/, '-$1')?.toLowerCase()
-        if (result?.endsWith("-command")) {
-            return result.substring(0, result.size() - 8)
-        }
-        return null
-    }
-
-    /**
-     * Checks whether the given action is a command object action
-     * @param callable The action to check
-     * @return true if it is a command object action
-     */
-    static boolean isCommandObjectAction(Closure callable) {
-        def paramTypes = callable.parameterTypes
-        paramTypes && paramTypes[0] != Object[].class && paramTypes[0] != Object
-    }
-
-    /**
-     * Enhances a command object with new capabilities such as validation and constraints handling
-     *
-     * @param commandObjectClass The command object class
-     */
-    static void enhanceCommandObject(ApplicationContext ctx, Class commandObjectClass) {
-
-        def commandObjectMetaClass = commandObjectClass.metaClass
-        if (!commandObjectMetaClass.respondsTo("grailsEnhanced")) {
-
-            commandObjectMetaClass.setErrors = { Errors errors ->
-                RCH.currentRequestAttributes().setAttribute(
-                        "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
-            }
-
-            commandObjectMetaClass.getErrors = {->
-                def errors = RCH.currentRequestAttributes().getAttribute(
-                        "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
-                if (!errors) {
-                    errors = new ValidationErrors(delegate)
-                    RCH.currentRequestAttributes().setAttribute(
-                            "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
-                }
-                return errors
-            }
-
-            commandObjectMetaClass.hasErrors = {-> errors?.hasErrors() ? true : false }
-            commandObjectMetaClass.validate = {->
-                DomainClassPluginSupport.validateInstance(delegate, ctx)
-            }
-            def constraintsEvaluator
-            if (ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
-                constraintsEvaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME)
-            }
-            else {
-                constraintsEvaluator = new DefaultConstraintEvaluator()
-            }
-            def constrainedProperties = constraintsEvaluator.evaluate(commandObjectClass)
-            commandObjectMetaClass.getConstraints = {-> constrainedProperties }
-
-            commandObjectMetaClass.clearErrors = {->
-                delegate.setErrors(new ValidationErrors(delegate))
-            }
-            commandObjectMetaClass.grailsEnhanced = {-> true }
-        }
     }
 
     /**
