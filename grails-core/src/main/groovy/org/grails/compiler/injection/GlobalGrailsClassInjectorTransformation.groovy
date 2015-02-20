@@ -180,7 +180,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
     }
 
     protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
-        if (GrailsASTUtils.isAssignableFrom(superType, classNode)) {
+        if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
             def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
@@ -200,8 +200,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             } else {
                 props.put(superTypeName, classNodeName)
             }
-            factoriesFile.withObjectOutputStream { OutputStream out ->
-                props.store(out, "Grails Factories File")
+            factoriesFile.withWriter {  Writer writer ->
+                props.store(writer, "Grails Factories File")
             }
             return true
         }

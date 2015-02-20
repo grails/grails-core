@@ -1,6 +1,7 @@
 package org.grails.gradle.plugin.core
 import grails.util.BuildSettings
 import grails.util.Environment
+import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
@@ -21,8 +22,10 @@ import org.gradle.process.JavaForkOptions
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.run.FindMainClassTask
+import org.grails.io.support.FactoriesLoaderSupport
 
 class GrailsGradlePlugin extends GroovyPlugin {
+    public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationContextCommand"
     List<Plugin<Project>> pluginInstancesToApply = [new IntegrationTestGradlePlugin()]
 
     void apply(Project project) {
@@ -130,6 +133,17 @@ class GrailsGradlePlugin extends GroovyPlugin {
                         ]
                     }
                 }
+            }
+        }
+
+
+        def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
+        for(ctxCommand in applicationContextCommands) {
+            def taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
+            def commandName = GrailsNameUtils.getScriptName( GrailsNameUtils.getLogicalName(ctxCommand, "Command") )
+            project.tasks.create(taskName, ApplicationContextCommandTask) {
+                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                command = commandName
             }
         }
     }

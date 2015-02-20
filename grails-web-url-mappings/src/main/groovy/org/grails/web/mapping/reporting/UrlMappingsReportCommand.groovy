@@ -37,7 +37,7 @@ import org.springframework.context.ConfigurableApplicationContext
 @Commons
 class UrlMappingsReportCommand implements ApplicationContextCommand {
 
-    final String name = "url-mappings-report"
+    final String description = "Prints out a report of the project's URL mappings"
 
     @Override
     boolean handle(ConfigurableApplicationContext applicationContext, CommandLine commandLine) {

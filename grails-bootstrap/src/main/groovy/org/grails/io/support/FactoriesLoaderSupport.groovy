@@ -45,9 +45,21 @@ class FactoriesLoaderSupport {
      */
     static String[] loadFactoryNames(Class<?> factoryClass, ClassLoader classLoader = FactoriesLoaderSupport.class.classLoader) {
         String factoryClassName = factoryClass.getName()
+        return loadFactoryNames(factoryClassName, classLoader)
+    }
+
+    /**
+     * Loads the names of the classes from grails.factories without loading the classes themselves
+     *
+     * @param factoryClass The factory class
+     * @param classLoader The ClassLoader
+     *
+     * @return An array of classes that implement the factory class
+     */
+    static String[] loadFactoryNames(String factoryClassName, ClassLoader classLoader = FactoriesLoaderSupport.class.classLoader) {
         try {
-            Map<String,String[]> loadedProperties = loadedPropertiesForClassLoader.get(System.identityHashCode(classLoader))
-            if( loadedProperties  == null) {
+            Map<String, String[]> loadedProperties = loadedPropertiesForClassLoader.get(System.identityHashCode(classLoader))
+            if (loadedProperties == null) {
                 Set<String> allKeys = [] as Set
                 def urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION);
                 Collection<Properties> allProperties = []
@@ -57,9 +69,9 @@ class FactoriesLoaderSupport {
                         properties.load(input)
                     }
                     allProperties << properties
-                    allKeys.addAll((Set<String>)properties.keySet())
+                    allKeys.addAll((Set<String>) properties.keySet())
                 }
-                Map<String,String[]> mergedFactoryNames=[:]
+                Map<String, String[]> mergedFactoryNames = [:]
                 for (String propertyName : allKeys) {
                     Set<String> result = [] as Set
                     for (Properties props : allProperties) {
