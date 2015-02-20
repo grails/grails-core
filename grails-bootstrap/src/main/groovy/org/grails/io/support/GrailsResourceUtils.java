@@ -645,6 +645,37 @@ public class GrailsResourceUtils {
     }
 
     /**
+     * Checks whether the specified path is a Grails path.
+     *
+     * @param path The path to check
+     * @return true if it is a Grails path
+     */
+    public static boolean isProjectSource(String path) {
+        for (Pattern grailsAppResourcePattern : patterns) {
+            Matcher m = grailsAppResourcePattern.matcher(path);
+            if (m.find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the specified path is a Grails path.
+     *
+     * @param r The resoruce to check
+     * @return true if it is a Grails path
+     */
+    public static boolean isProjectSource(Resource r) {
+        try {
+            String file = r.getURL().getFile();
+            return isProjectSource(file) || file.endsWith("GrailsPlugin.groovy");
+        }
+        catch (IOException e) {
+            return false;
+        }
+    }
+    /**
      * Checks whether the specific resources is a Grails resource. A Grails resource is a Groovy or Java class under the grails-app directory
      *
      * @param r The resource to check
