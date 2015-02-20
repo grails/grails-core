@@ -18,6 +18,8 @@ package grails.ui.command
 import grails.dev.commands.ApplicationContextCommandRegistry
 import grails.ui.support.DevelopmentGrailsApplication
 import groovy.transform.CompileStatic
+import org.grails.build.parsing.CommandLine
+import org.grails.build.parsing.CommandLineParser
 import org.springframework.context.ConfigurableApplicationContext
 
 
@@ -49,7 +51,8 @@ class GrailsApplicationContextCommandRunner extends DevelopmentGrailsApplication
             }
 
             try {
-                def result = command.handle(ctx, args)
+                CommandLine commandLine = new CommandLineParser().parse(args)
+                def result = command.handle(ctx, commandLine)
                 result ? System.exit(0) : System.exit(1)
             } catch (Throwable e) {
                 System.err.println("Command execution error: $e.message")

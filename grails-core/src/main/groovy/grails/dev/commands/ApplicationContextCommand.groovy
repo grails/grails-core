@@ -16,6 +16,7 @@
 package grails.dev.commands
 
 import grails.util.Named
+import org.grails.build.parsing.CommandLine
 import org.springframework.context.ConfigurableApplicationContext
 
 
@@ -35,6 +36,6 @@ interface ApplicationContextCommand extends Named {
      * @param args the command arguments
      * @return True if the command was successful
      */
-    boolean handle(ConfigurableApplicationContext applicationContext, String... args)
+    boolean handle(ConfigurableApplicationContext applicationContext, CommandLine commandLine)
 
 }
