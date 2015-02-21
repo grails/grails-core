@@ -180,7 +180,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
     }
 
     protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
-        if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
+        if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)
+                && classNode.name != 'org.grails.plugins.web.filters.FiltersConfigArtefactHandler') {
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
             def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
