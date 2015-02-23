@@ -20,7 +20,12 @@ import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.core.io.support.GrailsFactoriesLoader
-import org.grails.io.support.*
+import org.grails.io.support.AntPathMatcher
+import org.grails.io.support.GrailsResourceUtils
+import org.grails.io.support.UrlResource
+import org.springframework.expression.spel.standard.SpelExpressionParser
+import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.StandardTypeLocator
 
 import java.lang.reflect.Modifier
 /**
@@ -75,7 +80,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         Set<String> transformedClasses = []
         String pluginVersion = null
         ClassNode pluginClassNode = null
-        def compilationTargetDirectory = source.configuration.targetDirectory
+        def compilationTargetDirectory = resolveCompilationTargetDirectory(source)
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
 
         for (ClassNode classNode : classes) {
@@ -151,6 +156,24 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         pluginXmlFile.parentFile.mkdirs()
 
         generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
+    }
+
+    protected File resolveCompilationTargetDirectory(SourceUnit source) {
+        File targetDirectory = source.configuration.targetDirectory
+        if(targetDirectory==null) {
+            targetDirectory = resolveEclipseCompilationTargetDirectory(source)
+        }
+        return targetDirectory
+    }
+
+    File resolveEclipseCompilationTargetDirectory(SourceUnit sourceUnit) {
+        if(sourceUnit.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
+            StandardEvaluationContext context = new StandardEvaluationContext()
+            context.setTypeLocator(new StandardTypeLocator(sourceUnit.getClass().getClassLoader()))
+            context.setRootObject(sourceUnit)
+            return (File)new SpelExpressionParser().parseExpression("eclipseFile.workspace.root.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation.makeAbsolute()).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context)
+        }
+        return null
     }
 
     protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
