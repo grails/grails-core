@@ -289,6 +289,28 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         }
     }
 
+    void testGCreateLinkWithFlowExecutionParamConfigIndOff() {
+        unRegisterRequestDataValueProcessor()
+        request.flowExecutionKey = '12345'
+        def tagLibBean = appCtx.getBean(ApplicationTagLib.name)
+        ga.config.grails.views.enable.flowExecutionKey.param=false
+        tagLibBean.afterPropertiesSet()
+        def template = '<g:createLink controller="foo" action="bar" />'
+
+        assertOutputEquals('/foo/bar', template)
+    }
+
+    void testGCreateLinkWithFlowExecutionParamConfigIndOn() {
+        unRegisterRequestDataValueProcessor()
+        request.flowExecutionKey = '12345'
+        def tagLibBean = appCtx.getBean(ApplicationTagLib.name)
+        ga.config.grails.views.enable.flowExecutionKey.param=true
+        tagLibBean.afterPropertiesSet()
+        
+        def template = '<g:createLink controller="foo" action="bar" />'
+        assertOutputEquals('/foo/bar?execution=12345', template)
+    }
+
     void testCreateLinkWithFlowExecutionKeyAndEvent() {
         unRegisterRequestDataValueProcessor()
         request.flowExecutionKey = '12345'
