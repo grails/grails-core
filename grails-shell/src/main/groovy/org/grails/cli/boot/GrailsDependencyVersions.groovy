@@ -42,7 +42,7 @@ class GrailsDependencyVersions implements Dependencies {
 
     GrailsDependencyVersions(Map<String, String> bomCoords) {
         def grape = Grape.getInstance()
-        grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"http://repo.grails.org/grails/core"])
+        grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"https://repo.grails.org/grails/core"])
         def results = grape.resolve(null, bomCoords)
 
         for(URI u in results) {
