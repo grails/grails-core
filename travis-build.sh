@@ -21,7 +21,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
     echo "Publishing archives"
 
-    if [[ -n $TRAVIS_TAG ]]; then
+    if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
         ./gradlew bintrayUpload || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
 
