@@ -1,11 +1,9 @@
 package org.grails.compiler.injection
-
 import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
-import grails.plugins.GrailsPluginInfo
 import grails.plugins.metadata.GrailsPlugin
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
@@ -14,12 +12,7 @@ import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import groovy.xml.StreamingMarkupBuilder
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.ModuleNode
-import org.codehaus.groovy.ast.PropertyNode
+import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilePhase
@@ -27,14 +20,9 @@ import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.core.io.support.GrailsFactoriesLoader
-import org.grails.io.support.AntPathMatcher
-import org.grails.io.support.FileSystemResource
-import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
-import org.grails.io.support.UrlResource
+import org.grails.io.support.*
 
 import java.lang.reflect.Modifier
-
 /**
  * A global transformation that applies Grails' transformations to classes within a Grails project
  *
@@ -56,21 +44,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         ModuleNode ast = source.getAST();
         List<ClassNode> classes = new ArrayList<>(ast.getClasses());
 
-        URL url = null
-        final String filename = source.name
-        def uriString = source.source.URI.toString()
-        // logback config, ignore
-        if(uriString.startsWith('data:')) return
-
-        Resource resource = new FileSystemResource(filename)
-        if (resource.exists()) {
-            try {
-                url = resource.URL
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-
+        URL url = GrailsASTUtils.getSourceUrl(source);
 
         if(url == null ) return
         if(!GrailsResourceUtils.isProjectSource(new UrlResource(url))) return;
