@@ -12,10 +12,11 @@ echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
 echo "Executing tests"
 ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
 echo "Done."
-echo "Executing integration tests"
-./gradlew --no-daemon --stacktrace --info integrationTest < /dev/null || EXIT_STATUS=$?
-echo "Done."
-
+if [[ $EXIT_STATUS == 0 ]]; then
+  echo "Executing integration tests"
+  ./gradlew --no-daemon --stacktrace --info integrationTest < /dev/null || EXIT_STATUS=$?
+  echo "Done."
+fi
 
 if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
