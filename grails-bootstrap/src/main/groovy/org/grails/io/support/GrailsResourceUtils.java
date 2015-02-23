@@ -694,17 +694,24 @@ public class GrailsResourceUtils {
     public static Resource getViewsDir(Resource resource) {
         if (resource == null) return null;
 
-        try {
-            Resource appDir = getAppDir(resource);
-            return new UrlResource(appDir.getURL().toString() + "/views");
-        }
-        catch (IOException e) {
-            return null;
-        }
+        Resource appDir = getAppDir(resource);
+        if(appDir == null) return null;
+        return appDir.createRelative("views");
     }
 
     public static Resource getAppDir(Resource resource) {
         if (resource == null) return null;
+
+        try {
+            File file = resource.getFile();
+            while(file != null && !file.getName().equals(GRAILS_APP_DIR)) {
+                file = file.getParentFile();
+            }
+            if (file != null) {
+                return new FileSystemResource(file);
+            }
+        } catch (IOException e) {
+        }
 
         try {
             String url = resource.getURL().toString();
