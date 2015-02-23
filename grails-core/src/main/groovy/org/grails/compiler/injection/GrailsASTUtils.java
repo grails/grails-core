@@ -1465,4 +1465,8 @@ public class GrailsASTUtils {
         }
         return url;
     }
+
+    public static URL getSourceUrl(ClassNode classNode) {
+        return getSourceUrl(classNode.getModule().getContext());
+    }
 }
