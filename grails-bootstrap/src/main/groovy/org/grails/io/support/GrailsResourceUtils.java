@@ -708,7 +708,7 @@ public class GrailsResourceUtils {
                 file = file.getParentFile();
             }
             if (file != null) {
-                return new FileSystemResource(file);
+                return new FileSystemResource(file.getAbsolutePath() + '/');
             }
         } catch (IOException e) {
         }
@@ -719,7 +719,7 @@ public class GrailsResourceUtils {
             int i = url.lastIndexOf(GRAILS_APP_DIR);
             if (i > -1) {
                 url = url.substring(0, i+10);
-                return new UrlResource(url);
+                return new UrlResource(url + '/');
             }
 
             return null;
