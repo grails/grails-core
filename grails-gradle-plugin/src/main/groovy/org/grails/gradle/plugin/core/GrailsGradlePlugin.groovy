@@ -25,7 +25,7 @@ import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.io.support.FactoriesLoaderSupport
 
 class GrailsGradlePlugin extends GroovyPlugin {
-    public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationContextCommand"
+    public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     List<Plugin<Project>> pluginInstancesToApply = [new IntegrationTestGradlePlugin()]
 
     void apply(Project project) {

@@ -29,7 +29,22 @@ import org.springframework.context.ConfigurableApplicationContext
  * @author Graeme Rocher
  * @since 3.0
  */
-trait ApplicationContextCommand implements Named, Described {
+trait ApplicationCommand implements Named, Described {
+
+    private ConfigurableApplicationContext applicationContext
+
+    /**
+     * Sets the application context of the command
+     *
+     * @param applicationContext The application context
+     */
+    void setApplicationContext(ConfigurableApplicationContext applicationContext) {
+        this.applicationContext = applicationContext
+    }
+
+    ConfigurableApplicationContext getApplicationContext() {
+        return this.applicationContext
+    }
 
     @Override
     String getName() {
@@ -44,10 +59,9 @@ trait ApplicationContextCommand implements Named, Described {
     /**
      * Handles the command
      *
-     * @param applicationContext The {@link org.springframework.context.ApplicationContext} instance
-     * @param args the command arguments
+     * @param executionContext The execution context
      * @return True if the command was successful
      */
-    abstract boolean handle(ConfigurableApplicationContext applicationContext, CommandLine commandLine)
+    abstract boolean handle(ExecutionContext executionContext)
 
 }

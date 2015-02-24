@@ -28,10 +28,10 @@ import org.grails.core.io.support.GrailsFactoriesLoader
 @CompileStatic
 class ApplicationContextCommandRegistry {
 
-    private static final Map<String, ApplicationContextCommand> commands = [:]
+    private static final Map<String, ApplicationCommand> commands = [:]
 
     static {
-        def registeredCommands = GrailsFactoriesLoader.loadFactories(ApplicationContextCommand)
+        def registeredCommands = GrailsFactoriesLoader.loadFactories(ApplicationCommand)
 
         def iterator = registeredCommands.iterator()
         while(iterator.hasNext()) {
@@ -40,11 +40,11 @@ class ApplicationContextCommandRegistry {
         }
     }
 
-    static Collection<ApplicationContextCommand> findCommands() {
+    static Collection<ApplicationCommand> findCommands() {
         commands.values()
     }
 
-    static ApplicationContextCommand findCommand(String name) {
+    static ApplicationCommand findCommand(String name) {
         commands[name]
     }
 }

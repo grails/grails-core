@@ -40,7 +40,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
 
     public static final ClassNode ARTEFACT_HANDLER_CLASS = ClassHelper.make("grails.core.ArtefactHandler")
-    public static final ClassNode APPLICATION_CONTEXT_COMMAND_CLASS = ClassHelper.make("grails.dev.commands.ApplicationContextCommand")
+    public static final ClassNode APPLICATION_CONTEXT_COMMAND_CLASS = ClassHelper.make("grails.dev.commands.ApplicationCommand")
     public static final ClassNode TRAIT_INJECTOR_CLASS = ClassHelper.make("grails.compiler.traits.TraitInjector")
 
     @Override

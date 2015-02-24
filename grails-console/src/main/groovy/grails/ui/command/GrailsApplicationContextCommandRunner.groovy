@@ -15,13 +15,13 @@
  */
 package grails.ui.command
 
-import grails.core.support.GrailsApplicationAware
 import grails.dev.commands.ApplicationContextCommandRegistry
+import grails.dev.commands.ExecutionContext
 import grails.ui.support.DevelopmentGrailsApplication
 import groovy.transform.CompileStatic
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
-import org.springframework.context.ApplicationContextAware
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ConfigurableApplicationContext
 
 
@@ -54,8 +54,9 @@ class GrailsApplicationContextCommandRunner extends DevelopmentGrailsApplication
 
             try {
                 CommandLine commandLine = new CommandLineParser().parse(args)
-                ctx.autowireCapableBeanFactory.autowireBean(command)
-                def result = command.handle(ctx, commandLine)
+                ctx.autowireCapableBeanFactory.autowireBeanProperties(command, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false)
+                command.applicationContext = ctx
+                def result = command.handle(new ExecutionContext(commandLine))
                 result ? System.exit(0) : System.exit(1)
             } catch (Throwable e) {
                 System.err.println("Command execution error: $e.message")
