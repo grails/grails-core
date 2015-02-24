@@ -1,4 +1,5 @@
 package org.grails.compiler.injection
+
 import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
@@ -23,11 +24,9 @@ import org.grails.core.io.support.GrailsFactoriesLoader
 import org.grails.io.support.AntPathMatcher
 import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.UrlResource
-import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
-import org.springframework.expression.spel.support.StandardTypeLocator
 
 import java.lang.reflect.Modifier
+
 /**
  * A global transformation that applies Grails' transformations to classes within a Grails project
  *
@@ -160,20 +159,10 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
     protected File resolveCompilationTargetDirectory(SourceUnit source) {
         File targetDirectory = source.configuration.targetDirectory
-        if(targetDirectory==null) {
-            targetDirectory = resolveEclipseCompilationTargetDirectory(source)
+        if(targetDirectory==null && source.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
+            targetDirectory = GroovyEclipseCompilationHelper.resolveEclipseCompilationTargetDirectory(source)
         }
         return targetDirectory
-    }
-
-    File resolveEclipseCompilationTargetDirectory(SourceUnit sourceUnit) {
-        if(sourceUnit.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
-            StandardEvaluationContext context = new StandardEvaluationContext()
-            context.setTypeLocator(new StandardTypeLocator(sourceUnit.getClass().getClassLoader()))
-            context.setRootObject(sourceUnit)
-            return (File)new SpelExpressionParser().parseExpression("eclipseFile.workspace.root.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation.makeAbsolute()).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context)
-        }
-        return null
     }
 
     protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
