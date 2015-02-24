@@ -4,7 +4,7 @@ apply plugin: 'maven'
 group = 'org.grails'
 
 repositories {
-  maven { url "http://repo.spring.io/libs-release" }
+  maven { url "https://repo.spring.io/libs-release" }
   mavenLocal()
   mavenCentral()
 

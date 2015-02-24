@@ -43,7 +43,7 @@ ext {
     springLoadedVersion = "1.2.1.RELEASE"
     springBootVersion = "1.2.1.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.1.4.RELEASE"
+    springVersion = "4.1.5.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4"
@@ -93,7 +93,7 @@ allprojects {
         mavenLocal()
         if(isBuildSnapshot) {
             maven { url "https://repo.spring.io/repo"}
-            maven { url "http://repo.grails.org/grails/libs-snapshots-local" }
+            maven { url "https://repo.grails.org/grails/libs-snapshots-local" }
             maven { url "https://repo.gradle.org/gradle/libs-snapshots-local" }
         }
     }

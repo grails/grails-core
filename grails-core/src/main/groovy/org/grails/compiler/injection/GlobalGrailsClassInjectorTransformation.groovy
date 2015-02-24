@@ -1,11 +1,9 @@
 package org.grails.compiler.injection
-
 import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
-import grails.plugins.GrailsPluginInfo
 import grails.plugins.metadata.GrailsPlugin
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
@@ -14,12 +12,7 @@ import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import groovy.xml.StreamingMarkupBuilder
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.ModuleNode
-import org.codehaus.groovy.ast.PropertyNode
+import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilePhase
@@ -28,13 +21,13 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.core.io.support.GrailsFactoriesLoader
 import org.grails.io.support.AntPathMatcher
-import org.grails.io.support.FileSystemResource
 import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
+import org.springframework.expression.spel.standard.SpelExpressionParser
+import org.springframework.expression.spel.support.StandardEvaluationContext
+import org.springframework.expression.spel.support.StandardTypeLocator
 
 import java.lang.reflect.Modifier
-
 /**
  * A global transformation that applies Grails' transformations to classes within a Grails project
  *
@@ -56,21 +49,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         ModuleNode ast = source.getAST();
         List<ClassNode> classes = new ArrayList<>(ast.getClasses());
 
-        URL url = null
-        final String filename = source.name
-        def uriString = source.source.URI.toString()
-        // logback config, ignore
-        if(uriString.startsWith('data:')) return
-
-        Resource resource = new FileSystemResource(filename)
-        if (resource.exists()) {
-            try {
-                url = resource.URL
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-
+        URL url = GrailsASTUtils.getSourceUrl(source);
 
         if(url == null ) return
         if(!GrailsResourceUtils.isProjectSource(new UrlResource(url))) return;
@@ -101,7 +80,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         Set<String> transformedClasses = []
         String pluginVersion = null
         ClassNode pluginClassNode = null
-        def compilationTargetDirectory = source.configuration.targetDirectory
+        def compilationTargetDirectory = resolveCompilationTargetDirectory(source)
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
 
         for (ClassNode classNode : classes) {
@@ -179,8 +158,27 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
     }
 
+    protected File resolveCompilationTargetDirectory(SourceUnit source) {
+        File targetDirectory = source.configuration.targetDirectory
+        if(targetDirectory==null) {
+            targetDirectory = resolveEclipseCompilationTargetDirectory(source)
+        }
+        return targetDirectory
+    }
+
+    File resolveEclipseCompilationTargetDirectory(SourceUnit sourceUnit) {
+        if(sourceUnit.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
+            StandardEvaluationContext context = new StandardEvaluationContext()
+            context.setTypeLocator(new StandardTypeLocator(sourceUnit.getClass().getClassLoader()))
+            context.setRootObject(sourceUnit)
+            return (File)new SpelExpressionParser().parseExpression("eclipseFile.workspace.root.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation.makeAbsolute()).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context)
+        }
+        return null
+    }
+
     protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
-        if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
+        if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)
+                && classNode.name != 'org.grails.plugins.web.filters.FiltersConfigArtefactHandler') {
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
             def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")

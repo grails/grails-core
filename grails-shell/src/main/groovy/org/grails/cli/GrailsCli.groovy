@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package org.grails.cli
+
 import grails.build.logging.GrailsConsole
 import grails.config.ConfigMap
 import grails.io.support.SystemStreamsRedirector
@@ -25,7 +26,6 @@ import jline.UnixTerminal
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
 import jline.internal.NonBlockingInputStream
-import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.ExternalDependency
@@ -47,6 +47,7 @@ import org.grails.config.CodeGenConfig
 import org.grails.exceptions.ExceptionUtils
 
 import java.util.concurrent.*
+
 /**
  * Main class for the Grails command line. Handles interactive mode and running Grails commands within the context of a profile
  *
@@ -354,7 +355,7 @@ class GrailsCli {
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
                         def buildAction = connection.action(new ClasspathBuildAction())
-                        buildAction.colorOutput = true
+                        buildAction.colorOutput = projectContext.console.ansiEnabled
                         buildAction.setStandardOutput(originalStreams.out)
                         buildAction.setStandardError(originalStreams.err)
                         EclipseProject project = buildAction.run()

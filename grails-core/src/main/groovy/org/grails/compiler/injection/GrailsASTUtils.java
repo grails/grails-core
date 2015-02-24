@@ -17,6 +17,8 @@ package org.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
 import grails.compiler.ast.GrailsArtefactClassInjector;
+import grails.core.GrailsDomainClassProperty;
+import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import groovy.lang.Closure;
@@ -24,74 +26,28 @@ import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
 import groovy.transform.TypeChecked;
 import groovy.transform.TypeCheckingMode;
-
-import java.io.File;
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.InnerClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.expr.TupleExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.CatchStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.IfStatement;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.ast.stmt.ThrowStatement;
-import org.codehaus.groovy.ast.stmt.TryCatchStatement;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.VariableScopeVisitor;
 import org.codehaus.groovy.control.Janitor;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import grails.util.GrailsClassUtils;
-import grails.core.GrailsDomainClassProperty;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation;
+import org.grails.io.support.FileSystemResource;
+import org.grails.io.support.Resource;
 import org.springframework.util.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.*;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -1482,5 +1438,35 @@ public class GrailsASTUtils {
         }
         
         return false;
+    }
+
+    /**
+     * Find URL of SourceUnit
+     *
+     * source.getSource().getURI() fails in Groovy-Eclipse compiler
+     *
+     * @param source
+     * @return URL of SourceUnit
+     */
+    public static URL getSourceUrl(SourceUnit source) {
+        URL url = null;
+        final String filename = source.getName();
+        if(filename==null) {
+            return null;
+        }
+
+        Resource resource = new FileSystemResource(filename);
+        if (resource.exists()) {
+            try {
+                url = resource.getURL();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+        return url;
+    }
+
+    public static URL getSourceUrl(ClassNode classNode) {
+        return getSourceUrl(classNode.getModule().getContext());
     }
 }
