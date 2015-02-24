@@ -213,6 +213,7 @@ class GrailsCli {
     }
     
     Boolean handleCommand( CommandLine commandLine ) {
+
         handleCommand(createExecutionContext(commandLine))
     }
     
@@ -222,6 +223,14 @@ class GrailsCli {
                 currentExecutionContext = context
                 if(handleBuiltInCommands(context)) {
                     return true
+                }
+
+                def console = GrailsConsole.getInstance()
+                if(context.getCommandLine().hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
+                    console.setStacktrace(true);
+                }
+                else {
+                    console.setStacktrace(false);
                 }
         
                 if(profile.handleCommand(context)) {
