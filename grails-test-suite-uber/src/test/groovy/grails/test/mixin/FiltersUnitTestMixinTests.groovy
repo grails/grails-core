@@ -2,13 +2,14 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.test.mixin.web.FiltersUnitTestMixin
-
+import grails.test.runtime.FreshRuntime
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 @TestMixin(FiltersUnitTestMixin)
+@FreshRuntime
 class FiltersUnitTestMixinTests {
 
     AuthorController controller

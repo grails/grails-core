@@ -49,8 +49,9 @@ class FiltersGrailsPlugin implements GrailsApplicationAware, ApplicationContextA
     ApplicationContext applicationContext
 
     static final BEANS = { GrailsClass filter ->
+        def app = grailsApplication
         "${filter.fullName}Class"(MethodInvokingFactoryBean) {
-            targetObject = ref("grailsApplication", true)
+            targetObject = app
             targetMethod = "getArtefact"
             arguments = [TYPE, filter.fullName]
         }
