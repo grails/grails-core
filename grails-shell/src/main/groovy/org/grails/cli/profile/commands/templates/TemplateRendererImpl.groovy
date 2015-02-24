@@ -23,6 +23,8 @@ import groovy.transform.CompileStatic
 import org.grails.cli.interactive.completers.ClassNameCompleter
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.cli.profile.commands.io.FileSystemInteractionImpl
 import org.grails.io.support.DefaultResourceLoader
@@ -37,22 +39,25 @@ import org.grails.io.support.ResourceLoader
  * @since 3.0
  */
 @CompileStatic
-class TemplateRendererImpl implements TemplateRenderer {
+class TemplateRendererImpl implements TemplateRenderer, ProfileRepositoryAware {
 
     ExecutionContext executionContext
     Profile profile
+    ProfileRepository profileRepository
     @Delegate FileSystemInteraction fileSystemInteraction
     private Map<String, Template> templateCache = [:]
 
-    TemplateRendererImpl(ExecutionContext executionContext, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
+    TemplateRendererImpl(ExecutionContext executionContext, ProfileRepository profileRepository, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
         this.executionContext = executionContext
+        this.profileRepository = profileRepository
         this.profile = profile
         this.fileSystemInteraction = new FileSystemInteractionImpl(executionContext, resourceLoader)
     }
 
-    TemplateRendererImpl(ExecutionContext executionContext, Profile profile, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
+    TemplateRendererImpl(ExecutionContext executionContext, Profile profile, ProfileRepository profileRepository, ResourceLoader resourceLoader = new DefaultResourceLoader()) {
         this.executionContext = executionContext
         this.profile = profile
+        this.profileRepository = profileRepository
         this.fileSystemInteraction = new FileSystemInteractionImpl(executionContext, resourceLoader)
     }
 
@@ -238,7 +243,8 @@ class TemplateRendererImpl implements TemplateRenderer {
                 def path = "templates/$location"
                 f = new File(profile.profileDir, path)
                 if(!f.exists()) {
-                    for(parent in profile.extends) {
+                    def allProfiles = profileRepository.getProfileAndDependencies(profile)
+                    for(parent in allProfiles) {
                         f = new File(parent.profileDir, path)
                         if(f.exists()) break
                     }

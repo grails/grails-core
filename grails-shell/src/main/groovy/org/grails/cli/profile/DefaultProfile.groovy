@@ -42,6 +42,7 @@ class DefaultProfile implements Profile {
     private Map<String, Object> profileConfig
     private Map<String, Command> commandsByName
     private NavigableMap navigableConfig = new NavigableMap()
+    private ProfileRepository profileRepository
 
     private DefaultProfile(String name, File profileDir) {
         this.name = name
@@ -111,6 +112,9 @@ class DefaultProfile implements Profile {
             def registerCommand = { Command command ->
                 def name = command.name
                 if(!commandsByName.containsKey(name) && !excludes.contains(name)) {
+                    if(command instanceof ProfileRepositoryAware) {
+                        ((ProfileRepositoryAware)command).setProfileRepository(profileRepository)
+                    }
                     commandsByName[name] = command
                     def desc = command.description
                     def synonyms = desc.synonyms
@@ -195,6 +199,7 @@ class DefaultProfile implements Profile {
     }
 
     private void initialize(ProfileRepository repository) {
+        this.profileRepository = repository
         parentProfiles = []
         File profileYml = new File(profileDir, "profile.yml")
         if(profileYml.isFile()) {
