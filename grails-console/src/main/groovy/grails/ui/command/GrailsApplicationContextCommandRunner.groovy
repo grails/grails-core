@@ -93,7 +93,7 @@ class GrailsApplicationContextCommandRunner extends DevelopmentGrailsApplication
             }
 
             def runner = new GrailsApplicationContextCommandRunner(args[0], applicationClass)
-            runner.run((args.size() > 2 ? args[1..-2] : []) as String[])
+            runner.run(args.init() as String[])
         }
         else {
             System.err.println("Missing application class name and script name arguments")
