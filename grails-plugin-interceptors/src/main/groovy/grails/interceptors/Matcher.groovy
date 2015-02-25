@@ -64,6 +64,11 @@ interface Matcher {
     Matcher excludes(Map arguments)
 
     /**
+     * Synonym for {@link Matcher#excludes(groovy.lang.Closure)}
+     */
+    Matcher except(Map arguments)
+
+    /**
      * Adds an exclusion that is calculated by the given closure
      *
      * @param condition The condition, a closure which has full access to the properties of the {@link Interceptor}
