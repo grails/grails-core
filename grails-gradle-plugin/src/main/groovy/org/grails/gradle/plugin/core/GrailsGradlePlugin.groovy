@@ -19,6 +19,7 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.process.JavaForkOptions
+import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.run.FindMainClassTask
@@ -144,6 +145,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.tasks.create(taskName, ApplicationContextCommandTask) {
                 classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
                 command = commandName
+                if (project.hasProperty('args')) {
+                    args(CommandLineParser.translateCommandline(project.args))
+                }
             }
         }
     }
