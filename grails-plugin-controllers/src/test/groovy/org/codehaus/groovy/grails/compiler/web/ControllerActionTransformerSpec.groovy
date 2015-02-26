@@ -29,11 +29,6 @@ class ControllerActionTransformerSpec extends Specification {
             boolean shouldInject(URL url) { true }
         }
 
-        def controllerTraitInjector = new ControllerTraitInjector() {
-            boolean shouldInject(URL url) { true }
-        }
-
-        gcl.traitInjectors = [controllerTraitInjector] as TraitInjector[]
         gcl.classInjectors = [transformer] as ClassInjector[]
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def appCtx = new GrailsWebApplicationContext()
@@ -95,6 +90,7 @@ class ControllerActionTransformerSpec extends Specification {
     void 'Test that a controller may have an abstract method - GRAILS-10509'() {
         given:
         def controllerClass = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             abstract class SomeController {
                 def someAction() {}
                 abstract someAbstractMethod()
@@ -116,6 +112,7 @@ class ControllerActionTransformerSpec extends Specification {
     void 'Test action overiding'() {
         given:
             def superControllerClass = gcl.parseClass('''
+            @grails.artefact.Artefact('Controller')
             class SuperController {
                 def methodAction() {
                     [ actionInvoked: 'SuperController.methodAction' ]
