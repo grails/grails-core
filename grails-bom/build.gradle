@@ -134,7 +134,7 @@ bintray {
     user = u
     key = p
     publications = ['maven']
-    publish = true
+    publish = bintrayPublish
     pkg {
         repo = 'grails-core'
         userOrg = 'grails'

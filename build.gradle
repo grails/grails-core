@@ -18,6 +18,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
+    bintrayPublish = false
     grailsVersion = '3.0.0.M2'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
@@ -402,7 +403,7 @@ subprojects { project ->
             user = u
             key = p
             publications = ['maven']
-            publish = false
+            publish = bintrayPublish
             pkg {
                 repo = 'grails-core'
                 userOrg = 'grails'

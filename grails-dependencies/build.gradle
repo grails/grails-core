@@ -131,7 +131,7 @@ bintray {
     user = u
     key = p
     publications = ['maven']
-    publish = true
+    publish = bintrayPublish
     pkg {
         repo = 'grails-core'
         userOrg = 'grails'
@@ -149,7 +149,7 @@ bintray {
                 passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
             }
             mavenCentralSync {
-                sync = true
+                sync = false
                 def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
                 def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
                 user = ossUser
