@@ -29,7 +29,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
     echo "Publishing archives"
 
     if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-        ./gradlew bintrayUpload || EXIT_STATUS=$?
+        ./gradlew publish || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
 
         version="$TRAVIS_TAG"

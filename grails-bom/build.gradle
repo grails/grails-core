@@ -4,16 +4,19 @@ apply plugin: 'com.jfrog.bintray'
 
 publishing {
 
-    if(isBuildSnapshot) {
-        repositories {
-            maven {
-                credentials {
-                    def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                    def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                    username = u
-                    password = p
-                }
+    repositories {
+        maven {
+            credentials {
+                def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                username = u
+                password = p
+            }
+            if(isBuildSnapshot) {
                 url  "https://repo.grails.org/grails/libs-snapshots-local"
+            }
+            else {
+                url "https://repo.grails.org/grails/libs-releases-local"
             }
         }
     }

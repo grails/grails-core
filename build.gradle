@@ -19,7 +19,7 @@ ext.providedDeps = []
 ext.provided = { providedDeps << it }
 ext {
     bintrayPublish = false
-    grailsVersion = '3.0.0.M2'
+    grailsVersion = '3.0.0.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -310,16 +310,19 @@ subprojects { project ->
 
         publishing {
 
-            if(isBuildSnapshot) {
-                repositories {
-                    maven {
-                        credentials {
-                            def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                            def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                            username = u
-                            password = p
-                        }
+            repositories {
+                maven {
+                    credentials {
+                        def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                        def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                        username = u
+                        password = p
+                    }
+                    if(isBuildSnapshot) {
                         url  "https://repo.grails.org/grails/libs-snapshots-local"
+                    }
+                    else {
+                        url "https://repo.grails.org/grails/libs-releases-local"
                     }
                 }
             }
