@@ -157,7 +157,7 @@ subprojects { project ->
     sourceCompatibility = "1.7"
     targetCompatibility = "1.7"
 
-    if(project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test)/) {
+    if(project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test|grails-compat)/) {
         dependencies {
             provided "javax.servlet:javax.servlet-api:$servletApiVersion"
             // MockHttpServletRequest/Response/Context used in many classes

@@ -21,7 +21,7 @@ dependencies {
     }
 
     // Used by Spring AOP
-    optional 'aopalliance:aopalliance:1.0',
+    provided 'aopalliance:aopalliance:1.0',
              "org.aspectj:aspectjrt:$aspectjVersion"
 
     runtime ( 'xalan:serializer:2.7.1' ) {

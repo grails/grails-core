@@ -5,7 +5,7 @@ dependencies {
     compile project(":grails-web-common")
     compile project(":grails-web-gsp")
     compile project(":grails-web-databinding")
-    optional project(":grails-web-fileupload")
+    provided project(":grails-web-fileupload")
     compile project(":grails-web-url-mappings")
     compile project(":grails-web-jsp")
     compile project(":grails-web-mvc")

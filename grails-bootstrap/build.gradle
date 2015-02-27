@@ -1,38 +1,18 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-configurations {
-    optional
-}
 dependencies {
-
-    compile( "org.codehaus.groovy:groovy-xml:$groovyVersion" ){
-        ext.notInPom = true
-    }
+    provided ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
     compile "org.yaml:snakeyaml:1.14"
 
-    optional ("org.fusesource.jansi:jansi:$jansiVersion")
-    optional("jline:jline:$jlineVersion")
-    optional("net.java.dev.jna:jna:$jnaVersion")
+    provided ("org.fusesource.jansi:jansi:$jansiVersion")
+    provided("jline:jline:$jlineVersion")
+    provided("net.java.dev.jna:jna:$jnaVersion")
 
     // Ant
     compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
-
 }
-
-
-sourceSets {
-    main {
-        compileClasspath += files(configurations.optional)
-    }
-    test {
-        compileClasspath += files(configurations.optional)
-        runtimeClasspath += files(configurations.optional)
-    }
-}
-javadoc.classpath += files(configurations.optional)
 
 processResources {
     inputs.property "version", version
     filter(ReplaceTokens, tokens:[version:version])
 }
-

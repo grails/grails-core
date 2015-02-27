@@ -1,6 +1,3 @@
-configurations {
-    optional
-}
 dependencies {
     compile project(':grails-plugin-mimetypes'),
             project(':grails-plugin-controllers'),
@@ -8,25 +5,12 @@ dependencies {
 
     // These dependencies are not required, but due to a Groovy compiler bug they are loaded by Groovy and hence
     // have to be on the path for compilation even though they shouldn't be
-    optional "org.apache.ant:ant:${antVersion}"
-    optional "jline:jline:$jlineVersion"
-    optional "org.fusesource.jansi:jansi:$jansiVersion"
-    optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
+    provided "org.apache.ant:ant:${antVersion}"
+    provided "jline:jline:$jlineVersion"
+    provided "org.fusesource.jansi:jansi:$jansiVersion"
+    provided("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         exclude group:'commons-cli', module:'commons-cli'
         exclude group:'org.apache.ant', module:'ant'
     }
-    optional "org.apache.ivy:ivy:${ivyVersion}"
-
+    provided "org.apache.ivy:ivy:${ivyVersion}"
 }
-
-sourceSets {
-    main {
-        compileClasspath += files(configurations.optional)
-    }
-    test {
-        compileClasspath += files(configurations.optional)
-        runtimeClasspath += files(configurations.optional)
-    }
-}
-javadoc.classpath += files(configurations.optional)
-
