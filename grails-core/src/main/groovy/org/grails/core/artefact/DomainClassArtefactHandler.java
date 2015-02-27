@@ -16,26 +16,23 @@
 package org.grails.core.artefact;
 
 import grails.core.*;
+import grails.core.support.GrailsApplicationAware;
 import grails.persistence.Entity;
 import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.security.CodeSource;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import grails.core.support.GrailsApplicationAware;
 import org.codehaus.groovy.ast.ClassNode;
+import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
 import org.grails.validation.ConstraintEvalUtils;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.
@@ -75,14 +72,9 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         if(classNode == null) return false;
         if(!isValidArtefactClassNode(classNode, classNode.getModifiers())) return false;
 
-        URI uri = classNode.getModule().getContext().getSource().getURI();
-
-        if(uri != null) {
-            try {
-                return GrailsResourceUtils.isDomainClass(uri.toURL());
-            } catch (MalformedURLException e) {
-                return super.isArtefact(classNode);
-            }
+        URL url = GrailsASTUtils.getSourceUrl(classNode);
+        if(url != null) {
+            return GrailsResourceUtils.isDomainClass(url);
         }
         else {
             return super.isArtefact(classNode);

@@ -127,6 +127,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals "/foo/test;jsessionid=test", template
 
         ga.config.grails.views.enable.jsessionid=false
+        ga.config['grails.views.enable.jsessionid']=false
         tagLibBean.afterPropertiesSet()
         assertFalse(tagLibBean.@useJsessionId)
         assertOutputEquals "/foo/test", template
@@ -145,6 +146,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals "/foo/test?requestDataValueProcessorParamName=paramValue;jsessionid=test", template
 
         ga.config.grails.views.enable.jsessionid=false
+        ga.config['grails.views.enable.jsessionid']=false
         tagLibBean.afterPropertiesSet()
         assertFalse(tagLibBean.@useJsessionId)
         assertOutputEquals "/foo/test?requestDataValueProcessorParamName=paramValue", template

@@ -1,3 +1,6 @@
+configurations {
+    optional
+}
 dependencies {
     compile("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
@@ -12,13 +15,20 @@ dependencies {
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
     runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
 
-    runtime 'hsqldb:hsqldb:1.8.0.10', {
-        ext.notInPom = true
-    }
+    optional 'hsqldb:hsqldb:1.8.0.10'
 
-    runtime 'com.h2database:h2:1.3.176', {
-        ext.notInPom = true
-    }
+    optional 'com.h2database:h2:1.3.176'
 
     compile project(":grails-core")
 }
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
+}
+javadoc.classpath += files(configurations.optional)

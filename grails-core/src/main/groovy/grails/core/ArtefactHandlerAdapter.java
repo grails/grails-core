@@ -18,6 +18,7 @@ package grails.core;
 import groovy.lang.Closure;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
+import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.exceptions.GrailsRuntimeException;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
@@ -27,7 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.net.URI;
+import java.net.URL;
 
 /**
  * Adapter for the {@link grails.core.ArtefactHandler} interface
@@ -81,10 +82,11 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
     @Override
     public boolean isArtefact(ClassNode classNode) {
         int modifiers = classNode.getModifiers();
-        URI uri = classNode.getModule().getContext().getSource().getURI();
-        if(uri == null) return false;
+
+        URL url = GrailsASTUtils.getSourceUrl(classNode);
+        if(url == null) return false;
         try {
-            UrlResource resource = new UrlResource(uri);
+            UrlResource resource = new UrlResource(url);
             if(!isArtefactResource(resource)) return false;
         } catch (IOException e) {
             return false;

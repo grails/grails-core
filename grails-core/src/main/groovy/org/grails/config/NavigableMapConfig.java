@@ -161,9 +161,19 @@ public abstract class NavigableMapConfig implements Config {
         Object originalValue = configMap.get(key);
         if(originalValue == null && key.contains(".")) {
             originalValue = configMap.navigate(key.split("\\."));
+            if(originalValue != null) {
+                try {
+                    configMap.put(key, originalValue);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
         }
-        T value = conversionService.convert(originalValue, targetType);
-        return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+        if(originalValue != null) {
+            T value = conversionService.convert(originalValue, targetType);
+            return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+        }
+        return defaultValue;
     }
 
     @Override

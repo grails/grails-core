@@ -3,7 +3,7 @@ dependencies {
         exclude group:'org.multiverse', module:'multiverse-core'
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
-    compile 'io.projectreactor:reactor-core:2.0.0.BUILD-SNAPSHOT'
+    compile 'io.projectreactor:reactor-core:2.0.0.RC1'
 }
 
 eclipse {

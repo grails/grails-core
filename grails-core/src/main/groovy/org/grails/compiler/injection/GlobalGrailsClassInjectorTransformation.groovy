@@ -5,7 +5,6 @@ import grails.compiler.ast.ClassInjector
 import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
-import grails.plugins.GrailsPluginInfo
 import grails.plugins.metadata.GrailsPlugin
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
@@ -14,12 +13,7 @@ import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import groovy.xml.StreamingMarkupBuilder
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.ModuleNode
-import org.codehaus.groovy.ast.PropertyNode
+import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilePhase
@@ -28,9 +22,7 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.core.io.support.GrailsFactoriesLoader
 import org.grails.io.support.AntPathMatcher
-import org.grails.io.support.FileSystemResource
 import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
 
 import java.lang.reflect.Modifier
@@ -46,7 +38,9 @@ import java.lang.reflect.Modifier
 class GlobalGrailsClassInjectorTransformation implements ASTTransformation, CompilationUnitAware {
 
 
-    public static final String ARTEFACT_HANDLER_CLASS = "grails.core.ArtefactHandler"
+    public static final ClassNode ARTEFACT_HANDLER_CLASS = ClassHelper.make("grails.core.ArtefactHandler")
+    public static final ClassNode APPLICATION_CONTEXT_COMMAND_CLASS = ClassHelper.make("grails.dev.commands.ApplicationCommand")
+    public static final ClassNode TRAIT_INJECTOR_CLASS = ClassHelper.make("grails.compiler.traits.TraitInjector")
 
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
@@ -54,23 +48,10 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         ModuleNode ast = source.getAST();
         List<ClassNode> classes = new ArrayList<>(ast.getClasses());
 
-        URL url = null
-        final String filename = source.name
-        def uriString = source.source.URI.toString()
-        // logback config, ignore
-        if(uriString.startsWith('data:')) return
+        URL url = GrailsASTUtils.getSourceUrl(source);
 
-        Resource resource = new FileSystemResource(filename)
-        if (resource.exists()) {
-            try {
-                url = resource.URL
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-
-
-        if(url == null || !GrailsResourceUtils.isGrailsResource(new UrlResource(url))) return
+        if(url == null ) return
+        if(!GrailsResourceUtils.isProjectSource(new UrlResource(url))) return;
 
 
 
@@ -98,13 +79,14 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         Set<String> transformedClasses = []
         String pluginVersion = null
         ClassNode pluginClassNode = null
-        def compilationTargetDirectory = source.configuration.targetDirectory
+        def compilationTargetDirectory = resolveCompilationTargetDirectory(source)
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
 
         for (ClassNode classNode : classes) {
             def projectName = classNode.getNodeMetaData("projectName")
             def projectVersion = classNode.getNodeMetaData("projectVersion")
             pluginVersion = projectVersion
+
 
 
             def classNodeName = classNode.name
@@ -122,6 +104,15 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             if(updateGrailsFactoriesWithType(classNode, ARTEFACT_HANDLER_CLASS, compilationTargetDirectory)) {
                 continue
             }
+            if(updateGrailsFactoriesWithType(classNode, APPLICATION_CONTEXT_COMMAND_CLASS, compilationTargetDirectory)) {
+                continue
+            }
+            if(updateGrailsFactoriesWithType(classNode, TRAIT_INJECTOR_CLASS, compilationTargetDirectory)) {
+                continue
+            }
+
+            if(!GrailsResourceUtils.isGrailsResource(new UrlResource(url))) continue;
+
 
             if(projectName && projectVersion) {
                 GrailsASTUtils.addAnnotationOrGetExisting(classNode, GrailsPlugin, [name: GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(projectName.toString()), version:projectVersion])
@@ -166,27 +157,37 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
     }
 
-    protected boolean updateGrailsFactoriesWithType(ClassNode classNode, String superType, File compilationTargetDirectory) {
-        if (GrailsASTUtils.isSubclassOf(classNode, superType)) {
+    protected File resolveCompilationTargetDirectory(SourceUnit source) {
+        File targetDirectory = source.configuration.targetDirectory
+        if(targetDirectory==null && source.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
+            targetDirectory = GroovyEclipseCompilationHelper.resolveEclipseCompilationTargetDirectory(source)
+        }
+        return targetDirectory
+    }
+
+    protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
+        if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
             def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
             factoriesFile.parentFile.mkdirs()
             def props = new Properties()
+            def superTypeName = superType.getName()
             if (factoriesFile.exists()) {
                 // update
                 factoriesFile.withInputStream { InputStream input ->
                     props.load(input)
                 }
-                def existing = props.getProperty(superType)
+
+                def existing = props.getProperty(superTypeName)
                 if (existing != classNodeName) {
-                    props.put(superType, [existing, classNodeName].join(','))
+                    props.put(superTypeName, [existing, classNodeName].join(','))
                 }
             } else {
-                props.put(superType, classNodeName)
+                props.put(superTypeName, classNodeName)
             }
-            factoriesFile.withObjectOutputStream { OutputStream out ->
-                props.store(out, "Grails Factories File")
+            factoriesFile.withWriter {  Writer writer ->
+                props.store(writer, "Grails Factories File")
             }
             return true
         }

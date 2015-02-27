@@ -98,8 +98,10 @@ withConfig(configuration) {
         projectTasks.getByName('classes').dependsOn(copyAstClasses)
         project.processResources {
             rename "application.yml", "plugin.yml"
-            exclude "logback.groovy"
             exclude "spring/resources.groovy"
+        }
+        project.jar {
+            exclude "logback.groovy"
         }
         project.compileGroovy {
             groovyOptions.configurationScript = configFile

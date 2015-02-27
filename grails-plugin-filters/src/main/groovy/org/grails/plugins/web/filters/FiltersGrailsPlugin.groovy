@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.filters
 
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
@@ -35,7 +36,7 @@ import org.springframework.context.ApplicationContextAware
  *
  * @since 1.0
  */
-class FiltersGrailsPlugin implements GrailsApplicationAware, ApplicationContextAware{
+class FiltersGrailsPlugin extends Plugin implements GrailsApplicationAware, ApplicationContextAware{
 
     private static final String TYPE = FiltersConfigArtefactHandler.TYPE
     private static final Log LOG = LogFactory.getLog(FiltersGrailsPlugin)
@@ -45,44 +46,50 @@ class FiltersGrailsPlugin implements GrailsApplicationAware, ApplicationContextA
     def artefacts = [FiltersConfigArtefactHandler]
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
 
-    GrailsApplication grailsApplication
-    ApplicationContext applicationContext
 
-    static final BEANS = { GrailsClass filter ->
-        "${filter.fullName}Class"(MethodInvokingFactoryBean) {
-            targetObject = ref("grailsApplication", true)
-            targetMethod = "getArtefact"
-            arguments = [TYPE, filter.fullName]
-        }
-        "${filter.fullName}"(filter.clazz) { bean ->
-            bean.singleton = true
-            bean.autowire = "byName"
-        }
-    }
-
-    def doWithSpring = {
+    @Override
+    Closure doWithSpring() {{->
         filterInterceptor(CompositeInterceptor)
-
-        for (filter in application.getArtefacts(TYPE)) {
-            def callable = BEANS.curry(filter)
-            callable.delegate = delegate
-            callable.call()
+        def app = grailsApplication
+        for (filter in app.getArtefacts(TYPE)) {
+            "${filter.fullName}Class"(MethodInvokingFactoryBean) {
+                targetObject = app
+                targetMethod = "getArtefact"
+                arguments = [TYPE, filter.fullName]
+            }
+            "${filter.fullName}"(filter.clazz) { bean ->
+                bean.singleton = true
+                bean.autowire = "byName"
+            }
         }
-    }
+    }}
 
+    @Override
     @CompileStatic
-    def doWithApplicationContext(ApplicationContext ctx) {
-        reloadFilters(grailsApplication, ctx)
+    void doWithApplicationContext() {
+        reloadFilters(grailsApplication, applicationContext)
     }
 
-    def onChange = { event ->
-
+    @Override
+    void onChange(Map<String, Object> event) {
         LOG.debug("onChange: $event")
 
         // Get the new or modified filter and (re-)register the associated beans
-        def newFilter = event.application.addArtefact(TYPE, event.source)
-        beans(BEANS.curry(newFilter)).registerBeans(event.ctx)
-        FiltersGrailsPlugin.reloadFilters(grailsApplication, event.ctx)
+        def app = grailsApplication
+        def newFilter = app.addArtefact(TYPE, (Class)event.source)
+
+        beans {
+            "${newFilter.fullName}Class"(MethodInvokingFactoryBean) {
+                targetObject = app
+                targetMethod = "getArtefact"
+                arguments = [TYPE, newFilter.fullName]
+            }
+            "${newFilter.fullName}"(newFilter.clazz) { bean ->
+                bean.singleton = true
+                bean.autowire = "byName"
+            }
+        }
+        FiltersGrailsPlugin.reloadFilters(grailsApplication, applicationContext)
     }
 
     static void reloadFilters(GrailsApplication application, ApplicationContext applicationContext) {

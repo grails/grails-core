@@ -30,7 +30,9 @@ import org.grails.cli.profile.Profile
  */
 class ApplicationContextCommandFactory implements CommandFactory {
     @Override
-    Collection<Command> findCommands(Profile profile) {
+    Collection<Command> findCommands(Profile profile, boolean inherited) {
+        if(inherited) return Collections.emptyList()
+
         try {
             def classLoader = Thread.currentThread().contextClassLoader
             def registry = classLoader.loadClass("grails.dev.commands.ApplicationContextCommandRegistry")

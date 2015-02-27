@@ -44,12 +44,14 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     private static final Log LOG = LogFactory.getLog(Interceptor)
 
-    List<Interceptor> interceptors = []
+    protected List<Interceptor> interceptors = []
+    protected List<Interceptor> reverseInterceptors = []
 
     @Autowired(required = false)
     @CompileDynamic
     void setInterceptors(Interceptor[] interceptors) {
         this.interceptors = interceptors.sort(new OrderComparator()) as List<Interceptor>
+        this.reverseInterceptors = this.interceptors.reverse()
         if(LOG.isDebugEnabled()) {
             LOG.debug("Computed interceptor execution order:")
             for(Interceptor i in interceptors) {
@@ -74,11 +76,11 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     @Override
     void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        if(interceptors) {
+        if(reverseInterceptors) {
             if(modelAndView != null) {
                 request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
             }
-            for(i in interceptors) {
+            for(i in reverseInterceptors) {
                 if(i.doesMatch()) {
                     if( !i.after() ) {
                         modelAndView.setView(null)
@@ -93,8 +95,8 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
     @Override
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         request.setAttribute(Matcher.THROWABLE, ex)
-        if(interceptors) {
-            for(i in interceptors) {
+        if(reverseInterceptors) {
+            for(i in reverseInterceptors) {
                 if(i.doesMatch(request)) {
                     i.afterView()
                 }

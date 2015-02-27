@@ -122,43 +122,6 @@ task sourcesJars(type: Sync) {
 }
 
 
-task installResources(type: Copy) {
-    into "$buildDir/home-dir" // not actually used, but has to be set to something
-
-    into(homeLibDir.name) {
-        from('grails-resources/src/grails/home/tests')
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-    }
-
-    // the fileMode property above should take care of the chmod work, but
-    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
-    doLast {
-        ant.copy(todir:projectDir) {
-            fileset(dir:"$buildDir/home-dir")
-        }
-
-        ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
-    }
-
-    into(homeConfDir.name) {
-        from("grails-resources/src/grails/home/conf")
-
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
-        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
-        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
-        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
-        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
-        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
-        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
-    }
-
-    into ("$homeSrcDir.name/war/WEB-INF") {
-        from "grails-resources/src/war/WEB-INF"
-    }
-}
-
 task grailsCreateStartScripts(type: GrailsCreateStartScripts) {
     description = "Creates OS specific scripts to run grails-shell as a JVM application."
     mainClassName = 'org.grails.cli.GrailsCli'
@@ -198,7 +161,7 @@ class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateSt
     }
 }
 
-task install(dependsOn: [populateDependencies, installResources, grailsCreateStartScripts] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }
+task install(dependsOn: [populateDependencies, grailsCreateStartScripts] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }
                                                                                                         *.collect { Project p -> p.tasks.withType(PublishToMavenLocal)})
 
 task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
@@ -210,18 +173,11 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
 
     into("grails-$grailsVersion") {
         from(projectDir) {
-            include 'bin/grails', 'bin/grails.bat', 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/", 'build.properties'
+            include 'bin/grails', 'bin/grails.bat', 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/"
             exclude 'ant/bin', 'src/grails', 'src/war'
         }
         from(docs.destinationDir) {
             into "doc"
-        }
-        from('grails-resources/src/grails/home/docs/README') {
-            filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        }
-        from('grails-resources/src/grails/home/tests') {
-            into "src/resources/tests"
-            filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         }
         from("conf") {
             into "conf"
@@ -229,11 +185,6 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from(homeDistDir) {
             into "dist"
             exclude "*.zip"
-        }
-        from("grails-resources/src/grails/grails-macros.xml") {
-            into "src/grails"
-            filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-            filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         }
     }
 }

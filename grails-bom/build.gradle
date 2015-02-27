@@ -4,16 +4,19 @@ apply plugin: 'com.jfrog.bintray'
 
 publishing {
 
-    if(isBuildSnapshot) {
-        repositories {
-            maven {
-                credentials {
-                    def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                    def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                    username = u
-                    password = p
-                }
+    repositories {
+        maven {
+            credentials {
+                def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                username = u
+                password = p
+            }
+            if(isBuildSnapshot) {
                 url  "https://repo.grails.org/grails/libs-snapshots-local"
+            }
+            else {
+                url "https://repo.grails.org/grails/libs-releases-local"
             }
         }
     }
@@ -69,6 +72,28 @@ publishing {
                                     if(sub.name == 'grails-dependencies') {
                                         mkp.type 'pom'
                                     }
+
+                                    if(sub.name == 'grails-bootstrap') {
+                                        mkp.exclusions {
+                                            mkp.exclusion {
+                                                mkp.groupId 'jline'
+                                                mkp.artifactId 'jline'
+                                            }
+                                            mkp.exclusion {
+                                                mkp.groupId 'org.fusesource.jansi'
+                                                mkp.artifactId 'jansi'
+                                            }
+                                            mkp.exclusion {
+                                                mkp.groupId 'net.java.dev.jna'
+                                                mkp.artifactId 'jna'
+                                            }
+                                            mkp.exclusion {
+                                                mkp.groupId 'org.codehaus.groovy'
+                                                mkp.artifactId 'groovy-ant'
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
 
@@ -112,7 +137,7 @@ bintray {
     user = u
     key = p
     publications = ['maven']
-    publish = true
+    publish = bintrayPublish
     pkg {
         repo = 'grails-core'
         userOrg = 'grails'

@@ -1,9 +1,3 @@
-package org.grails.cli.profile.commands.templates
-
-import grails.codegen.model.Model
-import groovy.transform.CompileDynamic
-import org.grails.io.support.Resource
-
 /*
  * Copyright 2014 original authors
  *
@@ -19,9 +13,19 @@ import org.grails.io.support.Resource
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.cli.profile.commands.templates
+
+import grails.codegen.model.Model
+import groovy.transform.CompileDynamic
+import org.grails.io.support.Resource
+
+
 
 /**
- * @author graemerocher
+ * API for locating and rendering templates in the code generation layer
+ *
+ * @author Graeme Rocher
+ * @since 3.0
  */
 interface TemplateRenderer {
 

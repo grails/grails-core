@@ -645,6 +645,37 @@ public class GrailsResourceUtils {
     }
 
     /**
+     * Checks whether the specified path is a Grails path.
+     *
+     * @param path The path to check
+     * @return true if it is a Grails path
+     */
+    public static boolean isProjectSource(String path) {
+        for (Pattern grailsAppResourcePattern : patterns) {
+            Matcher m = grailsAppResourcePattern.matcher(path);
+            if (m.find()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the specified path is a Grails path.
+     *
+     * @param r The resoruce to check
+     * @return true if it is a Grails path
+     */
+    public static boolean isProjectSource(Resource r) {
+        try {
+            String file = r.getURL().getFile();
+            return isProjectSource(file) || file.endsWith("GrailsPlugin.groovy");
+        }
+        catch (IOException e) {
+            return false;
+        }
+    }
+    /**
      * Checks whether the specific resources is a Grails resource. A Grails resource is a Groovy or Java class under the grails-app directory
      *
      * @param r The resource to check
@@ -663,17 +694,24 @@ public class GrailsResourceUtils {
     public static Resource getViewsDir(Resource resource) {
         if (resource == null) return null;
 
-        try {
-            Resource appDir = getAppDir(resource);
-            return new UrlResource(appDir.getURL().toString() + "/views");
-        }
-        catch (IOException e) {
-            return null;
-        }
+        Resource appDir = getAppDir(resource);
+        if(appDir == null) return null;
+        return appDir.createRelative("views");
     }
 
     public static Resource getAppDir(Resource resource) {
         if (resource == null) return null;
+
+        try {
+            File file = resource.getFile();
+            while(file != null && !file.getName().equals(GRAILS_APP_DIR)) {
+                file = file.getParentFile();
+            }
+            if (file != null) {
+                return new FileSystemResource(file.getAbsolutePath() + '/');
+            }
+        } catch (IOException e) {
+        }
 
         try {
             String url = resource.getURL().toString();
@@ -681,7 +719,7 @@ public class GrailsResourceUtils {
             int i = url.lastIndexOf(GRAILS_APP_DIR);
             if (i > -1) {
                 url = url.substring(0, i+10);
-                return new UrlResource(url);
+                return new UrlResource(url + '/');
             }
 
             return null;

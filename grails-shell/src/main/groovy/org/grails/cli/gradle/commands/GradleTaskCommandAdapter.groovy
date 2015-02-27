@@ -15,6 +15,7 @@
  */
 package org.grails.cli.gradle.commands
 
+import grails.util.Described
 import grails.util.GrailsNameUtils
 import grails.util.Named
 import groovy.transform.CompileDynamic
@@ -44,7 +45,14 @@ class GradleTaskCommandAdapter implements ProfileCommand {
 
     @Override
     CommandDescription getDescription() {
-        return new CommandDescription(adapted.name, "")
+        String description
+        if(adapted instanceof Described) {
+            description = ((Described)adapted).description
+        }
+        else {
+            description = ""
+        }
+        return new CommandDescription(adapted.name, description)
     }
 
     @Override
@@ -52,7 +60,13 @@ class GradleTaskCommandAdapter implements ProfileCommand {
     boolean handle(ExecutionContext executionContext) {
         GradleInvoker invoker = new GradleInvoker(executionContext)
 
-        invoker."${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(adapted.name)}"()
+        def commandLine = executionContext.commandLine
+        if (commandLine.remainingArgs || commandLine.undeclaredOptions) {
+            invoker."${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(adapted.name)}"("-Pargs=${commandLine.remainingArgsWithOptionsString}")
+        } else {
+            invoker."${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(adapted.name)}"()
+        }
+
         return true
     }
 

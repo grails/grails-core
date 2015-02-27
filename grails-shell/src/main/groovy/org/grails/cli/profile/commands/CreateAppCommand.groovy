@@ -88,7 +88,9 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                     appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
                 }
             }
-            executionContext.console.addStatus("Application created at $targetDirectory.absolutePath")
+            executionContext.console.addStatus(
+                "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
+            )
             return true
         }
         else {

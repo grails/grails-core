@@ -145,6 +145,11 @@ class UrlMappingMatcher implements Matcher {
     }
 
     @Override
+    Matcher except(Map arguments) {
+        excludes(arguments)
+    }
+
+    @Override
     Matcher excludes(Closure<Boolean> condition) {
         excludes << new ClosureExclude(interceptor, condition)
         return this

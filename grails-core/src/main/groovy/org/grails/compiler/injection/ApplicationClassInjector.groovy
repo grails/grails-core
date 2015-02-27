@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 package org.grails.compiler.injection
-
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GrailsArtefactClassInjector
 import grails.dev.Support
 import grails.io.ResourceUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.ListExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
@@ -38,12 +34,10 @@ import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
 import org.grails.core.artefact.ApplicationArtefactHandler
 import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
 import org.springframework.util.ClassUtils
 
 import java.lang.reflect.Modifier
-
 /**
  * Injector for the 'Application' class
  *
@@ -92,7 +86,7 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                     def collectionClassNode = GrailsASTUtils.replaceGenericsPlaceholders(ClassHelper.make(Collection), [E: ClassHelper.make(String)])
 
                     def packageNamesBody = new BlockStatement()
-                    def grailsAppDir = GrailsResourceUtils.getAppDir(new UrlResource(source.getSource().URI))
+                    def grailsAppDir = GrailsResourceUtils.getAppDir(new UrlResource(GrailsASTUtils.getSourceUrl(source)))
                     if(grailsAppDir.exists()) {
 
                         def packageNames = ResourceUtils.getProjectPackageNames(grailsAppDir.file.parentFile).collect() { String str -> new ConstantExpression(str) }

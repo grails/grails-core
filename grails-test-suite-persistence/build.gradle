@@ -36,6 +36,8 @@ dependencies {
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
     }
+
+    testRuntime 'com.h2database:h2:1.3.176'
 }
 
 test {

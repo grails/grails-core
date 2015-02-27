@@ -40,7 +40,7 @@ class GroovyScriptCommandTransform implements ASTTransformation {
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
         for(ClassNode cNode in source.AST.classes) {
-            if(cNode.superClass.name == "org.grails.cli.profile.commands.script.GroovyScriptCommmand")
+            if(cNode.superClass.name == "org.grails.cli.profile.commands.script.GroovyScriptCommand")
                 new CommandScriptTransformer(source, cNode).visitClass(cNode)
         }
     }

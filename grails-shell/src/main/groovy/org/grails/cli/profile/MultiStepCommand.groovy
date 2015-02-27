@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 package org.grails.cli.profile
+
+import org.grails.cli.profile.commands.events.CommandEvents
+
 /**
  * A command that executes multiple steps
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-abstract class MultiStepCommand implements ProfileCommand {
+abstract class MultiStepCommand implements ProfileCommand, CommandEvents {
 
     String name
     Profile profile
@@ -42,11 +45,13 @@ abstract class MultiStepCommand implements ProfileCommand {
             context.console.info("${description.usage}")
             return true
         }
+        notify("${name}Start", context)
         for(AbstractStep step : getSteps()) {
             if(!step.handle(context)) {
                 break
             }
         }
+        notify("${name}End", context)
         true
     }
 }

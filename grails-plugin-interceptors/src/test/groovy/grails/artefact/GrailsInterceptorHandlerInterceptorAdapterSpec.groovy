@@ -76,6 +76,34 @@ class GrailsInterceptorHandlerInterceptorAdapterSpec extends Specification{
         modelAndView.viewName == null
     }
 
+    void "Test an execution order of interceptors"() {
+        given: "An interceptor"
+            def adapter = new GrailsInterceptorHandlerInterceptorAdapter()
+            adapter.setInterceptors([new HighestInterceptor(), new LowestInterceptor()] as Interceptor[])
+
+        when: "The adapter preHandle is executed"
+            def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            def modelAndView = new ModelAndView()
+            adapter.preHandle(webRequest.request, webRequest.response, this)
+
+        then: "The interceptors are executed in the order of highest priority"
+            webRequest.request.getAttribute('executed') == ['highest before', 'lowest before']
+
+        when: "The adapter postHandle is executed"
+            webRequest.request.setAttribute('executed', null)
+            adapter.postHandle(webRequest.request, webRequest.response, this, modelAndView)
+
+        then: "The interceptors are executed in the order of lowest priority"
+            webRequest.request.getAttribute('executed') == ['lowest after', 'highest after']
+
+        when: "The adapter afterCompletion is executed"
+            webRequest.request.setAttribute('executed', null)
+            adapter.afterCompletion(webRequest.request, webRequest.response, this, null)
+
+        then: "The interceptors are executed in the order of lowest priority"
+            webRequest.request.getAttribute('executed') == ['lowest afterView', 'highest afterView']
+    }
+
     void "Test that an interceptor can handle exceptions"() {
 
     }
@@ -111,5 +139,73 @@ class MyInterceptor implements Interceptor {
        if(request.getAttribute("bar")) {
            throw throwable
        }
+    }
+}
+class HighestInterceptor implements Interceptor {
+
+    int order = HIGHEST_PRECEDENCE
+
+    HighestInterceptor() {
+        matchAll()
+    }
+
+    @Override
+    boolean before() {
+        executed << 'highest before'
+        true
+    }
+
+    @Override
+    boolean after() {
+        executed << 'highest after'
+        true
+    }
+
+    @Override
+    void afterView() {
+        executed << 'highest afterView'
+    }
+
+    def getExecuted() {
+        def executed = request.getAttribute('executed')
+        if (!executed) {
+            executed = []
+            request.setAttribute('executed', executed)
+        }
+        executed
+    }
+}
+class LowestInterceptor implements Interceptor {
+
+    int order = LOWEST_PRECEDENCE
+
+    LowestInterceptor() {
+        matchAll()
+    }
+
+    @Override
+    boolean before() {
+        executed << 'lowest before'
+        true
+    }
+
+    @Override
+    boolean after() {
+        executed << 'lowest after'
+        true
+    }
+
+    @Override
+    void afterView() {
+        executed << 'lowest afterView'
+    }
+
+    def getExecuted() {
+        def executed = request.getAttribute('executed')
+        if (!executed) {
+            executed = []
+            request.setAttribute('executed', executed)
+        }
+        executed
     }
 }

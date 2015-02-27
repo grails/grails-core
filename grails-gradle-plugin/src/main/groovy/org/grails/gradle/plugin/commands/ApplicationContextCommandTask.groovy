@@ -30,6 +30,7 @@ class ApplicationContextCommandTask extends JavaExec {
     ApplicationContextCommandTask() {
         setMain("grails.ui.command.GrailsApplicationContextCommandRunner")
         dependsOn("classes", "findMainClass")
+        systemProperties(System.properties.findAll { it.key.toString().startsWith('grails.') } as Map<String, Object>)
     }
 
     void setCommand(String commandName) {

@@ -304,13 +304,13 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSource_ds2')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceLazy_ds2')
+        beanDef = bb.getBeanDefinition('dataSourceLazydataSource_ds2')
         assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceUnproxied_ds2')
+        beanDef = bb.getBeanDefinition('dataSourceUnproxieddataSource_ds2')
         assertEquals 'pooled false, readOnly true', ReadOnlyDriverManagerDataSource.name, beanDef.beanClassName
 
-        parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean_ds2')
+        parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBeandataSource_ds2')
 
         assertEquals 'user', parentBeanDef.propertyValues.getPropertyValue('username').value
         assertEquals 'pass', parentBeanDef.propertyValues.getPropertyValue('password').value
@@ -323,13 +323,13 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSource_ds3')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceLazy_ds3')
+        beanDef = bb.getBeanDefinition('dataSourceLazydataSource_ds3')
         assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceUnproxied_ds3')
+        beanDef = bb.getBeanDefinition('dataSourceUnproxieddataSource_ds3')
         assertEquals 'pooled default true, readOnly true', TomcatDataSource.name, beanDef.beanClassName
 
-        parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean_ds3')
+        parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBeandataSource_ds3')
 
         assertEquals 'sa', parentBeanDef.propertyValues.getPropertyValue('username').value
         assertEquals '', parentBeanDef.propertyValues.getPropertyValue('password').value
@@ -342,13 +342,13 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSource_ds4')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceLazy_ds4')
+        beanDef = bb.getBeanDefinition('dataSourceLazydataSource_ds4')
         assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceUnproxied_ds4')
+        beanDef = bb.getBeanDefinition('dataSourceUnproxieddataSource_ds4')
         assertEquals TomcatDataSource.name, beanDef.beanClassName
 
-        parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean_ds4')
+        parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBeandataSource_ds4')
 
         assertEquals 'sa', parentBeanDef.propertyValues.getPropertyValue('username').value
         assertEquals '', parentBeanDef.propertyValues.getPropertyValue('password').value
@@ -361,7 +361,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSource_jndi')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
-        beanDef = bb.getBeanDefinition('dataSourceUnproxied_jndi')
+        beanDef = bb.getBeanDefinition('dataSourceUnproxieddataSource_jndi')
         assertEquals JndiObjectFactoryBean.name, beanDef.beanClassName
 
         assertEquals "java:comp/env/myDataSource", beanDef.propertyValues.getPropertyValue('jndiName').value
@@ -402,8 +402,8 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         sql.execute('create table thing (foo int)')
 
         def dataSource_ds2 = ctx.dataSource_ds2
-        def dataSourceLazy_ds2 = ctx.dataSourceLazy_ds2
-        def dataSourceUnproxied_ds2 = ctx.dataSourceUnproxied_ds2
+        def dataSourceLazy_ds2 = ctx.dataSourceLazydataSource_ds2
+        def dataSourceUnproxied_ds2 = ctx.dataSourceUnproxieddataSource_ds2
         assert dataSource_ds2.targetDataSource.is(dataSourceLazy_ds2)
         assert dataSourceLazy_ds2.targetDataSource.is(dataSourceUnproxied_ds2)
 

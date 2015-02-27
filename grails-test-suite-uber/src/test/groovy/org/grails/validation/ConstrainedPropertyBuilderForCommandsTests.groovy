@@ -1,254 +1,73 @@
 package org.grails.validation
 
-import org.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.grails.plugins.support.WebMetaUtils
+import grails.persistence.Entity
+import grails.test.mixin.TestFor
+import grails.validation.Validateable
+
+import static org.junit.Assert.*
 
 /**
  * Tests constraints building specific for command objects
  */
-class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControllerTests {
-    protected void onSetUp() {
-        parseDomainTestClasses()
-    }
-
-    private void parseDomainTestClasses() {
-        gcl.parseClass('''
-            class Person implements grails.validation.Validateable{
-                Long id
-                Long version
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    firstName(nullable:false, blank:false, maxSize:30)
-                    lastName(nullable:false, blank:false, maxSize:50)
-                    middleName(nullable:true, blank:false, notEqual:"myMiddleName")
-                    telephone(nullable:true, blank:false, matches:"123123")
-                    email(nullable:true, blank:false, email:true)
-                }
-            }''')
-    }
-
-    private void parseCommandTestClasses() {
-        gcl.parseClass('''
-            class PersonAllConstraintsNoNormalConstraintsCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    importFrom Person
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonSomeConstraintsNoNormalConstraintsCommand {
-                String firstName
-                String lastName
-
-                static constraints = {
-                    importFrom Person
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonAllConstraintsWithNormalConstraintsFirstCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    firstName(nullable:true, blank:true, maxSize:10)
-                    lastName(nullable:true, blank:true, maxSize:20)
-                    email(nullable:false, blank:true, email:true)
-
-                    importFrom Person
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonAllConstraintsWithNormalConstraintsLastCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    importFrom Person
-
-                    firstName(nullable:true, blank:true, maxSize:10)
-                    lastName(nullable:true, blank:true, maxSize:20)
-                    email(nullable:false, blank:true, email:true)
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonAllConstraintsNoNormalConstraintsIncludingCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    importFrom Person, include:["firstName", "lastName"]
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonAllConstraintsNoNormalConstraintsExcludingCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    importFrom Person, exclude:["firstName", "lastName"]
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    importFrom Person, include:[".*Name"]
-                }
-            }''')
-
-        gcl.parseClass('''
-            class PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand {
-                String firstName
-                String lastName
-                String middleName
-                String telephone
-                String email
-
-                static constraints = {
-                    importFrom Person, include:[".*Name"], exclude:["m.*Name"]
-                }
-            }''')
-    }
+@TestFor(ConstraintsPerson)
+class ConstrainedPropertyBuilderForCommandsTests {
 
     void testImportFrom_AllConstraints_ConstraintsExist() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsCommand")
-
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
-
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(5, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("email"))
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("email"))
+        def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsCommand.constraintsMap
+        assertNotNull personCommandConstraints
+        assertEquals 5, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("email")
     }
 
     void testImportFrom_AllConstraints_Validation() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsCommand")
-
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        def personCommand = new PersonAllConstraintsNoNormalConstraintsCommand()
 
         personCommand.firstName = "firstName"
         personCommand.lastName = "lastName"
         personCommand.validate()
 
-        assertFalse(personCommand.hasErrors())
+        assertFalse personCommand.hasErrors()
 
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.validate()
 
-        assertTrue(personCommand.hasErrors())
-        assertEquals(1, personCommand.getErrors().getErrorCount())
-        assertEquals(1, personCommand.getErrors().getFieldErrors("firstName").size())
-        assertNull(personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-
-        person.firstName = "firstName"
-        person.lastName = "lastName"
-        person.validate()
-
-        assertFalse(person.hasErrors())
-
-        person.clearErrors()
-        person.firstName = null
-        person.validate()
-
-        assertTrue(person.hasErrors())
-        assertEquals(1, person.getErrors().getErrorCount())
-        assertEquals(1, person.getErrors().getFieldErrors("firstName").size())
-        assertNull(person.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
+        assertTrue personCommand.hasErrors()
+        assertEquals 1, personCommand.getErrors().getErrorCount()
+        assertEquals 1, personCommand.getErrors().getFieldErrors("firstName").size()
+        assertNull personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
     }
 
     void testImportFrom_SomeConstraints_ConstraintsExist() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonSomeConstraintsNoNormalConstraintsCommand")
+        def personCommandConstraints = PersonSomeConstraintsNoNormalConstraintsCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
-
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(2, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("firstName"))
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("firstName"))
-        assertNotNull(person.getConstraints().get("email"))
+        assertNotNull personCommandConstraints
+        assertEquals 2, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("firstName")
     }
 
     void testImportFrom_SomeConstraints_Validation() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonSomeConstraintsNoNormalConstraintsCommand")
-
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        def personCommand = new PersonSomeConstraintsNoNormalConstraintsCommand()
 
         personCommand.firstName = "firstName"
         personCommand.lastName = "lastName"
         personCommand.validate()
 
-        assertFalse(personCommand.hasErrors())
+        assertFalse personCommand.hasErrors()
 
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.validate()
 
-        assertTrue(personCommand.hasErrors())
+        assertTrue personCommand.hasErrors()
         assertEquals(1, personCommand.getErrors().getErrorCount())
         assertEquals(1, personCommand.getErrors().getFieldErrors("firstName").size())
-        assertNull(personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
+        assertNull personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
 
         // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
+        def person = new ConstraintsPerson()
 
         person.firstName = "firstName"
         person.lastName = "lastName"
@@ -268,58 +87,39 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsFirst() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsFirstCommand")
+        def personCommandConstraints = PersonAllConstraintsWithNormalConstraintsFirstCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        assertNotNull personCommandConstraints
+        assertEquals 5, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("telephone")
 
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(5, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("telephone"))
-
-        assertEquals(30, personCommand.getConstraints().get("firstName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(50, personCommand.getConstraints().get("lastName").getAppliedConstraint("maxSize").getParameter())
+        assertEquals(30, personCommandConstraints.get("firstName").getAppliedConstraint("maxSize").getParameter())
+        assertEquals(50, personCommandConstraints.get("lastName").getAppliedConstraint("maxSize").getParameter())
         assertEquals(
                 "123123",
-                personCommand.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("telephone"))
-
-        assertEquals(30, person.getConstraints().get("firstName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(50, person.getConstraints().get("lastName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals("123123", person.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
+                personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter())
     }
 
     void testImportFrom_AllConstraints_Validation_NormalConstraintsFirst() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsFirstCommand")
-
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        def personCommand = new PersonAllConstraintsWithNormalConstraintsFirstCommand()
 
         personCommand.firstName = "firstName"
         personCommand.lastName = "lastName"
         personCommand.validate()
 
-        assertFalse(personCommand.hasErrors())
+        assertFalse personCommand.hasErrors()
 
         personCommand.clearErrors()
         personCommand.firstName = null
         personCommand.lastName = null
         personCommand.validate()
 
-        assertTrue(personCommand.hasErrors())
-        assertEquals(2, personCommand.getErrors().getErrorCount())
+        assertTrue personCommand.hasErrors()
+        assertEquals 2, personCommand.getErrors().getErrorCount()
 
         // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
+        def person = new ConstraintsPerson()
 
         person.firstName = "firstName"
         person.lastName = "lastName"
@@ -334,56 +134,36 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         person.validate()
 
         assertTrue(person.hasErrors())
-        assertEquals(2, person.getErrors().getErrorCount())
-        assertEquals(1, person.getErrors().getFieldErrors("firstName").size())
-        assertNull(person.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
-        assertEquals(1, person.getErrors().getFieldErrors("email").size())
-        assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
+        assertEquals 2, person.getErrors().getErrorCount()
+        assertEquals 1, person.getErrors().getFieldErrors("firstName").size()
+        assertNull person.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
+        assertEquals 1, person.getErrors().getFieldErrors("email").size()
+        assertEquals "wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue()
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsLast() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsLastCommand")
+        def personCommandConstraints = PersonAllConstraintsWithNormalConstraintsLastCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        assertNotNull personCommandConstraints
+        assertEquals 5, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("telephone")
 
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(5, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("telephone"))
-
-        assertEquals(10, personCommand.getConstraints().get("firstName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(20, personCommand.getConstraints().get("lastName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(
-                "123123",
-                personCommand.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("telephone"))
-
-        assertEquals(30, person.getConstraints().get("firstName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals(50, person.getConstraints().get("lastName").getAppliedConstraint("maxSize").getParameter())
-        assertEquals("123123", person.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
+        assertEquals 10, personCommandConstraints.get("firstName").getAppliedConstraint("maxSize").getParameter()
+        assertEquals 20, personCommandConstraints.get("lastName").getAppliedConstraint("maxSize").getParameter()
+        assertEquals "123123",
+                     personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter()
     }
 
     void testImportFrom_AllConstraints_Validation_NormalConstraintsLast() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsLastCommand")
-
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        def personCommand = new PersonAllConstraintsWithNormalConstraintsLastCommand()
 
         personCommand.firstName = null
         personCommand.lastName = null
         personCommand.email = "someemail@some.net"
         personCommand.validate()
 
-        assertFalse(personCommand.hasErrors())
+        assertFalse personCommand.hasErrors()
 
         personCommand.clearErrors()
         personCommand.firstName = null
@@ -391,11 +171,11 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         personCommand.email = "wrongEmail"
         personCommand.validate()
 
-        assertTrue(personCommand.hasErrors())
-        assertEquals(1, personCommand.getErrors().getErrorCount())
+        assertTrue personCommand.hasErrors()
+        assertEquals 1, personCommand.getErrors().getErrorCount()
 
         // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
+        def person = new ConstraintsPerson()
 
         person.firstName = "firstName"
         person.lastName = "lastName"
@@ -410,104 +190,198 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         person.validate()
 
         assertTrue(person.hasErrors())
-        assertEquals(2, person.getErrors().getErrorCount())
-        assertEquals(1, person.getErrors().getFieldErrors("firstName").size())
-        assertNull(person.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
-        assertEquals(1, person.getErrors().getFieldErrors("email").size())
-        assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
+        assertEquals 2, person.getErrors().getErrorCount()
+        assertEquals 1, person.getErrors().getFieldErrors("firstName").size()
+        assertNull person.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
+        assertEquals 1, person.getErrors().getFieldErrors("email").size()
+        assertEquals "wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue()
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_Including() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsIncludingCommand")
+        def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        assertNotNull personCommandConstraints
+        assertEquals 5, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("firstName")
 
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(2, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("firstName"))
-        assertNull(personCommand.getConstraints().get("email"))
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("firstName"))
-        assertNotNull(person.getConstraints().get("email"))
+        def emailConstraint = personCommandConstraints.get('email')
+        assertNotNull emailConstraint
+        assertFalse emailConstraint.hasAppliedConstraint('email')
+        assertFalse emailConstraint.hasAppliedConstraint('blank')
+        assertTrue emailConstraint.hasAppliedConstraint('nullable')
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_Excluding() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsExcludingCommand")
+        def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsExcludingCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        assertNotNull personCommandConstraints
+        assertNull personCommandConstraints.get("importFrom")
+        assertEquals 5, personCommandConstraints.size()
 
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(3, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNull(personCommand.getConstraints().get("firstName"))
-        assertNull(personCommand.getConstraints().get("lastName"))
-        assertNotNull(personCommand.getConstraints().get("email"))
+        def firstNameConstraint = personCommandConstraints.get("firstName")
+        assertNotNull firstNameConstraint
+        assertTrue firstNameConstraint.hasAppliedConstraint('nullable')
+        assertFalse firstNameConstraint.hasAppliedConstraint('maxSize')
 
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("firstName"))
-        assertNotNull(person.getConstraints().get("email"))
+        def lastNameConstraint = personCommandConstraints.get("lastName")
+        assertNotNull lastNameConstraint
+        assertTrue lastNameConstraint.hasAppliedConstraint('nullable')
+        assertFalse lastNameConstraint.hasAppliedConstraint('maxSize')
+
+        def emailConstraint = personCommandConstraints.get("email")
+        assertNotNull emailConstraint
+        assertTrue emailConstraint.hasAppliedConstraint('email')
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_IncludingByRegexp() {
-        parseCommandTestClasses()
-        def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand")
+        def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        assertNotNull personCommandConstraints
+        assertEquals 5, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("firstName")
+        assertNotNull personCommandConstraints.get("lastName")
+        assertNotNull personCommandConstraints.get("middleName")
 
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(3, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("firstName"))
-        assertNotNull(personCommand.getConstraints().get("lastName"))
-        assertNotNull(personCommand.getConstraints().get("middleName"))
-        assertNull(personCommand.getConstraints().get("email"))
-
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("firstName"))
-        assertNotNull(person.getConstraints().get("email"))
+        def emailConstraint = personCommandConstraints.get('email')
+        assertNotNull emailConstraint
+        assertFalse emailConstraint.hasAppliedConstraint('email')
+        assertFalse emailConstraint.hasAppliedConstraint('blank')
+        assertTrue emailConstraint.hasAppliedConstraint('nullable')
     }
 
     void testImportFrom_AllConstraints_ConstraintsExist_IncludingExcludingByRegexp() {
-        parseCommandTestClasses()
-        def personCommandClazz =
-            gcl.loadClass("PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand")
+        def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand.constraintsMap
 
-        WebMetaUtils.enhanceCommandObject(appCtx, personCommandClazz)
-        def personCommand = personCommandClazz.newInstance()
+        assertNotNull personCommandConstraints
+        assertEquals 5, personCommandConstraints.size()
+        assertNull personCommandConstraints.get("importFrom")
+        assertNotNull personCommandConstraints.get("firstName")
+        assertNotNull personCommandConstraints.get("lastName")
 
-        assertNotNull(personCommand.getConstraints())
-        assertEquals(2, personCommand.getConstraints().size())
-        assertNull(personCommand.getConstraints().get("importFrom"))
-        assertNotNull(personCommand.getConstraints().get("firstName"))
-        assertNotNull(personCommand.getConstraints().get("lastName"))
-        assertNull(personCommand.getConstraints().get("middleName"))
-        assertNull(personCommand.getConstraints().get("email"))
+        def emailConstraint = personCommandConstraints.get('email')
+        assertNotNull emailConstraint
+        assertFalse emailConstraint.hasAppliedConstraint('email')
+        assertFalse emailConstraint.hasAppliedConstraint('blank')
+        assertTrue emailConstraint.hasAppliedConstraint('nullable')
+    }
+}
 
-        // Now check that everything is ok with domain class
-        def person = gcl.loadClass("Person").newInstance()
-        assertNotNull(person.getConstraints())
-        assertEquals(5, person.getConstraints().size())
-        assertNull(person.getConstraints().get("importFrom"))
-        assertNotNull(person.getConstraints().get("firstName"))
-        assertNotNull(person.getConstraints().get("email"))
+@Entity
+class ConstraintsPerson {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        firstName(nullable:false, blank:false, maxSize:30)
+        lastName(nullable:false, blank:false, maxSize:50)
+        middleName(nullable:true, blank:false, notEqual:"myMiddleName")
+        telephone(nullable:true, blank:false, matches:"123123")
+        email(nullable:true, blank:false, email:true)
+    }
+}
+
+class PersonAllConstraintsNoNormalConstraintsCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        importFrom ConstraintsPerson
+    }
+}
+
+class PersonSomeConstraintsNoNormalConstraintsCommand implements Validateable {
+    String firstName
+    String lastName
+
+    static constraints = {
+        importFrom ConstraintsPerson
+    }
+}
+
+class PersonAllConstraintsWithNormalConstraintsFirstCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        firstName(nullable:true, blank:true, maxSize:10)
+        lastName(nullable:true, blank:true, maxSize:20)
+        email(nullable:false, blank:true, email:true)
+
+        importFrom ConstraintsPerson
+    }
+}
+
+class PersonAllConstraintsWithNormalConstraintsLastCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        importFrom ConstraintsPerson
+
+        firstName(nullable:true, blank:true, maxSize:10)
+        lastName(nullable:true, blank:true, maxSize:20)
+        email(nullable:false, blank:true, email:true)
+    }
+}
+
+class PersonAllConstraintsNoNormalConstraintsIncludingCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        importFrom ConstraintsPerson, include:["firstName", "lastName"]
+    }
+}
+
+class PersonAllConstraintsNoNormalConstraintsExcludingCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        importFrom ConstraintsPerson, exclude:["firstName", "lastName"]
+    }
+}
+
+class PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        importFrom ConstraintsPerson, include:[".*Name"]
+    }
+}
+
+class PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand implements Validateable {
+    String firstName
+    String lastName
+    String middleName
+    String telephone
+    String email
+
+    static constraints = {
+        importFrom ConstraintsPerson, include:[".*Name"], exclude:["m.*Name"]
     }
 }

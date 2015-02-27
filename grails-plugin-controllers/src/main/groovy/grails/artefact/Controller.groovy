@@ -21,6 +21,7 @@ import grails.artefact.controller.support.ResponseRenderer
 import grails.core.GrailsControllerClass
 import grails.core.GrailsDomainClassProperty
 import grails.databinding.DataBindingSource
+import grails.databinding.SimpleMapDataBindingSource
 import grails.util.GrailsClassUtils
 import grails.util.GrailsMetaClassUtils
 import grails.web.api.ServletAttributes
@@ -31,7 +32,6 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.plugins.support.WebMetaUtils
 import org.grails.plugins.web.api.MimeTypesApiSupport
 import org.grails.plugins.web.controllers.ControllerExceptionHandlerMetaData
 import org.grails.plugins.web.servlet.mvc.InvalidResponseHandler
@@ -55,6 +55,7 @@ import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.lang.reflect.Method
+
 /**
  * Classes that implement the {@link Controller} trait are automatically treated as web controllers in a Grails application
  *
@@ -349,8 +350,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
                     .createDataBindingSource(
                     getGrailsApplication(), type,
                     request)
-            final DataBindingSource commandObjectBindingSource = WebMetaUtils
-                    .getCommandObjectBindingSourceForPrefix(
+            final DataBindingSource commandObjectBindingSource = getCommandObjectBindingSourceForPrefix(
                     commandObjectParameterName, dataBindingSource)
             def entityIdentifierValue = null
             final boolean isDomainClass = DomainClassArtefactHandler
@@ -434,6 +434,28 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
         }
 
         commandObjectInstance
+    }
+
+    /**
+     * Return a DataBindingSource for a command object which has a parameter name matching the specified prefix.
+     * If params include something like widget.name=Thing and prefix is widget then the returned binding source
+     * will include name=thing, not widget.name=Thing.
+     *
+     * @param prefix The parameter name for the command object
+     * @param params The original binding source associated with the request
+     * @return The binding source suitable for binding to a command object with a parameter name matching the specified prefix.
+     */
+    private DataBindingSource getCommandObjectBindingSourceForPrefix(String prefix, DataBindingSource params) {
+        DataBindingSource commandParams = params
+        if (params != null && prefix != null) {
+            def innerValue = params[prefix]
+            if(innerValue instanceof DataBindingSource) {
+                commandParams = (DataBindingSource)innerValue
+            } else if(innerValue instanceof Map) {
+                commandParams = new SimpleMapDataBindingSource(innerValue)
+            }
+        }
+        commandParams
     }
 
     @SuppressWarnings("unchecked")

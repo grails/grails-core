@@ -32,9 +32,7 @@ dependencies {
         exclude group: 'xml-apis', module:'xml-apis'
     }
 
-    compile ("org.springframework:springloaded:$springLoadedVersion") {
-        ext.notInPom = true
-    }
+    optional ("org.springframework:springloaded:$springLoadedVersion")
 
 
 

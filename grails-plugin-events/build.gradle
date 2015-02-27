@@ -1,5 +1,5 @@
 dependencies {
     compile project(":grails-core")
     compile project(":grails-async")
-    compile 'io.projectreactor.spring:reactor-spring-context:2.0.0.BUILD-SNAPSHOT'
+    compile 'io.projectreactor.spring:reactor-spring-context:2.0.0.RC1'
 }

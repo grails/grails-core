@@ -292,8 +292,7 @@ create-controller [controller name]
         retval == 0
         message == '''
 Error |
-Expecting an argument to create-controller.
-create-controller [controller name]
+Command [create-controller] missing required arguments: [Controller Name]. Type 'grails help create-controller' for more info.
 '''
     }
     

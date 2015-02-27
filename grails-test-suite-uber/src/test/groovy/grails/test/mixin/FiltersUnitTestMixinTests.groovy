@@ -1,19 +1,19 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-import grails.test.GrailsMock
 import grails.test.mixin.web.FiltersUnitTestMixin
-
+import grails.test.runtime.FreshRuntime
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 @TestMixin(FiltersUnitTestMixin)
+@FreshRuntime
 class FiltersUnitTestMixinTests {
 
     AuthorController controller
-    GrailsMock autowiredServiceMock
+    AutowiredService autowiredService
 
     @Before
     void setUp() {
@@ -89,7 +89,7 @@ class FiltersUnitTestMixinTests {
         defineBeans {
             autowiredService(MethodInvokingFactoryBean) {
                 targetObject = this
-                targetMethod = 'mockAutowiredService'
+                targetMethod = 'setupService'
             }
         }
         mockFilters(AutowiredFilters)
@@ -98,7 +98,7 @@ class FiltersUnitTestMixinTests {
             controller.list()
         }
 
-        autowiredServiceMock.verify()
+        assert 1 == autowiredService.sessionSetupCounter
     }
 
     @Test
@@ -107,7 +107,7 @@ class FiltersUnitTestMixinTests {
         defineBeans {
             autowiredService(MethodInvokingFactoryBean) {
                 targetObject = this
-                targetMethod = 'mockAutowiredService'
+                targetMethod = 'setupService'
             }
         }
 
@@ -115,13 +115,11 @@ class FiltersUnitTestMixinTests {
             controller.list()
         }
 
-        autowiredServiceMock.verify()
+        assert 1 == autowiredService.sessionSetupCounter
     }
 
-    AutowiredService mockAutowiredService() {
-        this.autowiredServiceMock = mockFor(AutowiredService)
-        this.autowiredServiceMock.demand.setupSession(1) {}
-        return this.autowiredServiceMock.createMock()
+    AutowiredService setupService() {
+        this.autowiredService = new AutowiredService()
     }
 }
 
@@ -192,6 +190,8 @@ class AutowiredFilters {
 }
 
 class AutowiredService {
-
-    void setupSession() {}
+    int sessionSetupCounter = 0
+    void setupSession() {
+        sessionSetupCounter++
+    }
 }

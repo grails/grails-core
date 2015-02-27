@@ -3,7 +3,6 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.rest.RestfulController
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -101,7 +100,6 @@ class RestfulControllerSubclassSpec extends Specification {
         album.artist == 'King Crimson'
     }
 
-    @Ignore
     @Issue('GRAILS-11958')
     void 'test compiling a subclass of a subclass of RestfulController'() {
         given:

@@ -16,6 +16,8 @@
 
 package org.grails.cli.profile
 
+import org.grails.build.parsing.CommandLine
+
 /**
  * Abstract implementation of the {@link Step} interface
  *
@@ -28,5 +30,16 @@ abstract class AbstractStep implements Step {
     AbstractStep(ProfileCommand command, Map<String, Object> parameters) {
         this.command = command
         this.parameters = parameters
+    }
+
+    /**
+     * Obtains details of the given flag if it has been set by the user
+     *
+     * @param name The name of the flag
+     * @return The flag information, or null if it isn't set by the user
+     */
+    def flag(CommandLine commandLine, String name) {
+        def value = commandLine?.undeclaredOptions?.get(name)
+        return value ?: null
     }
 }

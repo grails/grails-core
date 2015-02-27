@@ -15,6 +15,7 @@
  */
 
 package grails.test.runtime
+
 import grails.async.Promises
 import grails.boot.config.GrailsApplicationPostProcessor
 import grails.core.DefaultGrailsApplication
@@ -33,13 +34,13 @@ import org.grails.commons.CodecArtefactHandler
 import org.grails.commons.DefaultGrailsCodecClass
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.core.util.ClassPropertyFetcher
-import org.grails.plugins.testing.GrailsMockErrors
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
-import org.grails.validation.ConstraintEvalUtils
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.servlet.context.GrailsConfigUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.beans.factory.config.BeanDefinition
@@ -52,10 +53,14 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.mock.web.MockServletContext
+import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.MergedContextConfiguration
+import org.springframework.test.context.TestContextManager
 import org.springframework.web.context.support.GenericWebApplicationContext
 
 import javax.servlet.ServletContext
 import java.lang.reflect.Modifier
+
 /**
  * A TestPlugin for TestRuntime that builds the GrailsApplication instance for tests
  * 
@@ -65,6 +70,9 @@ import java.lang.reflect.Modifier
  */
 @CompileStatic
 class GrailsApplicationTestPlugin implements TestPlugin {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    static boolean disableClearSpringTestContextManagerCache = Boolean.getBoolean("grails.test.runtime.disable_clear_spring_tcf_cache")
     String[] requiredFeatures = ['metaClassCleaner']
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
@@ -168,6 +176,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
 
     void initialState() {
+        closeCachedSpringTestContexts()
         ExpandoMetaClass.enableGlobally()
         Holders.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
@@ -240,26 +249,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         (GrailsApplication)runtime.getValue('grailsApplication')
     }
     
-    void mockForConstraintsTests(TestRuntime runtime, Class clazz) {
-        ConstraintEvalUtils.clearDefaultConstraints()
-        mockGetErrors clazz
-    }
-    
-    @CompileStatic(TypeCheckingMode.SKIP)
-    void mockGetErrors(Class clazz) {
-        // rig up the getErrors() method to return an instance of GrailsMockErrors
-        def originalGetErrorsMethod = clazz.metaClass.getMetaMethod('getErrors', [] as Object[])
-        clazz.metaClass.getErrors = { ->
-            def result = originalGetErrorsMethod.invoke(delegate, [] as Object[])
-            if(result && !(result instanceof GrailsMockErrors)) {
-                def mockErrors = new GrailsMockErrors(delegate)
-                mockErrors.addAllErrors result
-                result = mockErrors
-            }
-            result
-        }
-    }
-
     void defineBeans(TestRuntime runtime, List<Closure> callables, RuntimeSpringConfiguration targetSpringConfig = null) {
         if(!callables) return
         def binding = new Binding()
@@ -313,7 +302,27 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             Holders.clear()
         }
     }
-    
+
+    void closeCachedSpringTestContexts() {
+        if(!disableClearSpringTestContextManagerCache) {
+            try {
+                doCloseCachedSpringTestContexts()
+            } catch (Exception e) {
+                log.warn("Problem in clearing Spring TestContext cache", e)
+            }
+        }
+    }
+
+    @CompileDynamic
+    void doCloseCachedSpringTestContexts() {
+        def contextCache = TestContextManager.contextCache
+        List<MergedContextConfiguration> keys = []
+        keys.addAll(contextCache.contextMap.keySet())
+        keys.each {
+            contextCache.remove(it, DirtiesContext.HierarchyMode.EXHAUSTIVE)
+        }
+    }
+
     public void onTestEvent(TestEvent event) {
         TestRuntime runtime = event.runtime
         switch(event.name) {
@@ -347,9 +356,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 break
             case 'mockCodec':   
                 mockCodec(runtime, (Class)event.arguments.codecClass)
-                break
-            case 'mockForConstraintsTests':   
-                mockForConstraintsTests(runtime, (Class)event.arguments.clazz)
                 break
         }
     }

@@ -35,8 +35,8 @@ import java.util.regex.Pattern
 abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
 
     @Override
-    Collection<Command> findCommands(Profile profile) {
-        def resources = findCommandResources(profile)
+    Collection<Command> findCommands(Profile profile, boolean inherited) {
+        def resources = findCommandResources(profile, inherited)
         Collection<Command> commands = []
         for(Resource resource in resources) {
             String commandName = evaluateFileName(resource.filename)
@@ -53,23 +53,28 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
         fileName - Pattern.compile(/\.(${getMatchingFileExtensions().join('|')})$/)
     }
 
-    protected Collection<Resource> findCommandResources(Profile profile) {
+    protected Collection<Resource> findCommandResources(Profile profile, boolean inherited) {
         Collection<Resource> allResources = []
-        for(CommandResourceResolver resolver in getCommandResolvers()) {
+        for(CommandResourceResolver resolver in getCommandResolvers(inherited)) {
             allResources.addAll resolver.findCommandResources(profile)
         }
         return allResources
     }
 
-    protected Collection<CommandResourceResolver> getCommandResolvers() {
+    protected Collection<CommandResourceResolver> getCommandResolvers(boolean inherited) {
         def profileCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions)
-        def localCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions) {
-            @Override
-            protected File getCommandsDirectory(Profile profile) {
-                return new File(BuildSettings.BASE_DIR, "src/main/scripts")
-            }
+        if(inherited) {
+            return [profileCommandsResolver]
         }
-        return [profileCommandsResolver, localCommandsResolver, new ClasspathCommandResourceResolver(matchingFileExtensions) ]
+        else {
+            def localCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions) {
+                @Override
+                protected File getCommandsDirectory(Profile profile) {
+                    return new File(BuildSettings.BASE_DIR, "src/main/scripts")
+                }
+            }
+            return [profileCommandsResolver, localCommandsResolver, new ClasspathCommandResourceResolver(matchingFileExtensions) ]
+        }
     }
 
     protected abstract T readCommandFile(Resource resource)

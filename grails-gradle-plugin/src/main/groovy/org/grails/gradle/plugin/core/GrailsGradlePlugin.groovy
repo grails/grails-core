@@ -1,17 +1,16 @@
 package org.grails.gradle.plugin.core
-
 import grails.util.BuildSettings
 import grails.util.Environment
+import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.JavaVersion
+import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
@@ -20,14 +19,20 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.process.JavaForkOptions
+import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.run.FindMainClassTask
+import org.grails.io.support.FactoriesLoaderSupport
 
 class GrailsGradlePlugin extends GroovyPlugin {
+    public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
+    List<Plugin<Project>> pluginInstancesToApply = [new IntegrationTestGradlePlugin()]
 
     void apply(Project project) {
         super.apply(project)
+        pluginInstancesToApply.each { it.apply(project) }
+
         project.extensions.create("grails", GrailsExtension)
         registerFindMainClassTask(project)
 
@@ -90,6 +95,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { JavaForkOptions task ->
+            def map = System.properties.findAll { entry ->
+                entry.key.startsWith("grails.")
+            }
+            for(key in map.keySet()) {
+                def value = map.get(key)
+                if(value) {
+                    def sysPropName = key.toString().substring(7)
+                    task.systemProperty(sysPropName, value.toString())
+                }
+            }
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
@@ -121,6 +136,20 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 }
             }
         }
+
+
+        def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
+        for(ctxCommand in applicationContextCommands) {
+            def taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
+            def commandName = GrailsNameUtils.getScriptName( GrailsNameUtils.getLogicalName(ctxCommand, "Command") )
+            project.tasks.create(taskName, ApplicationContextCommandTask) {
+                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                command = commandName
+                if (project.hasProperty('args')) {
+                    args(CommandLineParser.translateCommandline(project.args))
+                }
+            }
+        }
     }
 
 
@@ -128,25 +157,34 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void configureConsoleTask(TaskContainer tasks, Project project) {
         def consoleConfiguration = project.configurations.create("console")
         def findMainClass = tasks.findByName('findMainClass')
-        createConsoleTask(project, tasks, consoleConfiguration)
-
-        def consoleTask = (JavaExec) tasks.findByName('console')
+        def consoleTask = createConsoleTask(project, tasks, consoleConfiguration)
+        def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
             def mainClassName = project.properties.get("mainClassName")
             consoleTask.args mainClassName
+            shellTask.args mainClassName
             project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
                 task.args mainClassName
             }
         }
 
         consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)
+        shellTask.dependsOn(tasks.findByName('classes'), findMainClass)
     }
 
     protected JavaExec createConsoleTask(Project project, TaskContainer tasks, Configuration configuration) {
         tasks.create("console", JavaExec) {
             classpath = project.sourceSets.main.runtimeClasspath + configuration
             main = "grails.ui.console.GrailsSwingConsole"
+        }
+    }
+
+    protected JavaExec createShellTask(Project project, TaskContainer tasks, Configuration configuration) {
+        tasks.create("shell", JavaExec) {
+            classpath = project.sourceSets.main.runtimeClasspath + configuration
+            main = "grails.ui.shell.GrailsShell"
+            standardInput = System.in
         }
     }
 

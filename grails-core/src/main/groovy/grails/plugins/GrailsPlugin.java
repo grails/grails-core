@@ -29,6 +29,7 @@ import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.plugins.support.WatchPattern;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 
@@ -274,6 +275,8 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String getDependentVersion(String name);
 
 
+    PropertySource<?> getPropertySource();
+
     /**
      * Refreshes this Grails plugin reloading any watched resources as necessary
      */
@@ -426,11 +429,4 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * @param descriptor The descriptor
      */
     void setDescriptor(Resource descriptor);
-
-    /**
-     * The plugin's default configuration settings which can be overridden by the application
-     *
-     * @return The plugin Config
-     */
-    Config getPluginConfig();
 }

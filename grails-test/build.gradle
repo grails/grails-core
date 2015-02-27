@@ -1,3 +1,6 @@
+configurations {
+    optional
+}
 dependencies {
 
     compile "org.springframework:spring-tx:${springVersion}"
@@ -25,25 +28,24 @@ dependencies {
     compile project(":grails-web")
 
     // command line requirements
-    compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
-        ext.notInPom = true
-        exclude group:'org.apache.ant', module:'ant'
-    }
-    compile  "jline:jline:$jlineVersion", {
-        ext.notInPom = true
-    }
-    compile  "org.fusesource.jansi:jansi:$jansiVersion", {
-        ext.notInPom = true
-    }
+    optional  "jline:jline:$jlineVersion"
+    optional "org.fusesource.jansi:jansi:$jansiVersion"
 
     // Ant
-    compile "org.apache.ant:ant:${antVersion}",{
-        ext.notInPom = true
-    }
-    compile "org.apache.ant:ant-junit:${antVersion}",{
-        ext.notInPom = true
-    }
+    optional "org.apache.ant:ant:${antVersion}"
+    optional "org.apache.ant:ant-junit:${antVersion}"
 
     // needed for Spock
     compile "org.objenesis:objenesis:${objenesisVersion}"
 }
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
+}
+javadoc.classpath += files(configurations.optional)

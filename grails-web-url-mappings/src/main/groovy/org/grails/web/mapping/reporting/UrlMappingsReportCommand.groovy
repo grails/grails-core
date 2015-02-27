@@ -15,18 +15,17 @@
  */
 package org.grails.web.mapping.reporting
 
-import grails.dev.commands.ApplicationContextCommand
+import grails.dev.commands.ApplicationCommand
+import grails.dev.commands.ExecutionContext
 import grails.web.mapping.UrlMappings
 import grails.web.mapping.reporting.UrlMappingsRenderer
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import groovy.util.logging.Commons
-import org.springframework.context.ConfigurableApplicationContext
-
 
 
 /**
- * A {@link ApplicationContextCommand} that renders the URL mappings
+ * A {@link ApplicationCommand} that renders the URL mappings
  *
  * @author Graeme Rocher
  * @since 3.0
@@ -34,12 +33,12 @@ import org.springframework.context.ConfigurableApplicationContext
 @CompileStatic
 @EqualsAndHashCode
 @Commons
-class UrlMappingsReportCommand implements ApplicationContextCommand {
+class UrlMappingsReportCommand implements ApplicationCommand {
 
-    final String name = "url-mappings-report"
+    final String description = "Prints out a report of the project's URL mappings"
 
     @Override
-    boolean handle(ConfigurableApplicationContext applicationContext) {
+    boolean handle(ExecutionContext executionContext) {
         try {
             def urlMappings = applicationContext.getBean("grailsUrlMappingsHolder", UrlMappings)
 
