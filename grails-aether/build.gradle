@@ -1,14 +1,12 @@
 ext {
-    aetherVersion = "1.0.0.v20140518"
-    aetherProviderVersion = "0.9.0.M2"
-    mavenVersion = "3.2.1"
+    aetherVersion = "1.0.2.v20150114"
+    mavenVersion = "3.2.5"
 }
 
 dependencies {
     compile("org.eclipse.aether:aether-api:${aetherVersion}")
     compile("org.eclipse.aether:aether-util:${aetherVersion}")
     compile("org.eclipse.aether:aether-impl:${aetherVersion}")
-    compile("org.eclipse.aether:aether-connector-file:${aetherProviderVersion}")
     compile("org.eclipse.aether:aether-connector-basic:${aetherVersion}")
     compile("org.eclipse.aether:aether-transport-http:${aetherVersion}")
     compile("org.eclipse.aether:aether-transport-file:${aetherVersion}")
