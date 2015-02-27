@@ -1,6 +1,3 @@
-configurations {
-    optional
-}
 dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
@@ -8,13 +5,5 @@ dependencies {
     }
 
     compile project(":grails-web"), project(":grails-plugin-controllers"), project(":grails-validation")
-    optional "junit:junit:${junitVersion}"
-}
-sourceSets {
-    main {
-        compileClasspath += files(configurations.optional)
-    }
-    test {
-        runtimeClasspath += files(configurations.optional)
-    }
+    provided "junit:junit:${junitVersion}"
 }

@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.grails.plugins
-
-import org.springframework.context.ApplicationContext
-import org.springframework.validation.BeanPropertyBindingResult
 import grails.validation.ValidationErrors
-
+import org.springframework.context.ApplicationContext
 /**
  * @author Graeme Rocher
  * @since 1.1
@@ -34,7 +31,7 @@ class DomainClassPluginSupport {
             return true
         }
 
-        def constraints = object.constraints
+        def constraints = object.getConstraints()
         if (constraints) {
             for (prop in constraints.values()) {
                 prop.messageSource = ctx.getBean("messageSource")

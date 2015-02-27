@@ -3,4 +3,5 @@ dependencies {
 
     compile project(":grails-web"),
             project(':grails-plugin-domain-class')
+    provided project(":grails-async")
 }
