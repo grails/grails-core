@@ -11,13 +11,5 @@ dependencies {
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
     runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
 
-    runtime 'hsqldb:hsqldb:1.8.0.10', {
-        ext.notInPom = true
-    }
-
-    runtime 'com.h2database:h2:1.3.176', {
-        ext.notInPom = true
-    }
-
     compile project(":grails-core")
 }

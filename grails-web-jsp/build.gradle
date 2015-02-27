@@ -8,8 +8,7 @@ dependencies {
 
     // Required for JSP support
     jsp21 'javax.servlet.jsp:jsp-api:2.1'
-    compile 'javax.servlet:jsp-api:2.0', {
-        ext.notInPom = true
+    provided 'javax.servlet:jsp-api:2.0', {
         exclude group: 'javax.servlet', module:'servlet-api'
     }
 

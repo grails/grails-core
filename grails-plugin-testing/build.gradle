@@ -28,6 +28,8 @@ dependencies {
     }
 
     runtime "cglib:cglib:${cglibVersion}"
+
+    provided "org.apache.ant:ant:${antVersion}"
 }
 
 eclipse {
@@ -40,4 +42,3 @@ eclipse {
        }
     }
 }
-

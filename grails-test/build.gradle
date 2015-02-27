@@ -3,12 +3,8 @@ dependencies {
     compile "org.springframework:spring-tx:${springVersion}"
 
     // Ant
-    compile "org.apache.ant:ant:${antVersion}",{
-        ext.notInPom = true
-    }
-    compile "org.apache.ant:ant-junit:${antVersion}",{
-        ext.notInPom = true
-    }
+    provided "org.apache.ant:ant:${antVersion}"
+    provided "org.apache.ant:ant-junit:${antVersion}"
 
     // Testing
     compile "junit:junit:${junitVersion}", {
@@ -19,15 +15,9 @@ dependencies {
     compile project(":grails-web")
     compile project(":grails-project-api")
 
-    compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
-        ext.notInPom = true
-    }
-    compile  "jline:jline:$jlineVersion", {
-        ext.notInPom = true
-    }
-    compile  "org.fusesource.jansi:jansi:$jansiVersion", {
-        ext.notInPom = true
-    }
+    provided("org.codehaus.gant:gant_groovy1.8:${gantVersion}")
+    provided  "jline:jline:$jlineVersion"
+    provided  "org.fusesource.jansi:jansi:$jansiVersion"
 
     compile("org.spockframework:spock-core:${spockVersion}") {
         exclude group:'junit', module: 'junit-dep'

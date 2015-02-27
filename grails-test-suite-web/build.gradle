@@ -47,6 +47,10 @@ dependencies {
     // Required for tag library support
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
+
+    provided 'javax.servlet:jsp-api:2.0', {
+        exclude group: 'javax.servlet', module:'servlet-api'
+    }
 }
 
 // javaee-web-api has a bad versions of classes we need to compile against
