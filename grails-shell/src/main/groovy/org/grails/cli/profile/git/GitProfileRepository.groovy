@@ -137,8 +137,7 @@ class GitProfileRepository implements ProfileRepository{
         if(forceUpdate || !fetchHead.exists() || fetchHead.lastModified() < System.currentTimeMillis() - updateInterval) {
             try {
                 Git git = Git.open(profilesDirectory)
-                git.fetch()
-                git.rebase()
+                git.fetch().call()
             } catch (Exception e) {
                 GrailsConsole.getInstance().error("Problem updating profiles from origin git repository", e)
             }
