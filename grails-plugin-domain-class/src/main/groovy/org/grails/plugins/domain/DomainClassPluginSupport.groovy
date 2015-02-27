@@ -34,7 +34,7 @@ class DomainClassPluginSupport {
             return true
         }
 
-        def constraints = object.constraints
+        def constraints = object.getConstraints()
         if (constraints) {
             for (prop in constraints.values()) {
                 prop.messageSource = ctx.getBean("messageSource")

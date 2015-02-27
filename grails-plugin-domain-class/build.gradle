@@ -2,9 +2,7 @@ dependencies {
 
     compile project(":grails-core"), project(":grails-spring"), project(":grails-validation")
 
-    compile project(":grails-async"), {
-        ext.notInPom = true
-    }
+    provided project(":grails-async")
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {

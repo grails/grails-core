@@ -1,5 +1,5 @@
 dependencies {
-    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
-    compile 'javax:javaee-web-api:6.0', provided
+    provided "javax.servlet:javax.servlet-api:$servletApiVersion"
+    provided 'javax:javaee-web-api:6.0'
     compile project(':grails-plugin-controllers'), project(':grails-plugin-events')
 }

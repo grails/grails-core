@@ -1,11 +1,7 @@
-configurations {
-    optional
-}
 dependencies {
     compile project(":grails-web-common"),
             project(":grails-validation")
 
-    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
     compile("org.grails:grails-datastore-core:$datastoreVersion") {
         exclude group: 'org.springframework', module:'spring-core'
         exclude group: 'org.springframework', module:'spring-context'
@@ -30,14 +26,6 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    optional "org.fusesource.jansi:jansi:$jansiVersion"
-    optional "jline:jline:$jlineVersion"
-}
-sourceSets {
-    main {
-        compileClasspath += files(configurations.optional)
-    }
-    test {
-        runtimeClasspath += files(configurations.optional)
-    }
+    provided "org.fusesource.jansi:jansi:$jansiVersion"
+    provided "jline:jline:$jlineVersion"
 }

@@ -2,21 +2,19 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
+        maven { url "https://repo.grails.org/grails/core" }
         jcenter()
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
+        classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
     }
 }
 
 apply plugin: 'idea'
 
-ext.optionalDeps = []
-ext.providedDeps = []
-
-ext.provided = { providedDeps << it }
 ext {
     bintrayPublish = false
     grailsVersion = '3.0.0.BUILD-SNAPSHOT'
@@ -51,6 +49,7 @@ ext {
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
     tomcatVersion = "7.0.55"
+    servletApiVersion = "3.0.1"
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
 }
@@ -152,11 +151,28 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
+    apply plugin: 'provided-base'
+    apply plugin: 'optional-base'
 
     sourceCompatibility = "1.7"
     targetCompatibility = "1.7"
 
+    if(project.name =~ /^(grails-web|grails-plugin-|grails-project-api|grails-test-suite|grails-test)/) {
+        dependencies {
+            provided "javax.servlet:javax.servlet-api:$servletApiVersion"
+            // MockHttpServletRequest/Response/Context used in many classes
+            provided("org.springframework:spring-test:${springVersion}") {
+                exclude group: 'commons-logging', module:'commons-logging'
+            }
+        }
+    }
 
+    if(project.name =~ /^(grails-plugin-datasource|grails-test-suite)/) {
+        dependencies {
+            provided 'hsqldb:hsqldb:1.8.0.10'
+            provided 'com.h2database:h2:1.3.176'
+        }
+    }
 
     jar{
         manifest.mainAttributes(
@@ -340,20 +356,6 @@ subprojects { project ->
 
                     pom.withXml {
                         def xml = asNode()
-                        // respect 'optional' and 'provided' dependencies
-                        optionalDeps.each { dep ->
-                            xml.dependencies.find { it.artifactId == dep.name }?.optional = true
-                        }
-                        providedDeps.each { dep ->
-                            xml.dependencies.find { it.artifactId == dep.name }?.scope = 'provided'
-
-                        }
-
-                        configurations.runtime.allDependencies.each { dependency ->
-                            if (dependency.hasProperty("notInPom") && dependency.notInPom) {
-                                xml.dependencies.removeAll { it.groupId == dependency.group && it.artifactId == dependency.name }
-                            }
-                        }
 
                         xml.children().last() + {
                             delegate.name 'Grails'
@@ -374,8 +376,6 @@ subprojects { project ->
                                 delegate.developerConnection 'scm:git@github.com:grails/grails-core.git'
                             }
 
-
-
                             delegate.developers {
                                 delegate.developer {
                                     delegate.id 'graemerocher'
@@ -386,8 +386,8 @@ subprojects { project ->
                                     delegate.name 'Jeff Brown'
                                 }
                                 delegate.developer {
-                                    delegate.id 'burtbeckwith'
-                                    delegate.name 'Burt Beckwith'
+                                    delegate.id 'lhotari'
+                                    delegate.name 'Lari Hotari'
                                 }
                             }
 

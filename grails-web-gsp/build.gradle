@@ -1,8 +1,3 @@
-configurations {
-    optional
-}
-
-
 dependencies {
     compile( project(":grails-gsp") )
     compile( project(":grails-web-common") )
@@ -16,13 +11,5 @@ dependencies {
 //    }
 
     testRuntime( project(":grails-spring") )
-    optional "org.apache.ant:ant:${antVersion}"
+    provided "org.apache.ant:ant:${antVersion}"
 }
-
-sourceSets {
-    main {
-        compileClasspath += files(configurations.optional)
-    }
-}
-
-javadoc.classpath += files(configurations.optional)
