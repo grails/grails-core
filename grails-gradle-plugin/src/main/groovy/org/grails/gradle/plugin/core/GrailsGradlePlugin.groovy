@@ -1,4 +1,5 @@
 package org.grails.gradle.plugin.core
+
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
@@ -7,7 +8,6 @@ import groovy.transform.CompileStatic
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.JavaVersion
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
@@ -27,60 +27,121 @@ import org.grails.io.support.FactoriesLoaderSupport
 
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
-    List<Plugin<Project>> pluginInstancesToApply = [new IntegrationTestGradlePlugin()]
+    List<Class<?>> basePluginClasses = [IntegrationTestGradlePlugin]
 
     void apply(Project project) {
         super.apply(project)
-        pluginInstancesToApply.each { it.apply(project) }
+        registerGrailsExtension(project)
 
-        project.extensions.create("grails", GrailsExtension)
+        applyBasePlugins(project)
+
         registerFindMainClassTask(project)
 
-        def projectDir = project.projectDir
+        configureGrailsBuildSettings(project)
 
+        configureFileWatch(project)
+
+        def grailsVersion = resolveGrailsVersion(project)
+
+        enableNative2Ascii(project, grailsVersion)
+
+        configureAssetCompilation(project)
+
+        configureConsoleTask(project)
+
+        configureForkSettings(project, grailsVersion)
+
+        configureGrailsSourceDirs(project)
+
+        configureApplicationCommands(project)
+    }
+
+    protected List<Class<?>> applyBasePlugins(project) {
+        basePluginClasses.each { project.getPluginManager().apply(it) }
+    }
+
+    protected GrailsExtension registerGrailsExtension(Project project) {
+        project.extensions.create("grails", GrailsExtension)
+    }
+
+    protected void configureFileWatch(Project project) {
+        def environment = Environment.current
+        enableFileWatch(environment, project)
+    }
+
+    protected String configureGrailsBuildSettings(Project project) {
+        System.setProperty(BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
+    }
+
+    protected void configureApplicationCommands(Project project) {
+        def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
+        for (ctxCommand in applicationContextCommands) {
+            def taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
+            def commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
+            project.tasks.create(taskName, ApplicationContextCommandTask) {
+                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+                command = commandName
+                if (project.hasProperty('args')) {
+                    args(CommandLineParser.translateCommandline(project.args))
+                }
+            }
+        }
+    }
+
+    protected void configureGrailsSourceDirs(Project project) {
         def grailsSourceDirs = []
         def excludedDirs = ['views', 'migrations', 'assets', 'i18n', 'conf']
-        new File("$projectDir/grails-app").eachDir { File subdir ->
+        project.file("grails-app").eachDir { File subdir ->
             def dirName = subdir.name
-            if(!subdir.hidden && !dirName.startsWith(".") && !excludedDirs.contains(dirName)) {
+            if (!subdir.hidden && !dirName.startsWith(".") && !excludedDirs.contains(dirName)) {
                 grailsSourceDirs << subdir.absolutePath
             }
         }
 
-        grailsSourceDirs << "$projectDir/src/main/groovy"
+        grailsSourceDirs << project.file("src/main/groovy")
 
-        System.setProperty( BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
-        def environment = Environment.current
+        project.sourceSets {
+            main {
+                groovy {
+                    srcDirs = grailsSourceDirs
+                    resources {
+                        srcDirs = [
+                            project.file("src/main/resources"),
+                            project.file("grails-app/conf"),
+                            project.file("grails-app/views"),
+                            project.file("grails-app/i18n")
+                        ]
+                    }
+                }
+            }
+        }
+    }
 
-
-        enableFileWatch(environment, project)
-
+    protected String resolveGrailsVersion(Project project) {
         def grailsVersion = project.getProperties().get('grailsVersion')
 
-        if(!grailsVersion) {
+        if (!grailsVersion) {
             def grailsCoreDep = project.configurations.getByName('compile').dependencies.find { Dependency d -> d.name == 'grails-core' }
             grailsVersion = grailsCoreDep.version
         }
+        grailsVersion
+    }
 
-        enableNative2Ascii(project, grailsVersion)
-
-
-        if(project.extensions.findByName('assets')) {
+    protected void configureAssetCompilation(Project project) {
+        if (project.extensions.findByName('assets')) {
             project.assets {
                 assetsPath = 'grails-app/assets'
                 compileDir = 'build/assetCompile/assets'
             }
         }
 
-
         def tasks = project.tasks
         project.afterEvaluate {
-            if( tasks.findByName("war") ) {
+            if (tasks.findByName("war")) {
                 project.war {
-                   from "${project.buildDir}/assetCompile"
+                    from "${project.buildDir}/assetCompile"
                 }
-            }
-            else {
+            } else {
                 project.processResources {
                     from("${project.buildDir}/assetCompile") {
                         into "META-INF"
@@ -88,19 +149,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 }
             }
         }
+    }
 
-
-        configureConsoleTask(tasks, project)
-
+    protected void configureForkSettings(project, grailsVersion) {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { JavaForkOptions task ->
             def map = System.properties.findAll { entry ->
                 entry.key.startsWith("grails.")
             }
-            for(key in map.keySet()) {
+            for (key in map.keySet()) {
                 def value = map.get(key)
-                if(value) {
+                if (value) {
                     def sysPropName = key.toString().substring(7)
                     task.systemProperty(sysPropName, value.toString())
                 }
@@ -112,49 +172,21 @@ class GrailsGradlePlugin extends GroovyPlugin {
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
             task.minHeapSize = "768m"
             task.maxHeapSize = "768m"
-            if(!isJava8Compatible) {
+            if (!isJava8Compatible) {
                 task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
             }
             task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
         }
 
+        def tasks = project.tasks
         tasks.withType(Test).each systemPropertyConfigurer
         tasks.withType(JavaExec).each systemPropertyConfigurer
-
-        project.sourceSets {
-            main {
-                groovy {
-                    srcDirs = grailsSourceDirs
-                    resources {
-                        srcDirs = [
-                                "$projectDir/src/main/resources",
-                                "$projectDir/grails-app/conf",
-                                "$projectDir/grails-app/views",
-                                "$projectDir/grails-app/i18n"
-                        ]
-                    }
-                }
-            }
-        }
-
-
-        def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
-        for(ctxCommand in applicationContextCommands) {
-            def taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
-            def commandName = GrailsNameUtils.getScriptName( GrailsNameUtils.getLogicalName(ctxCommand, "Command") )
-            project.tasks.create(taskName, ApplicationContextCommandTask) {
-                classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
-                command = commandName
-                if (project.hasProperty('args')) {
-                    args(CommandLineParser.translateCommandline(project.args))
-                }
-            }
-        }
     }
 
 
     @CompileStatic
-    protected void configureConsoleTask(TaskContainer tasks, Project project) {
+    protected void configureConsoleTask(Project project) {
+        def tasks = project.tasks
         def consoleConfiguration = project.configurations.create("console")
         def findMainClass = tasks.findByName('findMainClass')
         def consoleTask = createConsoleTask(project, tasks, consoleConfiguration)
