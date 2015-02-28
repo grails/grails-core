@@ -35,6 +35,26 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
+        configureProvidedAndAstSources(project)
+
+        configureProjectNameAndVersionASTMetadata(project)
+
+        configurePluginResources(project)
+
+        configurePluginJarTask(project)
+
+        configureSourcesJarTask(project)
+
+    }
+
+    protected void configureSourcesJarTask(Project project) {
+        def sourcesJar = project.tasks.create("sourcesJar", Jar).configure {
+            classifier = 'sources'
+            from sourceSets.main.allSource
+        }
+    }
+
+    protected void configureProvidedAndAstSources(Project project) {
         def providedConfig = project.configurations.create("provided")
         def sourceSets = project.sourceSets
         def mainSourceSet = sourceSets.main
@@ -55,8 +75,65 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             }
         }
 
-        def projectTasks = project.tasks
-        def configScriptTask = projectTasks.create('configScript')
+        def copyAstClasses = project.task(type: Copy, "copyAstClasses") {
+            from sourceSets.ast.output
+            into mainSourceSet.output.classesDir
+        }
+        project.tasks.getByName('classes').dependsOn(copyAstClasses)
+
+        project.tasks.withType(JavaExec) {
+            classpath += project.configurations.provided + sourceSets.ast.output
+        }
+
+        def javadocTask = project.tasks.findByName('javadoc')
+        def groovydocTask = project.tasks.findByName('groovydoc')
+        if (javadocTask) {
+            javadocTask.configure {
+                source += sourceSets.ast.allJava
+                classpath += project.configurations.provided
+            }
+        }
+
+        if (groovydocTask) {
+            project.tasks.create("javadocJar", Jar).configure {
+                classifier = 'javadoc'
+                from groovydocTask.outputs
+            }.dependsOn(javadocTask)
+
+            groovydocTask.configure {
+                source += sourceSets.ast.allJava
+                classpath += project.configurations.provided
+            }
+        }
+    }
+
+    protected void configurePluginJarTask(Project project) {
+        project.jar {
+            exclude "logback.groovy"
+        }
+    }
+
+    protected void configurePluginResources(Project project) {
+        def copyCommands = project.task(type: Copy, "copyCommands") {
+            from "${project.projectDir}/src/main/scripts"
+            into "${processResources.destinationDir}/META-INF/commands"
+        }
+
+        def copyTemplates = project.task(type: Copy, "copyTemplates") {
+            from "${project.projectDir}/src/main/templates"
+            into "${processResources.destinationDir}/META-INF/templates"
+        }
+
+        ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
+        processResources.dependsOn(copyCommands, copyTemplates)
+        processResources {
+            rename "application.yml", "plugin.yml"
+            exclude "spring/resources.groovy"
+        }
+    }
+
+    protected void configureProjectNameAndVersionASTMetadata(Project project) {
+        def configScriptTask = project.tasks.create('configScript')
 
         def configFile = project.file("$project.buildDir/config.groovy")
         configScriptTask.outputs.file(configFile)
@@ -76,67 +153,9 @@ withConfig(configuration) {
 }
 """
         }
-
-        ProcessResources processResources = (ProcessResources) projectTasks.getByName('processResources')
-
-        def copyCommands = project.task(type:Copy, "copyCommands") {
-            from "${project.projectDir}/src/main/scripts"
-            into "${processResources.destinationDir}/META-INF/commands"
-        }
-
-        def copyTemplates = project.task(type:Copy, "copyTemplates") {
-            from "${project.projectDir}/src/main/templates"
-            into "${processResources.destinationDir}/META-INF/templates"
-        }
-
-        def copyAstClasses = project.task(type:Copy, "copyAstClasses") {
-            from sourceSets.ast.output
-            into mainSourceSet.output.classesDir
-        }
-        processResources.dependsOn(copyCommands, copyTemplates)
-        projectTasks.getByName('compileGroovy').dependsOn(configScriptTask)
-        projectTasks.getByName('classes').dependsOn(copyAstClasses)
-        project.processResources {
-            rename "application.yml", "plugin.yml"
-            exclude "spring/resources.groovy"
-        }
-        project.jar {
-            exclude "logback.groovy"
-        }
+        project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
         }
-
-        project.tasks.withType(JavaExec) {
-            classpath += project.configurations.provided + sourceSets.ast.output
-        }
-
-        def javadocTask = projectTasks.findByName('javadoc')
-        def groovydocTask = projectTasks.findByName('groovydoc')
-        if(javadocTask) {
-            javadocTask.configure {
-                source += sourceSets.ast.allJava
-                classpath += project.configurations.provided
-            }
-        }
-
-
-        if(groovydocTask) {
-            projectTasks.create("javadocJar", Jar).configure {
-                classifier = 'javadoc'
-                from groovydocTask.outputs
-            }.dependsOn(javadocTask)
-
-            groovydocTask.configure {
-                source += sourceSets.ast.allJava
-                classpath += project.configurations.provided
-            }
-        }
-
-        def sourcesJar = projectTasks.create("sourcesJar", Jar).configure {
-            classifier = 'sources'
-            from mainSourceSet.allSource
-        }
-
     }
 }
