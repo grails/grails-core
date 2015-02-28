@@ -52,8 +52,8 @@ publishing {
                             delegate.name 'Jeff Brown'
                         }
                         delegate.developer {
-                            delegate.id 'burtbeckwith'
-                            delegate.name 'Burt Beckwith'
+                            delegate.id 'lhotari'
+                            delegate.name 'Lari Hotari'
                         }
                     }
 
@@ -162,5 +162,3 @@ bintray {
         }
     }
 }
-
-

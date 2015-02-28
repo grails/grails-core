@@ -9,9 +9,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot:$springBootVersion")
     compile "org.springframework:spring-test:${springVersion}"
 
-    provided "org.springframework:spring-web:${springVersion}"
-    optional "org.springframework:spring-web:${springVersion}"
+    compile "org.springframework:spring-web:${springVersion}", optional
 
-    provided "javax.servlet:javax.servlet-api:$servletApiVersion"
-    optional "javax.servlet:javax.servlet-api:$servletApiVersion"
+    compile "javax.servlet:javax.servlet-api:$servletApiVersion", optional
 }

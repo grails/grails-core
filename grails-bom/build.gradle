@@ -55,8 +55,8 @@ publishing {
                             mkp.name 'Jeff Brown'
                         }
                         mkp.developer {
-                            mkp.id 'burtbeckwith'
-                            mkp.name 'Burt Beckwith'
+                            mkp.id 'lhotari'
+                            mkp.name 'Lari Hotari'
                         }
                     }
 
@@ -165,5 +165,3 @@ bintray {
         }
     }
 }
-
-
