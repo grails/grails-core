@@ -363,14 +363,10 @@ class GrailsCli {
 
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
-                        def buildAction = connection.action(new ClasspathBuildAction())
-                        buildAction.colorOutput = projectContext.console.ansiEnabled
-                        buildAction.setStandardOutput(originalStreams.out)
-                        buildAction.setStandardError(originalStreams.err)
-                        EclipseProject project = buildAction.run()
+                        EclipseProject project = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction())
 
                         List<URL> classpathUrls = project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
-                        originalStreams.out.println "Done."
+
                         return classpathUrls
                     }
                 }.call()
