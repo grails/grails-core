@@ -2,7 +2,6 @@ package org.grails.gradle.plugin.core
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 
@@ -35,8 +34,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
-        configureProvidedAndAstSources(project)
-
         configureProjectNameAndVersionASTMetadata(project)
 
         configurePluginResources(project)
@@ -47,63 +44,19 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     }
 
+    @Override
+    protected List<File> resolveGrailsSourceDirs(Project project) {
+        def grailsSourceDirs = super.resolveGrailsResourceDirs(project)
+        if (project.file("src/main/ast").isDirectory()) {
+            grailsSourceDirs << project.file("src/main/ast")
+        }
+        grailsSourceDirs
+    }
+
     protected void configureSourcesJarTask(Project project) {
         def sourcesJar = project.tasks.create("sourcesJar", Jar).configure {
             classifier = 'sources'
             from sourceSets.main.allSource
-        }
-    }
-
-    protected void configureProvidedAndAstSources(Project project) {
-        def providedConfig = project.configurations.create("provided")
-        def sourceSets = project.sourceSets
-        def mainSourceSet = sourceSets.main
-
-        project.sourceSets {
-            def providedFiles = project.files(providedConfig)
-            ast {
-                groovy {
-                    compileClasspath += project.configurations.compile + providedFiles
-                }
-            }
-            main {
-                compileClasspath += providedFiles + sourceSets.ast.output
-            }
-            test {
-                compileClasspath += providedFiles + sourceSets.ast.output
-                runtimeClasspath += providedFiles
-            }
-        }
-
-        def copyAstClasses = project.task(type: Copy, "copyAstClasses") {
-            from sourceSets.ast.output
-            into mainSourceSet.output.classesDir
-        }
-        project.tasks.getByName('classes').dependsOn(copyAstClasses)
-
-        project.tasks.withType(JavaExec) {
-            classpath += project.configurations.provided + sourceSets.ast.output
-        }
-
-        def javadocTask = project.tasks.findByName('javadoc')
-        def groovydocTask = project.tasks.findByName('groovydoc')
-        if (javadocTask) {
-            javadocTask.configure {
-                source += sourceSets.ast.allJava
-                classpath += project.configurations.provided
-            }
-        }
-
-        if (groovydocTask) {
-            project.tasks.create("javadocJar", Jar).configure {
-                classifier = 'javadoc'
-                from groovydocTask.outputs
-            }.dependsOn(javadocTask)
-
-            groovydocTask.configure {
-                source += sourceSets.ast.allJava
-                classpath += project.configurations.provided
-            }
         }
     }
 
