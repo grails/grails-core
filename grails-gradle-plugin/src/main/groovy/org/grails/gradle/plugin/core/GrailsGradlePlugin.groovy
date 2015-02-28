@@ -5,6 +5,7 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
+import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.JavaVersion
@@ -27,7 +28,7 @@ import org.grails.io.support.FactoriesLoaderSupport
 
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
-    List<Class<?>> basePluginClasses = [IntegrationTestGradlePlugin]
+    List<Class<?>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
 
