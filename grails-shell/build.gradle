@@ -2,13 +2,13 @@ apply plugin:'application'
 
 mainClassName = "org.grails.cli.GrailsCli"
 
-repositories { 
+repositories {
     jcenter()
 }
 
 ext {
 //    gradleToolingApiVersion = gradle.gradleVersion
-    gradleToolingApiVersion = '2.3-rc-3'
+    gradleToolingApiVersion = '2.3'
 }
 
 dependencies {
