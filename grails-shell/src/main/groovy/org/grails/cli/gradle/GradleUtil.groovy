@@ -36,7 +36,7 @@ import org.grails.cli.profile.ProjectContext
  */
 @CompileStatic
 class GradleUtil {
-    private static final boolean DEFAULT_SUPPRESS_OUTPUT = false
+    private static final boolean DEFAULT_SUPPRESS_OUTPUT = true
     private static ProjectConnection preparedConnection = null
     private static File preparedConnectionBaseDir = null
 
