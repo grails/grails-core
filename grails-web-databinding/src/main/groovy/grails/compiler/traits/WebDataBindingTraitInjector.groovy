@@ -16,9 +16,7 @@
 package grails.compiler.traits
 
 import grails.web.databinding.WebDataBinding
-
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.io.support.GrailsResourceUtils
 
 /**
  * 
@@ -30,11 +28,6 @@ class WebDataBindingTraitInjector implements TraitInjector {
 
     Class getTrait() {
         WebDataBinding
-    }
-
-    @Override
-    boolean shouldInject(URL url) {
-        GrailsResourceUtils.isDomainClass(url)
     }
 
     @Override

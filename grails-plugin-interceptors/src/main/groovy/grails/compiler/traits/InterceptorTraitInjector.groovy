@@ -17,10 +17,6 @@ package grails.compiler.traits
 
 import grails.artefact.Interceptor
 import groovy.transform.CompileStatic
-import org.grails.io.support.GrailsResourceUtils
-
-import java.util.regex.Pattern
-
 
 /**
  * Injects the {@link Interceptor} trait by convention
@@ -31,17 +27,9 @@ import java.util.regex.Pattern
 @CompileStatic
 class InterceptorTraitInjector implements TraitInjector {
 
-    static Pattern INTERCEPTOR_PATTERN = Pattern.compile(".+/" +
-            GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Interceptor\\.groovy");
-
     @Override
     Class getTrait() {
         Interceptor
-    }
-
-    @Override
-    boolean shouldInject(URL url) {
-        return url != null && INTERCEPTOR_PATTERN.matcher(url.getFile()).find();
     }
 
     @Override
