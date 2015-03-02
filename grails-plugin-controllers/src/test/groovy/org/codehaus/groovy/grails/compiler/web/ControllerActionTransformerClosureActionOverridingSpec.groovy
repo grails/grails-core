@@ -21,18 +21,11 @@ class ControllerActionTransformerClosureActionOverridingSpec extends Specificati
             @Override
             boolean shouldInject(URL url) { true }
         }
-        def controllerTraitInjector = new ControllerTraitInjector() {
-            @Override
-            boolean shouldInject(URL url) {
-                true
-            }
-        }
-
-        gcl.traitInjectors = [controllerTraitInjector] as TraitInjector[]
         gcl.classInjectors = [transformer] as ClassInjector[]
 
         // Make sure this parent controller is compiled before the subclass.  This is relevant to GRAILS-8268
         gcl.parseClass('''
+        @grails.artefact.Artefact('Controller')
         abstract class MyAbstractController {
             def index = {
                 [name: 'Abstract Parent Controller']
@@ -40,6 +33,7 @@ class ControllerActionTransformerClosureActionOverridingSpec extends Specificati
         }
 ''')
         subclassControllerClass = gcl.parseClass('''
+        @grails.artefact.Artefact('Controller')
         class SubClassController extends MyAbstractController {
             def index = {
                 [name: 'Subclass Controller']

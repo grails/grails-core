@@ -2,7 +2,6 @@ package org.grails.compiler.injection
 
 import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.TraitInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
 import grails.plugins.metadata.GrailsPlugin
@@ -58,22 +57,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         List<ArtefactHandler> artefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler)
         ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
 
-        GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit)
-        List<TraitInjector> allTraitInjectors = grailsTraitInjector.getTraitInjectors()
-
         Map<String, List<ClassInjector>> cache = new HashMap<String, List<ClassInjector>>().withDefault { String key ->
             ArtefactTypeAstTransformation.findInjectors(key, classInjectors)
-        }
-
-        Map<String, List<TraitInjector>> traitInjectorCache = new HashMap<String, List<TraitInjector>>().withDefault { String key ->
-            List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
-            for(TraitInjector injector : allTraitInjectors) {
-                List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes())
-                if(artefactTypes.contains(key)) {
-                    injectorsToUse.add(injector)
-                }
-            }
-            injectorsToUse
         }
 
         Set<String> transformedClasses = []
@@ -130,11 +115,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
                         List<ClassInjector> injectors = cache[handler.type]
                         ArtefactTypeAstTransformation.performInjection(source, classNode, injectors)
-
-                        List<TraitInjector> traitInjectorsToUse = traitInjectorCache[handler.type]
-                        if(traitInjectorsToUse != null && traitInjectorsToUse.size() > 0) {
-                            grailsTraitInjector.performTraitInjection(source, classNode, traitInjectorsToUse)
-                        }
+                        TraitInjectionUtils.processTraitsForNode(source, classNode, handler.getType(), compilationUnit)
                     }
                 }
             }

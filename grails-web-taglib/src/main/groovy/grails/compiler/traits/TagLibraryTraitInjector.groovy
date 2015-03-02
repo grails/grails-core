@@ -17,10 +17,6 @@ package grails.compiler.traits
 
 import grails.artefact.TagLibrary
 
-import java.util.regex.Pattern
-
-import org.grails.io.support.GrailsResourceUtils
-
 /**
  * 
  * @since 3.0
@@ -29,19 +25,11 @@ import org.grails.io.support.GrailsResourceUtils
  */
 class TagLibraryTraitInjector implements TraitInjector {
     
-    static Pattern TAGLIB_PATTERN = Pattern.compile(".+/" +
-        GrailsResourceUtils.GRAILS_APP_DIR + "/taglib/(.+)TagLib\\.groovy")
- 
     @Override
     Class getTrait() {
         TagLibrary
     }
- 
-    @Override
-    boolean shouldInject(URL url) {
-        return url != null && TAGLIB_PATTERN.matcher(url.getFile()).find();
-    }
- 
+
     @Override
     String[] getArtefactTypes() {
         ['TagLibrary', 'TagLib'] as String[]

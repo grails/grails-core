@@ -2,6 +2,7 @@ package org.grails.gradle.plugin.core
 
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 
@@ -34,6 +35,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
+        configureAstSources(project)
+
         configureProjectNameAndVersionASTMetadata(project)
 
         configurePluginResources(project)
@@ -44,19 +47,58 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     }
 
-    @Override
-    protected List<File> resolveGrailsSourceDirs(Project project) {
-        def grailsSourceDirs = super.resolveGrailsResourceDirs(project)
-        if (project.file("src/main/ast").isDirectory()) {
-            grailsSourceDirs << project.file("src/main/ast")
-        }
-        grailsSourceDirs
-    }
-
     protected void configureSourcesJarTask(Project project) {
         def sourcesJar = project.tasks.create("sourcesJar", Jar).configure {
             classifier = 'sources'
-            from sourceSets.main.allSource
+            from project.sourceSets.main.allSource
+        }
+    }
+
+    protected void configureAstSources(Project project) {
+        def sourceSets = project.sourceSets
+        def mainSourceSet = sourceSets.main
+
+        project.sourceSets {
+            ast {
+                groovy {
+                    compileClasspath += project.configurations.compile
+                }
+            }
+            main {
+                compileClasspath += sourceSets.ast.output
+            }
+            test {
+                compileClasspath += sourceSets.ast.output
+            }
+        }
+
+        def copyAstClasses = project.task(type: Copy, "copyAstClasses") {
+            from sourceSets.ast.output
+            into mainSourceSet.output.classesDir
+        }
+        project.tasks.getByName('classes').dependsOn(copyAstClasses)
+
+        project.tasks.withType(JavaExec) {
+            classpath += sourceSets.ast.output
+        }
+
+        def javadocTask = project.tasks.findByName('javadoc')
+        def groovydocTask = project.tasks.findByName('groovydoc')
+        if (javadocTask) {
+            javadocTask.configure {
+                source += sourceSets.ast.allJava
+            }
+        }
+
+        if (groovydocTask) {
+            project.tasks.create("javadocJar", Jar).configure {
+                classifier = 'javadoc'
+                from groovydocTask.outputs
+            }.dependsOn(javadocTask)
+
+            groovydocTask.configure {
+                source += sourceSets.ast.allJava
+            }
         }
     }
 
@@ -67,6 +109,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     protected void configurePluginResources(Project project) {
+        ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
         def copyCommands = project.task(type: Copy, "copyCommands") {
             from "${project.projectDir}/src/main/scripts"
             into "${processResources.destinationDir}/META-INF/commands"
@@ -77,9 +120,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             into "${processResources.destinationDir}/META-INF/templates"
         }
 
-        ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
         processResources.dependsOn(copyCommands, copyTemplates)
-        processResources {
+        project.processResources {
             rename "application.yml", "plugin.yml"
             exclude "spring/resources.groovy"
         }

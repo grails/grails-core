@@ -66,7 +66,7 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.compiler.injection.ArtefactTypeAstTransformation
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
-import org.grails.compiler.injection.GrailsAwareTraitInjectionOperation
+import org.grails.compiler.injection.TraitInjectionUtils
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.io.DefaultResourceLocator
@@ -154,7 +154,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { !(it instanceof ControllerActionTransformer) })
             
             if(unit) {
-                GrailsAwareTraitInjectionOperation.processTraitsForNode(source, newControllerClassNode, 'Controller', unit)
+                TraitInjectionUtils.processTraitsForNode(source, newControllerClassNode, 'Controller', unit)
             }
             
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)

@@ -27,8 +27,6 @@ import java.net.URL;
 public interface TraitInjector {
     Class getTrait();
 
-    boolean shouldInject(URL url);
-
     String[] getArtefactTypes();
 }
 
