@@ -35,7 +35,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
-        configureProvidedAndAstSources(project)
+        configureAstSources(project)
 
         configureProjectNameAndVersionASTMetadata(project)
 
@@ -54,24 +54,21 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
     }
 
-    protected void configureProvidedAndAstSources(Project project) {
-        def providedConfig = project.configurations.create("provided")
+    protected void configureAstSources(Project project) {
         def sourceSets = project.sourceSets
         def mainSourceSet = sourceSets.main
 
         project.sourceSets {
-            def providedFiles = project.files(providedConfig)
             ast {
                 groovy {
-                    compileClasspath += project.configurations.compile + providedFiles
+                    compileClasspath += project.configurations.compile
                 }
             }
             main {
-                compileClasspath += providedFiles + sourceSets.ast.output
+                compileClasspath += sourceSets.ast.output
             }
             test {
-                compileClasspath += providedFiles + sourceSets.ast.output
-                runtimeClasspath += providedFiles
+                compileClasspath += sourceSets.ast.output
             }
         }
 
@@ -82,7 +79,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         project.tasks.getByName('classes').dependsOn(copyAstClasses)
 
         project.tasks.withType(JavaExec) {
-            classpath += project.configurations.provided + sourceSets.ast.output
+            classpath += sourceSets.ast.output
         }
 
         def javadocTask = project.tasks.findByName('javadoc')
@@ -90,7 +87,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         if (javadocTask) {
             javadocTask.configure {
                 source += sourceSets.ast.allJava
-                classpath += project.configurations.provided
             }
         }
 
@@ -102,7 +98,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
             groovydocTask.configure {
                 source += sourceSets.ast.allJava
-                classpath += project.configurations.provided
             }
         }
     }
