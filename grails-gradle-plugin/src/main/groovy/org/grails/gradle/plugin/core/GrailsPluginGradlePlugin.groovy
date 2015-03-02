@@ -50,7 +50,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     protected void configureSourcesJarTask(Project project) {
         def sourcesJar = project.tasks.create("sourcesJar", Jar).configure {
             classifier = 'sources'
-            from sourceSets.main.allSource
+            from project.sourceSets.main.allSource
         }
     }
 
@@ -121,7 +121,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
 
         processResources.dependsOn(copyCommands, copyTemplates)
-        processResources {
+        project.processResources {
             rename "application.yml", "plugin.yml"
             exclude "spring/resources.groovy"
         }
