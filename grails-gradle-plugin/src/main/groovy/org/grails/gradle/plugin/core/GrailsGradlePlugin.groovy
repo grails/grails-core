@@ -133,7 +133,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected String resolveGrailsVersion(Project project) {
-        def grailsVersion = project.getProperties().get('grailsVersion')
+        def grailsVersion = project.property('grailsVersion')
 
         if (!grailsVersion) {
             def grailsCoreDep = project.configurations.getByName('compile').dependencies.find { Dependency d -> d.name == 'grails-core' }
@@ -208,7 +208,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
-            def mainClassName = project.properties.get("mainClassName")
+            def mainClassName = project.property("mainClassName")
             consoleTask.args mainClassName
             shellTask.args mainClassName
             project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
