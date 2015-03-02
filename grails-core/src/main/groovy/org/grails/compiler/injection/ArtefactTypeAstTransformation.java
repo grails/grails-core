@@ -87,7 +87,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     protected void performTraitInjectionOnArtefactType(SourceUnit sourceUnit,
             ClassNode cNode, String artefactType) {
         if (compilationUnit != null) {
-            GrailsAwareTraitInjectionOperation.processTraitsForNode(sourceUnit, cNode, artefactType, compilationUnit);
+            TraitInjectionUtils.processTraitsForNode(sourceUnit, cNode, artefactType, compilationUnit);
         }
     }
 

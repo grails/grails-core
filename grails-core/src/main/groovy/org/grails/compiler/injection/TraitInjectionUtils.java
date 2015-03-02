@@ -16,27 +16,16 @@
 package org.grails.compiler.injection;
 
 import grails.compiler.traits.TraitInjector;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.trait.TraitComposer;
 import org.grails.core.io.support.GrailsFactoriesLoader;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
+
+import java.util.*;
 
 /**
  *
@@ -44,46 +33,11 @@ import org.springframework.core.io.Resource;
  * @since 3.0
  *
  */
-public class GrailsAwareTraitInjectionOperation extends
-        CompilationUnit.PrimaryClassNodeOperation {
+public class TraitInjectionUtils {
 
-    protected CompilationUnit unit;
-    protected List<TraitInjector> traitInjectors;
+    private static List<TraitInjector> traitInjectors;
 
-    public GrailsAwareTraitInjectionOperation(CompilationUnit unit) {
-        this.unit = unit;
-        traitInjectors = GrailsFactoriesLoader.loadFactories(TraitInjector.class);
-    }
-
-    public void setTraitInjectors(List<TraitInjector> i) {
-        traitInjectors = i;
-    }
-
-    @Override
-    public void call(SourceUnit source, GeneratorContext context,
-            ClassNode classNode) throws CompilationFailedException {
-
-        URL url = null;
-        final String filename = source.getName();
-        Resource resource = new FileSystemResource(filename);
-        if (resource.exists()) {
-            try {
-                url = resource.getURL();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
-        for (TraitInjector injector : traitInjectors) {
-            if (injector.shouldInject(url)) {
-                injectorsToUse.add(injector);
-            }
-        }
-        performTraitInjection(source, classNode, injectorsToUse);
-    }
-
-    public void performTraitInjection(SourceUnit source, ClassNode classNode,
+    private static void doInjectionInternal(CompilationUnit unit, SourceUnit source, ClassNode classNode,
             List<TraitInjector> injectorsToUse) {
         boolean traitsAdded = false;
         for (TraitInjector injector : injectorsToUse) {
@@ -114,7 +68,10 @@ public class GrailsAwareTraitInjectionOperation extends
         }
     }
 
-    public List<TraitInjector> getTraitInjectors() {
+    private static List<TraitInjector> getTraitInjectors() {
+        if(traitInjectors == null) {
+            traitInjectors = GrailsFactoriesLoader.loadFactories(TraitInjector.class);
+        }
         return Collections.unmodifiableList(traitInjectors);
     }
     
@@ -122,8 +79,7 @@ public class GrailsAwareTraitInjectionOperation extends
                                             final ClassNode cNode,
                                             final String artefactType, 
                                             final CompilationUnit compilationUnit) {
-        final GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(compilationUnit);
-        final List<TraitInjector> traitInjectors = grailsTraitInjector.getTraitInjectors();
+        final List<TraitInjector> traitInjectors = getTraitInjectors();
         final List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
         for (final TraitInjector injector : traitInjectors) {
             final List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
@@ -133,11 +89,11 @@ public class GrailsAwareTraitInjectionOperation extends
         }
         try {
             if(injectorsToUse.size() > 0) {
-                grailsTraitInjector.performTraitInjection(sourceUnit, cNode, injectorsToUse);
+                doInjectionInternal(compilationUnit, sourceUnit, cNode, injectorsToUse);
             }
         } catch (RuntimeException e) {
             try {
-                System.err.println("Error occurred calling Trait injector ["+grailsTraitInjector.getClass().getName()+"]: "
+                System.err.println("Error occurred calling Trait injector ["+TraitInjectionUtils.class.getName()+"]: "
                         + e.getMessage());
                 e.printStackTrace();
             } catch (Throwable t) {

@@ -16,15 +16,12 @@
 package org.grails.compiler.injection;
 
 import grails.compiler.ast.ClassInjector;
-import grails.compiler.traits.TraitInjector;
 import groovy.lang.GroovyClassLoader;
-
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
 
 import java.security.CodeSource;
-import java.util.Arrays;
 
 /**
  * A class loader that is aware of Groovy sources and injection operations.
@@ -55,16 +52,11 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
     }
 
     private ClassInjector[] classInjectors;
-    private TraitInjector[] traitInjectors;
 
     public void setClassInjectors(ClassInjector[] classInjectors) {
         this.classInjectors = classInjectors;
     }
     
-    public void setTraitInjectors(TraitInjector[] traitInjectors) {
-        this.traitInjectors = traitInjectors;
-    }
-
     /**
      * @see groovy.lang.GroovyClassLoader#createCompilationUnit(org.codehaus.groovy.control.CompilerConfiguration, java.security.CodeSource)
      */
@@ -82,12 +74,6 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
         }
 
         cu.addPhaseOperation(operation, Phases.CANONICALIZATION);
-        
-        if(traitInjectors != null) {
-            GrailsAwareTraitInjectionOperation grailsTraitInjector = new GrailsAwareTraitInjectionOperation(cu);
-            grailsTraitInjector.setTraitInjectors(Arrays.asList(traitInjectors));
-            cu.addPhaseOperation(grailsTraitInjector, Phases.SEMANTIC_ANALYSIS);
-        }
 
         return cu;
     }
