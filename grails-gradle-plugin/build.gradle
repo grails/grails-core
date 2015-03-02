@@ -1,14 +1,4 @@
 apply plugin: 'groovy'
-apply plugin: 'maven'
-
-group = 'org.grails'
-
-repositories {
-  maven { url "https://repo.spring.io/libs-release" }
-  mavenLocal()
-  mavenCentral()
-
-}
 
 dependencies {
     compile gradleApi()
