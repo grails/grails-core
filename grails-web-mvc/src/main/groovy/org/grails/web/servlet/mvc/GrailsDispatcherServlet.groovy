@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.ServletRequestAttributes
+import org.springframework.web.multipart.MultipartException
 import org.springframework.web.servlet.DispatcherServlet
 
 import javax.servlet.http.HttpServletRequest
@@ -63,5 +64,17 @@ class GrailsDispatcherServlet extends DispatcherServlet{
             Holders.setServletContext(servletContext);
             Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
         }
+    }
+
+    @Override
+    protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
+        def processedRequest = super.checkMultipart(request)
+        if(!processedRequest.is(request)) {
+            def webRequest = GrailsWebRequest.lookup(request)
+            if(webRequest != null) {
+                webRequest.multipartRequest = processedRequest
+            }
+        }
+        return processedRequest
     }
 }

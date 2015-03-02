@@ -83,6 +83,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
     private HttpServletResponse wrappedResponse;
 
     private EncodingStateRegistry encodingStateRegistry;
+    private HttpServletRequest multipartRequest;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
         super(request, response);
@@ -106,6 +107,16 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext, ApplicationContext applicationContext) {
         this(request, response, servletContext);
         this.applicationContext = applicationContext;
+    }
+
+
+    /**
+     * Holds a reference to the {@link org.springframework.web.multipart.MultipartRequest}
+     *
+     * @param multipartRequest The multipart request
+     */
+    public void setMultipartRequest(HttpServletRequest multipartRequest) {
+        this.multipartRequest = multipartRequest;
     }
 
     private void inheritEncodingStateRegistry() {
@@ -197,7 +208,12 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
      * @return The currently executing request
      */
     public HttpServletRequest getCurrentRequest() {
-        return getRequest();
+        if(multipartRequest != null) {
+            return multipartRequest;
+        }
+        else {
+            return getRequest();
+        }
     }
 
     public HttpServletResponse getCurrentResponse() {

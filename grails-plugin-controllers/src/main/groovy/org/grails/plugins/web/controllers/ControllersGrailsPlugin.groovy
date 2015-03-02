@@ -131,6 +131,7 @@ class ControllersGrailsPlugin extends Plugin {
         dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), "/*") {
             loadOnStartup = 2
             asyncSupported = true
+            multipartConfig = multipartConfigElement
         }
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
