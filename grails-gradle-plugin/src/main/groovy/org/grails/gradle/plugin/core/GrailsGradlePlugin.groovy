@@ -14,7 +14,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
-import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
@@ -134,17 +133,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected String resolveGrailsVersion(Project project) {
-        def grailsVersion = getExtraProperties(project).get("grailsVersion")
+        def grailsVersion = project.getProperties().get('grailsVersion')
 
         if (!grailsVersion) {
             def grailsCoreDep = project.configurations.getByName('compile').dependencies.find { Dependency d -> d.name == 'grails-core' }
             grailsVersion = grailsCoreDep.version
         }
         grailsVersion
-    }
-
-    protected ExtraPropertiesExtension getExtraProperties(Project project) {
-        project.getExtensions().getExtraProperties()
     }
 
     protected void configureAssetCompilation(Project project) {
@@ -213,7 +208,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
-            def mainClassName = getExtraProperties(project).get("mainClassName")
+            def mainClassName = project.properties.get("mainClassName")
             consoleTask.args mainClassName
             shellTask.args mainClassName
             project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
