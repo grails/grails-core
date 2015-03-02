@@ -67,6 +67,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     protected void configurePluginResources(Project project) {
+        ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
         def copyCommands = project.task(type: Copy, "copyCommands") {
             from "${project.projectDir}/src/main/scripts"
             into "${processResources.destinationDir}/META-INF/commands"
@@ -77,7 +78,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             into "${processResources.destinationDir}/META-INF/templates"
         }
 
-        ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
         processResources.dependsOn(copyCommands, copyTemplates)
         processResources {
             rename "application.yml", "plugin.yml"
