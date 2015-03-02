@@ -21,20 +21,32 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.process.JavaForkOptions
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
+import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.io.support.FactoriesLoaderSupport
+
+import javax.inject.Inject
 
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
+    private final ToolingModelBuilderRegistry registry
+
+    @Inject
+    GrailsGradlePlugin(ToolingModelBuilderRegistry registry) {
+        this.registry = registry
+    }
 
     void apply(Project project) {
         super.apply(project)
+        registerToolingModelBuilder(project, registry)
+
         registerGrailsExtension(project)
 
         applyBasePlugins(project)
@@ -58,6 +70,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureGrailsSourceDirs(project)
 
         configureApplicationCommands(project)
+    }
+
+    protected void registerToolingModelBuilder(Project project, ToolingModelBuilderRegistry registry) {
+        registry.register(new GrailsClasspathToolingModelBuilder())
     }
 
     @CompileStatic

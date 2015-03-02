@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.cli.gradle
 
-import org.gradle.tooling.BuildAction
-import org.gradle.tooling.BuildController
-import org.grails.gradle.plugin.model.GrailsClasspath
+package org.grails.gradle.plugin.model
 
 /**
- * Gets the EclipseProject which helps obtain the classpath necessary
+ * Gradle ToolingModel class that is used to return Classpath to Grails cli
  *
- * @author Graeme Rocher
- * @since 3.0
+ * this file is also in grails-shell project
  */
-class ClasspathBuildAction implements BuildAction<GrailsClasspath>, Serializable {
-    @Override
-    GrailsClasspath execute(BuildController controller) {
-        controller.getModel(GrailsClasspath)
-    }
+interface GrailsClasspath extends Serializable {
+    List<URL> getDependencies()
 }

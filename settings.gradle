@@ -63,5 +63,6 @@ include (
         'grails-compat',
 
         // Gradle Plugin
-        'grails-gradle-plugin'
+        'grails-gradle-plugin',
+        'grails-gradle-model'
 )

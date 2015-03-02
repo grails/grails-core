@@ -28,8 +28,6 @@ import jline.console.completer.ArgumentCompleter
 import jline.internal.NonBlockingInputStream
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
-import org.gradle.tooling.model.ExternalDependency
-import org.gradle.tooling.model.eclipse.EclipseProject
 import org.grails.build.parsing.CommandLine
 import org.grails.build.parsing.CommandLineParser
 import org.grails.build.parsing.DefaultCommandLine
@@ -45,6 +43,7 @@ import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.cli.profile.git.GitProfileRepository
 import org.grails.config.CodeGenConfig
 import org.grails.exceptions.ExceptionUtils
+import org.grails.gradle.plugin.model.GrailsClasspath
 
 import java.util.concurrent.*
 
@@ -363,11 +362,8 @@ class GrailsCli {
 
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
-                        EclipseProject project = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction())
-
-                        List<URL> classpathUrls = project.getClasspath().collect { dependency -> ((ExternalDependency)dependency).file.toURI().toURL() }
-
-                        return classpathUrls
+                        GrailsClasspath grailsClasspath = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction())
+                        return grailsClasspath.dependencies
                     }
                 }.call()
 

@@ -16,8 +16,11 @@
 package org.grails.gradle.plugin.web
 
 import org.gradle.api.Project
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.core.GrailsGradlePlugin
+
+import javax.inject.Inject
 
 /**
  * Adds web specific extensions
@@ -26,6 +29,10 @@ import org.grails.gradle.plugin.core.GrailsGradlePlugin
  * @since 3.0
  */
 class GrailsWebGradlePlugin extends GrailsGradlePlugin {
+    @Inject
+    GrailsWebGradlePlugin(ToolingModelBuilderRegistry registry) {
+        super(registry)
+    }
 
     @Override
     void apply(Project project) {

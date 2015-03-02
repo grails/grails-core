@@ -13,6 +13,7 @@ ext {
 
 dependencies {
     compile project(":grails-bootstrap")
+    compile project(":grails-gradle-model")
     compile "org.apache.ant:ant:$antVersion"
     compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
     compile "org.codehaus.groovy:groovy-json:$groovyVersion"

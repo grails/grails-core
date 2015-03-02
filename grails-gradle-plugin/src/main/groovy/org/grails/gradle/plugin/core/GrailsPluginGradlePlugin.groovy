@@ -5,6 +5,9 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+
+import javax.inject.Inject
 
 /*
  * Copyright 2014 original authors
@@ -30,6 +33,11 @@ import org.gradle.language.jvm.tasks.ProcessResources
  *
  */
 class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
+
+    @Inject
+    GrailsPluginGradlePlugin(ToolingModelBuilderRegistry registry) {
+        super(registry)
+    }
 
     @Override
     void apply(Project project) {
