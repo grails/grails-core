@@ -9,6 +9,7 @@ import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.JavaVersion
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
@@ -28,7 +29,7 @@ import org.grails.io.support.FactoriesLoaderSupport
 
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
-    List<Class<?>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
+    List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
 
@@ -59,10 +60,12 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureApplicationCommands(project)
     }
 
-    protected List<Class<?>> applyBasePlugins(project) {
-        basePluginClasses.each { project.getPluginManager().apply(it) }
+    @CompileStatic
+    protected void applyBasePlugins(Project project) {
+        basePluginClasses.each { Class<Plugin> cls -> project.plugins.apply(cls) }
     }
 
+    @CompileStatic
     protected GrailsExtension registerGrailsExtension(Project project) {
         project.extensions.create("grails", GrailsExtension)
     }
