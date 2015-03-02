@@ -66,7 +66,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         basePluginClasses.each { Class<Plugin> cls -> project.plugins.apply(cls) }
     }
 
-    @CompileStatic
     protected GrailsExtension registerGrailsExtension(Project project) {
         project.extensions.create("grails", GrailsExtension)
     }
