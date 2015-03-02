@@ -18,10 +18,6 @@ package grails.compiler.traits
 import grails.artefact.Controller
 import groovy.transform.CompileStatic
 
-import java.util.regex.Pattern
-
-import org.grails.io.support.GrailsResourceUtils
-
 /**
  *
  * A {@link TraitInjector} that injects controllers with the {@link Controller} trait
@@ -35,19 +31,11 @@ import org.grails.io.support.GrailsResourceUtils
 @CompileStatic
 class ControllerTraitInjector implements TraitInjector {
     
-    static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
-        GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
- 
     @Override
     Class getTrait() {
         Controller
     }
- 
-    @Override
-    boolean shouldInject(URL url) {
-        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
-    }
- 
+
     @Override
     String[] getArtefactTypes() {
         ['Controller'] as String[]

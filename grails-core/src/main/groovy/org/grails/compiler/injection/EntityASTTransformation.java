@@ -90,7 +90,7 @@ public class EntityASTTransformation implements ASTTransformation, CompilationUn
         }
         
         if(compilationUnit != null) {
-            GrailsAwareTraitInjectionOperation.processTraitsForNode(sourceUnit, classNode, DomainClassArtefactHandler.TYPE, compilationUnit);
+            TraitInjectionUtils.processTraitsForNode(sourceUnit, classNode, DomainClassArtefactHandler.TYPE, compilationUnit);
         }
     }
 

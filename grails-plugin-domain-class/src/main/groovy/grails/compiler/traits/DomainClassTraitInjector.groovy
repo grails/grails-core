@@ -16,9 +16,7 @@
 package grails.compiler.traits
 
 import grails.artefact.DomainClass
-
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.io.support.GrailsResourceUtils
 
 /**
  * 
@@ -32,14 +30,9 @@ class DomainClassTraitInjector implements TraitInjector {
         DomainClass
     }
 
-    @Override
-    boolean shouldInject(URL url) {
-        GrailsResourceUtils.isDomainClass(url)
-    }
 
     @Override
     String[] getArtefactTypes() {
         [DomainClassArtefactHandler.TYPE]
     }
-
 }

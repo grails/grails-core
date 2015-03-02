@@ -17,10 +17,6 @@
 package grails.compiler.traits
 
 import grails.artefact.Service
-import org.grails.io.support.GrailsResourceUtils
-
-import java.util.regex.Pattern
-
 
 /**
  * A {@link TraitInjector} for services
@@ -30,17 +26,9 @@ import java.util.regex.Pattern
  */
 class ServiceTraitInjector implements TraitInjector {
 
-    static Pattern SERVICE_PATTERN = Pattern.compile(".+/" +
-            GrailsResourceUtils.GRAILS_APP_DIR + "/services/(.+)Service\\.groovy");
-
     @Override
     Class getTrait() {
         Service
-    }
-
-    @Override
-    boolean shouldInject(URL url) {
-        return url != null && SERVICE_PATTERN.matcher(url.getFile()).find();
     }
 
     @Override
