@@ -24,7 +24,6 @@ import org.gradle.tooling.provider.model.ToolingModelBuilder
  * Builds the GrailsClasspath instance that contains the URLs of the resolved dependencies
  */
 class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
-
     @Override
     boolean canBuild(String modelName) {
         return modelName == GrailsClasspath.name
@@ -32,7 +31,8 @@ class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
 
     @Override
     Object buildAll(String modelName, Project project) {
-        List<URL> runtimeDependencies = project.getConfigurations().getByName("runtime").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
+        // testRuntime includes provided
+        List<URL> runtimeDependencies = project.getConfigurations().getByName("testRuntime").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
             artifact.getFile().toURI().toURL()
         }
         new DefaultGrailsClasspath(dependencies: runtimeDependencies)
