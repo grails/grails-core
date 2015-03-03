@@ -72,18 +72,28 @@ class RenderStep extends AbstractStep {
         }
     }
 
+    protected File searchTemplateDepthFirst(Profile profile, String template) {
+        File profileDir = profile.profileDir
+        File templateFile = new File(profileDir, template)
+        if(templateFile.exists()) {
+            return templateFile
+        } else {
+            for(parent in profile.extends) {
+                templateFile = searchTemplateDepthFirst(parent, template)
+                if(templateFile) {
+                    return templateFile
+                }
+            }
+        }
+        null
+    }
 
     protected void renderToDestination(File destination, Map variables) {
         Profile profile = command.profile
-        File profileDir = profile.profileDir
-        File templateFile = new File(profileDir, parameters.template)
-        if(!templateFile.exists()) {
-            for(parent in profile.extends) {
-                templateFile = new File(parent.profileDir, parameters.template)
-                if(templateFile.exists()) break
-            }
+        File templateFile = searchTemplateDepthFirst(profile, parameters.template)
+        if(!templateFile) {
+            throw new IOException("cannot find template " + parameters.template)
         }
-
         destination.text = new SimpleTemplate(templateFile.text).render(variables)
         ClassNameCompleter.refreshAll()
     }
