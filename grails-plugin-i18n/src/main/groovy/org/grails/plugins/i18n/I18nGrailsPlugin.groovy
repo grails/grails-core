@@ -48,6 +48,7 @@ class I18nGrailsPlugin extends Plugin {
         def application = grailsApplication
         def config = application.config
         boolean gspEnableReload = config.getProperty(Settings.GSP_ENABLE_RELOAD, Boolean, false)
+        String encoding = config.getProperty(Settings.GSP_VIEW_ENCODING, 'UTF-8')
 
         messageSource(PluginAwareResourceBundleMessageSource) {
             fallbackToSystemLocale = false
@@ -57,6 +58,7 @@ class I18nGrailsPlugin extends Plugin {
                 cacheSeconds = config.getProperty(I18N_CACHE_SECONDS, Integer, 5)
                 fileCacheSeconds = config.getProperty(I18N_FILE_CACHE_SECONDS, Integer, 5)
             }
+            defaultEncoding = encoding
         }
 
         localeChangeInterceptor(ParamsAwareLocaleChangeInterceptor) {
