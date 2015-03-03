@@ -33,6 +33,7 @@ import grails.web.servlet.mvc.GrailsHttpSession;
 import grails.web.servlet.mvc.GrailsParameterMap;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.encoder.CodecLookupHelper;
 import org.grails.encoder.DefaultEncodingStateRegistry;
@@ -321,7 +322,20 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
      * @return the controllerClass
      */
     public GrailsControllerClass getControllerClass() {
-        return (GrailsControllerClass)getCurrentRequest().getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
+        HttpServletRequest currentRequest = getCurrentRequest();
+        GrailsControllerClass controllerClass = (GrailsControllerClass) currentRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
+        if(controllerClass == null) {
+            Object controllerNameObject = currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
+            if(controllerNameObject != null) {
+                controllerClass = (GrailsControllerClass)getAttributes()
+                                                            .getGrailsApplication()
+                                                            .getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controllerNameObject.toString());
+                if(controllerClass != null) {
+                    currentRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controllerClass);
+                }
+            }
+        }
+        return controllerClass;
     }
 
     /**
