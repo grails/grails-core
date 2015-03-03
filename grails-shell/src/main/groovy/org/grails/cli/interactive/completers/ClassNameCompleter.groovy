@@ -62,31 +62,35 @@ class ClassNameCompleter extends StringsCompleter {
         }
 
         private void initialize(File... baseDirs) {
-                if(!baseDirs) return
-                this.baseDirs = baseDirs
-                if(!allCompeters.contains(this))
-                        allCompeters << this
-                SortedSet<String> allStrings = new ConcurrentSkipListSet<>()
-                for(File baseDir in baseDirs) {
-                        def pattern = "file:${baseDir}/**/*.groovy".toString()
-                        SortedSet<String> strings = RESOURCE_SCAN_CACHE[pattern]
-                        if(strings == null) {
-                                strings = new TreeSet<>()
-                                RESOURCE_SCAN_CACHE[pattern] = strings
-                                def resources = resourcePatternResolver.getResources(pattern)
-                                for (res in resources) {
-                                        if(isValidResource(res)) {
-                                                def path = res.file.canonicalPath
-                                                def basePath = baseDir.canonicalPath
-                                                path = (path - basePath)[1..-8]
-                                                path = path.replace(File.separatorChar, '.' as char)
-                                                strings << path
+                try {
+                        if(!baseDirs) return
+                        this.baseDirs = baseDirs
+                        if(!allCompeters.contains(this))
+                                allCompeters << this
+                        SortedSet<String> allStrings = new ConcurrentSkipListSet<>()
+                        for(File baseDir in baseDirs) {
+                                def pattern = "file:${baseDir}/**/*.groovy".toString()
+                                SortedSet<String> strings = RESOURCE_SCAN_CACHE[pattern]
+                                if(strings == null) {
+                                        strings = new TreeSet<>()
+                                        RESOURCE_SCAN_CACHE[pattern] = strings
+                                        def resources = resourcePatternResolver.getResources(pattern)
+                                        for (res in resources) {
+                                                if(isValidResource(res)) {
+                                                        def path = res.file.canonicalPath
+                                                        def basePath = baseDir.canonicalPath
+                                                        path = (path - basePath)[1..-8]
+                                                        path = path.replace(File.separatorChar, '.' as char)
+                                                        strings << path
+                                                }
                                         }
                                 }
+                                allStrings.addAll(strings)
                         }
-                        allStrings.addAll(strings)
+                        setStrings(allStrings)
+                } catch (Throwable e) {
+                        // ignore
                 }
-                setStrings(allStrings)
         }
 
         boolean isValidResource(Resource resource) {
