@@ -37,7 +37,7 @@ public class GrailsCoreDependencies {
     protected final String h2Version = "1.3.176";
     protected final String jaxbVersion = "2.0";
     protected String servletApiVersion = "3.0.1";
-    protected String spockVersion = "0.7-groovy-2.0";
+    protected String spockVersion = "1.0-groovy-2.4";
     protected String cglibVersion = "2.2.2";
     protected String junitVersion = "4.11";
 
