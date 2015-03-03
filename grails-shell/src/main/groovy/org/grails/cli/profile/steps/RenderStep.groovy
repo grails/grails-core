@@ -94,7 +94,7 @@ class RenderStep extends AbstractStep {
         if(!templateFile) {
             throw new IOException("cannot find template " + parameters.template)
         }
-        destination.text = new SimpleTemplate(templateFile.text).render(variables)
+        destination.setText(new SimpleTemplate(templateFile.getText("UTF-8")).render(variables), "UTF-8")
         ClassNameCompleter.refreshAll()
     }
 
