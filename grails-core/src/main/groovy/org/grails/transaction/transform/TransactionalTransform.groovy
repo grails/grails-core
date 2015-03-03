@@ -16,6 +16,7 @@
 
 package org.grails.transaction.transform
 
+import grails.transaction.Rollback
 import org.codehaus.groovy.ast.stmt.Statement
 
 import static org.grails.compiler.injection.GrailsASTUtils.*
@@ -64,7 +65,7 @@ class TransactionalTransform implements ASTTransformation{
     private static final String PROPERTY_TRANSACTION_MANAGER = "transactionManager"
     private static final String METHOD_EXECUTE = "execute"
     private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
-    private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
+    private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), Rollback.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
 
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -104,8 +105,10 @@ class TransactionalTransform implements ASTTransformation{
         for (MethodNode md in methods) {
             String methodName = md.getName()
             int modifiers = md.modifiers
-            if (!md.isSynthetic() && !methodName.contains('$') && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
+            if (!md.isSynthetic() && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
                 if(hasExcludedAnnotation(md)) continue
+
+                if( methodName.contains('$') && !methodName.startsWith('$spock') ) continue
 
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
                 
