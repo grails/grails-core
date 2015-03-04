@@ -61,7 +61,7 @@ class ForwardMethodSpec extends Specification {
         when:
             def forwardUri = forwardMethod.forward(params)
         then:
-            forwardUri == '/grails/foo/foobar.dispatch'     
+            forwardUri == '/foo/foobar'
     }
     
     def 'Test forward request with controller and action params and url converter in app context'() {
@@ -72,7 +72,7 @@ class ForwardMethodSpec extends Specification {
         when:
             def forwardUri = forwardMethod.forward(params)
         then:
-            forwardUri == '/grails/foo/foobar.dispatch'
+            forwardUri == '/foo/foobar'
     }
     
     def 'Test forward request with controller and action params without an url converter'() {
@@ -83,7 +83,7 @@ class ForwardMethodSpec extends Specification {
         when:
             def forwardUri = forwardMethod.forward(params)
         then:
-            forwardUri == '/grails/foo/fooBar.dispatch'
+            forwardUri == '/foo/fooBar'
     }   
 }
 class ForwardMethodTest implements Controller {}

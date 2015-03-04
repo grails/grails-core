@@ -117,7 +117,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertTrue modelAndView.empty
 
-        assertEquals "/grails/foo/bar.dispatch",response.getForwardedUrl()
+        assertEquals "/foo/bar",response.getForwardedUrl()
     }
 
     void testResolveExceptionToControllerWhenResponseCommitted() {

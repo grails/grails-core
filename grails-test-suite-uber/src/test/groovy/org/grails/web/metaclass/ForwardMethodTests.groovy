@@ -19,9 +19,9 @@ class ForwardMethodTests extends AbstractGrailsControllerTests {
         def testController = new ForwardingController()
 
         webRequest.controllerName = "fowarding"
-        assertEquals "/grails/fowarding/two.dispatch",testController.one()
-        assertEquals "/grails/next/go.dispatch",testController.three()
-        assertEquals "/grails/next/go.dispatch?id=10",testController.four()
+        assertEquals "/fowarding/two",testController.one()
+        assertEquals "/next/go",testController.three()
+        assertEquals "/next/go?id=10",testController.four()
         assertEquals "bar", request.foo
     }
 }
