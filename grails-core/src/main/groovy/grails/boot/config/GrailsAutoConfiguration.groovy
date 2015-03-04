@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -93,7 +94,7 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
         Collection<Class> classes = []
         for (Resource res in resources) {
             // ignore closures / inner classes
-            if(!res.filename.contains('$')) {
+            if(!res.filename.contains('$') && res instanceof FileSystemResource) {
                 def reader = readerFactory.getMetadataReader(res)
                 def metadata = reader.annotationMetadata
                 if (metadata.annotationTypes.any() { String annotation -> annotation.startsWith('grails.') }) {
