@@ -17,6 +17,7 @@ package grails.artefact.controller.support
 
 import grails.web.UrlConverter
 import grails.web.api.WebAttributes
+import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.controllers.metaclass.ForwardMethod
 import org.grails.web.mapping.ForwardUrlMappingInfo
@@ -86,8 +87,12 @@ trait RequestForwarder implements WebAttributes {
         def request = webRequest.currentRequest
         def response = webRequest.currentResponse
         request.setAttribute(ForwardMethod.IN_PROGRESS, true)
-        String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, (Map)model, true)
+
+        if(params.params instanceof Map) {
+            urlInfo.parameters.putAll((Map)params.params)
+        }
         request.setAttribute(ForwardMethod.CALLED, true)
+        String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, (Map)model, true)
         return uri
     }
 

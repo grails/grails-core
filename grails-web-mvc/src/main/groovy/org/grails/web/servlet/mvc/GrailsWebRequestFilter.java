@@ -50,6 +50,8 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter implements Appl
             throws ServletException, IOException {
 
         LocaleContextHolder.setLocale(request.getLocale());
+        boolean isIncludeOrForward = WebUtils.isForward(request) || WebUtils.isInclude(request);
+        GrailsWebRequest previous = isIncludeOrForward ? GrailsWebRequest.lookup(request) : null;
         GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
         configureParameterCreationListeners(webRequest);
 
@@ -72,8 +74,17 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter implements Appl
         }
         finally {
             webRequest.requestCompleted();
-            WebUtils.clearGrailsWebRequest();
-            LocaleContextHolder.setLocale(null);
+
+            if(isIncludeOrForward) {
+                if(previous != null) {
+                    WebUtils.storeGrailsWebRequest(previous);
+                }
+            }
+            else {
+
+                WebUtils.clearGrailsWebRequest();
+                LocaleContextHolder.setLocale(null);
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("Cleared Grails thread-bound request context: " + request);
             }

@@ -475,4 +475,24 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return result;
     }
 
+    /**
+     * Check whether the given request is a forward request
+     *
+     * @param request The request
+     * @return True if it is a forward request
+     */
+    public static boolean isForward(HttpServletRequest request) {
+        return request.getAttribute(FORWARD_REQUEST_URI_ATTRIBUTE) != null;
+    }
+
+    /**
+     * Check whether the given request is an include request
+     *
+     * @param request The request
+     * @return True if it is an include request
+     */
+    public static boolean isInclude(HttpServletRequest request) {
+        return request.getAttribute(INCLUDE_REQUEST_URI_ATTRIBUTE) != null;
+    }
+
 }
