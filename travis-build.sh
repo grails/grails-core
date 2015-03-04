@@ -36,7 +36,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
         version=${version:1}
         zipName="grails-$version"
         export RELEASE_FILE="build/distributions/${zipName}.zip"
-    else
+    elif [[ $TRAVIS_BRANCH =~ ^(master|2.5.x|2.4.x)$ ]]; then
         ./gradlew publish || EXIT_STATUS=$?
     fi
 
