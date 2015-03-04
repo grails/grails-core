@@ -48,7 +48,7 @@ import javax.servlet.http.HttpServletResponse
 @CompileStatic
 class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
 
-    static final String MATCHED_REQUEST = "org.grails.url.match.info"
+    public static final String MATCHED_REQUEST = "org.grails.url.match.info"
 
     protected UrlMappingsHolder urlMappingsHolder
     protected UrlPathHelper urlHelper = new UrlPathHelper();

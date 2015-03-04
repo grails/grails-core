@@ -21,6 +21,7 @@ import grails.web.UrlConverter;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappingsHolder;
 import groovy.lang.Binding;
+import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
@@ -108,13 +109,11 @@ public class UrlMappingUtils {
             }
         }
         else {
-            forwardUrl.append(WebUtils.GRAILS_SERVLET_PATH);
             forwardUrl.append(WebUtils.SLASH).append(info.getControllerName());
 
             if (!GrailsStringUtils.isBlank(info.getActionName())) {
                 forwardUrl.append(WebUtils.SLASH).append(info.getActionName());
             }
-            forwardUrl.append(WebUtils.GRAILS_DISPATCH_EXTENSION);
         }
 
         final Map parameters = info.getParameters();
@@ -177,6 +176,7 @@ public class UrlMappingUtils {
         webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
         info.configure(webRequest);
         webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+        webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
         dispatcher.forward(request, response);
         return forwardUrl;
     }
