@@ -79,7 +79,7 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
                 GrailsASTUtils.error(source, applicationClassExpression, "Invalid applicationClass attribute value [${applicationClassNode.getName()}].  The applicationClass attribute must specify a class which extends grails.boot.config.GrailsAutoConfiguration.", true)
             }
         } else {
-            String mainClass = MainClassFinder.searchMainClass()
+            String mainClass = MainClassFinder.searchMainClass(source.source.URI)
             if(mainClass) {
                 applicationClassNode = ClassHelper.make(mainClass)
             }
