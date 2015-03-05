@@ -62,6 +62,7 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 if (!webRequest.actionName) {
                     webRequest.actionName = action
                 }
+                request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
                 def result = controllerClass.invoke(controller, action)
 
                 if(actionResultTransformers) {

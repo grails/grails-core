@@ -129,22 +129,29 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         def controllerName = controller.logicalPropertyName
 
         mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, plugin), controller)
+        mappingsToGrailsControllerMap.put(new ControllerKey(null, controllerName, null, plugin), controller)
 
+        String pluginNameToRegister = plugin ? GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(plugin) : null
         if(plugin) {
-            mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(plugin)), controller)
+            mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, pluginNameToRegister), controller)
             def controllerKeyWithoutPlugin = new ControllerKey(namespace, controllerName, null, null)
             if(!mappingsToGrailsControllerMap.containsKey(controllerKeyWithoutPlugin)) {
                 mappingsToGrailsControllerMap.put(controllerKeyWithoutPlugin, controller)
+                mappingsToGrailsControllerMap.put(new ControllerKey(null, controllerName, null, null), controller)
             }
         }
 
         for(action in controller.actions) {
-            def withPluginKey = new ControllerKey(namespace, controllerName, action, plugin)
+            def withPluginKey = new ControllerKey(namespace, controllerName, action, pluginNameToRegister)
+            def withPluginKeyWithoutNamespaceKey = new ControllerKey(null, controllerName, action, pluginNameToRegister)
             def withoutPluginKey = new ControllerKey(namespace, controllerName, action, null)
+            def withoutPluginKeyWithoutNamespace = new ControllerKey(null, controllerName, action, null)
             mappingsToGrailsControllerMap.put(withPluginKey, controller)
+            mappingsToGrailsControllerMap.put(withPluginKeyWithoutNamespaceKey, controller)
             if(plugin != null && !mappingsToGrailsControllerMap.containsKey(withoutPluginKey)) {
-                mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, action, GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(plugin)), controller)
+                mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, action, pluginNameToRegister), controller)
                 mappingsToGrailsControllerMap.put(withoutPluginKey, controller)
+                mappingsToGrailsControllerMap.put(withoutPluginKeyWithoutNamespace, controller)
             }
         }
     }
