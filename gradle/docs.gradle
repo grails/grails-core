@@ -43,7 +43,7 @@ task docs {
 }
 
 task javadoc(type:Javadoc) {
-    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' }
+    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
     classpath = files(subs.configurations.compile)
     dependsOn stubs
     maxMemory = '256M'
@@ -67,7 +67,7 @@ task javadoc(type:Javadoc) {
 }
 
 task groovydoc(type:Groovydoc) {
-    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' }
+    def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
     classpath = files(subs.configurations.compile)
     groovyClasspath = files(subs.configurations.compile)
     destinationDir = file("$docs.destinationDir/api")
