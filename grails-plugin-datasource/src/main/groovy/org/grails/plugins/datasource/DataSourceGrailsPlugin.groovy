@@ -107,9 +107,10 @@ class DataSourceGrailsPlugin extends Plugin {
 
     protected void createDatasource(beanBuilder, String dataSourceName, Map dataSourceData ) {
         boolean isDefault = dataSourceName == 'dataSource'
-        String suffix = isDefault ? '' : dataSourceName
+        String suffix = isDefault ? '' : "_$dataSourceName"
         String unproxiedName = "dataSourceUnproxied$suffix"
         String lazyName = "dataSourceLazy$suffix"
+        String beanName = isDefault ? 'dataSource' : "dataSource_$dataSourceName"
 
         if (applicationContext?.containsBean(dataSourceName)) {
             return
@@ -121,7 +122,7 @@ class DataSourceGrailsPlugin extends Plugin {
                 expectedType = DataSource
             }
             beanBuilder."$lazyName"(LazyConnectionDataSourceProxy, beanBuilder.ref(unproxiedName))
-            beanBuilder."$dataSourceName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
+            beanBuilder."$beanName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
             return
         }
 
@@ -197,7 +198,7 @@ class DataSourceGrailsPlugin extends Plugin {
         }
 
         beanBuilder."$lazyName"(LazyConnectionDataSourceProxy, beanBuilder.ref(unproxiedName))
-        beanBuilder."$dataSourceName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
+        beanBuilder."$beanName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
         
         // transactionManager beans will get overridden in Hibernate plugin
         beanBuilder."transactionManager$suffix"(DataSourceTransactionManager, beanBuilder.ref(lazyName))
