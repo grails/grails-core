@@ -3,13 +3,17 @@ package org.grails.compiler.boot
 import grails.boot.config.GrailsAutoConfiguration
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GlobalClassInjectorAdapter
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
@@ -47,6 +51,9 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
 
     @Override
     void performInjectionInternal(SourceUnit source, ClassNode classNode) {
+        // don't generate for plugins
+        if( classNode.getNodeMetaData('isPlugin') ) return
+
         if(GrailsASTUtils.isAssignableFrom(GRAILS_CONFIGURATION_CLASS_NODE, classNode)) {
             def methods = classNode.getMethods("main")
             for(MethodNode mn in methods) {
@@ -58,6 +65,11 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
 
                     def parameter = new Parameter(springApplicationBuilder, "application")
                     def methodBody = new BlockStatement()
+
+                    def setRunArguments = new ArgumentListExpression()
+                    setRunArguments.addExpression(new ConstantExpression(BuildSettings.RUN_EXECUTED))
+                    setRunArguments.addExpression(new ConstantExpression(Boolean.TRUE.toString()))
+                    methodBody.addStatement( new ExpressionStatement( new MethodCallExpression( new ClassExpression(ClassHelper.make(System)), "setProperty", setRunArguments)))
                     methodBody.addStatement( new ExpressionStatement( new MethodCallExpression( new VariableExpression(parameter), "sources", new ClassExpression(classNode))))
                     loaderClassNode.addMethod( new MethodNode("configure", Modifier.PROTECTED, springApplicationBuilder, [parameter] as Parameter[], [] as ClassNode[], methodBody))
                     source.getAST().addClass(

@@ -152,6 +152,7 @@ withConfig(configuration) {
     inline(phase: 'CONVERSION') { source, context, classNode ->
         classNode.putNodeMetaData('projectVersion', '$projectVersion')
         classNode.putNodeMetaData('projectName', '$projectName')
+        classNode.putNodeMetaData('isPlugin', 'true')
     }
 }
 """
