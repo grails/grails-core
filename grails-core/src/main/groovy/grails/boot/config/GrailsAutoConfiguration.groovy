@@ -3,6 +3,7 @@ package grails.boot.config
 import grails.config.Settings
 import grails.core.GrailsApplicationLifeCycle
 import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -25,7 +26,8 @@ import org.springframework.util.ClassUtils
 @CompileStatic
 class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoaderAware, ApplicationContextAware {
 
-    ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver()
+    ResourcePatternResolver resourcePatternResolver = new GrailsClasspathIgnoringResourceResolver()
+
     ApplicationContext applicationContext
 
     /**
@@ -84,7 +86,7 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
 
     @Override
     void setResourceLoader(ResourceLoader resourceLoader) {
-        this.resourcePatternResolver = new PathMatchingResourcePatternResolver(resourceLoader)
+        this.resourcePatternResolver = new GrailsClasspathIgnoringResourceResolver(resourceLoader)
     }
 
     private Collection<Class> scanUsingPattern(String pattern, CachingMetadataReaderFactory readerFactory) {
@@ -130,6 +132,32 @@ class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoa
     @Override
     void onShutdown(Map<String, Object> event) {
         // no-op
+    }
+
+    @CompileStatic
+    @InheritConstructors
+    private static class GrailsClasspathIgnoringResourceResolver extends PathMatchingResourcePatternResolver {
+        @Override
+        protected Set<Resource> doFindAllClassPathResources(String path) throws IOException {
+            Set<Resource> result = new LinkedHashSet<Resource>(16)
+            ClassLoader cl = getClassLoader()
+            Enumeration<URL> resourceUrls = (cl != null ? cl.getResources(path) : ClassLoader.getSystemResources(path))
+            while (resourceUrls.hasMoreElements()) {
+
+                URL url = resourceUrls.nextElement()
+                // if the path is from a JAR file ignore, plugins inside JAR files will have their own mechanism for loading
+                if(!url.path.contains('jar!/grails/')) {
+                    result.add(convertClassLoaderURL(url))
+                }
+
+            }
+            if ("".equals(path)) {
+                // The above result is likely to be incomplete, i.e. only containing file system references.
+                // We need to have pointers to each of the jar files on the classpath as well...
+                addAllClassLoaderJarRoots(cl, result)
+            }
+            return result
+        }
     }
 }
 
