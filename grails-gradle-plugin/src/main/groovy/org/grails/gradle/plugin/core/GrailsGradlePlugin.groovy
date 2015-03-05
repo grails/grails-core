@@ -33,9 +33,8 @@ import javax.inject.Inject
 
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
+
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
-    List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
-    List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
     private final ToolingModelBuilderRegistry registry
 
     @Inject
@@ -110,42 +109,32 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected void configureGrailsSourceDirs(Project project) {
+        def grailsSourceDirs = []
+        def excludedDirs = ['views', 'migrations', 'assets', 'i18n', 'conf']
+        project.file("grails-app").eachDir { File subdir ->
+            def dirName = subdir.name
+            if (!subdir.hidden && !dirName.startsWith(".") && !excludedDirs.contains(dirName)) {
+                grailsSourceDirs << subdir.absolutePath
+            }
+        }
+
+        grailsSourceDirs << project.file("src/main/groovy")
+
         project.sourceSets {
             main {
                 groovy {
-                    srcDirs += resolveGrailsSourceDirs(project)
-                }
-                resources {
-                    srcDirs += resolveGrailsResourceDirs(project)
+                    srcDirs = grailsSourceDirs
+                    resources {
+                        srcDirs = [
+                            project.file("src/main/resources"),
+                            project.file("grails-app/conf"),
+                            project.file("grails-app/views"),
+                            project.file("grails-app/i18n")
+                        ]
+                    }
                 }
             }
         }
-    }
-
-    @CompileStatic
-    protected List<File> resolveGrailsResourceDirs(Project project) {
-        List<File> grailsResourceDirs = []
-        grailsAppResourceDirs.each {
-            grailsResourceDirs << project.file("grails-app/${it}")
-        }
-        grailsResourceDirs
-    }
-
-    @CompileStatic
-    protected List<File> resolveGrailsSourceDirs(Project project) {
-        List<File> grailsSourceDirs = []
-        project.file("grails-app").eachDir { File subdir ->
-            if (isGrailsSourceDirectory(subdir)) {
-                grailsSourceDirs << subdir
-            }
-        }
-        grailsSourceDirs
-    }
-
-    @CompileStatic
-    protected boolean isGrailsSourceDirectory(File subdir) {
-        def dirName = subdir.name
-        !subdir.hidden && !dirName.startsWith(".") && !excludedGrailsAppSourceDirs.contains(dirName) && !grailsAppResourceDirs.contains(dirName)
     }
 
     protected String resolveGrailsVersion(Project project) {
