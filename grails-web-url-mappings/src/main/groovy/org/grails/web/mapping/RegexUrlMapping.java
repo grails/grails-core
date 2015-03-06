@@ -723,16 +723,6 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
         UrlMapping other = (UrlMapping) o;
 
-        final int otherDoubleWildcardCount = getDoubleWildcardCount(other);
-        final int thisDoubleWildcardCount = getDoubleWildcardCount(this);
-        final int doubleWildcardDiff = otherDoubleWildcardCount - thisDoubleWildcardCount;
-        if (doubleWildcardDiff != 0) return doubleWildcardDiff;
-
-        final int otherSingleWildcardCount = getSingleWildcardCount(other);
-        final int thisSingleWildcardCount = getSingleWildcardCount(this);
-        final int singleWildcardDiff = otherSingleWildcardCount - thisSingleWildcardCount;
-        if (singleWildcardDiff != 0) return singleWildcardDiff;
-
         final int thisStaticTokenCount = getStaticTokenCount(this);
         final int otherStaticTokenCount = getStaticTokenCount(other);
         if (otherStaticTokenCount==0 && thisStaticTokenCount>0) {
@@ -765,6 +755,16 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 return 1;
             }
         }
+
+        final int otherDoubleWildcardCount = getDoubleWildcardCount(other);
+        final int thisDoubleWildcardCount = getDoubleWildcardCount(this);
+        final int doubleWildcardDiff = otherDoubleWildcardCount - thisDoubleWildcardCount;
+        if (doubleWildcardDiff != 0) return doubleWildcardDiff;
+
+        final int otherSingleWildcardCount = getSingleWildcardCount(other);
+        final int thisSingleWildcardCount = getSingleWildcardCount(this);
+        final int singleWildcardDiff = otherSingleWildcardCount - thisSingleWildcardCount;
+        if (singleWildcardDiff != 0) return singleWildcardDiff;
 
         int constraintDiff = getAppliedConstraintsCount(this) - getAppliedConstraintsCount(other);
         if (constraintDiff != 0) return constraintDiff;
