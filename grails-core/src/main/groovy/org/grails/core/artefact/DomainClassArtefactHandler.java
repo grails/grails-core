@@ -22,6 +22,7 @@ import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.InnerClassNode;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
@@ -30,6 +31,7 @@ import org.grails.io.support.Resource;
 import org.grails.validation.ConstraintEvalUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,6 +68,12 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     protected boolean isArtefactResource(Resource resource) throws IOException {
         return super.isArtefactResource(resource) && GrailsResourceUtils.isDomainClass(resource.getURL());
     }
+
+    @Override
+    protected boolean isValidArtefactClassNode(ClassNode classNode, int modifiers) {
+        return !classNode.isEnum() && !(classNode instanceof InnerClassNode);
+    }
+
 
     @Override
     public boolean isArtefact(ClassNode classNode) {
