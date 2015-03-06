@@ -31,9 +31,9 @@ class AnsiConsoleUrlMappingsRendererSpec extends Specification{
         then:"The output is correct"
             sw.toString() == '''Controller: author
  |   GET    | /books/${bookId}/authors/create                            | Action: create           |
+ |   GET    | /books/${bookId}/authors/${id}/edit                        | Action: edit             |
  |   POST   | /books/${bookId}/authors                                   | Action: save             |
  |   GET    | /books/${bookId}/authors                                   | Action: index            |
- |   GET    | /books/${bookId}/authors/${id}/edit                        | Action: edit             |
  |  DELETE  | /books/${bookId}/authors/${id}                             | Action: delete           |
  |  PATCH   | /books/${bookId}/authors/${id}                             | Action: patch            |
  |   PUT    | /books/${bookId}/authors/${id}                             | Action: update           |
@@ -41,9 +41,9 @@ class AnsiConsoleUrlMappingsRendererSpec extends Specification{
 
 Controller: book
  |   GET    | /books/create                                              | Action: create           |
+ |   GET    | /books/${id}/edit                                          | Action: edit             |
  |   POST   | /books                                                     | Action: save             |
  |   GET    | /books                                                     | Action: index            |
- |   GET    | /books/${id}/edit                                          | Action: edit             |
  |  DELETE  | /books/${id}                                               | Action: delete           |
  |  PATCH   | /books/${id}                                               | Action: patch            |
  |   PUT    | /books/${id}                                               | Action: update           |
@@ -89,9 +89,9 @@ Controller: errors
 
 Controller: foo
  |   GET    | /foo/create                                       | Action: create           |
+ |   GET    | /foo/${id}/edit                                   | Action: edit             |
  |   POST   | /foo                                              | Action: save             |
  |   GET    | /foo                                              | Action: index            |
- |   GET    | /foo/${id}/edit                                   | Action: edit             |
  |  DELETE  | /foo/${id}                                        | Action: delete           |
  |  PATCH   | /foo/${id}                                        | Action: patch            |
  |   PUT    | /foo/${id}                                        | Action: update           |
