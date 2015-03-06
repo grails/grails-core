@@ -1,5 +1,7 @@
 package org.grails.gradle.plugin.core
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 /**
  * A extension to the Gradle plugin to configure Grails settings
  *
@@ -11,5 +13,5 @@ class GrailsExtension {
     /**
      * Whether to invoke native2ascii on resource bundles
      */
-    boolean native2ascii = true
+    boolean native2ascii = !Os.isFamily(Os.FAMILY_WINDOWS)
 }

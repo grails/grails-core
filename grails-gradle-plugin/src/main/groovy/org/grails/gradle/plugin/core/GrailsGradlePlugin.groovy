@@ -268,26 +268,29 @@ class GrailsGradlePlugin extends GroovyPlugin {
      * Enables native2ascii processing of resource bundles
      **/
     protected void enableNative2Ascii(Project project, grailsVersion) {
-        for (SourceSet sourceSet in project.sourceSets) {
-            project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
-                def grailsExt = project.extensions.getByType(GrailsExtension)
-                task.filter( ReplaceTokens, tokens: [
-                        'info.app.name': project.name,
-                        'info.app.version': project.version,
-                        'info.app.grailsVersion': grailsVersion
+        project.afterEvaluate {
+            for (SourceSet sourceSet in project.sourceSets) {
+
+                project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
+                    def grailsExt = project.extensions.getByType(GrailsExtension)
+                    task.filter( ReplaceTokens, tokens: [
+                            'info.app.name': project.name,
+                            'info.app.version': project.version,
+                            'info.app.grailsVersion': grailsVersion
                     ]
-                )
-                task.from(sourceSet.resources) {
-                    include '**/*.properties'
-                    if(grailsExt.native2ascii) {
-                        filter(EscapeUnicode)
+                    )
+                    task.from(sourceSet.resources) {
+                        include '**/*.properties'
+                        if(grailsExt.native2ascii) {
+                            filter(EscapeUnicode)
+                        }
                     }
-                }
-                task.from(sourceSet.resources) {
-                    exclude '**/*.properties'
-                }
-                task.from(sourceSet.resources) {
-                    include '**/*.groovy'
+                    task.from(sourceSet.resources) {
+                        exclude '**/*.properties'
+                    }
+                    task.from(sourceSet.resources) {
+                        include '**/*.groovy'
+                    }
                 }
             }
         }
