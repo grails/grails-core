@@ -746,6 +746,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         String[] thisTokens = getUrlData().getTokens();
         String[] otherTokens = other.getUrlData().getTokens();
         for (int i = 0; i < thisTokens.length; i++) {
+            if(i == otherTokens.length) break;
             boolean thisTokenIsWildcard = isSingleWildcard(thisTokens[i]);
             boolean otherTokenIsWildcard = isSingleWildcard(otherTokens[i]);
             if (thisTokenIsWildcard && !otherTokenIsWildcard) {
