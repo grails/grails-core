@@ -329,6 +329,8 @@ subprojects { project ->
 
     if(!isTestSuite) {
 
+        println "SIGNING CREDENTIALS KEY PRESENT? ${project.'signing.keyId' != null}"
+        println "SIGNING CREDENTIALS PASS PRESENT? ${project.'signing.password' != null}"
         modifyPom {
             delegate.project {
                 def updatePom = pomInfo.clone()
