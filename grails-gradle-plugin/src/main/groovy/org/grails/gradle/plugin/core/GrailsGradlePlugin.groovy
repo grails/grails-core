@@ -185,7 +185,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void configureForkSettings(project, grailsVersion) {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
-        def systemPropertyConfigurer = { JavaForkOptions task ->
+        def systemPropertyConfigurer = { String defaultGrailsEnv, JavaForkOptions task ->
             def map = System.properties.findAll { entry ->
                 entry.key.startsWith("grails.")
             }
@@ -199,7 +199,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             task.systemProperty Metadata.APPLICATION_NAME, project.name
             task.systemProperty Metadata.APPLICATION_VERSION, project.version
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
-            task.systemProperty Environment.KEY, Environment.current.name ?: Environment.DEVELOPMENT.name
+            task.systemProperty Environment.KEY, defaultGrailsEnv
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
             task.minHeapSize = "768m"
             task.maxHeapSize = "768m"
@@ -210,8 +210,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
 
         def tasks = project.tasks
-        tasks.withType(Test).each systemPropertyConfigurer
-        tasks.withType(JavaExec).each systemPropertyConfigurer
+        tasks.withType(Test).each systemPropertyConfigurer.curry("test")
+        tasks.withType(JavaExec).each systemPropertyConfigurer.curry(Environment.current.name ?: Environment.DEVELOPMENT.name)
     }
 
 
