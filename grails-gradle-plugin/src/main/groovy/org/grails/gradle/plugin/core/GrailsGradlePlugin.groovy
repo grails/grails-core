@@ -210,8 +210,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
 
         def tasks = project.tasks
-        tasks.withType(Test).each systemPropertyConfigurer.curry("test")
-        tasks.withType(JavaExec).each systemPropertyConfigurer.curry(Environment.current.name ?: Environment.DEVELOPMENT.name)
+
+        def grailsEnvSystemProperty = System.getProperty(Environment.KEY)
+        tasks.withType(Test).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.TEST.name)
+        tasks.withType(JavaExec).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.DEVELOPMENT.name)
     }
 
 
