@@ -15,31 +15,30 @@
  */
 package org.grails.web.mapping;
 
+import grails.config.Config;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import grails.core.GrailsControllerClass;
 import grails.core.GrailsUrlMappingsClass;
-import grails.web.mapping.UrlMappings;
-import groovy.lang.Script;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-
 import grails.core.events.ArtefactAdditionEvent;
+import grails.core.support.GrailsApplicationAware;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
-import grails.core.support.GrailsApplicationAware;
+import grails.web.mapping.UrlMappings;
+import groovy.lang.Script;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.Assert;
-import org.springframework.web.context.WebApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Constructs the UrlMappingsHolder from the registered UrlMappings class within a GrailsApplication.
@@ -103,12 +102,12 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
 
         DefaultUrlMappingsHolder defaultUrlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns, true);
 
-        Map flatConfig = grailsApplication.getFlatConfig();
-        Integer cacheSize = mapGetInteger(flatConfig, URL_MAPPING_CACHE_MAX_SIZE);
+        Config config = grailsApplication.getConfig();
+        Integer cacheSize = config.getProperty(URL_MAPPING_CACHE_MAX_SIZE, Integer.class, null);
         if (cacheSize != null) {
             defaultUrlMappingsHolder.setMaxWeightedCacheCapacity(cacheSize);
         }
-        Integer urlCreatorCacheSize = mapGetInteger(flatConfig, URL_CREATOR_CACHE_MAX_SIZE);
+        Integer urlCreatorCacheSize = config.getProperty(URL_CREATOR_CACHE_MAX_SIZE, Integer.class, null);
         if (urlCreatorCacheSize != null) {
             defaultUrlMappingsHolder.setUrlCreatorMaxWeightedCacheCapacity(urlCreatorCacheSize);
         }
@@ -127,25 +126,11 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         urlMappingsHolder= grailsControllerUrlMappings;
     }
 
-    // this should possibly be somewhere in utility classes , MapUtils.getInteger doesn't handle GStrings/CharSequence
-    private static Integer mapGetInteger(Map map, String key) {
-        Object value = map.get(key);
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Integer) {
-            return (Integer)value;
-        }
-        return value instanceof Number ? ((Number)value).intValue() : Integer.valueOf(String.valueOf(value));
-    }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
 
-    public void setServletContext(ServletContext servletContext) {
-        // not used
-    }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -169,8 +154,10 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
      */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        setGrailsApplication(applicationContext.getBean( GrailsApplication.APPLICATION_ID, GrailsApplication.class) );
-        setServletContext(applicationContext instanceof WebApplicationContext ? ((WebApplicationContext) applicationContext).getServletContext() : null);
+        setGrailsApplication(applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
         setPluginManager( applicationContext.containsBean(GrailsPluginManager.BEAN_NAME) ? applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null);
     }
+
+
+
 }
