@@ -10,6 +10,7 @@ buildscript {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
     }
 }
 
@@ -52,6 +53,11 @@ ext {
     servletApiVersion = "3.0.1"
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
+
+    nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+    nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+
+
 }
 
 version = grailsVersion
@@ -65,6 +71,8 @@ ext {
     homeConfDir = file("conf")
     homeLibDir = file("lib")
     homeSrcDir = file("src")
+
+
 }
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
@@ -135,6 +143,41 @@ subprojects { project ->
     group = "org.grails"
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     ext.isCiBuild = project.hasProperty("isCiBuild")
+    ext.pomInfo = {
+        delegate.name 'Grails'
+        delegate.description 'Grails Web Application Framework'
+        delegate.url 'http://grails.org/'
+
+        delegate.licenses {
+            delegate.license {
+                delegate.name 'The Apache Software License, Version 2.0'
+                delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                delegate.distribution 'repo'
+            }
+        }
+
+        delegate.scm {
+            delegate.url 'scm:git@github.com:grails/grails-core.git'
+            delegate.connection 'scm:git@github.com:grails/grails-core.git'
+            delegate.developerConnection 'scm:git@github.com:grails/grails-core.git'
+        }
+
+        delegate.developers {
+            delegate.developer {
+                delegate.id 'graemerocher'
+                delegate.name 'Graeme Rocher'
+            }
+            delegate.developer {
+                delegate.id 'jeffscottbrown'
+                delegate.name 'Jeff Brown'
+            }
+            delegate.developer {
+                delegate.id 'lhotari'
+                delegate.name 'Lari Hotari'
+            }
+        }
+
+    }
 
     if(!project.hasProperty("artifactoryPublishPassword") && System.getenv("ARTIFACTORY_PASSWORD")) {
         project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
@@ -144,6 +187,7 @@ subprojects { project ->
     if(project.name == 'grails-bom') return
 
     apply plugin: 'groovy'
+    apply plugin: 'com.bmuschko.nexus'
     if(!isTestSuite) {
         apply plugin: 'maven-publish'
         apply plugin: 'com.jfrog.bintray'
@@ -153,6 +197,7 @@ subprojects { project ->
     apply plugin: 'project-report'
     apply plugin: 'provided-base'
     apply plugin: 'optional-base'
+
 
     sourceCompatibility = "1.7"
     targetCompatibility = "1.7"
@@ -275,22 +320,6 @@ subprojects { project ->
         }
     }
 
-    if(!isTestSuite) {
-        task sourcesJar(type: Jar) {
-            classifier = 'sources'
-            from sourceSets.main.allSource
-        }
-
-        task javadocJar(type: Jar, dependsOn:javadoc) {
-            classifier = 'javadoc'
-            from javadoc.destinationDir
-        }
-
-    }
-
-    groovydoc.doLast {
-        delete("${buildDir}/tmp")
-    }
 
     configurations {
         meta
@@ -299,28 +328,19 @@ subprojects { project ->
     }
 
     if(!isTestSuite) {
-        artifacts {
-            archives jar
-            def excludedTaskNames = gradle.startParameter.excludedTaskNames
-            if(!excludedTaskNames.contains('sourcesJar')) {
-                archives sourcesJar
-            }
-            if(!excludedTaskNames.contains('javadocJar')) {
-                archives javadocJar
+
+        modifyPom {
+            delegate.project {
+                def updatePom = pomInfo.clone()
+                updatePom.delegate = delegate
+                updatePom()
             }
         }
-
 
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
             repositories {
-
                 flatDir name: 'libs', dirs: distInstallDir
-//                project.poms << mavenDeployer {
-//                    repository(url: distInstallDir.toURL())
-//                    uniqueVersion = false
-//                    pom.artifactId = project.name
-//                }.pom
             }
         }
 
@@ -357,41 +377,7 @@ subprojects { project ->
                     pom.withXml {
                         def xml = asNode()
 
-                        xml.children().last() + {
-                            delegate.name 'Grails'
-                            delegate.description 'Grails Web Application Framework'
-                            delegate.url 'http://grails.org/'
-
-                            delegate.licenses {
-                                delegate.license {
-                                    delegate.name 'The Apache Software License, Version 2.0'
-                                    delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                                    delegate.distribution 'repo'
-                                }
-                            }
-
-                            delegate.scm {
-                                delegate.url 'scm:git@github.com:grails/grails-core.git'
-                                delegate.connection 'scm:git@github.com:grails/grails-core.git'
-                                delegate.developerConnection 'scm:git@github.com:grails/grails-core.git'
-                            }
-
-                            delegate.developers {
-                                delegate.developer {
-                                    delegate.id 'graemerocher'
-                                    delegate.name 'Graeme Rocher'
-                                }
-                                delegate.developer {
-                                    delegate.id 'jeffscottbrown'
-                                    delegate.name 'Jeff Brown'
-                                }
-                                delegate.developer {
-                                    delegate.id 'lhotari'
-                                    delegate.name 'Lari Hotari'
-                                }
-                            }
-
-                        }
+                        xml.children().last() + pomInfo
                     }
 
                 }

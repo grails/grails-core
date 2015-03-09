@@ -18,6 +18,7 @@ env:
   - secure: olcrCPn3vcm9xKHWZAtDDPQogZVsoWHum+41YzfNPbXWHRdJ1g2JQ8Y/SpuS9fK+QBwaN5Xt/CF+A6fKPHeUr1xrDfqTfPEEr3fQyHFMZi09gMQmXwhEUyxpzYhrf3efJrGIL2I7Gh2Q7lc3iBwYwll1tRBBnk9fOSIpsfLgCko=
   - secure: VJt5eqKPhQbnjQakNrgC9l5MRmTMN9hccTLD+/ijZEMcb9OTHii+T3jbsHH6cw5JuTH5wabjuWYObtlXLZ+lQknU9hmbhSsm5NlqKHhOno+IxNzfhfRm26oo7wGQneW4cujkmOkzLZrSNN8MU1ISMb0g24x4TgbVzjAUD5jsT/M=
   - secure: bm/8EJkrBeO9H+MHwTogPr/0/19vV+K4O+lRAweKOl2w4QxbIog9cCPKr6+b3N+o2N75OImnRwRNXw2x/clV1Vl8TqxdtwNislW+SCei9N7MxrUK27KWCc/k1vad4D2D26DVxx2PquPo24Q8wfc7rXSeoLi4iHlIdpBECIxtA9c=
+  - secure: X0fScDRO+fo4P4/xUvRmMhpNVqqPrIACIfnywXkUhl4gC/JyxBTfZmw+V6zsnNbyAW8AqJoejB3c709xyqdURXMy89Ect+lY/tei7ah5uZpgv82MhZsGCVaplPJiPDNGPHanqRynIv5brBodZuq0sohKxGRlcoSqChq4ZlY2HII=
 before_script:
 - ./gradlew populateDependencies testClasses install
 script: ./travis-build.sh
@@ -27,7 +28,7 @@ deploy:
   provider: releases
   api_key:
     secure: DZw5jbbopmowRUhMjXOqosGLuyXQDHlXsT2BEH0sf08TxNJHvroCyoSy18Rl00AFEvkl1nyUf7Wsol9TRNAr+uqRdhGe3HCeOVYDEc8oKtsMQpHnrXBS1hBp6Bkb9DuKvbseUPs3k1CLreuZR3z48uhdQzKoQnn2ZXWcVRjJPl4=
-  file: $RELEASE_FILE
+  file: build/distributions/grails-${TRAVIS_TAG:1}.zip
   skip_cleanup: true
   on:
     repo: grails/grails-core

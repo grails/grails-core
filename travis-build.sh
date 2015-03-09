@@ -9,35 +9,19 @@ echo "Project Version: '$grailsVersion'"
 EXIT_STATUS=0
 ./gradlew --stop
 
-if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-    echo "Tagged Release Skipping Tests for Publish"
-else
-    echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
-    echo "Executing tests"
-    ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
-    echo "Done."
-    if [[ $EXIT_STATUS == 0 ]]; then
-      echo "Executing integration tests"
-      ./gradlew --no-daemon --stacktrace --info integrationTest < /dev/null || EXIT_STATUS=$?
-      echo "Done."
-    fi
-fi
-
 
 if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
     echo "Publishing archives"
 
-    if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-        ./gradlew publish || EXIT_STATUS=$?
-        ./gradlew assemble || EXIT_STATUS=$?
+    gpg --keyserver keyserver.ubuntu.com --recv-key $SIGNING_KEY
 
-        version="$TRAVIS_TAG"
-        version=${version:1}
-        zipName="grails-$version"
-        export RELEASE_FILE="build/distributions/${zipName}.zip"
+    if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
+        ./gradlew -Dsigning.key="$SIGNING_KEY" -Dsigning.password="$SIGNING_PASSPHRASE" -Dsigning.secretKeyRingFile="$USER/.gnupg/secring.gpg uploadArchives publish || EXIT_STATUS=$?
+        ./gradlew assemble || EXIT_STATUS=$?
     elif [[ $TRAVIS_BRANCH =~ ^(master|2.5.x|2.4.x)$ ]]; then
-        ./gradlew publish || EXIT_STATUS=$?
+
+        ./gradlew -Dsigning.key="$SIGNING_KEY" -Dsigning.password="$SIGNING_PASSPHRASE" -Dsigning.secretKeyRingFile="$USER/.gnupg/secring.gpg uploadArchives publish || EXIT_STATUS=$?
     fi
 
 fi
