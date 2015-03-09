@@ -60,6 +60,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
     private ConcurrentMap<String, CacheEntry<View>> viewCache = new ConcurrentHashMap<String, CacheEntry<View>>();
     private boolean allowGrailsViewCaching = !GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
+    private boolean resolveJspView = false;
     
     /**
      * Constructor.
@@ -213,7 +214,10 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
     }
 
     protected View createFallbackView(String viewName) throws Exception {
-        return createJstlView(viewName);
+        if(resolveJspView) {
+            return createJstlView(viewName);
+        }
+        return null;
     }
     
     protected View createJstlView(String viewName) throws Exception {
@@ -249,5 +253,9 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
 
     public void setAllowGrailsViewCaching(boolean allowGrailsViewCaching) {
         this.allowGrailsViewCaching = allowGrailsViewCaching;
+    }
+
+    public void setResolveJspView(boolean resolveJspView) {
+        this.resolveJspView = resolveJspView;
     }
 }
