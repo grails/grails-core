@@ -18,6 +18,11 @@ class GrailsArtefactTransformerSpec extends Specification {
         gcl = new GrailsAwareClassLoader()
         def transformer = new TestTransformer()
         gcl.classInjectors = [transformer]as ClassInjector[]
+        System.setProperty("grails.version", "3.0.0")
+    }
+
+    void cleanupSpec() {
+        System.setProperty("grails.version", "")
     }
 
     void "Test that a marker annotation can be added to weaved methods"() {
@@ -140,7 +145,7 @@ class GrailsArtefactTransformerSpec extends Specification {
            def version = enhancedAnnotation.version()
 
         then:
-            version == GrailsUtil.grailsVersion
+            version == "3.0.0"
     }
 
     void 'Test mixins attribute on @Enhanced'() {
@@ -157,7 +162,7 @@ class GrailsArtefactTransformerSpec extends Specification {
             def version = enhancedAnnotation.version()
 
         then:
-            version == GrailsUtil.grailsVersion
+            version == "3.0.0"
             enhancedAnnotation.mixins() == [Date] as Class[]
     }
 }

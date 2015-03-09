@@ -880,8 +880,14 @@ public class GrailsASTUtils {
         final List<AnnotationNode> annotations = classNode.getAnnotations(ENHANCED_CLASS_NODE);
         if (annotations.isEmpty()) {
             enhancedAnnotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
-            enhancedAnnotationNode.setMember("version", new ConstantExpression(getGrailsVersion()));
-            classNode.addAnnotation(enhancedAnnotationNode);
+            String grailsVersion = getGrailsVersion();
+            if(grailsVersion == null) {
+                grailsVersion = System.getProperty("grails.version");
+            }
+            if(grailsVersion != null) {
+                enhancedAnnotationNode.setMember("version", new ConstantExpression(grailsVersion));
+                classNode.addAnnotation(enhancedAnnotationNode);
+            }
         } else {
             enhancedAnnotationNode = annotations.get(0);
         }
