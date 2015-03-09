@@ -18,17 +18,11 @@ package org.grails.compiler.injection.test;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
-import grails.test.mixin.services.ServiceUnitTestMixin;
 import grails.test.mixin.support.MixinMethod;
 import grails.test.mixin.support.TestMixinRegistrar;
 import grails.test.mixin.support.TestMixinRegistry;
-import grails.test.mixin.web.ControllerUnitTestMixin;
-import grails.test.mixin.web.FiltersUnitTestMixin;
-import grails.test.mixin.web.GroovyPageUnitTestMixin;
-import grails.test.mixin.web.UrlMappingsUnitTestMixin;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
-import groovy.util.GroovyTestCase;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
@@ -38,16 +32,11 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.compiler.logging.LoggingTransformer;
-import org.grails.core.artefact.ControllerArtefactHandler;
-import org.grails.core.artefact.ServiceArtefactHandler;
-import org.grails.core.artefact.TagLibArtefactHandler;
-import org.grails.core.artefact.UrlMappingsArtefactHandler;
 import org.grails.core.io.DefaultResourceLocator;
 import org.grails.core.io.ResourceLocator;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.io.support.FileSystemResource;
 import org.grails.io.support.GrailsResourceUtils;
-import org.grails.plugins.web.filters.FiltersConfigArtefactHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +83,7 @@ public class TestForTransformation extends TestMixinTransformation implements Te
     public static final AnnotationNode AFTER_ANNOTATION = new AnnotationNode(AFTER_CLASS_NODE);
 
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
-    public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
+    private static final String GROOVY_TEST_CASE_CLASS_NAME = "groovy.util.GroovyTestCase";
     public static final String VOID_TYPE = "void";
 
     private ResourceLocator resourceLocator;
@@ -212,7 +201,7 @@ public class TestForTransformation extends TestMixinTransformation implements Te
 
         // make sure the 'log' property is not the one from GroovyTestCase
         FieldNode log = classNode.getField("log");
-        if (log == null || log.getDeclaringClass().equals(GROOVY_TEST_CASE_CLASS)) {
+        if (log == null || log.getDeclaringClass().getName().equals(GROOVY_TEST_CASE_CLASS_NAME)) {
             LoggingTransformer.addLogField(classNode, classNode.getName());
         }
         boolean isSpockTest = isSpockTest(classNode);
