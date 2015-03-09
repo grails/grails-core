@@ -54,6 +54,83 @@ public class ConstrainedPropertyTests extends TestCase {
 
         assertTrue("should be an url", cp.isUrl());
     }
+
+    public void testIsEmailOnNonStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        assertFalse(cp.isEmail());
+    }
+
+    public void testSetEmailOnForStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        try {
+            cp.setEmail(true);
+            fail("The call to setEmail(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
+        } catch (IllegalStateException expected) {
+            assertEquals("Email constraint can only be applied to String properties", expected.getMessage());
+        }
+    }
+
+    public void testIsCreditCardOnNonStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        assertFalse(cp.isCreditCard());
+    }
+
+    public void testSetCreditCardOnForStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        try {
+            cp.setCreditCard(true);
+            fail("The call to setCreditCard(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
+        } catch (IllegalStateException expected) {
+            assertEquals("CreditCard constraint can only be applied to String properties", expected.getMessage());
+        }
+    }
+
+    public void testIsMatchesOnNonStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        assertNull(cp.getMatches());
+    }
+
+    public void testSetMatchesOnForStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        try {
+            cp.setMatches("some regex");
+            fail("The call to setMatches(...) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
+        } catch (IllegalStateException expected) {
+            assertEquals("Matches constraint can only be applied to String properties", expected.getMessage());
+        }
+    }
+
+    public void testIsUrlOnNonStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        assertFalse(cp.isUrl());
+    }
+
+    public void testSetUrlOnForStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        try {
+            cp.setUrl(true);
+            fail("The call to setUrl(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
+        } catch (IllegalStateException expected) {
+            assertEquals("URL constraint can only be applied to String properties", expected.getMessage());
+        }
+    }
+
+
+    public void testIsBlankOnNonStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        assertFalse(cp.isBlank());
+    }
+
+    public void testSetBlankOnForStringProperty() {
+        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
+        try {
+            cp.setBlank(true);
+            fail("The call to setBlank(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
+        } catch (IllegalStateException expected) {
+            assertEquals("Blank constraint can only be applied to String properties", expected.getMessage());
+        }
+    }
+
     public void testGetSetEmail() {
         ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", String.class);
         cp.setEmail(true);

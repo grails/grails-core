@@ -562,6 +562,9 @@ public class ConstrainedProperty implements Constrained {
      */
     @Override
     public boolean isBlank() {
+        if(!isValidStringType()) {
+            return false;
+        }
         Object cons = appliedConstraints.get(BLANK_CONSTRAINT);
         return cons == null || (Boolean)((BlankConstraint)cons).getParameter();
     }
@@ -570,9 +573,8 @@ public class ConstrainedProperty implements Constrained {
      * @param blank The blank to set.
      */
     public void setBlank(boolean blank) {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("Blank constraint can only be applied to a String property",
-                    BLANK_CONSTRAINT, owningClass);
+        if (!isValidStringType()) {
+            throw new IllegalStateException("Blank constraint can only be applied to String properties");
         }
 
         if (!blank) {
@@ -595,21 +597,15 @@ public class ConstrainedProperty implements Constrained {
      */
     @Override
     public boolean isEmail() {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("Email constraint only applies to a String property",
-                    EMAIL_CONSTRAINT, owningClass);
-        }
-
-        return appliedConstraints.containsKey(EMAIL_CONSTRAINT);
+        return isValidStringType() && appliedConstraints.containsKey(EMAIL_CONSTRAINT);
     }
 
     /**
      * @param email The email to set.
      */
     public void setEmail(boolean email) {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("Email constraint can only be applied to a String property",
-                    EMAIL_CONSTRAINT, owningClass);
+        if (!isValidStringType()) {
+            throw new IllegalStateException("Email constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(EMAIL_CONSTRAINT);
@@ -629,8 +625,8 @@ public class ConstrainedProperty implements Constrained {
         }
     }
 
-    private boolean isNotValidStringType() {
-        return !CharSequence.class.isAssignableFrom(propertyType);
+    private boolean isValidStringType() {
+        return CharSequence.class.isAssignableFrom(propertyType);
     }
 
     /**
@@ -638,21 +634,15 @@ public class ConstrainedProperty implements Constrained {
      */
     @Override
     public boolean isCreditCard() {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("CreditCard constraint only applies to a String property",
-                    CREDIT_CARD_CONSTRAINT,owningClass);
-        }
-
-        return appliedConstraints.containsKey(CREDIT_CARD_CONSTRAINT);
+        return isValidStringType() && appliedConstraints.containsKey(CREDIT_CARD_CONSTRAINT);
     }
 
     /**
      * @param creditCard The creditCard to set.
      */
     public void setCreditCard(boolean creditCard) {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("CreditCard constraint only applies to a String property",
-                    CREDIT_CARD_CONSTRAINT,owningClass);
+        if (!isValidStringType()) {
+            throw new IllegalStateException("CreditCard constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(CREDIT_CARD_CONSTRAINT);
@@ -677,21 +667,16 @@ public class ConstrainedProperty implements Constrained {
      */
     @Override
     public String getMatches() {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("Matches constraint only applies to a String property",
-                    MATCHES_CONSTRAINT, owningClass);
-        }
         MatchesConstraint c = (MatchesConstraint)appliedConstraints.get(MATCHES_CONSTRAINT);
-        return c == null ? null : c.getRegex();
+        return (!isValidStringType() || c == null) ? null : c.getRegex();
     }
 
     /**
      * @param regex The matches to set.
      */
     public void setMatches(String regex) {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("Matches constraint can only be applied to a String property",
-                    MATCHES_CONSTRAINT, owningClass);
+        if (!isValidStringType()) {
+            throw new IllegalStateException("Matches constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(MATCHES_CONSTRAINT);
@@ -848,19 +833,15 @@ public class ConstrainedProperty implements Constrained {
      */
     @Override
     public boolean isUrl() {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("URL constraint can only be applied to a String property",
-                    URL_CONSTRAINT, owningClass);
-        }
-        return appliedConstraints.containsKey(URL_CONSTRAINT);
+        return isValidStringType() && appliedConstraints.containsKey(URL_CONSTRAINT);
     }
 
     /**
      * @param url The url to set.
      */
     public void setUrl(boolean url) {
-        if (isNotValidStringType()) {
-            throw new MissingPropertyException("URL constraint can only be applied to a String property",URL_CONSTRAINT,owningClass);
+        if (!isValidStringType()) {
+            throw new IllegalStateException("URL constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(URL_CONSTRAINT);
