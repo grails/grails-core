@@ -20,7 +20,6 @@ import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
-import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
@@ -881,7 +880,7 @@ public class GrailsASTUtils {
         final List<AnnotationNode> annotations = classNode.getAnnotations(ENHANCED_CLASS_NODE);
         if (annotations.isEmpty()) {
             enhancedAnnotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
-            enhancedAnnotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
+            enhancedAnnotationNode.setMember("version", new ConstantExpression(getGrailsVersion()));
             classNode.addAnnotation(enhancedAnnotationNode);
         } else {
             enhancedAnnotationNode = annotations.get(0);
@@ -909,6 +908,10 @@ public class GrailsASTUtils {
         }
 
         return enhancedAnnotationNode;
+    }
+
+    private static String getGrailsVersion() {
+        return GrailsASTUtils.class.getPackage().getImplementationVersion();
     }
 
     public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations) {
