@@ -113,10 +113,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.sourceSets {
             main {
                 groovy {
-                    srcDirs += resolveGrailsSourceDirs(project)
+                    srcDirs = resolveGrailsSourceDirs(project)
                 }
                 resources {
-                    srcDirs += resolveGrailsResourceDirs(project)
+                    srcDirs = resolveGrailsResourceDirs(project)
                 }
             }
         }
@@ -124,7 +124,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected List<File> resolveGrailsResourceDirs(Project project) {
-        List<File> grailsResourceDirs = []
+        List<File> grailsResourceDirs = [project.file("src/main/resources")]
         grailsAppResourceDirs.each {
             grailsResourceDirs << project.file("grails-app/${it}")
         }
@@ -133,7 +133,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected List<File> resolveGrailsSourceDirs(Project project) {
-        List<File> grailsSourceDirs = []
+        List<File> grailsSourceDirs = [project.file("src/main/groovy")]
         project.file("grails-app").eachDir { File subdir ->
             if (isGrailsSourceDirectory(subdir)) {
                 grailsSourceDirs << subdir
