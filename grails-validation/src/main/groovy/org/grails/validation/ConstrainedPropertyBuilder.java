@@ -106,7 +106,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 cp = (ConstrainedProperty)constrainedProperties.get(property);
             }
             else {
-                Class<?> propertyType = classPropertyFetcher.getPropertyType(property);
+                Class<?> propertyType = classPropertyFetcher.getPropertyType(property, true);
                 if (propertyType == null) {
                     throw new MissingMethodException(property, targetClass, new Object[]{attributes}, true);
                 }
