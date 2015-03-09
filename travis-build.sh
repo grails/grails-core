@@ -22,8 +22,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
         ./gradlew -Dsigning.key=$SIGNING_KEY -Dsigning.password=$SIGNING_PASSPHRASE -Dsigning.secretKeyRingFile=local.secring.gpg uploadArchives publish || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
     elif [[ $TRAVIS_BRANCH =~ ^(master|2.5.x|2.4.x)$ ]]; then
-
-        ./gradlew -Dsigning.key=$SIGNING_KEY -Dsigning.password=$SIGNING_PASSPHRASE -Dsigning.secretKeyRingFile=local.secring.gpg uploadArchives publish || EXIT_STATUS=$?
+        ./gradlew -d -Dsigning.key=$SIGNING_KEY -Dsigning.password=$SIGNING_PASSPHRASE -Dsigning.secretKeyRingFile=local.secring.gpg uploadArchives publish || EXIT_STATUS=$?
     fi
 
 fi
