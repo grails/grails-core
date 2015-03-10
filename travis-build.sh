@@ -35,7 +35,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
     echo "org.gradle.jvmargs=-XX\:MaxPermSize\=1024m -Xmx1500m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
     echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
     ./gradlew --stop
-    ./gradlew groovydoc
+    #./gradlew groovydoc
     ./gradlew --stop
     mv ~/.gradle/gradle.properties{.orig,}
 
