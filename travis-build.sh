@@ -28,6 +28,14 @@ fi
 
 if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
+    echo "Run groovydoc"
+    mv ~/.gradle/gradle.properties{,.orig}
+    echo "org.gradle.jvmargs=-XX\:MaxPermSize\=1024m -Xmx1500m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
+    ./gradlew --stop
+    ./gradlew groovydoc
+    ./gradlew --stop
+    mv ~/.gradle/gradle.properties{.orig,}
+
     echo "Publishing archives"
 
     gpg --keyserver keyserver.ubuntu.com --recv-key $SIGNING_KEY
