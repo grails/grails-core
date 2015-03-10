@@ -18,11 +18,11 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
 else
     echo "Executing tests"
-#    ./gradlew --stacktrace test || EXIT_STATUS=$?
+    ./gradlew --stacktrace test || EXIT_STATUS=$?
     echo "Done."
     if [[ $EXIT_STATUS == 0 ]]; then
       echo "Executing integration tests"
-#      ./gradlew --stacktrace --info integrationTest || EXIT_STATUS=$?
+      ./gradlew --stacktrace --info integrationTest || EXIT_STATUS=$?
       echo "Done."
     fi
 fi
@@ -30,13 +30,11 @@ fi
 
 if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
-    echo "Run groovydoc"
     mv ~/.gradle/gradle.properties{,.orig}
     echo "org.gradle.jvmargs=-XX\:MaxPermSize\=1024m -Xmx1500m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
     echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
     ./gradlew --stop
     #./gradlew groovydoc
-    ./gradlew --stop
     mv ~/.gradle/gradle.properties{.orig,}
 
     echo "Publishing archives"
@@ -49,7 +47,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives publish || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
     elif [[ $TRAVIS_BRANCH =~ ^(master|2.5.x|2.4.x)$ ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-bom:uploadArchives || EXIT_STATUS=$?
+        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     fi
 
 fi
