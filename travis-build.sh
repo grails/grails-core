@@ -15,13 +15,12 @@ EXIT_STATUS=0
 if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
 else
-    echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
     echo "Executing tests"
-    ./gradlew --no-daemon --stacktrace test || EXIT_STATUS=$?
+    ./gradlew --stacktrace test || EXIT_STATUS=$?
     echo "Done."
     if [[ $EXIT_STATUS == 0 ]]; then
       echo "Executing integration tests"
-      ./gradlew --no-daemon --stacktrace --info integrationTest < /dev/null || EXIT_STATUS=$?
+      ./gradlew --stacktrace --info integrationTest || EXIT_STATUS=$?
       echo "Done."
     fi
 fi
