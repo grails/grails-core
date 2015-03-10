@@ -24,7 +24,7 @@ env:
 before_install:
 - openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
 - openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in pubring.gpg.enc -out pubring.gpg -d
-- openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in settings.xml.enc -out settings.xml.gpg -d
+- openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in settings.xml.enc -out settings.xml -d
 - mkdir -p ~/.m2
 - cp settings.xml ~/.m2/settings.xml
 script: ./travis-build.sh
