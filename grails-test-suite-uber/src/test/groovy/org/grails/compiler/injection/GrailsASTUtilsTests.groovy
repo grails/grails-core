@@ -14,6 +14,16 @@ import org.codehaus.groovy.ast.builder.AstBuilder
  */
 class GrailsASTUtilsTests extends GroovyTestCase {
 
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("grails.version", "3.0.0")
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        System.setProperty("grails.version", "")
+    }
+
     void testGetFurthestParent() {
         def fooNode = new ClassNode(Foo)
         def barNode = new ClassNode(Bar)

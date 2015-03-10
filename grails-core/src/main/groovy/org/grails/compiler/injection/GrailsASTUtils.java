@@ -886,8 +886,8 @@ public class GrailsASTUtils {
             }
             if(grailsVersion != null) {
                 enhancedAnnotationNode.setMember("version", new ConstantExpression(grailsVersion));
-                classNode.addAnnotation(enhancedAnnotationNode);
             }
+            classNode.addAnnotation(enhancedAnnotationNode);
         } else {
             enhancedAnnotationNode = annotations.get(0);
         }
