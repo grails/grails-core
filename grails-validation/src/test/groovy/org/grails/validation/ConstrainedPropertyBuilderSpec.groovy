@@ -4,7 +4,7 @@ import grails.validation.ConstrainedProperty
 import spock.lang.Issue
 import spock.lang.Specification
 
-class ConstrainedPropertySpec extends Specification {
+class ConstrainedPropertyBuilderSpec extends Specification {
 
     @Issue('GRAILS-12010')
     void 'test methods with names matching constrained property names'() {
