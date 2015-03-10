@@ -3,6 +3,7 @@
 # Set Gradle daemon JVM args
 mkdir ~/.gradle
 echo "org.gradle.jvmargs=-XX\:MaxPermSize\=512m -Xmx1024m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
+echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
 
 grailsVersion="$(grep 'grailsVersion =' build.gradle | egrep -v ^[[:blank:]]*\/\/)"
 grailsVersion="${grailsVersion#*=}"
@@ -32,6 +33,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
     echo "Run groovydoc"
     mv ~/.gradle/gradle.properties{,.orig}
     echo "org.gradle.jvmargs=-XX\:MaxPermSize\=1024m -Xmx1500m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
+    echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
     ./gradlew --stop
     ./gradlew groovydoc
     ./gradlew --stop
