@@ -574,7 +574,7 @@ public class ConstrainedProperty implements Constrained {
      */
     public void setBlank(boolean blank) {
         if (!isValidStringType()) {
-            throw new IllegalStateException("Blank constraint can only be applied to String properties");
+            throw new ConstraintException("Blank constraint can only be applied to String properties");
         }
 
         if (!blank) {
@@ -605,7 +605,7 @@ public class ConstrainedProperty implements Constrained {
      */
     public void setEmail(boolean email) {
         if (!isValidStringType()) {
-            throw new IllegalStateException("Email constraint can only be applied to String properties");
+            throw new ConstraintException("Email constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(EMAIL_CONSTRAINT);
@@ -642,7 +642,7 @@ public class ConstrainedProperty implements Constrained {
      */
     public void setCreditCard(boolean creditCard) {
         if (!isValidStringType()) {
-            throw new IllegalStateException("CreditCard constraint can only be applied to String properties");
+            throw new ConstraintException("CreditCard constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(CREDIT_CARD_CONSTRAINT);
@@ -676,7 +676,7 @@ public class ConstrainedProperty implements Constrained {
      */
     public void setMatches(String regex) {
         if (!isValidStringType()) {
-            throw new IllegalStateException("Matches constraint can only be applied to String properties");
+            throw new ConstraintException("Matches constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(MATCHES_CONSTRAINT);
@@ -841,7 +841,7 @@ public class ConstrainedProperty implements Constrained {
      */
     public void setUrl(boolean url) {
         if (!isValidStringType()) {
-            throw new IllegalStateException("URL constraint can only be applied to String properties");
+            throw new ConstraintException("Url constraint can only be applied to String properties");
         }
 
         Constraint c = appliedConstraints.get(URL_CONSTRAINT);

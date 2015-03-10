@@ -2,10 +2,17 @@ package grails.validation;
 
 import grails.core.GrailsDomainClass;
 import grails.util.Holders;
+import grails.validation.exceptions.ConstraintException;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
+import junit.framework.TestCase;
+import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.plugins.MockGrailsPluginManager;
+import org.grails.test.support.MockHibernatePluginHelper;
+import org.springframework.validation.BindException;
+import org.springframework.validation.Errors;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -13,14 +20,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
-
-import junit.framework.TestCase;
-
-import org.grails.test.support.MockHibernatePluginHelper;
-import org.grails.core.DefaultGrailsDomainClass;
-import org.grails.plugins.MockGrailsPluginManager;
-import org.springframework.validation.BindException;
-import org.springframework.validation.Errors;
 
 public class ConstrainedPropertyTests extends TestCase {
 
@@ -53,82 +52,6 @@ public class ConstrainedPropertyTests extends TestCase {
         cp.setUrl(true);
 
         assertTrue("should be an url", cp.isUrl());
-    }
-
-    public void testIsEmailOnNonStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        assertFalse(cp.isEmail());
-    }
-
-    public void testSetEmailOnForStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        try {
-            cp.setEmail(true);
-            fail("The call to setEmail(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
-        } catch (IllegalStateException expected) {
-            assertEquals("Email constraint can only be applied to String properties", expected.getMessage());
-        }
-    }
-
-    public void testIsCreditCardOnNonStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        assertFalse(cp.isCreditCard());
-    }
-
-    public void testSetCreditCardOnForStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        try {
-            cp.setCreditCard(true);
-            fail("The call to setCreditCard(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
-        } catch (IllegalStateException expected) {
-            assertEquals("CreditCard constraint can only be applied to String properties", expected.getMessage());
-        }
-    }
-
-    public void testIsMatchesOnNonStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        assertNull(cp.getMatches());
-    }
-
-    public void testSetMatchesOnForStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        try {
-            cp.setMatches("some regex");
-            fail("The call to setMatches(...) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
-        } catch (IllegalStateException expected) {
-            assertEquals("Matches constraint can only be applied to String properties", expected.getMessage());
-        }
-    }
-
-    public void testIsUrlOnNonStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        assertFalse(cp.isUrl());
-    }
-
-    public void testSetUrlOnForStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        try {
-            cp.setUrl(true);
-            fail("The call to setUrl(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
-        } catch (IllegalStateException expected) {
-            assertEquals("URL constraint can only be applied to String properties", expected.getMessage());
-        }
-    }
-
-
-    public void testIsBlankOnNonStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        assertFalse(cp.isBlank());
-    }
-
-    public void testSetBlankOnForStringProperty() {
-        ConstrainedProperty cp = new ConstrainedProperty(ConstrainedPropertyTests.class,"testProperty", Integer.class);
-        try {
-            cp.setBlank(true);
-            fail("The call to setBlank(true) on a ConstrainedProperty associated with an Integer property should throw an IllegalStateException.");
-        } catch (IllegalStateException expected) {
-            assertEquals("Blank constraint can only be applied to String properties", expected.getMessage());
-        }
     }
 
     public void testGetSetEmail() {
