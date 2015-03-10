@@ -63,16 +63,11 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     boolean useJsessionId = false
     boolean hasResourceProcessor = false
-    boolean flowExecutionParamInd = true
 
     void afterPropertiesSet() {
         def config = grailsApplication.config
         if (config.grails.views.enable.jsessionid instanceof Boolean) {
             useJsessionId = config.grails.views.enable.jsessionid
-        }
-
-        if (config.grails.views.enable.flowExecutionKey.param instanceof Boolean) {
-            flowExecutionParamInd = config.grails.views.enable.flowExecutionKey.param
         }
 
         hasResourceProcessor = applicationContext.containsBean('grailsResourceProcessor')
@@ -364,11 +359,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
         if (request.flowExecutionKey) {
-            params.execution = request.flowExecutionKey           
-            //externalization of flow execution param
-            if(flowExecutionParamInd){                
-                urlAttrs.params = params
-            }           
+            params.execution = request.flowExecutionKey
+            //Commenting code for resolving Grails GRAILS-11583
+            //urlAttrs.params = params
             if (attrs.controller == null && attrs.action == null && attrs.url == null && attrs.uri == null) {
                 urlAttrs[LinkGenerator.ATTRIBUTE_ACTION] = GrailsWebRequest.lookup().actionName
             }
@@ -379,7 +372,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
 
         String generatedLink = linkGenerator.link(urlAttrs, request.characterEncoding)
-
         generatedLink = processedUrl(generatedLink, request)
 
         return useJsessionId ? response.encodeURL(generatedLink) : generatedLink
