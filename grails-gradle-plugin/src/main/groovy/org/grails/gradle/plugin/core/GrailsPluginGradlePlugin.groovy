@@ -118,6 +118,11 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     protected void configurePluginResources(Project project) {
         ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
+        def copyAssets = project.task(type: Copy, "copyAssets") {
+            from project.fileTree("${project.projectDir}/grails-app/assets").files
+            into "${processResources.destinationDir}/META-INF/assets"
+        }
+
         def copyCommands = project.task(type: Copy, "copyCommands") {
             from "${project.projectDir}/src/main/scripts"
             into "${processResources.destinationDir}/META-INF/commands"
@@ -128,7 +133,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             into "${processResources.destinationDir}/META-INF/templates"
         }
 
-        processResources.dependsOn(copyCommands, copyTemplates)
+        processResources.dependsOn(copyAssets, copyCommands, copyTemplates)
         project.processResources {
             rename "application.yml", "plugin.yml"
             exclude "spring/resources.groovy"
