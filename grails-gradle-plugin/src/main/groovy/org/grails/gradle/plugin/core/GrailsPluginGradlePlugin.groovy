@@ -119,7 +119,9 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     protected void configurePluginResources(Project project) {
         ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
         def copyAssets = project.task(type: Copy, "copyAssets") {
-            from project.fileTree("${project.projectDir}/grails-app/assets").files
+            from "${project.projectDir}/grails-app/assets/javascripts"
+            from "${project.projectDir}/grails-app/assets/stylesheets"
+            from "${project.projectDir}/grails-app/assets/images"
             into "${processResources.destinationDir}/META-INF/assets"
         }
 
