@@ -262,7 +262,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 agent
             }
             project.dependencies {
-                agent "org.springframework:springloaded:1.2.2.RELEASE"
+                agent "org.springframework:springloaded"
             }
             project.afterEvaluate(new AgentTasksEnhancer())
         }

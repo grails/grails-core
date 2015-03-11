@@ -143,6 +143,12 @@ publishing {
                                 }
                             }
 
+                            mkp.dependency {
+                                mkp.groupId 'org.springframework'
+                                mkp.artifactId "springloaded"
+                                mkp.version( springLoadedVersion )
+                            }
+
                             for(plugin in plugins) {
                                 mkp.dependency {
                                     mkp.groupId 'org.grails.plugins'
