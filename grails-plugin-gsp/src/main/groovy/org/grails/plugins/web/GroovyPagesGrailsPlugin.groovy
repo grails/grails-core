@@ -76,6 +76,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
         CountryTagLib,
         FormatTagLib,
         FormTagLib,
+        JavascriptTagLib,
         RenderTagLib,
         UrlMappingTagLib,
         ValidationTagLib,
