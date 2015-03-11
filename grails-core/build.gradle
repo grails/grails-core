@@ -24,7 +24,7 @@ dependencies {
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion"
 
-    runtime ( 'xalan:serializer:2.7.1' ) {
+    runtime ( 'xalan:serializer:2.7.2' ) {
         exclude group: 'xml-apis', module:'xml-apis'
     }
 

@@ -960,7 +960,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                   "javax.servlet:servlet-api:2.5",
                   "javax.servlet:jsp-api:2.1",
                   "javax.servlet:jstl:1.1.2",
-                  "xalan:serializer:2.7.1",
+                  "xalan:serializer:2.7.2",
                   "test:test:0.5"
 
             test "junit:junit:4.8.1"
