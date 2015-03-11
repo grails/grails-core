@@ -50,7 +50,7 @@ class Support {
                 if(!agentPath) {
                     System.getenv(ENV_RELOAD_AGENT_PATH)
                 }
-                def file = agentPath ? new File(agentPath) : new File(grailsHome, "lib/org.springframework/springloaded/jars/springloaded-1.2.1.RELEASE.jar")
+                def file = agentPath ? new File(agentPath) : new File(grailsHome, "lib/org.springframework/springloaded/jars/springloaded-1.2.2.RELEASE.jar")
                 if(file.exists()) {
                     def runtimeMxBean = ManagementFactory.runtimeMXBean
                     def arguments = runtimeMxBean.inputArguments
