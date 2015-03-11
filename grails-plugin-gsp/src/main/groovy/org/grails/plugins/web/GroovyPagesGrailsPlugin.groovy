@@ -36,7 +36,6 @@ import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.taglib.TagLibraryLookup
 import org.grails.taglib.TagLibraryMetaUtils
 import org.grails.web.errors.ErrorsViewStackTracePrinter
-import org.grails.web.filters.JavascriptLibraryHandlerInterceptor
 import org.grails.web.gsp.GroovyPagesTemplateRenderer
 import org.grails.web.gsp.io.CachingGrailsConventionGroovyPageLocator
 import org.grails.web.pages.DefaultGroovyPagesUriService
@@ -77,7 +76,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
         CountryTagLib,
         FormatTagLib,
         FormTagLib,
-        JavascriptTagLib,
         RenderTagLib,
         UrlMappingTagLib,
         ValidationTagLib,
@@ -261,7 +259,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
         }
 
         errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
-        javascriptLibraryHandlerInterceptor(JavascriptLibraryHandlerInterceptor, application)
         filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, application)
 
         groovyPagesServlet(ServletRegistrationBean, new GroovyPagesServlet(), "*.gsp") {

@@ -1,9 +1,7 @@
 package org.grails.web.pages
 
 import org.grails.gsp.GroovyPagesException
-import org.grails.plugins.web.taglib.JavascriptTagLib
 import org.grails.web.taglib.AbstractGrailsTagTests
-import org.grails.web.taglib.TestProvider
 
 /**
  * @author Graeme Rocher
@@ -29,14 +27,6 @@ class GroovyPageLineNumberTests extends AbstractGrailsTagTests {
 
         template = '<g:createLinkTo dir="${foo}" file="${foo + \' \' + bar}" />'
         assertOutputEquals "/one/one two", template, [foo:"one", bar:"two"]
-
-        template = '<g:link name="blah" controller="foo" action="${remoteFunction(action:\'bar\', params:\'\\\'grp=\\\' + encodeURIComponent(this.value)\')}"></g:link>'
-        JavascriptTagLib.PROVIDER_MAPPINGS["test"] = TestProvider
-        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
-        printCompiledSource template
-
-        // test will fail if compilation fails
-        applyTemplate(template)
     }
 
     void testLineNumberDataInsideTagAttribute() {
