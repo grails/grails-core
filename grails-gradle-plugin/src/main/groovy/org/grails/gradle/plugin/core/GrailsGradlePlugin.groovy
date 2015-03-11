@@ -133,12 +133,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected List<File> resolveGrailsSourceDirs(Project project) {
-        List<File> grailsSourceDirs = [project.file("src/main/groovy")]
+        List<File> grailsSourceDirs = []
         project.file("grails-app").eachDir { File subdir ->
             if (isGrailsSourceDirectory(subdir)) {
                 grailsSourceDirs << subdir
             }
         }
+        grailsSourceDirs.add(project.file("src/main/groovy"))
         grailsSourceDirs
     }
 
