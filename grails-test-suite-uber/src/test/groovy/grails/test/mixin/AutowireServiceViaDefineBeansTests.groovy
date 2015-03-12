@@ -12,12 +12,12 @@ import org.springframework.context.ApplicationContextAware
 @TestFor(SpringController)
 class AutowireServiceViaDefineBeansTests {
 
-    static doWithSpring = {
-        springService SpringService
-    }
-    
     @Test
     void testThatBeansAreWired() {
+        defineBeans {
+            springService(SpringService)
+        }
+
         applicationContext.getBean("springService") instanceof SpringService
         controller.index()
         controller.index()
