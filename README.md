@@ -24,7 +24,29 @@ To build Grails, clone this GitHub repository and execute the install Gradle tar
     git clone https://github.com/grails/grails-core.git
     cd grails-core
     ./gradlew install
-	
+
+Performing a Release
+---
+
+Releases of Grails are automated by [Travis CI](https://travis-ci.org/grails/grails-core).
+
+To create a release perform the following steps first update the Grails version in `build.gradle` and `grails-core/src/test/groovy/grails/util/GrailsUtilTests.java` then add them to git:
+
+    $ git add build.gradle grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
+    $ git commit -m "Prepare release"
+    $ git push
+
+After pushing these changes to the repository and wait for the build to complete. During this phase the JAR files will be uploaded  to the [Grails Artefactory Repository](https://repo.grails.org/grails/libs-releases-local/).
+
+Once the build completes successfully then tag the release using Git. The tag should begin with the letter 'v'. For example:
+
+     $ git tag v3.0.1
+     $ git push --tags
+
+The tagged release will be automatically uploaded to [Sonatype OSS](https://oss.sonatype.org) and [Github Releases](https://github.com/grails/grails-core/releases).
+
+Although Grails doesn't require the JARs to be in Maven Central for a release, without signing in  releasing the staged release via Sonatype OSS the JARs will not be synced to Maven Central.
+
 License
 ---
 
