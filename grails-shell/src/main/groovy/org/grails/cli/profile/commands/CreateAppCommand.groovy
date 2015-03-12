@@ -180,7 +180,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     }
 
     private String createValidPackageName() {
-        String defaultPackage = (appname.toLowerCase().toCharArray().findAll  { char ch -> Character.isJavaIdentifierPart(ch) } as char[]) as String
+        String defaultPackage = appname.split(/[-]+/).collect { String token -> (token.toLowerCase().toCharArray().findAll  { char ch -> Character.isJavaIdentifierPart(ch) } as char[]) as String }.join('.')
         return defaultPackage
     }
 
