@@ -73,7 +73,7 @@ class AetherExcludeResolverSpec extends Specification{
 
         then:"They are valid"
         !excludes.isEmpty()
-        validatorExcludes.size() == 3
+        validatorExcludes.size() == 5
         validatorExcludes.find { Dependency d -> d.name == 'commons-collections'}
         validatorExcludes.find { Dependency d -> d.name == 'commons-logging'}
         validatorExcludes.find { Dependency d -> d.name == 'jcaptcha-api'}

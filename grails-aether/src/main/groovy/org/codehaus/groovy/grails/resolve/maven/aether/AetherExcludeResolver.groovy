@@ -42,20 +42,18 @@ class AetherExcludeResolver implements ExcludeResolver {
         for (Dependency d in applicationDependencies) {
             newDependencyManager.parseDependencies {
                 delegate.dependencies {
-                    compile "$d.group:$d.name:$d.version", {
-                        if(d.excludeArray){
-                            excludes d.excludeArray
-                        }
-                    }
+                    compile "$d.group:$d.name:$d.version"
                 }
             }
         }
         AetherGraphNode graphNode = newDependencyManager.resolveToGraphNode("compile")
         for (GraphNode n in graphNode.children) {
-            List<Dependency> transitives = []
-            excludeMap[n.dependency] = transitives
-            for (GraphNode t in n.children) {
-                transitives << t.dependency
+            if(n.resolved) {
+                List<Dependency> transitives = []
+                excludeMap[n.dependency] = transitives
+                for (GraphNode t in n.children) {
+                    transitives << t.dependency
+                }
             }
         }
 
