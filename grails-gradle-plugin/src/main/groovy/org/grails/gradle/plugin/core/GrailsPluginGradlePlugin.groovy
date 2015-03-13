@@ -117,29 +117,38 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     protected void configurePluginResources(Project project) {
-        ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
-        def copyAssets = project.task(type: Copy, "copyAssets") {
-            from "${project.projectDir}/grails-app/assets/javascripts"
-            from "${project.projectDir}/grails-app/assets/stylesheets"
-            from "${project.projectDir}/grails-app/assets/images"
-            into "${processResources.destinationDir}/META-INF/assets"
+        project.afterEvaluate() {
+            ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
+            GrailsExtension grailsExtension = project.extensions.findByType(GrailsExtension)
+
+            def processResourcesDependencies = []
+            if(grailsExtension.packageAssets) {
+                processResourcesDependencies << project.task(type: Copy, "copyAssets") {
+                    from "${project.projectDir}/grails-app/assets/javascripts"
+                    from "${project.projectDir}/grails-app/assets/stylesheets"
+                    from "${project.projectDir}/grails-app/assets/images"
+                    into "${processResources.destinationDir}/META-INF/assets"
+                }
+            }
+
+
+            processResourcesDependencies << project.task(type: Copy, "copyCommands") {
+                from "${project.projectDir}/src/main/scripts"
+                into "${processResources.destinationDir}/META-INF/commands"
+            }
+
+            processResourcesDependencies << project.task(type: Copy, "copyTemplates") {
+                from "${project.projectDir}/src/main/templates"
+                into "${processResources.destinationDir}/META-INF/templates"
+            }
+
+            processResources.dependsOn(*processResourcesDependencies)
+            project.processResources {
+                rename "application.yml", "plugin.yml"
+                exclude "spring/resources.groovy"
+            }
         }
 
-        def copyCommands = project.task(type: Copy, "copyCommands") {
-            from "${project.projectDir}/src/main/scripts"
-            into "${processResources.destinationDir}/META-INF/commands"
-        }
-
-        def copyTemplates = project.task(type: Copy, "copyTemplates") {
-            from "${project.projectDir}/src/main/templates"
-            into "${processResources.destinationDir}/META-INF/templates"
-        }
-
-        processResources.dependsOn(copyAssets, copyCommands, copyTemplates)
-        project.processResources {
-            rename "application.yml", "plugin.yml"
-            exclude "spring/resources.groovy"
-        }
     }
 
     protected void configureProjectNameAndVersionASTMetadata(Project project) {

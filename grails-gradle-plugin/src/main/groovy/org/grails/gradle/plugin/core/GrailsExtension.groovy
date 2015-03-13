@@ -14,4 +14,9 @@ class GrailsExtension {
      * Whether to invoke native2ascii on resource bundles
      */
     boolean native2ascii = !Os.isFamily(Os.FAMILY_WINDOWS)
+
+    /**
+     * Whether assets should be packaged in META-INF/assets for plugins
+     */
+    boolean packageAssets = true
 }
