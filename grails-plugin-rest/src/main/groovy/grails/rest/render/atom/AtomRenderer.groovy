@@ -107,6 +107,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
                 }
             }
             writer.end()
+            context.writer.flush()
         } else {
             throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
         }
