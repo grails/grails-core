@@ -512,7 +512,11 @@ class AetherDependencyManager implements DependencyManager {
 
         collectRequest.setRepositories(repositories)
 
-        return repositorySystem.collectDependencies(session, collectRequest).getRoot()
+        try {
+            return repositorySystem.collectDependencies(session, collectRequest).getRoot()
+        } catch (DependencyCollectionException dce) {
+            return dce.getResult().getRoot()
+        }
     }
 
     protected void manageDependencies(CollectRequest collectRequest) {

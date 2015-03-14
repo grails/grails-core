@@ -73,9 +73,40 @@ class AetherExcludeResolverSpec extends Specification{
 
         then:"They are valid"
         !excludes.isEmpty()
-        validatorExcludes.size() == 3
+        validatorExcludes.size() == 5
         validatorExcludes.find { Dependency d -> d.name == 'commons-collections'}
         validatorExcludes.find { Dependency d -> d.name == 'commons-logging'}
         validatorExcludes.find { Dependency d -> d.name == 'jcaptcha-api'}
+    }
+
+    void "Test that dependency can be used as key in map returned by resolveExcludes method"() {
+        given:"An dependency manager with some dependencies"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.parseDependencies {
+            repositories {
+                mavenCentral()
+            }
+            dependencies {
+                compile "commons-validator:commons-validator:1.4.0", {
+                    exclude 'commons-logging'
+                }
+            }
+
+        }
+        def excludeResolver = new AetherExcludeResolver(dependencyManager)
+
+        def appDeps = dependencyManager.getApplicationDependencies('compile')
+
+        def commonsValidatorDep = appDeps.find { it.name == 'commons-validator' }
+
+        when:"The excludes are resolved"
+        final excludes = excludeResolver.resolveExcludes()
+
+        then:"They are valid"
+        !excludes.isEmpty()
+
+        def exclusions = excludes[commonsValidatorDep]
+        exclusions != null
+        exclusions.size() == 3
     }
 }
