@@ -18,6 +18,8 @@ import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.bundling.War
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.process.JavaForkOptions
@@ -169,14 +171,14 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         def tasks = project.tasks
         project.afterEvaluate {
-            if (tasks.findByName("war")) {
-                project.war {
-                    from "${project.buildDir}/assetCompile"
-                }
-            } else {
-                project.processResources {
-                    from("${project.buildDir}/assetCompile") {
-                        into "META-INF"
+            def assetCompile = tasks.findByName('assetCompile')
+            if(assetCompile) {
+                tasks.withType(Jar) { Jar bundleTask ->
+                    bundleTask.dependsOn assetCompile
+                    bundleTask.from "${project.buildDir}/assetCompile", {
+                        if(!(bundleTask instanceof War)) {
+                            into "META-INF"
+                        }
                     }
                 }
             }

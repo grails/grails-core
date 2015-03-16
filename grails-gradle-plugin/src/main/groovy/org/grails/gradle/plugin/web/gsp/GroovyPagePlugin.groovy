@@ -53,12 +53,12 @@ class GroovyPagePlugin implements Plugin<Project> {
         compileGroovyPages.dependsOn( project.tasks.getByName("compileGroovy") )
 
         def warTask = project.tasks.findByName('war')
-        def assembleTask = project.tasks.findByName('jar')
+        def jarTask = project.tasks.findByName('jar')
         if(warTask) {
             warTask.dependsOn(compileGroovyPages)
         }
-        else {
-            assembleTask?.dependsOn(compileGroovyPages)
+        if(jarTask) {
+            jarTask?.dependsOn(compileGroovyPages)
         }
     }
 
