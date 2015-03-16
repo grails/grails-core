@@ -187,8 +187,8 @@ subprojects { project ->
     if(project.name == 'grails-bom') return
 
     apply plugin: 'groovy'
-    apply plugin: 'com.bmuschko.nexus'
     if(!isTestSuite) {
+        apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
         apply plugin: 'com.jfrog.bintray'
     }
