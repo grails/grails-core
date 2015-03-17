@@ -64,6 +64,11 @@ interface Settings {
      * The default configured constraints for the application
      */
     String GORM_DEFAULT_CONSTRAINTS = 'grails.gorm.default.constraints'
+
+    /**
+     * Whether to autowire instances
+     */
+    String GORM_AUTOWIRE_INSTANCES = "grails.gorm.autowire";
     /**
      * The configured mime types
      */
