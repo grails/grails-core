@@ -28,7 +28,14 @@ else
 fi
 
 
-if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
+if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
+    && $TRAVIS_REPO_SLUG == grails/grails-core && ( $TRAVIS_TAG =~ ^v[[:digit:]] || $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ )  ]]; then
+    # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
+    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
+    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in pubring.gpg.enc -out pubring.gpg -d
+    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in settings.xml.enc -out settings.xml -d
+    mkdir -p ~/.m2
+    cp settings.xml ~/.m2/settings.xml
 
     mv ~/.gradle/gradle.properties{,.orig}
     echo "org.gradle.jvmargs=-XX\:MaxPermSize\=1024m -Xmx1500m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
@@ -46,7 +53,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
     if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
-    elif [[ $TRAVIS_BRANCH =~ ^(master|2.5.x|2.4.x)$ ]]; then
+    elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     fi
 
