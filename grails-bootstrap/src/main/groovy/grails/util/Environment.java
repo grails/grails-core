@@ -193,7 +193,7 @@ public enum Environment {
      * @return true if the application is running in development mode
      */
     public static boolean isDevelopmentMode() {
-        return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
+        return getCurrent() == DEVELOPMENT && Metadata.getCurrent().isDevelopmentEnvironmentAvailable() &&
                 cachedHasGrailsHome;
     }
 

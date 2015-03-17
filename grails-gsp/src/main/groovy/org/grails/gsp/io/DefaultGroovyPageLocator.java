@@ -20,6 +20,7 @@ import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
+import grails.util.Metadata;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.gsp.GroovyPage;
@@ -334,7 +335,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
     }
 
     private boolean isPrecompiledAvailable() {
-        return precompiledGspMap != null && precompiledGspMap.size() > 0 && warDeployed;
+        return precompiledGspMap != null && precompiledGspMap.size() > 0 && !Metadata.getCurrent().isDevelopmentEnvironmentAvailable();
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

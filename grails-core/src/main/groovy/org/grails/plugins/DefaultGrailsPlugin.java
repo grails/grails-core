@@ -356,7 +356,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, ON_CHANGE);
         }
 
-        final boolean warDeployed = Metadata.getCurrent().isWarDeployed();
+        final Metadata metadata = Metadata.getCurrent();
+        final boolean warDeployed = !metadata.isDevelopmentEnvironmentAvailable();
         final boolean reloadEnabled = Environment.getCurrent().isReloadEnabled();
 
         if (!((reloadEnabled || !warDeployed) && onChangeListener != null)) {

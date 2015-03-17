@@ -238,7 +238,18 @@ public class Metadata extends CodeGenConfig  {
      * @return true if this application is deployed as a WAR
      */
     public boolean isWarDeployed() {
-        return BuildSettings.IS_DEPLOYED && Boolean.getBoolean(BuildSettings.RUN_EXECUTED);
+        def loadedLocation = getClass().getClassLoader().getResource("");
+        if(loadedLocation && loadedLocation.path.contains('/WEB-INF/classes/')) {
+            return true
+        }
+        return false
+    }
+
+    /**
+     * @return True if the development sources are present
+     */
+    boolean isDevelopmentEnvironmentAvailable() {
+        return BuildSettings.GRAILS_APP_DIR_PRESENT;
     }
 
 

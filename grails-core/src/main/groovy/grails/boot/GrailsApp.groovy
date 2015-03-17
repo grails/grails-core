@@ -39,7 +39,6 @@ class GrailsApp extends SpringApplication {
 
     @Override
     ConfigurableApplicationContext run(String... args) {
-        System.setProperty(BuildSettings.RUN_EXECUTED, "true")
         def applicationContext = super.run(args)
 
         grails.util.Environment environment = grails.util.Environment.getCurrent()

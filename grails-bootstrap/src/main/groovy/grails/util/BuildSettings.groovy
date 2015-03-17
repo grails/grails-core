@@ -249,19 +249,19 @@ class BuildSettings {
     /**
      * Whether the application is running inside the development environment or deployed
      */
-    public static final boolean IS_DEPLOYED = !new File(BASE_DIR, "grails-app").exists() && !new File(BASE_DIR, "Application.groovy").exists()
+    public static final boolean GRAILS_APP_DIR_PRESENT = new File(BASE_DIR, "grails-app").exists() || new File(BASE_DIR, "Application.groovy").exists()
 
     /**
      * The target directory of the project, null outside of the development environment
      */
-    public static final File TARGET_DIR = IS_DEPLOYED ? null : (System.getProperty(PROJECT_TARGET_DIR) ? new File(System.getProperty(PROJECT_TARGET_DIR)) : new File(BASE_DIR, "build"))
+    public static final File TARGET_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_TARGET_DIR) ? new File(System.getProperty(PROJECT_TARGET_DIR)) : new File(BASE_DIR, "build"))
     /**
      * The resources directory of the project, null outside of the development environment
      */
-    public static final File RESOURCES_DIR = IS_DEPLOYED ? null : (System.getProperty(PROJECT_RESOURCES_DIR) ? new File(System.getProperty(PROJECT_RESOURCES_DIR)) : new File(TARGET_DIR, "resources/main"))
+    public static final File RESOURCES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_RESOURCES_DIR) ? new File(System.getProperty(PROJECT_RESOURCES_DIR)) : new File(TARGET_DIR, "resources/main"))
     /**
      * The classes directory of the project, null outside of the development environment
      */
-    public static final File CLASSES_DIR = IS_DEPLOYED ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
+    public static final File CLASSES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
     public static final String RUN_EXECUTED = "grails.run.executed"
 }

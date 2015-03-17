@@ -22,6 +22,7 @@ import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
+import grails.util.Metadata
 import grails.web.pages.GroovyPagesUriService
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
@@ -100,7 +101,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         def application = grailsApplication
         Config config = application.config
-        boolean developmentMode = !application.warDeployed
+        boolean developmentMode = Metadata.getCurrent().isDevelopmentEnvironmentAvailable()
         Environment env = Environment.current
 
         boolean enableReload = env.isReloadEnabled() ||
@@ -158,7 +159,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
             }
         }
 
-        def deployed = application.warDeployed
+        def deployed = !Metadata.getCurrent().isDevelopmentEnvironmentAvailable()
         groovyPageLocator(CachingGrailsConventionGroovyPageLocator) { bean ->
             bean.lazyInit = true
             if (customResourceLoader) {

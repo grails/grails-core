@@ -66,10 +66,6 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
                     def parameter = new Parameter(springApplicationBuilder, "application")
                     def methodBody = new BlockStatement()
 
-                    def setRunArguments = new ArgumentListExpression()
-                    setRunArguments.addExpression(new ConstantExpression(BuildSettings.RUN_EXECUTED))
-                    setRunArguments.addExpression(new ConstantExpression(Boolean.TRUE.toString()))
-                    methodBody.addStatement( new ExpressionStatement( new MethodCallExpression( new ClassExpression(ClassHelper.make(System)), "setProperty", setRunArguments)))
                     methodBody.addStatement( new ExpressionStatement( new MethodCallExpression( new VariableExpression(parameter), "sources", new ClassExpression(classNode))))
                     loaderClassNode.addMethod( new MethodNode("configure", Modifier.PROTECTED, springApplicationBuilder, [parameter] as Parameter[], [] as ClassNode[], methodBody))
                     source.getAST().addClass(
