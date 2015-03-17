@@ -240,7 +240,7 @@ subprojects { project ->
         options.debug = true
     }
 
-    configure([javadoc]) {
+    configure([groovydoc]) {
         options.encoding "UTF-8"
         options.docEncoding "UTF-8"
         options.charSet "UTF-8"
