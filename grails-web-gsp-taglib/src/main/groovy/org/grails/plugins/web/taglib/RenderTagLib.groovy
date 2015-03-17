@@ -57,8 +57,8 @@ class RenderTagLib implements RequestConstants, TagLibrary {
     CodecLookup codecLookup
     GroovyPageLayoutFinder groovyPageLayoutFinder
 
-    protected AbstractHTMLPage getPage() {
-        return (AbstractHTMLPage)getRequest().getAttribute(PAGE)
+    protected HTMLPage getPage() {
+        return (HTMLPage)getRequest().getAttribute(PAGE)
     }
     
     protected boolean isSitemeshPreprocessMode() {
