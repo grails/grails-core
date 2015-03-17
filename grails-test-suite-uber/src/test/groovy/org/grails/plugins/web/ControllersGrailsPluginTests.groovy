@@ -104,7 +104,13 @@ class FormTagLib {
     void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
         try {
             System.setProperty("grails.env", "development")
-            def plugin = new GroovyPagesGrailsPlugin()
+            def plugin = new GroovyPagesGrailsPlugin() {
+                @Override
+                protected boolean isDevelopmentMode() {
+                    return true
+                }
+            }
+
             plugin.grailsApplication = new DefaultGrailsApplication() {
                 @Override
                 boolean isWarDeployed() {

@@ -101,7 +101,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         def application = grailsApplication
         Config config = application.config
-        boolean developmentMode = Metadata.getCurrent().isDevelopmentEnvironmentAvailable()
+        boolean developmentMode = isDevelopmentMode()
         Environment env = Environment.current
 
         boolean enableReload = env.isReloadEnabled() ||
@@ -269,6 +269,10 @@ class GroovyPagesGrailsPlugin extends Plugin {
             }
         }
     }}
+
+    protected boolean isDevelopmentMode() {
+        Metadata.getCurrent().isDevelopmentEnvironmentAvailable()
+    }
 
     static String transformToValidLocation(String location) {
         if (location == '.') return location

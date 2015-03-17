@@ -357,7 +357,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
 
         final Metadata metadata = Metadata.getCurrent();
-        final boolean warDeployed = !metadata.isDevelopmentEnvironmentAvailable();
+        final boolean warDeployed = metadata.isWarDeployed();
         final boolean reloadEnabled = Environment.getCurrent().isReloadEnabled();
 
         if (!((reloadEnabled || !warDeployed) && onChangeListener != null)) {
