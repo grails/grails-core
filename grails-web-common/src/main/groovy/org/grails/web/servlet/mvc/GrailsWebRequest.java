@@ -67,6 +67,10 @@ import org.springframework.web.util.UrlPathHelper;
  * @since 3.0
  */
 public class GrailsWebRequest extends DispatcherServletWebRequest  {
+
+    private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
+    private static final String REDIRECT_CALLED = GrailsApplicationAttributes.REDIRECT_ISSUED;
+
     private static final Class<? extends GrailsApplicationAttributes> grailsApplicationAttributesClass = GrailsFactoriesLoader.loadFactoryClasses(GrailsApplicationAttributes.class, GrailsWebRequest.class.getClassLoader()).get(0);
     private static final Constructor<? extends GrailsApplicationAttributes> grailsApplicationAttributesConstructor = ClassUtils.getConstructorIfAvailable(grailsApplicationAttributesClass, ServletContext.class);
     private GrailsApplicationAttributes attributes;
@@ -353,7 +357,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
      * @return true if the view for this GrailsWebRequest should be rendered
      */
     public boolean isRenderView() {
-        return renderView;
+        final HttpServletRequest currentRequest = getCurrentRequest();
+        return renderView &&
+                !getCurrentResponse().isCommitted() &&
+                currentRequest.getAttribute(REDIRECT_CALLED) == null &&
+                currentRequest.getAttribute(FORWARD_CALLED) == null;
     }
 
     public String getId() {

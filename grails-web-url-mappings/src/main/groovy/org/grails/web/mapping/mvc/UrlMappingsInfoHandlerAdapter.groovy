@@ -23,8 +23,6 @@ import javax.servlet.http.HttpServletResponse
 @CompileStatic
 class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContextAware{
 
-    private static final String FORWARD_CALLED = 'org.codehaus.groovy.grails.FORWARD_CALLED'
-    private static final String REDIRECT_CALLED = GrailsApplicationAttributes.REDIRECT_ISSUED
     private  static final String ASYNC_REQUEST_URI_ATTR = "javax.servlet.async.request_uri"
     ApplicationContext applicationContext
 
@@ -81,10 +79,7 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 else if(result instanceof ModelAndView) {
                     return (ModelAndView) result
                 } else if(result == null &&
-                          webRequest.renderView &&
-                          !response.isCommitted() &&
-                          request.getAttribute(REDIRECT_CALLED) == null &&
-                          request.getAttribute(FORWARD_CALLED) == null) {
+                          webRequest.renderView) {
                     def viewUri = "/${controllerClass.logicalPropertyName}/${action}"
                     return new ModelAndView(viewUri)
                 }
