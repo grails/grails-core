@@ -32,7 +32,7 @@ public class GrailsCoreDependencies {
     public final String grailsVersion;
     public final String servletVersion;
     protected final String groovyVersion = "2.4.1";
-    protected final String springVersion = "4.1.4.RELEASE";
+    protected final String springVersion = "4.1.5.RELEASE";
     protected final String log4jVersion = "1.2.17";
     protected final String h2Version = "1.3.176";
     protected final String jaxbVersion = "2.0";
