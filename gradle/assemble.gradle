@@ -15,7 +15,7 @@ subprojects { subproject ->
 
 task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency',
                                 dependsOn: libsConfigurations) << {
-/*                                
+/*
     def moduleToVersionsMap = [:]
     libsConfigurations.each { configuration ->
         configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
@@ -124,11 +124,11 @@ task pluginsFromRepo {
     ext.plugins = [
         cache: "1.1.8",
         'database-migration': "1.4.0",
-        hibernate4: "4.3.6.1",
+        hibernate4: "4.3.8.1",
         jquery: "1.11.1",
-        'asset-pipeline': "1.9.9",
+        'asset-pipeline': "2.1.5",
         scaffolding: "2.1.2",
-        tomcat: "7.0.55",
+        tomcat: "7.0.55.2",
         webxml: "1.4.1"
     ]
 
@@ -169,7 +169,7 @@ def processGrailsScripts(intoParam, fromParam, originalDelegate) {
                 filter(ReplaceTokens, tokens: ['startup.command': ''])
                 fileMode = 0755
             }
-        }    
+        }
     }
     closure()
 }
