@@ -4,8 +4,8 @@ import grails.util.BuildSettings
 import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore
 class PluginResolveEngineSpec extends Specification {
-
     def "Test install-plugin no longer valid message"() {
         given:"An instance of the resolve engine"
             def resolveEngine = systemUnderTest()
