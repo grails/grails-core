@@ -28,7 +28,7 @@ ext {
     datastoreVersion = "3.1.4.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.3.11"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.3.11"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
     jlineVersion = "2.12"
@@ -86,6 +86,12 @@ allprojects {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         mavenLocal()
+        if(groovyVersion.endsWith('-SNAPSHOT')) {
+            maven {
+                name 'JFrog OSS snapshot repo'
+                url 'https://oss.jfrog.org/oss-snapshot-local/'
+            }
+        }
         if(isBuildSnapshot) {
             maven { url "http://repo.grails.org/grails/libs-snapshots-local" }
         }
