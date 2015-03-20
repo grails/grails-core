@@ -32,7 +32,15 @@ class BindingExcludeTests {
         def p = model.person
         assert p.name == 'John Doe'
         assert p.locations.size() == 0
+    }
 
+    @Test
+    void testBindingExcludeExpressedAsGstringExclude() {
+        def model = controller.bindWithGstringExclude()
+
+        def l = model.location
+        assert l.shippingAddress == 'Shipping Address'
+        assert l.billingAddress == null
     }
 }
 
@@ -42,5 +50,13 @@ class ExcludingController {
         def p = new Person()
         bindData(p, request, [exclude:"locations"])
         return [person:p]
+    }
+
+    def bindWithGstringExclude() {
+        def l = new Location()
+        def qualifier = 'billing'
+        def bindingSource = [shippingAddress: 'Shipping Address', billingAddress: 'Billing Address']
+        bindData l, bindingSource, [exclude: "${qualifier}Address"]
+        [location: l]
     }
 }

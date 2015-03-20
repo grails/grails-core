@@ -53,10 +53,8 @@ trait DataBinder {
     }
 
     BindingResult bindData(target, bindingSource, Map includeExclude, String filter) {
-        def include = includeExclude?.include
-        def exclude = includeExclude?.exclude
-        List includeList = include instanceof String ? [include]: (List)include
-        List excludeList = exclude instanceof String ? [exclude]: (List)exclude
+        List includeList = convertToListIfCharSequence(includeExclude?.include)
+        List excludeList = convertToListIfCharSequence(includeExclude?.exclude)
         DataBindingUtils.bindObjectToInstance target, bindingSource, includeList, excludeList, filter
     }
 
@@ -64,4 +62,14 @@ trait DataBinder {
         DataBindingUtils.bindToCollection targetType, collectionToPopulate, collectionBindingSource
     }
 
+    private List convertToListIfCharSequence(value) {
+        List result
+        if(value instanceof CharSequence) {
+            result = []
+            result << (value instanceof String ? value : value.toString())
+        } else if(value instanceof List) {
+            result = (List)value
+        }
+        result
+    }
 }
