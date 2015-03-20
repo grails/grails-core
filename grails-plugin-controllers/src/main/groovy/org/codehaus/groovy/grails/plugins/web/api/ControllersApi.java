@@ -357,9 +357,9 @@ public class ControllersApi extends CommonWebApi {
 
     @SuppressWarnings("unchecked")
     private List convertToListIfString(Object o) {
-        if (o instanceof String) {
+        if (o instanceof CharSequence) {
             List list = new ArrayList();
-            list.add(o);
+            list.add(o instanceof String ? o : o.toString());
             o = list;
         }
         return (List) o;
