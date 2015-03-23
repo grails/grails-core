@@ -1,27 +1,28 @@
 package org.grails.plugins.web
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.util.Holders
 import grails.util.Metadata
 import grails.util.MockHttpServletResponse
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
-
-import javax.servlet.ServletContext
-
-import grails.core.DefaultGrailsApplication
-import grails.core.GrailsApplication
-import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
-import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
+import org.grails.core.io.MockResourceLoader
+import org.grails.core.util.ClassPropertyFetcher
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.grails.support.MockApplicationContext
-import org.grails.core.io.MockResourceLoader
-import org.grails.web.util.GrailsApplicationAttributes
+import org.grails.web.servlet.context.support.GrailsRuntimeConfigurator
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
+
+import javax.servlet.ServletContext
 
 abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 
@@ -45,6 +46,10 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         super.setUp()
 
         ExpandoMetaClass.enableGlobally()
+        Holders.clear()
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
+        CachedIntrospectionResults.clearClassLoader(Thread.currentThread().getContextClassLoader())
 
         ctx = new MockApplicationContext()
         onSetUp()
@@ -84,12 +89,15 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         dependentPlugins*.doWithDynamicMethods(appCtx)
         dependentPlugins*.doWithApplicationContext(appCtx)
+
+        Holders.setGrailsApplication(ga)
+        Holders.setConfig(ga.config)
     }
 
     protected final void tearDown() {
         ga.mainContext.close()
         pluginsToLoad = []
         ExpandoMetaClass.disableGlobally()
-        Holders.setPluginManager null
+        Holders.clear()
     }
 }
