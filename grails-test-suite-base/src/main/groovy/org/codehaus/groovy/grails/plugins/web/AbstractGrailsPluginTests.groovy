@@ -5,9 +5,7 @@ import grails.util.Metadata
 import grails.util.MockHttpServletResponse
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
-
-import javax.servlet.ServletContext
-
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
@@ -18,10 +16,13 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.MockResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockServletContext
+
+import javax.servlet.ServletContext
 
 abstract class AbstractGrailsPluginTests extends GroovyTestCase {
 
@@ -45,6 +46,10 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         super.setUp()
 
         ExpandoMetaClass.enableGlobally()
+        Holders.clear()
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
+        CachedIntrospectionResults.clearClassLoader(Thread.currentThread().getContextClassLoader())
 
         ctx = new MockApplicationContext()
         onSetUp()
@@ -79,12 +84,15 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         dependentPlugins*.doWithDynamicMethods(appCtx)
         dependentPlugins*.doWithApplicationContext(appCtx)
+
+        Holders.setGrailsApplication(ga)
+        Holders.setConfig(ga.config)
     }
 
     protected final void tearDown() {
         ga.mainContext.close()
         pluginsToLoad = []
         ExpandoMetaClass.disableGlobally()
-        Holders.setPluginManager null
+        Holders.clear()
     }
 }
