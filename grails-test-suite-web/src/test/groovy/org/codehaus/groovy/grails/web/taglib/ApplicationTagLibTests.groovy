@@ -291,32 +291,27 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     void testCreateLinkWithFlowExecutionKeyAndEvent() {
         unRegisterRequestDataValueProcessor()
-        request.flowExecutionKey = '12345'
-
+      
         def template = '<g:createLink controller="foo" action="bar" event="boo" />'
-        assertOutputEquals('/foo/bar?execution=12345&_eventId=boo', template)
+        assertOutputEquals('/foo/bar?_eventId=boo', template)
     }
 
     void testCreateLinkWithFlowExecutionKeyAndEventAndRequestDataValueProcessor() {
-        request.flowExecutionKey = '12345'
 
         def template = '<g:createLink controller="foo" action="bar" event="boo" />'
-        assertOutputEquals('/foo/bar?execution=12345&_eventId=boo&requestDataValueProcessorParamName=paramValue', template)
+        assertOutputEquals('/foo/bar?_eventId=boo&requestDataValueProcessorParamName=paramValue', template)
     }
 
     void testLinkWithFlowExecutionKeyAndEvent() {
         unRegisterRequestDataValueProcessor()
-        request.flowExecutionKey = '12345'
 
         def template = '<g:link controller="foo" action="bar" event="boo" >link</g:link>'
-        assertOutputEquals('<a href="/foo/bar?execution=12345&amp;_eventId=boo">link</a>', template)
+        assertOutputEquals('<a href="/foo/bar?_eventId=boo">link</a>', template)
     }
 
     void testLinkWithFlowExecutionKeyAndEventAndRequestDataValueProcessor() {
-        request.flowExecutionKey = '12345'
-
         def template = '<g:link controller="foo" action="bar" event="boo" >link</g:link>'
-        assertOutputEquals('<a href="/foo/bar?execution=12345&amp;_eventId=boo&amp;requestDataValueProcessorParamName=paramValue">link</a>', template)
+        assertOutputEquals('<a href="/foo/bar?_eventId=boo&amp;requestDataValueProcessorParamName=paramValue">link</a>', template)
     }
 
     void testSetTag() {
