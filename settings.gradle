@@ -28,6 +28,7 @@ include (
         'grails-gsp',
         'grails-taglib',
         'grails-web-url-mappings',
+        'grails-wrapper',
 
         // POM / BOMs
         'grails-dependencies',

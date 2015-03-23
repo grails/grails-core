@@ -1,0 +1,25 @@
+configurations {
+    archive
+}
+
+//dependencies {
+//    archive "org.springframework:springloaded:$springLoadedVersion"
+//}
+
+task runtimeJar(type: Jar) {
+    // TODO
+    from('build/classes/main')
+    appendix = 'runtime'
+}
+
+jar {
+  from configurations.archive
+  from runtimeJar
+  // TODO
+  exclude 'org/**'
+  appendix = 'support'
+}
+
+artifacts {
+  runtime runtimeJar
+}
