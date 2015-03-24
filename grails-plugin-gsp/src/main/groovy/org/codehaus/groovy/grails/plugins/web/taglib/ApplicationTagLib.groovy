@@ -359,8 +359,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
         if (request.flowExecutionKey) {
-            params.execution = request.flowExecutionKey
-            urlAttrs.params = params
             if (attrs.controller == null && attrs.action == null && attrs.url == null && attrs.uri == null) {
                 urlAttrs[LinkGenerator.ATTRIBUTE_ACTION] = GrailsWebRequest.lookup().actionName
             }
