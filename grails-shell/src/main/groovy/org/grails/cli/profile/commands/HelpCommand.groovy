@@ -141,7 +141,10 @@ grails [environment]* [target] [arguments]*'
                 !(cmd instanceof ProjectCommand)
             }
         }
-        return commands.collect() { Command cmd -> cmd.description }.sort(false) { CommandDescription itDesc ->  itDesc.name }
+        return commands
+                    .collect() { Command cmd -> cmd.description }
+                    .unique() { CommandDescription cmd -> cmd.name }
+                    .sort(false) { CommandDescription itDesc ->  itDesc.name }
     }
 
 
