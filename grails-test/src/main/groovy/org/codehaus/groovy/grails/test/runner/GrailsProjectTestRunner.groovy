@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.test.runner
 
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
@@ -157,7 +158,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
      * @param triggerEvents Whether to trigger events on start and finish of the test run (optional)
      * @return true if the tests passed
      */
-    @CompileStatic
+    @TypeChecked
     boolean runAllTests(Map<String, String> argsMap, boolean triggerEvents = true) {
         testExecutionContext.setVariable("serverContextPath", projectPackager.configureServerContextPath())
 
