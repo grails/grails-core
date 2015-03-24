@@ -38,7 +38,7 @@ class ReactorPromise<T> implements Promise<T> {
     reactor.rx.Promise<T> internalPromise
 
     ReactorPromise(Closure<T> callable, Environment environment) {
-        this.internalPromise = Promises.task(environment, Environment.sharedDispatcher(), callable as Supplier<T>)
+        this.internalPromise = Promises.task(environment, Environment.cachedDispatcher(), callable as Supplier<T>)
     }
 
     ReactorPromise(reactor.rx.Promise promise) {
