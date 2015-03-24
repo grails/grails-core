@@ -344,7 +344,7 @@ subprojects { project ->
             repositories {
                 project.poms << mavenDeployer {
                     if(!isBuildSnapshot) {
-                    beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
                     }
 
                     if(project.hasProperty("sonatypeUsername")) {
