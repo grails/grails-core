@@ -18,13 +18,14 @@ package org.grails.web.servlet.mvc
 import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
-import org.springframework.context.ApplicationContext
+import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.ServletRequestAttributes
 import org.springframework.web.multipart.MultipartException
 import org.springframework.web.servlet.DispatcherServlet
 
+import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -35,7 +36,7 @@ import javax.servlet.http.HttpServletResponse
  * @since 3.0
  */
 @CompileStatic
-class GrailsDispatcherServlet extends DispatcherServlet{
+class GrailsDispatcherServlet extends DispatcherServlet implements ServletContextAware {
 
     GrailsDispatcherServlet() {
     }
@@ -57,16 +58,6 @@ class GrailsDispatcherServlet extends DispatcherServlet{
     }
 
     @Override
-    protected void initStrategies(ApplicationContext context) {
-        super.initStrategies(context)
-        if(context instanceof WebApplicationContext) {
-            def servletContext = ((WebApplicationContext) context).servletContext
-            Holders.setServletContext(servletContext);
-            Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
-        }
-    }
-
-    @Override
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
         def processedRequest = super.checkMultipart(request)
         if(!processedRequest.is(request)) {
@@ -76,5 +67,11 @@ class GrailsDispatcherServlet extends DispatcherServlet{
             }
         }
         return processedRequest
+    }
+
+    @Override
+    void setServletContext(ServletContext servletContext) {
+        Holders.setServletContext(servletContext);
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
     }
 }
