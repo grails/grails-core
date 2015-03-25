@@ -20,16 +20,16 @@ import grails.util.Metadata
 import grails.web.container.EmbeddableServer
 import grails.web.container.EmbeddableServerFactory
 import groovy.transform.CompileStatic
-
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-
+import groovy.transform.TypeChecked
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectWarCreator
+
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 
 /**
  * Runs the container embedded within the current JVM.
@@ -147,7 +147,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
         runWarInternal(SCHEME_HTTPS, serverHost, serverPort, serverPortHttps)
     }
 
-    @CompileStatic
+    @TypeChecked
     private EmbeddableServerFactory loadServerFactory() {
         serverContextPath = projectPackager.configureServerContextPath()
         config = projectPackager.createConfig()
