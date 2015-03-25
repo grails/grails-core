@@ -108,10 +108,17 @@ allprojects {
             }
         }
     }
-// this will apply the javadoc fix tool to all generated javadocs
-// we use it to make sure that the javadocs are not vulnerable independently of the JDK used to build
+
     [Javadoc, Groovydoc].each {
         tasks.withType(it).all {
+            // exclude problematic jar file from javadoc classpath
+            // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+            if (classpath) {
+                classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
+            }
+
+            // this will apply the javadoc fix tool to all generated javadocs
+            // we use it to make sure that the javadocs are not vulnerable independently of the JDK used to build
             doLast {
                 def javadocFix = new JavadocFixTool()
                 javadocFix.recursive = true
@@ -433,6 +440,16 @@ task wrapper(type: Wrapper) {
 
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
     configurations = project.buildscript.configurations
+}
+
+[Javadoc, Groovydoc].each {
+    tasks.withType(it).all {
+        // exclude problematic jar file from javadoc classpath
+        // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+        if (classpath) {
+            classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
+        }
+    }
 }
 
 apply plugin: 'net.gvmtool.sdkvendor'
