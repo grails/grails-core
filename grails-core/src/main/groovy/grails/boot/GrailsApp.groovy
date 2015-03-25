@@ -1,4 +1,6 @@
 package grails.boot
+
+import grails.boot.config.tools.SettingsFile
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.BuildSettings
@@ -11,6 +13,9 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.grails.io.support.FileSystemResource
+import org.grails.io.support.GrailsResourceUtils
+import org.grails.io.support.Resource
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
@@ -113,16 +118,47 @@ class GrailsApp extends SpringApplication {
                 }
             })
 
-            for(GrailsPlugin plugin in pluginManager.allPlugins) {
-                for(WatchPattern wp in plugin.watchedResourcePatterns) {
-                    if(wp.file) {
-                        directoryWatcher.addWatchFile(wp.file)
-                    }
-                    else if(wp.directory && wp.extension) {
-                        directoryWatcher.addWatchDirectory(wp.directory, wp.extension)
+            File baseDir = new File(location).canonicalFile
+
+            List<File> watchBaseDirectories = [baseDir]
+            def parentDir = baseDir.parentFile
+            File settingsFile = new File(parentDir, "settings.gradle")
+
+            if(settingsFile.exists()) {
+                def cc = new CompilerConfiguration()
+                cc.scriptBaseClass = SettingsFile.name
+                def binding = new Binding()
+                def shell = new GroovyShell(Thread.currentThread().contextClassLoader, binding, cc)
+                try {
+                    shell.evaluate(settingsFile)
+                } catch (Throwable e) {
+                    // ignore
+                }
+                def projectPaths = binding.getVariables().get('projectPaths')
+                if(projectPaths) {
+                    for(path in projectPaths) {
+                        watchBaseDirectories << new File(parentDir, path.toString())
                     }
                 }
             }
+
+            def locationLength = location.length() + 1
+            for(GrailsPlugin plugin in pluginManager.allPlugins) {
+                for(WatchPattern wp in plugin.watchedResourcePatterns) {
+                    for(watchBase in watchBaseDirectories) {
+                        if(wp.file) {
+                            def resolvedPath = new File(watchBase, wp.file.path.substring(locationLength))
+                            directoryWatcher.addWatchFile(resolvedPath)
+                        }
+                        else if(wp.directory && wp.extension) {
+
+                            def resolvedPath = new File(watchBase, wp.directory.path.substring(locationLength))
+                            directoryWatcher.addWatchDirectory(resolvedPath, wp.extension)
+                        }
+                    }
+                }
+            }
+
 
             Thread.start {
                 CompilerConfiguration compilerConfig = new CompilerConfiguration()
@@ -143,6 +179,14 @@ class GrailsApp extends SpringApplication {
                         }
                         else if(i == 1) {
                             def changedFile = changedFiles.poll()
+                            changedFile = changedFile.canonicalFile
+                            File appDir = null
+                            def changedPath = changedFile.path
+                            if(changedPath.contains('/grails-app')) {
+                                appDir = new File(changedPath.substring(0, changedPath.indexOf('/grails-app')))
+                            }
+                            def baseFileLocation = appDir?.absolutePath ?: location
+                            compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
                             println "File $changedFile changed, recompiling..."
                             // only one change, just to a simple recompile and propagate the change
                             def unit = new CompilationUnit(compilerConfig)

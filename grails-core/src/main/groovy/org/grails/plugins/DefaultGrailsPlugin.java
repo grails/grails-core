@@ -360,7 +360,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         final boolean warDeployed = metadata.isWarDeployed();
         final boolean reloadEnabled = Environment.getCurrent().isReloadEnabled();
 
-        if (!((reloadEnabled || !warDeployed) && onChangeListener != null)) {
+        if (!((reloadEnabled || !warDeployed))) {
             return;
         }
 
@@ -764,7 +764,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void notifyOfEvent(Map event) {
-        if (onChangeListener != null) {
+        if(plugin instanceof Plugin) {
+            ((Plugin)plugin).onChange(event);
+        }
+        else if(onChangeListener != null) {
             invokeOnChangeListener(event);
         }
     }

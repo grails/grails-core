@@ -121,10 +121,14 @@ public class DirectoryWatcher extends Thread {
         extension = removeStartingDotIfPresent(extension);
         List<String> fileExtensions = new ArrayList<String>();
         if (extension != null && extension.length() > 0) {
-            fileExtensions.add("*");
+            int i = extension.lastIndexOf('.');
+            if(i > -1) {
+                extension = extension.substring(i + 1);
+            }
+            fileExtensions.add(extension);
         }
         else {
-            fileExtensions.add(extension);
+            fileExtensions.add("*");
         }
         addWatchDirectory(dir, fileExtensions);
     }
