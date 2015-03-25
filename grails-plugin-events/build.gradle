@@ -1,5 +1,9 @@
 dependencies {
     compile project(":grails-core")
     compile project(":grails-async")
-    compile 'io.projectreactor.spring:reactor-spring-context:2.0.0.RC1'
+    compile "io.projectreactor.spring:reactor-spring-context:$reactorVersion", {
+        exclude module:'reactor-bus', group:'io.projectreactor'
+    }
+
+    compile "io.projectreactor:reactor-bus:$reactorVersion"
 }

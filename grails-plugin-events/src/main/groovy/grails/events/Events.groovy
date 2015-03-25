@@ -18,9 +18,9 @@ package grails.events
 import groovy.transform.CompileStatic
 import org.grails.events.ClosureEventConsumer
 import org.springframework.beans.factory.annotation.Autowired
+import reactor.bus.Bus
 import reactor.bus.Event
 import reactor.bus.EventBus
-import reactor.bus.Observable
 import reactor.bus.registry.Registration
 import reactor.bus.selector.Selector
 import reactor.bus.selector.Selectors
@@ -100,9 +100,9 @@ trait Events {
     }
 
     /**
-     * @see reactor.bus.Observable#notify(java.lang.Object, java.lang.Object)
+     * @see reactor.bus.Bus#notify(java.lang.Object, java.lang.Object)
      */
-    public Observable notify(Object key, Event<?> ev) {
+    public Bus notify(Object key, Event<?> ev) {
         if(eventBus == null) throw new IllegalStateException("EventBus not present. Event notification attempted outside of application context.")
         if(ev.replyTo) {
             eventBus.send key, ev
@@ -113,16 +113,16 @@ trait Events {
     }
 
     /**
-     * @see reactor.bus.Observable#notify(java.lang.Object, reactor.bus.Event)
+     * @see reactor.bus.Bus#notify(java.lang.Object, reactor.bus.Event)
      */
-    public Observable notify(Object key, data) {
+    public Bus notify(Object key, data) {
         notify key, Event.wrap(data)
     }
 
     /**
-     * @see reactor.bus.Observable#notify(java.lang.Object, reactor.bus.Event)
+     * @see reactor.bus.Bus#notify(java.lang.Object, reactor.bus.Event)
      */
-    public <E extends Event<?>> Observable notify(Object key, Closure<E> supplier) {
+    public <E extends Event<?>> Bus notify(Object key, Closure<E> supplier) {
         if(eventBus == null) throw new IllegalStateException("EventBus not present. Event notification attempted outside of application context.")
         eventBus.notify key, supplier as Supplier<E>
     }
@@ -130,7 +130,7 @@ trait Events {
     /**
      * @see EventBus#sendAndReceive(java.lang.Object, reactor.bus.Event, reactor.fn.Consumer)
      */
-    public Observable sendAndReceive(Object key, data, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+    public Bus sendAndReceive(Object key, data, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
             value = ClosureEventConsumer.ReplyDecorator) Closure reply) {
         eventBus.sendAndReceive key, Event.wrap(data), new ClosureEventConsumer(reply)
     }
@@ -138,7 +138,7 @@ trait Events {
     /**
      * @see EventBus#sendAndReceive(java.lang.Object, reactor.fn.Supplier, reactor.fn.Consumer)
      */
-    public <E extends Event<?>> Observable sendAndReceive(Object key, Closure<E> supplier, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+    public <E extends Event<?>> Bus sendAndReceive(Object key, Closure<E> supplier, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
             value = ClosureEventConsumer.ReplyDecorator) Closure reply) {
         eventBus.sendAndReceive key, supplier as Supplier<E>, new ClosureEventConsumer(reply)
     }
