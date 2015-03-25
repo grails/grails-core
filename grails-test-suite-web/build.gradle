@@ -48,7 +48,7 @@ dependencies {
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
 
-    provided 'javax.servlet:jsp-api:2.0', {
+    provided 'javax.servlet.jsp:jsp-api:2.1', {
         exclude group: 'javax.servlet', module:'servlet-api'
     }
 }
