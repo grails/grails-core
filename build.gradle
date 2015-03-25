@@ -4,6 +4,7 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
+        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
@@ -11,6 +12,7 @@ buildscript {
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
+        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.0'
     }
 }
 
@@ -24,7 +26,7 @@ ext {
 
     antTraxVersion = "1.7.1"
     antVersion = "1.9.3"
-    aspectjVersion = "1.8.2"
+    aspectjVersion = "1.8.5"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
@@ -122,10 +124,17 @@ allprojects {
             }
         }
     }
-// this will apply the javadoc fix tool to all generated javadocs
-// we use it to make sure that the javadocs are not vulnerable independently of the JDK used to build
+
     [Javadoc, Groovydoc].each {
         tasks.withType(it).all {
+            // exclude problematic jar file from javadoc classpath
+            // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+            if (classpath) {
+                classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
+            }
+
+            // this will apply the javadoc fix tool to all generated javadocs
+            // we use it to make sure that the javadocs are not vulnerable independently of the JDK used to build
             doLast {
                 def javadocFix = new JavadocFixTool()
                 javadocFix.recursive = true
@@ -463,7 +472,6 @@ apply {
 
 apply plugin: "com.github.adrianbk.tcitrigger"
 
-
 tciTrigger {
     gitHubRepo 'grails/grails3-functional-tests'
 }
@@ -471,4 +479,29 @@ tciTrigger {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
+}
+
+task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
+    configurations = project.buildscript.configurations
+}
+
+[Javadoc, Groovydoc].each {
+    tasks.withType(it).all {
+        // exclude problematic jar file from javadoc classpath
+        // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
+        if (classpath) {
+            classpath -= classpath.filter { it.name == 'javaee-web-api-6.0.jar' }
+        }
+    }
+}
+
+apply plugin: 'net.gvmtool.sdkvendor'
+gvm {
+    api = "https://gvm-vendor.herokuapp.com"
+    consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
+    consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
+    candidate = "grails"
+    version = project.version
+    url = "https://github.com/grails/grails-core/releases/download/v${project.version}/grails-${project.version}.zip"
+    hashtag = "#grailsfw"
 }
