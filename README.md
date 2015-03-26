@@ -24,6 +24,10 @@ To build Grails, clone this GitHub repository and execute the install Gradle tar
     git clone https://github.com/grails/grails-core.git
     cd grails-core
     ./gradlew install
+    
+If you encounter out of memory errors when trying to run the install target, try adjusting Gradle build settings. For example:
+
+    export GRADLE_OPTS="-Xmx2G -Xms2G -XX:NewSize=512m -XX:MaxNewSize=512m -XX:MaxPermSize=1G"
 
 Performing a Release
 ---
