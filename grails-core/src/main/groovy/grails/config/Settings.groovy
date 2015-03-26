@@ -137,4 +137,14 @@ interface Settings {
      * The suffix used during scaffolding for the domain
      */
     String SCAFFOLDING_DOMAIN_SUFFIX = 'grails.scaffolding.templates.domainSuffix'
+
+    /**
+     * The amount of time to cache static resource requests
+     */
+    String RESOURCES_CACHE_PERIOD = 'grails.resources.cachePeriod'
+
+    /**
+     * Whether serving static HTML pages from src/main/resources/public is enabled
+     */
+    String RESOURCES_ENABLED = 'grails.resources.enabled'
 }
