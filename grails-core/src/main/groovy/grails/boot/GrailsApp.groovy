@@ -1,6 +1,8 @@
 package grails.boot
 
 import grails.boot.config.tools.SettingsFile
+import grails.config.Config
+import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.BuildSettings
@@ -217,7 +219,9 @@ class GrailsApp extends SpringApplication {
     protected printRunStatus(ConfigurableApplicationContext applicationContext) {
         try {
             def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
-            println("Grails application running at ${protocol}://localhost:${applicationContext.embeddedServletContainer.port}")
+            GrailsApplication app = applicationContext.getBean(GrailsApplication)
+            def contextPath = app.config.getProperty('server.context-path', '')
+            println("Grails application running at ${protocol}://localhost:${applicationContext.embeddedServletContainer.port}${contextPath}")
         } catch (e) {
             // ignore
         }
