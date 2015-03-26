@@ -18,6 +18,8 @@ package org.grails.plugins.events
 
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
+import groovy.util.logging.Commons
 import org.grails.events.reactor.GrailsReactorConfigurationReader
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import reactor.Environment
@@ -31,6 +33,7 @@ import reactor.spring.context.config.ConsumerBeanAutoConfiguration
  * @author Graeme Rocher
  * @since 3.0
  */
+@Commons
 class EventBusGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.grailsVersion
@@ -39,9 +42,7 @@ class EventBusGrailsPlugin extends Plugin {
     Closure doWithSpring() {
         {->
             reactorConfigurationReader(GrailsReactorConfigurationReader, grailsApplication.config, ref("grailsConfigProperties"))
-            reactorEnv(Environment, ref("reactorConfigurationReader")) { bean ->
-                bean.destroyMethod = "shutdown"
-            }
+            reactorEnv(Environment, ref("reactorConfigurationReader"))
 
             eventBus(MethodInvokingFactoryBean) { bean ->
                 targetClass = EventBus
@@ -49,6 +50,22 @@ class EventBusGrailsPlugin extends Plugin {
                 arguments = [reactorEnv]
             }
             consumerBeanAutoConfiguration(ConsumerBeanAutoConfiguration)
+        }
+    }
+
+    @Override
+    @CompileStatic
+    void doWithApplicationContext() {
+        Environment.assign applicationContext.getBean('reactorEnv', Environment)
+    }
+
+    @Override
+    @CompileStatic
+    void onShutdown(Map<String, Object> event) {
+        try {
+            Environment.terminate()
+        } catch (Throwable e) {
+            log.warn("Error shutting down Reactor: ${e.message}", e)
         }
     }
 }
