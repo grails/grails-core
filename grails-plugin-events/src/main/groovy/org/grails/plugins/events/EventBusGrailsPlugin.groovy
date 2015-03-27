@@ -56,14 +56,18 @@ class EventBusGrailsPlugin extends Plugin {
     @Override
     @CompileStatic
     void doWithApplicationContext() {
-        Environment.assign applicationContext.getBean('reactorEnv', Environment)
+        if( !Environment.alive() ) {
+            Environment.assign applicationContext.getBean('reactorEnv', Environment)
+        }
     }
 
     @Override
     @CompileStatic
     void onShutdown(Map<String, Object> event) {
         try {
-            Environment.terminate()
+            if( Environment.alive() ) {
+                Environment.terminate()
+            }
         } catch (Throwable e) {
             log.warn("Error shutting down Reactor: ${e.message}", e)
         }
