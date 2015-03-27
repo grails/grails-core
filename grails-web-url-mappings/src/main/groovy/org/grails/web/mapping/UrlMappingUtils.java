@@ -286,7 +286,18 @@ public class UrlMappingUtils {
 
         Map toRestore = WebUtils.exposeRequestAttributesAndReturnOldValues(request, model);
 
+        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+
+
+        final Object previousControllerClass = webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+        final Object previousMatchedRequest = webRequest.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
+
+
+
         try {
+            webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+            webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
+            webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, WebRequest.SCOPE_REQUEST);
             final IncludeResponseWrapper responseWrapper = new IncludeResponseWrapper(response);
             try {
                 WrappedResponseHolder.setWrappedResponse(responseWrapper);
@@ -297,6 +308,9 @@ public class UrlMappingUtils {
                 return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
             }
             finally {
+                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, previousControllerClass,WebRequest.SCOPE_REQUEST);
+                webRequest.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST,previousMatchedRequest, WebRequest.SCOPE_REQUEST);
+
                 WrappedResponseHolder.setWrappedResponse(wrapped);
             }
         }
