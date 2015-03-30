@@ -1,6 +1,7 @@
 idea {
     project {
         jdkName "1.7"
+        languageLevel "1.6"
         ipr {
             withXml { provider ->
                 def node = provider.asNode()
