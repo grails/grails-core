@@ -1,6 +1,6 @@
 idea {
     project {
-        jdkName "1.6"
+        jdkName "1.7"
         ipr {
             withXml { provider ->
                 def node = provider.asNode()
@@ -26,6 +26,11 @@ idea {
                         </copyright>
                     '''))
                 }
+
+                // Disable Spring framework detection
+                node.append(new NodeBuilder().component(name: 'FrameworkDetectionExcludesConfiguration') {
+                  type(id: 'Spring')
+                })
             }
         }
     }
