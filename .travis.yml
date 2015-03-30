@@ -19,6 +19,8 @@ env:
   - secure: VJt5eqKPhQbnjQakNrgC9l5MRmTMN9hccTLD+/ijZEMcb9OTHii+T3jbsHH6cw5JuTH5wabjuWYObtlXLZ+lQknU9hmbhSsm5NlqKHhOno+IxNzfhfRm26oo7wGQneW4cujkmOkzLZrSNN8MU1ISMb0g24x4TgbVzjAUD5jsT/M=
   - secure: bm/8EJkrBeO9H+MHwTogPr/0/19vV+K4O+lRAweKOl2w4QxbIog9cCPKr6+b3N+o2N75OImnRwRNXw2x/clV1Vl8TqxdtwNislW+SCei9N7MxrUK27KWCc/k1vad4D2D26DVxx2PquPo24Q8wfc7rXSeoLi4iHlIdpBECIxtA9c=
   - secure: X0fScDRO+fo4P4/xUvRmMhpNVqqPrIACIfnywXkUhl4gC/JyxBTfZmw+V6zsnNbyAW8AqJoejB3c709xyqdURXMy89Ect+lY/tei7ah5uZpgv82MhZsGCVaplPJiPDNGPHanqRynIv5brBodZuq0sohKxGRlcoSqChq4ZlY2HII=
+  - secure: M2WGEzaA4K64HCuNaXbEsg9aKg9Uo5VJOUBSiNmBQQfracqDWoPW6BlC+uD8dqBkFG4z3L4rJWnPoUNDZrqIUmInNLXGQrlkmfHTrAvCs6V+Jj4ilIRfc/bZnasoTmLxT4PPFZGCLcRJ3QwAJ+36EOZPDcXPXpN0hw4hB1hOx9Q=
+  - secure: Frvf9gLJ/pfy3SWMm9LXdprO/snMFfDO9pTd1bl2GN3QBmkF40G20NzoFI6jbYeyg+gwJQmnC6NVi/KDAkJ/EBO05Xk/qMKwWWsASgdDzdnUNTynFPH0zcnv64d6qZAaLWeH/gWQPZ+99zmbVzFqSNDggEo+cPBm9QjqJ608Yx4=
 script: ./travis-build.sh
 install: /bin/true
 after_failure: ./travis-after-failure.sh
@@ -32,3 +34,5 @@ deploy:
     repo: grails/grails-core
     tags: true
     all_branches: true
+after_deploy:
+  - ./gradlew sdkMajorRelease
