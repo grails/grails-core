@@ -175,7 +175,10 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         variables['grails.codegen.projectName'] = GrailsNameUtils.getScriptName(projectClassName)
         variables['grails.profile'] = profile.name
         variables['grails.version'] = Environment.getPackage().getImplementationVersion() ?: GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS
+        variables['info.app.grailsVersion'] = Environment.getPackage().getImplementationVersion() ?: GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS
+        variables['info.app.version'] = '0.1-SNAPSHOT'
         variables['grails.app.name'] = appname
+        variables['info.app.name'] = appname
         variables['grails.app.group'] = groupname
     }
 
