@@ -312,4 +312,11 @@ public interface GrailsPluginManager extends ApplicationContextAware {
      * @return True if it was shutdown
      */
     boolean isShutdown();
+
+    /**
+     * Sets the filter to use to filter for plugins
+     *
+     * @param pluginFilter The plugin filter
+     */
+    public void setPluginFilter(PluginFilter pluginFilter);
 }

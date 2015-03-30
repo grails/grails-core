@@ -34,7 +34,7 @@ public class IncludingPluginFilter extends BasePluginFilter {
         super(included);
     }
 
-    public IncludingPluginFilter(String[] included) {
+    public IncludingPluginFilter(String... included) {
         super(included);
     }
 

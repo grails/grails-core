@@ -716,7 +716,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         }
     }
 
-    void setPluginFilter(PluginFilter pluginFilter) {
+    public void setPluginFilter(PluginFilter pluginFilter) {
         this.pluginFilter = pluginFilter;
     }
 

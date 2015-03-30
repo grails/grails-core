@@ -16,6 +16,7 @@
 package org.grails.plugins;
 
 import grails.artefact.Enhanced;
+import grails.plugins.PluginFilter;
 import org.grails.config.NavigableMap;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
@@ -347,6 +348,11 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public boolean isShutdown() {
         return shutdown;
+    }
+
+    @Override
+    public void setPluginFilter(PluginFilter pluginFilter) {
+        // no-op
     }
 
     public boolean supportsCurrentBuildScope(String pluginName) {

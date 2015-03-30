@@ -34,6 +34,7 @@ import org.grails.commons.CodecArtefactHandler
 import org.grails.commons.DefaultGrailsCodecClass
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.core.util.ClassPropertyFetcher
+import org.grails.plugins.IncludingPluginFilter
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
@@ -149,6 +150,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         RootBeanDefinition beandef = new RootBeanDefinition(TestRuntimeGrailsApplicationPostProcessor.class);
         ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues()
         constructorArgumentValues.addIndexedArgumentValue(0, doWithSpringClosure)
+        constructorArgumentValues.addIndexedArgumentValue(1, (resolveTestCallback(callerInfo, "includePlugins") ?: ['core']) as Set )
         beandef.setConstructorArgumentValues(constructorArgumentValues)
         beandef.setPropertyValues(new MutablePropertyValues().add("loadExternalBeans", resolveTestCallback(callerInfo, "loadExternalBeans") as boolean).add("customizeGrailsApplicationClosure", customizeGrailsApplicationClosure))
         beandef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -367,11 +369,18 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     static class TestRuntimeGrailsApplicationPostProcessor extends GrailsApplicationPostProcessor {
         Closure customizeGrailsApplicationClosure
+        Set includedPlugins = ['core'] as Set
 
-        TestRuntimeGrailsApplicationPostProcessor(Closure doWithSpringClosure) {
+        TestRuntimeGrailsApplicationPostProcessor(Closure doWithSpringClosure, Set includedPlugins = ['core']) {
             super([doWithSpring: { -> doWithSpringClosure }] as GrailsApplicationLifeCycle, null, null)
             loadExternalBeans = false
             reloadingEnabled = false
+            this.includedPlugins = includedPlugins
+        }
+
+        @Override
+        protected void customizePluginManager(GrailsPluginManager grailsApplication) {
+            pluginManager.pluginFilter = new IncludingPluginFilter(includedPlugins)
         }
 
         @Override

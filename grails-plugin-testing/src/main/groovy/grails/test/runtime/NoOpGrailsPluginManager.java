@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import grails.core.GrailsApplication;
+import grails.plugins.PluginFilter;
 import org.grails.spring.RuntimeSpringConfiguration;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
@@ -199,5 +200,10 @@ final class NoOpGrailsPluginManager implements GrailsPluginManager {
     public boolean isShutdown() {
         return false;
     }
-    
+
+    @Override
+    public void setPluginFilter(PluginFilter pluginFilter) {
+        // no-op
+    }
+
 }

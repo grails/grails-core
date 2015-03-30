@@ -77,15 +77,20 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         }
     }
 
-    protected void initializeGrailsApplication(ApplicationContext applicationContext) {
+    protected final void initializeGrailsApplication(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
+        customizePluginManager(pluginManager)
         pluginManager.loadPlugins()
         pluginManager.applicationContext = applicationContext
         loadApplicationConfig()
         customizeGrailsApplication(grailsApplication)
         performGrailsInitializationSequence()
+    }
+
+    protected void customizePluginManager(GrailsPluginManager grailsApplication) {
+
     }
 
     protected void customizeGrailsApplication(GrailsApplication grailsApplication) {
