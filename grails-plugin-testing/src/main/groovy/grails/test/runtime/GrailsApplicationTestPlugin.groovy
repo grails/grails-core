@@ -150,7 +150,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         RootBeanDefinition beandef = new RootBeanDefinition(TestRuntimeGrailsApplicationPostProcessor.class);
         ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues()
         constructorArgumentValues.addIndexedArgumentValue(0, doWithSpringClosure)
-        constructorArgumentValues.addIndexedArgumentValue(1, (resolveTestCallback(callerInfo, "includePlugins") ?: ['core']) as Set )
+        constructorArgumentValues.addIndexedArgumentValue(1, (resolveTestCallback(callerInfo, "includePlugins") ?: TestRuntimeGrailsApplicationPostProcessor.DEFAULT_INCLUDED_PLUGINS) as Set )
         beandef.setConstructorArgumentValues(constructorArgumentValues)
         beandef.setPropertyValues(new MutablePropertyValues().add("loadExternalBeans", resolveTestCallback(callerInfo, "loadExternalBeans") as boolean).add("customizeGrailsApplicationClosure", customizeGrailsApplicationClosure))
         beandef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
@@ -368,10 +368,11 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
 
     static class TestRuntimeGrailsApplicationPostProcessor extends GrailsApplicationPostProcessor {
+        static final Set DEFAULT_INCLUDED_PLUGINS = ['core', 'eventBus'] as Set
         Closure customizeGrailsApplicationClosure
-        Set includedPlugins = ['core'] as Set
+        Set includedPlugins = DEFAULT_INCLUDED_PLUGINS
 
-        TestRuntimeGrailsApplicationPostProcessor(Closure doWithSpringClosure, Set includedPlugins = ['core']) {
+        TestRuntimeGrailsApplicationPostProcessor(Closure doWithSpringClosure, Set includedPlugins = DEFAULT_INCLUDED_PLUGINS) {
             super([doWithSpring: { -> doWithSpringClosure }] as GrailsApplicationLifeCycle, null, null)
             loadExternalBeans = false
             reloadingEnabled = false
