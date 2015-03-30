@@ -26,6 +26,11 @@ idea {
                         </copyright>
                     '''))
                 }
+
+                // Disable Spring framework detection
+                node.append(new NodeBuilder().component(name: 'FrameworkDetectionExcludesConfiguration') {
+                  type(id: 'Spring')
+                })
             }
         }
     }
