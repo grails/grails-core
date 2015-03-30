@@ -1,6 +1,6 @@
 idea {
     project {
-        jdkName "1.6"
+        jdkName "1.7"
         ipr {
             withXml { provider ->
                 def node = provider.asNode()
