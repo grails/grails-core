@@ -47,6 +47,8 @@ import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
+import org.springframework.context.ApplicationContext
+import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
 /**
@@ -107,7 +109,9 @@ class GroovyPagesGrailsPlugin extends Plugin {
         boolean enableReload = env.isReloadEnabled() ||
                                 config.getProperty(GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD, Boolean, false) ||
                                     (developmentMode && env == Environment.DEVELOPMENT)
-        boolean warDeployedWithReload = application.warDeployed && enableReload
+
+        boolean warDeployed = application.warDeployed
+        boolean warDeployedWithReload = warDeployed && enableReload
 
         long gspCacheTimeout = config.getProperty(GSP_RELOAD_INTERVAL, Long,  (developmentMode && env == Environment.DEVELOPMENT) ? 0L : 5000L)
         boolean enableCacheResources = !config.getProperty(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES, Boolean, false)
@@ -166,9 +170,22 @@ class GroovyPagesGrailsPlugin extends Plugin {
                 resourceLoader = groovyPageResourceLoader
             }
             if (deployed) {
+                def context = grailsApplication.mainContext
+                def allViewsProperties = context.getResources("classpath*:gsp/views.properties")
+                allViewsProperties = allViewsProperties.findAll { Resource r ->
+                    def p = r.URL.path
+                    if(warDeployed && p.contains('/WEB-INF/classes')) {
+                        return true
+                    }
+                    else if(!warDeployed && !p.contains("!/lib")) {
+                        return true
+                    }
+
+                    return false
+                }
                 precompiledGspMap = { PropertiesFactoryBean pfb ->
                     ignoreResourceNotFound = true
-                    location = "classpath:gsp/views.properties"
+                    locations = allViewsProperties as Resource[]
                 }
             }
             if (enableReload) {
