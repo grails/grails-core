@@ -238,8 +238,8 @@ public class Metadata extends CodeGenConfig  {
      * @return true if this application is deployed as a WAR
      */
     public boolean isWarDeployed() {
-        def loadedLocation = getClass().getClassLoader().getResource("");
-        if(loadedLocation && loadedLocation.path.contains('/WEB-INF/classes/')) {
+        def loadedLocation = getClass().getClassLoader().getResource(FILE);
+        if(loadedLocation && loadedLocation.path.contains('/WEB-INF/classes')) {
             return true
         }
         return false
