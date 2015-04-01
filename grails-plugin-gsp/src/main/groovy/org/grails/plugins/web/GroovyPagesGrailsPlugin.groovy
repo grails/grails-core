@@ -170,9 +170,9 @@ class GroovyPagesGrailsPlugin extends Plugin {
                 resourceLoader = groovyPageResourceLoader
             }
             if (deployed) {
-                def context = grailsApplication.mainContext
-                def allViewsProperties = context.getResources("classpath*:gsp/views.properties")
-                allViewsProperties = allViewsProperties.findAll { Resource r ->
+                def context = grailsApplication?.mainContext
+                def allViewsProperties = context?.getResources("classpath*:gsp/views.properties")
+                allViewsProperties = allViewsProperties?.findAll { Resource r ->
                     def p = r.URL.path
                     if(warDeployed && p.contains('/WEB-INF/classes')) {
                         return true
@@ -185,7 +185,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
                 }
                 precompiledGspMap = { PropertiesFactoryBean pfb ->
                     ignoreResourceNotFound = true
-                    locations = allViewsProperties as Resource[]
+                    locations = allViewsProperties ? allViewsProperties as Resource[] : 'classpath:gsp/views.properties'
                 }
             }
             if (enableReload) {
