@@ -419,6 +419,29 @@ class SomeClass {
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot find matching method grails.compiler.Person#addToCodes'
     }
+
+    void 'test GrailsCompileStatic on a method in a class marked with Transactional'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        gcl.parseClass('''
+package demo
+
+@grails.transaction.Transactional
+class SomeService {
+    @grails.compiler.GrailsCompileStatic
+    def someMethod() {
+        int x = 'Jeff'.lastName()
+    }
+}
+''')
+
+        then: 'an error is thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot find matching method java.lang.String#lastName()'
+
+    }
 }
 
 @Entity

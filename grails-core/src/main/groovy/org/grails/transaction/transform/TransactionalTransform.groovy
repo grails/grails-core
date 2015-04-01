@@ -17,6 +17,7 @@
 package org.grails.transaction.transform
 
 import grails.transaction.Rollback
+import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
 
 import static org.grails.compiler.injection.GrailsASTUtils.*
@@ -62,6 +63,8 @@ import org.springframework.transaction.interceptor.RollbackRuleAttribute
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class TransactionalTransform implements ASTTransformation{
     public static final ClassNode MY_TYPE = new ClassNode(Transactional)
+    public static final ClassNode COMPILE_STATIC_TYPE = ClassHelper.make(CompileStatic)
+    public static final ClassNode TYPE_CHECKED_TYPE = ClassHelper.make(TypeChecked)
     private static final String PROPERTY_TRANSACTION_MANAGER = "transactionManager"
     private static final String METHOD_EXECUTE = "execute"
     private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
@@ -270,6 +273,13 @@ class TransactionalTransform implements ASTTransformation{
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                 methodNode.code
                 );
+
+        // GrailsCompileStatic and GrailsTypeChecked are not explicitly addressed
+        // here but they will be picked up because they are @AnnotationCollector annotations
+        // which use CompileStatic and TypeChecked...
+        renamedMethodNode.addAnnotations(methodNode.getAnnotations(COMPILE_STATIC_TYPE))
+        renamedMethodNode.addAnnotations(methodNode.getAnnotations(TYPE_CHECKED_TYPE))
+
         methodNode.setCode(null)
         classNode.addMethod(renamedMethodNode)
         

@@ -17,6 +17,7 @@
 package grails.transaction
 
 import grails.spring.BeanBuilder
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
@@ -577,6 +578,27 @@ new BookService()
             status.isRollbackOnly()
     }
 
+    void 'test CompileStatic on a method in a class marked with Transactional'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        gcl.parseClass('''
+package demo
+
+@grails.transaction.Transactional
+class SomeClass {
+    @groovy.transform.CompileStatic
+    def someMethod() {
+        int x = 'Jeff'.lastName()
+    }
+}
+''')
+        then:
+        MultipleCompilationErrorsException ex = thrown()
+        ex.message.contains 'Cannot find matching method java.lang.String#lastName()'
+
+    }
 }
 
 
