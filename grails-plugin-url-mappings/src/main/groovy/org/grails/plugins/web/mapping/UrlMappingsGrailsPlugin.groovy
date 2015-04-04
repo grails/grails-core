@@ -95,7 +95,7 @@ class UrlMappingsGrailsPlugin extends Plugin {
 
 
     @Override
-    void onChange(Map<String, Object> events) {
+    void onChange(Map<String, Object> event) {
         def application = grailsApplication
         if (!application.isArtefactOfType(UrlMappingsArtefactHandler.TYPE, event.source)) {
             return
