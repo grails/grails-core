@@ -59,7 +59,28 @@ trait RestResponder {
      * Same as {@link RestResponder#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
      */
     def respond(Map args, value) {
-        respond(value, args)
+        internalRespond value, args
+    }
+
+    /**
+     * The respond method will attempt to delivery an appropriate response for the
+     * requested response format and Map value.
+     *
+     * If the value is null then a 404 will be returned. Otherwise the {@link RendererRegistry}
+     * will be consulted for an appropriate response renderer for the requested response format.
+     *
+     * @param value The value
+     * @return
+     */
+    def respond(Map value) {
+        internalRespond value
+    }
+
+    /**
+     * Same as {@link RestResponder#respond(java.util.Map)}, but here to support Groovy named arguments
+     */
+    def respond(Map namedArgs, Map value) {
+        internalRespond value, namedArgs
     }
 
     /**
@@ -74,6 +95,10 @@ trait RestResponder {
      * @return
      */
     def respond(value, Map args = [:]) {
+        internalRespond value, args
+    }
+
+    private internalRespond(value, Map args=[:]) {
         Integer statusCode
         if (args.status) {
             final statusValue = args.status
