@@ -51,7 +51,7 @@ class Support {
                     System.getenv(ENV_RELOAD_AGENT_PATH)
                 }
                 def file = findAgentJar(agentPath, grailsHome)
-                if(file.exists()) {
+                if(file?.exists()) {
                     def runtimeMxBean = ManagementFactory.runtimeMXBean
                     def arguments = runtimeMxBean.inputArguments
                     if(!arguments.contains('-Xverify:none') && !arguments.contains('-noverify')) {
