@@ -36,7 +36,7 @@ Releases of Grails are automated by [Travis CI](https://travis-ci.org/grails/gra
 
 To create a release perform the following steps.
 
-First check that the [tests are passing](https://travis-ci.org/grails/grails-core) and all is well on Travis.
+First check that the [tests are passing](https://github.com/grails/grails-core/wiki/Travis-CI-status) and all is well on Travis.
 
 With that done checkout the [Profile Repository](https://github.com/grails/grails-profile-repository) and tag it for the release version. The tag should begin with the letter 'v'. For example::
 
