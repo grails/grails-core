@@ -231,7 +231,7 @@ class RespondMethodSpec extends Specification{
         modelAndView.viewName == 'showWithModel'
     }
 
-    @Issue('grails/grails-core#610')
+    @Issue(['grails/grails-core#610', 'grails/grails-core#611'])
     void 'Test respond with a single Map argument'() {
         when:
         response.format = 'json'
@@ -241,7 +241,7 @@ class RespondMethodSpec extends Specification{
         response.json.name == 'Jeff'
     }
 
-    @Issue('grails/grails-core#610')
+    @Issue(['grails/grails-core#610', 'grails/grails-core#611'])
     void 'Test respond with a Map argument and named arguments'() {
         when:
         response.format = 'json'
@@ -249,6 +249,7 @@ class RespondMethodSpec extends Specification{
 
         then:
         response.json.name == 'Jeff'
+        response.status == 201
     }
 }
 
@@ -275,7 +276,7 @@ class BookController {
     }
 
     def respondWithMapAndNamedArguments() {
-        respond([name: 'Jeff'], status: 200)
+        respond([name: 'Jeff'], status: 201)
     }
 }
 @Entity
