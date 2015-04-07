@@ -26,7 +26,7 @@ import grails.web.mime.MimeType
 import grails.core.support.proxy.ProxyHandler
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
-
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(BookController)
@@ -230,6 +230,27 @@ class RespondMethodSpec extends Specification{
         modelAndView.model.extra == true
         modelAndView.viewName == 'showWithModel'
     }
+
+    @Issue(['grails/grails-core#610', 'grails/grails-core#611'])
+    void 'Test respond with a single Map argument'() {
+        when:
+        response.format = 'json'
+        controller.respondWithMap()
+
+        then:
+        response.json.name == 'Jeff'
+    }
+
+    @Issue(['grails/grails-core#610', 'grails/grails-core#611'])
+    void 'Test respond with a Map argument and named arguments'() {
+        when:
+        response.format = 'json'
+        controller.respondWithMapAndNamedArguments()
+
+        then:
+        response.json.name == 'Jeff'
+        response.status == 201
+    }
 }
 
 @Artefact("Controller")
@@ -248,6 +269,14 @@ class BookController {
 
     def showWithFormats(Long id) {
         respond Book.get(id), formats:['json', 'html']
+    }
+
+    def respondWithMap() {
+        respond([name: 'Jeff'])
+    }
+
+    def respondWithMapAndNamedArguments() {
+        respond([name: 'Jeff'], status: 201)
     }
 }
 @Entity
