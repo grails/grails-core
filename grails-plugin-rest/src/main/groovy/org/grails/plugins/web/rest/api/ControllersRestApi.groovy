@@ -72,7 +72,23 @@ class ControllersRestApi {
      * Same as {@link ControllersRestApi#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
      */
     public <T> Object respond(controller, Map args, value) {
-        respond(controller, value, args)
+        internalRespond(controller, value, args)
+    }
+
+    /**
+     * The respond method will attempt to delivery an appropriate response for the
+     * requested response format and Map value.
+     *
+     * If the value is null then a 404 will be returned. Otherwise the {@link RendererRegistry}
+     * will be consulted for an appropriate response renderer for the requested response format.
+     *
+     * @param controller The controller
+     * @param value The value
+     * @param namedArgs The arguments
+     * @return
+     */
+    def respond(Object controller, Map namedArgs, Map value) {
+        internalRespond controller, value, namedArgs
     }
 
     /**
@@ -87,7 +103,11 @@ class ControllersRestApi {
      * @param args The arguments
      * @return
      */
-    Object respond(Object controller, Object value, Map args = [:]) {
+    def respond(Object controller, Object value, Map args = [:]) {
+        internalRespond controller, value, args
+    }
+
+    private internalRespond(Object controller, Object value, Map args = [:]) {
         Integer statusCode
         if (args.status) {
             final Object statusValue = args.status
