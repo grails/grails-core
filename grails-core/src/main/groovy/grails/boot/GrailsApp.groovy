@@ -75,9 +75,9 @@ class GrailsApp extends SpringApplication {
 
     @Override
     protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
+        configurePropertySources(environment, args)
+
         def env = Environment.current
-
-
         environment.addActiveProfile(env.name)
     }
 
