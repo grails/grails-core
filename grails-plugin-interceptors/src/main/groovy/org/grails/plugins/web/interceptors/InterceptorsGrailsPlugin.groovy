@@ -47,7 +47,8 @@ class InterceptorsGrailsPlugin extends Plugin {
 
             def enableJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
             for(GrailsClass i in interceptors) {
-                "${i.propertyName}"(i.clazz) {
+                "${i.propertyName}"(i.clazz) { bean ->
+                    bean.autowire = 'byName'
                     if (enableJsessionId) {
                         useJessionId = enableJsessionId
                     }
