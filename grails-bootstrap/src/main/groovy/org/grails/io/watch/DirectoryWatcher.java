@@ -80,6 +80,15 @@ public class DirectoryWatcher extends Thread {
     }
 
     /**
+     * Removes a file listener from the current list
+     *
+     * @param listener The file listener
+     */
+    public void removeListener(FileChangeListener listener) {
+        directoryWatcherDelegate.removeListener(listener);
+    }
+
+    /**
      * Adds a file to the watch list
      *
      * @param fileToWatch The file to watch

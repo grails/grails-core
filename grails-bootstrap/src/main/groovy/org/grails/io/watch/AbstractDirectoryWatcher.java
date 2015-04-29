@@ -47,6 +47,15 @@ abstract class AbstractDirectoryWatcher implements Runnable {
     }
 
     /**
+     * Removes a file listener from the current list
+     *
+     * @param listener The file listener
+     */
+    public void removeListener(DirectoryWatcher.FileChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
      * Adds a file to the watch list
      *
      * @param fileToWatch The file to watch

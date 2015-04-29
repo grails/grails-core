@@ -102,23 +102,8 @@ class GrailsApp extends SpringApplication {
                 }
             })
 
-
-            def pluginManager = applicationContext.getBean(GrailsPluginManager)
-            directoryWatcher.addListener(new DirectoryWatcher.FileChangeListener() {
-                @Override
-                void onChange(File file) {
-                    if(!file.name.endsWith('.groovy') && !file.name.endsWith('.java')) {
-                        pluginManager.informOfFileChange(file)
-                    }
-                }
-
-                @Override
-                void onNew(File file) {
-                    if(!file.name.endsWith('.groovy') && !file.name.endsWith('.java')) {
-                        pluginManager.informOfFileChange(file)
-                    }
-                }
-            })
+            def pluginManagerListener = createPluginManagerListener(applicationContext)
+            directoryWatcher.addListener(pluginManagerListener)
 
             File baseDir = new File(location).canonicalFile
 
@@ -145,6 +130,7 @@ class GrailsApp extends SpringApplication {
             }
 
             def locationLength = location.length() + 1
+            def pluginManager = applicationContext.getBean(GrailsPluginManager)
             for(GrailsPlugin plugin in pluginManager.allPlugins) {
                 for(WatchPattern wp in plugin.watchedResourcePatterns) {
                     for(watchBase in watchBaseDirectories) {
@@ -167,20 +153,27 @@ class GrailsApp extends SpringApplication {
                 compilerConfig.setTargetDirectory(new File(location, "build/classes/main"))
 
                 while(true) {
-                    def i = changedFiles.size()
+                    // Workaround for some IDE / OS combos - 2 events (new + update) for the same file
+                    def uniqueChangedFiles = changedFiles as Set
+                    changedFiles.clear()
+
+                    def i = uniqueChangedFiles.size()
                     try {
                         if(i > 1) {
-
-                            // more than one change, recompile and restart
+                            println("Multiple file changes detected, recompiling & restarting...")
+                            directoryWatcher.removeListener(pluginManagerListener)
                             applicationContext.close()
                             def unit = new CompilationUnit(compilerConfig)
-                            unit.addSources(changedFiles as File[])
+                            unit.addSources(uniqueChangedFiles as File[])
                             unit.compile()
-                            changedFiles.clear()
-                            super.run(args)
+
+                            applicationContext = super.run(args)
+                            // Register the new plugin manager with the directory watcher
+                            pluginManagerListener = createPluginManagerListener(applicationContext)
+                            directoryWatcher.addListener(pluginManagerListener)
                         }
                         else if(i == 1) {
-                            def changedFile = changedFiles.poll()
+                            def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
                             File appDir = null
                             def changedPath = changedFile.path
@@ -207,6 +200,30 @@ class GrailsApp extends SpringApplication {
         }
 
 
+    }
+
+    /**
+     * Creates and returns a file change listener for notifying the plugin manager of changes.
+     * @param applicationContext - The running {@link org.springframework.context.ApplicationContext}
+     * @return {@link DirectoryWatcher.FileChangeListener}
+     */
+    protected static DirectoryWatcher.FileChangeListener createPluginManagerListener(ConfigurableApplicationContext applicationContext) {
+        def pluginManager = applicationContext.getBean(GrailsPluginManager)
+        return new DirectoryWatcher.FileChangeListener() {
+            @Override
+            void onChange(File file) {
+                if(!file.name.endsWith('.groovy') && !file.name.endsWith('.java')) {
+                    pluginManager.informOfFileChange(file)
+                }
+            }
+
+            @Override
+            void onNew(File file) {
+                if(!file.name.endsWith('.groovy') && !file.name.endsWith('.java')) {
+                    pluginManager.informOfFileChange(file)
+                }
+            }
+        }
     }
 
     protected void configureDirectoryWatcher(DirectoryWatcher directoryWatcher, String location) {
