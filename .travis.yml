@@ -1,4 +1,5 @@
 language: groovy
+sudo: false
 jdk:
 - oraclejdk7
 env:
@@ -36,3 +37,6 @@ deploy:
     all_branches: true
 after_deploy:
   - ./gradlew sdkMajorRelease
+cache:
+  directories:
+    - $HOME/.gradle
