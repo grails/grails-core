@@ -28,11 +28,14 @@ import org.grails.plugins.web.controllers.ControllersGrailsPlugin
 import org.grails.validation.ConstraintEvalUtils
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormStaticApi
+import org.grails.datastore.gorm.events.AutoTimestampEventListener
+import org.grails.datastore.gorm.events.DomainEventListener
 import org.grails.datastore.gorm.finders.FinderMethod
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.query.api.BuildableCriteria
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
 
@@ -73,7 +76,10 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     }
 
     SimpleMapDatastore getSimpleDatastore() {
-        grailsApplication.mainContext.getBean(SimpleMapDatastore)
+        SimpleMapDatastore datastore = grailsApplication.mainContext.getBean(SimpleMapDatastore)
+        ((ConfigurableApplicationContext) applicationContext).addApplicationListener new DomainEventListener(datastore)
+        ((ConfigurableApplicationContext) applicationContext).addApplicationListener new AutoTimestampEventListener(datastore)
+        datastore
     }
     
     PlatformTransactionManager getTransactionManager() {
