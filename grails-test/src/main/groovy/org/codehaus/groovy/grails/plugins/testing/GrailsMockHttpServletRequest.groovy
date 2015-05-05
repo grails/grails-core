@@ -65,8 +65,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     private cachedJson
     private cachedXml
     DispatcherType dispatcherType
-    AsyncContext asyncContext
-    
+    AsyncContext asyncContext    
     
     public GrailsMockHttpServletRequest() {
         super();
@@ -117,6 +116,8 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         else {
             setContent(new JSON(sourceJson).toString().getBytes("UTF-8"))
         }
+        cachedJson = null
+        setAttribute(JSON.CACHED_JSON, null)
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
 
@@ -141,7 +142,8 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
             }
             setContent(xml.toString().getBytes("UTF-8"))
         }
-
+        cachedXml = null
+        setAttribute(XML.CACHED_XML, null)
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
 

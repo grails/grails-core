@@ -62,7 +62,7 @@ import org.codehaus.groovy.runtime.IOGroovyMethods;
 public class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConverter<JSONWriter> {
 
     private final static Log log = LogFactory.getLog(JSON.class);
-    private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
+    public static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
 
     protected Object target;
     protected final ConverterConfiguration<JSON> config;
