@@ -62,7 +62,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
 
     public static final Log log = LogFactory.getLog(XML.class);
 
-    private static final String CACHED_XML = "org.codehaus.groovy.grails.CACHED_XML_REQUEST_CONTENT";
+    public static final String CACHED_XML = "org.codehaus.groovy.grails.CACHED_XML_REQUEST_CONTENT";
 
     private Object target;
     private StreamingMarkupWriter stream;
