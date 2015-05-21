@@ -1,0 +1,20 @@
+configurations {
+    owasp
+}
+
+dependencies {
+    owasp "org.owasp:dependency-check-ant:1.2.11"
+}
+
+task owasp(dependsOn: ['populateDependencies']) << {
+    ant.taskdef(name: 'owasp',
+                classname: 'org.owasp.dependencycheck.taskdefs.DependencyCheckTask',
+                classpath: configurations.owasp.asPath)
+
+    ant.owasp(applicationname: 'Grails Core',
+              reportoutputdirectory: 'build/owasp/') {
+        fileset(dir: 'lib') {
+            include(name: '**/*.jar')
+        }
+    }
+}
