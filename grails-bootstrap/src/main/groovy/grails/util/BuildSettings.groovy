@@ -1276,7 +1276,7 @@ class BuildSettings extends AbstractBuildSettings {
     DependencyManager configureDependencyManager() {
         DependencyManagerConfigurer configurer = new DependencyManagerConfigurer()
 
-        if (useMavenDependencyResolver && !isDependenciesExternallyConfigured()) {
+        if (useMavenDependencyResolver) {
             return configurer.configureAether(this)
         }
         return configurer.configureIvy(this)
