@@ -1217,10 +1217,12 @@ class BuildSettings extends AbstractBuildSettings {
             }
         }
 
-        dependencyManager = configureDependencyManager()
-        def pluginDirs = getPluginDirectories()
-        for (dir in pluginDirs) {
-            handleInlinePlugin(dir.name, dir, dependencyManager)
+        if (!Environment.isFork()) {
+            dependencyManager = configureDependencyManager()
+            def pluginDirs = getPluginDirectories()
+            for (dir in pluginDirs) {
+                handleInlinePlugin(dir.name, dir, dependencyManager)
+            }
         }
     }
 
