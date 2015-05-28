@@ -70,7 +70,7 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
 
         def domain = grailsApplication != null ? grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, targetType.name) : null
 
-        ObjectMarshaller<JSON> marshaller
+        ObjectMarshaller<JSON> marshaller  = null
 
         if (domain) {
             marshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
@@ -84,7 +84,7 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
                     return excludes.contains(property)
                 }
             }
-        } else {
+        } else if(!Collection.isAssignableFrom(targetType) && !Map.isAssignableFrom(targetType)) {
             marshaller = (ObjectMarshaller<JSON>)new GroovyBeanMarshaller() {
                 @Override
                 protected boolean includesProperty(Object o, String property) {
@@ -97,7 +97,9 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
                 }
             }
         }
-        registerCustomMarshaller(marshaller)
+        if(marshaller) {
+            registerCustomMarshaller(marshaller)
+        }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
