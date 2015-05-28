@@ -94,6 +94,15 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals(['html','html','xml', 'all'], mimes.extension)
     }
 
+    void testParseAcceptHeaderWithNonNumericQualityValue() {
+
+        def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=blah,*/*;q=0.8")
+
+        assertEquals 4, mimes.size()
+
+        assertEquals(['html','html','xml', 'all'], mimes.extension)
+    }
+
     void testAcceptHeaderWithQNumberOrdering() {
         def mimes = getAcceptHeaderParser().parse("text/html,application/xhtml+xml,application/xml;q=1.1,*/*;q=0.8")
 

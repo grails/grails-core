@@ -91,7 +91,9 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         MimeType appXml = mimes.find { MimeType it -> it.name ==  MimeType.XML.name }
         if (textXml && appXml) {
             // take the largest q value
-            appXml.parameters.q = [textXml.parameters.q.toBigDecimal(), appXml.parameters.q.toBigDecimal()].max()
+            appXml.parameters.q = [ textXml.qualityAsNumber,
+                                    appXml.qualityAsNumber
+            ].max()
 
             mimes.remove(textXml)
         }
@@ -103,9 +105,9 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             // prioritise more specific XML types like xhtml+xml if they are of equal quality
             def specificTypes = mimes.findAll { MimeType it -> it.name ==~ /\S+?\+xml$/ }
             def appXmlIndex = mimes.indexOf(appXml)
-            def appXmlQuality = appXml.parameters.q.toBigDecimal()
+            def appXmlQuality = appXml.qualityAsNumber
             for (mime in specificTypes) {
-                if (mime.parameters.q.toBigDecimal() < appXmlQuality) continue
+                if (mime.qualityAsNumber < appXmlQuality) continue
 
                 def mimeIndex = mimes.indexOf(mime)
                 if (mimeIndex > appXmlIndex) {
@@ -133,16 +135,22 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             mimes << mime
         }
     }
+
 }
 
 @CompileStatic
 class QualityComparator implements Comparator<MimeType> {
 
     int compare(MimeType t, MimeType t1) {
-        def left = t.parameters.q.toBigDecimal()
-        def right = t1.parameters.q.toBigDecimal()
+        BigDecimal left = t.qualityAsNumber
+        BigDecimal right = t1.qualityAsNumber
+
         if (left > right) return -1
         if (left < right) return 1
         return 0
     }
+
+
+
+
 }
