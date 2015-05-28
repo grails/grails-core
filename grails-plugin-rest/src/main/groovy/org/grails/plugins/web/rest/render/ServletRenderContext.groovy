@@ -34,11 +34,12 @@ import grails.rest.render.AbstractRenderContext
  * @since 2.3
  */
 @CompileStatic
-class ServletRenderContext extends AbstractRenderContext{
+class ServletRenderContext extends AbstractRenderContext {
 
     GrailsWebRequest webRequest
     Map<String, Object> arguments
     private String resourcePath
+    private boolean writerObtained = false
 
     ServletRenderContext(GrailsWebRequest webRequest) {
         this(webRequest, Collections.emptyMap())
@@ -94,6 +95,7 @@ class ServletRenderContext extends AbstractRenderContext{
 
     @Override
     Writer getWriter() {
+        writerObtained = true
         webRequest.currentResponse.writer
     }
 
@@ -158,5 +160,8 @@ class ServletRenderContext extends AbstractRenderContext{
         webRequest.controllerName
     }
 
-
+    @Override
+    boolean wasWrittenTo() {
+        return writerObtained
+    }
 }

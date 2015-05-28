@@ -264,4 +264,5 @@ class BuildSettings {
      */
     public static final File CLASSES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
     public static final String RUN_EXECUTED = "grails.run.executed"
+
 }
