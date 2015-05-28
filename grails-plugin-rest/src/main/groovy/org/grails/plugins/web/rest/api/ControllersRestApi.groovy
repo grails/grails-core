@@ -195,6 +195,9 @@ class ControllersRestApi {
                 context.setStatus(HttpStatus.valueOf(statusCode))
             }
             renderer.render(value, context)
+            if(context.wasWrittenTo() && !response.isCommitted()) {
+                response.flushBuffer()
+            }
             return
         }
         render(controller,[status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])
