@@ -25,22 +25,24 @@ def getAvailablePluginVersions = {
     def plugins = [:]
     eachRepository {repo, url ->
         use(DOMCategory) {
-            pluginsList.'plugin'.each {plugin ->
-                def name = plugin.'@name'
-                def version
-                if (plugin.'@latest-release') {
-                    version = plugin.'@latest-release'
-                }
-                else if (plugin.'release'.size() > 0) {
-                    // determine latest release by comparing version names in lexicografic order
-                    version = plugin.'release'[0].'@version'
-                    plugin.'release'.each {
-                        if (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version) {
-                            version = "${it.'@version'}"
+            if(pluginsList) {
+                pluginsList.'plugin'.each {plugin ->
+                    def name = plugin.'@name'
+                    def version
+                    if (plugin.'@latest-release') {
+                        version = plugin.'@latest-release'
+                    }
+                    else if (plugin.'release'.size() > 0) {
+                        // determine latest release by comparing version names in lexicografic order
+                        version = plugin.'release'[0].'@version'
+                        plugin.'release'.each {
+                            if (!"${it.'@version'}".endsWith("SNAPSHOT") && "${it.'@version'}" > version) {
+                                version = "${it.'@version'}"
+                            }
                         }
                     }
+                    plugins."$name" = version
                 }
-                plugins."$name" = version
             }
         }
     }
