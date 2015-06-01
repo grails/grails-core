@@ -291,6 +291,8 @@ class GrailsProjectCompiler extends BaseSettingsApi{
         ant.mkdir(dir:classesDirPath)
         String classpathId = "grails.compile.classpath"
         ant.groovyc(destdir:classesDirPath,
+                    stubdir: new File(buildSettings.projectWorkDir, "stubs"),
+                    keepStubs:true,
                     classpathref:classpathId,
                     encoding:encoding,
                     verbose: verbose,
