@@ -95,7 +95,6 @@ class InteractiveMode {
         interactiveModeActive = true
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
-        new BaseSettingsApi(settings, false).enableUaa()
         String originalGrailsEnv = System.getProperty(Environment.KEY)
         String originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
         addStatus("Enter a script name to run. Use TAB for completion: ")

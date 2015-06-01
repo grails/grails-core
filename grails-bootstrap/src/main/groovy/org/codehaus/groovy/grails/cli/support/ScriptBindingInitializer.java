@@ -99,11 +99,6 @@ public class ScriptBindingInitializer {
 
         BaseSettingsApi cla = initBinding(binding, buildSettings, classLoader, grailsConsole, interactive);
 
-        // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
-        if (scriptName.equals("RunApp")) {
-            cla.enableUaa();
-        }
-
         // setup Ant alias for older scripts
         binding.setVariable("Ant", binding.getVariable("ant"));
 
