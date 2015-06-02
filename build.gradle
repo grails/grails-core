@@ -1,3 +1,4 @@
+// this is a test
 import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
