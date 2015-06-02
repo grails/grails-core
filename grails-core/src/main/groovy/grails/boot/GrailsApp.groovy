@@ -237,7 +237,7 @@ class GrailsApp extends SpringApplication {
         try {
             def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
-            def contextPath = app.config.getProperty('server.context-path', '')
+            def contextPath = app.config.getProperty('server.contextPath', '')
             println("Grails application running at ${protocol}://localhost:${applicationContext.embeddedServletContainer.port}${contextPath}")
         } catch (e) {
             // ignore
