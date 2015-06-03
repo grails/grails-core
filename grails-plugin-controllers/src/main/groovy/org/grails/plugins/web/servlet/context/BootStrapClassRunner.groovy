@@ -17,7 +17,12 @@ package org.grails.plugins.web.servlet.context
 
 import grails.core.GrailsApplication
 import grails.core.GrailsApplicationLifeCycleAdapter
+import grails.core.GrailsClass
 import grails.core.support.GrailsApplicationAware
+import grails.web.servlet.bootstrap.GrailsBootstrapClass
+import groovy.transform.CompileStatic
+import groovy.util.logging.Commons
+import org.grails.web.servlet.boostrap.BootstrapArtefactHandler
 import org.grails.web.servlet.context.GrailsConfigUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -34,6 +39,8 @@ import javax.servlet.ServletContext
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
+@Commons
 class BootStrapClassRunner extends GrailsApplicationLifeCycleAdapter implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware {
 
     GrailsApplication grailsApplication
@@ -44,6 +51,19 @@ class BootStrapClassRunner extends GrailsApplicationLifeCycleAdapter implements 
     void onStartup(Map<String, Object> event) {
         if(grailsApplication && applicationContext && servletContext) {
             GrailsConfigUtils.executeGrailsBootstraps(grailsApplication, (WebApplicationContext)applicationContext, servletContext )
+        }
+    }
+
+    @Override
+    void onShutdown(Map<String, Object> event) {
+        if(grailsApplication && applicationContext) {
+            for(GrailsClass cls in grailsApplication.getArtefacts(BootstrapArtefactHandler.TYPE)) {
+                try {
+                    ((GrailsBootstrapClass)cls).callDestroy()
+                } catch (Throwable e) {
+                     log.error("Error occurred running Bootstrap destroy method: " + e.getMessage(), e)
+                }
+            }
         }
     }
 }
