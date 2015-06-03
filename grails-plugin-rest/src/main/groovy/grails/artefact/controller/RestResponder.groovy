@@ -157,6 +157,9 @@ trait RestResponder {
                             context.setStatus(HttpStatus.valueOf(statusCode))
                         }
                         errorsRenderer.render(errors, context)
+                        if(context.wasWrittenTo() && !response.isCommitted()) {
+                            response.flushBuffer()
+                        }
                         return
                     }
 
@@ -183,6 +186,9 @@ trait RestResponder {
                 context.setStatus(HttpStatus.valueOf(statusCode))
             }
             renderer.render(value, context)
+            if(context.wasWrittenTo() && !response.isCommitted()) {
+                response.flushBuffer()
+            }
             return
         }
         callRender([status: statusCode ?: HttpStatus.NOT_ACCEPTABLE.value() ])

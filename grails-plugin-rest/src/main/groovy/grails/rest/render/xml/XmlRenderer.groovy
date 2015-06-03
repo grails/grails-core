@@ -69,7 +69,7 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
     void registerCustomConverter() {
         def domain = grailsApplication != null ? grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, targetType.name) : null
 
-        ObjectMarshaller<XML> marshaller
+        ObjectMarshaller<XML> marshaller = null
 
         if (domain) {
             marshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
@@ -83,7 +83,7 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
                     return excludes.contains(property)
                 }
             }
-        } else {
+        } else if(!Collection.isAssignableFrom(targetType) && !Map.isAssignableFrom(targetType)) {
             marshaller = new GroovyBeanMarshaller() {
                 @Override
                 protected boolean includesProperty(Object o, String property) {
@@ -96,7 +96,9 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
                 }
             }
         }
-        registerCustomMarshaller(marshaller)
+        if(marshaller) {
+            registerCustomMarshaller(marshaller)
+        }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)

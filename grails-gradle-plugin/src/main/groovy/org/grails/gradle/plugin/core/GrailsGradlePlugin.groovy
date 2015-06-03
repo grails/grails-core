@@ -30,6 +30,7 @@ import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.io.support.FactoriesLoaderSupport
+import org.springframework.boot.gradle.SpringBootPluginExtension
 
 import javax.inject.Inject
 
@@ -45,6 +46,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         this.registry = registry
     }
 
+    @CompileStatic
     void apply(Project project) {
         super.apply(project)
         registerToolingModelBuilder(project, registry)
@@ -63,6 +65,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         enableNative2Ascii(project, grailsVersion)
 
+        configureSpringBootExtension(project)
+
         configureAssetCompilation(project)
 
         configureConsoleTask(project)
@@ -72,6 +76,15 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureGrailsSourceDirs(project)
 
         configureApplicationCommands(project)
+    }
+
+    @CompileStatic
+    protected void configureSpringBootExtension(Project project) {
+        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+
+        if(springBoot) {
+            springBoot.providedConfiguration = ProvidedBasePlugin.PROVIDED_CONFIGURATION_NAME
+        }
     }
 
     protected void registerToolingModelBuilder(Project project, ToolingModelBuilderRegistry registry) {

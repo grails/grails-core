@@ -82,10 +82,13 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
     protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
         HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
                 (HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
-        chain.addInterceptors getAdaptedInterceptors()
+
+        // WebRequestInterceptor need to come first, as these include things like Hibernate OSIV
         if(webRequestHandlerInterceptors) {
             chain.addInterceptors webRequestHandlerInterceptors
         }
+
+        chain.addInterceptors getAdaptedInterceptors()
 
         String lookupPath = this.urlPathHelper.getLookupPathForRequest(request)
         for (MappedInterceptor mappedInterceptor in getMappedInterceptors()) {

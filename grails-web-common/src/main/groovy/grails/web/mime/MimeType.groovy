@@ -47,6 +47,13 @@ class MimeType {
 
     private static DEFAULTS = createDefaults()
     public static final String QUALITY_RATING = "1.0"
+    public static final BigDecimal QUALITY_RATING_NUMBER = 1.0
+
+    String name
+    String extension
+    Map<String, String> parameters = [q: QUALITY_RATING]
+
+    private BigDecimal qualityNumberField
 
     MimeType(String name, Map params = [:]) {
         this(name, null, params)
@@ -71,15 +78,21 @@ class MimeType {
         parameters.putAll(params)
     }
 
-    String name
-    String extension
-    Map<String, String> parameters = [q: QUALITY_RATING]
-
     /**
      * @return The quality of the Mime type
      */
     String getQuality() {
         return parameters.q ?: QUALITY_RATING
+    }
+
+    /**
+     * @return The quality in BigDecimal form
+     */
+    BigDecimal getQualityAsNumber() {
+        if(this.qualityNumberField == null) {
+            this.qualityNumberField = getOrConvertQualityParameterToBigDecimal(this)
+        }
+        return this.qualityNumberField
     }
 
     /**
@@ -143,5 +156,22 @@ class MimeType {
         mimes << JSON
         mimes << TEXT_JSON
         mimes as MimeType[]
+    }
+
+    private BigDecimal getOrConvertQualityParameterToBigDecimal(MimeType mt) {
+        BigDecimal bd
+        try {
+            def q = mt.parameters.q
+            if(q == null) return QUALITY_RATING_NUMBER
+            else {
+                bd = q.toString().toBigDecimal()
+                // replace to avoid expensive conversion again
+                mt.parameters.q = bd
+            }
+            return bd
+        } catch (NumberFormatException e) {
+            bd = QUALITY_RATING_NUMBER
+            return bd
+        }
     }
 }

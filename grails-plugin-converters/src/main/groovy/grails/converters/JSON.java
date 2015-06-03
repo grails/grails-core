@@ -316,12 +316,14 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 firstByte = pushbackInputStream.read();
             } catch (IOException ioe) {}
 
+            // code has only been changed from here down
             if (firstByte == -1) {
-                return new JSONObject();
+                json = new JSONObject();
             }
-
-            pushbackInputStream.unread(firstByte);
-            json = parse(pushbackInputStream, encoding);
+            else {
+                pushbackInputStream.unread(firstByte);
+                json = parse(pushbackInputStream, encoding);
+            }
             request.setAttribute(CACHED_JSON, json);
             return json;
         }

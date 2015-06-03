@@ -43,7 +43,9 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                 e = e.cause
                 continue
             }
-            def last = e.stackTrace.size()
+
+            def stackTrace = e.stackTrace
+            def last = stackTrace.size()
             def prevFn
             def prevLn
             boolean evenRow = false
@@ -51,54 +53,57 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                 printCausedByMessage(sb, e)
             }
             if (e instanceof MultipleCompilationErrorsException) break
-            e.stackTrace[0..-1].eachWithIndex { te, idx ->
-                def fileName = getFileName(te)
-                def lineNumber
-                if (e instanceof SourceCodeAware) {
-                    if (e.lineNumber && e.lineNumber > -1) {
-                        lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
+            if(last > 0) {
+                stackTrace[0..-1].eachWithIndex { te, idx ->
+                    def fileName = getFileName(te)
+                    def lineNumber
+                    if (e instanceof SourceCodeAware) {
+                        if (e.lineNumber && e.lineNumber > -1) {
+                            lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
+                        }
+                        else {
+                            lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
+                        }
+                        if (e.fileName) {
+                            fileName = e.fileName
+                            fileName = makeRelativeIfPossible(fileName)
+                        }
                     }
                     else {
                         lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
                     }
-                    if (e.fileName) {
-                        fileName = e.fileName
-                        fileName = makeRelativeIfPossible(fileName)
-                    }
-                }
-                else {
-                    lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
-                }
 
-                if (prevLn == lineNumber && idx != last) return // no point duplicating lines
-                if ((idx == 0) || fileName) {
-                    prevLn = lineNumber
-                    if (prevFn && (prevFn == fileName)) {
-                        fileName = "    ''"
-                    } else {
-                        prevFn = fileName
-                    }
-                    if (!fileName) {
-                        fileName = te.className
-                    }
+                    if (prevLn == lineNumber && idx != last) return // no point duplicating lines
+                    if ((idx == 0) || fileName) {
+                        prevLn = lineNumber
+                        if (prevFn && (prevFn == fileName)) {
+                            fileName = "    ''"
+                        } else {
+                            prevFn = fileName
+                        }
+                        if (!fileName) {
+                            fileName = te.className
+                        }
 
-                    def padChar = (evenRow || idx == 0) ? ' ' : ' .'
-                    evenRow = !evenRow
+                        def padChar = (evenRow || idx == 0) ? ' ' : ' .'
+                        evenRow = !evenRow
 
-                    def methodName = te.methodName
-                    if (methodName.size() < methodNameBaseWidth) {
-                        methodName = methodName.padRight(methodNameBaseWidth - 1, padChar)
-                    }
+                        def methodName = te.methodName
+                        if (methodName.size() < methodNameBaseWidth) {
+                            methodName = methodName.padRight(methodNameBaseWidth - 1, padChar)
+                        }
 
-                    if (idx == 0) {
-                        printFailureLocation(sb, lineNumber, methodName, fileName)
-                    } else if (idx < last - 1) {
-                        printStackLine(sb, lineNumber, methodName, fileName)
-                    } else {
-                        printLastEntry(sb, lineNumber, methodName, fileName)
+                        if (idx == 0) {
+                            printFailureLocation(sb, lineNumber, methodName, fileName)
+                        } else if (idx < last - 1) {
+                            printStackLine(sb, lineNumber, methodName, fileName)
+                        } else {
+                            printLastEntry(sb, lineNumber, methodName, fileName)
+                        }
                     }
                 }
             }
+
             first = false
             if (shouldSkipNextCause(e)) break
             e = e.cause
