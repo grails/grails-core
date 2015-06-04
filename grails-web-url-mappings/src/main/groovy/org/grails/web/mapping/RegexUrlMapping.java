@@ -736,6 +736,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         if(thisStaticTokenCount == 0 && thisSingleWildcardCount == 0 && thisDoubleWildcardCount == 0) {
             return 1;
         }
+        if(otherStaticTokenCount == 0 && otherSingleWildcardCount == 0 && otherDoubleWildcardCount == 0) {
+            return -1;
+        }
 
         if (otherStaticTokenCount ==0 && thisStaticTokenCount > 0) {
             return 1;
