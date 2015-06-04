@@ -42,7 +42,7 @@ class RegexUrlMappingTests {
         def m9 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,null, servletContext)
         def m10 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,null, servletContext)
 
-        assertTrue m1.compareTo(m2) > 0
+        assertTrue m1.compareTo(m2) < 0
         assertTrue m1.compareTo(m3) < 0
         assertTrue m1.compareTo(m4) < 0
         assertTrue m1.compareTo(m5) > 0
@@ -63,7 +63,7 @@ class RegexUrlMappingTests {
         assertTrue m2.compareTo(m10) > 0
 
         assertTrue m3.compareTo(m1) > 0
-        assertTrue m3.compareTo(m2) > 0
+        assertTrue m3.compareTo(m2) < 0
         assertTrue m3.compareTo(m4) > 0
         assertTrue m3.compareTo(m5) > 0
         assertTrue m3.compareTo(m6) > 0
@@ -73,7 +73,7 @@ class RegexUrlMappingTests {
         assertTrue m3.compareTo(m10) > 0
 
         assertTrue m4.compareTo(m1) > 0
-        assertTrue m4.compareTo(m2) > 0
+        assertTrue m4.compareTo(m2) < 0
         assertTrue m4.compareTo(m3) < 0
         assertTrue m4.compareTo(m5) > 0
         assertTrue m4.compareTo(m6) > 0
@@ -83,7 +83,7 @@ class RegexUrlMappingTests {
         assertTrue m4.compareTo(m10) > 0
 
         assertTrue m5.compareTo(m1) < 0
-        assertTrue m5.compareTo(m2) > 0
+        assertTrue m5.compareTo(m2) < 0
         assertTrue m5.compareTo(m3) < 0
         assertTrue m5.compareTo(m4) < 0
         assertTrue m5.compareTo(m6) < 0
@@ -93,7 +93,7 @@ class RegexUrlMappingTests {
         assertTrue m5.compareTo(m10) > 0
 
         assertTrue m6.compareTo(m1) < 0
-        assertTrue m6.compareTo(m2) > 0
+        assertTrue m6.compareTo(m2) < 0
         assertTrue m6.compareTo(m3) < 0
         assertTrue m6.compareTo(m4) < 0
         assertTrue m6.compareTo(m5) > 0
@@ -113,7 +113,7 @@ class RegexUrlMappingTests {
         assertTrue m7.compareTo(m10) > 0
 
         assertTrue m8.compareTo(m1) < 0
-        assertTrue m8.compareTo(m2) > 0
+        assertTrue m8.compareTo(m2) < 0
         assertTrue m8.compareTo(m3) < 0
         assertTrue m8.compareTo(m4) < 0
         assertTrue m8.compareTo(m5) > 0
@@ -123,7 +123,7 @@ class RegexUrlMappingTests {
         assertTrue m8.compareTo(m10) > 0
 
         assertTrue m9.compareTo(m1) < 0
-        assertTrue m9.compareTo(m2) > 0
+        assertTrue m9.compareTo(m2) < 0
         assertTrue m9.compareTo(m3) < 0
         assertTrue m9.compareTo(m4) < 0
         assertTrue m9.compareTo(m5) < 0
