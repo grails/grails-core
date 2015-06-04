@@ -160,33 +160,15 @@ class GrailsApp extends SpringApplication {
                     def i = uniqueChangedFiles.size()
                     try {
                         if(i > 1) {
-                            println("Multiple file changes detected, recompiling & restarting...")
-                            directoryWatcher.removeListener(pluginManagerListener)
-                            applicationContext.close()
-                            def unit = new CompilationUnit(compilerConfig)
-                            unit.addSources(uniqueChangedFiles as File[])
-                            unit.compile()
-
-                            applicationContext = super.run(args)
-                            // Register the new plugin manager with the directory watcher
-                            pluginManagerListener = createPluginManagerListener(applicationContext)
-                            directoryWatcher.addListener(pluginManagerListener)
+                            for(f in uniqueChangedFiles) {
+                                recompile(f, compilerConfig, location)
+                                sleep 1000
+                            }
                         }
                         else if(i == 1) {
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
-                            File appDir = null
-                            def changedPath = changedFile.path
-                            if(changedPath.contains('/grails-app')) {
-                                appDir = new File(changedPath.substring(0, changedPath.indexOf('/grails-app')))
-                            }
-                            def baseFileLocation = appDir?.absolutePath ?: location
-                            compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
-                            println "File $changedFile changed, recompiling..."
-                            // only one change, just to a simple recompile and propagate the change
-                            def unit = new CompilationUnit(compilerConfig)
-                            unit.addSource(changedFile)
-                            unit.compile()
+                            recompile(changedFile, compilerConfig)
                         }
                     } catch (CompilationFailedException cfe) {
                         log.error("Compilation Error: $cfe.message", cfe)
@@ -200,6 +182,21 @@ class GrailsApp extends SpringApplication {
         }
 
 
+    }
+
+    protected void recompile(File changedFile, CompilerConfiguration compilerConfig, String location) {
+        File appDir = null
+        def changedPath = changedFile.path
+        if (changedPath.contains('/grails-app')) {
+            appDir = new File(changedPath.substring(0, changedPath.indexOf('/grails-app')))
+        }
+        def baseFileLocation = appDir?.absolutePath ?: location
+        compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
+        println "File $changedFile changed, recompiling..."
+        // only one change, just to a simple recompile and propagate the change
+        def unit = new CompilationUnit(compilerConfig)
+        unit.addSource(changedFile)
+        unit.compile()
     }
 
     /**
