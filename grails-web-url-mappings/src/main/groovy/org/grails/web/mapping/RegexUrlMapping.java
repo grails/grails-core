@@ -307,6 +307,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             Matcher m = OPTIONAL_EXTENSION_WILDCARD_PATTERN.matcher(token);
             if (m.find()) {
 
+                boolean tokenSet = false;
                 if (token.startsWith(CAPTURED_WILDCARD)) {
                     ConstrainedProperty prop = constraints[paramIndex++];
                     String propName = prop.getPropertyName();
@@ -316,12 +317,16 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
                     if (value != null) {
                         token = token.replaceFirst(DOUBLE_WILDCARD_PATTERN.pattern(), value.toString());
+                        tokenSet = true;
                     }
-                    else if (prop.isNullable()) {
-                        break;
+                    else {
+                        token = token.replaceFirst(DOUBLE_WILDCARD_PATTERN.pattern(), "");
                     }
                 }
-                uri.append(SLASH);
+                if(tokenSet) {
+
+                    uri.append(SLASH);
+                }
                 ConstrainedProperty prop = constraints[paramIndex++];
                 String propName = prop.getPropertyName();
                 Object value = paramValues.get(propName);
