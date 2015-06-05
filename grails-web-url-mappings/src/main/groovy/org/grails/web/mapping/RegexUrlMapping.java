@@ -323,6 +323,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                         token = token.replaceFirst(DOUBLE_WILDCARD_PATTERN.pattern(), "");
                     }
                 }
+                else {
+                    tokenSet = true;
+                }
                 if(tokenSet) {
 
                     uri.append(SLASH);
