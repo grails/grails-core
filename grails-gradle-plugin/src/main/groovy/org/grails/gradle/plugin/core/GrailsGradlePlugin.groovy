@@ -11,6 +11,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
@@ -76,6 +77,37 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureGrailsSourceDirs(project)
 
         configureApplicationCommands(project)
+
+        createBuildPropertiesTask(project)
+    }
+
+    protected Task createBuildPropertiesTask(Project project) {
+        def buildInfoFile = project.file("${project.buildDir}/grails.build.info")
+
+        def buildPropertiesTask = project.tasks.create("buildProperties")
+        def buildPropertiesContents = ['grails.env': Environment.current.name,
+                                        'info.app.name': project.name,
+                                        'info.app.version':  project.version,
+                                        'info.app.grailsVersion': project.properties.get('grailsVersion')]
+
+        buildPropertiesTask.inputs.properties(buildPropertiesContents)
+        buildPropertiesTask.outputs.file(buildInfoFile)
+        buildPropertiesTask << {
+            ant.propertyfile(file: buildInfoFile) {
+                for(me in buildPropertiesContents) {
+                    entry key: me.key, value: me.value
+                }
+            }
+        }
+
+        project.afterEvaluate {
+            project.tasks.withType(Jar) { Jar jar ->
+                jar.dependsOn(buildPropertiesTask)
+                jar.metaInf {
+                    from(buildInfoFile)
+                }
+            }
+        }
     }
 
     @CompileStatic

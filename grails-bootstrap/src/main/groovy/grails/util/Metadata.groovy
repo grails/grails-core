@@ -40,6 +40,7 @@ public class Metadata extends CodeGenConfig  {
     public static final String DEFAULT_SERVLET_VERSION = "2.5";
 
     private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata");
+    public static final String BUILD_INFO_FILE = "META-INF/grails.build.info"
 
     private File metadataFile;
     private boolean warDeployed;
@@ -79,6 +80,8 @@ public class Metadata extends CodeGenConfig  {
     }
 
     private void afterLoading() {
+        def flatConfig = configMap.toFlatConfig()
+        configMap.putAll(flatConfig)
         def map = [:]
         // allow override via system properties
         map.putAll(System.properties.findAll { it.value })
@@ -107,6 +110,17 @@ public class Metadata extends CodeGenConfig  {
             }
             if (input != null) {
                 loadYml(input);
+            }
+
+            input = Metadata.class.getClassLoader().getResourceAsStream(BUILD_INFO_FILE);
+            if(input != null) {
+                try {
+                    def props = new Properties()
+                    props.load(input)
+                    mergeMap(props, true)
+                } catch (Throwable e) {
+                    // ignore
+                }
             }
             afterLoading();
         }
