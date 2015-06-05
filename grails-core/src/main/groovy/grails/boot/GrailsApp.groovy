@@ -168,7 +168,7 @@ class GrailsApp extends SpringApplication {
                         else if(i == 1) {
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
-                            recompile(changedFile, compilerConfig)
+                            recompile(changedFile, compilerConfig, location)
                         }
                     } catch (CompilationFailedException cfe) {
                         log.error("Compilation Error: $cfe.message", cfe)
