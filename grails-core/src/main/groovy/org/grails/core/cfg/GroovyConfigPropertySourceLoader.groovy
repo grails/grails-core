@@ -51,7 +51,11 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
         if(resource.exists()) {
             try {
                 def configObject = configSlurper.parse(resource.URL)
-                return new MapPropertySource(name, configObject.flatten())
+                def flatMap = configObject.flatten()
+                Map<String, Object> finalMap = [:]
+                finalMap.putAll(configObject)
+                finalMap.putAll(flatMap)
+                return new MapPropertySource(name, finalMap)
             } catch (Throwable e) {
                 log.error("Unable to load $resource.filename: $e.message", e)
             }
