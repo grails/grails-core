@@ -26,7 +26,7 @@ public class CodecArtefactHandler extends ArtefactHandlerAdapter {
     public static final String TYPE = "Codec";
 
     public CodecArtefactHandler() {
-        super(TYPE, GrailsCodecClass.class, DefaultGrailsCodecClass.class, null);
+        super(TYPE, GrailsCodecClass.class, DefaultGrailsCodecClass.class, TYPE);
     }
 
     @Override
