@@ -1,6 +1,7 @@
 package org.grails.gradle.plugin.core
 
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.bundling.Jar
@@ -53,6 +54,11 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
         configureSourcesJarTask(project)
 
+    }
+
+    @Override
+    protected Task createBuildPropertiesTask(Project project) {
+        // no-op
     }
 
     protected void configureSourcesJarTask(Project project) {
