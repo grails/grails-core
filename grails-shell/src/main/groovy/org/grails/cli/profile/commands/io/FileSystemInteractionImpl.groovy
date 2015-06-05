@@ -117,6 +117,7 @@ class FileSystemInteractionImpl implements FileSystemInteraction {
      */
     @Override
     FileSystemInteractionImpl copyAll(Iterable resources, destination) {
+        mkdir(destination)
         for(path in resources) {
             def from = resource(path)
             def to = file(destination)
@@ -134,6 +135,7 @@ class FileSystemInteractionImpl implements FileSystemInteraction {
      */
     @Override
     FileSystemInteractionImpl copy(Resource from, File to) {
+        if(!to?.exists()) mkdir(to)
         if (from && to) {
             if (to.isDirectory()) {
                 mkdir(to)
