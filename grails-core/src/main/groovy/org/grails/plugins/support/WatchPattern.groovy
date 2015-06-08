@@ -53,8 +53,8 @@ class WatchPattern {
         if (directory != null) {
             try {
                 String ext = extension == '*' ? '' : extension ?: ''
-                def matchPath = /${directory.absolutePath.replaceAll('\\\\', '/')}.+?$ext/
-                def absolutePath = new File(path).absolutePath.replaceAll('\\\\', '/')
+                def matchPath = /${directory.canonicalPath.replaceAll('\\\\', '/')}.+?$ext/
+                def absolutePath = new File(path).canonicalPath.replaceAll('\\\\', '/')
                 return absolutePath ==~ matchPath
             } catch (e) {
                 // ignore

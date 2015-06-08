@@ -89,16 +89,18 @@ class GrailsApp extends SpringApplication {
             DirectoryWatcher directoryWatcher = new DirectoryWatcher()
             configureDirectoryWatcher(directoryWatcher, location)
             Queue<File> changedFiles = new ConcurrentLinkedQueue<>()
+            Queue<File> newFiles = new ConcurrentLinkedQueue<>()
 
             directoryWatcher.addListener(new FileExtensionFileChangeListener(['groovy', 'java']) {
                 @Override
                 void onChange(File file, List<String> extensions) {
-                    changedFiles << file
+                    changedFiles << file.canonicalFile
                 }
 
                 @Override
                 void onNew(File file, List<String> extensions) {
-                    changedFiles << file
+                    changedFiles << file.canonicalFile
+                    newFiles << file.canonicalFile
                 }
             })
 
@@ -162,6 +164,10 @@ class GrailsApp extends SpringApplication {
                         if(i > 1) {
                             for(f in uniqueChangedFiles) {
                                 recompile(f, compilerConfig, location)
+                                if(newFiles.contains(f)) {
+                                    newFiles.remove(f)
+                                    pluginManager.informOfFileChange(f)
+                                }
                                 sleep 1000
                             }
                         }
@@ -169,7 +175,13 @@ class GrailsApp extends SpringApplication {
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
                             recompile(changedFile, compilerConfig, location)
+                            if(newFiles.contains(changedFile)) {
+                                newFiles.remove(changedFile)
+                                pluginManager.informOfFileChange(changedFile)
+                            }
                         }
+
+                        newFiles.clear()
                     } catch (CompilationFailedException cfe) {
                         log.error("Compilation Error: $cfe.message", cfe)
                     }
