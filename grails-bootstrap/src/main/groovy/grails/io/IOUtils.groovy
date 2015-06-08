@@ -89,10 +89,36 @@ class IOUtils extends SpringIOUtils {
      * @return The JAR file
      */
     static File findJarFile(Class targetClass) {
-        def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class")?.getPath()
+        def absolutePath = findClassResource(targetClass)?.getPath()
         if(absolutePath) {
             final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
             new File(jarPath)
         }
+    }
+
+    /**
+     * Returns the URL resource for the location on disk of the given class or null if it cannot be found
+     *
+     * @param targetClass The target class
+     * @return The URL to class file or null
+     */
+    static URL findClassResource(Class targetClass) {
+        targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class")
+    }
+
+    /**
+     * Finds a URL within a JAR relative (from the root) to the given class
+     * @param targetClass
+     * @param path
+     * @return
+     */
+    static URL findResourceRelativeToClass(Class targetClass, String path) {
+        def pathToClassFile = '/' + targetClass.name.replace(".", "/") + ".class"
+        def classRes = targetClass.getResource(pathToClassFile)
+        if(classRes) {
+            def rootPath = classRes.toString() - pathToClassFile
+            return new URL("$rootPath$path")
+        }
+        return null
     }
 }
