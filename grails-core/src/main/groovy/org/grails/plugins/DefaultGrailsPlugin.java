@@ -118,7 +118,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         pluginDescriptor = resource;
         resolver = new PathMatchingResourcePatternResolver();
 
-        initialisePlugin(pluginClass);
+        try {
+            initialisePlugin(pluginClass);
+        } catch (Throwable e) {
+            throw new PluginException("Error initialising plugin for class ["+pluginClass.getName()+"]:" + e.getMessage(), e);
+        }
     }
 
     @Override
