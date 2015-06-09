@@ -1,5 +1,6 @@
 package org.grails.plugins
 
+import grails.plugins.exceptions.PluginException
 import grails.util.BuildScope
 import grails.util.Environment
 
@@ -126,7 +127,7 @@ class TestGrailsPlugin {
 ''')
 
         DefaultGrailsApplication application = new DefaultGrailsApplication()
-        shouldFail(GrailsConfigurationException) {
+        shouldFail(PluginException) {
             new DefaultGrailsPlugin(test1, application)
         }
     }
