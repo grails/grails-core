@@ -221,7 +221,12 @@ class DemandProxy {
 }
 
 class ExplicitDemandProxy {
+    // If true, check for existence of static methods
+    boolean isStatic
+
+    // The underlying demand implementation
     DemandProxy demandProxy
+
     ExplicitDemandProxy(DemandProxy demandProxy) {
         this.demandProxy = demandProxy
     }
@@ -235,6 +240,13 @@ class ExplicitDemandProxy {
     void assertHasMethod(Object obj, String name, Class[] types) {
         def methods = obj.metaClass.respondsTo(obj, name, types)
         if (methods.isEmpty()) throw new ExplicitDemandException(obj, name, types)
+    }
+
+    def getStatic() {
+        isStatic = true
+        // Also toggle state on our delegate
+        demandProxy.getStatic()
+        return this
     }
 }
 
