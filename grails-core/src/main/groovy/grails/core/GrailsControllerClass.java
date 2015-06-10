@@ -70,6 +70,16 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      */
     String getNamespace();
 
+    /**
+     * @return The scope of the controller, defaults to singleton
+     */
+    String getScope();
+
+    /**
+     * @return Whether the scope is singleton
+     */
+    boolean isSingleton();
+
 
     /**
      * Returns the default action for this Controller.
