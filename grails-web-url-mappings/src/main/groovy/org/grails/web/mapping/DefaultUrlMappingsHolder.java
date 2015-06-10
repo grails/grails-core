@@ -383,7 +383,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
     @SuppressWarnings("unchecked")
     protected UrlMapping lookupMapping(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
         final UrlMappingsListKey lookupKey = new UrlMappingsListKey(controller, action, namespace, pluginName, httpMethod, version);
-        SortedSet mappingKeysSet = mappingsListLookup.get(lookupKey);
+        Collection mappingKeysSet = mappingsListLookup.get(lookupKey);
 
         final String actionName = lookupKey.action;
         boolean secondAttempt = false;
@@ -800,19 +800,23 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
 
     class UrlMappingsList {
         // A map from a UrlMappingsListKey to a list of UrlMappingKeys
-        private Map<UrlMappingsListKey, SortedSet<UrlMappingKey>> lookup =
-            new HashMap<UrlMappingsListKey, SortedSet<UrlMappingKey>>();
+        private Map<UrlMappingsListKey, List<UrlMappingKey>> lookup =
+                new HashMap<UrlMappingsListKey, List<UrlMappingKey>>();
 
         public void put(UrlMappingsListKey key, UrlMappingKey mapping) {
-            SortedSet<UrlMappingKey> mappingsList = lookup.get(key);
+            List<UrlMappingKey> mappingsList = lookup.get(key);
             if (null == mappingsList) {
-                mappingsList = new TreeSet<UrlMappingKey>();
+                mappingsList = new ArrayList<UrlMappingKey>();
                 lookup.put(key, mappingsList);
             }
-            mappingsList.add(mapping);
+            if(!mappingsList.contains(mapping)) {
+
+                mappingsList.add(mapping);
+                Collections.sort(mappingsList);
+            }
         }
 
-        public SortedSet<UrlMappingKey> get(UrlMappingsListKey key) {
+        public Collection<UrlMappingKey> get(UrlMappingsListKey key) {
             return lookup.get(key);
         }
     }
