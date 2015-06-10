@@ -81,7 +81,9 @@ public class GrailsWrappedRuntimeException extends GrailsException {
      */
     public GrailsWrappedRuntimeException(ServletContext servletContext, Throwable t) {
         super(t.getMessage(), t);
-        cause = t;
+        this.cause = t;
+        Throwable cause = t;
+
         FastStringPrintWriter pw = FastStringPrintWriter.newInstance();
         cause.printStackTrace(pw);
         stackTrace = pw.toString();
