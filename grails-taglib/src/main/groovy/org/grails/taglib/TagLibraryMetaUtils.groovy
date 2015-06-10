@@ -99,17 +99,14 @@ class TagLibraryMetaUtils {
     @CompileStatic
     protected static boolean doesMethodExist(final MetaClass mc, final String methodName, final Class[] parameterTypes, boolean staticScope=false, boolean onlyReal=false) {
         boolean methodExists = false
-        try {
-            MetaMethod existingMethod = mc.pickMethod(methodName, parameterTypes)
+        def existinMethods = mc.respondsTo(methodName, parameterTypes)
+        for(MetaMethod existingMethod in existinMethods) {
             if(existingMethod && existingMethod.isStatic()==staticScope && (!onlyReal || isRealMethod(existingMethod)) && parameterTypes.length==existingMethod.parameterTypes.length)  {
                 methodExists = true
-            }
-        } catch (MethodSelectionException mse) {
-            // the metamethod already exists with multiple signatures, must check if the exact method exists
-            methodExists = mc.methods.contains { MetaMethod existingMethod ->
-                existingMethod.name == methodName && existingMethod.isStatic()==staticScope && (!onlyReal || isRealMethod(existingMethod)) && ((!parameterTypes && !existingMethod.parameterTypes) || Arrays.equals(parameterTypes, existingMethod.getNativeParameterTypes()))
+                break
             }
         }
+        return methodExists
     }
         
     @CompileStatic

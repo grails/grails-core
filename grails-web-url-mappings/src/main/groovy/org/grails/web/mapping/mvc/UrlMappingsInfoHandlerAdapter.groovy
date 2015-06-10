@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * A {@link HandlerAdapter} that takes a matched {@link UrlMappingInfo} and executes the underlying controller producing an appropriate model
@@ -27,6 +28,7 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
     ApplicationContext applicationContext
 
     protected Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
+    protected Map<String, Object> controllerCache = new ConcurrentHashMap<>()
 
     void setApplicationContext(ApplicationContext applicationContext) {
         this.actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
@@ -54,7 +56,19 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
             if(info instanceof GrailsControllerUrlMappingInfo) {
                 GrailsControllerUrlMappingInfo controllerUrlMappingInfo = (GrailsControllerUrlMappingInfo)info
                 GrailsControllerClass controllerClass = controllerUrlMappingInfo.controllerClass
-                Object controller = applicationContext ? applicationContext.getBean(controllerClass.fullName) : controllerClass.newInstance()
+                Object controller
+
+                def fullName = controllerClass.fullName
+                if( controllerClass.isSingleton() ) {
+                    controller = controllerCache.get(fullName)
+                    if(controller == null) {
+                        controller = applicationContext ? applicationContext.getBean(fullName) : controllerClass.newInstance()
+                        controllerCache.put(fullName, controller)
+                    }
+                }
+                else {
+                    controller = applicationContext ? applicationContext.getBean(fullName) : controllerClass.newInstance()
+                }
 
                 def action = controllerUrlMappingInfo.actionName ?: controllerClass.defaultAction
                 if (!webRequest.actionName) {
