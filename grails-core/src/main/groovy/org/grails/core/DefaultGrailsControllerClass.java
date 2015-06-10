@@ -144,7 +144,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if(action == null) action = this.defaultActionName;
         FastMethod handle = actions.get(action);
         if(handle == null) throw new IllegalArgumentException("Invalid action name: " + action);
-        return handle.invoke(this, EMPTY_ARGS);
+        return handle.invoke(controller, EMPTY_ARGS);
     }
 
 }
