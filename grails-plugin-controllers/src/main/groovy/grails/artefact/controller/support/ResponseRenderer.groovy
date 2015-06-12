@@ -439,6 +439,16 @@ trait ResponseRenderer extends WebAttributes {
                 }
             }
         }
+        else {
+            // reached here so only the status was set, just send it back
+            def message = argMap?.message?.toString()
+            if( message ) {
+                response.sendError( response.status, message  )
+            }
+            else {
+                response.sendError( response.status )
+            }
+        }
     }
 
 
