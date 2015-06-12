@@ -39,6 +39,7 @@ public abstract class AbstractArtefactTypeAstTransformation implements ASTTransf
             ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
             List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(artefactType, classInjectors);
             if (!injectors.isEmpty()) {
+                AbstractGrailsArtefactTransformer.addToTransformedClasses(cNode.getName());
                 for (ClassInjector injector : injectors) {
                     if(injector instanceof AllArtefactClassInjector) {
                         injector.performInjection(sourceUnit,cNode);
