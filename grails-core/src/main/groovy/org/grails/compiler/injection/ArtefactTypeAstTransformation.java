@@ -75,6 +75,9 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
         }
         
         String artefactType = resolveArtefactType(sourceUnit, node, cNode);
+        if(artefactType != null) {
+            AbstractGrailsArtefactTransformer.addToTransformedClasses(cNode.getName());
+        }
         performInjectionOnArtefactType(sourceUnit, cNode, artefactType);
         
         performTraitInjectionOnArtefactType(sourceUnit, cNode, artefactType);

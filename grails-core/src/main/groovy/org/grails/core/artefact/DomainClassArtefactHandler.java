@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
 
     public static final String TYPE = "Domain";
+    public static final String PLUGIN_NAME = "domainClass";
 
     private Map<String, Object> defaultConstraints;
     public DomainClassArtefactHandler() {
@@ -56,6 +57,11 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         if (grailsApplication != null) {
             defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
         }
+    }
+
+    @Override
+    public String getPluginName() {
+        return PLUGIN_NAME;
     }
 
     @Override
