@@ -48,7 +48,7 @@ class Support {
             if(grailsHome) {
                 def agentPath = System.getProperty(PROPERTY_RELOAD_AGENT_PATH)
                 if(!agentPath) {
-                    System.getenv(ENV_RELOAD_AGENT_PATH)
+                    agentPath = System.getenv(ENV_RELOAD_AGENT_PATH)
                 }
                 def file = findAgentJar(agentPath, grailsHome)
                 if(file?.exists()) {
