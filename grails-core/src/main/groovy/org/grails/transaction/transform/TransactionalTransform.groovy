@@ -300,7 +300,45 @@ class TransactionalTransform implements ASTTransformation{
 
             //add the transactionManager property
             if (!GrailsASTUtils.hasProperty(declaringClassNode, PROPERTY_TRANSACTION_MANAGER)) {
-                declaringClassNode.addProperty(PROPERTY_TRANSACTION_MANAGER, Modifier.PUBLIC, ClassHelper.make(PlatformTransactionManager), null, null, null);
+
+                def transactionManagerClassNode = ClassHelper.make(PlatformTransactionManager)
+
+                def fieldName = '$' + PROPERTY_TRANSACTION_MANAGER
+                def field = declaringClassNode.addField(fieldName, Modifier.PROTECTED, transactionManagerClassNode, null)
+
+
+                def body = new BlockStatement()
+                def p = new Parameter(transactionManagerClassNode, PROPERTY_TRANSACTION_MANAGER)
+                def parameters = [p] as Parameter[]
+
+
+                def transactionManagerPropertyExpr = new PropertyExpression(new VariableExpression("this"), fieldName)
+                def getterBody = new BlockStatement()
+
+                // this is a hacky workaround that ensures the transaction manager is also set on the spock shared instance which seems to differ for
+                // some reason
+                if(GrailsASTUtils.isSubclassOf(declaringClassNode, "spock.lang.Specification")) {
+
+                    getterBody.addStatement(new ExpressionStatement(
+                            new MethodCallExpression(new PropertyExpression(new PropertyExpression(new VariableExpression("this"), "specificationContext"), "sharedInstance" ),
+                                    "setTransactionManager",
+                                    transactionManagerPropertyExpr)
+                    ))
+                }
+
+                getterBody.addStatement( new ReturnStatement(transactionManagerPropertyExpr))
+                declaringClassNode.addMethod("getTransactionManager", Modifier.PUBLIC, transactionManagerClassNode, GrailsASTUtils.ZERO_PARAMETERS, null, getterBody)
+
+                def assignment = Token.newSymbol("=", -1, -1)
+                body.addStatement(new ExpressionStatement(
+                        new BinaryExpression(transactionManagerPropertyExpr,
+                                assignment,
+                                             new VariableExpression(p)
+                )))
+
+
+                declaringClassNode.addMethod("setTransactionManager", Modifier.PUBLIC, ClassHelper.VOID_TYPE, parameters, null, body)
+
             }
 
         }
