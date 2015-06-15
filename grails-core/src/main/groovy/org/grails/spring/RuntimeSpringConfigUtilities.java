@@ -36,8 +36,8 @@ public class RuntimeSpringConfigUtilities {
 
     private static final Log LOG = LogFactory.getLog(RuntimeSpringConfigUtilities.class);
     public static final String GRAILS_URL_MAPPINGS = "grailsUrlMappings";
-    public static final String SPRING_RESOURCES_XML = "/WEB-INF/spring/resources.xml";
-    public static final String SPRING_RESOURCES_GROOVY = "/WEB-INF/spring/resources.groovy";
+    public static final String SPRING_RESOURCES_XML = "classpath:spring/resources.xml";
+    public static final String SPRING_RESOURCES_GROOVY = "classpath:spring/resources.groovy";
     public static final String SPRING_RESOURCES_CLASS = "resources";
 
     private static final String DEVELOPMENT_SPRING_RESOURCES_XML = "file:./grails-app/conf/spring/resources.xml";

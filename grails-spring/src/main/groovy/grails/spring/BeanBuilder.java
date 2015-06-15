@@ -190,21 +190,25 @@ public class BeanBuilder extends GroovyObjectSupport {
         try {
             Resource[] resources = resourcePatternResolver.getResources(resourcePattern);
             for (Resource resource : resources) {
-                if (resource.getFilename().endsWith(".groovy")) {
-                    loadBeans(resource);
-                }
-                else if (resource.getFilename().endsWith(".xml")) {
-                    SimpleBeanDefinitionRegistry beanRegistry = new SimpleBeanDefinitionRegistry();
-                    XmlBeanDefinitionReader beanReader = new XmlBeanDefinitionReader(beanRegistry);
-                    beanReader.loadBeanDefinitions(resource);
-                    String[] beanNames = beanRegistry.getBeanDefinitionNames();
-                    for (String beanName : beanNames) {
-                        springConfig.addBeanDefinition(beanName, beanRegistry.getBeanDefinition(beanName));
-                    }
-                }
+                importBeans(resource);
             }
         } catch (IOException e) {
             LOG.error("Error loading beans for resource pattern: " + resourcePattern, e);
+        }
+    }
+
+    public void importBeans(Resource resource) {
+        if (resource.getFilename().endsWith(".groovy")) {
+            loadBeans(resource);
+        }
+        else if (resource.getFilename().endsWith(".xml")) {
+            SimpleBeanDefinitionRegistry beanRegistry = new SimpleBeanDefinitionRegistry();
+            XmlBeanDefinitionReader beanReader = new XmlBeanDefinitionReader(beanRegistry);
+            beanReader.loadBeanDefinitions(resource);
+            String[] beanNames = beanRegistry.getBeanDefinitionNames();
+            for (String beanName : beanNames) {
+                springConfig.addBeanDefinition(beanName, beanRegistry.getBeanDefinition(beanName));
+            }
         }
     }
 

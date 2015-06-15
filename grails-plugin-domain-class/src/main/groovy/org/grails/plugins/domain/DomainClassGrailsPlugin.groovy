@@ -44,8 +44,6 @@ class DomainClassGrailsPlugin extends Plugin {
     def dependsOn = [i18n:version]
     def loadAfter = ['controllers', 'dataSource']
 
-    GrailsApplication grailsApplication
-
     Closure doWithSpring() {{->
 
         def application = grailsApplication
@@ -137,7 +135,7 @@ class DomainClassGrailsPlugin extends Plugin {
                 application = ref("grailsApplication", true)
             }
         }
-        application.refreshConstraints()
+        grailsApplication.refreshConstraints()
     }
 
     void onConfigChange(Map<String, Object> event) {

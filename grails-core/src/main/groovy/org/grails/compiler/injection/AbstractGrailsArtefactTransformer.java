@@ -405,4 +405,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public static Collection<String> getTransformedClassNames() {
         return Collections.unmodifiableCollection( KNOWN_TRANSFORMED_CLASSES );
     }
+
+    public static void addToTransformedClasses(String name) {
+        KNOWN_TRANSFORMED_CLASSES.add(name);
+    }
 }

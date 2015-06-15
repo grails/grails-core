@@ -25,6 +25,7 @@ import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource
+import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 /**
@@ -101,11 +102,13 @@ class I18nGrailsPlugin extends Plugin {
             return
         }
 
+        if(!ClassUtils.isPresent("groovy.util.AntBuilder", grailsApplication.classLoader)) return
+
         def nativeascii = application.config.getProperty('grails.enable.native2ascii', Boolean, true)
         def resourcesDir = BuildSettings.RESOURCES_DIR
         if (resourcesDir.exists() && event.source instanceof Resource) {
             def eventFile = event.source.file.canonicalFile
-            def ant = new AntBuilder()
+            def ant = getClass().classLoader.loadClass("groovy.util.AntBuilder").newInstance()
             File i18nDir = new File("${Environment.current.reloadLocation}/grails-app/i18n").canonicalFile
             if (isChildOfFile(eventFile, i18nDir)) {
                 executeMessageBundleCopy(ant, eventFile, i18nDir, BuildSettings.RESOURCES_DIR, nativeascii)
@@ -119,7 +122,7 @@ class I18nGrailsPlugin extends Plugin {
         }
     }
 
-    private void executeMessageBundleCopy(AntBuilder ant, File eventFile, File i18nDir, File targetDir, boolean nativeascii) {
+    private void executeMessageBundleCopy(ant, File eventFile, File i18nDir, File targetDir, boolean nativeascii) {
         def eventFileRelative = relativePath(i18nDir, eventFile)
 
         if (nativeascii) {

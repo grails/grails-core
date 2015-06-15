@@ -18,6 +18,9 @@ package org.grails.core;
 import grails.core.GrailsControllerClass;
 import grails.web.Action;
 import groovy.lang.GroovyObject;
+import org.springframework.beans.factory.config.Scope;
+import org.springframework.cglib.reflect.FastClass;
+import org.springframework.cglib.reflect.FastMethod;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
@@ -38,7 +41,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
     public static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
-    private Map<String, Method> actions = new HashMap<String, Method>();
+    public static final Object[] EMPTY_ARGS = new Object[0];
+    public static final String SCOPE = "scope";
+    public static final String SCOPE_SINGLETON = "singleton";
+    private final String scope;
+    private Map<String, FastMethod> actions = new HashMap<String, FastMethod>();
     private String defaultActionName;
     private String namespace;
 
@@ -49,6 +56,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
+        final String t = getStaticPropertyValue(SCOPE, String.class);
+        this.scope = t != null ? t : SCOPE_SINGLETON;
         methodStrategy(actions);
     }
 
@@ -64,22 +73,35 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     @Override
+    public String getScope() {
+        return scope;
+    }
+
+    @Override
+    public boolean isSingleton() {
+        return SCOPE_SINGLETON.equalsIgnoreCase(getScope());
+    }
+
+    @Override
     public String getDefaultAction() {
         return this.defaultActionName;
     }
 
-    private void methodStrategy(Map<String, Method> methodNames) {
+    private void methodStrategy(Map<String, FastMethod> methodNames) {
+
         Class superClass = getClazz();
+        FastClass fastClass = FastClass.create(superClass);
         while (superClass != null && superClass != Object.class && superClass != GroovyObject.class) {
             for (Method method : superClass.getMethods()) {
                 if (Modifier.isPublic(method.getModifiers()) && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
 
                     ReflectionUtils.makeAccessible(method);
-                    methodNames.put(methodName, method);
+                    methodNames.put(methodName, fastClass.getMethod(method));
                 }
             }
             superClass = superClass.getSuperclass();
+            fastClass = FastClass.create(superClass);
         }
 
         if (!isActionMethod(defaultActionName) && methodNames.size() == 1 && !isReadableProperty("scaffold")) {
@@ -120,9 +142,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     @Override
     public Object invoke(Object controller, String action) throws Throwable {
         if(action == null) action = this.defaultActionName;
-        Method handle = actions.get(action);
+        FastMethod handle = actions.get(action);
         if(handle == null) throw new IllegalArgumentException("Invalid action name: " + action);
-        return ReflectionUtils.invokeMethod(handle, controller);
+        return handle.invoke(controller, EMPTY_ARGS);
     }
 
 }
