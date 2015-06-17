@@ -371,7 +371,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     protected void handleCircularRelationship(Object o) throws ConverterException {
         switch (circularReferenceBehaviour) {
             case DEFAULT:
-                if (!(Map.class.isAssignableFrom(o.getClass()) || Collection.class.isAssignableFrom(o.getClass()))) {
+                final boolean isCollection = Collection.class.isAssignableFrom(o.getClass());
+                final boolean isMap = Map.class.isAssignableFrom(o.getClass());
+                if (!(isMap || isCollection)) {
                     Map<String, Object> props = new HashMap<String, Object>();
                     props.put("class", o.getClass());
                     StringBuilder ref = new StringBuilder();
@@ -381,6 +383,14 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                     }
                     props.put("_ref", ref.substring(0, ref.length() - 1));
                     value(props);
+                }
+                else {
+                    if(isMap) {
+                        writer.object(); writer.endObject();
+                    }
+                    else {
+                        writer.array(); writer.endArray();
+                    }
                 }
                 break;
             case EXCEPTION:
