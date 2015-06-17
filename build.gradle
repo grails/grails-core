@@ -26,13 +26,13 @@ ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
     antTraxVersion = "1.7.1"
-    antVersion = "1.9.3"
+    antVersion = "1.9.4"
     aspectjVersion = "1.8.5"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "4.0.0.RELEASE"
+    datastoreVersion = "4.0.3.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.3"
