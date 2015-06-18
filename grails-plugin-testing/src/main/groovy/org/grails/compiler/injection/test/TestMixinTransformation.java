@@ -112,7 +112,6 @@ public class TestMixinTransformation implements ASTTransformation{
 
         String mainClass = MainClassFinder.searchMainClass(source.getSource().getURI());
 
-        System.out.println("mainClass = " + mainClass);
         ClassNode applicationClassNode = null;
         if(mainClass != null) {
             applicationClassNode = ClassHelper.make(mainClass);
@@ -208,8 +207,6 @@ public class TestMixinTransformation implements ASTTransformation{
     protected void weaveMixinIntoClass(final ClassNode classNode, final ClassNode mixinClassNode,
             final Junit3TestFixtureMethodHandler junit3MethodHandler, ClassNode applicationClassNode) {
 
-        System.out.println("mixinClassNode = " + mixinClassNode.getName());
-        System.out.println("applicationClassNode = " + applicationClassNode);
         if(mixinClassNode.getName().equals(IntegrationTestMixin.class.getName())) {
             new IntegrationTestMixinTransformation().weaveIntegrationTestMixin(classNode, applicationClassNode);
             return;
