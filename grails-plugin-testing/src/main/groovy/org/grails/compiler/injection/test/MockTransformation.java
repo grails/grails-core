@@ -89,7 +89,6 @@ public class MockTransformation extends TestForTransformation {
         if (!domainClassNodes.isEmpty()) {
             weaveMixinClass(classNode, DomainClassUnitTestMixin.class);
             addMockCollaborators(classNode, "Domain", domainClassNodes);
-            addEnableEMCStatement(classNode);
         }
     }
 }
