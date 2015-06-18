@@ -34,31 +34,35 @@ class MainClassFinder {
     static String searchMainClass(URI path) {
         if(mainClassName) return mainClassName
 
-        File file = path ? Paths.get(path).toFile() : null
-        def rootDir = findRootDirectory(file)
+        try {
+            File file = path ? Paths.get(path).toFile() : null
+            def rootDir = findRootDirectory(file)
 
-        def classesDir = BuildSettings.CLASSES_DIR
-        Collection<File> searchDirs
-        if (classesDir == null) {
-            searchDirs = []
-        } else {
-            searchDirs = [classesDir]
-        }
-
-        if(rootDir) {
-            def rootClassesDir = new File(rootDir, "build/classes/main")
-            if(rootClassesDir.exists()) {
-                searchDirs << rootClassesDir
+            def classesDir = BuildSettings.CLASSES_DIR
+            Collection<File> searchDirs
+            if (classesDir == null) {
+                searchDirs = []
+            } else {
+                searchDirs = [classesDir]
             }
-        }
 
-        String mainClass = null
+            if(rootDir) {
+                def rootClassesDir = new File(rootDir, "build/classes/main")
+                if(rootClassesDir.exists()) {
+                    searchDirs << rootClassesDir
+                }
+            }
 
-        for (File dir in searchDirs) {
-            mainClass = findMainClass(dir)
-            if (mainClass) break
+            String mainClass = null
+
+            for (File dir in searchDirs) {
+                mainClass = findMainClass(dir)
+                if (mainClass) break
+            }
+            return mainClass
+        } catch (Throwable e) {
+            return null
         }
-        mainClass
     }
 
     private static File findRootDirectory(File file) {
