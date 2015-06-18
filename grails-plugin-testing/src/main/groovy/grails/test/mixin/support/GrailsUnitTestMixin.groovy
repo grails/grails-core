@@ -29,9 +29,6 @@ import org.springframework.web.context.support.GenericWebApplicationContext
  */
 @CompileStatic
 class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
-    static {
-        ExpandoMetaClass.enableGlobally()
-    }
 
     private static final Set<String> REQUIRED_FEATURES = (["grailsApplication", "coreBeans"] as Set).asImmutable() 
     

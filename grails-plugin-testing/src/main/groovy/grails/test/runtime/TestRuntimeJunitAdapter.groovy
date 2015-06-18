@@ -33,9 +33,6 @@ import org.junit.runners.model.Statement
 //@CompileStatic
 @TypeChecked
 class TestRuntimeJunitAdapter {
-    static {
-        ExpandoMetaClass.enableGlobally()
-    }
 
     public TestRule newRule(final Object testInstance) {
         return new TestRule() {

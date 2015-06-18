@@ -88,42 +88,46 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
         if(applicationClassNode) {
             ClassNode classNode = (ClassNode) parent
 
-            if(TestMixinTransformation.isSpockTest(classNode)) {
-                // first add context configuration
-                // Example: @ContextConfiguration(loader = GrailsApplicationContextLoader, classes = Application)
-                def contextConfigAnn = new AnnotationNode(CONTEXT_CONFIG_ANNOTATION)
-                contextConfigAnn.addMember("loader", new ClassExpression(GRAILS_APPLICATION_CONTEXT_LOADER))
-                contextConfigAnn.addMember("classes", new ClassExpression(applicationClassNode))
-                classNode.addAnnotation(contextConfigAnn)
-
-                enhanceGebSpecWithPort(classNode)
-
-            }
-            else {
-                // Must be a JUnit 4 test so add JUnit spring annotations
-                // @RunWith(SpringJUnit4ClassRunner)
-                def runWithAnnotation = new AnnotationNode(RUN_WITH_ANNOTATION_NODE)
-                runWithAnnotation.addMember("value", new ClassExpression(SPRING_JUNIT4_CLASS_RUNNER))
-                classNode.addAnnotation(runWithAnnotation)
-
-                // @SpringApplicationConfiguration(classes = Application)
-                def contextConfigAnn = new AnnotationNode(SPRING_APPLICATION_CONFIGURATION_CLASS_NODE)
-                contextConfigAnn.addMember("classes", new ClassExpression(applicationClassNode))
-                classNode.addAnnotation(contextConfigAnn)
-            }
-
-            // now add integration test annotations
-            // @WebAppConfiguration
-            // @IntegrationTest
-            if(ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-                classNode.addAnnotation(new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE))
-            }
-            else {
-                classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
-            }
+            weaveIntegrationTestMixin(classNode, applicationClassNode)
 
         }
 
+    }
+
+    public void weaveIntegrationTestMixin(ClassNode classNode, ClassNode applicationClassNode) {
+        if(applicationClassNode == null) return
+
+        if (TestMixinTransformation.isSpockTest(classNode)) {
+            // first add context configuration
+            // Example: @ContextConfiguration(loader = GrailsApplicationContextLoader, classes = Application)
+            def contextConfigAnn = new AnnotationNode(CONTEXT_CONFIG_ANNOTATION)
+            contextConfigAnn.addMember("loader", new ClassExpression(GRAILS_APPLICATION_CONTEXT_LOADER))
+            contextConfigAnn.addMember("classes", new ClassExpression(applicationClassNode))
+            classNode.addAnnotation(contextConfigAnn)
+
+            enhanceGebSpecWithPort(classNode)
+
+        } else {
+            // Must be a JUnit 4 test so add JUnit spring annotations
+            // @RunWith(SpringJUnit4ClassRunner)
+            def runWithAnnotation = new AnnotationNode(RUN_WITH_ANNOTATION_NODE)
+            runWithAnnotation.addMember("value", new ClassExpression(SPRING_JUNIT4_CLASS_RUNNER))
+            classNode.addAnnotation(runWithAnnotation)
+
+            // @SpringApplicationConfiguration(classes = Application)
+            def contextConfigAnn = new AnnotationNode(SPRING_APPLICATION_CONFIGURATION_CLASS_NODE)
+            contextConfigAnn.addMember("classes", new ClassExpression(applicationClassNode))
+            classNode.addAnnotation(contextConfigAnn)
+        }
+
+        // now add integration test annotations
+        // @WebAppConfiguration
+        // @IntegrationTest
+        if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
+            classNode.addAnnotation(new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE))
+        } else {
+            classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
+        }
     }
 
     protected void enhanceGebSpecWithPort(ClassNode classNode) {

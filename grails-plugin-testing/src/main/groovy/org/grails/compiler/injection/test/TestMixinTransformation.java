@@ -18,6 +18,7 @@ package org.grails.compiler.injection.test;
 import grails.test.mixin.TestMixin;
 import grails.test.mixin.TestMixinTargetAware;
 import grails.test.mixin.TestRuntimeAwareMixin;
+import grails.test.mixin.integration.IntegrationTestMixin;
 import grails.test.mixin.support.MixinInstance;
 import grails.test.mixin.support.MixinMethod;
 import grails.test.mixin.support.SkipMethod;
@@ -61,6 +62,7 @@ import org.grails.compiler.injection.GrailsASTUtils;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
+import org.grails.io.support.MainClassFinder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -108,23 +110,17 @@ public class TestMixinTransformation implements ASTTransformation{
             return;
         }
 
+        String mainClass = MainClassFinder.searchMainClass(source.getSource().getURI());
+
+        System.out.println("mainClass = " + mainClass);
+        ClassNode applicationClassNode = null;
+        if(mainClass != null) {
+            applicationClassNode = ClassHelper.make(mainClass);
+        }
+
         ClassNode classNode = (ClassNode) parent;
         ListExpression values = getListOfClasses(annotationNode);
-        weaveTestMixins(classNode, values);
-        addEnableEMCStatement(classNode);
-    }
-
-    protected void addEnableEMCStatement(ClassNode classNode) {
-        if (classNode.redirect().getNodeMetaData(EMC_STATEMENT_ADDED_KEY) != Boolean.TRUE) {
-            List<Statement> statements = new ArrayList<Statement>();
-            ClassNode emcClassNode = ClassHelper.make(ExpandoMetaClass.class);
-            // make direct static call to ExpandoMetaClass.enableGlobally() is static initializer block
-            statements.add(new ExpressionStatement(GrailsASTUtils.applyDefaultMethodTarget(new MethodCallExpression(
-                    new ClassExpression(emcClassNode), "enableGlobally", MethodCallExpression.NO_ARGUMENTS),
-                    emcClassNode)));
-            classNode.addStaticInitializerStatements(statements, true);
-            classNode.redirect().setNodeMetaData(EMC_STATEMENT_ADDED_KEY, Boolean.TRUE);
-        }
+        weaveTestMixins(classNode, values, applicationClassNode);
     }
 
     /**
@@ -132,6 +128,14 @@ public class TestMixinTransformation implements ASTTransformation{
      * @param values A list of ClassExpression instances
      */
     public void weaveTestMixins(ClassNode classNode, ListExpression values) {
+        weaveTestMixins(classNode, values, null);
+    }
+
+    /**
+     * @param classNode The class node to weave into
+     * @param values A list of ClassExpression instances
+     */
+    public void weaveTestMixins(ClassNode classNode, ListExpression values, ClassNode applicationClassNode) {
         String cName = classNode.getName();
         if (classNode.isInterface()) {
             throw new RuntimeException("Error processing interface '" + cName + "'. " +
@@ -141,7 +145,7 @@ public class TestMixinTransformation implements ASTTransformation{
         autoAnnotateSetupTeardown(classNode);
         autoAddTestAnnotation(classNode);
 
-        weaveMixinsIntoClass(classNode, values);
+        weaveMixinsIntoClass(classNode, values, applicationClassNode);
     }
 
     private void autoAddTestAnnotation(ClassNode classNode) {
@@ -178,6 +182,10 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     public void weaveMixinsIntoClass(ClassNode classNode, ListExpression values) {
+        weaveMixinsIntoClass(classNode, values, null);
+    }
+
+    public void weaveMixinsIntoClass(ClassNode classNode, ListExpression values, ClassNode applicationClassNode) {
         if (values == null) {
             return;
         }
@@ -188,7 +196,7 @@ public class TestMixinTransformation implements ASTTransformation{
             if (current instanceof ClassExpression) {
                 ClassExpression ce = (ClassExpression) current;
                 ClassNode mixinClassNode = ce.getType();
-                weaveMixinIntoClass(classNode, mixinClassNode, junit3MethodHandler);
+                weaveMixinIntoClass(classNode, mixinClassNode, junit3MethodHandler, applicationClassNode);
             }
         }
 
@@ -198,7 +206,15 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected void weaveMixinIntoClass(final ClassNode classNode, final ClassNode mixinClassNode,
-            final Junit3TestFixtureMethodHandler junit3MethodHandler) {
+            final Junit3TestFixtureMethodHandler junit3MethodHandler, ClassNode applicationClassNode) {
+
+        System.out.println("mixinClassNode = " + mixinClassNode.getName());
+        System.out.println("applicationClassNode = " + applicationClassNode);
+        if(mixinClassNode.getName().equals(IntegrationTestMixin.class.getName())) {
+            new IntegrationTestMixinTransformation().weaveIntegrationTestMixin(classNode, applicationClassNode);
+            return;
+        }
+
         final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
         
         boolean implementsTestRuntimeAwareMixin = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(TestRuntimeAwareMixin.class)) != null;

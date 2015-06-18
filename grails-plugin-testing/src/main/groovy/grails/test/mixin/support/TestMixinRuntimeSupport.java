@@ -34,9 +34,6 @@ import java.util.Set;
  *
  */
 public abstract class TestMixinRuntimeSupport extends GroovyObjectSupport implements TestRuntimeAwareMixin {
-    static {
-        ExpandoMetaClass.enableGlobally();
-    }
 
     private TestRuntime currentRuntime;
     private Set<String> features;

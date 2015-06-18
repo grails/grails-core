@@ -179,7 +179,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     void initialState() {
         closeCachedSpringTestContexts()
-        ExpandoMetaClass.enableGlobally()
         Holders.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
