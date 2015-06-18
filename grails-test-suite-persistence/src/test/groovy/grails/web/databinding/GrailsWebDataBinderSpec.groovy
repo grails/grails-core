@@ -26,10 +26,8 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
-
 import org.apache.commons.lang.builder.CompareToBuilder
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
-
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -383,27 +381,31 @@ class GrailsWebDataBinderSpec extends Specification {
         publisher.publications[1].publisher == publisher
     }
 
+    @Issue('#9003')
     void 'Test binding an array of ids to a collection of persistent instances'() {
         given:
         def book = new AssociationBindingBook()
-        
+
         when:
+        def pInitial = new AssociationBindingPage(number: 1).save()
+        book.addToPages(pInitial)
         def p1 = new AssociationBindingPage(number: 42).save()
         def p2 = new AssociationBindingPage(number: 2112).save()
-        
+
         then:
         p1.id != null
         p2.id != null
-        
+        book.pages?.find { it.number == 1 && it.id == pInitial.id }
+
         when:
         binder.bind book, [pages: [p1.id, p2.id] as String[]] as SimpleMapDataBindingSource
-        
-        then:
+
+        then: 'the initial page should have been replaced by the 2 new pages'
         book.pages?.size() == 2
         book.pages.find { it.number == 42 && it.id == p1.id }
         book.pages.find { it.number == 2112 && it.id == p2.id }
     }
-    
+
     void 'Test bindable'() {
         given:
         def widget = new Widget()
