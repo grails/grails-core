@@ -96,17 +96,21 @@ class GrailsCli {
     public static void main(String[] args) {
         GrailsCli cli=new GrailsCli()
         try {
-            System.exit(cli.execute(args))
+            exit(cli.execute(args))
         }
         catch(BuildCancelledException e) {
             GrailsConsole.instance.addStatus("Build stopped.")
-            System.exit(0)
+            exit(0)
         }
         catch (Throwable e) {
             e = ExceptionUtils.getRootCause(e)
             GrailsConsole.instance.error("Error occurred running Grails CLI: $e.message", e)
-            System.exit(1)
+            exit(1)
         }
+    }
+
+    static void exit(int code) {
+        GrailsConsole.instance.cleanlyExit(code)
     }
 
     static boolean isInteractiveModeActive() {
@@ -142,13 +146,13 @@ class GrailsCli {
             console.addStatus("Grails Version: ${GrailsCli.getPackage().implementationVersion}")
             console.addStatus("Groovy Version: ${GroovySystem.version}")
             console.addStatus("JVM Version: ${System.getProperty('java.version')}")
-            System.exit(0)
+            exit(0)
         }
 
         if(mainCommandLine.hasOption(CommandLine.HELP_ARGUMENT) || mainCommandLine.hasOption('h')) {
             def cmd = CommandRegistry.getCommand("help", profileRepository)
             cmd.handle(createExecutionContext(mainCommandLine))
-            System.exit(0)
+            exit(0)
         }
 
         if(mainCommandLine.environmentSet) {
@@ -373,7 +377,7 @@ class GrailsCli {
         } catch (Throwable e) {
             e = ExceptionUtils.getRootCause(e)
             GrailsConsole.instance.error("Error initializing classpath: $e.message", e)
-            System.exit(1)
+            exit(1)
         }
     }
 
