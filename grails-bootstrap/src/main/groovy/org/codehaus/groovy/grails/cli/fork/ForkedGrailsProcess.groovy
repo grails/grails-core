@@ -118,7 +118,7 @@ abstract class ForkedGrailsProcess {
                                 final contextFile = readLine(sockIn)
                                 if (contextFile) {
                                     if ("exit" == contextFile) {
-                                        System.exit(0)
+                                        GrailsConsole.instance.cleanlyExit(0)
                                     }
                                     else {
                                         def loadedContext = readExecutionContext(contextFile)
@@ -188,7 +188,7 @@ abstract class ForkedGrailsProcess {
     }
 
     /**
-     * @return Whether this process should be launched using a running daemon process. 
+     * @return Whether this process should be launched using a running daemon process.
      */
     protected boolean isDaemonProcess() {
         System.getProperty("grails.fork.daemon")!=null
@@ -244,7 +244,7 @@ abstract class ForkedGrailsProcess {
 
         def lockDir = new File(executionContext.projectWorkDir, "process-lock")
         if (lockDir.mkdir()) {
-            System.exit 0
+            GrailsConsole.instance.cleanlyExit(0)
         } else {
             // someone is already connected; let the process finish
         }
@@ -470,7 +470,7 @@ abstract class ForkedGrailsProcess {
 
                 GrailsConsole.instance.error("Forked Grails VM exited with error")
                 if(!InteractiveMode.active) {
-                    System.exit(1)
+                    GrailsConsole.instance.cleanlyExit(1)
                 }
             }
         }
@@ -549,7 +549,7 @@ abstract class ForkedGrailsProcess {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE"])
             cmd << (debugArgs ?: DEFAULT_DEBUG_ARGS)
         }
-        final console = GrailsConsole.getInstance()
+        final console = GrailsConsole.instance
         if (isReserve) {
             cmd.add "-Dgrails.fork.reserve=true"
         }
@@ -798,8 +798,8 @@ abstract class ForkedGrailsProcess {
                     sleep(15000)
                     if (!isServerRunning(portInt)) {
                         // parent process killed, so bail out too
-                        GrailsConsole.getInstance().addStatus("Parent process shutdown. Exiting...")
-                        System.exit(1)
+                        GrailsConsole.instance.addStatus("Parent process shutdown. Exiting...")
+                        GrailsConsole.instance.cleanlyExit(1)
                     }
                 }
             }
@@ -860,7 +860,7 @@ abstract class ForkedGrailsProcess {
                 def isr = new InputStreamReader(input, "UTF-8")
                 new BufferedReader(isr).eachLine { String next ->
                     if (next) {
-                        GrailsConsole.getInstance().log(next)
+                        GrailsConsole.instance.log(next)
                     }
                 }
             } catch (IOException e) {

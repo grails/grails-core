@@ -72,10 +72,10 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     static void main(String[] args) {
         try {
-            System.exit( new ForkedGrailsTestRunner().run() )
+            GrailsConsole.instance.cleanlyExit( new ForkedGrailsTestRunner().run() )
         } catch (Throwable e) {
-            GrailsConsole.getInstance().error("Error running forked test-app: " + e.getMessage(), e)
-            System.exit(1)
+            GrailsConsole.instance.error("Error running forked test-app: " + e.getMessage(), e)
+            GrailsConsole.instance.cleanlyExit(1)
         }
     }
 

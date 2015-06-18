@@ -109,7 +109,7 @@ public class ClasspathConfigurer {
             GrailsConsole.getInstance().error("Required Grails build dependencies were not found. This is normally due to internet connectivity issues (such as a misconfigured proxy) or missing repositories in grails-app/conf/BuildConfig.groovy. Please verify your configuration to continue.");
             cleanResolveCache(settings);
 
-            System.exit(1);
+            GrailsConsole.getInstance().cleanlyExit(1);
         }
         addDependenciesToURLs(excludes, urls, buildDependencies);
         // add dependencies required at development time, but not at deployment time
@@ -160,7 +160,7 @@ public class ClasspathConfigurer {
         grailsConsole.error(buildResolveReport.getResolveError().getMessage());
         grailsConsole.addStatus("Run 'grails dependency-report' for further information.");
         if (exitOnResolveError) {
-            System.exit(1);
+            GrailsConsole.getInstance().cleanlyExit(1);
         }
     }
 

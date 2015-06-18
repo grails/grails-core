@@ -359,8 +359,7 @@ public class BaseSettingsApi {
         if (System.getProperty("grails.cli.testing") != null || System.getProperty("grails.disable.exit") != null) {
             throw new ScriptExitException(code);
         }
-        GrailsConsole.getInstance().flush();
-        System.exit(code);
+        GrailsConsole.getInstance().cleanlyExit(code);
     }
 
     /**

@@ -47,7 +47,7 @@ class InteractiveMode {
 
     static InteractiveMode current
 
-    @Delegate GrailsConsole console = GrailsConsole.getInstance()
+    @Delegate GrailsConsole console = GrailsConsole.instance
 
     GrailsScriptRunner scriptRunner
     BuildSettings settings
@@ -229,7 +229,7 @@ class InteractiveMode {
 
     protected void goodbye() {
         updateStatus "Goodbye"
-        System.exit(0)
+        GrailsConsole.instance.cleanlyExit(0)
     }
 
     protected void stopApp() {
