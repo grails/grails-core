@@ -141,7 +141,7 @@ public class GrailsScriptRunner {
             }
         } catch (ParseException e) {
             console.error("Error processing command line arguments: " + e.getMessage());
-            System.exit(1);
+            console.cleanlyExit(1);
             return;
         }
 
@@ -175,7 +175,7 @@ public class GrailsScriptRunner {
 
         if (commandLine.hasOption(CommandLine.VERSION_ARGUMENT)) {
             console.log("Grails version: " + build.getGrailsVersion());
-            System.exit(0);
+            console.cleanlyExit(0);
         }
 
         if (commandLine.hasOption(CommandLine.HELP_ARGUMENT)) {
@@ -184,7 +184,7 @@ public class GrailsScriptRunner {
             } else {
                 console.log("The '-help' option is deprecated; use 'grails help'");
             }
-            System.exit(0);
+            console.cleanlyExit(0);
         }
 
         boolean resolveDeps = commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT);
@@ -224,8 +224,7 @@ public class GrailsScriptRunner {
 
             try {
                 int exitCode = scriptRunner.executeCommand(commandLine, script.name, script.env);
-                GrailsConsole.getInstance().flush();
-                System.exit(exitCode);
+                GrailsConsole.getInstance().cleanlyExit(exitCode);
             }
             catch (ScriptNotFoundException ex) {
                 String msg = "Script not found: " + ex.getScriptName();
@@ -272,8 +271,7 @@ public class GrailsScriptRunner {
         else {
             grailsConsole.error(error, t);
         }
-        grailsConsole.flush();
-        System.exit(1);
+        grailsConsole.cleanlyExit(1);
     }
 
     private static ScriptAndArgs processArgumentsAndReturnScriptName(CommandLine commandLine) {
@@ -365,7 +363,7 @@ public class GrailsScriptRunner {
         }
         catch (Exception e) {
             console.error("There was an error loading the BuildConfig: " + e.getMessage(), e);
-            System.exit(1);
+            console.cleanlyExit(1);
         }
         finally {
             System.setProperty("disable.grails.plugin.transform", "false");
@@ -751,7 +749,7 @@ public class GrailsScriptRunner {
             String selection = console.userInput("Please make a selection or enter Q to quit: ");
 
             if ("Q".equalsIgnoreCase(selection)) {
-                System.exit(0);
+                GrailsConsole.getInstance().cleanlyExit(0);
             }
 
             try {

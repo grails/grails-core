@@ -45,10 +45,10 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor {
     static void main(String[] args) {
         try {
             new ForkedGrailsCompiler().run()
-            System.exit(0)
+            GrailsConsole.instance.cleanlyExit(0)
         } catch (Throwable e) {
-            GrailsConsole.getInstance().error("Error running forked compilation: " + e.getMessage(), e)
-            System.exit(1)
+            GrailsConsole.instance.error("Error running forked compilation: " + e.getMessage(), e)
+            GrailsConsole.instance.cleanlyExit(1)
         }
     }
 
@@ -76,7 +76,7 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor {
             ((GroovyObject)instance).invokeMethod("compileAll", null)
             return 0
         } catch (Throwable e) {
-            GrailsConsole.getInstance().error("Error running forked compiler: ${e.message}", e)
+            GrailsConsole.instance.error("Error running forked compiler: ${e.message}", e)
             return 1
         }
     }

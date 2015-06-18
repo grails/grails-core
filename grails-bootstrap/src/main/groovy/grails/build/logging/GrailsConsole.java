@@ -370,7 +370,7 @@ public class GrailsConsole {
     private void assertAllowInput() {
         assertAllowInput(null);
     }
-    
+
     private void assertAllowInput(String prompt) {
         if (reader == null) {
             String msg = "User input is not enabled, cannot obtain input stream";
@@ -929,7 +929,19 @@ public class GrailsConsole {
         }
     }
 
+    public void cleanlyExit(int status) {
+        flush();
+        System.exit(status);
+    }
+
+    /**
+     * Makes sure that the console has been reset to the default state and that
+     * the out stream has been flushed.
+     */
     public void flush() {
+        if (isAnsiEnabled()) {
+            out.print(ansi().reset().toString());
+        }
         out.flush();
     }
 }
