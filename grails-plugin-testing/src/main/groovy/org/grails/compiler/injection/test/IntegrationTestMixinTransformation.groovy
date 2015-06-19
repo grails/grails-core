@@ -17,8 +17,11 @@ import org.grails.test.context.junit4.GrailsJunit4ClassRunner
 import org.grails.test.context.junit4.GrailsTestConfiguration
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.test.IntegrationTest
 import org.springframework.boot.test.WebIntegrationTest
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.util.ClassUtils
@@ -97,6 +100,9 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
     public void weaveIntegrationTestMixin(ClassNode classNode, ClassNode applicationClassNode) {
         if(applicationClassNode == null) return
 
+
+        enableAutowireByName(classNode)
+
         if (TestMixinTransformation.isSpockTest(classNode)) {
             // first add context configuration
             // Example: @ContextConfiguration(loader = GrailsApplicationContextLoader, classes = Application)
@@ -128,6 +134,22 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
         } else {
             classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
         }
+    }
+
+    protected void enableAutowireByName(ClassNode classNode) {
+        classNode.addInterface(ClassHelper.make(ApplicationContextAware))
+
+        def body = new BlockStatement()
+
+        def ctxClass = ClassHelper.make(ApplicationContext)
+        def p = new Parameter(ctxClass, "ctx")
+
+        def getBeanFactoryMethodCall = new MethodCallExpression(new VariableExpression(p), "getAutowireCapableBeanFactory", GrailsASTUtils.ZERO_ARGUMENTS)
+
+        def args = new ArgumentListExpression(new VariableExpression("this"), new ConstantExpression(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME), new ConstantExpression(Boolean.FALSE))
+        def autoMethodCall = new MethodCallExpression(getBeanFactoryMethodCall, "autowireBeanProperties", args)
+        body.addStatement(new ExpressionStatement(autoMethodCall))
+        classNode.addMethod("setApplicationContext", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [p] as Parameter[], null, body)
     }
 
     protected void enhanceGebSpecWithPort(ClassNode classNode) {
