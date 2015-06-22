@@ -17,6 +17,10 @@ package org.grails.spring.aop.autoproxy;
 
 import groovy.lang.GroovyObject;
 import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
+import org.springframework.aop.config.AopConfigUtils;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * Enables AspectJ weaving from the application context.
@@ -25,6 +29,23 @@ import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProx
  * @since 1.3.4
  */
 public class GroovyAwareAspectJAwareAdvisorAutoProxyCreator extends AnnotationAwareAspectJAutoProxyCreator {
+
+    private static final String APC_PRIORITY_LIST_FIELD = "APC_PRIORITY_LIST";
+
+    static {
+        try {
+            // patch AopConfigUtils if possible
+            Field field = AopConfigUtils.class.getDeclaredField(APC_PRIORITY_LIST_FIELD);
+            if(field != null) {
+                field.setAccessible(true);
+                Object obj = field.get(null);
+                List<Class<?>> list = (List<Class<?>>) obj;
+                list.add(GroovyAwareAspectJAwareAdvisorAutoProxyCreator.class);
+            }
+        } catch (Throwable e) {
+            // ignore
+        }
+    }
 
     private static final long serialVersionUID = 1;
 
