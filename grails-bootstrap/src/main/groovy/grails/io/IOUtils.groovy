@@ -117,6 +117,9 @@ class IOUtils extends SpringIOUtils {
         def classRes = targetClass.getResource(pathToClassFile)
         if(classRes) {
             def rootPath = classRes.toString() - pathToClassFile
+            if(rootPath.endsWith("/build/classes/main")) {
+                rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+            }
             return new URL("$rootPath$path")
         }
         return null
