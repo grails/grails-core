@@ -42,20 +42,20 @@ With that done checkout the [Profile Repository](https://github.com/grails/grail
 
     $ git clone git@github.com:grails/grails-profile-repository.git
     $ cd grails-profile-repository
-    $ git tag v3.0.1
+    $ git tag v3.0.2
     $ git push --tags
 
 Next, update the Grails version in `build.gradle` and `grails-core/src/test/groovy/grails/util/GrailsUtilTests.java` and then push the changes to git:
 
     $ git add build.gradle grails-core/src/test/groovy/grails/util/GrailsUtilTests.java
-    $ git commit -m "Release Grails 3.0.1"
+    $ git commit -m "Release Grails 3.0.2"
     $ git push
 
 After pushing these changes to the repository you must wait for [the build](https://travis-ci.org/grails/grails-core) to complete. During this phase the JAR files will be uploaded  to the [Grails Artefactory Repository](https://repo.grails.org/grails/libs-releases-local/).
 
 Once the build completes successfully, tag the release using Git: 
 
-     $ git tag v3.0.1
+     $ git tag v3.0.2
      $ git push --tags
 
 
@@ -67,13 +67,13 @@ At this point it is a good idea to release [the documentation](https://github.co
 
     $ git clone git@github.com:grails/grails-doc.git
     $ cd grails-doc
-    $ echo "grails.version=3.0.1" > gradle.properties
+    $ echo "grails.version=3.0.2" > gradle.properties
     $ git add gradle.properties
-    $ git commit -m "Release 3.0.1 docs"
-    $ git tag v3.0.1
+    $ git commit -m "Release 3.0.2 docs"
+    $ git tag v3.0.2
     $ git push --tags
     
-The [Travis CI build](https://travis-ci.org/grails/grails-doc) for the documentation will automatically publish the documentation and make it available on the website at: http://grails.org/doc/3.0.1
+The [Travis CI build](https://travis-ci.org/grails/grails-doc) for the documentation will automatically publish the documentation and make it available on the website at: http://grails.org/doc/3.0.2
 
 Finally to update the website's download page you should [edit the sitemap](https://github.com/grails/grails-static-website/blob/39c84b93e08ec111a7860075b89082c46083fe34/site/src/site/sitemap.groovy#L108)
 
