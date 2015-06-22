@@ -1,11 +1,9 @@
 package grails.boot
 
 import grails.boot.config.tools.SettingsFile
-import grails.config.Config
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
-import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -15,9 +13,6 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
-import org.grails.io.support.FileSystemResource
-import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
@@ -246,7 +241,14 @@ class GrailsApp extends SpringApplication {
         try {
             def protocol = System.getProperty('server.ssl.key-store') ? 'https' : 'http'
             GrailsApplication app = applicationContext.getBean(GrailsApplication)
-            def contextPath = app.config.getProperty('server.contextPath', '')
+            String context_path = app.config.getProperty('server.context-path', '')
+            if(context_path){
+                println("WARNING: 'server.context-path: ${context_path}' is deprecated. Please use 'server.contextPath: ${context_path}'")
+            } else {
+                context_path=''
+            }
+            // in spring-boot context-path is chosen before contextPath ...
+            String contextPath = context_path?context_path:app.config.getProperty('server.contextPath', '')
             println("Grails application running at ${protocol}://localhost:${applicationContext.embeddedServletContainer.port}${contextPath} in environment: ${Environment.current.name}")
         } catch (e) {
             // ignore
