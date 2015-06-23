@@ -15,11 +15,28 @@
  */
 package grails.artefact
 
+import grails.core.GrailsDomainClass
+import grails.util.Holders
+import grails.validation.Constrained
+import groovy.transform.CompileStatic
+import org.grails.core.artefact.DomainClassArtefactHandler
+
 /**
- * 
+ *
+ * A trait implemented by all domain classes
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  *
  */
+@CompileStatic
 trait DomainClass {
+
+
+    static Map<String, Constrained> getConstrainedProperties() {
+        GrailsDomainClass domainClass = (GrailsDomainClass)Holders?.grailsApplication?.getArtefact(DomainClassArtefactHandler.TYPE, this.getClass().name)
+        return (Map<String, Constrained>)domainClass?.getConstrainedProperties() ?: Collections.emptyMap()
+    }
 }
