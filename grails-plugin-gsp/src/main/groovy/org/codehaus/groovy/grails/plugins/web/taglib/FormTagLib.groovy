@@ -364,6 +364,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      * @attr name A value to use for both the name and id attribute of the form tag
      * @attr useToken Set whether to send a token in the request to handle duplicate form submissions. See Handling Duplicate Form Submissions
      * @attr method the form method to use, either 'POST' or 'GET'; defaults to 'POST'
+     * @attr elementId DOM element id
      */
     Closure form = { attrs, body ->
 
@@ -374,7 +375,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         }
 
         def writer = getOut()
-
+        def elementId = attrs.remove('elementId')
+        
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
 
         writer << "<form action=\""
@@ -412,6 +414,10 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         // process remaining attributes
         if (attrs.id == null) attrs.remove('id')
 
+        if (elementId) {
+            writer << " id=\"${elementId}\""
+        }
+        
         outputAttributes(attrs, writer, true)
 
         writer << ">"
