@@ -17,6 +17,7 @@
 package org.grails.gradle.plugin.model
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.tooling.provider.model.ToolingModelBuilder
 
@@ -32,9 +33,13 @@ class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
     @Override
     Object buildAll(String modelName, Project project) {
         // testRuntime includes provided
-        List<URL> runtimeDependencies = project.getConfigurations().getByName("testRuntime").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
-            artifact.getFile().toURI().toURL()
+        try {
+            List<URL> runtimeDependencies = project.getConfigurations().getByName("testRuntime").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
+                artifact.getFile().toURI().toURL()
+            }
+            new DefaultGrailsClasspath(dependencies: runtimeDependencies)
+        } catch (ResolveException e) {
+            new DefaultGrailsClasspath(error: e.message)
         }
-        new DefaultGrailsClasspath(dependencies: runtimeDependencies)
     }
 }

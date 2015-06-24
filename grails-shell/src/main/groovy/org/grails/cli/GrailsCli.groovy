@@ -367,6 +367,10 @@ class GrailsCli {
                     @Override
                     List<URL> readFromGradle(ProjectConnection connection) {
                         GrailsClasspath grailsClasspath = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction())
+                        if(grailsClasspath.error) {
+                            GrailsConsole.instance.error("${grailsClasspath.error} Type 'gradle dependencies' for more information")
+                            exit 1
+                        }
                         return grailsClasspath.dependencies
                     }
                 }.call()

@@ -23,4 +23,5 @@ package org.grails.gradle.plugin.model
  */
 interface GrailsClasspath extends Serializable {
     List<URL> getDependencies()
+    String getError()
 }
