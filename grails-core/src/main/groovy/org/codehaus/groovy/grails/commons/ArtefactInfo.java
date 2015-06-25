@@ -70,4 +70,36 @@ public interface ArtefactInfo {
      * @return A GrailsClass or null
      */
     GrailsClass getGrailsClassByLogicalPropertyName(String logicalName);
+
+    /**
+    * Retrieves a list of Grails classes by their logical property name. This can grab multiple classes that have
+    * the same name but may have different namespaces.
+    *
+    * @param logicalName The logical name
+    * @return A List<GrailsClass> or null
+    */
+    List<GrailsClass> getGrailsClassesByLogicalPropertyName(String logicalName);
+
+    /** 
+    * Retreives a Grails class by its logical property anem and namespace.
+    * @param logicalName The logical name
+    * @param namespace The namespace of the class
+    */
+    GrailsClass getGrailsClassByLogicalPropertyNameAndNamespace(String logicalName, String namespace);
+
+    /**
+    * Retrieves a list of Grails classes by their logical property name. This can grab multiple classes that have
+    * the same name but may have different namespaces.
+    *
+    * @param logicalName The logical name
+    * @return A List<GrailsClass> or null
+    */
+    List<GrailsClass> getGrailsClassesByLogicalPropertyName(String logicalName);
+
+    /** 
+    * Retreives a Grails class by its logical property anem and namespace.
+    * @param logicalName The logical name
+    * @param namespace The namespace of the class
+    */
+    GrailsClass getGrailsClassByLogicalPropertyNameAndNamespace(String logicalName, String namespace);
 }

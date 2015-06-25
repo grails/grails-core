@@ -405,6 +405,24 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The GrailsClass or null if it doesn't exist
      */
     GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName);
+    
+    /**
+    * Retrieves all artefacts that have the same logicalPropertyName. For example 2 controllers with
+    * the same name but a different namespace
+    * @param type The artefact type
+    * @param logicalName The logical name
+    * @return The List<GrailsClass> or null if it doesn't exist
+    */
+    List<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName);
+
+    /**
+    * Retrieves an artefact by its logical property name and namespace.
+    * @param type The artefact type
+    * @param logicalName The logical name
+    * @param namespace The namespace of the artefact
+    * @return The GrailsClass or null if it doesn't exist
+    */
+    GrailsClass getArtefactByLogicalPropertyNameAndNamespace(String type, String logicalName, String namespace);
 
     /**
      * Adds the given artefact, attempting to determine type from

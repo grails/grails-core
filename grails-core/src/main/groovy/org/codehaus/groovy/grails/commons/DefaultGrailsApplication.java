@@ -736,6 +736,16 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         return info == null ? null : info.getGrailsClassByLogicalPropertyName(logicalName);
     }
 
+    public List<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName) {
+        ArtefactInfo info = getArtefactInfo(type);
+        return info == null ? null : info.getGrailsClassesByLogicalPropertyName(logicalName);
+    }
+
+    public GrailsClass getArtefactByLogicalPropertyNameAndNamespace(String type, String logicalName, String namespace) {
+        ArtefactInfo info = getArtefactInfo(type);
+        return info == null ? null : info.getGrailsClassByLogicalPropertyNameAndNamespace(logicalName, namespace);
+    }
+
     public void addArtefact(@SuppressWarnings("rawtypes") Class artefact) {
         for (ArtefactHandler artefactHandler : artefactHandlers) {
             if (artefactHandler.isArtefact(artefact)) {

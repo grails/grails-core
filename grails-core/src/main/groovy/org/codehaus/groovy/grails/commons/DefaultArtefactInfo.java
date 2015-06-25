@@ -33,7 +33,7 @@ public class DefaultArtefactInfo implements ArtefactInfo {
     private Class<?>[] classes;
     private Map<String, GrailsClass> grailsClassesByName = new LinkedHashMap<String, GrailsClass>();
     private Map<String, Class<?>> classesByName = new LinkedHashMap<String, Class<?>>();
-    private Map<String, GrailsClass> logicalPropertyNameToClassMap = new HashMap<String, GrailsClass>();
+    private Map<String, <List<GrailsClass>> logicalPropertyNameToClassMap = new HashMap<String, GrailsClass>();
     @SuppressWarnings("rawtypes")
     public Map handlerData = new HashMap();
     private GrailsClass[] grailsClassesArray;
@@ -61,7 +61,16 @@ public class DefaultArtefactInfo implements ArtefactInfo {
             grailsClasses.remove(oldVersion);
         }
         classesByName.put(actualClass.getName(), actualClass);
-        logicalPropertyNameToClassMap.put(artefactClass.getLogicalPropertyName(), artefactClass);
+
+        List<GrailsClass> grailsClassesByLogicalPropertyName = logicalPropertyNameToClassMap.get(artefactClass.getLogicalPropertyName());
+        if(grailsClassesByLogicalPropertyName == null) {
+            grailsClassesByLogicalPropertyName = new List();
+            grailsClassesByLogicalPropertyName.add(artefactClass);
+            logicalPropertyNameToClassMap.put(artefactClass.getLogicalPropertyName(), grailsClassesByLogicalPropertyName);    
+        } else if (!grailsClassesByLogicalPropertyName.contains(artefactClass)) {
+            grailsClassesByLogicalPropertyName.add(artefactClass);
+        }
+        
 
         if (!grailsClasses.contains(artefactClass)) {
             if (atStart) {
@@ -106,7 +115,31 @@ public class DefaultArtefactInfo implements ArtefactInfo {
     }
 
     public GrailsClass getGrailsClassByLogicalPropertyName(String logicalName) {
+        List<GrailsClass> grailsClasses = logicalPropertyNameToClassMap.get(logicalName);
+        if(grailsClasses != null && grailsClasses.size() > 0) {
+            return grailsClasses.get(0);
+        }
+        return null;
+    }
+
+    public List<GrailsClass> getGrailsClassesByLogicalPropertyName(String logicalName) {
         return logicalPropertyNameToClassMap.get(logicalName);
+    }
+
+    public GrailsClass getGrailsClassByLogicalPropertyNameAndNamespace(String logicalName, String namespace) {
+        List<GrailsClass> grailsClasses = logicalPropertyNameToClassMap.get(logicalName);
+        if(grailsClasses != null && grailsClasses.size() > 0) {
+            for (GrailsClass grailsClass: grailsClasses) {
+                if (grailsClass instanceof GrailsControllerClass) {
+                    if(((GrailsControllerClass)grialsClass).getNamespace() == namespace) {
+                        return grailsClass;
+                    }
+                } else if(namespace == null) {
+                    return grailsClass;
+                }
+            }
+        }
+        return null;
     }
 
     public void addOverridableGrailsClass(GrailsClass artefactGrailsClass) {
