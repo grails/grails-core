@@ -736,7 +736,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         return info == null ? null : info.getGrailsClassByLogicalPropertyName(logicalName);
     }
 
-    public List<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName) {
+    public LinkedList<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName) {
         ArtefactInfo info = getArtefactInfo(type);
         return info == null ? null : info.getGrailsClassesByLogicalPropertyName(logicalName);
     }

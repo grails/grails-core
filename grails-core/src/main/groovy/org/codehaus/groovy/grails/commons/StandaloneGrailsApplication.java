@@ -15,7 +15,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.util.ConfigObject;
-
+import java.util.LinkedList;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -151,6 +151,16 @@ public class StandaloneGrailsApplication extends AbstractGrailsApplication {
 
     @Override
     public GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
+        return null;
+    }
+
+    @Override
+    public LinkedList<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName) {
+        return null;
+    }
+
+    @Override
+    public GrailsClass getArtefactByLogicalPropertyNameAndNamespace(String type, String logicalName, String namespace) {
         return null;
     }
 

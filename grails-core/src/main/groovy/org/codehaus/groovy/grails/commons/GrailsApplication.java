@@ -20,6 +20,7 @@ import grails.util.Metadata;
 import groovy.util.ConfigObject;
 
 import java.util.Map;
+import java.util.LinkedList;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -413,7 +414,7 @@ public interface GrailsApplication extends ApplicationContextAware {
     * @param logicalName The logical name
     * @return The List<GrailsClass> or null if it doesn't exist
     */
-    List<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName);
+    LinkedList<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName);
 
     /**
     * Retrieves an artefact by its logical property name and namespace.
