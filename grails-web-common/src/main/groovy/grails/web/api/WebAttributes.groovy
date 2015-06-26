@@ -24,6 +24,7 @@ import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -38,8 +39,13 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 @CompileStatic
 trait WebAttributes {
-    
-    private GrailsApplication grailsApplication
+
+    /**
+     * Obtains the GrailsApplication instance
+     * @return The GrailsApplication instance
+     */
+    @Autowired
+    GrailsApplication grailsApplication
 
     GrailsWebRequest currentRequestAttributes() {
         (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
@@ -124,15 +130,5 @@ trait WebAttributes {
     GrailsWebRequest getWebRequest() {
         currentRequestAttributes()
     }
-    
-    /**
-     * Obtains the GrailsApplication instance
-     * @return The GrailsApplication instance
-     */
-    GrailsApplication getGrailsApplication() {
-        if (grailsApplication == null) {
-            grailsApplication = getGrailsAttributes().getGrailsApplication()
-        }
-        grailsApplication
-    }
+
 }
