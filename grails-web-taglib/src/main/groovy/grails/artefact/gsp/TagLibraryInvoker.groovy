@@ -112,7 +112,7 @@ trait TagLibraryInvoker extends WebAttributes{
      */
      Object propertyMissing(String propertyName) {
         TagLibraryLookup lookup = tagLibraryLookup
-        NamespacedTagDispatcher namespacedTagDispatcher = lookup.lookupNamespaceDispatcher(propertyName)
+        NamespacedTagDispatcher namespacedTagDispatcher = lookup?.lookupNamespaceDispatcher(propertyName)
         if (namespacedTagDispatcher) {
             if (!developmentMode) {
                 TagLibraryMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(this),propertyName, namespacedTagDispatcher)
