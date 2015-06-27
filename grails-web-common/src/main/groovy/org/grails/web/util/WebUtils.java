@@ -63,7 +63,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String RENDERING_VIEW = "org.grails.rendering.view";
     public static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
     public static final String GRAILS_SERVLET_PATH = "/grails";
-    public static final String EXCEPTION_ATTRIBUTE = "exception";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
