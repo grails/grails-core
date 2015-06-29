@@ -40,6 +40,7 @@ public class TraitInjectionUtils {
     private static void doInjectionInternal(CompilationUnit unit, SourceUnit source, ClassNode classNode,
             List<TraitInjector> injectorsToUse) {
         boolean traitsAdded = false;
+
         for (TraitInjector injector : injectorsToUse) {
             Class<?> trait = injector.getTrait();
             ClassNode traitClassNode = ClassHelper.make(trait);
@@ -71,6 +72,8 @@ public class TraitInjectionUtils {
     private static List<TraitInjector> getTraitInjectors() {
         if(traitInjectors == null) {
             traitInjectors = GrailsFactoriesLoader.loadFactories(TraitInjector.class);
+
+            traitInjectors = TraitInjectionSupport.resolveTraitInjectors(traitInjectors);
         }
         return Collections.unmodifiableList(traitInjectors);
     }

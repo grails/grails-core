@@ -138,7 +138,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
     }
 
-    protected File resolveCompilationTargetDirectory(SourceUnit source) {
+    static File resolveCompilationTargetDirectory(SourceUnit source) {
         File targetDirectory = source.configuration.targetDirectory
         if(targetDirectory==null && source.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
             targetDirectory = GroovyEclipseCompilationHelper.resolveEclipseCompilationTargetDirectory(source)
@@ -146,7 +146,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         return targetDirectory
     }
 
-    protected boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
+    static boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
         if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
@@ -161,7 +161,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 }
 
                 def existing = props.getProperty(superTypeName)
-                if (existing != classNodeName) {
+                if (!existing.contains(classNodeName)) {
                     props.put(superTypeName, [existing, classNodeName].join(','))
                 }
             } else {

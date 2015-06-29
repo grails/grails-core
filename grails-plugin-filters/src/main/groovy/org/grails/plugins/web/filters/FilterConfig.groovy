@@ -15,8 +15,10 @@
  */
 package org.grails.plugins.web.filters
 import grails.artefact.Controller
+import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.util.GrailsClassUtils
+import grails.web.api.WebAttributes
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.filters.support.DelegateMetaMethod
@@ -48,6 +50,11 @@ class FilterConfig implements Controller {
         ExpandoMetaClass emc = new ExpandoMetaClass(getClass(), false, true)
         emc.initialize()
         setMetaClass(emc)
+    }
+
+    @Override
+    GrailsApplication getGrailsApplication() {
+        getGrailsAttributes().getGrailsApplication()
     }
 
     /**

@@ -19,4 +19,5 @@ package org.grails.gradle.plugin.model
 class DefaultGrailsClasspath implements GrailsClasspath {
     private static final long serialVersionUID = 1L
     List<URL> dependencies
+    String error
 }
