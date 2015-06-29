@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.grails.boot.internal.JavaCompiler
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
@@ -200,10 +201,15 @@ class GrailsApp extends SpringApplication {
         def baseFileLocation = appDir?.absolutePath ?: location
         compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
         println "File $changedFile changed, recompiling..."
-        // only one change, just to a simple recompile and propagate the change
-        def unit = new CompilationUnit(compilerConfig)
-        unit.addSource(changedFile)
-        unit.compile()
+        if(changedFile.name.endsWith('.java')) {
+            JavaCompiler.recompile(compilerConfig, changedFile)
+        }
+        else {
+            // only one change, just to a simple recompile and propagate the change
+            def unit = new CompilationUnit(compilerConfig)
+            unit.addSource(changedFile)
+            unit.compile()
+        }
     }
 
     /**
