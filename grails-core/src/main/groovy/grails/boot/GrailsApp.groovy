@@ -202,7 +202,12 @@ class GrailsApp extends SpringApplication {
         compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
         println "File $changedFile changed, recompiling..."
         if(changedFile.name.endsWith('.java')) {
-            JavaCompiler.recompile(compilerConfig, changedFile)
+            if(JavaCompiler.isAvailable()) {
+                JavaCompiler.recompile(compilerConfig, changedFile)
+            }
+            else {
+                log.error("Cannot recompile [$changedFile.name], the current JVM is not a JDK (recompilation will not work on a JRE missing the compiler APIs).")
+            }
         }
         else {
             // only one change, just to a simple recompile and propagate the change
