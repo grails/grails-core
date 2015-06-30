@@ -16,9 +16,9 @@
 package org.grails.core;
 
 import grails.core.GrailsControllerClass;
+import grails.util.GrailsClassUtils;
 import grails.web.Action;
 import groovy.lang.GroovyObject;
-import org.springframework.beans.factory.config.Scope;
 import org.springframework.cglib.reflect.FastClass;
 import org.springframework.cglib.reflect.FastMethod;
 import org.springframework.util.ReflectionUtils;
@@ -90,8 +90,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private void methodStrategy(Map<String, FastMethod> methodNames) {
 
         Class superClass = getClazz();
-        FastClass fastClass = FastClass.create(superClass);
-        while (superClass != null && superClass != Object.class && superClass != GroovyObject.class) {
+        FastClass fastClass = GrailsClassUtils.fastClass(superClass);
+        while (superClass != Object.class && superClass != GroovyObject.class) {
             for (Method method : superClass.getMethods()) {
                 if (Modifier.isPublic(method.getModifiers()) && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
@@ -101,7 +101,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
                 }
             }
             superClass = superClass.getSuperclass();
-            fastClass = FastClass.create(superClass);
+            fastClass = GrailsClassUtils.fastClass(superClass);
         }
 
         if (!isActionMethod(defaultActionName) && methodNames.size() == 1 && !isReadableProperty("scaffold")) {

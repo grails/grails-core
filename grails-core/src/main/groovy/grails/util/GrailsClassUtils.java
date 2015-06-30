@@ -37,6 +37,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
+import org.springframework.cglib.reflect.FastClass;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -1256,5 +1257,13 @@ public class GrailsClassUtils {
             }
         }
         return hasBeenEnhanced;
+    }
+
+    public static FastClass fastClass(Class superClass) {
+        FastClass.Generator gen = new FastClass.Generator();
+        gen.setType(superClass);
+        gen.setClassLoader(superClass.getClassLoader());
+        gen.setUseCache( !Environment.isReloadingAgentEnabled() );
+        return gen.create();
     }
 }
