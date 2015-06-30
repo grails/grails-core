@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.grails.io.support.MainClassFinder;
 
 /**
  * Represents the current environment.
@@ -496,6 +497,13 @@ public enum Environment {
             File current = new File(".", "grails-app");
             if(current.exists()) {
                 location = current.getParentFile().getAbsolutePath();
+            }
+            else {
+                current = new File(".", "settings.gradle");
+                if(current.exists()) {
+                    // multi-project build
+
+                }
             }
         }
         return location;

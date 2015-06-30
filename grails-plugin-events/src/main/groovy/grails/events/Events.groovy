@@ -43,7 +43,7 @@ trait Events {
     /**
      * @see #on(reactor.bus.selector.Selector, reactor.fn.Consumer)
      */
-    public <E extends Event<?> > Registration<Consumer<E>> on(Class key, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+    public <E extends Event<?> > Registration<Object, Consumer<E>> on(Class key, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
             value = ClosureEventConsumer.ReplyDecorator) Closure consumer) {
         on key, new ClosureEventConsumer<E>(consumer)
     }
@@ -51,7 +51,7 @@ trait Events {
     /**
      * @see #on(reactor.bus.selector.Selector, reactor.fn.Consumer)
      */
-    public <E extends Event<?> > Registration<Consumer<E>> on(Selector key, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+    public <E extends Event<?> > Registration<Object, Consumer<E>> on(Selector key, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
             value = ClosureEventConsumer.ReplyDecorator) Closure consumer) {
         on key, new ClosureEventConsumer<E>(consumer)
     }
@@ -59,7 +59,7 @@ trait Events {
     /**
      * @see #on(reactor.bus.selector.Selector, reactor.fn.Consumer)
      */
-    public <E extends Event<?> > Registration<Consumer<E>> on(key, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
+    public <E extends Event<?> > Registration<Object, Consumer<E>> on(key, @DelegatesTo(strategy = Closure.DELEGATE_FIRST,
             value = ClosureEventConsumer.ReplyDecorator) Closure consumer) {
         on key, new ClosureEventConsumer<E>(consumer)
     }
@@ -67,7 +67,7 @@ trait Events {
     /**
      * @see #on(reactor.bus.selector.Selector, reactor.fn.Consumer)
      */
-    public <E extends Event<?> > Registration<Consumer<E>> on(key, Consumer<E> consumer) {
+    public <E extends Event<?> > Registration<Object, Consumer<E>> on(key, Consumer<E> consumer) {
         if(key instanceof CharSequence) {
             key = key.toString()
         }
@@ -77,7 +77,7 @@ trait Events {
     /**
      * @see #on(reactor.bus.selector.Selector, reactor.fn.Consumer)
      */
-    public <E extends Event<?> > Registration<Consumer<E>> on(Class type, Consumer<E> consumer) {
+    public <E extends Event<?> > Registration<Object, Consumer<E>> on(Class type, Consumer<E> consumer) {
         on(Selectors.T(type), consumer)
     }
 
@@ -94,7 +94,7 @@ trait Events {
      *
      * @return A {@link Registration} object that allows the caller to interact with the given mapping
      */
-    public <E extends Event<?> > Registration<Consumer<E>> on(Selector sel, Consumer<E> consumer) {
+    public <E extends Event<?> > Registration<Object, Consumer<E>> on(Selector sel, Consumer<E> consumer) {
         if(eventBus == null) throw new IllegalStateException("EventBus not present. Event registration attempted outside of application context.")
         eventBus.on sel, consumer
     }
