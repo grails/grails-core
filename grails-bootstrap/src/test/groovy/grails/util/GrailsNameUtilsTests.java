@@ -21,6 +21,11 @@ import junit.framework.TestCase;
  */
 public class GrailsNameUtilsTests extends TestCase {
 
+    public void testIsValidPackage() {
+        assertTrue(GrailsNameUtils.isValidJavaPackage("jax.demo.bar"));
+        assertFalse(GrailsNameUtils.isValidJavaPackage("jax.demo.2015"));
+    }
+
     public void testGetGetterNameForPropertyThatBeginsWithASingleLowerCaseLetter() {
         assertEquals("getaPaperback", GrailsNameUtils.getGetterName("aPaperback"));
     }
