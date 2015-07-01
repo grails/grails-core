@@ -35,6 +35,7 @@ import org.grails.cli.profile.codegen.ModelBuilder
 import org.grails.cli.profile.commands.events.CommandEvents
 import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.cli.profile.commands.io.FileSystemInteractionImpl
+import org.grails.cli.profile.commands.io.ServerInteraction
 import org.grails.cli.profile.commands.templates.TemplateRenderer
 import org.grails.cli.profile.commands.templates.TemplateRendererImpl
 
@@ -45,7 +46,7 @@ import org.grails.cli.profile.commands.templates.TemplateRendererImpl
  * @since 3.0
  */
 @CompileStatic
-abstract class GroovyScriptCommand extends Script implements ProfileCommand, ProfileRepositoryAware, ConsoleLogger, ModelBuilder, FileSystemInteraction, TemplateRenderer, CommandEvents {
+abstract class GroovyScriptCommand extends Script implements ProfileCommand, ProfileRepositoryAware, ConsoleLogger, ModelBuilder, FileSystemInteraction, TemplateRenderer, CommandEvents, ServerInteraction {
 
     Profile profile
     ProfileRepository profileRepository
