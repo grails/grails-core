@@ -40,6 +40,9 @@ class GrailsApp extends SpringApplication {
 
     private final Log log = LogFactory.getLog(getClass())
 
+    private static boolean developmentModeActive = false
+    private static DirectoryWatcher directoryWatcher
+
     @Override
     ConfigurableApplicationContext run(String... args) {
         def applicationContext = super.run(args)
@@ -82,7 +85,7 @@ class GrailsApp extends SpringApplication {
         def location = environment.getReloadLocation()
 
         if(location) {
-            DirectoryWatcher directoryWatcher = new DirectoryWatcher()
+            directoryWatcher = new DirectoryWatcher()
             configureDirectoryWatcher(directoryWatcher, location)
             Queue<File> changedFiles = new ConcurrentLinkedQueue<>()
             Queue<File> newFiles = new ConcurrentLinkedQueue<>()
@@ -146,11 +149,12 @@ class GrailsApp extends SpringApplication {
             }
 
 
+            developmentModeActive = true
             Thread.start {
                 CompilerConfiguration compilerConfig = new CompilerConfiguration()
                 compilerConfig.setTargetDirectory(new File(location, "build/classes/main"))
 
-                while(true) {
+                while(developmentModeActive) {
                     // Workaround for some IDE / OS combos - 2 events (new + update) for the same file
                     def uniqueChangedFiles = changedFiles as Set
                     changedFiles.clear()
@@ -190,6 +194,11 @@ class GrailsApp extends SpringApplication {
         }
 
 
+    }
+
+    static void setDevelopmentModeActive(boolean active) {
+        developmentModeActive = active
+        directoryWatcher.active = active
     }
 
     protected void recompile(File changedFile, CompilerConfiguration compilerConfig, String location) {

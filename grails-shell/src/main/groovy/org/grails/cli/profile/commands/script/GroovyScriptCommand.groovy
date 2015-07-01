@@ -106,8 +106,13 @@ abstract class GroovyScriptCommand extends Script implements ProfileCommand, Pro
      * @return The flag information, or null if it isn't set by the user
      */
     def flag(String name) {
-        def value = commandLine?.undeclaredOptions?.get(name)
-        return value ?: null
+        if(commandLine.hasOption(name)) {
+            return commandLine.optionValue(name)
+        }
+        else {
+            def value = commandLine?.undeclaredOptions?.get(name)
+            return value ?: null
+        }
     }
 
     /**

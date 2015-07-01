@@ -1,5 +1,6 @@
 package grails.boot.config
 
+import grails.boot.GrailsApp
 import grails.config.Settings
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
@@ -238,8 +239,14 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             ShutdownOperations.runOperations()
             Holders.clear()
             if(reloadingEnabled) {
-                GrailsSpringLoadedPlugin.unregister()
+                try {
+                    GrailsSpringLoadedPlugin.unregister()
+                } catch (Throwable e) {
+                    // ignore
+                }
             }
+
+            GrailsApp.setDevelopmentModeActive(false)
         }
     }
 
