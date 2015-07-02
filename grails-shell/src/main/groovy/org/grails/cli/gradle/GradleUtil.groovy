@@ -24,6 +24,8 @@ import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
 import org.gradle.tooling.*
 import org.gradle.tooling.internal.consumer.DefaultCancellationTokenSource
+import org.grails.build.logging.GrailsConsoleErrorPrintStream
+import org.grails.build.logging.GrailsConsolePrintStream
 import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.ProjectContext
 
@@ -111,7 +113,8 @@ class GradleUtil {
     public static LongRunningOperation setupConsoleOutput(ProjectContext context, LongRunningOperation operation) {
         GrailsConsole grailsConsole = context.console
         operation.colorOutput = grailsConsole.ansiEnabled
-        operation.standardOutput = grailsConsole.out
+        operation.standardOutput = new GrailsConsolePrintStream( grailsConsole.out )
+        operation.standardError = new GrailsConsoleErrorPrintStream( grailsConsole.err )
         operation
     }
 
