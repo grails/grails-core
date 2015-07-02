@@ -157,11 +157,12 @@ class GrailsApp extends SpringApplication {
                 while(developmentModeActive) {
                     // Workaround for some IDE / OS combos - 2 events (new + update) for the same file
                     def uniqueChangedFiles = changedFiles as Set
-                    changedFiles.clear()
+
 
                     def i = uniqueChangedFiles.size()
                     try {
                         if(i > 1) {
+                            changedFiles.clear()
                             for(f in uniqueChangedFiles) {
                                 recompile(f, compilerConfig, location)
                                 if(newFiles.contains(f)) {
@@ -172,6 +173,7 @@ class GrailsApp extends SpringApplication {
                             }
                         }
                         else if(i == 1) {
+                            changedFiles.clear()
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
                             recompile(changedFile, compilerConfig, location)
