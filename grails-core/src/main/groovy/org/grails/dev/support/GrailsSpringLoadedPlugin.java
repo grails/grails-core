@@ -1,6 +1,9 @@
 package org.grails.dev.support;
 
+import grails.compiler.ast.ClassInjector;
 import grails.plugins.GrailsPluginManager;
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.grails.compiler.injection.GrailsAwareInjectionOperation;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.util.Assert;
@@ -38,6 +41,13 @@ public class GrailsSpringLoadedPlugin implements ReloadEventProcessorPlugin {
         org.grails.beans.support.CachedIntrospectionResults.clearClassLoader(clazz.getClassLoader());
         ClassPropertyFetcher.clearClassPropertyFetcherCache();
         Introspector.flushFromCaches(clazz);
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
+        for (ClassInjector classInjector : classInjectors) {
+            if(classInjector instanceof AbstractGrailsArtefactTransformer) {
+                ((AbstractGrailsArtefactTransformer)classInjector).clearCachedState();
+            }
+        }
+
 
         pluginManager.informOfClassChange(clazz);
     }
