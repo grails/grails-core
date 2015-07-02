@@ -115,8 +115,10 @@ class TransactionalTransform implements ASTTransformation{
 
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
                 
-                if(GrailsASTUtils.isSetterOrGetterMethod(md)) continue
-                
+                if(isSetterOrGetterMethod(md)) continue
+
+                // don't apply to methods added by traits
+                if(hasAnnotation(md, org.codehaus.groovy.transform.trait.Traits.TraitBridge.class)) continue
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
         }
