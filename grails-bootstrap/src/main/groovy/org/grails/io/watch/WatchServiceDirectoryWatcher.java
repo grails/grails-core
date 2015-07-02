@@ -93,11 +93,21 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 								// by using the addWatchFile method, /images/a.png is watched.
 								// Now, /images/b.png is changed. Because java.nio.file.WatchService watches directories, it gets a WatchEvent
 								// for /images/b.png. But we aren't interested in that.
-								LOG.debug("WatchService receieved an event for a file/directory that it's not interested in.");
+								LOG.debug("WatchService received an event for a file/directory that it's not interested in.");
 							}else{
 								if(kind==StandardWatchEventKinds.ENTRY_CREATE){
 									// new directory created, so watch its contents
 									addWatchDirectory(child,fileExtensions);
+									if(childFile.isDirectory() && childFile.exists()) {
+										final File[] files = childFile.listFiles();
+										if(files != null) {
+											for (File newFile : files) {
+												if(isValidFileToMonitor(newFile, fileExtensions)) {
+													fireOnNew(newFile);
+												}
+											}
+										}
+									}
 								}
 								if(isValidFileToMonitor(childFile,fileExtensions)){
 									if(kind == StandardWatchEventKinds.ENTRY_CREATE){

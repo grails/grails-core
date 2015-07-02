@@ -16,6 +16,7 @@
 package org.grails.plugins
 
 import grails.config.Config
+import grails.config.ConfigProperties
 import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.BuildSettings
@@ -65,18 +66,17 @@ class CoreGrailsPlugin extends Plugin {
 
         // Grails config as properties
         def config = application.config
-        def configProperties = config.toProperties()
         def placeHolderPrefix = config.getProperty(Settings.SPRING_PLACEHOLDER_PREFIX, '${')
-        grailsConfigProperties(InstanceFactoryBean, configProperties, Properties)
+
 
         // enable post-processing of @Configuration beans defined by plugins
         grailsConfigurationClassPostProcessor ConfigurationClassPostProcessor
 
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
-        final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
-        final placeholderConfigurer = new GrailsPlaceholderConfigurer(placeHolderPrefix, configProperties)
-        placeholderConfigurer.environment = springEnvironment
-        addBeanFactoryPostProcessor(placeholderConfigurer)
+        propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer) {
+            placeholderPrefix = placeHolderPrefix
+        }
+        grailsConfigProperties(ConfigProperties)
         legacyGrailsApplication(LegacyGrailsApplication, application)
 
         // replace AutoProxy advisor with Groovy aware one

@@ -15,6 +15,7 @@
  */
 package org.grails.events.reactor
 import grails.config.Config
+import grails.config.ConfigProperties
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import reactor.Environment
@@ -41,6 +42,10 @@ class GrailsReactorConfigurationReader implements ConfigurationReader {
 
     Config configuration
     Properties configurationProperties = new Properties()
+
+    GrailsReactorConfigurationReader(Config configuration, ConfigProperties configurationProperties) {
+        this(configuration, configurationProperties.resolveProperties())
+    }
 
     GrailsReactorConfigurationReader(Config configuration, Properties configurationProperties) {
         this.configuration = configuration

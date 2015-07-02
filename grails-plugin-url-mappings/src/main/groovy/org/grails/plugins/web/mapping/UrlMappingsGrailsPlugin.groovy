@@ -49,7 +49,7 @@ import org.springframework.web.context.WebApplicationContext
  */
 class UrlMappingsGrailsPlugin extends Plugin {
 
-    def watchedResources = ["file:./grails-app/conf/*UrlMappings.groovy"]
+    def watchedResources = ["file:./grails-app/controllers/*UrlMappings.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]

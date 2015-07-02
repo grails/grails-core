@@ -15,6 +15,7 @@
  */
 package grails.core;
 
+import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
@@ -64,7 +65,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
     }
 
     public String getPluginName() {
-        return type.toLowerCase();
+        return GrailsNameUtils.getPropertyName(type);
     }
 
     public String getType() {
