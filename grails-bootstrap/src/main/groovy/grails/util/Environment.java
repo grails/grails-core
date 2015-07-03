@@ -104,6 +104,7 @@ public enum Environment {
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
+    private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT && cachedHasGrailsHome;
     private static boolean initializingState = false;
     public static Throwable currentReloadError = null;
     public static MultipleCompilationErrorsException currentCompilationError = null;
@@ -193,9 +194,9 @@ public enum Environment {
      * Returns true if the application is running in development mode (within grails run-app)
      * @return true if the application is running in development mode
      */
+
     public static boolean isDevelopmentMode() {
-        return getCurrent() == DEVELOPMENT && Metadata.getCurrent().isDevelopmentEnvironmentAvailable() &&
-                cachedHasGrailsHome;
+        return DEVELOPMENT_MODE;
     }
 
     /**
