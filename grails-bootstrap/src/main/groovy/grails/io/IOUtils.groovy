@@ -15,8 +15,11 @@
  */
 package grails.io
 
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+import org.grails.io.support.Resource
 import org.grails.io.support.SpringIOUtils
+import org.grails.io.support.UrlResource
 
 /**
  * Utility methods for performing I/O operations.
@@ -117,11 +120,33 @@ class IOUtils extends SpringIOUtils {
         def classRes = targetClass.getResource(pathToClassFile)
         if(classRes) {
             def rootPath = classRes.toString() - pathToClassFile
-            if(rootPath.endsWith("/build/classes/main")) {
+            if(rootPath.endsWith(BuildSettings.BUILD_CLASSES_PATH)) {
                 rootPath = rootPath.replace('/build/classes/', '/build/resources/')
             }
             return new URL("$rootPath$path")
         }
         return null
+    }
+
+    public static String findApplicationDirectory() {
+        String location = null
+        try {
+            final String mainClassName = System.getProperty(BuildSettings.MAIN_CLASS_NAME)
+            final Class<?> mainClass = Thread.currentThread().contextClassLoader.loadClass(mainClassName)
+            final URL classResource = findClassResource(mainClass)
+            if(classResource) {
+                def file = new UrlResource(classResource).getFile()
+                def path = file.canonicalPath
+                if(path.contains(BuildSettings.BUILD_CLASSES_PATH)) {
+                    location = path.substring(0, path.indexOf(BuildSettings.BUILD_CLASSES_PATH) - 1)
+                }
+            }
+
+        } catch (ClassNotFoundException e) {
+            // ignore
+        } catch (IOException e) {
+            // ignore
+        }
+        return location;
     }
 }

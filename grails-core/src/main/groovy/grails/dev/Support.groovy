@@ -15,6 +15,7 @@
  */
 package grails.dev
 
+import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -40,7 +41,11 @@ class Support {
     /**
      * Enables the reloading agent at runtime if it isn't present
      */
-    static void enableAgentIfNotPresent() {
+    static void enableAgentIfNotPresent(Class mainClass = null) {
+        if(mainClass) {
+            System.setProperty(BuildSettings.MAIN_CLASS_NAME, mainClass.getName())
+        }
+
         def environment = Environment.current
         if(environment.isReloadEnabled() && !ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", System.classLoader)) {
             def grailsHome = System.getenv(Environment.ENV_GRAILS_HOME)

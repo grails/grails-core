@@ -23,6 +23,10 @@ import java.util.regex.Pattern
  * @author Graeme Rocher
  */
 class BuildSettings {
+    /**
+     * Name of the System property that specifies the main class name
+     */
+    public static final String MAIN_CLASS_NAME = "org.grails.MAIN_CLASS_NAME"
 
     static final String BUILD_SCOPE = "build"
     static final String COMPILE_SCOPE = "compile"
@@ -265,4 +269,8 @@ class BuildSettings {
     public static final File CLASSES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
     public static final String RUN_EXECUTED = "grails.run.executed"
 
+    /**
+     * The path to the build classes directory
+     */
+    public static final String BUILD_CLASSES_PATH = "build/classes/main"
 }
