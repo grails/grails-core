@@ -1,6 +1,7 @@
 package org.grails.web.mapping.mvc
 
 import grails.core.GrailsControllerClass
+import grails.util.Environment
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
 import org.grails.web.servlet.mvc.ActionResultTransformer
@@ -63,7 +64,10 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                     controller = controllerCache.get(fullName)
                     if(controller == null) {
                         controller = applicationContext ? applicationContext.getBean(fullName) : controllerClass.newInstance()
-                        controllerCache.put(fullName, controller)
+                        if( !Environment.isReloadingAgentEnabled() ) {
+                            // don't cache when reloading active
+                            controllerCache.put(fullName, controller)
+                        }
                     }
                 }
                 else {
