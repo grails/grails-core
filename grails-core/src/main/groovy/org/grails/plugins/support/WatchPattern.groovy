@@ -15,10 +15,13 @@
  */
 package org.grails.plugins.support
 
+import groovy.transform.CompileStatic
+
 /**
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class WatchPattern {
 
     /**
