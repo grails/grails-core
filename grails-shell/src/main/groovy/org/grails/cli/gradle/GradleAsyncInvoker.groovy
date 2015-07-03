@@ -30,7 +30,15 @@ import java.util.concurrent.Executors
 class GradleAsyncInvoker {
     GradleInvoker invoker
 
-    public static final ExecutorService POOL = Executors.newFixedThreadPool(1);
+    public static final ExecutorService POOL = Executors.newFixedThreadPool(4);
+
+    static {
+        Runtime.addShutdownHook {
+            if(!POOL.isTerminated()) {
+                POOL.shutdownNow()
+            }
+        }
+    }
 
     GradleAsyncInvoker(GradleInvoker invoker) {
         this.invoker = invoker
@@ -43,4 +51,6 @@ class GradleAsyncInvoker {
             invoker."$name"(*args)
         }
     }
+
+
 }

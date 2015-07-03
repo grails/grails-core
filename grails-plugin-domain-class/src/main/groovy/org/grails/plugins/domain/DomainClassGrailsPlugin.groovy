@@ -118,7 +118,7 @@ class DomainClassGrailsPlugin extends Plugin {
                 bean.autowire = "byName"
             }
             "${domainClass.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
-                targetObject = ref("grailsApplication", true)
+                targetObject = ref("grailsApplication")
                 targetMethod = "getArtefact"
                 bean.lazyInit = true
                 arguments = [DomainClassArtefactHandler.TYPE, domainClass.fullName]
@@ -131,11 +131,11 @@ class DomainClassGrailsPlugin extends Plugin {
             "${domainClass.fullName}Validator"(GrailsDomainClassValidator) { bean ->
                 messageSource = ref("messageSource")
                 bean.lazyInit = true
-                domainClass = ref("${domainClass.fullName}DomainClass")
-                application = ref("grailsApplication", true)
+                delegate.domainClass = ref("${domainClass.fullName}DomainClass")
+                delegate.grailsApplication = application
             }
         }
-        grailsApplication.refreshConstraints()
+        application.refreshConstraints()
     }
 
     void onConfigChange(Map<String, Object> event) {
