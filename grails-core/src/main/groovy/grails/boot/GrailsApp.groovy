@@ -1,6 +1,7 @@
 package grails.boot
 
 import grails.boot.config.tools.SettingsFile
+import grails.compiler.ast.ClassInjector
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
@@ -14,6 +15,8 @@ import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.grails.boot.internal.JavaCompiler
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
+import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
@@ -221,11 +224,21 @@ class GrailsApp extends SpringApplication {
             }
         }
         else {
-            // only one change, just to a simple recompile and propagate the change
-            def unit = new CompilationUnit(compilerConfig)
-            unit.addSource(changedFile)
-            unit.compile()
+            compileGroovyFile(compilerConfig, changedFile)
         }
+    }
+
+    protected void compileGroovyFile(CompilerConfiguration compilerConfig, File changedFile) {
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
+        for (ClassInjector classInjector in classInjectors) {
+            if (classInjector instanceof AbstractGrailsArtefactTransformer) {
+                ((AbstractGrailsArtefactTransformer) classInjector).clearCachedState()
+            }
+        }
+        // only one change, just to a simple recompile and propagate the change
+        def unit = new CompilationUnit(compilerConfig)
+        unit.addSource(changedFile)
+        unit.compile()
     }
 
     /**
