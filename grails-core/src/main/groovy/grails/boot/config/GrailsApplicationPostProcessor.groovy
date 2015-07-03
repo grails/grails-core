@@ -49,7 +49,7 @@ import org.springframework.util.ClassUtils
 @CompileStatic
 @Commons
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
-    static final boolean RELOADING_ENABLED = Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)
+    static final boolean RELOADING_ENABLED = Environment.isReloadingAgentEnabled()
 
     final GrailsApplication grailsApplication
     final GrailsApplicationLifeCycle lifeCycle

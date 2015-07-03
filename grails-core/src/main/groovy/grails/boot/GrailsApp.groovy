@@ -5,6 +5,7 @@ import grails.compiler.ast.ClassInjector
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
+import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -155,7 +156,7 @@ class GrailsApp extends SpringApplication {
             developmentModeActive = true
             Thread.start {
                 CompilerConfiguration compilerConfig = new CompilerConfiguration()
-                compilerConfig.setTargetDirectory(new File(location, "build/classes/main"))
+                compilerConfig.setTargetDirectory(new File(location, BuildSettings.BUILD_CLASSES_PATH))
 
                 while(developmentModeActive) {
                     // Workaround for some IDE / OS combos - 2 events (new + update) for the same file
@@ -213,7 +214,7 @@ class GrailsApp extends SpringApplication {
             appDir = new File(changedPath.substring(0, changedPath.indexOf('/grails-app')))
         }
         def baseFileLocation = appDir?.absolutePath ?: location
-        compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
+        compilerConfig.setTargetDirectory(new File(baseFileLocation, BuildSettings.BUILD_CLASSES_PATH))
         println "File $changedFile changed, recompiling..."
         if(changedFile.name.endsWith('.java')) {
             if(JavaCompiler.isAvailable()) {

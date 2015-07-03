@@ -47,7 +47,7 @@ class MainClassFinder {
             }
 
             if(rootDir) {
-                def rootClassesDir = new File(rootDir, "build/classes/main")
+                def rootClassesDir = new File(rootDir, BuildSettings.BUILD_CLASSES_PATH)
                 if(rootClassesDir.exists()) {
                     searchDirs << rootClassesDir
                 }

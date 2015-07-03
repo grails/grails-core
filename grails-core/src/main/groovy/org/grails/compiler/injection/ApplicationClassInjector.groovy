@@ -16,16 +16,20 @@
 package org.grails.compiler.injection
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GrailsArtefactClassInjector
+import grails.core.GrailsApplication
 import grails.dev.Support
 import grails.io.ResourceUtils
+import grails.util.BuildSettings
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.ListExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
+import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
@@ -75,8 +79,10 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
             if(!transformedInstances.contains(objectId)) {
                 transformedInstances << objectId
 
-                def enableAgentMethodCall = new MethodCallExpression(new ClassExpression(ClassHelper.make(Support)), "enableAgentIfNotPresent", GrailsASTUtils.ZERO_ARGUMENTS)
+                def arguments = new ArgumentListExpression(new ClassExpression(classNode))
+                def enableAgentMethodCall = new MethodCallExpression(new ClassExpression(ClassHelper.make(Support)), "enableAgentIfNotPresent", arguments)
                 def methodCallStatement = new ExpressionStatement(enableAgentMethodCall)
+
                 List<Statement> statements = [ methodCallStatement ]
                 classNode.addStaticInitializerStatements(statements, false)
 
