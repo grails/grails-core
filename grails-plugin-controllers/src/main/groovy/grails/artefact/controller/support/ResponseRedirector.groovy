@@ -138,6 +138,7 @@ trait ResponseRedirector implements WebAttributes {
     void chain(Map args) {
         String controller = (args.controller ?: GrailsNameUtils.getLogicalPropertyName( getClass().name, ControllerArtefactHandler.TYPE)).toString()
         String action = args.action?.toString()
+        String namespace = args.remove('namespace')
         String plugin = args.remove('plugin')?.toString()
         def id = args.id
         def params = CollectionUtils.getOrCreateChildMap(args, "params")
@@ -165,10 +166,10 @@ trait ResponseRedirector implements WebAttributes {
         // the reverse URL mapping.
         if (id) params.id = id
 
-        UrlCreator creator = mappings.getReverseMapping(controller, action, plugin, params)
+        UrlCreator creator = mappings.getReverseMapping(controller, action, namespace, plugin, params)
         def response = currentWebRequest.getCurrentResponse()
 
-        String url = creator.createURL(controller, action, plugin, params, 'utf-8')
+        String url = creator.createURL(controller, action, namespace, plugin, params, 'utf-8')
 
         if (requestDataValueProcessor) {
             HttpServletRequest request = currentWebRequest.getCurrentRequest()
