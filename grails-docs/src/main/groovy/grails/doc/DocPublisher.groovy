@@ -477,8 +477,12 @@ class DocPublisher {
             }
             else if(propertiesFile.name.endsWith('.yml')) {
                 propertiesFile.withInputStream { input ->
-                    def yml = new Yaml().load(input)
-                    flattenKeys(props, yml,[], true)
+                    def ymls = new Yaml().loadAll(input)
+                    for(yml in ymls) {
+                        if(yml instanceof Map) {
+                            flattenKeys(props, (Map) yml,[], true)
+                        }
+                    }
                 }
 
             }
