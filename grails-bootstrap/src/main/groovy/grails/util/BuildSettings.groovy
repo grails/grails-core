@@ -15,6 +15,8 @@
  */
 package grails.util
 
+import grails.io.IOUtils
+
 import java.util.regex.Pattern
 
 /**
@@ -248,7 +250,7 @@ class BuildSettings {
     /**
      * The base directory of the project
      */
-    public static final File BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) : new File('.')
+    public static final File BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) :  ( IOUtils.findApplicationDirectoryFile() ?: new File("."))
 
     /**
      * Whether the application is running inside the development environment or deployed

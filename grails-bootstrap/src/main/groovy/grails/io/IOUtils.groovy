@@ -30,6 +30,8 @@ import org.grails.io.support.UrlResource
 @CompileStatic
 class IOUtils extends SpringIOUtils {
 
+    private static String applicationDirectory
+
     /**
      * Gracefully opens a stream for a file, throwing exceptions where appropriate. Based off the commons-io method
      *
@@ -128,17 +130,47 @@ class IOUtils extends SpringIOUtils {
         return null
     }
 
+    public static File findApplicationDirectoryFile() {
+        def directory = findApplicationDirectory()
+        if(directory) {
+            def f = new File(directory)
+            if(f.exists()) {
+
+                return f
+            }
+        }
+        return null
+    }
+
     public static String findApplicationDirectory() {
+        if(applicationDirectory) {
+            return applicationDirectory
+        }
+
         String location = null
         try {
-            final String mainClassName = System.getProperty(BuildSettings.MAIN_CLASS_NAME)
-            final Class<?> mainClass = Thread.currentThread().contextClassLoader.loadClass(mainClassName)
-            final URL classResource = findClassResource(mainClass)
-            if(classResource) {
-                def file = new UrlResource(classResource).getFile()
-                def path = file.canonicalPath
-                if(path.contains(BuildSettings.BUILD_CLASSES_PATH)) {
-                    location = path.substring(0, path.indexOf(BuildSettings.BUILD_CLASSES_PATH) - 1)
+            String mainClassName = System.getProperty(BuildSettings.MAIN_CLASS_NAME)
+            if(!mainClassName) {
+                def stackTraceElements = Thread.currentThread().getStackTrace()
+                if(stackTraceElements) {
+                    def lastElement = stackTraceElements[-1]
+                    def className = lastElement.className
+                    def methodName = lastElement.methodName
+                    if(className.endsWith(".Application") && methodName == '<clinit>') {
+                        mainClassName = className
+                    }
+                }
+            }
+            if(mainClassName) {
+
+                final Class<?> mainClass = Thread.currentThread().contextClassLoader.loadClass(mainClassName)
+                final URL classResource = mainClass ? findClassResource(mainClass) : null
+                if(classResource) {
+                    def file = new UrlResource(classResource).getFile()
+                    def path = file.canonicalPath
+                    if(path.contains(BuildSettings.BUILD_CLASSES_PATH)) {
+                        location = path.substring(0, path.indexOf(BuildSettings.BUILD_CLASSES_PATH) - 1)
+                    }
                 }
             }
 
@@ -147,6 +179,7 @@ class IOUtils extends SpringIOUtils {
         } catch (IOException e) {
             // ignore
         }
+        applicationDirectory = location
         return location;
     }
 }
