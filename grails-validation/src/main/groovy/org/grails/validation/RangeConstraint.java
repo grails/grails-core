@@ -18,6 +18,7 @@ package org.grails.validation;
 import grails.util.GrailsClassUtils;
 import grails.validation.AbstractConstraint;
 import grails.validation.ConstrainedProperty;
+import groovy.lang.IntRange;
 import groovy.lang.Range;
 
 import org.springframework.validation.Errors;
@@ -79,12 +80,25 @@ public class RangeConstraint extends AbstractConstraint {
         Comparable from = range.getFrom();
         Comparable to = range.getTo();
 
-        if (from instanceof Number && propertyValue instanceof Number) {
+        boolean isNumber = propertyValue instanceof Number;
+        final boolean isFromNumber = from instanceof Number;
+        if(isFromNumber && !isNumber)  {
+            try {
+                propertyValue = Integer.parseInt(propertyValue.toString());
+                isNumber = true;
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+
+        if (isFromNumber && isNumber) {
             // Upgrade the numbers to Long, so all integer types can be compared.
             from = ((Number) from).longValue();
             to = ((Number) to).longValue();
             propertyValue = ((Number) propertyValue).longValue();
         }
+
+
 
         if (from.compareTo(propertyValue) > 0) {
             rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
