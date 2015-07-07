@@ -2,6 +2,8 @@ package org.grails.web.mapping.mvc
 
 import grails.core.GrailsControllerClass
 import grails.util.Environment
+import grails.web.mapping.LinkGenerator
+import grails.web.mapping.ResponseRedirector
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
 import org.grails.web.servlet.mvc.ActionResultTransformer
@@ -30,10 +32,12 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
 
     protected Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
     protected Map<String, Object> controllerCache = new ConcurrentHashMap<>()
+    protected ResponseRedirector redirector
 
     void setApplicationContext(ApplicationContext applicationContext) {
         this.actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
         this.applicationContext = applicationContext
+        this.redirector = new ResponseRedirector(applicationContext.getBean(LinkGenerator))
     }
 
     @Override
@@ -104,6 +108,15 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
             }
             else if(info.viewName) {
                 return new ModelAndView(info.viewName)
+            }
+            else if(info.redirectInfo) {
+                def i = info.redirectInfo
+                if(i instanceof Map) {
+                    redirector?.redirect((Map) i)
+                }
+                else {
+                    redirector?.redirect(uri: i.toString())
+                }
             }
         }
         return null
