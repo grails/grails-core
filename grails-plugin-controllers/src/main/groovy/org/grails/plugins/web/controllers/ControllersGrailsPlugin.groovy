@@ -81,7 +81,6 @@ class ControllersGrailsPlugin extends Plugin {
 
         bootStrapClassRunner(BootStrapClassRunner)
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
-        simpleControllerHandlerAdapter(UrlMappingsInfoHandlerAdapter)
 
         def catchAllMapping = ['/*']
 
