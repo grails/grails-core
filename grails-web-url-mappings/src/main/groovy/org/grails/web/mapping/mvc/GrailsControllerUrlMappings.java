@@ -16,6 +16,7 @@
 package org.grails.web.mapping.mvc;
 
 import grails.core.GrailsApplication;
+import grails.web.UrlConverter;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappings;
@@ -28,6 +29,9 @@ import org.springframework.http.HttpMethod;
  * @since 3.0
  */
 public class GrailsControllerUrlMappings extends AbstractGrailsControllerUrlMappings {
+    public GrailsControllerUrlMappings(GrailsApplication grailsApplication, UrlMappings urlMappingsHolderDelegate, UrlConverter urlConverter) {
+        super(grailsApplication, urlMappingsHolderDelegate, urlConverter);
+    }
     public GrailsControllerUrlMappings(GrailsApplication grailsApplication, UrlMappings urlMappingsHolderDelegate) {
         super(grailsApplication, urlMappingsHolderDelegate);
     }

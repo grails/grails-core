@@ -15,8 +15,12 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsApplication;
 import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
+import org.grails.web.util.WebUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.net.URI;
 import java.util.Collections;
@@ -41,6 +45,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Object forwardURI;
     protected Object redirectInfo;
     protected ServletContext servletContext;
+    protected GrailsApplication grailsApplication;
     @SuppressWarnings("rawtypes")
     protected Map parameterValues = Collections.EMPTY_MAP;
     protected boolean parseRequest;
@@ -54,29 +59,57 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      * @param controllerName The name of the controller
      * @param actionName The name of the action
      * @param constraints Any constraints that apply to the mapping
-     * @param servletContext
+     * @param grailsApplication The GrailsApplication instance
      */
-    public AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+    public AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.namespace = namespace;
         this.pluginName = pluginName;
         this.constraints = constraints;
         this.viewName = viewName;
-        this.servletContext = servletContext;
+        setGrailsApplication(grailsApplication);
         this.redirectInfo = redirectInfo;
     }
 
-    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this.viewName = viewName;
-        this.constraints = constraints;
-        this.servletContext = servletContext;
+    private void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+        if(grailsApplication != null) {
+
+            final ApplicationContext applicationContext = grailsApplication.getMainContext();
+            if(applicationContext instanceof WebApplicationContext) {
+                this.servletContext = ((WebApplicationContext)applicationContext).getServletContext();
+            }
+        }
     }
 
-    protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
+    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
+        this.viewName = viewName;
+        this.constraints = constraints;
+        this.grailsApplication = grailsApplication;
+        setGrailsApplication(grailsApplication);
+    }
+
+    protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
         this.forwardURI = uri;
         this.constraints = constraints;
-        this.servletContext = servletContext;
+        this.grailsApplication = grailsApplication;
+        setGrailsApplication(grailsApplication);
+    }
+
+    @Deprecated
+    public AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints, WebUtils.findApplication(servletContext));
+    }
+
+    @Deprecated
+    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(viewName, constraints, WebUtils.findApplication(servletContext));
+    }
+
+    @Deprecated
+    protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(uri, constraints, WebUtils.findApplication(servletContext));
     }
 
     @Override

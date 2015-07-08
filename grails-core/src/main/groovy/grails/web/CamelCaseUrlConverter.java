@@ -15,10 +15,8 @@
  */
 package grails.web;
 
+import grails.util.GrailsNameUtils;
 import org.springframework.util.StringUtils;
-
-import java.util.Locale;
-
 
 /**
  * URL converter that allows for camel case URLs
@@ -32,11 +30,6 @@ public class CamelCaseUrlConverter implements UrlConverter {
         if (!StringUtils.hasText(propertyOrClassName)) {
             return propertyOrClassName;
         }
-        if (propertyOrClassName.length() > 1 && Character.isUpperCase(propertyOrClassName.charAt(0)) &&
-                Character.isUpperCase(propertyOrClassName.charAt(1))) {
-            return propertyOrClassName;
-        }
-
-        return propertyOrClassName.substring(0,1).toLowerCase(Locale.ENGLISH) + propertyOrClassName.substring(1);
+        return GrailsNameUtils.getPropertyName(propertyOrClassName);
     }
 }

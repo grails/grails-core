@@ -90,8 +90,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private void methodStrategy(Map<String, FastMethod> methodNames) {
 
         Class superClass = getClazz();
-        FastClass fastClass = GrailsClassUtils.fastClass(superClass);
         while (superClass != Object.class && superClass != GroovyObject.class) {
+            FastClass fastClass = GrailsClassUtils.fastClass(superClass);
             for (Method method : superClass.getMethods()) {
                 if (Modifier.isPublic(method.getModifiers()) && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
@@ -101,7 +101,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
                 }
             }
             superClass = superClass.getSuperclass();
-            fastClass = GrailsClassUtils.fastClass(superClass);
         }
 
         if (!isActionMethod(defaultActionName) && methodNames.size() == 1 && !isReadableProperty("scaffold")) {

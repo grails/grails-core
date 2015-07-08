@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.validation.ConstrainedPropertyBuilder;
+import org.grails.web.util.WebUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -79,11 +80,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     public static final String ACTION_DELETE = "delete";
     public static final String ACTION_SAVE = "save";
     public static final List<String> DEFAULT_RESOURCES_INCLUDES = Arrays.asList(ACTION_INDEX, ACTION_CREATE, ACTION_SAVE,ACTION_SHOW,ACTION_EDIT, ACTION_UPDATE, ACTION_PATCH, ACTION_DELETE);
-    public static final List<String> DEFAULT_RESOURCE_INCLUDES = Arrays.asList(ACTION_CREATE,ACTION_SAVE,ACTION_SHOW, ACTION_EDIT, ACTION_UPDATE, ACTION_PATCH, ACTION_DELETE);
+    public static final List<String> DEFAULT_RESOURCE_INCLUDES = Arrays.asList(ACTION_CREATE, ACTION_SAVE, ACTION_SHOW, ACTION_EDIT, ACTION_UPDATE, ACTION_PATCH, ACTION_DELETE);
     private static final Log LOG = LogFactory.getLog(UrlMappingBuilder.class);
     private GroovyClassLoader classLoader = new GroovyClassLoader();
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
-    private ServletContext servletContext;
     private static final String EXCEPTION = "exception";
     private static final String PARSE_REQUEST = "parseRequest";
     private static final String RESOURCE = "resource";
@@ -91,6 +91,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
+    private GrailsApplication grailsApplication;
 
 
     /**
@@ -99,14 +100,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
      */
     @Deprecated
     public DefaultUrlMappingEvaluator(ServletContext servletContext) {
-        this.servletContext = servletContext;
+        this(WebApplicationContextUtils.getWebApplicationContext(servletContext));
     }
 
     public DefaultUrlMappingEvaluator(ApplicationContext applicationContext) {
-        if (applicationContext instanceof WebApplicationContext) {
-            this.servletContext = ((WebApplicationContext)applicationContext).getServletContext();
-        }
         this.applicationContext = applicationContext;
+        if(applicationContext != null) {
+            this.grailsApplication = applicationContext.getBean(GrailsApplication.class);
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -149,7 +150,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     }
 
     private List<UrlMapping> evaluateMappings(GroovyObject go, Closure<?> mappings, Binding binding) {
-        UrlMappingBuilder builder = new UrlMappingBuilder(binding, servletContext);
+        UrlMappingBuilder builder = new UrlMappingBuilder(binding);
         mappings.setDelegate(builder);
         mappings.call();
         builder.urlDefiningMode = false;
@@ -159,7 +160,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     @SuppressWarnings("rawtypes")
     public List<UrlMapping> evaluateMappings(Closure closure) {
-        UrlMappingBuilder builder = new UrlMappingBuilder(null, servletContext);
+        UrlMappingBuilder builder = new UrlMappingBuilder(null);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         if (closure.getParameterTypes().length == 0) {
@@ -227,15 +228,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
         private Map<String, Object> parameterValues = new HashMap<String, Object>();
         private Binding binding;
-        private ServletContext sc;
         private Object exception;
         private Object parseRequest;
         private Deque<ParentResource> parentResources = new ArrayDeque<ParentResource>();
         private Deque<MetaMappingInfo> mappingInfoDeque = new ArrayDeque<MetaMappingInfo>();
 
-        public UrlMappingBuilder(Binding binding, ServletContext servletContext) {
+        public UrlMappingBuilder(Binding binding) {
             this.binding = binding;
-            sc = servletContext;
         }
 
         public List<UrlMapping> getUrlMappings() {
@@ -243,15 +242,19 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         public ServletContext getServletContext() {
-            return sc;
+            final ApplicationContext ctx = getApplicationContext();
+            if(ctx instanceof WebApplicationContext) {
+                return ((WebApplicationContext)ctx).getServletContext();
+            }
+            return null;
         }
 
         public ApplicationContext getApplicationContext() {
-            return WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+            return applicationContext;
         }
 
         public GrailsApplication getGrailsApplication() {
-            return getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            return grailsApplication;
         }
 
         @Override
@@ -415,7 +418,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             UrlMapping urlMapping;
                             if (mappingInfo.getUri() != null) {
                                 try {
-                                    urlMapping = new RegexUrlMapping(urlData, new URI(mappingInfo.getUri().toString()), constraints, sc);
+                                    urlMapping = new RegexUrlMapping(urlData, new URI(mappingInfo.getUri().toString()), constraints, grailsApplication);
                                 } catch (URISyntaxException e) {
                                     throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
                                 }
@@ -639,21 +642,21 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             UrlMappingData deleteUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> deleteUrlMappingConstraints = createConstraintsWithIdAndFormat(constrainedList);
 
-            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, namespace, pluginName, null, HttpMethod.DELETE.toString(), version,deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, namespace, pluginName, null, HttpMethod.DELETE.toString(), version,deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createUpdateActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData updateUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> updateUrlMappingConstraints = createConstraintsWithIdAndFormat(constrainedList);
 
-            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE,  namespace, pluginName, null, HttpMethod.PUT.toString(),version,updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE,  namespace, pluginName, null, HttpMethod.PUT.toString(),version,updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createPatchActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData patchUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> patchUrlMappingConstraints = createConstraintsWithIdAndFormat(constrainedList);
 
-            return new RegexUrlMapping(patchUrlMappingData,controllerName, ACTION_PATCH,  namespace, pluginName, null, HttpMethod.PATCH.toString(),version,patchUrlMappingConstraints.toArray(new ConstrainedProperty[patchUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(patchUrlMappingData,controllerName, ACTION_PATCH,  namespace, pluginName, null, HttpMethod.PATCH.toString(),version,patchUrlMappingConstraints.toArray(new ConstrainedProperty[patchUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createEditActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
@@ -661,14 +664,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             List<ConstrainedProperty> editUrlMappingConstraints = new ArrayList<ConstrainedProperty>(constrainedList);
             editUrlMappingConstraints.add(new ConstrainedProperty(UrlMapping.class, "id", String.class));
 
-            return new RegexUrlMapping(editUrlMappingData,controllerName, ACTION_EDIT, namespace, pluginName, null, HttpMethod.GET.toString(), version,editUrlMappingConstraints.toArray(new ConstrainedProperty[editUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(editUrlMappingData,controllerName, ACTION_EDIT, namespace, pluginName, null, HttpMethod.GET.toString(), version,editUrlMappingConstraints.toArray(new ConstrainedProperty[editUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createShowActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData showUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> showUrlMappingConstraints = createConstraintsWithIdAndFormat(constrainedList);
 
-            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW, namespace, pluginName, null, HttpMethod.GET.toString(), version,showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW, namespace, pluginName, null, HttpMethod.GET.toString(), version,showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         private List<ConstrainedProperty> createConstraintsWithIdAndFormat(List<ConstrainedProperty> constrainedList) {
@@ -692,19 +695,19 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             UrlMappingData saveActionUrlMappingData = urlData.createRelative(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
             List<ConstrainedProperty> saveUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
-            return new RegexUrlMapping(saveActionUrlMappingData,controllerName, ACTION_SAVE, namespace, pluginName, null, HttpMethod.POST.toString(),version,saveUrlMappingConstraints.toArray(new ConstrainedProperty[saveUrlMappingConstraints.size()]), servletContext);
+            return new RegexUrlMapping(saveActionUrlMappingData,controllerName, ACTION_SAVE, namespace, pluginName, null, HttpMethod.POST.toString(),version,saveUrlMappingConstraints.toArray(new ConstrainedProperty[saveUrlMappingConstraints.size()]), grailsApplication);
         }
 
         protected UrlMapping createCreateActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {
             UrlMappingData createMappingData = urlData.createRelative("/create");
-            return new RegexUrlMapping(createMappingData,controllerName, ACTION_CREATE, namespace, pluginName, null, HttpMethod.GET.toString(), version,constraintArray, servletContext);
+            return new RegexUrlMapping(createMappingData,controllerName, ACTION_CREATE, namespace, pluginName, null, HttpMethod.GET.toString(), version,constraintArray, grailsApplication);
         }
 
         protected UrlMapping createIndexActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData indexActionUrlMappingData = urlData.createRelative(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
             List<ConstrainedProperty> indexUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
-            return new RegexUrlMapping(indexActionUrlMappingData, controllerName, ACTION_INDEX, namespace, pluginName, null, HttpMethod.GET.toString(), version,indexUrlMappingConstraints.toArray(new ConstrainedProperty[indexUrlMappingConstraints.size()]), servletContext);
+            return new RegexUrlMapping(indexActionUrlMappingData, controllerName, ACTION_INDEX, namespace, pluginName, null, HttpMethod.GET.toString(), version,indexUrlMappingConstraints.toArray(new ConstrainedProperty[indexUrlMappingConstraints.size()]), grailsApplication);
         }
 
         private List<ConstrainedProperty> createFormatOnlyConstraints(List<ConstrainedProperty> constrainedList) {
@@ -776,33 +779,33 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             UrlMappingData deleteUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> deleteUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
-            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, namespace, pluginName, null, HttpMethod.DELETE.toString(), version, deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, namespace, pluginName, null, HttpMethod.DELETE.toString(), version, deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createUpdateActionResourceRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData updateUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> updateUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
-            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, namespace, pluginName, null, HttpMethod.PUT.toString(),version, updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, namespace, pluginName, null, HttpMethod.PUT.toString(),version, updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createPatchActionResourceRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData patchUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> patchUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
-            return new RegexUrlMapping(patchUrlMappingData,controllerName, ACTION_PATCH, namespace, pluginName, null, HttpMethod.PATCH.toString(),version, patchUrlMappingConstraints.toArray(new ConstrainedProperty[patchUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(patchUrlMappingData,controllerName, ACTION_PATCH, namespace, pluginName, null, HttpMethod.PATCH.toString(),version, patchUrlMappingConstraints.toArray(new ConstrainedProperty[patchUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         protected UrlMapping createEditActionResourceRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {
             UrlMappingData editMappingData = urlData.createRelative("/edit");
-            return new RegexUrlMapping(editMappingData,controllerName,ACTION_EDIT, namespace, pluginName, null, HttpMethod.GET.toString(),version, constraintArray, servletContext);
+            return new RegexUrlMapping(editMappingData,controllerName,ACTION_EDIT, namespace, pluginName, null, HttpMethod.GET.toString(),version, constraintArray, grailsApplication);
         }
 
         protected UrlMapping createShowActionResourceRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constrainedList) {
             UrlMappingData showUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> showUrlMappingConstraints = createFormatOnlyConstraints(constrainedList);
 
-            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW, namespace, pluginName, null, HttpMethod.GET.toString(), version, showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW, namespace, pluginName, null, HttpMethod.GET.toString(), version, showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , grailsApplication);
         }
 
         @SuppressWarnings("unchecked")
@@ -878,7 +881,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             UrlMapping urlMapping;
             if (uri != null) {
                 try {
-                    urlMapping = new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, sc);
+                    urlMapping = new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, grailsApplication);
                 }
                 catch (URISyntaxException e) {
                     throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
@@ -971,11 +974,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                             Object controllerName, Object actionName, Object namespace, Object pluginName,
                                             Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints) {
             if (!isResponseCode) {
-                return new RegexUrlMapping(redirectInfo, urlData, controllerName, actionName, namespace, pluginName, viewName, httpMethod,  version, constraints, sc);
+                return new RegexUrlMapping(redirectInfo, urlData, controllerName, actionName, namespace, pluginName, viewName, httpMethod,  version, constraints, grailsApplication);
             }
 
             return new ResponseCodeUrlMapping(urlData, controllerName, actionName, namespace, pluginName, viewName,
-                    null, sc);
+                    null, grailsApplication);
         }
         
         protected MetaMappingInfo pushNewMetaMappingInfo() {
