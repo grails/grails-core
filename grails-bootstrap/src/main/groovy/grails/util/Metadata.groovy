@@ -104,22 +104,24 @@ public class Metadata extends CodeGenConfig  {
     private void loadFromDefault() {
         InputStream input = null;
         try {
-            input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
+            def classLoader = Thread.currentThread().getContextClassLoader()
+            input = classLoader.getResourceAsStream(FILE);
             if (input == null) {
-                input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
+                input = classLoader.getResourceAsStream(FILE);
             }
             if (input != null) {
                 loadYml(input);
             }
 
-            input = Metadata.class.getClassLoader().getResourceAsStream(BUILD_INFO_FILE);
+            input = classLoader.getResourceAsStream(BUILD_INFO_FILE);
             if(input != null) {
-                try {
-                    def props = new Properties()
-                    props.load(input)
-                    mergeMap(props, true)
-                } catch (Throwable e) {
-                    // ignore
+                loadAndMerge(input)
+            }
+            else {
+                // try WAR packaging resolve
+                input = classLoader.getResourceAsStream("../../" + BUILD_INFO_FILE)
+                if(input != null) {
+                    loadAndMerge(input)
                 }
             }
             afterLoading();
@@ -129,6 +131,16 @@ public class Metadata extends CodeGenConfig  {
         }
         finally {
             closeQuietly(input);
+        }
+    }
+
+    private void loadAndMerge(InputStream input) {
+        try {
+            def props = new Properties()
+            props.load(input)
+            mergeMap(props, true)
+        } catch (Throwable e) {
+            // ignore
         }
     }
 

@@ -15,8 +15,11 @@
  */
 package grails.io
 
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+import org.grails.io.support.Resource
 import org.grails.io.support.SpringIOUtils
+import org.grails.io.support.UrlResource
 
 /**
  * Utility methods for performing I/O operations.
@@ -26,6 +29,8 @@ import org.grails.io.support.SpringIOUtils
  */
 @CompileStatic
 class IOUtils extends SpringIOUtils {
+
+    private static String applicationDirectory
 
     /**
      * Gracefully opens a stream for a file, throwing exceptions where appropriate. Based off the commons-io method
@@ -117,11 +122,64 @@ class IOUtils extends SpringIOUtils {
         def classRes = targetClass.getResource(pathToClassFile)
         if(classRes) {
             def rootPath = classRes.toString() - pathToClassFile
-            if(rootPath.endsWith("/build/classes/main")) {
+            if(rootPath.endsWith(BuildSettings.BUILD_CLASSES_PATH)) {
                 rootPath = rootPath.replace('/build/classes/', '/build/resources/')
             }
             return new URL("$rootPath$path")
         }
         return null
+    }
+
+    public static File findApplicationDirectoryFile() {
+        def directory = findApplicationDirectory()
+        if(directory) {
+            def f = new File(directory)
+            if(f.exists()) {
+
+                return f
+            }
+        }
+        return null
+    }
+
+    public static String findApplicationDirectory() {
+        if(applicationDirectory) {
+            return applicationDirectory
+        }
+
+        String location = null
+        try {
+            String mainClassName = System.getProperty(BuildSettings.MAIN_CLASS_NAME)
+            if(!mainClassName) {
+                def stackTraceElements = Thread.currentThread().getStackTrace()
+                if(stackTraceElements) {
+                    def lastElement = stackTraceElements[-1]
+                    def className = lastElement.className
+                    def methodName = lastElement.methodName
+                    if(className.endsWith(".Application") && methodName == '<clinit>') {
+                        mainClassName = className
+                    }
+                }
+            }
+            if(mainClassName) {
+
+                final Class<?> mainClass = Thread.currentThread().contextClassLoader.loadClass(mainClassName)
+                final URL classResource = mainClass ? findClassResource(mainClass) : null
+                if(classResource) {
+                    def file = new UrlResource(classResource).getFile()
+                    def path = file.canonicalPath
+                    if(path.contains(BuildSettings.BUILD_CLASSES_PATH)) {
+                        location = path.substring(0, path.indexOf(BuildSettings.BUILD_CLASSES_PATH) - 1)
+                    }
+                }
+            }
+
+        } catch (ClassNotFoundException e) {
+            // ignore
+        } catch (IOException e) {
+            // ignore
+        }
+        applicationDirectory = location
+        return location;
     }
 }

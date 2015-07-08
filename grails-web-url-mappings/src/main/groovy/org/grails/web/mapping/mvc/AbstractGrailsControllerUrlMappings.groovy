@@ -16,6 +16,7 @@
 package org.grails.web.mapping.mvc
 
 import grails.util.GrailsNameUtils
+import grails.web.UrlConverter
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.ControllerArtefactHandler
@@ -42,11 +43,12 @@ import java.util.concurrent.ConcurrentHashMap
 abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
     UrlMappings urlMappingsHolderDelegate
+    UrlConverter urlConverter
     Map<ControllerKey, GrailsControllerClass> mappingsToGrailsControllerMap = new ConcurrentHashMap<>()
 
-    AbstractGrailsControllerUrlMappings(GrailsApplication grailsApplication, UrlMappings urlMappingsHolderDelegate) {
+    AbstractGrailsControllerUrlMappings(GrailsApplication grailsApplication, UrlMappings urlMappingsHolderDelegate, UrlConverter urlConverter = null) {
         this.urlMappingsHolderDelegate = urlMappingsHolderDelegate
-
+        this.urlConverter = urlConverter
         def controllerArtefacts = grailsApplication.getArtefacts(ControllerArtefactHandler.TYPE)
         for(GrailsClass gc in controllerArtefacts) {
             registerController((GrailsControllerClass)gc)
@@ -124,9 +126,9 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
 
     void registerController(GrailsControllerClass controller) {
-        def namespace = controller.namespace
-        def plugin = controller.pluginName
-        def controllerName = controller.logicalPropertyName
+        def namespace = urlConverter ? urlConverter.toUrlElement( controller.namespace ) : controller.namespace
+        def plugin = urlConverter ? urlConverter.toUrlElement( controller.pluginName ) : controller.pluginName
+        def controllerName = urlConverter ? urlConverter.toUrlElement( controller.logicalPropertyName ) : controller.logicalPropertyName
 
         mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, plugin), controller)
         mappingsToGrailsControllerMap.put(new ControllerKey(null, controllerName, null, plugin), controller)
@@ -142,6 +144,7 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         }
 
         for(action in controller.actions) {
+            action = urlConverter ? urlConverter.toUrlElement(action) : action
             def withPluginKey = new ControllerKey(namespace, controllerName, action, pluginNameToRegister)
             def withPluginKeyWithoutNamespaceKey = new ControllerKey(null, controllerName, action, pluginNameToRegister)
             def withoutPluginKey = new ControllerKey(namespace, controllerName, action, null)
@@ -159,6 +162,9 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
     protected UrlMappingInfo[] collectControllerMappings(UrlMappingInfo[] infos) {
         def webRequest = GrailsWebRequest.lookup()
         infos.collect() { UrlMappingInfo info ->
+            if(info.redirectInfo) {
+                return info
+            }
             webRequest.resetParams()
             info.configure(webRequest)
             def controllerKey = new ControllerKey(info.namespace, info.controllerName, info.actionName, info.pluginName)

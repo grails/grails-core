@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsApplication;
 import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingInfo;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.grails.web.util.WebUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -40,12 +42,17 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
     private Map parameterValues = Collections.EMPTY_MAP;
     private Class<?> exceptionType;
 
-    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(null, controllerName, actionName, namespace, pluginName, viewName, constraints, servletContext);
+    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
+        super(null, controllerName, actionName, namespace, pluginName, viewName, constraints, grailsApplication);
         this.urlData = (ResponseCodeMappingData) urlData;
 
         Assert.isTrue(constraints == null || constraints.length == 0,
                 "Constraints can't be used for response code url mapping");
+    }
+
+    @Deprecated
+    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(null, controllerName, actionName, namespace, pluginName, viewName, constraints, WebUtils.findApplication(servletContext));
     }
 
     public UrlMappingInfo match(String uri) {
@@ -136,7 +143,7 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
     public UrlMappingInfo match(int responseCode) {
         if (responseCode == urlData.getResponseCode()) {
             return new DefaultUrlMappingInfo(null, controllerName, actionName, namespace, pluginName, viewName,
-                    parameterValues, urlData, servletContext);
+                    parameterValues, urlData, grailsApplication);
         }
         return null;
     }

@@ -1,9 +1,11 @@
 package grails.boot
 
 import grails.boot.config.tools.SettingsFile
+import grails.compiler.ast.ClassInjector
 import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
+import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -13,6 +15,9 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.grails.boot.internal.JavaCompiler
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
+import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
@@ -38,6 +43,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class GrailsApp extends SpringApplication {
 
     private final Log log = LogFactory.getLog(getClass())
+
+    private static boolean developmentModeActive = false
+    private static DirectoryWatcher directoryWatcher
 
     @Override
     ConfigurableApplicationContext run(String... args) {
@@ -81,7 +89,7 @@ class GrailsApp extends SpringApplication {
         def location = environment.getReloadLocation()
 
         if(location) {
-            DirectoryWatcher directoryWatcher = new DirectoryWatcher()
+            directoryWatcher = new DirectoryWatcher()
             configureDirectoryWatcher(directoryWatcher, location)
             Queue<File> changedFiles = new ConcurrentLinkedQueue<>()
             Queue<File> newFiles = new ConcurrentLinkedQueue<>()
@@ -145,18 +153,20 @@ class GrailsApp extends SpringApplication {
             }
 
 
+            developmentModeActive = true
             Thread.start {
                 CompilerConfiguration compilerConfig = new CompilerConfiguration()
-                compilerConfig.setTargetDirectory(new File(location, "build/classes/main"))
+                compilerConfig.setTargetDirectory(new File(location, BuildSettings.BUILD_CLASSES_PATH))
 
-                while(true) {
+                while(developmentModeActive) {
                     // Workaround for some IDE / OS combos - 2 events (new + update) for the same file
                     def uniqueChangedFiles = changedFiles as Set
-                    changedFiles.clear()
+
 
                     def i = uniqueChangedFiles.size()
                     try {
                         if(i > 1) {
+                            changedFiles.clear()
                             for(f in uniqueChangedFiles) {
                                 recompile(f, compilerConfig, location)
                                 if(newFiles.contains(f)) {
@@ -167,6 +177,7 @@ class GrailsApp extends SpringApplication {
                             }
                         }
                         else if(i == 1) {
+                            changedFiles.clear()
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
                             recompile(changedFile, compilerConfig, location)
@@ -191,6 +202,11 @@ class GrailsApp extends SpringApplication {
 
     }
 
+    static void setDevelopmentModeActive(boolean active) {
+        developmentModeActive = active
+        directoryWatcher.active = active
+    }
+
     protected void recompile(File changedFile, CompilerConfiguration compilerConfig, String location) {
         File appDir = null
         def changedPath = changedFile.path
@@ -198,8 +214,28 @@ class GrailsApp extends SpringApplication {
             appDir = new File(changedPath.substring(0, changedPath.indexOf('/grails-app')))
         }
         def baseFileLocation = appDir?.absolutePath ?: location
-        compilerConfig.setTargetDirectory(new File(baseFileLocation, "build/classes/main"))
+        compilerConfig.setTargetDirectory(new File(baseFileLocation, BuildSettings.BUILD_CLASSES_PATH))
         println "File $changedFile changed, recompiling..."
+        if(changedFile.name.endsWith('.java')) {
+            if(JavaCompiler.isAvailable()) {
+                JavaCompiler.recompile(compilerConfig, changedFile)
+            }
+            else {
+                log.error("Cannot recompile [$changedFile.name], the current JVM is not a JDK (recompilation will not work on a JRE missing the compiler APIs).")
+            }
+        }
+        else {
+            compileGroovyFile(compilerConfig, changedFile)
+        }
+    }
+
+    protected void compileGroovyFile(CompilerConfiguration compilerConfig, File changedFile) {
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors()
+        for (ClassInjector classInjector in classInjectors) {
+            if (classInjector instanceof AbstractGrailsArtefactTransformer) {
+                ((AbstractGrailsArtefactTransformer) classInjector).clearCachedState()
+            }
+        }
         // only one change, just to a simple recompile and propagate the change
         def unit = new CompilationUnit(compilerConfig)
         unit.addSource(changedFile)

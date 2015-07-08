@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.util.GrailsStringUtils;
 import grails.validation.ConstrainedProperty;
@@ -47,6 +48,7 @@ import org.apache.commons.logging.LogFactory;
 import grails.plugins.VersionComparator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.grails.web.util.WebUtils;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -85,14 +87,14 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param data The pattern
      * @param uri The URI
      * @param constraints Any constraints etc.
-     * @param servletContext The servlet context
+     * @param grailsApplication The GrailsApplication instance
      */
-    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(uri, constraints, servletContext);
+    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
+        super(uri, constraints, grailsApplication);
         parse(data, constraints);
     }
-    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(null, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, servletContext);
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
+        this(null, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, grailsApplication);
     }
 
     /**
@@ -107,11 +109,11 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param httpMethod     The http method
      * @param version     The version
      * @param constraints    A list of ConstrainedProperty instances that relate to tokens in the URL
-     * @param servletContext
+     * @param grailsApplication The Grails application
      * @see grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
+    public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
+        super(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], grailsApplication);
         if (httpMethod != null) {
             this.httpMethod = httpMethod;
         }
@@ -119,6 +121,30 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             this.version = version;
         }
         parse(data, constraints);
+    }
+
+    /**
+     * @deprecated Use {@link #RegexUrlMapping(grails.web.mapping.UrlMappingData, java.net.URI, grails.validation.ConstrainedProperty[], grails.core.GrailsApplication)} instead
+     */
+    @Deprecated
+    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(data, uri, constraints, WebUtils.findApplication(servletContext));
+    }
+
+    /**
+     * @deprecated Use {@link #RegexUrlMapping(grails.web.mapping.UrlMappingData, Object, Object, Object, Object, Object, String, String, grails.validation.ConstrainedProperty[], grails.core.GrailsApplication)}  instead
+     */
+    @Deprecated
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, WebUtils.findApplication(servletContext));
+    }
+
+    /**
+     * @deprecated Use {@link #RegexUrlMapping(Object, grails.web.mapping.UrlMappingData, Object, Object, Object, Object, Object, String, String, grails.validation.ConstrainedProperty[], grails.core.GrailsApplication)} instead
+     */
+    @Deprecated
+    public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(redirectInfo, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, WebUtils.findApplication(servletContext));
     }
 
     private void parse(UrlMappingData data, ConstrainedProperty[] constraints) {
@@ -527,6 +553,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         boolean addedParams = false;
         usedParams.add("controller");
         usedParams.add("action");
+        usedParams.add("namespace");
 
         // A 'null' encoding will cause an exception, so default to 'UTF-8'.
         if (encoding == null) {
@@ -654,13 +681,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
         DefaultUrlMappingInfo info;
         if (forwardURI != null && controllerName == null) {
-            info = new DefaultUrlMappingInfo(forwardURI,getHttpMethod(), urlData, servletContext);
+            info = new DefaultUrlMappingInfo(forwardURI,getHttpMethod(), urlData, grailsApplication);
         }
         else if (viewName != null && controllerName == null) {
-            info = new DefaultUrlMappingInfo(viewName, params, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(viewName, params, urlData, grailsApplication);
         }
         else {
-            info = new DefaultUrlMappingInfo(redirectInfo, controllerName, actionName, namespace, pluginName, getViewName(), getHttpMethod(),getVersion(), params, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(redirectInfo, controllerName, actionName, namespace, pluginName, getViewName(), getHttpMethod(),getVersion(), params, urlData, grailsApplication);
         }
 
         if (parseRequest) {

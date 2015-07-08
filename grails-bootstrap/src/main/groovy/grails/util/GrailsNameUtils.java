@@ -417,6 +417,45 @@ public class GrailsNameUtils {
         return getPropertyNameConvention(object, suffix);
     }
 
+
+    /**
+     * Test whether the give package name is a valid Java package
+     *
+     * @param packageName The name of the package
+     * @return True if it is valid
+     */
+    public static boolean isValidJavaPackage(String packageName) {
+        if(isBlank(packageName)) return false;
+        final String[] parts = packageName.split("\\.");
+        for (String part : parts) {
+            if(!isValidJavaIdentifier(part)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * Test whether the given name is a valid Java identifier
+     *
+     * @param name The name
+     * @return True if it is
+     */
+    public static boolean isValidJavaIdentifier(String name) {
+        if(isBlank(name)) return false;
+
+        final char[] chars = name.toCharArray();
+        if(!Character.isJavaIdentifierStart(chars[0])) {
+            return false;
+        }
+
+        for (char c : chars) {
+            if(!Character.isJavaIdentifierPart(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     /**
      * Returns an appropriate property name for the given object. If the object is a collection will append List, Set, Collection or Map to the property name
      * @param object The object

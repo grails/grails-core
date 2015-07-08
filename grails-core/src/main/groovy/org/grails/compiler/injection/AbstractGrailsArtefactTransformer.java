@@ -94,6 +94,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return name;
     }
 
+    public void clearCachedState() {
+        classesTransformedByThis.clear();
+    }
+
     /**
      * Used for ordering not equality.
      *

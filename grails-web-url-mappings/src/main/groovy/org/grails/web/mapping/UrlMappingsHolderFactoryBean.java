@@ -24,6 +24,7 @@ import grails.core.events.ArtefactAdditionEvent;
 import grails.core.support.GrailsApplicationAware;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
+import grails.web.UrlConverter;
 import grails.web.mapping.UrlMappings;
 import groovy.lang.Script;
 import org.grails.core.artefact.UrlMappingsArtefactHandler;
@@ -31,6 +32,7 @@ import org.grails.web.mapping.mvc.GrailsControllerUrlMappings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
@@ -113,13 +115,14 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         }
         // call initialize() after settings are in place
         defaultUrlMappingsHolder.initialize();
-        final GrailsControllerUrlMappings grailsControllerUrlMappings = new GrailsControllerUrlMappings(grailsApplication, defaultUrlMappingsHolder);
-        ((ConfigurableApplicationContext)applicationContext).addApplicationListener( new ApplicationListener<ArtefactAdditionEvent>() {
+        UrlConverter urlConverter = applicationContext.containsBean(UrlConverter.BEAN_NAME) ? applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class) : null;
+        final GrailsControllerUrlMappings grailsControllerUrlMappings = new GrailsControllerUrlMappings(grailsApplication, defaultUrlMappingsHolder, urlConverter);
+        ((ConfigurableApplicationContext)applicationContext).addApplicationListener(new ApplicationListener<ArtefactAdditionEvent>() {
             @Override
             public void onApplicationEvent(ArtefactAdditionEvent event) {
                 GrailsClass artefact = event.getArtefact();
-                if(artefact instanceof GrailsControllerClass) {
-                    grailsControllerUrlMappings.registerController((GrailsControllerClass)artefact);
+                if (artefact instanceof GrailsControllerClass) {
+                    grailsControllerUrlMappings.registerController((GrailsControllerClass) artefact);
                 }
             }
         });

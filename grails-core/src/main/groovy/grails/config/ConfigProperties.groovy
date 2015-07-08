@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.config
 
-package org.grails.gradle.plugin.model
+import grails.core.support.GrailsConfigurationAware
+import groovy.transform.CompileStatic
 
-class DefaultGrailsClasspath implements GrailsClasspath {
-    private static final long serialVersionUID = 1L
-    List<URL> dependencies
-    String error
+
+/**
+ * Cached access to Config.toProperties to avoid repeated calls
+ *
+ * @author Graeme Rocher
+ * @since 3.0
+ */
+@CompileStatic
+class ConfigProperties implements GrailsConfigurationAware {
+
+    private Properties properties = new Properties()
+
+    Properties resolveProperties() {
+        properties
+    }
+
+    @Override
+    void setConfiguration(Config co) {
+        properties = co.toProperties()
+    }
 }

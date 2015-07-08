@@ -32,7 +32,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "4.0.3.RELEASE"
+    datastoreVersion = "4.0.4.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.3"
@@ -41,13 +41,13 @@ ext {
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
     slf4jVersion = "1.7.10"
-    reactorVersion = '2.0.0.RELEASE'
+    reactorVersion = '2.0.3.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
     springLoadedVersion = "1.2.3.RELEASE"
-    springBootVersion = "1.2.4.RELEASE"
+    springBootVersion = "1.2.5.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.1.6.RELEASE"
+    springVersion = "4.1.7.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4"

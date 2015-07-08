@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping;
 
+import grails.boot.GrailsApp;
 import grails.util.GrailsNameUtils;
 import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
@@ -47,6 +48,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
+    private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.web.disable.multipart";
     private static final String CONTROLLER_PREFIX = "controller:";
     private static final String ACTION_PREFIX = "action:";
     private static final String PLUGIN_PREFIX = "plugin:";
@@ -55,6 +57,8 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private static final String VIEW_PREFIX = "view:";
     private static final String METHOD_PREFIX = "method:";
     private static final String VERSION_PREFIX = "version:";
+
+    private final GrailsApplication grailsApplication;
     private Object controllerName;
     private Object actionName;
     private Object pluginName;
@@ -64,8 +68,6 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private static final String ID_PARAM = "id";
     private UrlMappingData urlData;
     private Object viewName;
-    private ServletContext servletContext;
-    private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.web.disable.multipart";
     private boolean parsingRequest;
     private Object uri;
     private UrlConverter urlConverter;
@@ -73,15 +75,14 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private String version;
 
     @SuppressWarnings("rawtypes")
-    private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
+    private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, GrailsApplication grailsApplication) {
         setParams(params);
         id = getParams().get(ID_PARAM);
         this.urlData = urlData;
-        this.servletContext = servletContext;
+        this.grailsApplication = grailsApplication;
         ApplicationContext applicationContext = null;
-        if(servletContext != null) {
-
-            applicationContext = WebUtils.findApplicationContext(servletContext);
+        if(grailsApplication != null) {
+            applicationContext = grailsApplication.getMainContext();
         }
         if(applicationContext != null && applicationContext.containsBean(UrlConverter.BEAN_NAME)) {
             urlConverter = applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
@@ -93,13 +94,13 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     @SuppressWarnings("rawtypes")
     public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
-            UrlMappingData urlData, ServletContext servletContext) {
-        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, null, UrlMapping.ANY_VERSION, params, urlData, servletContext);
+            UrlMappingData urlData, GrailsApplication grailsApplication) {
+        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, null, UrlMapping.ANY_VERSION, params, urlData, grailsApplication);
     }
 
     public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName,
-                                 String httpMethod, String version, Map<?, ?> params, UrlMappingData urlData, ServletContext servletContext) {
-        this(params, urlData, servletContext);
+                                 String httpMethod, String version, Map<?, ?> params, UrlMappingData urlData, GrailsApplication grailsApplication) {
+        this(params, urlData, grailsApplication);
         Assert.isTrue(redirectInfo != null || controllerName != null || viewName != null, "URL mapping must either provide redirect information, a controller or a view name to map to!");
         Assert.notNull(params, "Argument [params] cannot be null");
         this.controllerName = controllerName;
@@ -119,25 +120,68 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         return this.version;
     }
 
-    @SuppressWarnings("rawtypes")
-    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
-        this(params, urlData, servletContext);
+    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, GrailsApplication grailsApplication) {
+        this(params, urlData, grailsApplication);
         this.viewName = viewName;
         Assert.notNull(viewName, "Argument [viewName] cannot be null or blank");
+
     }
 
-    public DefaultUrlMappingInfo(Object uri, UrlMappingData data, ServletContext servletContext) {
-        this(Collections.EMPTY_MAP, data, servletContext);
+    public DefaultUrlMappingInfo(Object uri, UrlMappingData data, GrailsApplication grailsApplication) {
+        this(Collections.EMPTY_MAP, data, grailsApplication);
         this.uri = uri;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
-    public DefaultUrlMappingInfo(Object uri,String httpMethod, UrlMappingData data, ServletContext servletContext) {
-        this(Collections.EMPTY_MAP, data, servletContext);
+
+    public DefaultUrlMappingInfo(Object uri,String httpMethod, UrlMappingData data, GrailsApplication grailsApplication) {
+        this(Collections.EMPTY_MAP, data, grailsApplication);
         this.uri = uri;
         this.httpMethod = httpMethod;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
 
+    /**
+     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, java.util.Map, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)} instead
+     */
+    @SuppressWarnings("rawtypes")
+    @Deprecated
+    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
+        this(viewName, params, urlData, WebUtils.findApplication(servletContext));
+    }
+
+    /**
+     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, String, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)}  instead
+     */
+    @Deprecated
+    public DefaultUrlMappingInfo(Object uri,String httpMethod, UrlMappingData data, ServletContext servletContext) {
+        this(uri, httpMethod, data, WebUtils.findApplication(servletContext));
+    }
+
+    /**
+     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)} instead
+     */
+    @Deprecated
+    public DefaultUrlMappingInfo(Object uri, UrlMappingData data, ServletContext servletContext) {
+        this(uri, data, WebUtils.findApplication(servletContext));
+    }
+
+    /**
+     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, Object, Object, Object, Object, Object, java.util.Map, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)}  instead
+     */
+    @Deprecated
+    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
+                                 UrlMappingData urlData, ServletContext servletContext) {
+        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, null, UrlMapping.ANY_VERSION, params, urlData, WebUtils.findApplication(servletContext));
+    }
+
+    /**
+     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, Object, Object, Object, Object, Object, String, String, java.util.Map, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)}  instead
+     */
+    @Deprecated
+    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName,
+                                 String httpMethod, String version, Map<?, ?> params, UrlMappingData urlData, ServletContext servletContext) {
+        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName,httpMethod,version, params, urlData, WebUtils.findApplication(servletContext));
+    }
 
     @Override
     public String getHttpMethod() {
@@ -219,9 +263,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     private Enumeration<String> tryMultipartParams(HttpServletRequest request, Enumeration<String> originalParams) {
         Enumeration<String> paramNames = originalParams;
-        boolean disabled = getMultipartDisabled();
+        boolean disabled = isMultipartDisabled();
         if (!disabled) {
-            MultipartResolver resolver = getResolver();
+            MultipartResolver resolver = getMultipartResolver();
             if (resolver != null && resolver.isMultipart(request)) {
                 MultipartHttpServletRequest resolvedMultipartRequest = getResolvedRequest(request, resolver);
                 paramNames = resolvedMultipartRequest.getParameterNames();
@@ -239,26 +283,19 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         return resolvedMultipartRequest;
     }
 
-    private boolean getMultipartDisabled() {
-        boolean disabled = false;
-        GrailsApplication app = WebUtils.findApplication(servletContext);
-        if(app != null) {
-            Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
-            if (disableMultipart instanceof Boolean) {
-                disabled = (Boolean)disableMultipart;
-            }
-            else if (disableMultipart instanceof String) {
-                disabled = Boolean.valueOf((String)disableMultipart);
-            }
+    private boolean isMultipartDisabled() {
+        if(grailsApplication != null) {
+            return grailsApplication.getConfig().getProperty(SETTING_GRAILS_WEB_DISABLE_MULTIPART, Boolean.class, false);
         }
-
-        return disabled;
+        return false;
     }
 
-    private MultipartResolver getResolver() {
-        ApplicationContext ctx = WebUtils.findApplicationContext(servletContext);
-        if(ctx != null) {
-            return (MultipartResolver)ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
+    private MultipartResolver getMultipartResolver() {
+        if(grailsApplication != null) {
+            ApplicationContext ctx = grailsApplication.getMainContext();
+            if(ctx != null) {
+                return (MultipartResolver)ctx.getBean(DispatcherServlet.MULTIPART_RESOLVER_BEAN_NAME);
+            }
         }
         return null;
     }

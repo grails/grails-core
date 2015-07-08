@@ -1,6 +1,9 @@
 package org.grails.dev.support;
 
+import grails.compiler.ast.ClassInjector;
 import grails.plugins.GrailsPluginManager;
+import org.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.grails.compiler.injection.GrailsAwareInjectionOperation;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.util.Assert;
@@ -10,6 +13,7 @@ import org.springsource.loaded.ReloadEventProcessorPlugin;
 import org.springsource.loaded.agent.*;
 
 import java.beans.Introspector;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,13 +41,20 @@ public class GrailsSpringLoadedPlugin implements ReloadEventProcessorPlugin {
         org.grails.beans.support.CachedIntrospectionResults.clearClassLoader(clazz.getClassLoader());
         ClassPropertyFetcher.clearClassPropertyFetcherCache();
         Introspector.flushFromCaches(clazz);
+        ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
+        for (ClassInjector classInjector : classInjectors) {
+            if(classInjector instanceof AbstractGrailsArtefactTransformer) {
+                ((AbstractGrailsArtefactTransformer)classInjector).clearCachedState();
+            }
+        }
+
 
         pluginManager.informOfClassChange(clazz);
     }
 
     private static boolean unregistered = false;
     public static void unregister() {
-        List<Plugin> globalPlugins = SpringLoadedPreProcessor.getGlobalPlugins();
+        List<Plugin> globalPlugins = new ArrayList<Plugin>(SpringLoadedPreProcessor.getGlobalPlugins());
         for (Plugin globalPlugin : globalPlugins) {
             Plugins.unregisterGlobalPlugin(globalPlugin);
         }

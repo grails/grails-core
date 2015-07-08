@@ -15,16 +15,16 @@
  */
 package org.grails.config;
 
-import grails.config.Config;
-import grails.util.*;
+import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.env.*;
-import org.springframework.util.ClassUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Graeme Rocher
@@ -89,11 +89,15 @@ public class PropertySourcesConfig extends NavigableMapConfig {
     private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
         Map<String, Object> map = new LinkedHashMap<String, Object>();
         for(String propertyName : enumerablePropertySource.getPropertyNames()) {
+            Object value = enumerablePropertySource.getProperty(propertyName);
+            if(value instanceof CharSequence) {
+                value = resolvePlaceholders(value.toString());
+            }
             if(prefix != null) {
-                map.put(prefix + '.' + propertyName, enumerablePropertySource.getProperty(propertyName));
+                map.put(prefix + '.' + propertyName, value);
             }
             else {
-                map.put(propertyName, enumerablePropertySource.getProperty(propertyName));
+                map.put(propertyName, value);
             }
         }
 
@@ -111,7 +115,10 @@ public class PropertySourcesConfig extends NavigableMapConfig {
 
     @Override
     public String resolvePlaceholders(String text) {
-        return propertySourcesPropertyResolver.resolvePlaceholders(text);
+        if(!GrailsStringUtils.isBlank(text)) {
+            return propertySourcesPropertyResolver.resolvePlaceholders(text);
+        }
+        return text;
     }
 
     @Override

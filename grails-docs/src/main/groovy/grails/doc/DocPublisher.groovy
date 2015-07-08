@@ -469,6 +469,7 @@ class DocPublisher {
         }
         def metaProps = DocPublisher.metaClass.properties
         def props = engineProperties ?: new Properties()
+
         if(propertiesFile?.exists()) {
             if(propertiesFile.name.endsWith('.properties')) {
                 propertiesFile.withInputStream {
@@ -477,13 +478,21 @@ class DocPublisher {
             }
             else if(propertiesFile.name.endsWith('.yml')) {
                 propertiesFile.withInputStream { input ->
-                    def yml = new Yaml().load(input)
-                    flattenKeys(props, yml,[], true)
+                    def ymls = new Yaml().loadAll(input)
+                    for(yml in ymls) {
+                        if(yml instanceof Map) {
+                            def config = yml.grails?.doc
+                            if(config instanceof Map) {
+                                flattenKeys(props, (Map) config,[], true)
+                            }
+                        }
+                    }
                 }
 
             }
 
         }
+
 
         for (MetaProperty mp in metaProps) {
             if (mp.type == String) {

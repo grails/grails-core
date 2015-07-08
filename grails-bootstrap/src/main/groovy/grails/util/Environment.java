@@ -15,16 +15,17 @@
  */
 package grails.util;
 
+import grails.io.IOUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.grails.io.support.GrailsResourceUtils;
 
 import java.io.File;
 import java.util.Locale;
 import java.util.Map;
-
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
  * Represents the current environment.
@@ -103,10 +104,12 @@ public enum Environment {
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
+    private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT && cachedHasGrailsHome;
     private static boolean initializingState = false;
     public static Throwable currentReloadError = null;
     public static MultipleCompilationErrorsException currentCompilationError = null;
     private String name;
+    private String reloadLocation;
 
     Environment() {
         initialize();
@@ -192,9 +195,9 @@ public enum Environment {
      * Returns true if the application is running in development mode (within grails run-app)
      * @return true if the application is running in development mode
      */
+
     public static boolean isDevelopmentMode() {
-        return getCurrent() == DEVELOPMENT && Metadata.getCurrent().isDevelopmentEnvironmentAvailable() &&
-                cachedHasGrailsHome;
+        return DEVELOPMENT_MODE;
     }
 
     /**
@@ -423,8 +426,7 @@ public enum Environment {
      */
     public boolean isReloadEnabled() {
         final boolean reloadOverride = Boolean.getBoolean(RELOAD_ENABLED);
-
-        final String reloadLocation = getReloadLocationInternal();
+        getReloadLocation();
         final boolean reloadLocationSpecified = hasLocation(reloadLocation);
         return this == DEVELOPMENT && reloadLocationSpecified ||
                 reloadOverride && reloadLocationSpecified;
@@ -454,22 +456,31 @@ public enum Environment {
     /**
      * @return true if the reloading agent is active
      */
+    private static Boolean reloadingAgentEnabled = null;
     public static boolean isReloadingAgentEnabled() {
+        if(reloadingAgentEnabled != null) {
+            return reloadingAgentEnabled;
+        }
         try {
             Class.forName("org.springsource.loaded.TypeRegistry");
-            return Environment.getCurrent().isReloadEnabled();
+            reloadingAgentEnabled = Environment.getCurrent().isReloadEnabled();
         }
         catch (ClassNotFoundException e) {
-            return false;
+            reloadingAgentEnabled = false;
         }
+        return reloadingAgentEnabled;
     }
 
     /**
      * @return Obtains the location to reload resources from
      */
     public String getReloadLocation() {
+        if(this.reloadLocation != null) {
+            return this.reloadLocation;
+        }
         String location = getReloadLocationInternal();
         if (hasLocation(location)) {
+            reloadLocation = location;
             return location;
         }
         return "."; // default to the current directory
@@ -483,8 +494,8 @@ public enum Environment {
      * @return Whether a reload location is specified
      */
     public boolean hasReloadLocation() {
-        String reloadingLocation = getReloadLocationInternal();
-        return hasLocation(reloadingLocation);
+        getReloadLocation();
+        return hasLocation(reloadLocation);
     }
 
     private String getReloadLocationInternal() {
@@ -497,7 +508,16 @@ public enum Environment {
             if(current.exists()) {
                 location = current.getParentFile().getAbsolutePath();
             }
+            else {
+                current = new File(".", "settings.gradle");
+                if(current.exists()) {
+                    // multi-project build
+                    location = IOUtils.findApplicationDirectory();
+                }
+            }
         }
         return location;
     }
+
+
 }

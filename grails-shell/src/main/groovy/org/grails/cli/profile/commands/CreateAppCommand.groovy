@@ -142,7 +142,12 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                 defaultPackage = groupname
             }
             else {
-                defaultPackage = createValidPackageName()
+                try {
+                    defaultPackage = createValidPackageName()
+                } catch (IllegalArgumentException e ) {
+                    GrailsConsole.instance.error(e.message)
+                    return false
+                }
                 groupname = defaultPackage
             }
         }
@@ -154,7 +159,12 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             List<String> parts = groupAndAppName.split(/\./) as List
             if(parts.size() == 1) {
                 appname = parts[0]
-                defaultPackage = createValidPackageName()
+                try {
+                    defaultPackage = createValidPackageName()
+                } catch (IllegalArgumentException e ) {
+                    GrailsConsole.instance.error(e.message)
+                    return false
+                }
                 groupname = defaultPackage
             } else {
                 appname = parts[-1]
@@ -181,6 +191,9 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
     private String createValidPackageName() {
         String defaultPackage = appname.split(/[-]+/).collect { String token -> (token.toLowerCase().toCharArray().findAll  { char ch -> Character.isJavaIdentifierPart(ch) } as char[]) as String }.join('.')
+        if(!GrailsNameUtils.isValidJavaPackage(defaultPackage)) {
+            throw new IllegalArgumentException("Cannot create a valid package name for [$appname]. Please specify a name that is also a valid Java package.")
+        }
         return defaultPackage
     }
 

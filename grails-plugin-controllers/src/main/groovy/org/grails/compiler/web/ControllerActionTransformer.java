@@ -22,6 +22,7 @@ import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpre
 import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
 import grails.artefact.controller.support.AllowedMethodsHelper;
+import grails.compiler.DelegatingMethod;
 import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.GrailsArtefactClassInjector;
@@ -153,6 +154,7 @@ class TestController{
 @AstTransformer
 public class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector {
 
+    public static final AnnotationNode DELEGATING_METHOD_ANNOATION = new AnnotationNode(ClassHelper.make(DelegatingMethod.class));
     public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
             GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
     private static final String ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME = "ALLOWED_METHODS_HANDLED";
@@ -373,6 +375,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             
             methodCode.addStatement(codeToHandleAllowedMethods);
             methodCode.addStatement(codeToCallOriginalMethod);
+
             
             method = new MethodNode(
                     methodNode.getName(),
@@ -382,6 +385,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     methodCode);
             
             GrailsASTUtils.copyAnnotations(methodNode, method);
+
+            methodNode.addAnnotation(DELEGATING_METHOD_ANNOATION);
             annotateActionMethod(classNode, parameters, method);
             wrapMethodBodyWithExceptionHandling(classNode, method);
         } else {

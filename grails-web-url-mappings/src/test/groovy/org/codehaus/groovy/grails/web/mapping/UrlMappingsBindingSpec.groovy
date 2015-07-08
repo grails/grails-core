@@ -29,7 +29,7 @@ class UrlMappingsBindingSpec extends Specification{
         ctx.defaultListableBeanFactory.registerSingleton(GrailsApplication.APPLICATION_ID,new DefaultGrailsApplication())
         ctx.refresh()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
-        return new DefaultUrlMappingEvaluator(servletContext)
+        return new DefaultUrlMappingEvaluator(ctx)
     }
 
     Closure getMappings() {

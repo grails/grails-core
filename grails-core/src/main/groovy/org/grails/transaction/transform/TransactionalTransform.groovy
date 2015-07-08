@@ -16,6 +16,7 @@
 
 package org.grails.transaction.transform
 
+import grails.compiler.DelegatingMethod
 import grails.transaction.Rollback
 import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
@@ -115,8 +116,12 @@ class TransactionalTransform implements ASTTransformation{
 
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
                 
-                if(GrailsASTUtils.isSetterOrGetterMethod(md)) continue
-                
+                if(isSetterOrGetterMethod(md)) continue
+
+                // don't apply to methods added by traits
+                if(hasAnnotation(md, org.codehaus.groovy.transform.trait.Traits.TraitBridge.class)) continue
+                // ignore methods that delegate to each other
+                if(hasAnnotation(md, DelegatingMethod.class)) continue
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
         }

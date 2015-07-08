@@ -95,7 +95,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         mergeMaps(this, sourceMap, parseFlatKeys)
     }
     
-    private static void mergeMaps(NavigableMap targetMap, Map sourceMap, boolean parseFlatKeys) {
+    private void mergeMaps(NavigableMap targetMap, Map sourceMap, boolean parseFlatKeys) {
         sourceMap.each { Object sourceKeyObject, Object sourceValue ->
             String sourceKey = String.valueOf(sourceKeyObject)
             NavigableMap actualTarget
@@ -114,7 +114,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
     }
     
-    private static void mergeMapEntry(NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys) {
+    protected void mergeMapEntry(NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys) {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue
         if(sourceValue instanceof Map) {
@@ -130,10 +130,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         if (newValue == null) {
             targetMap.remove(sourceKey)
         } else {
-            targetMap.put(sourceKey, newValue)
+            mergeMapEntry(targetMap, sourceKey, newValue)
         }
     }
-    
+
+    protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, newValue) {
+        targetMap.put(sourceKey, newValue)
+    }
+
     public Object getAt(Object key) {
         getProperty(String.valueOf(key))
     }

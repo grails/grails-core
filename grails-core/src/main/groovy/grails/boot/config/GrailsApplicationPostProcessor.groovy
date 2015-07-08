@@ -1,5 +1,6 @@
 package grails.boot.config
 
+import grails.boot.GrailsApp
 import grails.config.Settings
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
@@ -48,7 +49,7 @@ import org.springframework.util.ClassUtils
 @CompileStatic
 @Commons
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
-    static final boolean RELOADING_ENABLED = Environment.getCurrent().isReloadEnabled() && ClassUtils.isPresent("org.springsource.loaded.SpringLoaded", Thread.currentThread().contextClassLoader)
+    static final boolean RELOADING_ENABLED = Environment.isReloadingAgentEnabled()
 
     final GrailsApplication grailsApplication
     final GrailsApplicationLifeCycle lifeCycle
@@ -238,8 +239,14 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             ShutdownOperations.runOperations()
             Holders.clear()
             if(reloadingEnabled) {
-                GrailsSpringLoadedPlugin.unregister()
+                try {
+                    GrailsSpringLoadedPlugin.unregister()
+                } catch (Throwable e) {
+                    // ignore
+                }
             }
+
+            GrailsApp.setDevelopmentModeActive(false)
         }
     }
 

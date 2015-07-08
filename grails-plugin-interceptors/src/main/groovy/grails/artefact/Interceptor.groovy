@@ -147,6 +147,24 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     }
 
     /**
+     * Obtains the ModelAndView for the currently executing controller
+     *
+     * @return The ModelAndView
+     */
+    ModelAndView getModelAndView() {
+        (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
+    }
+
+    /**
+     * Sets the ModelAndView of the current controller
+     *
+     * @param mav The ModelAndView
+     */
+    void setModelAndView(ModelAndView mav) {
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0)
+    }
+
+    /**
      * Obtains the exception thrown by an action execution
      *
      * @param t The exception or null if none was thrown
