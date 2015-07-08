@@ -33,7 +33,15 @@ import java.util.*;
 public abstract class NavigableMapConfig implements Config {
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     protected ConfigurableConversionService conversionService = new DefaultConversionService();
-    protected NavigableMap configMap = new NavigableMap();
+    protected NavigableMap configMap = new NavigableMap() {
+        @Override
+        protected Object mergeMapEntry(NavigableMap targetMap, String sourceKey, Object newValue) {
+            if(newValue instanceof CharSequence) {
+                newValue = resolvePlaceholders(newValue.toString());
+            }
+            return super.mergeMapEntry(targetMap, sourceKey, newValue);
+        }
+    };
 
     @Override
     public Object getAt(Object key) {
