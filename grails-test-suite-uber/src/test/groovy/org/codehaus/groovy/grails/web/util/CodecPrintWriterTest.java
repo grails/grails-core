@@ -7,6 +7,7 @@ import groovy.util.ConfigObject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
 
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.ArtefactInfo;
