@@ -280,6 +280,14 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
+    public LinkedList<GrailsClass> getArtefactsByLogicalPropertyName(String type, String logicalName) {
+        throw new UnsupportedOperationException();
+    }
+
+    public GrailsClass getArtefactByLogicalPropertyNameAndNamespace(String type, String logicalName, String namespace) {
+        throw new UnsupportedOperationException();
+    }
+
     public void addArtefact(Class artefact) {
         throw new UnsupportedOperationException();
     }
