@@ -75,7 +75,7 @@ class ControllersGrailsPlugin extends Plugin {
         int fileSizeThreashold = config.getProperty(Settings.CONTROLLERS_UPLOAD_FILE_SIZE_THRESHOLD, Integer, 0)
         def filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
         boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
-
+        String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, '/')
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
         boolean resourcesEnabled = config.getProperty(Settings.RESOURCES_ENABLED, Boolean, true)
 
@@ -135,7 +135,7 @@ class ControllersGrailsPlugin extends Plugin {
 
         // add the dispatcher servlet
         dispatcherServlet(GrailsDispatcherServlet)
-        dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), "/*") {
+        dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), grailsServletPath) {
             loadOnStartup = 2
             asyncSupported = true
             multipartConfig = multipartConfigElement

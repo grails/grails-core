@@ -129,6 +129,11 @@ interface Settings {
     String WEB_LINK_GENERATOR_USE_CACHE = "grails.web.linkGenerator.useCache"
 
     /**
+     * The path to the Grails servlet. Defaults to '/'
+     */
+    String WEB_SERVLET_PATH = "grails.web.servlet.path"
+
+    /**
      * The URL of the server
      */
     String SERVER_URL = 'grails.serverURL'
