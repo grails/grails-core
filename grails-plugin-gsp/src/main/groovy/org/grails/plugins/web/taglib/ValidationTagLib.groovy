@@ -110,7 +110,7 @@ class ValidationTagLib implements TagLibrary {
     }
 
     private String parseForRejectedValue(bean, field) {
-        rejectedValue = bean
+        def rejectedValue = bean
         for (String fieldPart in field.split("\\.")) {
             rejectedValue = rejectedValue?."$fieldPart"
         }
