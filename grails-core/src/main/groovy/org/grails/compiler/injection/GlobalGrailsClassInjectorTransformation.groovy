@@ -161,7 +161,10 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                 }
 
                 def existing = props.getProperty(superTypeName)
-                if (!existing.contains(classNodeName)) {
+                if(!existing) {
+                    props.put(superTypeName, classNodeName)
+                }
+                else if (!existing.contains(classNodeName)) {
                     props.put(superTypeName, [existing, classNodeName].join(','))
                 }
             } else {
