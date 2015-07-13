@@ -92,28 +92,29 @@ class ValidationTagLib implements TagLibrary {
 
         def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
 
+	def rejectedValue = null
         if (bean.metaClass.hasProperty(bean, 'errors')) {
             Errors errors = bean.errors
-            def rejectedValue = errors?.getFieldError(field)?.rejectedValue
+            rejectedValue = errors?.getFieldError(field)?.rejectedValue
             if (rejectedValue == null) {
-                rejectedValue = bean
-                for (String fieldPart in field.split("\\.")) {
-                    rejectedValue = rejectedValue?."$fieldPart"
-                }
+                rejectedValue = parseForRejectedValue(bean, field)
             }
-            if (rejectedValue != null) {
-                out << formatValue(rejectedValue, field, tagSyntaxCall)
-            }
+            
         }
         else {
-            def rejectedValue = bean
-            for (String fieldPart in field.split("\\.")) {
-                rejectedValue = rejectedValue?."$fieldPart"
-            }
-            if (rejectedValue != null) {
-                out << formatValue(rejectedValue, field, tagSyntaxCall)
-            }
+            rejectedValue = parseForRejectedValue(bean, field)
         }
+	if (rejectedValue != null) {
+            out << formatValue(rejectedValue, field, tagSyntaxCall)
+        }
+    }
+
+    private String parseForRejectedValue(bean, field) {
+        def rejectedValue = bean
+        for (String fieldPart in field.split("\\.")) {
+            rejectedValue = rejectedValue?."$fieldPart"
+        }
+        return rejectedValue
     }
 
     def extractErrors(attrs) {
