@@ -53,7 +53,7 @@ class UrlMappings {
         def mappings = evaluator.evaluateMappings(closure)
 
         webRequest.currentRequest.addParameter("${WebUtils.DISPATCH_ACTION_PARAMETER}foo", "true")
-        webRequest.currentRequest.setAttribute(WebUtils.EXCEPTION_ATTRIBUTE, new RuntimeException("bad"))
+        webRequest.currentRequest.setAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, new RuntimeException("bad"))
         def holder = new DefaultUrlMappingsHolder(mappings)
         def info = holder.match('/foo/list')
 

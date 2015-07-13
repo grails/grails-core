@@ -59,7 +59,7 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
  */
 public class GrailsExceptionResolver extends SimpleMappingExceptionResolver implements ServletContextAware, GrailsApplicationAware {
 
-    public static final String EXCEPTION_ATTRIBUTE = WebUtils.EXCEPTION_ATTRIBUTE;
+    public static final String EXCEPTION_ATTRIBUTE = WebUtils.ERROR_EXCEPTION_ATTRIBUTE;
 
     protected static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
     protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -141,7 +141,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         // expose the servlet 2.3 specs status code request attribute as 500
         request.setAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
-        mv.addObject(WebUtils.EXCEPTION_ATTRIBUTE, new GrailsWrappedRuntimeException(servletContext, e));
+        mv.addObject(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, new GrailsWrappedRuntimeException(servletContext, e));
     }
 
     protected UrlMappingsHolder lookupUrlMappings() {
