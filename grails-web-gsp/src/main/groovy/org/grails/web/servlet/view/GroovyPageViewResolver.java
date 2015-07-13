@@ -195,6 +195,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         return createFallbackView(viewName);
     }
 
+
     private View createGroovyPageView(String gspView, ScriptSource scriptSource) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Resolved GSP view at URI [" + gspView + "]");

@@ -16,6 +16,7 @@
 package org.grails.web.gsp.io;
 
 import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
 import grails.core.GrailsControllerClass;
 import grails.core.support.GrailsApplicationAware;
 import grails.util.GrailsNameUtils;
@@ -136,18 +137,16 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         String viewNameWithFormat = resolveViewFormat(viewName);
 
         GroovyPageScriptSource scriptSource = null;
-        if(grailsApplication != null) {
-        	Object controllerArtefact = grailsApplication.getArtefact("Controller", controller.getClass().getName());
-        	if(controllerArtefact instanceof GrailsControllerClass) {
-        		GrailsControllerClass gcc = (GrailsControllerClass)controllerArtefact;
-        		String namespace = gcc.getNamespace();
-        		if(namespace != null) {
-					scriptSource = findPage("/" + namespace + uriService.getViewURI(controllerName, viewNameWithFormat));
-					if(scriptSource == null) {
-						scriptSource = findPage("/" + namespace + uriService.getViewURI(controllerName, viewName));
-					}
-        		}
-        	}
+        Object controllerArtefact = grailsApplication != null ? grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controller.getClass().getName()) : null;
+        if(controllerArtefact instanceof GrailsControllerClass) {
+            GrailsControllerClass gcc = (GrailsControllerClass)controllerArtefact;
+            String namespace = gcc.getNamespace();
+            if(namespace != null) {
+                scriptSource = findPage("/" + namespace + uriService.getViewURI(controllerName, viewNameWithFormat));
+                if(scriptSource == null) {
+                    scriptSource = findPage("/" + namespace + uriService.getViewURI(controllerName, viewName));
+                }
+            }
         }
         if(scriptSource == null) {
 			scriptSource = findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
@@ -188,7 +187,20 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      */
     public GroovyPageScriptSource findTemplate(Object controller, String templateName) {
         String controllerName = getNameForController(controller);
-        return findPage(uriService.getTemplateURI(controllerName, templateName));
+        GroovyPageScriptSource scriptSource = null;
+        final String templateURI = uriService.getTemplateURI(controllerName, templateName);
+        Object controllerArtefact = grailsApplication != null ? grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controller.getClass().getName()) : null;
+        if(controllerArtefact instanceof GrailsControllerClass) {
+            GrailsControllerClass gcc = (GrailsControllerClass)controllerArtefact;
+            String namespace = gcc.getNamespace();
+            if(namespace != null) {
+                scriptSource = findPage("/" + namespace + templateURI);
+            }
+        }
+        if(scriptSource == null) {
+            scriptSource = findPage(templateURI);
+        }
+        return scriptSource;
     }
 
     /**
@@ -216,6 +228,50 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
             return findTemplateByPath(templateName);
         }
         return findTemplate(webRequest.getControllerName(), templateName);
+    }
+
+    /**
+     * Finds a template for the given given template name, looking up the controller from the request as necessary
+     *
+     * @param templateName The template name
+     * @return The GroovyPageScriptSource
+     */
+    public GroovyPageScriptSource findTemplateInBinding(Object controller, String templateName, TemplateVariableBinding binding) {
+        return findTemplateInBinding(controller, null, templateName, binding);
+    }
+
+    /**
+     * Finds a template for the given given template name, looking up the controller from the request as necessary
+     *
+     * @param pluginName The plugin
+     * @param templateName The template name
+     * @param binding The binding
+     * @return The GroovyPageScriptSource
+     */
+    public GroovyPageScriptSource findTemplateInBinding(Object controller, String pluginName, String templateName, TemplateVariableBinding binding) {
+        if (controller == null) {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if (webRequest == null) {
+                return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName), binding);
+            }
+            return findPageInBinding(pluginName, uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
+        }
+        final GrailsControllerClass controllerClass = (GrailsControllerClass)grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controller.getClass().getName());
+
+        String templateURI;
+        final String ns = controllerClass.getNamespace();
+        GroovyPageScriptSource scriptSource = null;
+        final String controllerName = controllerClass.getLogicalPropertyName();
+        if(ns != null) {
+            templateURI = '/' + ns + uriService.getTemplateURI(controllerName, templateName);
+            scriptSource = findPageInBinding(pluginName, templateURI, binding);
+        }
+
+        if(scriptSource == null) {
+            templateURI = uriService.getTemplateURI(controllerName, templateName);
+            scriptSource = findPageInBinding(pluginName, templateURI, binding);
+        }
+        return scriptSource;
     }
 
     /**
