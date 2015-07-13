@@ -20,6 +20,7 @@ import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsStringUtils;
+import groovy.lang.GroovyObject;
 import groovy.text.Template;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.buffer.CodecPrintWriter;
@@ -40,6 +41,7 @@ import org.grails.taglib.encoder.OutputEncodingSettings;
 import org.grails.taglib.encoder.WithCodecHelper;
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.Assert;
@@ -102,8 +104,8 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         String uri = webRequest.getAttributes().getTemplateUri(templateName, webRequest.getRequest());
         String contextPath = getStringValue(attrs, "contextPath");
         String pluginName = getStringValue(attrs, "plugin");
-
-        Template t = findAndCacheTemplate(pageScope, templateName, contextPath, pluginName, uri);
+        final Object controller = webRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER, GrailsWebRequest.SCOPE_REQUEST);
+        Template t = findAndCacheTemplate(controller, pageScope, templateName, contextPath, pluginName, uri);
         if (t == null) {
             throw new GrailsTagException("Template not found for name [" + templateName + "] and path [" + uri + "]");
         }
@@ -112,20 +114,20 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     }
 
     // required for binary compatibility: GRAILS-11598
-    private Template findAndCacheTemplate(GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
+    private Template findAndCacheTemplate(Object controller, GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
             String contextPath, String pluginName, String uri) throws IOException {
-        return findAndCacheTemplate(pageScope, templateName, contextPath, pluginName, uri);
+        return findAndCacheTemplate(controller, pageScope, templateName, contextPath, pluginName, uri);
     }
 
-    private Template findAndCacheTemplate(TemplateVariableBinding pageScope, String templateName,
+    private Template findAndCacheTemplate(Object controller, TemplateVariableBinding pageScope, String templateName,
             String contextPath, String pluginName, final String uri) throws IOException {
 
         String templatePath = GrailsStringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
         final GroovyPageScriptSource scriptSource;
         if (pluginName == null) {
-            scriptSource = groovyPageLocator.findTemplateInBinding(templatePath, pageScope);
+            scriptSource = groovyPageLocator.findTemplateInBinding(controller, templatePath, pageScope);
         }  else {
-            scriptSource = groovyPageLocator.findTemplateInBinding(pluginName, templatePath, pageScope);
+            scriptSource = groovyPageLocator.findTemplateInBinding(controller, pluginName, templatePath, pageScope);
         }
 
         String cacheKey;
