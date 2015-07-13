@@ -140,8 +140,9 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         // expose the servlet 2.3 specs status code request attribute as 500
         request.setAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-
-        mv.addObject(WebUtils.EXCEPTION_ATTRIBUTE, new GrailsWrappedRuntimeException(servletContext, e));
+        final GrailsWrappedRuntimeException gwre = new GrailsWrappedRuntimeException(servletContext, e);
+        mv.addObject(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, gwre);
+        mv.addObject(WebUtils.EXCEPTION_ATTRIBUTE, gwre);
     }
 
     protected UrlMappingsHolder lookupUrlMappings() {
