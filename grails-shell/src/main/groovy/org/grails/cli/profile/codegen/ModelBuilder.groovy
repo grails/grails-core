@@ -16,106 +16,17 @@
 
 package org.grails.cli.profile.codegen
 
-import grails.codegen.model.Model
-import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.runtime.MetaClassHelper
-import org.grails.io.support.FileSystemResource
-import org.grails.io.support.GrailsResourceUtils
-import org.grails.io.support.Resource
-
-
 /**
  * Used to build a Model for the purposes of codegen
  *
  * @author Graeme Rocher
  * @since 3.0
+ * @deprecated Use {@link grails.codegen.model.ModelBuilder} instead
  */
 @CompileStatic
-trait ModelBuilder {
+@Deprecated
+trait ModelBuilder extends grails.codegen.model.ModelBuilder {
 
-    String defaultPackage
-
-    /**
-     * A model for the given class name
-     * @param className The class name
-     *
-     * @return The {@link Model} instance
-     */
-    Model model(Class cls) {
-        return new ModelImpl(cls.getName())
-    }
-    /**
-     * A model for the given class name
-     * @param className The class name
-     *
-     * @return The {@link Model} instance
-     */
-    Model model(String className) {
-        if(defaultPackage && !className.contains('.')) {
-            return new ModelImpl("${defaultPackage}.$className")
-        }
-        else {
-            return new ModelImpl(className)
-        }
-    }
-
-    /**
-     * A model for the given class name
-     * @param className The class name
-     *
-     * @return The {@link Model} instance
-     */
-    Model model(File file) {
-        model(new FileSystemResource(file))
-    }
-
-    /**
-     * A model for the given class name
-     * @param className The class name
-     *
-     * @return The {@link Model} instance
-     */
-    Model model(Resource resource) {
-        def className = GrailsResourceUtils.getClassName(resource)
-        model(className)
-    }
-
-    @CompileStatic
-    private static class ModelImpl implements Model {
-        final String className
-        final String fullName
-        final String propertyName
-        final String packageName
-        final String simpleName
-        final String lowerCaseName
-        final String packagePath
-
-        ModelImpl(String className) {
-            this.className = MetaClassHelper.capitalize(GrailsNameUtils.getShortName(className))
-            this.fullName = className
-            this.propertyName = GrailsNameUtils.getPropertyName(className)
-            this.packageName = GrailsNameUtils.getPackageName(className)
-            this.packagePath = packageName.replace('.' as char, File.separatorChar)
-            this.simpleName = this.className
-            this.lowerCaseName = GrailsNameUtils.getScriptName(className)
-
-        }
-
-        @Override
-        String getModelName() {
-            propertyName
-        }
-
-        @Override
-        String convention(String conventionName) {
-            "${simpleName}${conventionName}"
-        }
-
-        @Override
-        Map<String, Object> asMap() {
-            [ className: className, fullName: fullName, propertyName: propertyName, modelName: propertyName, packageName: packageName, packagePath: packagePath, simpleName: simpleName, lowerCaseName: lowerCaseName]
-        }
-    }
 
 }
