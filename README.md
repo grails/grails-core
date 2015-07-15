@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/grails/grails-core.svg?branch=master)](https://travis-ci.org/grails/grails-core)
-<script async defer src="https://slack-signup.grails.org/slackin.js"></script>
+[![Slack Signup](http://slack-signup.grails.org/badge.svg)](http://slack-signup.grails.org)
 
 Grails
 ===
