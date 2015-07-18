@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.io.support.IOUtils
 import grails.build.logging.GrailsConsole
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
@@ -1263,7 +1262,8 @@ class BuildSettings extends AbstractBuildSettings {
                 }
             }
             catch (Throwable e) {
-                CONSOLE.error "WARNING: Inline plugins for [$pluginName] cannot be read due to error: ${e.message}", e
+                final console = GrailsConsole.getInstance()
+                console.error "WARNING: Inline plugins for [$pluginName] cannot be read due to error: ${e.message}", e
             }
         }
     }
@@ -1322,7 +1322,8 @@ class BuildSettings extends AbstractBuildSettings {
                     }
                 }
                 catch (Throwable e) {
-                    CONSOLE.error "WARNING: Error configuring proxy settings: ${e.message}", e
+                    final console = GrailsConsole.getInstance()
+                    console.error "WARNING: Error configuring proxy settings: ${e.message}", e
                 }
             }
 
