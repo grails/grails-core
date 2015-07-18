@@ -15,7 +15,6 @@ include (
         'grails-validation',
         'grails-web',
         'grails-web-common',
-        'grails-web-initializer',
         'grails-web-boot',
         'grails-web-databinding',
         'grails-web-fileupload',
