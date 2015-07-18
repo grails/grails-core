@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.regex.Pattern
 
 /**
- * An interceptor can be used to interceptor requests to controllers and URIs
+ * An interceptor can be used to intercept requests to controllers and URIs
  *
  * They replace the notion of filters from earlier versions of Grails, prior to Grails 3.0
  *

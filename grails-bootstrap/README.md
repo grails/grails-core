@@ -1,3 +1,3 @@
 ## grails-bootstrap
 
-This subproject contains much of the basic core coded required to bootstrap the Grails environment.
+This subproject contains much of the core code required to bootstrap the Grails environment.
