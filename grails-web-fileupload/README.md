@@ -1,4 +1,4 @@
-## Subproject grails-web-fileupload
+## grails-web-fileupload
 
 This is a very small subproject defines the
 (ContentLengthAwareCommonsMultipartResolver)[./src/main/groovy/org/grails/web/multipart/ContentLengthAwareCommonsMultipartResolver.java]

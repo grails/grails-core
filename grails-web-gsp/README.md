@@ -1,3 +1,3 @@
-## Subproject grails-web-gsp
+## grails-web-gsp
 
 This subproject defines the support files for GSP rendering.

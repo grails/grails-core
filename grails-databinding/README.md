@@ -1,4 +1,4 @@
-## Subproject grails-databinding
+## grails-databinding
 
 This subproject contains much of the core data binding code.  The main class here is
 [SimpleDataBinder](./src/main/groovy/grails/databinding/SimpleDataBinder.groovy).  Most of the other code
