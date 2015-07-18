@@ -17,6 +17,7 @@ package org.grails.cli.profile.commands.script
 
 import grails.build.logging.ConsoleLogger
 import grails.build.logging.GrailsConsole
+import grails.codegen.model.ModelBuilder
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
@@ -31,7 +32,6 @@ import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileCommand
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
-import org.grails.cli.profile.codegen.ModelBuilder
 import org.grails.cli.profile.commands.events.CommandEvents
 import org.grails.cli.profile.commands.io.FileSystemInteraction
 import org.grails.cli.profile.commands.io.FileSystemInteractionImpl
