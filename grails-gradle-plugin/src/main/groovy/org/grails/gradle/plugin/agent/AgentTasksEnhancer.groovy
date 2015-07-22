@@ -29,5 +29,6 @@ class AgentTasksEnhancer implements Action<Project> {
     private void addAgent(Project project, JavaExec exec, File agent) {
         exec.jvmArgs "-javaagent:$agent.absolutePath"
         exec.jvmArgs "-Xverify:none"
+        exec.jvmArgs "-Dspringloaded=inclusions=grails.plugins..*"
     }
 }
