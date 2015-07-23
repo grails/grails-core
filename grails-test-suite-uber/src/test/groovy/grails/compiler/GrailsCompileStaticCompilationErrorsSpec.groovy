@@ -345,6 +345,33 @@ class SomeClass {
         c
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/643')
+    void 'Test that a controller marked with @GrailsCompileStatic may reference dynamic request properties'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.web.Controller
+class SomeController {
+
+    void someAction() {
+        if(request.post || request.get || request.xhr) {
+            render 'yep'
+        } else {
+            render 'nope'
+        }
+    }
+}
+''')
+        then:
+        c
+
+    }
+
     
     void 'Test compiling a domain class with a mapping block and unrelated dynamic code'() {
         given:

@@ -16,6 +16,8 @@ Grails
 [Groovy]: http://groovy-lang.org/
 [plugins]: http://grails.org/plugins/
 
+Grails is sponsored by [Object Computing Inc.](http://www.ociweb.com) in St. Louis Missouri.  Please contact <info@ociweb.com> for support inquiries.
+
 Getting Started
 ---
 

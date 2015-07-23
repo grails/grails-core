@@ -33,7 +33,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 
 /**
- * Adds a log method to all artifacts.
+ * Adds a log field to all artifacts.
  *
  * @author Graeme Rocher
  * @since 2.0
