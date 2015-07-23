@@ -25,13 +25,15 @@ import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
  */
 class HttpServletRequestTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
 
+    private dynamicPropertyNames = ['post', 'get', 'xhr']
+
     @Override
     def run() {
         unresolvedProperty { PropertyExpression expression ->
             def property = expression.property
             if(isConstantExpression(property)) {
                 def propertyName = property.value
-                if('post' == propertyName) {
+                if(propertyName in dynamicPropertyNames) {
                     def referenceType = getType(expression.objectExpression)
                     if(referenceType.name == 'javax.servlet.http.HttpServletRequest') {
                         return makeDynamic(expression)

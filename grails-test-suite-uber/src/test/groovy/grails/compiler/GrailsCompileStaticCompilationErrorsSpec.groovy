@@ -346,7 +346,7 @@ class SomeClass {
     }
 
     @Issue('https://github.com/grails/grails-core/issues/643')
-    void 'Test that a controller marked with @GrailsCompileStatic may reference request.post'() {
+    void 'Test that a controller marked with @GrailsCompileStatic may reference dynamic request properties'() {
         given:
         def gcl = new GroovyClassLoader()
 
@@ -359,10 +359,10 @@ package grails.compiler
 class SomeController {
 
     void someAction() {
-        if(request.post) {
-            render 'post'
+        if(request.post || request.get || request.xhr) {
+            render 'yep'
         } else {
-            render 'not post'
+            render 'nope'
         }
     }
 }
