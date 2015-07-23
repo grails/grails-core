@@ -38,7 +38,7 @@ class EnhancesSpec extends Specification{
 
 @Enhances("Controller")
 trait Foo {
-    def bar() {
+    def someMethodInTheFooTrait() {
         "bar"
     }
 }
