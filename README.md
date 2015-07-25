@@ -1,5 +1,5 @@
 #### Waffle.IO Board
-- [![Stories in Ready](https://badge.waffle.io/grails/grails-core.png?label=ready&title=Ready)](https://waffle.io/grails/grails-core)
+- [![Stories in Acknowledged](https://badge.waffle.io/grails/grails-core.png?label=ready&title=Acknowledged)](https://waffle.io/grails/grails-core)
 - [![Stories in Progress](https://badge.waffle.io/grails/grails-core.png?label=in progress&title=In Progress)](http://waffle.io/grails/grails-core)
 
 #### Build Status
