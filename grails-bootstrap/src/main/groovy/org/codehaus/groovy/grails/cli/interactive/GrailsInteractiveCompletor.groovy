@@ -59,7 +59,7 @@ class GrailsInteractiveCompletor extends StringsCompleter {
             trimmedBuffer = trimmedBuffer.split(' ')[0]
         }
 
-        Completer completer = (Completer) trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer)
+        Completer completer = (Completer) (trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer))
         if (completer == null) {
             def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
             className = "grails.build.interactive.completors.$className"
