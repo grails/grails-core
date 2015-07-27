@@ -71,8 +71,9 @@ class CoreGrailsPlugin extends Plugin {
 
         // enable post-processing of @Configuration beans defined by plugins
         grailsConfigurationClassPostProcessor ConfigurationClassPostProcessor
-
-        addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
+        grailsBeanOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer) {
+            delegate.grailsApplication = application
+        }
         propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer) {
             placeholderPrefix = placeHolderPrefix
         }
