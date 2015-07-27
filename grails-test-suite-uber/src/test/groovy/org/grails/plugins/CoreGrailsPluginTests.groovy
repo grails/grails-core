@@ -136,6 +136,5 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
             plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, gcl.loadClass(it))
         }
 
-        assertEquals(2, appCtx.getBean('nonTransactionalService').i)
     }
 }
