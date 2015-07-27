@@ -15,10 +15,12 @@
  */
 package org.grails.spring.context.support
 
+import grails.config.Config
+import grails.core.support.GrailsApplicationAware
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import grails.core.GrailsApplication
-
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.config.BeanDefinition
@@ -34,15 +36,13 @@ import org.springframework.beans.factory.BeanCreationException
  * the properties to the <em>actual</em> bean.
  *
  * @author Luke Daley
+ * @author Graeme Rocher
  */
 @CompileStatic
-class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcessor {
+class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcessor, GrailsApplicationAware {
 
-    final GrailsApplication application
-
-    MapBasedSmartPropertyOverrideConfigurer(GrailsApplication application) {
-        this.application = application
-    }
+    @Autowired
+    GrailsApplication grailsApplication
 
     void postProcessBeanFactory(ConfigurableListableBeanFactory factory) {
         def beans = getBeansConfig()
@@ -75,12 +75,12 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected ConfigObject getBeansConfig() {
-        application.config.beans
+    protected Map<String, Object> getBeansConfig() {
+        grailsApplication?.config?.getProperty("beans", Map)
     }
 
     protected ClassLoader getClassLoader() {
-        application.classLoader
+        grailsApplication.classLoader
     }
 
     protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName) {
