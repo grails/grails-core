@@ -415,7 +415,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         }
 
                         requestAttributes.setRenderView(false);
-                        return;
                     }
                 }
             }
