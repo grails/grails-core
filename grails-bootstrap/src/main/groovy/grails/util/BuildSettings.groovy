@@ -275,4 +275,5 @@ class BuildSettings {
      * The path to the build classes directory
      */
     public static final String BUILD_CLASSES_PATH = "build/classes/main"
+
 }
