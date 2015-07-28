@@ -923,7 +923,8 @@ public class JSONObject implements JSONElement, Map {
      *         or null if there was no value.
      */
     public Object remove(String key) {
-        return myHashMap.remove(key);
+        Object value = myHashMap.remove(key);
+        return value instanceof Null ? null : value;
     }
 
     /**
@@ -1255,7 +1256,8 @@ public class JSONObject implements JSONElement, Map {
     }
 
     public Object remove(Object o) {
-        return myHashMap.remove(o);
+        Object value = myHashMap.remove(o);
+        return value instanceof Null ? null : value;
     }
 
     public void putAll(Map map) {

@@ -9,4 +9,12 @@ class ParsingNullJsonValuesSpec extends Specification {
         JSON.parse("{'myList':null}").myList == null
         JSON.parse("{'myList':null}").get('myList') == null
     }
+
+    def "test the remove method returns null, not JSONObject.Null"() {
+        when:
+        def obj = JSON.parse("{'myList':null}")
+
+        then:
+        obj.remove('myList') == null
+    }
 }
