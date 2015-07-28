@@ -17,15 +17,6 @@ package grails.util
 
 import grails.io.IOUtils
 
-<<<<<<< HEAD
-=======
-import grails.build.logging.GrailsConsole
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
-
-import groovy.transform.CompileStatic
-
-import java.util.concurrent.ConcurrentHashMap
->>>>>>> 2.5.x
 import java.util.regex.Pattern
 
 /**
