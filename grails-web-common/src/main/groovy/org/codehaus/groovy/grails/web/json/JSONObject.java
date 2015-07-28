@@ -331,7 +331,7 @@ public class JSONObject implements JSONElement, Map {
             throw new JSONException("JSONObject[" + quote(key) +
                     "] not found.");
         }
-        return o;
+        return o instanceof Null ? null : o;
     }
 
 
@@ -1246,7 +1246,8 @@ public class JSONObject implements JSONElement, Map {
     }
 
     public Object get(Object o) {
-        return myHashMap.get(o);
+        Object value =  myHashMap.get(o);
+        return value instanceof Null ? null : value;
     }
 
     public Object put(Object o, Object o1) {
