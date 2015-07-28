@@ -17,29 +17,11 @@ package grails.converters;
 
 import grails.io.IOUtils;
 import grails.util.GrailsWebUtil;
+import grails.web.mime.MimeType;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PushbackInputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.web.json.JSONArray;
-import org.grails.web.json.JSONElement;
-import org.grails.web.json.JSONException;
-import org.grails.web.json.JSONObject;
-import org.grails.web.json.JSONTokener;
-import org.grails.web.json.JSONWriter;
-import org.grails.web.json.PathCapturingJSONWriterWrapper;
-import org.grails.web.json.PrettyPrintJSONWriter;
 import org.grails.web.converters.AbstractConverter;
 import org.grails.web.converters.Converter;
 import org.grails.web.converters.ConverterUtil;
@@ -50,8 +32,12 @@ import org.grails.web.converters.configuration.DefaultConverterConfiguration;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
+import org.grails.web.json.*;
 
-import grails.web.mime.MimeType;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.*;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.
@@ -173,7 +159,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     public void value(Object o) throws ConverterException {
         o = config.getProxyHandler().unwrapIfProxy(o);
         try {
-            if (o == null || o.equals(JSONObject.NULL)) {
+            if (o == null) {
                 writer.valueNull();
             }
             else if (o instanceof CharSequence) {

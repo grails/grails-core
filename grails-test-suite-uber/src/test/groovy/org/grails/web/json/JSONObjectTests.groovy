@@ -5,12 +5,6 @@ package org.grails.web.json
  */
 class JSONObjectTests extends GroovyTestCase {
 
-    void testJsonNullBehavior() {
-        def jsonNull = new JSONObject.Null()
-        assertTrue jsonNull.equals(null)
-        assertFalse jsonNull ? true : false
-    }
-
     void testContainsKey() {
         JSONObject j = new JSONObject()
         j.put('test', 1)

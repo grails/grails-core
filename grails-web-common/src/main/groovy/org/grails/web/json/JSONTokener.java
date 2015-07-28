@@ -363,7 +363,7 @@ public class JSONTokener {
             return Boolean.FALSE;
         }
         if (s.equalsIgnoreCase("null")) {
-            return JSONObject.NULL;
+            return null;
         }
 
         if (s.startsWith("new Date(")) {

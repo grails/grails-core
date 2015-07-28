@@ -18,14 +18,7 @@ package grails.web.databinding
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
-import grails.databinding.BindingFormat
-
-import org.grails.databinding.BindingFormat as LegacyBindingFormat
-
-import grails.databinding.DataBindingSource
-import grails.databinding.SimpleDataBinder
-import grails.databinding.SimpleMapDataBindingSource
-import grails.databinding.TypedStructuredBindingEditor
+import grails.databinding.*
 import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
 import grails.databinding.events.DataBindingListener
@@ -38,24 +31,19 @@ import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
-
-import java.lang.annotation.Annotation
-import java.lang.reflect.Modifier
-import java.util.concurrent.ConcurrentHashMap
-
-import org.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
-import org.grails.web.databinding.converters.ByteArrayMultipartFileValueConverter;
 import org.grails.databinding.xml.GPathResultMap
 import org.grails.web.databinding.DataBindingEventMulticastListener
 import org.grails.web.databinding.DefaultASTDatabindingHelper
 import org.grails.web.databinding.GrailsWebDataBindingListener
 import org.grails.web.databinding.SpringConversionServiceAdapter
+import org.grails.web.databinding.converters.ByteArrayMultipartFileValueConverter
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -63,6 +51,10 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.BindingResult
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
+
+import java.lang.annotation.Annotation
+import java.lang.reflect.Modifier
+import java.util.concurrent.ConcurrentHashMap
 
 @CompileStatic
 class GrailsWebDataBinder extends SimpleDataBinder {
@@ -610,7 +602,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
     @Override
     protected convert(Class typeToConvertTo, value) {
-        if (value instanceof JSONObject.Null) {
+        if (value == null) {
             return null
         }
         def persistentInstance

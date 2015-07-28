@@ -25,21 +25,15 @@ SOFTWARE.
 */
 
 import groovy.lang.Writable;
+import org.grails.encoder.EncodesToWriter;
+import org.grails.encoder.StreamingEncoder;
+import org.grails.encoder.StreamingEncoderWritable;
+import org.grails.encoder.StreamingEncoderWriter;
+import org.springframework.util.ClassUtils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.grails.encoder.EncodesToWriter;
-import org.grails.encoder.StreamingEncoder;
-import org.grails.encoder.StreamingEncoderWriter;
-import org.grails.encoder.StreamingEncoderWritable;
-import org.springframework.util.ClassUtils;
+import java.util.*;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its
@@ -112,72 +106,9 @@ public class JSONObject implements JSONElement, Map {
     }
     
     /**
-     * JSONObject.NULL is equivalent to the value that JavaScript calls null,
-     * whilst Java's null is equivalent to the value that JavaScript calls
-     * undefined.
-     */
-    public static final class Null {
-
-        /**
-         * There is only intended to be a single instance of the NULL object,
-         * so the clone method returns itself.
-         *
-         * @return NULL.
-         */
-        @Override
-        protected final Object clone() {
-            return this;
-        }
-
-
-        /**
-         * A Null object is equal to the null value and to itself.
-         *
-         * @param object An object to test for nullness.
-         * @return true if the object parameter is the JSONObject.NULL object
-         *         or null.
-         */
-        @Override
-        public boolean equals(Object object) {
-            return object == null || object == this;
-        }
-
-        /**
-         * Null in JSON should evaluate to false
-         *
-         * @return false
-         */
-        public boolean asBoolean() {
-            return false;
-        }
-
-
-        /**
-         * Get the "null" string value.
-         *
-         * @return The string "null".
-         */
-        @Override
-        public String toString() {
-            return "null";
-        }
-    }
-
-
-    /**
      * The hash map where the JSONObject's properties are kept.
      */
     private HashMap myHashMap;
-
-
-    /**
-     * It is sometimes more convenient and less ambiguous to have a
-     * <code>NULL</code> object than to use Java's <code>null</code> value.
-     * <code>JSONObject.NULL.equals(null)</code> returns <code>true</code>.
-     * <code>JSONObject.NULL.toString()</code> returns <code>"null"</code>.
-     */
-    public static final Object NULL = new Null();
-
 
     /**
      * Construct an empty JSONObject.
@@ -326,12 +257,11 @@ public class JSONObject implements JSONElement, Map {
      * @throws JSONException if the key is not found.
      */
     public Object get(String key) throws JSONException {
-        Object o = opt(key);
-        if (o == null) {
+        if(!myHashMap.containsKey(key)) {
             throw new JSONException("JSONObject[" + quote(key) +
                     "] not found.");
         }
-        return o instanceof Null ? null : o;
+        return opt(key);
     }
 
 
@@ -478,7 +408,7 @@ public class JSONObject implements JSONElement, Map {
      *         the value is the JSONObject.NULL object.
      */
     public boolean isNull(String key) {
-        return JSONObject.NULL.equals(opt(key));
+        return opt(key) == null;
     }
 
 
@@ -923,8 +853,7 @@ public class JSONObject implements JSONElement, Map {
      *         or null if there was no value.
      */
     public Object remove(String key) {
-        Object value = myHashMap.remove(key);
-        return value instanceof Null ? null : value;
+        return myHashMap.remove(key);
     }
 
     /**
@@ -1247,8 +1176,7 @@ public class JSONObject implements JSONElement, Map {
     }
 
     public Object get(Object o) {
-        Object value =  myHashMap.get(o);
-        return value instanceof Null ? null : value;
+        return myHashMap.get(o);
     }
 
     public Object put(Object o, Object o1) {
@@ -1256,8 +1184,7 @@ public class JSONObject implements JSONElement, Map {
     }
 
     public Object remove(Object o) {
-        Object value = myHashMap.remove(o);
-        return value instanceof Null ? null : value;
+        return myHashMap.remove(o);
     }
 
     public void putAll(Map map) {
