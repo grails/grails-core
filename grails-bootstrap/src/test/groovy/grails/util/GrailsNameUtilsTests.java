@@ -28,6 +28,7 @@ public class GrailsNameUtilsTests extends TestCase {
 
     public void testGetGetterNameForPropertyThatBeginsWithASingleLowerCaseLetter() {
         assertEquals("getaPaperback", GrailsNameUtils.getGetterName("aPaperback"));
+        assertEquals("setaPaperback", GrailsNameUtils.getSetterName("aPaperback"));
     }
 
     public void testGetClassNameRepresentation() {
