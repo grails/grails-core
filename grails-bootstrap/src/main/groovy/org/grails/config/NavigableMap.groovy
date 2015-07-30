@@ -237,7 +237,17 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             }
         }        
     }
-    
+
+    @Override
+    int hashCode() {
+        return delegateMap.hashCode()
+    }
+
+    @Override
+    boolean equals(Object obj) {
+        return delegateMap.equals(obj)
+    }
+
     @CompileStatic
     static class NullSafeNavigator implements Map<String, Object>{
         final NavigableMap parent
