@@ -64,7 +64,8 @@ class UrlMappingsGrailsPlugin extends Plugin {
         def config = application.config
         String serverURL = config.getProperty(Settings.SERVER_URL) ?: null
         String urlConverterType = config.getProperty(Settings.WEB_URL_CONVERTER)
-        boolean cacheUrls = config.getProperty(Settings.WEB_LINK_GENERATOR_USE_CACHE, Boolean, false)
+        boolean isReloadEnabled = Environment.isDevelopmentMode() || Environment.current.isReloadEnabled()
+        boolean cacheUrls = config.getProperty(Settings.WEB_LINK_GENERATOR_USE_CACHE, Boolean, !isReloadEnabled)
 
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
@@ -73,7 +74,9 @@ class UrlMappingsGrailsPlugin extends Plugin {
         urlMappingsErrorPageCustomizer(UrlMappingsErrorPageCustomizer)
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
-        if (Environment.isDevelopmentMode() || Environment.current.isReloadEnabled()) {
+
+
+        if (isReloadEnabled) {
             urlMappingsTargetSource(HotSwappableTargetSourceFactoryBean) {
                 it.lazyInit = true
                 target = bean(UrlMappingsHolderFactoryBean) {
@@ -121,29 +124,6 @@ class UrlMappingsGrailsPlugin extends Plugin {
         factory.afterPropertiesSet()
         return factory.getObject()
     }
-
-//    @Override
-//    @CompileStatic
-//    void onStartup(ServletContext servletContext) throws ServletException {
-//        def urlMappingsFilter = new FilterRegistrationBean(new UrlMappingsFilter())
-//        urlMappingsFilter.urlPatterns = ["/*"]
-//        urlMappingsFilter.onStartup(servletContext)
-//
-//
-//        GrailsApplication application = GrailsWebUtil.lookupApplication(servletContext)
-//
-//
-//
-//        // TODO: read ResponseCodeUrlMappings from URLMappings on startup and register with error handler
-//        // Note that Servlet 3.0 does not allow the registration of error pages programmatically, will use Boot APIs to achieve this
-//        // See https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/embedded/tomcat/TomcatEmbeddedServletContainerFactory.java#L239
-          // Also see https://github.com/spring-projects/spring-boot/blob/master/spring-boot/src/main/java/org/springframework/boot/context/web/ErrorPageFilter.java
-//
-//        // def errorHandler = new ServletRegistrationBean(new ErrorHandlingServlet())
-//        //  errorHandler.onStartup(servletContext)
-//
-//    }
-
 
     @CompileDynamic
     static class DefaultUrlMappings {
