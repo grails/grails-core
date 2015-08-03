@@ -49,8 +49,7 @@ import org.springframework.util.ClassUtils;
  * accessing the values by name, and <code>put</code> methods for adding or
  * replacing values by name. The values can be any of these types:
  * <code>Boolean</code>, <code>JSONArray</code>, <code>JSONObject</code>,
- * <code>Number</code>, <code>String</code>, or the <code>JSONObject.NULL</code>
- * object. A JSONObject constructor can be used to convert an external form
+ * <code>Number</code>, or  <code>String</code>. A JSONObject constructor can be used to convert an external form
  * JSON text into an internal form whose values can be retrieved with the
  * <code>get</code> and <code>opt</code> methods, or to convert values into a
  * JSON text using the <code>put</code> and <code>toString</code> methods.
@@ -110,12 +109,16 @@ public class JSONObject implements JSONElement, Map {
             // ignore
         }
     }
-    
+
     /**
-     * JSONObject.NULL is equivalent to the value that JavaScript calls null,
-     * whilst Java's null is equivalent to the value that JavaScript calls
-     * undefined.
+     * This class has been deprecated, should no longer be referenced and
+     * has been removed from Grails 3.1.  As of Grails 2.5.1 an expression
+     * like <code>JSON.parse('{ "a": null }').a</code> will evaluate to <code>null</code> instead
+     * of <code>JSONObject.Null</code>.
+     *
+     * @deprecated This class has been deprecated and has been removed from Grails 3.1.
      */
+     @Deprecated
     public static final class Null {
 
         /**
@@ -1109,7 +1112,7 @@ public class JSONObject implements JSONElement, Map {
         }
         return quote(value.toString());
     }
-    
+
     static void writeValue(Writer writer, Object value) throws IOException {
         if (value == null || value.equals(null)) {
             writer.write("null");
