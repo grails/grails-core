@@ -43,8 +43,7 @@ import java.util.*;
  * accessing the values by name, and <code>put</code> methods for adding or
  * replacing values by name. The values can be any of these types:
  * <code>Boolean</code>, <code>JSONArray</code>, <code>JSONObject</code>,
- * <code>Number</code>, <code>String</code>, or the <code>JSONObject.NULL</code>
- * object. A JSONObject constructor can be used to convert an external form
+ * <code>Number</code>, or <code>String</code>. A JSONObject constructor can be used to convert an external form
  * JSON text into an internal form whose values can be retrieved with the
  * <code>get</code> and <code>opt</code> methods, or to convert values into a
  * JSON text using the <code>put</code> and <code>toString</code> methods.
@@ -104,7 +103,7 @@ public class JSONObject implements JSONElement, Map {
             // ignore
         }
     }
-    
+
     /**
      * The hash map where the JSONObject's properties are kept.
      */
@@ -1038,7 +1037,7 @@ public class JSONObject implements JSONElement, Map {
         }
         return quote(value.toString());
     }
-    
+
     static void writeValue(Writer writer, Object value) throws IOException {
         if (value == null || value.equals(null)) {
             writer.write("null");

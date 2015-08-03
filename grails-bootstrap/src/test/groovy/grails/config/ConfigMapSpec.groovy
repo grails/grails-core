@@ -1,6 +1,7 @@
 package grails.config
 
-import org.grails.config.NavigableMap;
+import org.grails.config.NavigableMap
+import spock.lang.Issue;
 import spock.lang.Specification
 
 class ConfigMapSpec extends Specification {
@@ -13,6 +14,17 @@ class ConfigMapSpec extends Specification {
         configMap.a.b.d = 2
         then:
         configMap.toFlatConfig() == ['a.b.c': 1, 'a.b.d': 2]
+    }
+
+    @Issue('#9146')
+    def "should support hashCode()"() {
+        given:
+        NavigableMap configMap = new NavigableMap()
+        when:
+        configMap.a.b.c = 1
+        configMap.a.b.d = 2
+        then:"hasCode() doesn't cause a Stack Overflow error"
+        configMap.hashCode() == configMap.hashCode()
     }
 
     def "should support flattening list values"() {

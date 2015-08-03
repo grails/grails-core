@@ -25,6 +25,7 @@ import java.util.*;
 public class GrailsNameUtils {
 
     private static final String PROPERTY_SET_PREFIX = "set";
+    private static final String PROPERTY_GET_PREFIX = "get";
 
     /**
      * Retrieves the name of a setter for the specified property name
@@ -32,7 +33,8 @@ public class GrailsNameUtils {
      * @return The setter equivalent
      */
     public static String getSetterName(String propertyName) {
-        return PROPERTY_SET_PREFIX+propertyName.substring(0,1).toUpperCase()+ propertyName.substring(1);
+        final String suffix = getSuffixForGetterOrSetter(propertyName);
+        return PROPERTY_SET_PREFIX+suffix;
     }
 
     /**
@@ -41,6 +43,11 @@ public class GrailsNameUtils {
      * @return The name for the getter method for this property, if it were to exist, i.e. getConstraints
      */
     public static String getGetterName(String propertyName) {
+        final String suffix = getSuffixForGetterOrSetter(propertyName);
+        return PROPERTY_GET_PREFIX + suffix;
+    }
+
+    private static String getSuffixForGetterOrSetter(String propertyName) {
         final String suffix;
         if (propertyName.length() > 1 &&
                 Character.isLowerCase(propertyName.charAt(0)) &&
@@ -49,7 +56,7 @@ public class GrailsNameUtils {
         } else {
             suffix = Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         }
-        return "get" + suffix;
+        return suffix;
     }
 
     /**
