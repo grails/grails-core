@@ -61,26 +61,25 @@ class UrlMappingMatcher implements Matcher {
         boolean isNotExcluded = !isExcluded(uri, info)
         if(matchAll && isNotExcluded) return true
 
-        if(hasUriPatterns) {
-            uri = uri.replace(';', '')
-            for(pattern in uriPatterns) {
-                if( pathMatcher.match(pattern, uri)  && isNotExcluded) {
+        if(isNotExcluded) {
+            if (hasUriPatterns) {
+                uri = uri.replace(';', '')
+                for (pattern in uriPatterns) {
+                    if (pathMatcher.match(pattern, uri)) {
+                        return true
+                    }
+                }
+            } else if (info) {
+                def infoCode = info.hashCode()
+                Boolean matched = CACHED_MATCHES.get(infoCode)
+                if (matched != null) return matched
+
+                if (doesMatchInternal(info)) {
+                    if (Environment.current == Environment.PRODUCTION) {
+                        CACHED_MATCHES.put(infoCode, Boolean.TRUE)
+                    }
                     return true
                 }
-            }
-        }
-
-        if(info) {
-            def infoCode = info.hashCode()
-            Boolean matched = CACHED_MATCHES.get(infoCode)
-            if(matched != null) return matched
-
-            if(doesMatchInternal(info)
-                && isNotExcluded) {
-                if(Environment.current == Environment.PRODUCTION) {
-                    CACHED_MATCHES.put(infoCode, Boolean.TRUE)
-                }
-                return true
             }
         }
         return false
