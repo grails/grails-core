@@ -78,22 +78,17 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
     @Override
     void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         if(reverseInterceptors) {
-            boolean renderView = true
+            if (modelAndView != null) {
+                request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
+            }
             for(i in reverseInterceptors) {
                 if(i.doesMatch()) {
                     if( !i.after() ) {
-                        renderView = false
+                        modelAndView?.clear()
+                        GrailsWebRequest.lookup().setRenderView(false)
                         break
                     }
                 }
-            }
-            if(renderView) {
-                if (modelAndView != null) {
-                    request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
-                }
-            } else {
-                modelAndView?.clear()
-                GrailsWebRequest.lookup().setRenderView(false)
             }
         }
     }
