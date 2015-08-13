@@ -22,6 +22,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.OrderComparator
@@ -77,14 +78,14 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
     @Override
     void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         if(reverseInterceptors) {
-            if(modelAndView != null) {
+            if (modelAndView != null) {
                 request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
             }
             for(i in reverseInterceptors) {
                 if(i.doesMatch()) {
                     if( !i.after() ) {
-                        modelAndView.setView(null)
-                        modelAndView.setViewName(null)
+                        modelAndView?.clear()
+                        GrailsWebRequest.lookup().setRenderView(false)
                         break
                     }
                 }
