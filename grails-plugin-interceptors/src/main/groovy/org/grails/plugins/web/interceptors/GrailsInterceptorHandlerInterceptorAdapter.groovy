@@ -31,8 +31,6 @@ import org.springframework.web.servlet.ModelAndView
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-
-
 /**
  * Adapts Grails {@link Interceptor} instances to the Spring {@link HandlerInterceptor} interface
  *
@@ -43,6 +41,8 @@ import javax.servlet.http.HttpServletResponse
 class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     private static final Log LOG = LogFactory.getLog(Interceptor)
+
+    static final String INTERCEPTOR_RENDERED_VIEW = 'interceptor_rendered_view'
 
     protected List<Interceptor> interceptors = []
     protected List<Interceptor> reverseInterceptors = []
@@ -77,14 +77,20 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
     @Override
     void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         if(reverseInterceptors) {
-            if(modelAndView != null) {
+            if (modelAndView != null) {
                 request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
             }
             for(i in reverseInterceptors) {
                 if(i.doesMatch()) {
                     if( !i.after() ) {
-                        modelAndView.setView(null)
-                        modelAndView.setViewName(null)
+                        if(request.getAttribute(INTERCEPTOR_RENDERED_VIEW)) {
+                            ModelAndView interceptorsModelAndView = i.modelAndView
+                            modelAndView.viewName = interceptorsModelAndView.viewName
+                            modelAndView.model.clear()
+                            modelAndView.model.putAll(interceptorsModelAndView.model)
+                        } else {
+                            modelAndView?.clear()
+                        }
                         break
                     }
                 }
