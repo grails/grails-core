@@ -4,6 +4,12 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.SourceSetOutput
+import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.bundling.War
+import org.gradle.api.tasks.compile.GroovyCompile
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.grails.gradle.plugin.util.SourceSets
 
 /**
@@ -26,21 +32,25 @@ class GroovyPagePlugin implements Plugin<Project> {
 
         def mainSourceSet = SourceSets.findMainSourceSet(project)
 
-        def destDir = mainSourceSet?.output?.classesDir ?: new File(project.buildDir, "main/classes")
+        def output = mainSourceSet?.output
+        def classesDir = output?.classesDir ?: new File(project.buildDir, "classes/main")
+        def destDir = output?.dir("gsp-classes") ?: new File(project.buildDir, "gsp-classes/main")
 
         def providedConfig = project.configurations.findByName('provided')
-        def allClasspath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(destDir)
+        def allClasspath = project.configurations.compile + project.configurations.gspCompile + project.fileTree(classesDir)
         if(providedConfig) {
             allClasspath += providedConfig
         }
-        project.tasks.create("compileGroovyPages", GroovyPageCompileTask) {
+
+        def allTasks = project.tasks
+        def compileGroovyPages = allTasks.create("compileGroovyPages", GroovyPageCompileTask) {
             destinationDir = destDir
             source = project.file("${project.projectDir}/grails-app/views")
             serverpath = "/WEB-INF/grails-app/views/"
             classpath = allClasspath
         }
 
-        project.tasks.create("compileWebappGroovyPages", GroovyPageCompileTask) {
+        def compileWebappGroovyPages = allTasks.create("compileWebappGroovyPages", GroovyPageCompileTask) {
             destinationDir = destDir
             source = project.file("${project.projectDir}/src/main/webapp")
             serverpath = "/"
@@ -48,17 +58,18 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
 
 
-        def compileGroovyPages = project.tasks.getByName("compileGroovyPages")
-        compileGroovyPages.dependsOn( project.tasks.getByName('compileWebappGroovyPages'))
-        compileGroovyPages.dependsOn( project.tasks.getByName("compileGroovy") )
+        compileGroovyPages.dependsOn( allTasks.withType(GroovyCompile) )
+        compileGroovyPages.dependsOn( compileWebappGroovyPages )
 
-        def warTask = project.tasks.findByName('war')
-        def jarTask = project.tasks.findByName('jar')
-        if(warTask) {
-            warTask.dependsOn(compileGroovyPages)
+        allTasks.withType(War) { War war ->
+            war.dependsOn compileGroovyPages
+            war.classpath = war.classpath + project.files(destDir)
         }
-        if(jarTask) {
-            jarTask?.dependsOn(compileGroovyPages)
+        allTasks.withType(Jar) { Jar jar ->
+            if(!(jar instanceof War)) {
+                jar.dependsOn compileGroovyPages
+                jar.from destDir
+            }
         }
     }
 

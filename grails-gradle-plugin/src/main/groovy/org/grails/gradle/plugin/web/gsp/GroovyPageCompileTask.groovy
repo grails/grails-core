@@ -2,6 +2,7 @@ package org.grails.gradle.plugin.web.gsp
 
 import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
@@ -24,6 +25,7 @@ class GroovyPageCompileTask extends AbstractCompile {
     @Optional
     String serverpath
 
+    @InputDirectory
     File srcDir
 
     @Override
