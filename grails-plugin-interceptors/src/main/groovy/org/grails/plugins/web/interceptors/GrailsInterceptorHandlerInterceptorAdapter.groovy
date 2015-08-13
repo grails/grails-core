@@ -22,7 +22,6 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.OrderComparator
@@ -31,8 +30,6 @@ import org.springframework.web.servlet.ModelAndView
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
-
 
 /**
  * Adapts Grails {@link Interceptor} instances to the Spring {@link HandlerInterceptor} interface
@@ -93,7 +90,6 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
                             modelAndView.model.putAll(interceptorsModelAndView.model)
                         } else {
                             modelAndView?.clear()
-                            GrailsWebRequest.lookup().setRenderView(false)
                         }
                         break
                     }
