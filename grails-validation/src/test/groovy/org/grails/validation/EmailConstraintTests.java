@@ -47,6 +47,29 @@ public class EmailConstraintTests extends AbstractConstraintTests {
                 "");
     }
 
+    /**
+     * #9184 - com.org.apache.commons.validator.routines.EmailValidator claims
+     * to not validate TLDs, but delegates to org.apache.commons.validator.routines.DomainValidator
+     * which does so.
+     */
+    public void testUnrecognizedTld() {
+        testConstraintFailed(
+                getConstraint("testString", Boolean.TRUE),
+                "somperson@someagency.agency"
+        );
+
+        testConstraintPassed(
+                getConstraint("testString", Boolean.TRUE),
+                "somperson@someagency.io"
+        );
+
+        // This is the example that "should" pass from the EmailValidator javadoc
+        testConstraintFailed(
+                getConstraint("testString", Boolean.TRUE),
+                "nobody@noplace.somedog"
+        );
+    }
+
 
     public void testCreation() {
         EmailConstraint constraint = new EmailConstraint();
