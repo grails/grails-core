@@ -45,6 +45,8 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     private static final Log LOG = LogFactory.getLog(Interceptor)
 
+    static final String INTERCEPTOR_RENDERED_VIEW = 'interceptor_rendered_view'
+
     protected List<Interceptor> interceptors = []
     protected List<Interceptor> reverseInterceptors = []
 
@@ -84,8 +86,15 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
             for(i in reverseInterceptors) {
                 if(i.doesMatch()) {
                     if( !i.after() ) {
-                        modelAndView?.clear()
-                        GrailsWebRequest.lookup().setRenderView(false)
+                        if(request.getAttribute(INTERCEPTOR_RENDERED_VIEW)) {
+                            ModelAndView interceptorsModelAndView = i.modelAndView
+                            modelAndView.viewName = interceptorsModelAndView.viewName
+                            modelAndView.model.clear()
+                            modelAndView.model.putAll(interceptorsModelAndView.model)
+                        } else {
+                            modelAndView?.clear()
+                            GrailsWebRequest.lookup().setRenderView(false)
+                        }
                         break
                     }
                 }

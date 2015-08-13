@@ -25,6 +25,7 @@ import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
+import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
 import org.grails.plugins.web.interceptors.UrlMappingMatcher
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.util.GrailsApplicationAttributes
@@ -46,6 +47,7 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwarder, DataBinder, WebAttributes, ServletAttributes, Ordered {
+
 
     /**
      * The order the interceptor should execute in
@@ -221,6 +223,13 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
             final HttpServletResponse response = getResponse()
             response?.setHeader headerName, headerValue.toString()
         }
+    }
+
+    void render(Map argMap) {
+        if(argMap.containsKey('view')) {
+            request.setAttribute(GrailsInterceptorHandlerInterceptorAdapter.INTERCEPTOR_RENDERED_VIEW, true)
+        }
+        ResponseRenderer.super.render(argMap)
     }
 
 }
