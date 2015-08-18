@@ -40,24 +40,26 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
     @Override
     PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
         def env = Environment.current.name
-        ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
+        if(env == profile) {
+            ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
 
-        configSlurper.setBinding(userHome: System.getProperty('user.home'),
-                                 grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
-                                 springProfile: profile,
-                                 appName: Metadata.getCurrent().getApplicationName(),
-                                 appVersion: Metadata.getCurrent().getApplicationVersion() )
+            configSlurper.setBinding(userHome: System.getProperty('user.home'),
+                    grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
+                    springProfile: profile,
+                    appName: Metadata.getCurrent().getApplicationName(),
+                    appVersion: Metadata.getCurrent().getApplicationVersion() )
 
-        if(resource.exists()) {
-            try {
-                def configObject = configSlurper.parse(resource.URL)
-                def flatMap = configObject.flatten()
-                Map<String, Object> finalMap = [:]
-                finalMap.putAll(configObject)
-                finalMap.putAll(flatMap)
-                return new MapPropertySource(name, finalMap)
-            } catch (Throwable e) {
-                log.error("Unable to load $resource.filename: $e.message", e)
+            if(resource.exists()) {
+                try {
+                    def configObject = configSlurper.parse(resource.URL)
+                    def flatMap = configObject.flatten()
+                    Map<String, Object> finalMap = [:]
+                    finalMap.putAll(configObject)
+                    finalMap.putAll(flatMap)
+                    return new MapPropertySource(name, finalMap)
+                } catch (Throwable e) {
+                    log.error("Unable to load $resource.filename: $e.message", e)
+                }
             }
         }
         return null

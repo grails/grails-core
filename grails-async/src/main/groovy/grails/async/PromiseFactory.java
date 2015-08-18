@@ -54,6 +54,20 @@ public interface PromiseFactory {
      * @return A Promise
      */
     <T> Promise<T> createBoundPromise(T value);
+
+    /**
+     * Creates an unfulfilled promise that returns the given type
+     * @param returnType The return type
+     * @param <T> The type of the class
+     * @return The unfulfilled promise
+     */
+    <T> Promise<T> createPromise(Class<T> returnType);
+    /**
+     * Creates an unfulfilled promise that returns void
+     *
+     * @return The unfulfilled promise
+     */
+    Promise<Object> createPromise();
     /**
      * Creates a promise from the given map where the values of the map are either closures or Promise instances
      *
