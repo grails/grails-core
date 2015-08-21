@@ -166,7 +166,7 @@ class FormatTagLib {
         }
         String type = attrs.type?.toString()?.toUpperCase()
         def formatName = attrs.formatName
-        def format = attrs.format
+        String format = attrs.format
         def timeZone = attrs.timeZone
         if (timeZone != null) {
             if (!(timeZone instanceof TimeZone)) {
