@@ -354,8 +354,8 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
                     commandObjectParameterName, dataBindingSource)
             def entityIdentifierValue = null
             final boolean isDomainClass
-            if(GroovyObject.isAssignableFrom(type) && !DomainClass.isAssignableFrom(type)) {
-                isDomainClass = false
+            if(GroovyObject.isAssignableFrom(type)) {
+                isDomainClass = DomainClass.isAssignableFrom(type)
             } else {
                 isDomainClass = DomainClassArtefactHandler
                         .isDomainClass(type)
