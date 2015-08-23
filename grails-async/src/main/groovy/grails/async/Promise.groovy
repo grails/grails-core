@@ -45,6 +45,13 @@ interface Promise<T> {
     T get(final long timeout, final TimeUnit units) throws Throwable
 
     /**
+     * Assigns a value to an unfulfilled promise
+     *
+     * @param value The value
+     */
+    Promise<T> accept(T value)
+
+    /**
      * Execute the given closure when the promise completes
      *
      * @param callable

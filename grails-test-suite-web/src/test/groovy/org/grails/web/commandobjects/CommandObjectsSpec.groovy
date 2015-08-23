@@ -396,6 +396,22 @@ class CommandObjectsSpec extends Specification {
         then:
         1 == model.co.validationCounter
     }
+
+    @Issue('grails/grails-core#9172')
+    void 'test that a non domain class command object with an id and version is not treated as a domain class'() {
+        when:
+        params.name = 'Jeffrey'
+        params.id = '42'
+        request.method = 'PUT'
+        def model = controller.nonDomainCommandObject()
+        def commandObject = model.commandObject
+
+        then:
+        commandObject?.name == 'Jeffrey'
+        commandObject.id == 42l
+        commandObject.version == null
+
+    }
 }
 
 @Artefact('Controller')
@@ -467,6 +483,10 @@ class TestController {
     def methodActionWithNonValidateableCommandObject(NonValidateableCommand co) {
         [commandObject: co]
     }
+
+    def nonDomainCommandObject(NonDomainCommandObjectWithIdAndVersion co) {
+        [commandObject: co]
+    }
 }
 
 class DateComamndObject {
@@ -528,4 +548,10 @@ class Person {
         city nullable: true, bindable: false
         state nullable: true
     }
+}
+
+class NonDomainCommandObjectWithIdAndVersion {
+    Long id
+    Long version
+    String name
 }

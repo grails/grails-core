@@ -68,6 +68,16 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     }
 
     @Override
+    def <T> Promise<T> createPromise(Class<T> returnType) {
+        new ReactorPromise<T>(Promises.ready(environment, Environment.cachedDispatcher()))
+    }
+
+    @Override
+    Promise<Object> createPromise() {
+        new ReactorPromise<Object>(Promises.ready(environment, Environment.cachedDispatcher()))
+    }
+
+    @Override
     def <T> List<T> waitAll(List<Promise<T>> promises) {
         waitAll(promises, -1, TimeUnit.SECONDS)
     }

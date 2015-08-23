@@ -29,7 +29,13 @@ import java.util.concurrent.TimeUnit
 class PromiseList<T> implements Promise<List<T>> {
 
     protected List<Promise> promises = []
+    protected List<T> initialized
 
+    @Override
+    Promise<List<T>> accept(List<T> value) {
+        initialized = value
+        return this
+    }
     /**
      * Add a promise to the promise list
      *
@@ -117,11 +123,21 @@ class PromiseList<T> implements Promise<List<T>> {
      * @return The values
      */
     List get() {
-        Promises.waitAll(promises)
+        if(initialized != null) {
+            return initialized
+        }
+        else {
+            Promises.waitAll(promises)
+        }
     }
 
     @Override
     List get(long timeout, TimeUnit units) throws Throwable {
-        Promises.waitAll(promises, timeout, units)
+        if(initialized != null) {
+            return initialized
+        }
+        else {
+            Promises.waitAll(promises, timeout, units)
+        }
     }
 }

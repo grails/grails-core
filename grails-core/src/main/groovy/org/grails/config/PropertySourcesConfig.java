@@ -16,6 +16,7 @@
 package org.grails.config;
 
 import grails.util.GrailsStringUtils;
+import groovy.util.ConfigObject;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
@@ -90,6 +91,9 @@ public class PropertySourcesConfig extends NavigableMapConfig {
         Map<String, Object> map = new LinkedHashMap<String, Object>();
         for(String propertyName : enumerablePropertySource.getPropertyNames()) {
             Object value = enumerablePropertySource.getProperty(propertyName);
+            if(value instanceof ConfigObject) {
+                if(((ConfigObject)value).isEmpty()) continue;
+            }
             if(value instanceof CharSequence) {
                 value = resolvePlaceholders(value.toString());
             }

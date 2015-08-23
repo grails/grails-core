@@ -17,6 +17,7 @@ package org.grails.async.factory.gpars
 
 import grails.async.Promise
 import grails.async.Promises
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovyx.gpars.dataflow.Dataflow
 
@@ -47,6 +48,13 @@ class  GparsPromise<T> implements Promise<T> {
 
     T get(long timeout, TimeUnit units) throws Throwable {
         internalPromise.get(timeout, units)
+    }
+
+    @Override
+    @CompileDynamic
+    Promise<T> accept(T value) {
+        internalPromise << value
+        return this
     }
 
     Promise<T> leftShift(Closure callable) {
