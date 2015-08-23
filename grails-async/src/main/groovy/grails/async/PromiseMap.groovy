@@ -35,18 +35,22 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
     PromiseMap() {
     }
 
-    PromiseMap(Map<K, Object> values) {
-        values.each {K key, value ->
+    PromiseMap(Map<K, V> values) {
+        accept(values)
+    }
+
+    @Override
+    Promise<Map<K, V>> accept(Map<K, V> values) {
+        values.each { K key, value ->
             if (value instanceof Promise) {
-                put(key, (Promise)value)
-            }
-            else if (value instanceof Closure) {
-                put(key, (Closure)value)
-            }
-            else {
+                put(key, (Promise) value)
+            } else if (value instanceof Closure) {
+                put(key, (Closure) value)
+            } else {
                 put(key, value)
             }
         }
+        return this
     }
 
     /**

@@ -62,6 +62,18 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     }
 
     @Override
+    def <T> Promise<T> createPromise(Class<T> returnType) {
+        final variable = new DataflowVariable()
+        return new GparsPromise<T>(variable)
+    }
+
+    @Override
+    Promise<Object> createPromise() {
+        final variable = new DataflowVariable()
+        return new GparsPromise<Object>(variable)
+    }
+
+    @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
             final callable = closures[0]

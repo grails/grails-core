@@ -134,6 +134,20 @@ public class Promises {
     }
 
     /**
+     * @see grails.async.PromiseFactory#createPromise()
+     */
+    public static Promise<Object> createPromise() {
+        return getPromiseFactory().createPromise();
+    }
+
+    /**
+     * @see grails.async.PromiseFactory#createPromise(Class)
+     */
+    public static<T> Promise<T> createPromise(Class<T> returnType) {
+        return getPromiseFactory().createPromise(returnType);
+    }
+
+    /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
     public static<T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {

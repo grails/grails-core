@@ -32,6 +32,16 @@ import java.util.concurrent.TimeUnit
 @CompileStatic
 class SynchronousPromiseFactory extends AbstractPromiseFactory {
     @Override
+    def <T> Promise<T> createPromise(Class<T> returnType) {
+        throw new UnsupportedOperationException("synchronous factory does not support unfulfilled promises")
+    }
+
+    @Override
+    Promise<Object> createPromise() {
+        throw new UnsupportedOperationException("synchronous factory does not support unfulfilled promises")
+    }
+
+    @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
             return new SynchronousPromise<T>(closures[0])

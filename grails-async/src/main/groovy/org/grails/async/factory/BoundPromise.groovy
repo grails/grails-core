@@ -45,6 +45,12 @@ class BoundPromise<T> implements Promise<T> {
         return get()
     }
 
+    @Override
+    Promise<T> accept(T value) {
+        this.value = value
+        return this
+    }
+
     Promise<T> onComplete(Closure callable) {
         if (!(value instanceof Throwable)) {
             callable.call(value)

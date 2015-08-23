@@ -47,6 +47,12 @@ class ReactorPromise<T> implements Promise<T> {
     }
 
     @Override
+    Promise<T> accept(T value) {
+        this.internalPromise.accept(value)
+        return this
+    }
+
+    @Override
     T get() throws Throwable {
         internalPromise.await()
     }
