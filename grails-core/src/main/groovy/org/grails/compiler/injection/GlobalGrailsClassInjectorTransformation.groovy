@@ -108,7 +108,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             for(ArtefactHandler handler in artefactHandlers) {
                 if(handler.isArtefact(classNode)) {
                     if(!classNode.getAnnotations(ARTEFACT_CLASS_NODE)) {
-                        transformedClasses << classNodeName
+                        transformedClasses.add classNodeName
                         def annotationNode = new AnnotationNode(new ClassNode(Artefact.class))
                         annotationNode.addMember("value", new ConstantExpression(handler.getType()))
                         classNode.addAnnotation(annotationNode)
