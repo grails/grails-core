@@ -70,15 +70,19 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         for (ClassNode classNode : classes) {
             def projectName = classNode.getNodeMetaData("projectName")
             def projectVersion = classNode.getNodeMetaData("projectVersion")
-            pluginVersion = projectVersion
+            if(projectVersion == null) {
+                projectVersion = 'SNAPSHOT'
+            }
 
+            pluginVersion = projectVersion
 
 
             def classNodeName = classNode.name
 
             if(classNodeName.endsWith("GrailsPlugin")) {
                 pluginClassNode = classNode
-                if(projectVersion && !classNode.getProperty('version')) {
+
+                if(!classNode.getProperty('version')) {
                     classNode.addProperty(new PropertyNode('version', Modifier.PUBLIC, ClassHelper.make(Object), classNode, new ConstantExpression(projectVersion.toString()) , null, null))
                 }
 
@@ -108,7 +112,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
             for(ArtefactHandler handler in artefactHandlers) {
                 if(handler.isArtefact(classNode)) {
                     if(!classNode.getAnnotations(ARTEFACT_CLASS_NODE)) {
-                        transformedClasses << classNodeName
+                        transformedClasses.add classNodeName
                         def annotationNode = new AnnotationNode(new ClassNode(Artefact.class))
                         annotationNode.addMember("value", new ConstantExpression(handler.getType()))
                         classNode.addAnnotation(annotationNode)

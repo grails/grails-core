@@ -59,7 +59,7 @@ class ResourceUtils extends GrailsResourceUtils {
             if (!dir.hidden && !dirName.startsWith('.')) {
                 packageNames << "${prefix}${dirName}".toString()
 
-                populatePackages(dir, packageNames, "${dirName}.")
+                populatePackages(dir, packageNames, "${prefix}${dirName}.")
             }
         }
     }
