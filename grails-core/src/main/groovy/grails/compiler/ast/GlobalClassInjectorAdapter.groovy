@@ -31,7 +31,7 @@ abstract class GlobalClassInjectorAdapter implements GlobalClassInjector {
         def className = classNode.name
         if(!processesClassNames.contains(className)) {
             performInjectionInternal source, classNode
-            processesClassNames << className
+            processesClassNames.add className
         }
     }
 

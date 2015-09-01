@@ -60,7 +60,8 @@ public class TraitInjectionUtils {
                         parameterNameToParameterValue.put(gt.getName(), classNode);
                     }
                 }
-                classNode.addInterface(GrailsASTUtils.replaceGenericsPlaceholders(traitClassNode, parameterNameToParameterValue, classNode));                traitsAdded = true;
+                classNode.addInterface(GrailsASTUtils.replaceGenericsPlaceholders(traitClassNode, parameterNameToParameterValue, classNode));
+                traitsAdded = true;
             }
         }
         if(traitsAdded && 

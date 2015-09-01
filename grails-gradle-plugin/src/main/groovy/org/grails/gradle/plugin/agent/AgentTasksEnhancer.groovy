@@ -14,15 +14,19 @@ import org.gradle.api.tasks.JavaExec
 class AgentTasksEnhancer implements Action<Project> {
     @Override
     void execute(Project project) {
-        def agentJars = project.getConfigurations().getByName("agent").resolvedConfiguration.resolvedArtifacts
+        try {
+            def agentJars = project.getConfigurations().getByName("agent").resolvedConfiguration.resolvedArtifacts
 
-        if(agentJars) {
-            def agentJar = agentJars.iterator().next().file
-            for (Task task : project.getTasks()) {
-                if (task instanceof JavaExec) {
-                    addAgent(project, (JavaExec) task, agentJar);
+            if(agentJars) {
+                def agentJar = agentJars.iterator().next().file
+                for (Task task : project.getTasks()) {
+                    if (task instanceof JavaExec) {
+                        addAgent(project, (JavaExec) task, agentJar);
+                    }
                 }
             }
+        } catch (Throwable e) {
+            project.logger.warn("Cannot resolve reloading agent JAR: ${e.message}")
         }
     }
 

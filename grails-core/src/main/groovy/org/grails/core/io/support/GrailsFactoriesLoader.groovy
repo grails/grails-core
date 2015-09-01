@@ -77,7 +77,7 @@ class GrailsFactoriesLoader extends FactoriesLoaderSupport {
         for (String factoryName in factoryNames) {
             def clazz = loadFactoryClass(factoryName, factoryClass, classLoader)
             if(clazz) {
-                result << clazz
+                result.add clazz
             }
         }
         return result
