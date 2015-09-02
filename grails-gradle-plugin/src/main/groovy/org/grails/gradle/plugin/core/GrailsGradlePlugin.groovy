@@ -334,23 +334,30 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
                 project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
                     def grailsExt = project.extensions.getByType(GrailsExtension)
-                    task.filter( ReplaceTokens, tokens: [
+                    def replaceTokens = [
                             'info.app.name': project.name,
                             'info.app.version': project.version,
                             'info.app.grailsVersion': grailsVersion
                     ]
-                    )
                     task.from(sourceSet.resources) {
                         include '**/*.properties'
+                        filter( ReplaceTokens, tokens: replaceTokens )
                         if(grailsExt.native2ascii) {
                             filter(EscapeUnicode)
                         }
                     }
                     task.from(sourceSet.resources) {
-                        exclude '**/*.properties'
-                    }
-                    task.from(sourceSet.resources) {
+                        filter( ReplaceTokens, tokens: replaceTokens )
                         include '**/*.groovy'
+                        include '**/*.yml'
+                        include '**/*.xml'
+                    }
+
+                    task.from(sourceSet.resources) {
+                        exclude '**/*.properties'
+                        exclude '**/*.groovy'
+                        exclude '**/*.yml'
+                        exclude '**/*.xml'
                     }
                 }
             }
