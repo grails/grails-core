@@ -26,6 +26,7 @@ import grails.web.databinding.DataBinder
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
+import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.plugins.web.interceptors.UrlMappingMatcher
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.util.GrailsApplicationAttributes
@@ -48,7 +49,7 @@ import java.util.regex.Pattern
 @CompileStatic
 trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwarder, DataBinder, WebAttributes, ServletAttributes, Ordered {
 
-    private String interceptorMatchKey = "${getClass().name}.MATCHED"
+    private String interceptorMatchKey = "${getClass().name}${InterceptorArtefactHandler.MATCH_SUFFIX}"
 
     /**
      * The order the interceptor should execute in

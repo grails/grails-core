@@ -16,6 +16,7 @@
 package grails.artefact
 
 import grails.util.GrailsWebMockUtil
+import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
@@ -23,6 +24,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
+import javax.servlet.http.HttpServletRequest
 
 
 /**
@@ -38,19 +40,22 @@ class InterceptorSpec extends Specification {
         given:"A test interceptor"
             def i = new TestInterceptor()
             def webRequest = GrailsWebMockUtil.bindMockWebRequest()
-
+            HttpServletRequest request = webRequest.request
         when:"The current request is for a controller called test"
-            webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test"))
+            request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test"))
+
         then:"We match"
             i.doesMatch()
 
         when:"The current request is for a controller called test and action called bar"
-            webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
+            clearMatch(i,request)
+            request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
         then:"We match"
             i.doesMatch()
 
         when:"The current request is for another controller"
-            webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "other"))
+            clearMatch(i,request)
+            request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "other"))
         then:"We don't match"
             !i.doesMatch()
     }
@@ -59,24 +64,28 @@ class InterceptorSpec extends Specification {
         given:"A test interceptor"
         def i = new Test3Interceptor()
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def request = webRequest.request
 
         when:"The current request is for a controller called test"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test"))
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test"))
         then:"We match"
         i.doesMatch()
 
         when:"The current request is for a controller called test and action called bar"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
         then:"We match"
         i.doesMatch()
 
         when:"The current request is for another controller"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "other"))
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "other"))
         then:"We match"
         i.doesMatch()
 
         when:"The current request is for an excluded controller controller"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
         then:"We don't match"
         !i.doesMatch()
     }
@@ -85,27 +94,35 @@ class InterceptorSpec extends Specification {
         given:"A test interceptor"
         def i = new Test2Interceptor()
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def request = webRequest.request
 
         when:"The current request is for a controller called test"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
         then:"We match"
         i.doesMatch()
 
         when:"The current request is for a controller called test and action called bar"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName: "bar"))
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName: "bar"))
         then:"We don't match"
         !i.doesMatch()
 
         when:"The current request is for another controller action"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName:"stuff"))
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName:"stuff"))
         then:"We match"
         i.doesMatch()
 
         when:"The current request is for another controller action and method"
-        webRequest.request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName:"stuff", httpMethod: "POST"))
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName:"stuff", httpMethod: "POST"))
         then:"We match"
         i.doesMatch()
 
+    }
+
+    void clearMatch(i, HttpServletRequest request) {
+        request.removeAttribute(i.getClass().name + InterceptorArtefactHandler.MATCH_SUFFIX)
     }
 }
 
