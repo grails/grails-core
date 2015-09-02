@@ -48,6 +48,7 @@ import java.util.regex.Pattern
 @CompileStatic
 trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwarder, DataBinder, WebAttributes, ServletAttributes, Ordered {
 
+    private String interceptorMatchKey = "${getClass().name}.MATCHED"
 
     /**
      * The order the interceptor should execute in
@@ -69,6 +70,10 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      * @return Whether the current interceptor does match
      */
     boolean doesMatch(HttpServletRequest request) {
+        def existing = request.getAttribute(interceptorMatchKey)
+        if(existing != null) {
+            return (Boolean)existing
+        }
 
         if(matchers.isEmpty()) {
             // default to map just the controller by convention
@@ -76,6 +81,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
             matcher.matches(controller:Pattern.compile(GrailsNameUtils.getLogicalPropertyName(getClass().simpleName, "Interceptor")))
             matchers << matcher
         }
+
         def req = request
         def uri = req.requestURI
 
@@ -84,10 +90,11 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
 
         for(Matcher matcher in matchers) {
             if(matcher.doesMatch(uri, grailsMappingInfo)) {
+                request.setAttribute(interceptorMatchKey, Boolean.TRUE)
                 return true
             }
         }
-
+        request.setAttribute(interceptorMatchKey, Boolean.FALSE)
         return false
     }
 
