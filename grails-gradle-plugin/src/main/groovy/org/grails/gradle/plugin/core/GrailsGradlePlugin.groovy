@@ -82,6 +82,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected Task createBuildPropertiesTask(Project project) {
+
         def buildInfoFile = project.file("${project.buildDir}/grails.build.info")
 
         def buildPropertiesTask = project.tasks.create("buildProperties")
@@ -93,6 +94,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         buildPropertiesTask.inputs.properties(buildPropertiesContents)
         buildPropertiesTask.outputs.file(buildInfoFile)
         buildPropertiesTask << {
+            project.buildDir.mkdirs()
             ant.propertyfile(file: buildInfoFile) {
                 for(me in buildPropertiesContents) {
                     entry key: me.key, value: me.value
