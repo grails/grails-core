@@ -119,6 +119,7 @@ public class GroovyPageParser implements Tokens {
     private final String pageName;
     public static final String[] DEFAULT_IMPORTS = {
         "grails.plugins.metadata.GrailsPlugin",
+        "org.grails.gsp.compiler.transform.LineNumber",
         "org.grails.gsp.GroovyPage",
         "org.grails.web.taglib.*",
         "org.grails.taglib.GrailsTagException",
