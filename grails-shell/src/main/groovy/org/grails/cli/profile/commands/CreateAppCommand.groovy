@@ -204,6 +204,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
         AntBuilder ant = new GrailsConsoleAntBuilder()
         File srcDir = new File(profileDirectory, "skeleton")
+        ant.copy(file:"${srcDir}/.gitignore", todir: targetDirectory, failonerror:false)
         ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
             fileSet(dir: srcDir, casesensitive: false) {
                 exclude(name: '**/.gitkeep')

@@ -67,13 +67,15 @@ class ControllersGrailsPlugin extends Plugin {
     Closure doWithSpring(){ { ->
         def application = grailsApplication
         def config = application.config
-        def defaultScope = config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
+
+        String defaultScope = config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
         boolean useJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
-        def uploadTmpDir = config.getProperty(Settings.CONTROLLERS_UPLOAD_LOCATION, System.getProperty("java.io.tmpdir"))
+        String uploadTmpDir = config.getProperty(Settings.CONTROLLERS_UPLOAD_LOCATION, System.getProperty("java.io.tmpdir"))
         long maxFileSize = config.getProperty(Settings.CONTROLLERS_UPLOAD_MAX_FILE_SIZE, Long, 128000L)
         long maxRequestSize = config.getProperty(Settings.CONTROLLERS_UPLOAD_MAX_REQUEST_SIZE, Long, 128000L)
         int fileSizeThreashold = config.getProperty(Settings.CONTROLLERS_UPLOAD_FILE_SIZE_THRESHOLD, Integer, 0)
-        def filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
+        String filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
+        boolean filtersForceEncoding = config.getProperty(Settings.FILTER_FORCE_ENCODING, Boolean, false)
         boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
         String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, '/')
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
@@ -87,6 +89,7 @@ class ControllersGrailsPlugin extends Plugin {
         characterEncodingFilter(FilterRegistrationBean) {
             filter = bean(CharacterEncodingFilter) {
                 encoding = filtersEncoding
+                forceEncoding = filtersForceEncoding
             }
             urlPatterns = catchAllMapping
             order = Ordered.HIGHEST_PRECEDENCE + 10

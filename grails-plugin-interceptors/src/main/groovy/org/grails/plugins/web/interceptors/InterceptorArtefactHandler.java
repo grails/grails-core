@@ -28,6 +28,8 @@ import grails.core.GrailsClass;
  */
 public class InterceptorArtefactHandler extends ArtefactHandlerAdapter {
 
+    public static final String MATCH_SUFFIX = ".INTERCEPTOR_MATCHED";
+
     public static final String TYPE = Interceptor.class.getSimpleName();
 
     public InterceptorArtefactHandler() {

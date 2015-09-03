@@ -15,6 +15,7 @@
  */
 package org.grails.gsp;
 
+import grails.config.Config;
 import grails.config.Settings;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
@@ -98,7 +99,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 
     private GrailsApplication grailsApplication;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
-
+    private String gspEncoding = System.getProperty("file.encoding", "us-ascii");
     private List<GroovyPageSourceDecorator> groovyPageSourceDecorators = new ArrayList();
 
     static {
@@ -530,9 +531,9 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             parser = new GroovyPageParser(name, path, path, decorateGroovyPageSource(new StringBuilder(gspSource)).toString());
 
             if (grailsApplication != null) {
-                Map<String,Object> config = grailsApplication.getFlatConfig();
+                Config config = grailsApplication.getConfig();
 
-                Object keepDirObj = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR);
+                Object keepDirObj = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, Object.class);
                 if (keepDirObj instanceof File) {
                     parser.setKeepGeneratedDirectory((File) keepDirObj);
                 }
@@ -809,14 +810,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         }
     }
 
+    public void setGspEncoding(String gspEncoding) {
+        this.gspEncoding = gspEncoding;
+    }
+
     public String getGspEncoding() {
-    	Map<?, ?> config = Holders.getFlatConfig();
-        if (config != null) {
-            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
-            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                return gspEnc.toString();
-            }
-        }
-        return System.getProperty("file.encoding", "us-ascii");
+    	return this.gspEncoding;
     }
 }

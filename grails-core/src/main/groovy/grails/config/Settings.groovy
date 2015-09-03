@@ -51,6 +51,11 @@ interface Settings {
     String GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
 
     /**
+     * Thew views directory for GSP
+     */
+    String GSP_VIEWS_DIR = "grails.gsp.view.dir"
+
+    /**
      * The encoding to use for GSP views, defaults to UTF-8
      */
     String GSP_VIEW_ENCODING = "grails.views.gsp.encoding"
@@ -112,6 +117,11 @@ interface Settings {
      * The encoding to use for filters, default to UTF-8
      */
     String FILTER_ENCODING = 'grails.filter.encoding'
+
+    /**
+     * The encoding to use for filters, default to UTF-8
+     */
+    String FILTER_FORCE_ENCODING = 'grails.filter.forceEncoding'
 
     /**
      * Whether the H2 dbconsole is enabled or not
