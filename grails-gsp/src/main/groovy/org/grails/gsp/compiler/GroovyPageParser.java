@@ -1245,14 +1245,8 @@ public class GroovyPageParser implements Tokens {
     }
 
     public static String getGspEncoding(){
-        Map<?, ?> config = Holders.getFlatConfig();
-        if (config != null) {
-            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
-            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                return gspEnc.toString();
-            }
-        }
-        return "UTF-8";
+        Config config = Holders.getConfig();
+        return config.getProperty(Settings.GSP_VIEW_ENCODING, "UTF-8");
     }
 
     private void script(boolean gsp) {

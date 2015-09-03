@@ -15,6 +15,7 @@
  */
 package org.grails.web.util;
 
+import grails.config.Config;
 import grails.util.GrailsWebUtil;
 
 import java.io.UnsupportedEncodingException;
@@ -409,15 +410,14 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
-     * Returns the value of the "grails.mime.file.extensions" setting configured in COnfig.groovy
+     * Returns the value of the "grails.mime.file.extensions" setting configured in application.groovy
      *
      * @return true if file extensions are enabled
      */
     @SuppressWarnings("rawtypes")
     public static boolean areFileExtensionsEnabled() {
-        Map config = GrailsWebUtil.currentFlatConfiguration();
-        Object o = config.get(ENABLE_FILE_EXTENSIONS);
-        return !(o != null && o instanceof Boolean) || (Boolean)o;
+        Config config = GrailsWebUtil.currentApplication().getConfig();
+        return config.getProperty(ENABLE_FILE_EXTENSIONS, Boolean.class, true);
     }
 
     /**

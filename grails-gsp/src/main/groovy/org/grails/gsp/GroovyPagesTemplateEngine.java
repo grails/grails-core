@@ -531,9 +531,9 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             parser = new GroovyPageParser(name, path, path, decorateGroovyPageSource(new StringBuilder(gspSource)).toString());
 
             if (grailsApplication != null) {
-                Map<String,Object> config = grailsApplication.getFlatConfig();
+                Config config = grailsApplication.getConfig();
 
-                Object keepDirObj = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR);
+                Object keepDirObj = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, Object.class);
                 if (keepDirObj instanceof File) {
                     parser.setKeepGeneratedDirectory((File) keepDirObj);
                 }

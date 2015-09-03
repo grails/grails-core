@@ -70,16 +70,16 @@ public final class HTMLCodec implements CodecFactory, GrailsApplicationAware, In
     }
 
     public void afterPropertiesSet() {
-        if (grailsApplication == null || grailsApplication.getFlatConfig() == null) {
+        if (grailsApplication == null || grailsApplication.getConfig() == null) {
             return;
         }
 
-        Object htmlCodecSetting = grailsApplication.getFlatConfig().get(CONFIG_PROPERTY_GSP_HTMLCODEC);
+        String htmlCodecSetting = grailsApplication.getConfig().getProperty(CONFIG_PROPERTY_GSP_HTMLCODEC);
         if (htmlCodecSetting == null) {
             return;
         }
 
-        String htmlCodecSettingStr = htmlCodecSetting.toString().toLowerCase();
+        String htmlCodecSettingStr = htmlCodecSetting.toLowerCase();
         if (htmlCodecSettingStr.startsWith("xml") || "xhtml".equalsIgnoreCase(htmlCodecSettingStr)) {
             setUseLegacyEncoder(false);
         }
