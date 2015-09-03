@@ -194,6 +194,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         if (value == null) value = false
         def hiddenValue = ""
 
+        def unprocessed = value
         value = processFormFieldValueIfNecessary(name, value,"checkbox")
         hiddenValue = processFormFieldValueIfNecessary("_${name}", hiddenValue, "hidden")
 
@@ -214,11 +215,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
                 out << 'checked="checked" '
             }
         }
-        else if (value) {
+        else if (unprocessed) {
             out << 'checked="checked" '
         }
 
-        def outputValue = !(value instanceof Boolean || value?.getClass() == boolean)
+        def outputValue = !(unprocessed instanceof Boolean || unprocessed?.getClass() == boolean)
         if (outputValue) {
             out << "value=\"${value}\" "
         }
@@ -1143,18 +1144,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
 
     private processFormFieldValueIfNecessary(name, value, type) {
         if (requestDataValueProcessor != null) {
-            def processedValue = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type)
-            if(processedValue != null ) {
-                if(conversionService != null) {
-                    value = conversionService.convert(processedValue, value.getClass())
-                }
-                else {
-                    value = processedValue.asType(value.getClass())
-                }
-            }
-            else {
-                value = processedValue
-            }
+            return requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type)
         }
         return value
     }
