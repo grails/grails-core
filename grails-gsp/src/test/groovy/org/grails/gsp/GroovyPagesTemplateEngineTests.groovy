@@ -1,7 +1,10 @@
 package org.grails.gsp
+
+import grails.config.Config
 import grails.core.GrailsApplication
 import grails.core.GrailsClass
 import grails.util.GrailsUtil
+import org.grails.config.PropertySourcesConfig
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.gsp.compiler.GroovyPageParser
 import org.springframework.core.io.ByteArrayResource
@@ -144,9 +147,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"/>''', sw.toString()
     }
 
-    private GrailsApplication createMockGrailsApplication(ConfigObject config = null) {
+    private GrailsApplication createMockGrailsApplication(Config config = null) {
         if (config == null) {
-            config = new ConfigObject()
+            config = new PropertySourcesConfig()
             config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
         }
         [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }, getArtefactByLogicalPropertyName: { String type, String logicalName ->  null} ] as GrailsApplication
