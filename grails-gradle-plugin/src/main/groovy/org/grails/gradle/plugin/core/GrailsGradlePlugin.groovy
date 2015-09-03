@@ -23,6 +23,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.War
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.process.JavaForkOptions
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.build.parsing.CommandLineParser
@@ -336,11 +337,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
                 project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
                     def grailsExt = project.extensions.getByType(GrailsExtension)
+//                    def destinationDir = ((ProcessResources) task).destinationDir
+
                     def replaceTokens = [
                             'info.app.name': project.name,
                             'info.app.version': project.version,
                             'info.app.grailsVersion': grailsVersion
                     ]
+
+                    task.from(project.relativePath("src/main/templates")) {
+                        into("META-INF/templates")
+                    }
+
                     task.from(sourceSet.resources) {
                         include '**/*.properties'
                         filter( ReplaceTokens, tokens: replaceTokens )
