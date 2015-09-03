@@ -375,6 +375,12 @@ class GrailsCli {
                     }
                 }.call()
 
+                try {
+                    // add tools.jar
+                    urls.add(new File("${System.getenv('JAVA_HOME')}/lib/tools.jar").toURI().toURL())
+                } catch (Throwable e) {
+                    // ignore
+                }
                 URLClassLoader classLoader = new URLClassLoader(urls as URL[])
                 Thread.currentThread().contextClassLoader = classLoader
             }
