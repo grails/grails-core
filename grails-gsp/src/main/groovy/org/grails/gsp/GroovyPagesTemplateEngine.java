@@ -15,6 +15,7 @@
  */
 package org.grails.gsp;
 
+import grails.config.Config;
 import grails.config.Settings;
 import grails.core.GrailsApplication;
 import grails.core.GrailsClass;

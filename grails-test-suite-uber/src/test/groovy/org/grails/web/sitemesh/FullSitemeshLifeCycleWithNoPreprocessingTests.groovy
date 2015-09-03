@@ -16,4 +16,8 @@ grails.views.gsp.sitemesh.preprocess=false
         request.setAttribute(GrailsLayoutView.GSP_SITEMESH_PAGE, page)
     }
 
+    @Override
+    void testMultipleLevelsOfLayouts() {
+        // no-op
+    }
 }
