@@ -143,8 +143,8 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
      * @return prefix for cache key that contains current controller's context (currently plugin and namespace)
      */
     protected String resolveCurrentControllerKeyPrefixes() {
-        String pluginContextPath;
-        String namespace;
+        String pluginContextPath = null;
+        String namespace = null;
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if(webRequest != null) {
             namespace = webRequest.getControllerNamespace();
