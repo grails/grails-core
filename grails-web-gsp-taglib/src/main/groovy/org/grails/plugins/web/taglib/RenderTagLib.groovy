@@ -18,6 +18,8 @@ package org.grails.plugins.web.taglib
 import com.opensymphony.module.sitemesh.*
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
 import grails.artefact.TagLibrary
+import grails.core.GrailsApplication
+import grails.core.support.GrailsApplicationAware
 import grails.gsp.TagLib
 import grails.util.TypeConvertingMap
 import groovy.text.Template
@@ -49,21 +51,26 @@ import javax.servlet.http.HttpServletRequest
  */
 @CompileStatic
 @TagLib
-class RenderTagLib implements RequestConstants, TagLibrary {
+class RenderTagLib implements RequestConstants, TagLibrary, GrailsApplicationAware {
     GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
     ErrorsViewStackTracePrinter errorsViewStackTracePrinter
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     TagLibraryLookup gspTagLibraryLookup
     CodecLookup codecLookup
     GroovyPageLayoutFinder groovyPageLayoutFinder
+    protected boolean sitemeshPreprocessMode = true
 
     protected HTMLPage getPage() {
         return (HTMLPage)getRequest().getAttribute(PAGE)
     }
-    
+
+    @Override
+    void setGrailsApplication(GrailsApplication grailsApplication) {
+        sitemeshPreprocessMode = grailsApplication.config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean, true)
+    }
+
     protected boolean isSitemeshPreprocessMode() {
-        def preprocessConfig = grailsApplication?.getFlatConfig()?.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS)
-        preprocessConfig == null || preprocessConfig
+        return sitemeshPreprocessMode
     }
 
 

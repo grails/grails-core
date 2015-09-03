@@ -56,7 +56,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
 
         @Override
         public Object getProperty(String key) {
-            return grailsApplication.getFlatConfig().get(key);
+            return grailsApplication.getConfig().getProperty(key, Object.class);
         }
     }
 }

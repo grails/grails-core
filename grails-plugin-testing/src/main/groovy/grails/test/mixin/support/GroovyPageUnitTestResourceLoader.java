@@ -15,6 +15,8 @@
  */
 package grails.test.mixin.support;
 
+import grails.config.Config;
+import grails.config.Settings;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsApplicationAware;
 
@@ -90,10 +92,10 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader impl
     @Override
     public void afterPropertiesSet() throws Exception {
         if(grailsApplication != null) {
-            Map config = grailsApplication.getFlatConfig();
-            Object viewDir = config.get("grails.gsp.view.dir");
+            Config config = grailsApplication.getConfig();
+            String viewDir = config.getProperty(Settings.GSP_VIEWS_DIR);
             if(viewDir != null) {
-                basePath = viewDir.toString();
+                basePath = viewDir;
             }
         }
     }

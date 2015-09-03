@@ -15,6 +15,8 @@
  */
 package org.grails.gsp.compiler;
 
+import grails.config.Config;
+import grails.config.Settings;
 import grails.io.IOUtils;
 import grails.plugins.GrailsPluginInfo;
 import grails.util.Environment;
@@ -119,6 +121,7 @@ public class GroovyPageParser implements Tokens {
     private final String pageName;
     public static final String[] DEFAULT_IMPORTS = {
         "grails.plugins.metadata.GrailsPlugin",
+        "org.grails.gsp.compiler.transform.LineNumber",
         "org.grails.gsp.GroovyPage",
         "org.grails.web.taglib.*",
         "org.grails.taglib.GrailsTagException",
@@ -126,7 +129,7 @@ public class GroovyPageParser implements Tokens {
         "grails.util.GrailsUtil"
     };
     public static final String CONFIG_PROPERTY_DEFAULT_CODEC = "grails.views.default.codec";
-    public static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
+    public static final String CONFIG_PROPERTY_GSP_ENCODING = Settings.GSP_VIEW_ENCODING;
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
     public static final String CONFIG_PROPERTY_GSP_CODECS = "grails.views.gsp.codecs";
@@ -202,13 +205,11 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, String gspSource, String expressionCodecName) throws IOException {
-        Map<?, ?> config = Holders.getFlatConfig();
+        Config config = Holders.getConfig();
         if (config != null) {
-            Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
-            if (sitemeshPreprocessEnabled != null) {
-                final boolean enableSitemeshPreprocessing = GrailsStringUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
-                setEnableSitemeshPreprocessing(enableSitemeshPreprocessing);
-            }
+            setEnableSitemeshPreprocessing(
+                    config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean.class, true)
+            );
         }
 
         GrailsPluginInfo pluginInfo = null;
@@ -1244,14 +1245,8 @@ public class GroovyPageParser implements Tokens {
     }
 
     public static String getGspEncoding(){
-        Map<?, ?> config = Holders.getFlatConfig();
-        if (config != null) {
-            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
-            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                return gspEnc.toString();
-            }
-        }
-        return "UTF-8";
+        Config config = Holders.getConfig();
+        return config.getProperty(Settings.GSP_VIEW_ENCODING, "UTF-8");
     }
 
     private void script(boolean gsp) {

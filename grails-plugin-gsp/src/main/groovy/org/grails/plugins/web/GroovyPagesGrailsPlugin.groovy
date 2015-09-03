@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web
 import grails.config.Config
+import grails.config.Settings
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
 import grails.gsp.PageRenderer
@@ -30,6 +31,7 @@ import org.grails.buffer.StreamCharBufferMetaUtils
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.gsp.GroovyPageResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
+import org.grails.gsp.compiler.GroovyPageParser
 import org.grails.gsp.io.CachingGroovyPageStaticResourceLocator
 import org.grails.gsp.jsp.TagLibraryResolverImpl
 import org.grails.plugins.web.taglib.*
@@ -211,6 +213,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
             tagLibraryLookup = gspTagLibraryLookup
             jspTagLibraryResolver = jspTagLibraryResolver
             cacheResources = enableCacheResources
+            gspEncoding = config.getProperty(Settings.GSP_VIEW_ENCODING, System.getProperty("file.encoding", "us-ascii"))
         }
 
         spring.addAlias('groovyTemplateEngine', 'groovyPagesTemplateEngine')
