@@ -17,7 +17,7 @@ class DynamicElementReaderTests extends GroovyTestCase {
         }
         catch (e) {
             assertEquals """Configuration problem: No namespace handler found for element <jee:jndi-lookup id='dataSource' jndi-name='jdbc/petstore' xmlns:jee='http://www.springframework.org/schema/jee'/>
-Offending resource: resource loaded from byte array""", e.message
+Offending resource: Byte array resource [resource loaded from byte array]""", e.message
         }
     }
 }
