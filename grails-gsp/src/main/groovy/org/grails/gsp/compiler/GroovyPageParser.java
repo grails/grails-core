@@ -15,6 +15,8 @@
  */
 package org.grails.gsp.compiler;
 
+import grails.config.Config;
+import grails.config.Settings;
 import grails.io.IOUtils;
 import grails.plugins.GrailsPluginInfo;
 import grails.util.Environment;
@@ -1246,7 +1248,10 @@ public class GroovyPageParser implements Tokens {
 
     public static String getGspEncoding(){
         Config config = Holders.getConfig();
-        return config.getProperty(Settings.GSP_VIEW_ENCODING, "UTF-8");
+        if(config != null) {
+            return config.getProperty(Settings.GSP_VIEW_ENCODING, DEFAULT_ENCODING);
+        }
+        return DEFAULT_ENCODING;
     }
 
     private void script(boolean gsp) {
