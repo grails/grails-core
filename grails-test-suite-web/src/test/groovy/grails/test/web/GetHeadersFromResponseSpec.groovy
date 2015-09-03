@@ -5,6 +5,8 @@ import grails.test.mixin.TestFor
 import spock.lang.Issue
 import spock.lang.Specification
 
+import java.text.SimpleDateFormat
+
 @TestFor(YourController)
 @Issue('GRAILS-9196')
 class GetHeadersFromResponseSpec extends Specification{
@@ -15,8 +17,14 @@ class GetHeadersFromResponseSpec extends Specification{
 
         then:"It is possible to inspect the mock response"
             response.header('Cache-Control') == 'no-cache' // that's fine
-            "0"  in  response.headers('Expires') // will throw the exception
+            formatDate(0)  in  response.headers('Expires') // will throw the exception
 
+    }
+
+    private String formatDate(long date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return dateFormat.format(new Date(date));
     }
 }
 
