@@ -24,6 +24,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.*;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.ClassPathResource;
@@ -123,6 +124,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         // do nothing
     }
 
+    @Override
+    public void publishEvent(Object event) {
+
+    }
+
     public boolean containsBeanDefinition(String beanName) {
         return beans.containsKey(beanName);
     }
@@ -133,6 +139,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     public String[] getBeanDefinitionNames() {
         return beans.keySet().toArray(new String[beans.keySet().size()]);
+    }
+
+    @Override
+    public String[] getBeanNamesForType(ResolvableType type) {
+        return new String[0];
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -255,6 +266,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     public boolean isPrototype(String s) {
         throw new UnsupportedOperationException("Method not supported by implementation");
+    }
+
+    @Override
+    public boolean isTypeMatch(String name, ResolvableType typeToMatch) throws NoSuchBeanDefinitionException {
+        return isTypeMatch(name, typeToMatch.getRawClass());
     }
 
     @SuppressWarnings("rawtypes")
