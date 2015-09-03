@@ -18,6 +18,7 @@ package org.grails.plugins.web.taglib
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
@@ -52,6 +53,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
 
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
+    @Autowired(required = false)
     ConversionService conversionService
     
     CodecLookup codecLookup
@@ -1141,7 +1143,18 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
 
     private processFormFieldValueIfNecessary(name, value, type) {
         if (requestDataValueProcessor != null) {
-            value = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type)
+            def processedValue = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type)
+            if(processedValue != null ) {
+                if(conversionService != null) {
+                    value = conversionService.convert(processedValue, value.getClass())
+                }
+                else {
+                    value = processedValue.asType(value.getClass())
+                }
+            }
+            else {
+                value = processedValue
+            }
         }
         return value
     }
