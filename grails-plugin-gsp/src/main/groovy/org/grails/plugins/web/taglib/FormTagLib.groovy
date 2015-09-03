@@ -18,6 +18,7 @@ package org.grails.plugins.web.taglib
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
+import org.springframework.beans.factory.annotation.Autowired
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
@@ -52,6 +53,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
 
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
+    @Autowired(required = false)
     ConversionService conversionService
     
     CodecLookup codecLookup
@@ -192,6 +194,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         if (value == null) value = false
         def hiddenValue = ""
 
+        def unprocessed = value
         value = processFormFieldValueIfNecessary(name, value,"checkbox")
         hiddenValue = processFormFieldValueIfNecessary("_${name}", hiddenValue, "hidden")
 
@@ -212,11 +215,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
                 out << 'checked="checked" '
             }
         }
-        else if (value) {
+        else if (unprocessed) {
             out << 'checked="checked" '
         }
 
-        def outputValue = !(value instanceof Boolean || value?.getClass() == boolean)
+        def outputValue = !(unprocessed instanceof Boolean || unprocessed?.getClass() == boolean)
         if (outputValue) {
             out << "value=\"${value}\" "
         }
@@ -1141,7 +1144,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
 
     private processFormFieldValueIfNecessary(name, value, type) {
         if (requestDataValueProcessor != null) {
-            value = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type)
+            return requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type)
         }
         return value
     }

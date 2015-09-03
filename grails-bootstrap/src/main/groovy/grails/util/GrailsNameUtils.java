@@ -79,6 +79,30 @@ public class GrailsNameUtils {
     }
 
     /**
+     * Returns the class name, including package, for the given class. This method will deals with proxies and closures.
+     *
+     * @param cls The class name
+     */
+    public static String getFullClassName(Class cls) {
+        String className = cls.getName();
+
+        return getFullClassName(className);
+    }
+
+    /**
+     * Returns the class name, including package, for the given class. This method will deals with proxies and closures.
+     *
+     * @param className The class name
+     */
+    public static String getFullClassName(String className) {
+        final int i = className.indexOf('$');
+        if(i > -1) {
+            className = className.substring(0, i);
+        }
+        return className;
+    }
+
+    /**
      * Return the class name for the given logical name. For example "person" would evaluate to "Person"
      *
      * @param logicalName The logical name
