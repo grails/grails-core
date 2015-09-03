@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
