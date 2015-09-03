@@ -17,6 +17,7 @@ dependencies {
     compile "org.apache.ant:ant:$antVersion"
     compile "org.codehaus.groovy:groovy-ant:$groovyVersion"
     compile "org.codehaus.groovy:groovy-json:$groovyVersion"
+    compile "org.codehaus.groovy:groovy-jmx:$groovyVersion"
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile "jline:jline:$jlineVersion"
     compile "org.eclipse.jgit:org.eclipse.jgit:3.5.2.201411120430-r"
