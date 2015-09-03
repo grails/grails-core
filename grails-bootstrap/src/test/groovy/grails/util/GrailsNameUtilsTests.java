@@ -21,6 +21,9 @@ import junit.framework.TestCase;
  */
 public class GrailsNameUtilsTests extends TestCase {
 
+    public void testGetFullClassName() {
+        assertEquals("FooBar", GrailsNameUtils.getFullClassName("FooBar$$CGlib"));
+    }
     public void testIsValidPackage() {
         assertTrue(GrailsNameUtils.isValidJavaPackage("jax.demo.bar"));
         assertFalse(GrailsNameUtils.isValidJavaPackage("jax.demo.2015"));

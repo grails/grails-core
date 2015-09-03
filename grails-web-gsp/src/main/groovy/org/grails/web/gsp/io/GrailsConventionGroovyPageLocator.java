@@ -137,7 +137,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         String viewNameWithFormat = resolveViewFormat(viewName);
 
         GroovyPageScriptSource scriptSource = null;
-        Object controllerArtefact = grailsApplication != null ? grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controller.getClass().getName()) : null;
+        final String controllerClassName = GrailsNameUtils.getFullClassName( controller.getClass() );
+        Object controllerArtefact = grailsApplication != null ? grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controllerClassName) : null;
         if(controllerArtefact instanceof GrailsControllerClass) {
             GrailsControllerClass gcc = (GrailsControllerClass)controllerArtefact;
             String namespace = gcc.getNamespace();
@@ -189,7 +190,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         String controllerName = getNameForController(controller);
         GroovyPageScriptSource scriptSource = null;
         final String templateURI = uriService.getTemplateURI(controllerName, templateName);
-        Object controllerArtefact = grailsApplication != null ? grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controller.getClass().getName()) : null;
+        final String fullClassName = GrailsNameUtils.getFullClassName(controller.getClass());
+        Object controllerArtefact = grailsApplication != null ? grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, fullClassName) : null;
         if(controllerArtefact instanceof GrailsControllerClass) {
             GrailsControllerClass gcc = (GrailsControllerClass)controllerArtefact;
             String namespace = gcc.getNamespace();
@@ -256,7 +258,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
             }
             return findPageInBinding(pluginName, uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
         }
-        final GrailsControllerClass controllerClass = (GrailsControllerClass)grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, controller.getClass().getName());
+        final GrailsControllerClass controllerClass = (GrailsControllerClass)grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, GrailsNameUtils.getFullClassName(controller.getClass()) );
 
         String templateURI;
         final String ns = controllerClass.getNamespace();
@@ -337,7 +339,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     }
 
     protected String getNameForController(Object controller) {
-        return GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
+        final Class<?> cls = controller.getClass();
+        return GrailsNameUtils.getLogicalPropertyName(GrailsNameUtils.getFullClassName(cls), ControllerArtefactHandler.TYPE);
     }
 
 	@Override
