@@ -274,7 +274,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
-            def mainClassName = project.property("mainClassName")
+            def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
+            def mainClassName = bootExtension.mainClass
             consoleTask.args mainClassName
             shellTask.args mainClassName
             project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->

@@ -3,6 +3,7 @@ package org.grails.gradle.plugin.run
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 import org.grails.gradle.plugin.util.SourceSets
@@ -21,9 +22,12 @@ class FindMainClassTask extends DefaultTask {
     @TaskAction
     void setMainClassProperty() {
         Project project = this.project
-        if ( !project.property("mainClassName") ) {
+        def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
+        if ( bootExtension != null ) {
             def mainClass = findMainClass()
-            project.setProperty "mainClassName", mainClass
+            bootExtension.setMainClass(mainClass)
+            JavaExec javaExec = (JavaExec)project.tasks.findByName("bootRun")
+            javaExec.setMain(mainClass)
         }
     }
 

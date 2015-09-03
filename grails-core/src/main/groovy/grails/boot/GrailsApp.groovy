@@ -296,7 +296,7 @@ class GrailsApp extends SpringApplication {
     }
 
     @Override
-    protected void printBanner() {
+    protected void printBanner(org.springframework.core.env.Environment environment) {
         // noop
     }
 

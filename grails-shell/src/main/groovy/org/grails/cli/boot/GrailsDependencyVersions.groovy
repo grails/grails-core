@@ -19,8 +19,8 @@ import groovy.grape.Grape
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
-import org.springframework.boot.dependency.tools.Dependencies
-import org.springframework.boot.dependency.tools.Dependency
+import org.springframework.boot.cli.compiler.dependencies.Dependency
+import org.springframework.boot.cli.compiler.dependencies.DependencyManagement
 
 
 /**
@@ -30,11 +30,11 @@ import org.springframework.boot.dependency.tools.Dependency
  * @since 3.0
  */
 @CompileStatic
-class GrailsDependencyVersions implements Dependencies {
+class GrailsDependencyVersions implements DependencyManagement {
 
     protected Map<String, Dependency> groupAndArtifactToDependency = [:]
     protected Map<String, String> artifactToGroupAndArtifact = [:]
-
+    protected List<Dependency> dependencies = []
 
     GrailsDependencyVersions() {
         this([group: "org.grails", module: "grails-bom", version: GrailsDependencyVersions.package.implementationVersion, type: "pom"])
@@ -62,12 +62,24 @@ class GrailsDependencyVersions implements Dependencies {
     protected void addDependency(String group, String artifactId, String version) {
         def groupAndArtifactId = "$group:$artifactId".toString()
         artifactToGroupAndArtifact[artifactId] = groupAndArtifactId
-        groupAndArtifactToDependency[groupAndArtifactId] = new Dependency(group, artifactId, version)
+
+        def dep = new Dependency(group, artifactId, version)
+        dependencies.add(dep)
+        groupAndArtifactToDependency[groupAndArtifactId] = dep
+    }
+
+    Dependency find(String groupId, String artifactId) {
+        return groupAndArtifactToDependency["$groupId:$artifactId".toString()]
     }
 
     @Override
-    Dependency find(String groupId, String artifactId) {
-        return groupAndArtifactToDependency["$groupId:$artifactId".toString()]
+    List<Dependency> getDependencies() {
+        return dependencies
+    }
+
+    @Override
+    String getSpringBootVersion() {
+        return find("spring-boot").getVersion();
     }
 
     @Override
@@ -77,7 +89,6 @@ class GrailsDependencyVersions implements Dependencies {
             return groupAndArtifactToDependency[groupAndArtifact]
     }
 
-    @Override
     Iterator<Dependency> iterator() {
         return groupAndArtifactToDependency.values().iterator()
     }
