@@ -62,13 +62,14 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
             resources = [resource] as Resource[]
             def propertySource = new NavigableMap()
             process { Properties properties, Map<String, Object> map ->
-                if(groovyConfigMap != null) {
-                    propertySource.merge( groovyConfigMap.source, false )
-                }
                 propertySource.merge(map, false)
                 propertySource.merge(properties, false)
                 propertySource.putAll( propertySource.toFlatConfig() )
             }
+            if(groovyConfigMap != null) {
+                propertySource.merge( groovyConfigMap.source, false )
+            }
+
             if (!propertySource.isEmpty()) {
                 return new MapPropertySource(name, propertySource);
             }
