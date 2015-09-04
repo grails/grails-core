@@ -49,8 +49,6 @@ import java.util.regex.Pattern
 @CompileStatic
 trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwarder, DataBinder, WebAttributes, ServletAttributes, Ordered {
 
-    private String interceptorMatchKey = "${getClass().name}${InterceptorArtefactHandler.MATCH_SUFFIX}"
-
     /**
      * The order the interceptor should execute in
      */
@@ -71,6 +69,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      * @return Whether the current interceptor does match
      */
     boolean doesMatch(HttpServletRequest request) {
+        String interceptorMatchKey = "${getClass().name}${InterceptorArtefactHandler.MATCH_SUFFIX}"
         def existing = request.getAttribute(interceptorMatchKey)
         if(existing != null) {
             return (Boolean)existing
