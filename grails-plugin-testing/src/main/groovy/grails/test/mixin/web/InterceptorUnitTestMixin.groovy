@@ -114,9 +114,10 @@ class InterceptorUnitTestMixin extends ControllerUnitTestMixin {
         } else {
             info = new ForwardUrlMappingInfo(arguments)
             request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, info)
-            for(name in request.attributeNames.findAll() { String n -> n.endsWith(InterceptorArtefactHandler.MATCH_SUFFIX)}) {
-                request.removeAttribute(name)
-            }
+        }
+
+        for(name in request.attributeNames.findAll() { String n -> n.endsWith(InterceptorArtefactHandler.MATCH_SUFFIX)}) {
+            request.removeAttribute(name)
         }
         info
     }

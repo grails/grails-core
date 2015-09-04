@@ -17,6 +17,7 @@ package org.grails.config.yaml
 
 import groovy.transform.CompileStatic
 import org.grails.config.NavigableMap
+import org.grails.core.cfg.GroovyConfigPropertySourceLoader
 import org.springframework.beans.factory.config.YamlProcessor
 import org.springframework.boot.env.PropertySourceLoader
 import org.springframework.boot.yaml.SpringProfileDocumentMatcher
@@ -41,6 +42,8 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
 
     @Override
     PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
+
+        MapPropertySource groovyConfigMap = (MapPropertySource)new GroovyConfigPropertySourceLoader().load(name, resource, profile)
         if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
             if (profile == null) {
                 matchDefault = true
@@ -53,6 +56,9 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
             resources = [resource] as Resource[]
             def propertySource = new NavigableMap()
             process { Properties properties, Map<String, Object> map ->
+                if(groovyConfigMap != null) {
+                    propertySource.merge( groovyConfigMap.source, false )
+                }
                 propertySource.merge(map, false)
                 propertySource.merge(properties, false)
                 propertySource.putAll( propertySource.toFlatConfig() )

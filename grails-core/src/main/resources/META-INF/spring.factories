@@ -1,4 +1,2 @@
 # PropertySource Loaders
-org.springframework.boot.env.PropertySourceLoader=\
-org.grails.core.cfg.GroovyConfigPropertySourceLoader,\
-org.grails.config.yaml.YamlPropertySourceLoader
+org.springframework.boot.env.PropertySourceLoader=org.grails.config.yaml.YamlPropertySourceLoader
