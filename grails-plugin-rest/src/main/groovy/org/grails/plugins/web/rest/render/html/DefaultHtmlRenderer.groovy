@@ -81,7 +81,12 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     }
 
     protected void applyModel(RenderContext context, Object object) {
-        context.setModel([(resolveModelVariableName(object)): object])
+        if(object instanceof Map) {
+            context.setModel((Map)object)
+        }
+        else {
+            context.setModel([(resolveModelVariableName(object)): object])
+        }
     }
 
     protected String resolveModelVariableName(Object object) {
