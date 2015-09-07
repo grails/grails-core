@@ -18,6 +18,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.control.SourceUnit
+import org.grails.boot.context.web.GrailsAppServletInitializer
 import org.grails.compiler.injection.GrailsASTUtils
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.context.web.SpringBootServletInitializer
@@ -58,7 +59,7 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
             def methods = classNode.getMethods("main")
             for(MethodNode mn in methods) {
                 if(Modifier.isStatic(mn.modifiers) && Modifier.isPublic(mn.modifiers)) {
-                    def loaderClassNode = new ClassNode("${classNode.name}Loader", Modifier.PUBLIC, ClassHelper.make(SpringBootServletInitializer))
+                    def loaderClassNode = new ClassNode("${classNode.name}Loader", Modifier.PUBLIC, ClassHelper.make(GrailsAppServletInitializer))
 
 
                     def springApplicationBuilder = ClassHelper.make(SpringApplicationBuilder)

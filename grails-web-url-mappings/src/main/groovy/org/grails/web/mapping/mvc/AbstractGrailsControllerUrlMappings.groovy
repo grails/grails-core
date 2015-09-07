@@ -126,9 +126,13 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
 
     void registerController(GrailsControllerClass controller) {
-        def namespace = urlConverter ? urlConverter.toUrlElement( controller.namespace ) : controller.namespace
-        def plugin = urlConverter ? urlConverter.toUrlElement( controller.pluginName ) : controller.pluginName
-        def controllerName = urlConverter ? urlConverter.toUrlElement( controller.logicalPropertyName ) : controller.logicalPropertyName
+        boolean hasUrlConverter = urlConverter != null
+        if(hasUrlConverter) {
+            controller.registerUrlConverter(urlConverter)
+        }
+        def namespace = hasUrlConverter ? urlConverter.toUrlElement( controller.namespace ) : controller.namespace
+        def plugin = hasUrlConverter ? urlConverter.toUrlElement( controller.pluginName ) : controller.pluginName
+        def controllerName = hasUrlConverter ? urlConverter.toUrlElement( controller.logicalPropertyName ) : controller.logicalPropertyName
 
         mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, plugin), controller)
         mappingsToGrailsControllerMap.put(new ControllerKey(null, controllerName, null, plugin), controller)
@@ -144,7 +148,7 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         }
 
         for(action in controller.actions) {
-            action = urlConverter ? urlConverter.toUrlElement(action) : action
+            action = hasUrlConverter ? urlConverter.toUrlElement(action) : action
             def withPluginKey = new ControllerKey(namespace, controllerName, action, pluginNameToRegister)
             def withPluginKeyWithoutNamespaceKey = new ControllerKey(null, controllerName, action, pluginNameToRegister)
             def withoutPluginKey = new ControllerKey(namespace, controllerName, action, null)

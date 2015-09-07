@@ -31,19 +31,15 @@ class GrailsConfigSpec extends Specification{
         when:
         config.mergeMap([a: [c:1]])
         then:
-        config.configMap == [a: [c:1], b:2]
+        config.configMap == [a: [c:1], b:2, 'a.c':1]
         when:
         config.mergeMap([a: [d: 1]])
         then:
-        config.configMap == [a: [c:1, d:1], b:2]
+        config.configMap == [a: [c:1, d:1], b:2, 'a.c':1, 'a.d':1]
         when:
         config.mergeMap([a: [c: 2]])
         then:
-        config.configMap == [a: [c:2, d:1], b:2]
-        when: 'key has null value'
-        config.mergeMap([a: null])
-        then: 'the key should be removed'
-        config.configMap == [b:2]
+        config.configMap == [a: [c:2, d:1], b:2, 'a.c':2, 'a.d':1]
     }
     
     def "should support basic type conversions"() {
@@ -84,11 +80,11 @@ class GrailsConfigSpec extends Specification{
         config.a.b.c = 1
         config.a = [d: 2]
         then:
-        config.configMap == [a: [b: [c: 1], d: 2]]
+        config.configMap == [a: [b: [c: 1], d: 2], 'a.d':2]
         when:
         config.a.b = [e: 3]
         then:
-        config.configMap == [a: [b: [c: 1, e: 3], d: 2]]
+        config.configMap == [a:[b:[c:1, e:3], d:2], 'a.d':2, 'a.b.e':3, 'a.b':[c:1, e:3]]
     }
 
     def "should support merging values when map already exists"() {
@@ -98,11 +94,11 @@ class GrailsConfigSpec extends Specification{
         config.a.b.c = 1
         config.a = [d: 2]
         then:
-        config.configMap == [a: [b: [c: 1], d: 2]]
+        config.configMap == [a: [b: [c: 1], d: 2], 'a.d':2]
         when:
         config.a.b.e = 3
         then:
-        config.configMap == [a: [b: [c: 1, e: 3], d: 2]]
+        config.configMap == [a:[b:[c:1, e:3], d:2], 'a.d':2, 'a.b.e':3]
     }
         
     def "should support setting map in null safe navigation"() {
@@ -123,12 +119,12 @@ class GrailsConfigSpec extends Specification{
         !config.is(config2)
         config.configMap == config2.configMap
         !config.configMap.is(config2.configMap)
-        config2.configMap == [a: [b:[c:[d:3, e:[f:4]]]]]
+        config2.configMap == ['a.b.c.d':3, 'a.b.c.e.f':4, 'a.b.c.e':[f:4], 'a.b.c':[d:3, e:[f:4]], 'a.b':[c:[d:3, e:[f:4]]], a:[b:[c:[d:3, e:[f:4]]]]]
         when:
         config.a.b.hello = 'world'
         then:
         config.a.b.hello == 'world'
-        config.configMap == [a: [b:[c:[d:3, e:[f:4]], hello:'world']]]
+        config.configMap == ['a.b.c.d':3, 'a.b.c.e.f':4, 'a.b.c.e':[f:4], 'a.b.c':[d:3, e:[f:4]], 'a.b.hello':'world', 'a.b':[c:[d:3, e:[f:4]], hello:"world"], a:[b:[c:[d:3, e:[f:4]], hello:"world"]]]
     }
     
     def "should support removing values when key is set to null"() {
@@ -145,7 +141,7 @@ class GrailsConfigSpec extends Specification{
         given:
         CodeGenConfig config = new CodeGenConfig([a: [b: [c: [d: 1, e: 2]]]])
         expect:
-        (config as Map) == [a: [b: [c: [d: 1, e: 2]]]]
+        (config as Map) == ['a.b.c.d':1, 'a.b.c.e':2, 'a.b.c':[d:1, e:2], 'a.b':[c:[d:1, e:2]], a:[b:[c:[d:1, e:2]]]]
     }
     
     def "should support casting to boolean"() {
@@ -164,7 +160,7 @@ class GrailsConfigSpec extends Specification{
         def config = [a: [b: [c: [d: 1, e: 2]]]] as CodeGenConfig
         expect:
         config instanceof CodeGenConfig
-        config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
+        config.configMap == ['a.b.c.d':1, 'a.b.c.e':2, 'a.b.c':[d:1, e:2], 'a.b':[c:[d:1, e:2]], a:[b:[c:[d:1, e:2]]]]
     }
     
     def "should support with"() {
@@ -198,6 +194,6 @@ class GrailsConfigSpec extends Specification{
         when:
         config.mergeMap(['a.b.c.d':1, 'a.b.c.e':2], true)
         then:
-        config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
+        config.configMap == ['a.b.c.d':1, a:[b:[c:[d:1, e:2]]], 'a.b.c.e':2]
     }
 }

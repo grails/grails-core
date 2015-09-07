@@ -87,7 +87,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def buildInfoFile = project.file("${project.buildDir}/grails.build.info")
 
         def buildPropertiesTask = project.tasks.create("buildProperties")
-        def buildPropertiesContents = ['grails.env': Environment.current.name,
+        def buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
                                         'info.app.name': project.name,
                                         'info.app.version':  project.version,
                                         'info.app.grailsVersion': project.properties.get('grailsVersion')]

@@ -194,9 +194,6 @@ class ControllersGrailsPlugin extends Plugin {
                     }
                 }
             }
-            // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
-            // register the necessary beans with the given app ctx
-            controllerClass.initialize()
         }
     }
 
