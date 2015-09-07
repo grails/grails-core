@@ -224,7 +224,7 @@ public enum Environment {
     }
 
     /**
-     * @return Return true if the environment has been set as a Systme property
+     * @return Return true if the environment has been set as a System property
      */
     public static boolean isSystemSet() {
         return System.getProperty(KEY) != null;
