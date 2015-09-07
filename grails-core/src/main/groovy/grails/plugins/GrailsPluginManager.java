@@ -298,6 +298,11 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     GrailsPlugin getPluginForClass(Class<?> theClass);
 
     /**
+     * Inform of a change in configuration
+     */
+    void informPluginsOfConfigChange();
+
+    /**
      * Fire to inform the PluginManager that a particular file changes
      *
      * @param file The file that changed

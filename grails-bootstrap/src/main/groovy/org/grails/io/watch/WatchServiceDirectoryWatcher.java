@@ -73,7 +73,7 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 						Path dir = (Path) watchKey.watchable();
 						Path child = dir.resolve(name).toAbsolutePath();
 						File childFile = child.toFile();
-						if(individualWatchedFiles.contains(child)){
+						if(individualWatchedFiles.contains(child) || individualWatchedFiles.contains(child.normalize())){
 							if(kind == StandardWatchEventKinds.ENTRY_CREATE){
 								fireOnNew(childFile);
 							}else if(kind == StandardWatchEventKinds.ENTRY_MODIFY){

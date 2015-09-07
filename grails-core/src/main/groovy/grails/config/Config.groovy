@@ -44,4 +44,5 @@ public interface Config extends PropertyResolver, ConfigMap {
      * @return This config
      */
     Config merge(Map<String,Object> toMerge)
+
 }

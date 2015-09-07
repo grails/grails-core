@@ -53,7 +53,7 @@ public class EnvironmentAwarePropertySource extends EnumerablePropertySource<Pro
                     EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
 
                     for(String propertyName : enumerablePropertySource.getPropertyNames()) {
-                        if(propertyName.startsWith(key)) {
+                        if(propertyName.startsWith(key) && propertyName.length() > key.length()) {
                             propertyNames.add(propertyName.substring(key.length() + 1));
                         }
                     }

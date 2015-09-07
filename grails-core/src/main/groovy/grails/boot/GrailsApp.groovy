@@ -180,10 +180,16 @@ class GrailsApp extends SpringApplication {
                             changedFiles.clear()
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
-                            recompile(changedFile, compilerConfig, location)
-                            if(newFiles.contains(changedFile)) {
-                                newFiles.remove(changedFile)
+                            // Groovy files within the 'conf' directory are not compiled
+                            if(changedFile.path.contains('/grails-app/conf/')) {
                                 pluginManager.informOfFileChange(changedFile)
+                            }
+                            else {
+                                recompile(changedFile, compilerConfig, location)
+                                if(newFiles.contains(changedFile)) {
+                                    newFiles.remove(changedFile)
+                                    pluginManager.informOfFileChange(changedFile)
+                                }
                             }
                         }
 
