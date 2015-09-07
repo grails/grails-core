@@ -11,10 +11,12 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     final NavigableMap rootConfig
     final List<String> path
     final Map<String, Object> delegateMap
+    final String dottedPath
 
     public NavigableMap() {
         rootConfig = this
         path = []
+        dottedPath = ""
         delegateMap = new LinkedHashMap<>()
     }
     
@@ -22,6 +24,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         super()
         this.rootConfig = rootConfig
         this.path = path
+        dottedPath = path.join('.')
         delegateMap = new LinkedHashMap<>()
     }
     
@@ -118,7 +121,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
     }
     
-    protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys) {
+    protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue
         if(sourceValue instanceof Map) {
@@ -132,7 +135,15 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         } else {
             newValue = sourceValue
         }
-        if (newValue == null) {
+        if (isNestedSet && newValue == null) {
+            if(path) {
+                def keysToRemove = rootMap.keySet().findAll() { String key ->
+                    key.startsWith("${path}.")
+                }
+                for(key in keysToRemove) {
+                    rootMap.remove(key)
+                }
+            }
             targetMap.remove(sourceKey)
         } else {
             if(path) {
@@ -162,7 +173,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
     
     public void setProperty(String name, Object value) {
-        mergeMapEntry(this, "", this, name, value, false)
+        mergeMapEntry(rootConfig, dottedPath, this, name, value, false, true)
     }
     
     public Object navigate(String... path) {
