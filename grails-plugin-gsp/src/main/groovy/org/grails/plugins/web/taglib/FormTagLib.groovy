@@ -19,6 +19,8 @@ import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.convert.support.DefaultConversionService
+import org.springframework.core.convert.support.GenericConversionService
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
@@ -53,7 +55,6 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
 
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
-    @Autowired(required = false)
     ConversionService conversionService
     
     CodecLookup codecLookup
@@ -61,6 +62,9 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
     void afterPropertiesSet() {
         if (applicationContext.containsBean('requestDataValueProcessor')) {
             requestDataValueProcessor = applicationContext.getBean('requestDataValueProcessor', RequestDataValueProcessor)
+        }
+        if (applicationContext.containsBean('mvcConversionService')) {
+            conversionService = applicationContext.getBean('mvcConversionService', ConversionService)
         }
     }
 
