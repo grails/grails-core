@@ -214,7 +214,9 @@ class GrailsApp extends SpringApplication {
 
     static void setDevelopmentModeActive(boolean active) {
         developmentModeActive = active
-        directoryWatcher.active = active
+        if(directoryWatcher != null) {
+            directoryWatcher.active = active
+        }
     }
 
     protected void recompile(File changedFile, CompilerConfiguration compilerConfig, String location) {
