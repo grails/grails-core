@@ -187,6 +187,11 @@ final class NoOpGrailsPluginManager implements GrailsPluginManager {
     }
 
     @Override
+    public void informPluginsOfConfigChange() {
+        // no op
+    }
+
+    @Override
     public void informOfFileChange(File file) {
         
     }
