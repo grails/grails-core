@@ -14,7 +14,7 @@ class GrailsConfigSpec extends Specification{
         then:
         config.configMap.a1 == [a2:3, b2:4, c2:[a3:3, b2:4, c3:1], d2: 1, e2: 2]
         config.configMap.grails.profile == 'web'
-        config.configMap.grails.containsKey('somekey') == false
+        config.configMap.grails.containsKey('somekey') == true
     }
     
     def "should support merging maps"() {
@@ -70,7 +70,7 @@ class GrailsConfigSpec extends Specification{
         when:
         config.a.b.c = 1
         then:
-        config.configMap == [a: [b: [c: 1]]]
+        config.configMap == [a: [b: [c: 1]], 'a.b.c':1]
     }
 
     def "should support merging values when map is set"() {
@@ -80,11 +80,11 @@ class GrailsConfigSpec extends Specification{
         config.a.b.c = 1
         config.a = [d: 2]
         then:
-        config.configMap == [a: [b: [c: 1], d: 2], 'a.d':2]
+        config.configMap == [a: [b: [c: 1], d: 2], 'a.b.c':1, 'a.d':2]
         when:
         config.a.b = [e: 3]
         then:
-        config.configMap == [a:[b:[c:1, e:3], d:2], 'a.d':2, 'a.b.e':3, 'a.b':[c:1, e:3]]
+        config.configMap == [a:[b:[c:1, e:3], d:2],'a.b.c':1, 'a.d':2, 'a.b.e':3, 'a.b':[c:1, e:3]]
     }
 
     def "should support merging values when map already exists"() {
@@ -94,11 +94,11 @@ class GrailsConfigSpec extends Specification{
         config.a.b.c = 1
         config.a = [d: 2]
         then:
-        config.configMap == [a: [b: [c: 1], d: 2], 'a.d':2]
+        config.configMap == [a: [b: [c: 1], d: 2], 'a.b.c':1, 'a.d':2]
         when:
         config.a.b.e = 3
         then:
-        config.configMap == [a:[b:[c:1, e:3], d:2], 'a.d':2, 'a.b.e':3]
+        config.configMap == [a:[b:[c:1, e:3], d:2], 'a.b.c':1, 'a.d':2, 'a.b.e':3]
     }
         
     def "should support setting map in null safe navigation"() {
@@ -107,7 +107,7 @@ class GrailsConfigSpec extends Specification{
         when:
         config.a.b.c = [d: 3, e: [f: 4]]
         then:
-        config.configMap == [a: [b:[c:[d:3, e:[f:4]]]]]
+        config.configMap == [a:[b:[c:[d:3, e:[f:4]]]], 'a.b.c.d':3, 'a.b.c.e.f':4, 'a.b.c.e':[f:4], 'a.b.c':[d:3, e:[f:4]]]
     }
     
     def "should support cloning"() {
@@ -134,7 +134,7 @@ class GrailsConfigSpec extends Specification{
         config.a.b = null
         config.a.b.c = 1
         then:
-        config.configMap == [a: [b: [c: 1]]]
+        config.configMap == [a: [b: [c: 1]], 'a.b.c':1]
     }
     
     def "should support casting to Map"() {
@@ -172,7 +172,7 @@ class GrailsConfigSpec extends Specification{
             e = 2
         }
         then:
-        config.configMap == [a: [b: [c: [d: 1, e: 2]]]]
+        config.configMap == [a: [b: [c: [d: 1, e: 2]]], 'a.b.c.d':1, 'a.b.c.e':2]
     }
     
     def "null safe navigation should be supported without creating keys"() {
@@ -184,7 +184,7 @@ class GrailsConfigSpec extends Specification{
         when:
         subconfigReference.f.g = 1
         then:
-        config.configMap == [a: [b: [c: [d: [e: [f: [g: 1]]]]]]]
+        config.configMap == [a: [b: [c: [d: [e: [f: [g: 1]]]]]],'a.b.c.d.e.f.g':1]
         subconfigReference.f == [g: 1]
     }
     
