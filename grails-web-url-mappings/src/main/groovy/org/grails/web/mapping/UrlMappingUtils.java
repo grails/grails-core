@@ -183,16 +183,6 @@ public class UrlMappingUtils {
         return forwardUrl;
     }
 
-    private static UrlConverter locateUrlConverter(final GrailsWebRequest webRequest) {
-        UrlConverter urlConverter = null;
-        try {
-            urlConverter = webRequest.getAttributes().getApplicationContext().getBean("grailsUrlConverter", UrlConverter.class);
-        } catch (NoSuchBeanDefinitionException e) {
-            urlConverter = new CamelCaseUrlConverter();
-        }
-        return urlConverter;
-    }
-
     /**
      * Include whatever the given UrlMappingInfo maps to within the current response
      *
