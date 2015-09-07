@@ -1,5 +1,6 @@
 package org.grails.config
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 
@@ -27,11 +28,17 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         dottedPath = path.join('.')
         delegateMap = new LinkedHashMap<>()
     }
-    
+
+    private NavigableMap(NavigableMap rootConfig, List<String> path, Map<String, Object> delegateMap) {
+        this.rootConfig = rootConfig
+        this.path = path
+        dottedPath = path.join('.')
+        this.delegateMap= delegateMap
+    }
+
+    @CompileDynamic
     public NavigableMap clone() {
-        NavigableMap cloned = new NavigableMap()
-        cloned.merge(delegateMap)
-        return cloned
+        return new NavigableMap(rootConfig, path, delegateMap.clone())
     }
 
     @Override
@@ -383,7 +390,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         
         public void setProperty(String name, Object value) {
             NavigableMap parentMap = parent.navigateSubMap(path, true)
-            parentMap.put(name, value)
+            parentMap.setProperty(name, value)
         }
         
         public boolean asBoolean() {
