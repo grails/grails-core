@@ -38,6 +38,26 @@ public class PrefixedConfig implements Config {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PrefixedConfig entries = (PrefixedConfig) o;
+
+        if (delegate != null ? !delegate.equals(entries.delegate) : entries.delegate != null) return false;
+        if (prefix != null ? !prefix.equals(entries.prefix) : entries.prefix != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = prefix != null ? prefix.hashCode() : 0;
+        result = 31 * result + (delegate != null ? delegate.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public Map<String, Object> flatten() {
         Map<String, Object> flattened = delegate.flatten();
         Map<String, Object> map = new LinkedHashMap<String, Object>(flattened.size());

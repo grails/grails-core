@@ -20,7 +20,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         dottedPath = ""
         delegateMap = new LinkedHashMap<>()
     }
-    
+
     public NavigableMap(NavigableMap rootConfig, List<String> path) {
         super()
         this.rootConfig = rootConfig
@@ -34,6 +34,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         this.path = path
         dottedPath = path.join('.')
         this.delegateMap= delegateMap
+    }
+
+    @Override
+    String toString() {
+        delegateMap.toString()
     }
 
     @CompileDynamic
@@ -283,7 +288,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             this.parent = parent
             this.path = path
         }
-        
+
         Object getAt(Object key) {
             getProperty(String.valueOf(key))
         }
