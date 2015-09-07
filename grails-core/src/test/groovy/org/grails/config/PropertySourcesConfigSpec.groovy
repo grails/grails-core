@@ -38,6 +38,7 @@ class PropertySourcesConfigSpec extends Specification {
             config.three.four == 34
             !config.four.five
             config.getProperty('one', String) == '1'
+            config.getProperty('three.four', String) == '34'
             !config.empty.value
 
 

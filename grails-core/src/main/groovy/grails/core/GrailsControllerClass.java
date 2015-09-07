@@ -15,6 +15,8 @@
  */
 package grails.core;
 
+import grails.web.UrlConverter;
+
 import java.util.Set;
 
 /**
@@ -107,4 +109,12 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @throws Throwable Thrown when an error occurs invoking the action
      */
     Object invoke(Object controller, String action) throws Throwable;
+
+
+    /**
+     * Register a new {@link grails.web.UrlConverter} with the controller
+     *
+     * @param urlConverter The {@link grails.web.UrlConverter} to register
+     */
+    void registerUrlConverter(UrlConverter urlConverter);
 }

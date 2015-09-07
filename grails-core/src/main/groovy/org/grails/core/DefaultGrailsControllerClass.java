@@ -18,6 +18,7 @@ package org.grails.core;
 import grails.core.GrailsControllerClass;
 import grails.util.GrailsClassUtils;
 import grails.web.Action;
+import grails.web.UrlConverter;
 import groovy.lang.GroovyObject;
 import org.springframework.cglib.reflect.FastClass;
 import org.springframework.cglib.reflect.FastMethod;
@@ -61,7 +62,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         methodStrategy(actions);
     }
 
-    public void initialize() {}
+    public void initialize() {
+        // no-op
+    }
 
     @Override
     public Set<String> getActions() {
@@ -128,6 +131,18 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             }
         }
         return false;
+    }
+
+    /**
+     * Register a new {@link grails.web.UrlConverter} with the controller
+     *
+     * @param urlConverter The {@link grails.web.UrlConverter} to register
+     */
+    @Override
+    public void registerUrlConverter(UrlConverter urlConverter) {
+        for (String actionName : actions.keySet()) {
+            actions.put( urlConverter.toUrlElement(actionName), actions.get(actionName));
+        }
     }
 
     /**

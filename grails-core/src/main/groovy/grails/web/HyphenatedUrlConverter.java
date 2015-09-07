@@ -36,7 +36,7 @@ public class HyphenatedUrlConverter implements UrlConverter {
         for (char c : charArray) {
             if (Character.isUpperCase(c)) {
                 if (builder.length() > 0) {
-                    builder.append("-");
+                    builder.append('-');
                 }
                 builder.append(Character.toLowerCase(c));
             } else {

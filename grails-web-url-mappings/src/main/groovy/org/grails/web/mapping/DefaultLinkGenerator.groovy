@@ -88,7 +88,7 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
     @Qualifier('grailsDomainClassMappingContext')
     MappingContext mappingContext
 
-    @Autowired
+    @Autowired(required = false)
     UrlConverter grailsUrlConverter = new CamelCaseUrlConverter()
 
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {

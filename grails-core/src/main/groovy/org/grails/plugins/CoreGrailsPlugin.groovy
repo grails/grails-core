@@ -22,12 +22,12 @@ import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
 import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
-import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
@@ -41,9 +41,12 @@ import org.grails.beans.support.PropertiesEditor
 import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.beans.factory.config.YamlProcessor
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
+import org.springframework.boot.yaml.SpringProfileDocumentMatcher
 import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.annotation.ConfigurationClassPostProcessor
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 
@@ -56,7 +59,10 @@ import org.springframework.util.ClassUtils
 class CoreGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
-    def watchedResources = ["file:./grails-app/conf/spring/resources.xml","file:./grails-app/conf/spring/resources.groovy"]
+    def watchedResources = [    "file:./grails-app/conf/spring/resources.xml",
+                                "file:./grails-app/conf/spring/resources.groovy",
+                                "file:./grails-app/conf/application.groovy",
+                                "file:./grails-app/conf/application.yml"]
 
     @Override
     Closure doWithSpring() { {->
@@ -167,18 +173,49 @@ class CoreGrailsPlugin extends Plugin {
     }
 
     @Override
+    @CompileStatic
     void onChange(Map<String, Object> event) {
+        GenericApplicationContext applicationContext = (GenericApplicationContext)this.applicationContext
         if (event.source instanceof Resource) {
-            def xmlBeans = new OptimizedAutowireCapableBeanFactory()
-            new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(event.source)
-            xmlBeans.beanDefinitionNames.each { name ->
-                applicationContext.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))
+            Resource res = (Resource)event.source
+            if(res.filename.endsWith('.xml')) {
+                def xmlBeans = new OptimizedAutowireCapableBeanFactory()
+                new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(res)
+                for(String beanName in xmlBeans.beanDefinitionNames) {
+                    applicationContext.registerBeanDefinition(beanName, xmlBeans.getBeanDefinition(beanName))
+                }
+            }
+            else if(res.filename.endsWith('.yml')) {
+                def processor = new YmlConfigModifier(grailsApplication.config)
+                processor.matchDefault = true
+                processor.setResources(res)
+                processor.modifyConfig()
+                processor.matchDefault = false
+                processor.setDocumentMatchers(new SpringProfileDocumentMatcher(Environment.current.name))
+                grailsApplication.configChanged()
+                pluginManager.informPluginsOfConfigChange()
             }
         }
         else if (event.source instanceof Class) {
-            RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, event.source)
+            RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(applicationContext)
+            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, (Class) event.source)
             springConfig.registerBeansWithContext(applicationContext)
+        }
+    }
+
+    @CompileStatic
+    static class YmlConfigModifier extends YamlProcessor {
+        Config config
+
+        YmlConfigModifier(Config config) {
+            this.config = config
+        }
+
+        void modifyConfig() {
+            process { Properties properties, Map<String, Object> map ->
+                config.merge(map)
+                config.merge((Map<String,Object>)properties)
+            }
         }
     }
 }

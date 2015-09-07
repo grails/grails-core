@@ -11,10 +11,12 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     final NavigableMap rootConfig
     final List<String> path
     final Map<String, Object> delegateMap
+    final String dottedPath
 
     public NavigableMap() {
         rootConfig = this
         path = []
+        dottedPath = ""
         delegateMap = new LinkedHashMap<>()
     }
     
@@ -22,6 +24,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         super()
         this.rootConfig = rootConfig
         this.path = path
+        dottedPath = path.join('.')
         delegateMap = new LinkedHashMap<>()
     }
     
@@ -92,29 +95,33 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
 
     public void merge(Map sourceMap, boolean parseFlatKeys=false) {
-        mergeMaps(this, sourceMap, parseFlatKeys)
+        mergeMaps(this, "", this, sourceMap, parseFlatKeys)
     }
     
-    private void mergeMaps(NavigableMap targetMap, Map sourceMap, boolean parseFlatKeys) {
-        sourceMap.each { Object sourceKeyObject, Object sourceValue ->
+    private void mergeMaps(NavigableMap rootMap, String path, NavigableMap targetMap, Map sourceMap, boolean parseFlatKeys) {
+        for(Map.Entry entry in sourceMap) {
+            Object sourceKeyObject = entry.key
+            Object sourceValue = entry.value
             String sourceKey = String.valueOf(sourceKeyObject)
-            NavigableMap actualTarget
             if(parseFlatKeys) {
                 String[] keyParts = sourceKey.split(/\./)
                 if(keyParts.length > 1) {
-                    actualTarget = targetMap.navigateSubMap(keyParts[0..-2] as List, true)
+                    mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    def pathParts = keyParts[0..-2]
+                    Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
                     sourceKey = keyParts[-1]
+                    mergeMapEntry(rootMap, pathParts.join('.'), actualTarget, sourceKey, sourceValue, parseFlatKeys)
                 } else {
-                    actualTarget = targetMap
+                    mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
                 }
             } else {
-                actualTarget = targetMap
+                mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
             }
-            mergeMapEntry(actualTarget, sourceKey, sourceValue, parseFlatKeys)
+
         }
     }
     
-    protected void mergeMapEntry(NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys) {
+    protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue
         if(sourceValue instanceof Map) {
@@ -122,14 +129,26 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             if(currentValue instanceof Map) {
                 subMap.putAll((Map)currentValue)
             }
-            mergeMaps(subMap, (Map)sourceValue, parseFlatKeys)
+            String newPath = path ? "${path}.${sourceKey}" : sourceKey
+            mergeMaps(rootMap, newPath , subMap, (Map)sourceValue, parseFlatKeys)
             newValue = subMap
         } else {
             newValue = sourceValue
         }
-        if (newValue == null) {
+        if (isNestedSet && newValue == null) {
+            if(path) {
+                def keysToRemove = rootMap.keySet().findAll() { String key ->
+                    key.startsWith("${path}.")
+                }
+                for(key in keysToRemove) {
+                    rootMap.remove(key)
+                }
+            }
             targetMap.remove(sourceKey)
         } else {
+            if(path) {
+                rootMap.put( "${path}.${sourceKey}".toString(), newValue )
+            }
             mergeMapEntry(targetMap, sourceKey, newValue)
         }
     }
@@ -154,7 +173,7 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
     
     public void setProperty(String name, Object value) {
-        mergeMapEntry(this, name, value, false)
+        mergeMapEntry(rootConfig, dottedPath, this, name, value, false, true)
     }
     
     public Object navigate(String... path) {
