@@ -44,6 +44,24 @@ public abstract class NavigableMapConfig implements Config {
     };
 
     @Override
+    public int hashCode() {
+        return configMap.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof NavigableMapConfig) {
+            return this.configMap.equals(((NavigableMapConfig)obj).configMap);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return configMap.toString();
+    }
+
+    @Override
     public Object getAt(Object key) {
         return get(key);
     }
