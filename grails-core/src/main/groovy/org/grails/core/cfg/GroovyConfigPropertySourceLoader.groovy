@@ -20,6 +20,7 @@ import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
+import org.grails.core.exceptions.GrailsConfigurationException
 import org.springframework.boot.env.PropertySourceLoader
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.PropertySource
@@ -59,6 +60,7 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                     return new MapPropertySource(name, finalMap)
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)
+                    throw new GrailsConfigurationException("Error loading $resource.filename due to [${e.getClass().name}]: $e.message", e)
                 }
             }
         }
