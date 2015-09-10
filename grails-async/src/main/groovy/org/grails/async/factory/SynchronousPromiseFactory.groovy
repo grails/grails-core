@@ -60,7 +60,7 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
             // ignore
         }
 
-        promise
+        return promise
     }
 
     @Override
