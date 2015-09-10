@@ -32,15 +32,24 @@ import java.util.concurrent.TimeUnit
 class SynchronousPromiseFactory extends AbstractPromiseFactory {
     @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
+        Promise<T> promise
         if (closures.length == 1) {
-            return new SynchronousPromise<T>(closures[0])
+            promise = new SynchronousPromise<T>(closures[0])
+        } else {
+            def promiseList = new PromiseList()
+            for(p in closures) {
+                promiseList << p
+            }
+            promise = promiseList
         }
 
-        def promiseList = new PromiseList()
-        for(p in closures) {
-            promiseList << p
+        try {
+            promise.get()
+        } catch (e) {
+            // ignore
         }
-        return promiseList
+
+        return promise
     }
 
     @Override
