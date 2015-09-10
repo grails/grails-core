@@ -18,6 +18,7 @@ package grails.async
 import org.grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.async.factory.gpars.GparsPromiseFactory
+import spock.lang.Issue
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
@@ -139,12 +140,24 @@ class SynchronousPromiseFactorySpec extends Specification {
 
     void "Test promise chaining with exception"() {
         when:"A promise is chained"
-            def promise = Promises.createPromise { 1 + 1 }
-            promise = promise.then { it * 2 } then { throw new RuntimeException("bad")} then { it + 6 }
-            def val = promise.get()
+        def promise = Promises.createPromise { 1 + 1 }
+        promise = promise.then { it * 2 } then { throw new RuntimeException("bad")} then { it + 6 }
+        def val = promise.get()
 
         then:'the chain is executed'
-            thrown RuntimeException
-            val == null
+        thrown RuntimeException
+        val == null
+    }
+
+    @Issue("GRAILS-9229")
+    void "Test promise is executed without calling get"() {
+        given:
+        Closure callable = Mock(Closure)
+
+        when:"A promise is created"
+        Promises.createPromise(callable)
+
+        then:'the closure is executed'
+        1 * callable.call()
     }
 }
