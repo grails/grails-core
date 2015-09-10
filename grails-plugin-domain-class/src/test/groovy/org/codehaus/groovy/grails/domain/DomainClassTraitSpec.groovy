@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.domain
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
 import grails.util.Holders
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -10,6 +11,7 @@ import spock.lang.Specification
  */
 class DomainClassTraitSpec extends Specification {
 
+    @Issue("GRAILS-9245")
     void "test getConstrainedProperties"() {
         given:
         def application = new DefaultGrailsApplication([Person] as Class[], getClass().classLoader)
