@@ -208,9 +208,9 @@ class UrlMappingMatcher implements Matcher {
     }
 
     protected int hashCode(UrlMappingInfo info) {
-        def builder = new HashCodeBuilder()
-        builder.append(interceptor)
-        builder.append(info)
-        builder.toHashCode()
+        new HashCodeBuilder()
+            .append(interceptor)
+            .append(info)
+            .toHashCode()
     }
 }
