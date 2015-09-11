@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile.steps
 
+import groovy.transform.CompileStatic
 import org.gradle.tooling.BuildException
 import org.gradle.tooling.BuildLauncher
 import org.grails.build.parsing.CommandLine
@@ -30,7 +31,12 @@ import org.grails.exceptions.ExceptionUtils
  *
  * @since 3.0
  */
+@CompileStatic
 class GradleStep extends AbstractStep {
+    protected static final Map<String, String> GRADLE_ARGUMENT_ADAPTER = [
+            'plain-output' : '--console plain',
+            'verbose' : '-d'
+    ]
     protected List<String> tasks = []
     protected String baseArguments = ""
     protected boolean passArguments = true
@@ -60,7 +66,7 @@ class GradleStep extends AbstractStep {
     }
 
     protected void initialize() {
-        tasks = parameters.tasks
+        tasks = (List<String>)parameters.tasks
         baseArguments = parameters.baseArguments ?: ''
         passArguments = Boolean.valueOf(parameters.passArguments?.toString() ?: 'true' )
     }
@@ -68,24 +74,30 @@ class GradleStep extends AbstractStep {
     protected BuildLauncher fillArguments(ExecutionContext context, BuildLauncher buildLauncher) {
         def commandLine = context.commandLine
 
-        List<String> argList = baseArguments ? [baseArguments] : []
+        List<String> argList = baseArguments ? [baseArguments] : new ArrayList<String>()
 
         for(Map.Entry<String, Object> entry in commandLine.undeclaredOptions) {
             def flagName = entry.key
-            def flag = command.description.getFlag(flagName)
-            if(flag) {
-                flagName = flag.target ?: "-$flagName".toString()
+            if(GRADLE_ARGUMENT_ADAPTER.containsKey(flagName)) {
+                argList.addAll( GRADLE_ARGUMENT_ADAPTER[flagName].split(/\s/) )
+                continue
             }
 
-            argList << flagName
+            def flag = command.description.getFlag(flagName)
+            if(flag) {
+                flagName = flag.target ?: flagName
+            }
+            argList << "-$flagName".toString()
+
         }
 
         if(passArguments) {
-            argList.addAll(commandLine.remainingArgsArray)
+            argList.addAll(commandLine.remainingArgs.collect() { String arg -> "-${arg}".toString() } )
         }
 
 
         if(argList) {
+
             buildLauncher.withArguments(argList as String[])
         }
         buildLauncher
