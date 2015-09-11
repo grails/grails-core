@@ -109,11 +109,6 @@ allprojects {
                 url 'https://oss.jfrog.org/oss-snapshot-local/'
             }
         }
-        if(isBuildSnapshot) {
-            maven { url "https://repo.spring.io/repo"}
-            maven { url "https://repo.grails.org/grails/libs-snapshots-local" }
-            maven { url "https://repo.gradle.org/gradle/libs-snapshots-local" }
-        }
     }
 
     configurations {
