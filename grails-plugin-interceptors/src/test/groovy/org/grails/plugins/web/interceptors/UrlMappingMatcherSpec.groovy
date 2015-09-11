@@ -1,7 +1,8 @@
 package org.grails.plugins.web.interceptors
 
+import grails.artefact.Interceptor
+import grails.util.Environment
 import grails.web.mapping.UrlMappingInfo
-import org.grails.web.mapping.DefaultUrlMappingInfo
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -18,5 +19,36 @@ class UrlMappingMatcherSpec extends Specification {
 
         then:
         !matcher.doesMatch('/demo/index', mappingInfo)
+    }
+
+    @Issue("https://github.com/grails/grails-core/issues/9208")
+    void "test caching of results in production"() {
+        given:
+        System.setProperty(Environment.KEY, "prod")
+        Environment.cacheCurrentEnvironment()
+        String controller = "foo"
+        String url = "/foo/test"
+        def info = Mock(UrlMappingInfo)
+        info.getControllerName() >> controller
+
+        when:
+        def matcher = new UrlMappingMatcher(Mock(Interceptor))
+        matcher.matches(controller: controller)
+
+
+        then:
+        matcher.doesMatch(url, info)
+
+
+        when:
+        matcher = new UrlMappingMatcher(Mock(Interceptor))
+        matcher.matches(controller: 'bar')
+
+        then:
+        !matcher.doesMatch(url, info)
+
+        cleanup:
+        System.setProperty(Environment.KEY, "test")
+        Environment.cacheCurrentEnvironment()
     }
 }
