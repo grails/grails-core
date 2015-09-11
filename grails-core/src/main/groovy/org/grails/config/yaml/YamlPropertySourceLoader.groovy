@@ -17,6 +17,7 @@ package org.grails.config.yaml
 
 import groovy.transform.CompileStatic
 import org.grails.config.NavigableMap
+import org.grails.config.NavigableMapPropertySource
 import org.grails.core.cfg.GroovyConfigPropertySourceLoader
 import org.springframework.beans.factory.config.YamlProcessor
 import org.springframework.boot.env.PropertySourceLoader
@@ -69,7 +70,7 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
             }
 
             if (!propertySource.isEmpty()) {
-                return new MapPropertySource(name, propertySource);
+                return new NavigableMapPropertySource(name, propertySource)
             }
         }
         return null
