@@ -89,8 +89,16 @@ public class PropertySourcesConfig extends NavigableMapConfig {
 
     private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
         Map<String, Object> map = new LinkedHashMap<String, Object>();
-        for(String propertyName : enumerablePropertySource.getPropertyNames()) {
-            Object value = enumerablePropertySource.getProperty(propertyName);
+        final boolean isNavigable = enumerablePropertySource instanceof NavigableMapPropertySource;
+        final String[] propertyNames = isNavigable ? ((NavigableMapPropertySource)enumerablePropertySource).getNavigablePropertyNames() : enumerablePropertySource.getPropertyNames();
+        for(String propertyName : propertyNames) {
+            Object value;
+            if(isNavigable) {
+                value = ((NavigableMapPropertySource)enumerablePropertySource).getNavigableProperty(propertyName);
+            }
+            else {
+                value = enumerablePropertySource.getProperty(propertyName);
+            }
             if(value instanceof ConfigObject) {
                 if(((ConfigObject)value).isEmpty()) continue;
             }
