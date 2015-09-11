@@ -11,6 +11,9 @@ grailsVersion="${grailsVersion//[[:blank:]\'\"]/}"
 
 echo "Project Version: '$grailsVersion'"
 
+git config --global credential.helper "store --file=~/.git-credentials"
+echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
+
 EXIT_STATUS=0
 ./gradlew --stop
 
@@ -51,8 +54,37 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
     echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 
     if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives || EXIT_STATUS=$?
+        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
+
+        # Tag the Profile Repo
+        git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
+        cd grails-profile-repository
+        git tag $TRAVIS_TAG
+        git push --tags
+
+        # Tag and release the docs
+        cd ..
+        git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
+        cd grails-doc
+        echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
+        git add gradle.properties
+        git commit -m "Release $TRAVIS_TAG docs"
+        git tag $TRAVIS_TAG
+        git push --tags
+        git push
+        cd ..
+
+        # Update the website
+        git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
+        cd grails-static-website
+        echo -e "\n${TRAVIS_TAG:1}" >> generator/src/main/resources/versions
+        git add generator/src/main/resources/versions
+        git commit -m "Release Grails $TRAVIS_TAG"
+        git push
+        cd ..
+
+
     elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     fi

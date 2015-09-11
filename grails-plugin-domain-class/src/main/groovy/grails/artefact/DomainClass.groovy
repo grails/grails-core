@@ -36,7 +36,7 @@ trait DomainClass {
 
 
     static Map<String, Constrained> getConstrainedProperties() {
-        GrailsDomainClass domainClass = (GrailsDomainClass)Holders?.grailsApplication?.getArtefact(DomainClassArtefactHandler.TYPE, this.getClass().name)
+        GrailsDomainClass domainClass = (GrailsDomainClass)Holders?.grailsApplication?.getArtefact(DomainClassArtefactHandler.TYPE, this.name)
         return (Map<String, Constrained>)domainClass?.getConstrainedProperties() ?: Collections.emptyMap()
     }
 }

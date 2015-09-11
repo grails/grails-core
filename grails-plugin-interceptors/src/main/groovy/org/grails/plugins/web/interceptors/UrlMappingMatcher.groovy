@@ -20,6 +20,7 @@ import grails.interceptors.Matcher
 import grails.util.Environment
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
+import org.apache.commons.lang.builder.HashCodeBuilder
 import org.springframework.util.AntPathMatcher
 
 import java.util.concurrent.ConcurrentHashMap
@@ -70,7 +71,7 @@ class UrlMappingMatcher implements Matcher {
                     }
                 }
             } else if (info) {
-                def infoCode = info.hashCode()
+                def infoCode = hashCode(info)
                 Boolean matched = CACHED_MATCHES.get(infoCode)
                 if (matched != null) return matched
 
@@ -204,5 +205,12 @@ class UrlMappingMatcher implements Matcher {
             (namespaceExcludesRegex != null && ((info.namespace ?: '') ==~ namespaceExcludesRegex)) ||
             (methodExcludesRegex != null && ((info.httpMethod ?: '') ==~ methodExcludesRegex))
         }
+    }
+
+    protected int hashCode(UrlMappingInfo info) {
+        new HashCodeBuilder()
+            .append(interceptor)
+            .append(info)
+            .toHashCode()
     }
 }
