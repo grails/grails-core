@@ -811,11 +811,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
     private int getStaticTokenCount(UrlMapping mapping) {
         String[] tokens = mapping.getUrlData().getTokens();
-        int count = 0;
-        for (String token : tokens) {
-            if (!isSingleWildcard(token) && !"".equals(token)) count++;
-        }
-        return count;
+		return tokens.length;
     }
 
     private boolean isSingleWildcard(String token) {
