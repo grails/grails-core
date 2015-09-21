@@ -57,9 +57,16 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives || EXIT_STATUS=$?
         ./gradlew assemble || EXIT_STATUS=$?
 
+        # Configure GIT
+        git config --global user.name "$GIT_NAME"
+        git config --global user.email "$GIT_EMAIL"
+        git config --global credential.helper "store --file=~/.git-credentials"
+
         # Tag the Profile Repo
         git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
         cd grails-profile-repository
+        git branch --track 3.0.x remotes/origin/3.0.x
+        git checkout 3.0.x
         git tag $TRAVIS_TAG
         git push --tags
 
@@ -67,6 +74,9 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         cd ..
         git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
         cd grails-doc
+        git branch --track 3.0.x remotes/origin/3.0.x
+        git checkout 3.0.x
+        
         echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
         git add gradle.properties
         git commit -m "Release $TRAVIS_TAG docs"
