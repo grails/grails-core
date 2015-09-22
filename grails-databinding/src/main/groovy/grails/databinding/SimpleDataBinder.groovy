@@ -27,6 +27,7 @@ import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 
+import grails.databinding.BindUsing
 import org.grails.databinding.BindUsing as LegacyBindUsing
 import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import org.grails.databinding.ClosureValueConverter
