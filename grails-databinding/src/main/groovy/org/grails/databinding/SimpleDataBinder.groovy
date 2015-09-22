@@ -68,7 +68,7 @@ class SimpleDataBinder implements DataBinder {
     protected Map<Class, StructuredBindingEditor> structuredEditors = new HashMap<Class, StructuredBindingEditor>()
     ConversionService conversionService
     protected Map<Class, List<ValueConverter>> conversionHelpers = [:].withDefault { c -> [] }
-    protected Map<Class, FormattedValueConverter> formattedValueConvertersionHelpers = new HashMap<Class, FormattedValueConverter>()
+    protected Map<Class, FormattedValueConverter> formattedValueConversionHelpers = new HashMap<Class, FormattedValueConverter>()
     protected static final List<Class> BASIC_TYPES = [
         String,
         Boolean,
@@ -101,7 +101,7 @@ class SimpleDataBinder implements DataBinder {
         conversionHelpers[converter.targetType] << converter
     }
     void registerFormattedValueConverter(FormattedValueConverter converter) {
-        formattedValueConvertersionHelpers[converter.targetType] = converter
+        formattedValueConversionHelpers[converter.targetType] = converter
     }
 
     /**
@@ -463,7 +463,7 @@ class SimpleDataBinder implements DataBinder {
      */
     protected ValueConverter getFormattedConverter(Field field, String formattingValue) {
         def converter
-        def formattedConverter = formattedValueConvertersionHelpers[field.type]
+        def formattedConverter = formattedValueConversionHelpers[field.type]
         if (formattedConverter) {
             converter = { SimpleMapDataBindingSource source ->
                 def value = preprocessValue(source.getPropertyValue(field.name))
