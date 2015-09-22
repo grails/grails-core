@@ -43,16 +43,16 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
     @Override
     PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
         def env = Environment.current.name
-        if(env == profile) {
-            ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
-
-            configSlurper.setBinding(userHome: System.getProperty('user.home'),
-                    grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
-                    springProfile: profile,
-                    appName: Metadata.getCurrent().getApplicationName(),
-                    appVersion: Metadata.getCurrent().getApplicationVersion() )
+        if(profile == null || env == profile) {
 
             if(resource.exists()) {
+                ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
+
+                configSlurper.setBinding(userHome: System.getProperty('user.home'),
+                        grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
+                        springProfile: profile,
+                        appName: Metadata.getCurrent().getApplicationName(),
+                        appVersion: Metadata.getCurrent().getApplicationVersion() )
                 try {
                     def configObject = configSlurper.parse(resource.URL)
                     def propertySource = new NavigableMap()
