@@ -20,6 +20,8 @@ import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
+import org.grails.config.NavigableMap
+import org.grails.config.NavigableMapPropertySource
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.springframework.boot.env.PropertySourceLoader
 import org.springframework.core.env.MapPropertySource
@@ -53,11 +55,9 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
             if(resource.exists()) {
                 try {
                     def configObject = configSlurper.parse(resource.URL)
-                    def flatMap = configObject.flatten()
-                    Map<String, Object> finalMap = [:]
-                    finalMap.putAll(configObject)
-                    finalMap.putAll(flatMap)
-                    return new MapPropertySource(name, finalMap)
+                    def propertySource = new NavigableMap()
+                    propertySource.merge(configObject, false)
+                    return new NavigableMapPropertySource(name, propertySource)
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)
                     throw new GrailsConfigurationException("Error loading $resource.filename due to [${e.getClass().name}]: $e.message", e)

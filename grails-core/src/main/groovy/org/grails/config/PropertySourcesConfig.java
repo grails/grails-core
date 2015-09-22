@@ -88,32 +88,31 @@ public class PropertySourcesConfig extends NavigableMapConfig {
     }
 
     private void mergeEnumerablePropertySource(EnumerablePropertySource enumerablePropertySource) {
-        Map<String, Object> map = new LinkedHashMap<String, Object>();
-        final boolean isNavigable = enumerablePropertySource instanceof NavigableMapPropertySource;
-        final String[] propertyNames = isNavigable ? ((NavigableMapPropertySource)enumerablePropertySource).getNavigablePropertyNames() : enumerablePropertySource.getPropertyNames();
-        for(String propertyName : propertyNames) {
-            Object value;
-            if(isNavigable) {
-                value = ((NavigableMapPropertySource)enumerablePropertySource).getNavigableProperty(propertyName);
-            }
-            else {
-                value = enumerablePropertySource.getProperty(propertyName);
-            }
-            if(value instanceof ConfigObject) {
-                if(((ConfigObject)value).isEmpty()) continue;
-            }
-            if(value instanceof CharSequence) {
-                value = resolvePlaceholders(value.toString());
-            }
-            if(prefix != null) {
-                map.put(prefix + '.' + propertyName, value);
-            }
-            else {
-                map.put(propertyName, value);
-            }
+        if(enumerablePropertySource instanceof NavigableMapPropertySource) {
+            configMap.merge(((NavigableMapPropertySource)enumerablePropertySource).getSource(), false);
         }
+        else {
+            Map<String, Object> map = new LinkedHashMap<String, Object>();
 
-        configMap.merge(map, true);
+            final String[] propertyNames = enumerablePropertySource.getPropertyNames();
+            for(String propertyName : propertyNames) {
+                Object value = enumerablePropertySource.getProperty(propertyName);
+                if(value instanceof ConfigObject) {
+                    if(((ConfigObject)value).isEmpty()) continue;
+                }
+                if(value instanceof CharSequence) {
+                    value = resolvePlaceholders(value.toString());
+                }
+                if(prefix != null) {
+                    map.put(prefix + '.' + propertyName, value);
+                }
+                else {
+                    map.put(propertyName, value);
+                }
+            }
+
+            configMap.merge(map, true);
+        }
     }
 
     public void setClassLoader(ClassLoader classLoader) {
