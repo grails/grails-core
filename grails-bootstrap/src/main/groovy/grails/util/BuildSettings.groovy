@@ -299,42 +299,4 @@ class BuildSettings {
 
     public static final File SETTINGS_FILE = new File("${System.getProperty('user.home')}/.grails/settings.groovy")
 
-    private static final NavigableMap SETTINGS_MAP = new NavigableMap()
-
-    static {
-         if(SETTINGS_FILE.exists()) {
-             try {
-                 SETTINGS_MAP.merge new ConfigSlurper().parse(SETTINGS_FILE.toURI().toURL())
-             } catch (Throwable e) {
-                 System.err.println("ERROR: Problem loading $SETTINGS_FILE: ${e.message}")
-             }
-
-         }
-    }
-
-
-    /**
-     * Obtains a value from USER_HOME/.grails/settings.yml
-     *
-     * @param key the property name to resolve
-     * @param targetType the expected type of the property value
-     * @param defaultValue The default value
-     */
-    public static <T> T getSetting(String key, Class<T> targetType = Object.class, T defaultValue = null) {
-        def value = SETTINGS_MAP.get(key, defaultValue)
-        if(value == null) {
-            return null
-        }
-
-        else if(targetType.isInstance(value)) {
-            return (T)value
-        }
-        else {
-            try {
-                return value.asType(targetType)
-            } catch (Throwable e) {
-                return null
-            }
-        }
-    }
 }

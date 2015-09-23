@@ -43,6 +43,7 @@ import org.grails.cli.profile.*
 import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.cli.profile.git.GitProfileRepository
 import org.grails.config.CodeGenConfig
+import org.grails.config.NavigableMap
 import org.grails.exceptions.ExceptionUtils
 import org.grails.gradle.plugin.model.GrailsClasspath
 
@@ -68,15 +69,30 @@ class GrailsCli {
     private static ExecutionContext currentExecutionContext = null
 
     private static boolean interactiveModeActive
+    private static final NavigableMap SETTINGS_MAP = new NavigableMap()
+
     static {
-        try {
-            Runtime.addShutdownHook {
-                currentExecutionContext?.cancel()
+        if(BuildSettings.SETTINGS_FILE.exists()) {
+            try {
+                SETTINGS_MAP.merge new ConfigSlurper().parse(BuildSettings.SETTINGS_FILE.toURI().toURL())
+            } catch (Throwable e) {
+                e.printStackTrace()
+                System.err.println("ERROR: Problem loading $BuildSettings.SETTINGS_FILE: ${e.message}")
             }
-        } catch (e) {
-            // ignore
+
+            try {
+                Runtime.addShutdownHook {
+                    currentExecutionContext?.cancel()
+                }
+            } catch (e) {
+                // ignore
+            }
         }
     }
+
+
+
+
 
     SortedAggregateCompleter aggregateCompleter=new SortedAggregateCompleter()
     CommandLineParser cliParser = new CommandLineParser()
@@ -90,14 +106,38 @@ class GrailsCli {
     Profile profile = null
 
     /**
+     * Obtains a value from USER_HOME/.grails/settings.yml
+     *
+     * @param key the property name to resolve
+     * @param targetType the expected type of the property value
+     * @param defaultValue The default value
+     */
+    public static <T> T getSetting(String key, Class<T> targetType = Object.class, T defaultValue = null) {
+        def value = SETTINGS_MAP.get(key, defaultValue)
+        if(value == null) {
+            return null
+        }
+
+        else if(targetType.isInstance(value)) {
+            return (T)value
+        }
+        else {
+            try {
+                return value.asType(targetType)
+            } catch (Throwable e) {
+                return null
+            }
+        }
+    }
+    /**
      * Main method for running via the command line
      *
      * @param args The arguments
      */
     public static void main(String[] args) {
 
-        Authenticator.setDefault( BuildSettings.getSetting( BuildSettings.AUTHENTICATOR, Authenticator,  new SystemPropertiesAuthenticator() ) )
-        def proxySelector = BuildSettings.getSetting(BuildSettings.PROXY_SELECTOR, ProxySelector)
+        Authenticator.setDefault( getSetting( BuildSettings.AUTHENTICATOR, Authenticator,  new SystemPropertiesAuthenticator() ) )
+        def proxySelector = getSetting(BuildSettings.PROXY_SELECTOR, ProxySelector)
         if(proxySelector != null) {
             ProxySelector.setDefault( proxySelector )
         }
