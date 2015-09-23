@@ -16,6 +16,7 @@
 package org.grails.cli
 
 import grails.build.logging.GrailsConsole
+import grails.build.proxy.SystemPropertiesAuthenticator
 import grails.config.ConfigMap
 import grails.io.support.SystemStreamsRedirector
 import grails.util.BuildSettings
@@ -94,6 +95,13 @@ class GrailsCli {
      * @param args The arguments
      */
     public static void main(String[] args) {
+
+        Authenticator.setDefault( BuildSettings.getSetting( BuildSettings.AUTHENTICATOR, Authenticator,  new SystemPropertiesAuthenticator() ) )
+        def proxySelector = BuildSettings.getSetting(BuildSettings.PROXY_SELECTOR, ProxySelector)
+        if(proxySelector != null) {
+            ProxySelector.setDefault( proxySelector )
+        }
+
         GrailsCli cli=new GrailsCli()
         try {
             exit(cli.execute(args))
@@ -148,6 +156,8 @@ class GrailsCli {
             console.addStatus("JVM Version: ${System.getProperty('java.version')}")
             exit(0)
         }
+
+
 
         if(mainCommandLine.hasOption(CommandLine.HELP_ARGUMENT) || mainCommandLine.hasOption('h')) {
             def cmd = CommandRegistry.getCommand("help", profileRepository)

@@ -33,7 +33,7 @@ import org.grails.cli.profile.*
  * @since 3.0
  */
 @CompileStatic
-class GitProfileRepository implements ProfileRepository{
+class GitProfileRepository implements ProfileRepository {
     File profilesDirectory = new File(new File(System.getProperty("user.home")), ".grails/repository")
     String originUri = "https://github.com/grails/grails-profile-repository"
     String gitBranch = 'master'
