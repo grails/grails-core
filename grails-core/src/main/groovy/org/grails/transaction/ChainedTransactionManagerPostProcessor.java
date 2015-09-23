@@ -60,12 +60,14 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     private Config config;
 
     private Map<String, Map> dsConfigs;
+    private static String[] transactionManagerBeanNames = null;
 
     public ChainedTransactionManagerPostProcessor(Config config) {
         this(config, null, null);
     }
     
     public ChainedTransactionManagerPostProcessor(Config config, String whitelistPattern, String blacklistPattern) {
+        transactionManagerBeanNames = null;
         this.config = config;
         if (whitelistPattern != null) {
             beanNameWhitelistPattern = whitelistPattern;
@@ -98,7 +100,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         }
     }
 
-    private static String[] transactionManagerBeanNames = null;
+
     protected static String[] getTransactionManagerBeanNames(BeanDefinitionRegistry registry) {
         if(transactionManagerBeanNames == null) {
 
