@@ -2,15 +2,13 @@ package org.grails.transaction;
 
 import grails.config.Config;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.grails.config.PropertySourcesConfig;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
@@ -20,6 +18,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.Ordered;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.util.ClassUtils;
 
@@ -47,6 +46,9 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     private static final String TRANSACTIONAL = "transactional";
     private static final String DEFAULT_TRANSACTION_MANAGER_BEAN_NAME_WHITELIST_PATTERN = "(?i).*transactionManager(_.+)?";
     private static final String DEFAULT_TRANSACTION_MANAGER_INTERNAL_BEAN_NAME_BLACKLIST_PATTERN = "(?i)chainedTransactionManagerPostProcessor|transactionManagerPostProcessor|.*PostProcessor";
+    public static final String DATA_SOURCE_SETTING = "dataSource";
+    public static final String DATA_SOURCES_SETTING = "dataSources";
+    public static final String DATA_SOURCES_PREFIX = "dataSources.";
     private String beanNameWhitelistPattern = DEFAULT_TRANSACTION_MANAGER_BEAN_NAME_WHITELIST_PATTERN;
     private String beanNameBlacklistPattern = null;
     private String beanNameInternalBlacklistPattern = DEFAULT_TRANSACTION_MANAGER_INTERNAL_BEAN_NAME_BLACKLIST_PATTERN;
@@ -56,7 +58,9 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     private static final String READONLY = "readOnly";
     
     private Config config;
-    
+
+    private Map<String, Map> dsConfigs;
+
     public ChainedTransactionManagerPostProcessor(Config config) {
         this(config, null, null);
     }
@@ -75,41 +79,37 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         this(new PropertySourcesConfig(), null, null);
     }
     
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Map<String, Map> readDataSourceConfig() {
-        Map<String, Map> dsConfigs = new LinkedHashMap<String, Map>();
-        if (config != null) {
-            if(config.containsKey("dataSource")) {
-                dsConfigs.put("", (Map)config.get("dataSource"));
-            }
-            for(Map.Entry<String, Object> entry : config.entrySet()) {
-                String name=String.valueOf(entry.getKey());
-                Object value = entry.getValue();
-                if(name.startsWith("dataSource_") && value instanceof Map) {
-                    dsConfigs.put(name.substring("dataSource_".length()), (Map) value);
-                }
-            }
-        }
-        return dsConfigs;
-    }
-    
+
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         
     }
 
     protected void registerAdditionalTransactionManagers(BeanDefinitionRegistry registry, BeanDefinition chainedTransactionManagerBeanDefinition, ManagedList<RuntimeBeanReference> transactionManagerRefs) {
-        String[] allBeanNames = registry.getBeanDefinitionNames();
-        Map<String, Map> dsConfigs=readDataSourceConfig();
+        String[] allBeanNames = getTransactionManagerBeanNames(registry);
         for (String beanName : allBeanNames) {
             BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
             if(!TRANSACTION_MANAGER.equals(beanName) && !PRIMARY_TRANSACTION_MANAGER.equals(beanName) && isValidTransactionManagerBeanDefinition(beanName, beanDefinition)) {
                 String suffix = resolveDataSourceSuffix(beanName);
-                if (!isNotTransactional(dsConfigs, suffix)) {
+                if (!isNotTransactional(suffix)) {
                     transactionManagerRefs.add(new RuntimeBeanReference(beanName));
                 }
             }
         }
+    }
+
+    private static String[] transactionManagerBeanNames = null;
+    protected static String[] getTransactionManagerBeanNames(BeanDefinitionRegistry registry) {
+        if(transactionManagerBeanNames == null) {
+
+            if(registry instanceof ListableBeanFactory) {
+                transactionManagerBeanNames =  ((ListableBeanFactory)registry).getBeanNamesForType(PlatformTransactionManager.class);
+            }
+            else {
+                transactionManagerBeanNames = registry.getBeanDefinitionNames();
+            }
+        }
+        return transactionManagerBeanNames;
     }
 
     @Override
@@ -158,13 +158,12 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     }
 
     protected int countChainableTransactionManagerBeans(BeanDefinitionRegistry registry) {
-        Map<String, Map> dsConfigs=readDataSourceConfig();
         int transactionManagerBeanCount=0;
-        for (String beanName : registry.getBeanDefinitionNames()) {
+        for (String beanName : getTransactionManagerBeanNames(registry)) {
             BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
             if(isValidTransactionManagerBeanDefinition(beanName, beanDefinition)) {
                 String suffix = resolveDataSourceSuffix(beanName);
-                if (beanName.equals(TRANSACTION_MANAGER) || !isNotTransactional(dsConfigs, suffix)) {
+                if (beanName.equals(TRANSACTION_MANAGER) || !isNotTransactional(suffix)) {
                     transactionManagerBeanCount++;
                 }
             }
@@ -176,26 +175,20 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         return beanName.matches(beanNameWhitelistPattern) && (beanNameBlacklistPattern==null || !beanName.matches(beanNameBlacklistPattern)) && !beanName.matches(beanNameInternalBlacklistPattern);
     }
     
-    protected boolean isNotTransactional(Map<String, Map> dsConfigs, String suffix) {
-        if (suffix == null) {
+    protected boolean isNotTransactional(String suffix) {
+        if (suffix == null || config == null) {
             return false;
         }
-        Map dsConfig = dsConfigs.get(suffix);
-        if (dsConfig != null) {
-            if(dsConfig.containsKey(TRANSACTIONAL)) {
-                Object transactionalValue = dsConfig.get(TRANSACTIONAL);
-                if (transactionalValue instanceof Boolean) {
-                    return !((Boolean)transactionalValue).booleanValue();
-                }
-            }
-            if(dsConfig.containsKey(READONLY)) {
-                Object readOnlyValue = dsConfig.get(READONLY);
-                if (readOnlyValue instanceof Boolean) {
-                    return ((Boolean)readOnlyValue).booleanValue();
-                }
-            }
+        Boolean transactional = config.getProperty(DATA_SOURCES_PREFIX + suffix + "." + TRANSACTIONAL, Boolean.class, null);
+        if(transactional == null) {
+            transactional =  config.getProperty(DATA_SOURCES_PREFIX + suffix + "." + READONLY, Boolean.class, null);
         }
-        return false;
+        if(transactional != null){
+            return !transactional;
+        }
+        else {
+            return false;
+        }
     }
 
     protected String resolveDataSourceSuffix(String transactionManagerBeanName) {
@@ -216,7 +209,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         }
         // remove link to child beans
         Set<String> previousChildBeans = new LinkedHashSet<String>();
-        for (String bdName : registry.getBeanDefinitionNames()) {
+        for (String bdName : getTransactionManagerBeanNames(registry)) {
             if (!oldName.equals(bdName)) {
                 BeanDefinition bd = registry.getBeanDefinition(bdName);
                 if (oldName.equals(bd.getParentName())) {
