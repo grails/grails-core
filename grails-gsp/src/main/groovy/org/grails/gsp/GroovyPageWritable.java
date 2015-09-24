@@ -38,7 +38,7 @@ import java.util.Map;
  * @author Lari Hotari
  * @since 0.5
  */
-class GroovyPageWritable implements Writable {
+public class GroovyPageWritable implements Writable {
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
     private static final String GSP_NONE_CODEC_NAME = "none";
     private GroovyPageMetaInfo metaInfo;
@@ -56,33 +56,6 @@ class GroovyPageWritable implements Writable {
     }
 
 
-        /*
-    private static final String ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER = "org.codehaus.groovy.grails.web.pages.DEBUG_TEMPLATES_COUNTER";
-
-        TODO: implement debugging GSPs at development time
-
-    private boolean debugTemplates;
-    private AtomicInteger debugTemplatesIdCounter;
-
-        debugTemplates = shouldDebugTemplates();
-        if (debugTemplates) {
-            debugTemplatesIdCounter=(AtomicInteger)request.getAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER);
-            if (debugTemplatesIdCounter==null) {
-                debugTemplatesIdCounter=new AtomicInteger(0);
-                request.setAttribute(ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER, debugTemplatesIdCounter);
-            }
-        }
-
-    private boolean shouldDebugTemplates() {
-        return request != null && request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
-    }
-
-    private boolean shouldShowGroovySource() {
-        return request != null && request.getParameter("showSource") != null &&
-            (Environment.getCurrent() == Environment.DEVELOPMENT) &&
-            metaInfo.getGroovySource() != null;
-    }
-    */
 
     /**
      * This sets any additional variables that need to be placed in the Binding of the GSP page.
