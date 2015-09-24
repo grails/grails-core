@@ -50,7 +50,7 @@ class EventBusGrailsPlugin extends Plugin {
                 targetMethod = "create"
                 arguments = [reactorEnv]
             }
-            eventTranslator(SpringEventTranslator)
+            springReactorEventTranslator(SpringEventTranslator)
             consumerBeanAutoConfiguration(ConsumerBeanAutoConfiguration)
         }
     }
