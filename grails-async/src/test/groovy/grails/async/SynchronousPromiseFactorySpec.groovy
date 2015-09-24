@@ -17,7 +17,6 @@ package grails.async
 
 import grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
-import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -143,17 +142,5 @@ class SynchronousPromiseFactorySpec extends Specification {
         then:'the chain is executed'
             thrown RuntimeException
             val == null
-    }
-
-    @Issue("GRAILS-9229")
-    void "Test promise is executed without calling get"() {
-        given:
-        Closure callable = Mock(Closure)
-
-        when:"A promise is created"
-        Promises.createPromise(callable)
-
-        then:'the closure is executed'
-        1 * callable.call()
     }
 }

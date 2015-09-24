@@ -43,24 +43,15 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
 
     @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
-        Promise<T> promise
         if (closures.length == 1) {
-            promise = new SynchronousPromise<T>(closures[0])
-        } else {
-            def promiseList = new PromiseList()
-            for(p in closures) {
-                promiseList << p
-            }
-            promise = promiseList
+            return new SynchronousPromise<T>(closures[0])
         }
 
-        try {
-            promise.get()
-        } catch (e) {
-            // ignore
+        def promiseList = new PromiseList()
+        for(p in closures) {
+            promiseList << p
         }
-
-        return promise
+        return promiseList
     }
 
     @Override
