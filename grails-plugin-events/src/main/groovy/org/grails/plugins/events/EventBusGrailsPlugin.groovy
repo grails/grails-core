@@ -21,6 +21,7 @@ import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
 import org.grails.events.reactor.GrailsReactorConfigurationReader
+import org.grails.events.spring.SpringEventTranslator
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import reactor.Environment
 import reactor.bus.EventBus
@@ -49,6 +50,7 @@ class EventBusGrailsPlugin extends Plugin {
                 targetMethod = "create"
                 arguments = [reactorEnv]
             }
+            eventTranslator(SpringEventTranslator)
             consumerBeanAutoConfiguration(ConsumerBeanAutoConfiguration)
         }
     }
