@@ -236,17 +236,26 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         }
     }
 
+    /**
+     * Overridden render method that renders the view directly inside before()
+     *
+     * @param argMap
+     */
     void render(Map argMap) {
         boolean isRenderView = argMap.containsKey(RenderDynamicMethod.ARGUMENT_VIEW)
         if(isRenderView) {
             def req = request
+            def previous = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
             req.setAttribute(GrailsInterceptorHandlerInterceptorAdapter.INTERCEPTOR_RENDERED_VIEW, true)
             ResponseRenderer.super.render(argMap)
             def mav = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
             if(mav != null) {
                 def view = applicationContext.getBean(ViewResolver).resolveViewName(mav.viewName, request.getLocale())
                 if(view != null) {
-                    view.render(mav.model, req, response)
+                    def resp = response
+                    view.render(mav.model, req, resp)
+                    mav.clear()
+                    previous?.clear()
                 }
                 else {
                     throw new ControllerExecutionException("No view found for name [$mav.viewName]")
