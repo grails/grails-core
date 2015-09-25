@@ -61,7 +61,9 @@ class InterceptorsGrailsPlugin extends Plugin {
 
     @Override
     void doWithApplicationContext() {
-        interceptorAdapter = applicationContext.getBean(GrailsInterceptorHandlerInterceptorAdapter)
+        if(applicationContext.containsBeanDefinition("grailsInterceptorHandlerInterceptorAdapter")) {
+            interceptorAdapter = applicationContext.getBean("grailsInterceptorHandlerInterceptorAdapter", GrailsInterceptorHandlerInterceptorAdapter)
+        }
     }
 
     @Override
