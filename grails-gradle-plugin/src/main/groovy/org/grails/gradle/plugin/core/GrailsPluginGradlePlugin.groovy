@@ -150,7 +150,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
             processResources.dependsOn(*processResourcesDependencies)
             project.processResources {
-                rename "application.yml", "plugin.yml"
+                exclude "application.yml"
+                exclude "application.groovy"
                 exclude "spring/resources.groovy"
             }
         }
