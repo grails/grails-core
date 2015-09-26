@@ -118,6 +118,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     protected void configurePluginJarTask(Project project) {
         project.jar {
+            exclude "application.yml"
+            exclude "application.groovy"
             exclude "logback.groovy"
         }
     }
@@ -150,8 +152,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
             processResources.dependsOn(*processResourcesDependencies)
             project.processResources {
-                exclude "application.yml"
-                exclude "application.groovy"
                 exclude "spring/resources.groovy"
             }
         }
