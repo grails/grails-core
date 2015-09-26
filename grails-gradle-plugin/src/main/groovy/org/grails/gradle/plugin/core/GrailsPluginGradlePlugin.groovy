@@ -1,5 +1,6 @@
 package org.grails.gradle.plugin.core
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
@@ -42,6 +43,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     @Override
+    @CompileStatic
     void apply(Project project) {
         super.apply(project)
 
