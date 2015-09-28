@@ -439,7 +439,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         if (reqAttrs != null) {
             // First remove the web request from the HTTP request attributes.
             GrailsWebRequest webRequest = (GrailsWebRequest) reqAttrs;
-            webRequest.getRequest().removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+            try {
+                webRequest.getRequest().removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+            } catch (Throwable e) {
+                // some containers have potential bugs whereby the request is nulled before the the thread completes
+            }
 
             // Now remove it from RequestContextHolder.
             RequestContextHolder.resetRequestAttributes();

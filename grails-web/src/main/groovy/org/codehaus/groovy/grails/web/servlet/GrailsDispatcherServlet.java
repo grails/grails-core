@@ -348,6 +348,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     // if an async request was started simply return
                     if (processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
                         processedRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mv);
+                        triggerPostInterceptors(response, processedRequest, mv, handler, interceptors);
+                        triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, handlerException);
                         return;
                     }
 
@@ -356,13 +358,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         mv.setViewName(getDefaultViewName(request));
                     }
                 }
+                triggerPostInterceptors(response, processedRequest, mv, handler, interceptors);
 
-                // Apply postHandle methods of registered interceptors.
-                if (interceptors != null) {
-                    for (int i = interceptors.length - 1; i >= 0; i--) {
-                        interceptors[i].postHandle(processedRequest, response, handler, mv);
-                    }
-                }
             }
             catch (ModelAndViewDefiningException ex) {
                 // Exceptions inside includes should propogate up so the original dispatcher handles the exception
@@ -463,6 +460,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("Cleared thread-bound request context: " + request);
+            }
+        }
+    }
+
+    private void triggerPostInterceptors(HttpServletResponse response, HttpServletRequest processedRequest, ModelAndView mv, Object handler, HandlerInterceptor[] interceptors) throws Exception {
+        // Apply postHandle methods of registered interceptors.
+        if (interceptors != null) {
+            for (int i = interceptors.length - 1; i >= 0; i--) {
+                interceptors[i].postHandle(processedRequest, response, handler, mv);
             }
         }
     }
