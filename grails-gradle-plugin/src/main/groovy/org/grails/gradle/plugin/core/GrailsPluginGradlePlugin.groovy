@@ -1,9 +1,11 @@
 package org.grails.gradle.plugin.core
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
@@ -41,6 +43,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     @Override
+    @CompileStatic
     void apply(Project project) {
         super.apply(project)
 
@@ -62,9 +65,12 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     protected void configureSourcesJarTask(Project project) {
-        def sourcesJar = project.tasks.create("sourcesJar", Jar).configure {
-            classifier = 'sources'
-            from project.sourceSets.main.allSource
+        def taskContainer = project.tasks
+        if(taskContainer.findByName('sourcesJar') == null) {
+            taskContainer.create("sourcesJar", Jar).configure {
+                classifier = 'sources'
+                from project.sourceSets.main.allSource
+            }
         }
     }
 
@@ -90,14 +96,16 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             from sourceSets.ast.output
             into mainSourceSet.output.classesDir
         }
-        project.tasks.getByName('classes').dependsOn(copyAstClasses)
 
-        project.tasks.withType(JavaExec) {
+        def taskContainer = project.tasks
+        taskContainer.getByName('classes').dependsOn(copyAstClasses)
+
+        taskContainer.withType(JavaExec) {
             classpath += sourceSets.ast.output
         }
 
-        def javadocTask = project.tasks.findByName('javadoc')
-        def groovydocTask = project.tasks.findByName('groovydoc')
+        def javadocTask = taskContainer.findByName('javadoc')
+        def groovydocTask = taskContainer.findByName('groovydoc')
         if (javadocTask) {
             javadocTask.configure {
                 source += sourceSets.ast.allJava
@@ -105,10 +113,12 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
 
         if (groovydocTask) {
-            project.tasks.create("javadocJar", Jar).configure {
-                classifier = 'javadoc'
-                from groovydocTask.outputs
-            }.dependsOn(javadocTask)
+            if( taskContainer.findByName('javadocJar') == null) {
+                taskContainer.create("javadocJar", Jar).configure {
+                    classifier = 'javadoc'
+                    from groovydocTask.outputs
+                }.dependsOn(javadocTask)
+            }
 
             groovydocTask.configure {
                 source += sourceSets.ast.allJava
@@ -118,6 +128,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     protected void configurePluginJarTask(Project project) {
         project.jar {
+            exclude "application.yml"
+            exclude "application.groovy"
             exclude "logback.groovy"
         }
     }
@@ -150,7 +162,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
             processResources.dependsOn(*processResourcesDependencies)
             project.processResources {
-                rename "application.yml", "plugin.yml"
                 exclude "spring/resources.groovy"
             }
         }

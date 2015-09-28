@@ -102,7 +102,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication,  mainContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager), mainContext)
         }
 
-        grailsApplication.initialise()
+        if(!grailsApplication.isInitialised()) {
+            grailsApplication.initialise()
+        }
 
         applicationInitialized(runtime, grailsApplication)
     }

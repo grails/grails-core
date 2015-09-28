@@ -347,9 +347,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
             try {
                 parentResources.push(new ParentResource(null, uri, true));
+                pushNewMetaMappingInfo();
                 mappings.call();
             } finally {
+                mappingInfoDeque.pop();
                 parentResources.pop();
+
             }
         }
 
@@ -425,7 +428,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             } else {
                                 urlMapping = createURLMapping(urlData, isResponseCode, mappingInfo.getRedirectInfo(), mappingInfo.getController(), mappingInfo.getAction(), mappingInfo.getNamespace(), mappingInfo.getPlugin(), mappingInfo.getView(), mappingInfo.getHttpMethod(), null, constraints);
                             }
-                            
+
                             if (binding != null) {
                                 Map bindingVariables = variables;
                                 Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
@@ -452,7 +455,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             if (namedArguments.containsKey(UrlMapping.PLUGIN)) {
                                 mappingInfo.setPlugin(namedArguments.get(UrlMapping.PLUGIN).toString());
                             }
-                            
+
                             UrlMappingData urlData = createUrlMappingData(uri, isResponseCode);
 
                             if (namedArguments.containsKey(RESOURCE)) {

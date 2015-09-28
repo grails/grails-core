@@ -36,6 +36,8 @@ class InterceptorsGrailsPlugin extends Plugin {
     def dependsOn = [controllers:version, urlMappings:version]
     def watchedResources = "file:./grails-app/controllers/**/*Interceptor.groovy"
 
+    GrailsInterceptorHandlerInterceptorAdapter interceptorAdapter
+
     @Override
     @CompileDynamic
     Closure doWithSpring() {
@@ -58,6 +60,13 @@ class InterceptorsGrailsPlugin extends Plugin {
     }
 
     @Override
+    void doWithApplicationContext() {
+        if(applicationContext.containsBeanDefinition("grailsInterceptorHandlerInterceptorAdapter")) {
+            interceptorAdapter = applicationContext.getBean("grailsInterceptorHandlerInterceptorAdapter", GrailsInterceptorHandlerInterceptorAdapter)
+        }
+    }
+
+    @Override
     void onChange(Map<String, Object> event) {
 
         def source = event.source
@@ -66,8 +75,10 @@ class InterceptorsGrailsPlugin extends Plugin {
 
             def interceptorClass = (Class) source
             def grailsClass = grailsApplication.addArtefact(InterceptorArtefactHandler.TYPE, interceptorClass)
+
+            def interceptorAdapter = this.interceptorAdapter ?: applicationContext.getBean(GrailsInterceptorHandlerInterceptorAdapter)
             defineInterceptorBean(grailsClass, interceptorClass, enableJsessionId)
-            applicationContext.getBean(GrailsInterceptorHandlerInterceptorAdapter).setInterceptors(
+            interceptorAdapter.setInterceptors(
                     applicationContext.getBeansOfType(Interceptor).values() as Interceptor[]
             )
         }
@@ -76,7 +87,8 @@ class InterceptorsGrailsPlugin extends Plugin {
     @CompileDynamic
     private defineInterceptorBean(GrailsClass grailsClass, interceptorClass, enableJsessionId) {
         beans {
-            "${grailsClass.propertyName}"(interceptorClass) {
+            "${grailsClass.propertyName}"(interceptorClass) { bean ->
+                bean.autowire = 'byName'
                 if (enableJsessionId) {
                     useJessionId = enableJsessionId
                 }

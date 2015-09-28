@@ -281,10 +281,6 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
                 }
             }
 
-            if (registry.containsBeanDefinition(beanName)) {
-                removeBeanDefinition(registry, beanName);
-            }
-
             registry.registerBeanDefinition(beanName, bc.getBeanDefinition());
         }
     }
@@ -302,10 +298,6 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
                 }
             }
             final String beanName = key.toString();
-            if (registry.containsBeanDefinition(beanName)) {
-                removeBeanDefinition(registry, beanName);
-            }
-
             registry.registerBeanDefinition(beanName, bd);
         }
     }

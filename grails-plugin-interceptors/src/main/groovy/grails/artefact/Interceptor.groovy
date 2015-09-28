@@ -25,13 +25,17 @@ import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
+import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod
 import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
 import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.plugins.web.interceptors.UrlMappingMatcher
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
+import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.View
+import org.springframework.web.servlet.ViewResolver
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -232,11 +236,35 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         }
     }
 
+    /**
+     * Overridden render method that renders the view directly inside before()
+     *
+     * @param argMap
+     */
     void render(Map argMap) {
-        if(argMap.containsKey('view')) {
-            request.setAttribute(GrailsInterceptorHandlerInterceptorAdapter.INTERCEPTOR_RENDERED_VIEW, true)
+        boolean isRenderView = argMap.containsKey(RenderDynamicMethod.ARGUMENT_VIEW)
+        if(isRenderView) {
+            def req = request
+            def previous = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+            req.setAttribute(GrailsInterceptorHandlerInterceptorAdapter.INTERCEPTOR_RENDERED_VIEW, true)
+            ResponseRenderer.super.render(argMap)
+            def mav = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+            if(mav != null) {
+                def view = applicationContext.getBean(ViewResolver).resolveViewName(mav.viewName, request.getLocale())
+                if(view != null) {
+                    def resp = response
+                    view.render(mav.model, req, resp)
+                    mav.clear()
+                    previous?.clear()
+                }
+                else {
+                    throw new ControllerExecutionException("No view found for name [$mav.viewName]")
+                }
+            }
         }
-        ResponseRenderer.super.render(argMap)
+        else {
+            ResponseRenderer.super.render(argMap)
+        }
     }
 
 }
