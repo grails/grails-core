@@ -960,7 +960,7 @@ class ExecutionContext implements Serializable {
             forkConfig[key] = forkConf
         }
 
-        final agentReport = settings.dependencyManager.resolveAgent()
+        final agentReport = settings.dependencyManager?.resolveAgent()
         if(agentReport && agentReport.jarFiles) {
             agentJar = agentReport.jarFiles[0]
         }
