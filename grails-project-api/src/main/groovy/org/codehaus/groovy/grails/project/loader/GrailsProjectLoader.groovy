@@ -122,13 +122,15 @@ class GrailsProjectLoader extends BaseSettingsApi{
      * Configures the Grails application and builds an ApplicationContext
      * @return The ApplicationContext
      */
-    @CompileStatic
     ApplicationContext configureApplication() {
         buildEventListener.triggerEvent("AppCfgStart", ["Configuring Grails Application"])
         GrailsApplication grailsApplication = loadApplication()
-        if (applicationContext instanceof GrailsApplicationContext)
+        if (applicationContext instanceof GrailsApplicationContext) {
             applicationContext.resourceLoader = new  CommandLineResourceLoader()
-            profile("Performing runtime Spring configuration") {
+            grailsApplication.applicationContext = applicationContext
+        }
+
+        profile("Performing runtime Spring configuration") {
             def configurer = new GrailsRuntimeConfigurator(grailsApplication, applicationContext)
             configureJndi(grailsApplication)
             applicationContext = configurer.configure(servletContext)
