@@ -24,11 +24,11 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
+import org.codehaus.groovy.grails.context.support.ReloadableResourceBundleMessageSource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
 import org.springframework.core.io.FileSystemResource
@@ -52,19 +52,7 @@ class I18nGrailsPlugin {
 
     def doWithSpring = {
         // find i18n resource bundles and resolve basenames
-        Set baseNames = []
-
-        def messageResources
-        if (application.warDeployed) {
-            messageResources = parentCtx?.getResources("**/WEB-INF/${baseDir}/**/*.properties")?.toList()
-        }
-        else {
-            messageResources = plugin.watchedResources
-        }
-
-        calculateBaseNamesFromMessageSources(messageResources, baseNames)
-
-        LOG.debug "Creating messageSource with basenames: $baseNames"
+        Set baseNames = ['WEB-INF/grails-app/i18n/messages']
 
         if (Environment.isWarDeployed()) {
             servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
@@ -92,77 +80,7 @@ class I18nGrailsPlugin {
         }
     }
 
-    @CompileStatic
-    protected void calculateBaseNamesFromMessageSources(messageResources, Set baseNames) {
-        if (messageResources) {
-            for (mr in messageResources) {
-                Resource resource = (Resource)mr
-                // Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
-                // Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
-                def isInlinePluginResource = false
-                def isPluginResource = false
-                File parentDir
-                if (!(resource instanceof ClassPathResource) && !(resource instanceof ContextResource) && !Environment.isWarDeployed()) {
 
-                    final buildSettings = BuildSettingsHolder.settings
-                    final separatorChar = File.separatorChar
-                    parentDir = new File(resource.file.getParent().minus("${separatorChar}grails-app${separatorChar}i18n".toString()))
-                    final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
-                    if (buildSettings && pluginBuildSettings) {
-                        if (pluginBuildSettings.isInlinePluginLocation(new org.codehaus.groovy.grails.io.support.FileSystemResource(parentDir))) {
-                            isInlinePluginResource = true
-                        }
-                        else if (!parentDir.equals(buildSettings.baseDir) && pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {
-                            isPluginResource = true
-                        }
-                    }
-                }
-                String path = null
-
-                // If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
-                // generate the path to the resource based on its relativity to the application.
-                if (isInlinePluginResource || isPluginResource) {
-                    final buildSettings = BuildSettingsHolder.settings
-                    final resourcesDir = buildSettings.resourcesDir
-                    final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
-                    final pluginInfo = pluginBuildSettings.getPluginInfo(parentDir.absolutePath)
-                    path = new File(resourcesDir, "plugins/$pluginInfo.fullName/grails-app/i18n/$resource.file.name" ).absolutePath
-                } else {
-                    // Extract the file path of the file's parent directory
-                    // that comes after "grails-app/i18n".
-                    if (resource instanceof ContextResource) {
-                        path = GrailsStringUtils.substringAfter(resource.getPathWithinContext(), baseDir)
-                    } else if (resource instanceof FileSystemResource) {
-                        path = GrailsStringUtils.substringAfter(resource.getPath(), baseDir)
-                    }
-                    else if (resource instanceof ClassPathResource) {
-                        path = GrailsStringUtils.substringAfter(resource.getPath(), baseDir)
-                    }
-                }
-
-                if (path) {
-
-                    // look for an underscore in the file name (not the full path)
-                    String fileName = resource.filename
-                    int firstUnderscore = fileName.indexOf('_')
-
-                    if (firstUnderscore > 0) {
-                        // grab everything up to but not including
-                        // the first underscore in the file name
-                        int numberOfCharsToRemove = fileName.length() - firstUnderscore
-                        int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
-                        path = path[0..lastCharacterToRetain]
-                    } else {
-                        // Lop off the extension - the "basenames" property in the
-                        // message source cannot have entries with an extension.
-                        path -= ".properties"
-                    }
-
-                    baseNames << (isInlinePluginResource ? path : "WEB-INF/" + baseDir + path)
-                }
-            }
-        }
-    }
 
     def isChildOfFile(File child, File parent) {
         def currentFile = child.canonicalFile
@@ -189,7 +107,7 @@ class I18nGrailsPlugin {
         File currentFile = propertiesFile.canonicalFile
         File previousFile = null
         while (currentFile != null) {
-            if (currentFile.name == 'grails-app' && previousFile?.name == 'i18n') {
+            if (currentFile.name == 'grails-appgrai' && previousFile?.name == 'i18n') {
                 return currentFile.parentFile
             }
             previousFile = currentFile
