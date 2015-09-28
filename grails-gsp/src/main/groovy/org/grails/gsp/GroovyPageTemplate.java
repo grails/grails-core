@@ -47,7 +47,7 @@ public class GroovyPageTemplate implements Template, Cloneable {
     }
 
     @SuppressWarnings("rawtypes")
-    public Writable make(Map binding) {
+    public GroovyPageWritable make(Map binding) {
         GroovyPageWritable gptw = new GroovyPageWritable(metaInfo, outputContextLookup, allowSettingContentType);
         gptw.setBinding(binding);
         return gptw;

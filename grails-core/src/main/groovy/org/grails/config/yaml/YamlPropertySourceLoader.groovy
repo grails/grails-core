@@ -43,14 +43,6 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
 
     @Override
     PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
-        MapPropertySource groovyConfigMap = null
-        if(resource.filename == 'application.yml') {
-
-            groovyConfigMap = (MapPropertySource)new GroovyConfigPropertySourceLoader()
-                                                            .load(  "applicationConfig: [classpath:/application.groovy]",
-                                                                    resource.createRelative("application.groovy"),
-                                                                    profile)
-        }
         if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
             if (profile == null) {
                 matchDefault = true
@@ -65,10 +57,6 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
             process { Properties properties, Map<String, Object> map ->
                 propertySource.merge(map, true)
             }
-            if(groovyConfigMap != null) {
-                propertySource.merge( groovyConfigMap.source, true )
-            }
-
             if (!propertySource.isEmpty()) {
                 return new NavigableMapPropertySource(name, propertySource)
             }

@@ -16,6 +16,9 @@
 package grails.util
 
 import grails.io.IOUtils
+import groovy.transform.CompileStatic
+import org.grails.config.NavigableMap
+import org.yaml.snakeyaml.Yaml
 
 import java.util.regex.Pattern
 
@@ -24,7 +27,25 @@ import java.util.regex.Pattern
  *
  * @author Graeme Rocher
  */
+@CompileStatic
 class BuildSettings {
+
+    /**
+     * The http proxy username
+     */
+    public static final String PROXY_HTTP_USER = "http.proxyUser"
+    /**
+     * The http proxy password
+     */
+    public static final String PROXY_HTTP_PASSWORD = "http.proxyPassword"
+    /**
+     * The proxy selector object to use when connecting remotely from the CLI
+     */
+    public static final String PROXY_SELECTOR = "grails.proxy.selector"
+    /**
+     * The authenticator to use when connecting remotely from the CLI
+     */
+    public static final String AUTHENTICATOR = "grails.proxy.authenticator"
     /**
      * Name of the System property that specifies the main class name
      */
@@ -275,4 +296,7 @@ class BuildSettings {
      * The path to the build classes directory
      */
     public static final String BUILD_CLASSES_PATH = "build/classes/main"
+
+    public static final File SETTINGS_FILE = new File("${System.getProperty('user.home')}/.grails/settings.groovy")
+
 }

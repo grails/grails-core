@@ -6,6 +6,25 @@ import spock.lang.Specification
 
 class ConfigMapSpec extends Specification {
 
+    def "should support merging ConfigObject maps"() {
+        given:
+        NavigableMap configMap = new NavigableMap()
+        def config = new ConfigSlurper().parse('''
+foo {
+    bar = "good"
+}
+test.another = true
+''')
+
+        when:"a config object is merged"
+        configMap.merge(config)
+
+        then:"The merge is correct"
+        configMap.size() == 4
+        configMap['test'] instanceof NavigableMap
+        configMap['test.another']  == true
+    }
+
     def "should support merge correctly"() {
         given:
         NavigableMap configMap = new NavigableMap()
