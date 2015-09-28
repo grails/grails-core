@@ -52,7 +52,15 @@ class I18nGrailsPlugin {
 
     def doWithSpring = {
         // find i18n resource bundles and resolve basenames
-        Set baseNames = ['WEB-INF/grails-app/i18n/messages']
+        Set baseNames = []
+        def messageResources
+        if (application.warDeployed) {
+            messageResources = parentCtx?.getResources("**/WEB-INF/${baseDir}/**/*.properties")?.toList()
+        }
+        else {
+            messageResources = plugin.watchedResources
+        }
+        calculateBaseNamesFromMessageSources(messageResources, baseNames)
 
         if (Environment.isWarDeployed()) {
             servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
@@ -80,7 +88,46 @@ class I18nGrailsPlugin {
         }
     }
 
+    @CompileStatic
+    protected void calculateBaseNamesFromMessageSources(messageResources, Set baseNames) {
+        if (messageResources) {
+            for (mr in messageResources) {
+                Resource resource = (Resource)mr
+                String path
+                // Extract the file path of the file's parent directory
+                // that comes after "grails-app/i18n".
+                if (resource instanceof ContextResource) {
+                    path = GrailsStringUtils.substringAfter(resource.getPathWithinContext(), baseDir)
+                } else if (resource instanceof FileSystemResource) {
+                    path = GrailsStringUtils.substringAfter(resource.getPath(), baseDir)
+                }
+                else if (resource instanceof ClassPathResource) {
+                    path = GrailsStringUtils.substringAfter(resource.getPath(), baseDir)
+                }
 
+                if (path) {
+
+                    // look for an underscore in the file name (not the full path)
+                    String fileName = resource.filename
+                    int firstUnderscore = fileName.indexOf('_')
+
+                    if (firstUnderscore > 0) {
+                        // grab everything up to but not including
+                        // the first underscore in the file name
+                        int numberOfCharsToRemove = fileName.length() - firstUnderscore
+                        int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
+                        path = path[0..lastCharacterToRetain]
+                    } else {
+                        // Lop off the extension - the "basenames" property in the
+                        // message source cannot have entries with an extension.
+                        path -= ".properties"
+                    }
+
+                    baseNames << "WEB-INF/$baseDir/$path".toString()
+                }
+            }
+        }
+    }
 
     def isChildOfFile(File child, File parent) {
         def currentFile = child.canonicalFile
