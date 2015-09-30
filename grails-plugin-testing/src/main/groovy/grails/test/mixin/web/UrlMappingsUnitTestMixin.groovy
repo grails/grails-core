@@ -199,7 +199,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
             if (mapping) mappingInfos << mapping
         }
         else {
-            mappingInfos = mappingsHolder.matchAll(url)
+            mappingInfos = mappingsHolder.matchAll(url, request.method)
         }
 
         if (mappingInfos.size() == 0) throw new AssertionFailedError("url '$url' did not match any mappings")

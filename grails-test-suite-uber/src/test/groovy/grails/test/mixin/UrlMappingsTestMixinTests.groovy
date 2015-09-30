@@ -1,6 +1,7 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
+import grails.rest.RestfulController
 import grails.test.mixin.web.UrlMappingsUnitTestMixin
 import grails.web.Action
 import junit.framework.AssertionFailedError
@@ -8,6 +9,7 @@ import junit.framework.ComparisonFailure
 
 import org.junit.Test
 import org.springframework.web.context.WebApplicationContext
+import spock.lang.Issue
 
 /**
  * Tests for the UrlMappingsTestMixin class
@@ -154,6 +156,42 @@ class UrlMappingsTestMixinTests {
             dateParam = new Date(1)
         }
     }
+
+    @Test
+    @Issue('https://github.com/grails/grails-core/issues/9065')
+    void testResourcesUrlMapping() {
+        mockController(PersonController)
+        mockUrlMappings(ResourceTestUrlMappings)
+
+        request.method = 'GET'
+        assertForwardUrlMapping('/person', controller: 'person', action: 'index')
+        assertForwardUrlMapping('/person/create', controller: 'person', action: 'create')
+        assertForwardUrlMapping('/person/personId', controller: 'person', action: 'show') {
+            id = 'personId'
+        }
+        assertForwardUrlMapping('/person/personId/edit', controller: 'person', action: 'edit') {
+            id = 'personId'
+        }
+
+        request.method = 'POST'
+        assertForwardUrlMapping('/person', controller: 'person', action: 'save')
+
+        request.method = 'PUT'
+        assertForwardUrlMapping('/person/personId', controller: 'person', action: 'update') {
+            id = 'personId'
+        }
+
+        request.method = 'PATCH'
+        assertForwardUrlMapping('/person/personId', controller: 'person', action: 'patch') {
+            id = 'personId'
+        }
+
+        request.method = 'DELETE'
+        assertForwardUrlMapping('/person/personId', controller: 'person', action: 'delete') {
+            id = 'personId'
+        }
+
+    }
 }
 
 class AnotherUrlMappings {
@@ -209,5 +247,18 @@ class GRAILS9110UrlMappings {
             objParam = [test:true]
             dateParam = new Date(1)
         }
+    }
+}
+
+@Artefact("Controller")
+class PersonController extends RestfulController<String> {
+    PersonController() {
+        super(''.class)
+    }
+}
+
+class ResourceTestUrlMappings {
+    static mappings = {
+        '/person'(resources: 'person')
     }
 }
