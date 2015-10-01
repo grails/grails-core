@@ -5,7 +5,6 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
-import io.spring.gradle.dependencymanagement.DependencyManagementExtension
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
@@ -22,10 +21,8 @@ import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.bundling.War
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
-import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.process.JavaForkOptions
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.build.parsing.CommandLineParser
@@ -34,6 +31,7 @@ import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.io.support.FactoriesLoaderSupport
+import org.springframework.boot.gradle.SpringBootPlugin
 import org.springframework.boot.gradle.SpringBootPluginExtension
 
 import javax.inject.Inject
@@ -53,6 +51,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     void apply(Project project) {
         super.apply(project)
+
+        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+        if(!springBoot) {
+            project.plugins.apply(SpringBootPlugin)
+        }
 
         if(!project.plugins.findPlugin(DependencyManagementPlugin)) {
             project.plugins.apply(DependencyManagementPlugin)
