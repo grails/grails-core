@@ -3,6 +3,9 @@ apply plugin: 'groovy'
 dependencies {
     compile gradleApi()
     compile project(":grails-gradle-model")
+    compile project(":grails-shell"), {
+        exclude group:"org.slf4j", module:"slf4j-simple"
+    }
     compile project(":grails-bootstrap"), {
         exclude group:"org.fusesource.jansi", module:"jansi"
         exclude group:"jline", module:"jline"
