@@ -473,7 +473,7 @@ tciTrigger {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
+    gradleVersion = '2.7'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
 
