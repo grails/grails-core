@@ -128,18 +128,29 @@ class GrailsProfileGradlePlugin extends BasePlugin {
                 publishingExtension.publications.withType(MavenPublication) { MavenPublication pub ->
 
                     pub.pom.withXml() {
-                        def dependencies = asNode()
-                                            .appendNode("dependencies")
+                        def xml = asNode()
+                        def dependencies = xml.dependencies
+
+                        if(!dependencies) {
+                            dependencies = xml.appendNode("dependencies")
+
+                        }
                         project.configurations.profile.allDependencies.all() { Dependency dep ->
 
+                            def foundDep = dependencies.dependency.find {
+                                it.artifactId.text() == dep.name
+                            }
 
-                            def depNode = dependencies
-                                            .appendNode("dependency")
+                            if(!foundDep) {
 
-                            depNode.appendNode("groupId", dep.group)
-                            depNode.appendNode("artifactId", dep.name)
-                            depNode.appendNode("version", dep.version)
-                            depNode.appendNode("scope", "runtime")
+                                def depNode = dependencies
+                                        .appendNode("dependency")
+
+                                depNode.appendNode("groupId", dep.group)
+                                depNode.appendNode("artifactId", dep.name)
+                                depNode.appendNode("version", dep.version)
+                                depNode.appendNode("scope", "runtime")
+                            }
                         }
                     }
                 }
