@@ -18,8 +18,11 @@ package org.grails.gradle.plugin.profiles
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.CopySpec
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
+import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
+import org.gradle.api.internal.java.JavaLibrary
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
@@ -46,7 +49,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
     void apply(Project project) {
         super.apply(project)
 
-        project.configurations.create("profile")
+        def profileConfiguration = project.configurations.create("profile")
 
         def profileYml = project.file("profile.yml")
         if(!profileYml.exists()) {
@@ -92,7 +95,13 @@ class GrailsProfileGradlePlugin extends BasePlugin {
                 jar.from(resourcesDir)
                 jar.from(classsesDir)
                 jar.destinationDir = new File(project.buildDir, "libs")
+                jar.setDescription("Assembles a jar archive containing the profile classes.")
+                jar.setGroup(BUILD_GROUP)
+
+                ArchivePublishArtifact jarArtifact = new ArchivePublishArtifact(jar)
+                project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()));
             }
+
             project.tasks.findByName("assemble").dependsOn jarTask
         }
     }
