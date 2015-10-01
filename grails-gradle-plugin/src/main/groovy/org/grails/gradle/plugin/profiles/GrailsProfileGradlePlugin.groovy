@@ -16,14 +16,20 @@
 package org.grails.gradle.plugin.profiles
 
 import grails.io.IOUtils
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.gradle.api.DomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
 import org.gradle.api.internal.java.JavaLibrary
 import org.gradle.api.plugins.BasePlugin
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.configuration.project.ProjectConfigurationActionContainer
@@ -103,6 +109,42 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             }
 
             project.tasks.findByName("assemble").dependsOn jarTask
+
+            Closure callable = getMavenPublishConfigurer(project)
+            if(project.state.executed) {
+                callable.call()
+            }
+            else {
+                project.afterEvaluate(callable)
+            }
         }
+    }
+
+    @CompileDynamic
+    public Closure getMavenPublishConfigurer(Project project) {
+        Closure callable = {
+            project.plugins.withType(PublishingPlugin) { PublishingPlugin plugin ->
+                PublishingExtension publishingExtension = project.extensions.getByType(PublishingExtension)
+                publishingExtension.publications.withType(MavenPublication) { MavenPublication pub ->
+
+                    pub.pom.withXml() {
+                        def dependencies = asNode()
+                                            .appendNode("dependencies")
+                        project.configurations.profile.allDependencies.all() { Dependency dep ->
+
+
+                            def depNode = dependencies
+                                            .appendNode("dependency")
+
+                            depNode.appendNode("groupId", dep.group)
+                            depNode.appendNode("artifactId", dep.name)
+                            depNode.appendNode("version", dep.version)
+                            depNode.appendNode("scope", "runtime")
+                        }
+                    }
+                }
+            }
+        }
+        return callable
     }
 }
