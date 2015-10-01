@@ -5,6 +5,8 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
+import io.spring.gradle.dependencymanagement.DependencyManagementExtension
+import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -51,6 +53,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     void apply(Project project) {
         super.apply(project)
+
+        if(!project.plugins.findPlugin(DependencyManagementPlugin)) {
+            project.plugins.apply(DependencyManagementPlugin)
+        }
+
         registerToolingModelBuilder(project, registry)
 
         registerGrailsExtension(project)
