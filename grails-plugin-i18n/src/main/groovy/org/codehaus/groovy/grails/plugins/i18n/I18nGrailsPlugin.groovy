@@ -154,7 +154,7 @@ class I18nGrailsPlugin {
         File currentFile = propertiesFile.canonicalFile
         File previousFile = null
         while (currentFile != null) {
-            if (currentFile.name == 'grails-appgrai' && previousFile?.name == 'i18n') {
+            if (currentFile.name == 'grails-app' && previousFile?.name == 'i18n') {
                 return currentFile.parentFile
             }
             previousFile = currentFile
