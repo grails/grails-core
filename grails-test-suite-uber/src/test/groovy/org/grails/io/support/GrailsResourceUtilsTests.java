@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class GrailsResourceUtilsTests extends TestCase {
@@ -92,18 +93,18 @@ public class GrailsResourceUtilsTests extends TestCase {
 
     public void testGetViewsDirForURL() throws Exception {
         Resource viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_CONTROLLER_URL));
-        assertEquals("file:/test/grails/app/grails-app/views", viewsDir.getURL().toString());
+        assertEquals(toFileUrl("/test/grails/app/grails-app/views"), viewsDir.getURL().toString());
 
         viewsDir = GrailsResourceUtils.getViewsDir(new UrlResource(TEST_URL));
-        assertEquals("file:/test/grails/app/grails-app/views", viewsDir.getURL().toString());
+        assertEquals(toFileUrl("/test/grails/app/grails-app/views"), viewsDir.getURL().toString());
     }
 
     public void testGetAppDir() throws Exception {
         Resource appDir = GrailsResourceUtils.getAppDir(new UrlResource(TEST_CONTROLLER_URL));
-        assertEquals("file:/test/grails/app/grails-app", appDir.getURL().toString());
+        assertEquals(toFileUrl("/test/grails/app/grails-app"), appDir.getURL().toString());
 
         appDir = GrailsResourceUtils.getAppDir(new UrlResource(TEST_URL));
-        assertEquals("file:/test/grails/app/grails-app", appDir.getURL().toString());
+        assertEquals(toFileUrl("/test/grails/app/grails-app"), appDir.getURL().toString());
     }
 
     public void testGetDirWithinWebInf() throws Exception {
@@ -113,12 +114,12 @@ public class GrailsResourceUtilsTests extends TestCase {
         Resource webInfViews = GrailsResourceUtils.getViewsDir(new UrlResource(WEBINF_CONTROLLER));
         Resource webInfPluginViews = GrailsResourceUtils.getViewsDir(new UrlResource(WEBINF_PLUGIN_CTRL));
 
-        assertEquals("file:/test/grails/app/grails-app/views", viewsDir.getURL().toString());
-        assertEquals("file:/test/grails/app/plugins/myplugin/grails-app/views",
+        assertEquals(toFileUrl("/test/grails/app/grails-app/views"), viewsDir.getURL().toString());
+        assertEquals(toFileUrl("/test/grails/app/plugins/myplugin/grails-app/views"),
                 pluginViews.getURL().toString());
-        assertEquals("file:/test/grails/app/WEB-INF/grails-app/views",
+        assertEquals(toFileUrl("/test/grails/app/WEB-INF/grails-app/views"),
                 webInfViews.getURL().toString());
-        assertEquals("file:/test/grails/app/WEB-INF/plugins/myplugin/grails-app/views",
+        assertEquals(toFileUrl("/test/grails/app/WEB-INF/plugins/myplugin/grails-app/views"),
                 webInfPluginViews.getURL().toString());
 
         assertEquals("/WEB-INF/grails-app/views", GrailsResourceUtils.getRelativeInsideWebInf(webInfViews));
@@ -153,5 +154,16 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("/alpha/beta/gamma", GrailsResourceUtils.appendPiecesForUri("/alpha/", "/beta/", "/gamma"));
         assertEquals("/alpha/beta/gamma/", GrailsResourceUtils.appendPiecesForUri("/alpha/", "/beta/", "/gamma/"));
         assertEquals("alpha/beta/gamma", GrailsResourceUtils.appendPiecesForUri("alpha", "beta", "gamma"));
+    }
+
+    private String toFileUrl(String path) {
+        if (path == null) return path;
+        String url = null;
+        try {
+            url = new File(path).toURI().toURL().toString();
+        } catch (MalformedURLException e) {
+            url = path;
+        }
+        return url;
     }
 }
