@@ -126,7 +126,7 @@ class FormTagLib {
             assertEquals "org.grails.gsp.GroovyPageResourceLoader", beanDef.beanClassName
             assertNotNull beanDef.getPropertyValues().getPropertyValue('baseResource')
 
-            assertEquals "file:${new File(".").absolutePath}/".toString(), beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
+            assertEquals "file:${new File(".").absolutePath}${File.separatorChar}".toString(), beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
 
             beanDef = bb.getBeanDefinition("groovyPagesTemplateEngine")
             assertEquals "groovyPageLocator", beanDef.getPropertyValues().getPropertyValue("groovyPageLocator").getValue()?.beanName
