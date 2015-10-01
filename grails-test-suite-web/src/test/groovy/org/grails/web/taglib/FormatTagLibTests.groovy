@@ -1,5 +1,8 @@
 package org.grails.web.taglib
 
+import org.grails.buffer.StreamCharBuffer
+import spock.lang.Issue
+
 import java.text.DecimalFormatSymbols
 
 import org.grails.taglib.GrailsTagException
@@ -35,6 +38,17 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '', template, [somebool: true]
         assertOutputEquals 'X', template, [somebool: false]
     }
+
+    @Issue('https://github.com/grails/grails-core/issues/9159')
+    void testFormatDateWithStreamCharBufferFormat() {
+        def calender = new GregorianCalendar(1980,1,3)
+        def format = 'yyyy-MM-dd'
+        def buffer = new StreamCharBuffer()
+        buffer.writer.append(format)
+        def template = '<g:formatDate format="${format}" date="${date}"/>'
+        assertOutputEquals("1980-02-03", template, [date:calender.getTime(), format: buffer])
+    }
+
 
     void testFormatDate() {
         def calender = new GregorianCalendar(1980,1,3)
