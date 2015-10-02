@@ -336,6 +336,17 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         }
                     }
                 }
+            } else if(grailsApplication != null) { // Fixes bidirectional oneToOne binding issue #9308
+                def domainClass = (GrailsDomainClass) grailsApplication.getArtefact('Domain', obj.getClass().name)
+                if (domainClass != null) {
+                    def property = domainClass.getPersistentProperty metaProperty.name
+                    if (property != null && property.isBidirectional()) {
+                        def otherSide = property.otherSide
+                        if (otherSide.isOneToOne()) {
+                            val[otherSide.name] = obj
+                        }
+                    }
+                }
             }
         }
         if (needsBinding) {
@@ -566,7 +577,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     @Override
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
 
-        // Fix for issue #9308 sets propertyValue's otherside value to the owning object
+        // Fix for issue #9308 sets propertyValue's otherside value to the owning object for bidirectional manyToOne relationships
         if (grailsApplication != null) {
             def domainClass = (GrailsDomainClass) grailsApplication.getArtefact('Domain', obj.getClass().name)
             if (domainClass != null) {
