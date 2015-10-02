@@ -565,6 +565,21 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     
     @Override
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
+
+        // Fix for issue #9308 sets propertyValue's otherside value to the owning object
+        if (grailsApplication != null) {
+            def domainClass = (GrailsDomainClass) grailsApplication.getArtefact('Domain', obj.getClass().name)
+            if (domainClass != null) {
+                def property = domainClass.getPersistentProperty propName
+                if (property != null && property.isBidirectional()) {
+                    def otherSide = property.otherSide
+                    if (otherSide.isManyToOne()) {
+                        propertyValue[otherSide.name] = obj
+                    }
+                }
+            }
+        }
+
         def elementToAdd = propertyValue
         def referencedType = getReferencedTypeForCollection propName, obj
         if (referencedType != null) {
