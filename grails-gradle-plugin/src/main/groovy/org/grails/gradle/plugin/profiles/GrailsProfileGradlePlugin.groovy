@@ -18,9 +18,7 @@ package org.grails.gradle.plugin.profiles
 import grails.io.IOUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import org.gradle.api.DomainObjectCollection
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
@@ -46,6 +44,9 @@ import javax.inject.Inject
 @CompileStatic
 class GrailsProfileGradlePlugin extends BasePlugin {
 
+
+    public static final String RUNTIME_CONFIGURATION = "runtime"
+
     @Inject
     GrailsProfileGradlePlugin( ProjectPublicationRegistry publicationRegistry, ProjectConfigurationActionContainer configurationActionContainer) {
         super(publicationRegistry, configurationActionContainer)
@@ -55,107 +56,58 @@ class GrailsProfileGradlePlugin extends BasePlugin {
     void apply(Project project) {
         super.apply(project)
 
-        def profileConfiguration = project.configurations.create("profile")
+        def profileConfiguration = project.configurations.create(RUNTIME_CONFIGURATION)
 
         def profileYml = project.file("profile.yml")
-        if(!profileYml.exists()) {
-            throw new RuntimeException("No 'profile.yml' file found. Not a valid Grails profile.")
+
+        def commandsDir = project.file("commands")
+        def resourcesDir = new File(project.buildDir, "resources/profile")
+        def templatesDir = project.file("templates")
+        def skeletonsDir = project.file("skeleton")
+
+        def spec1 = project.copySpec { CopySpec spec ->
+            spec.from(commandsDir)
+            spec.exclude("*.groovy")
+            spec.into("META-INF/commands")
         }
-        else {
-            def commandsDir = project.file("commands")
-            def resourcesDir = new File(project.buildDir, "resources/profile")
-            def templatesDir = project.file("templates")
-            def skeletonsDir = project.file("skeleton")
-
-            def spec1 = project.copySpec { CopySpec spec ->
-                spec.from(commandsDir)
-                spec.exclude("*.groovy")
-                spec.into("META-INF/commands")
-            }
-            def spec2 = project.copySpec { CopySpec spec ->
-                spec.from(templatesDir)
-                spec.into("META-INF/templates")
-            }
-            def spec3 = project.copySpec { CopySpec spec ->
-                spec.from(skeletonsDir)
-                spec.into("META-INF/skeleton")
-            }
-
-            def processResources = project.tasks.create("processResources", Copy) { Copy c ->
-                c.with(spec1, spec2, spec3)
-                c.from(profileYml) { CopySpec it ->
-                    it.into('META-INF')
-                }
-                c.into(resourcesDir)
-            }
-
-            def classsesDir = new File(project.buildDir, "classes/profile")
-            def compileTask = project.tasks.create("compileProfile", ProfileCompilerTask) { ProfileCompilerTask task ->
-                task.destinationDir = classsesDir
-                task.source = commandsDir
-                task.classpath = project.configurations.getByName("profile") + project.files(IOUtils.findJarFile(GroovyScriptCommand))
-            }
-
-            def jarTask = project.tasks.create("jar", Jar) { Jar jar ->
-                jar.dependsOn(processResources, compileTask)
-                jar.from(resourcesDir)
-                jar.from(classsesDir)
-                jar.destinationDir = new File(project.buildDir, "libs")
-                jar.setDescription("Assembles a jar archive containing the profile classes.")
-                jar.setGroup(BUILD_GROUP)
-
-                ArchivePublishArtifact jarArtifact = new ArchivePublishArtifact(jar)
-                project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()));
-            }
-
-            project.tasks.findByName("assemble").dependsOn jarTask
-
-            Closure callable = getMavenPublishConfigurer(project)
-            if(project.state.executed) {
-                callable.call()
-            }
-            else {
-                project.afterEvaluate(callable)
-            }
+        def spec2 = project.copySpec { CopySpec spec ->
+            spec.from(templatesDir)
+            spec.into("META-INF/templates")
         }
-    }
-
-    @CompileDynamic
-    public Closure getMavenPublishConfigurer(Project project) {
-        Closure callable = {
-            project.plugins.withType(PublishingPlugin) { PublishingPlugin plugin ->
-                PublishingExtension publishingExtension = project.extensions.getByType(PublishingExtension)
-                publishingExtension.publications.withType(MavenPublication) { MavenPublication pub ->
-
-                    pub.pom.withXml() {
-                        def xml = asNode()
-                        def dependencies = xml.dependencies
-
-                        if(!dependencies) {
-                            dependencies = xml.appendNode("dependencies")
-
-                        }
-                        project.configurations.profile.allDependencies.all() { Dependency dep ->
-
-                            def foundDep = dependencies.dependency.find {
-                                it.artifactId.text() == dep.name
-                            }
-
-                            if(!foundDep) {
-
-                                def depNode = dependencies
-                                        .appendNode("dependency")
-
-                                depNode.appendNode("groupId", dep.group)
-                                depNode.appendNode("artifactId", dep.name)
-                                depNode.appendNode("version", dep.version)
-                                depNode.appendNode("scope", "runtime")
-                            }
-                        }
-                    }
-                }
-            }
+        def spec3 = project.copySpec { CopySpec spec ->
+            spec.from(skeletonsDir)
+            spec.into("META-INF/skeleton")
         }
-        return callable
+
+        def processResources = project.tasks.create("processResources", Copy) { Copy c ->
+            c.with(spec1, spec2, spec3)
+            c.into(resourcesDir)
+        }
+
+        def classsesDir = new File(project.buildDir, "classes/profile")
+        def compileTask = project.tasks.create("compileProfile", ProfileCompilerTask) { ProfileCompilerTask task ->
+            task.destinationDir = classsesDir
+            task.source = commandsDir
+            task.config = profileYml
+            if(templatesDir.exists()) {
+                task.templatesDir = templatesDir
+            }
+            task.classpath = project.configurations.getByName(RUNTIME_CONFIGURATION) + project.files(IOUtils.findJarFile(GroovyScriptCommand))
+        }
+
+        def jarTask = project.tasks.create("jar", Jar) { Jar jar ->
+            jar.dependsOn(processResources, compileTask)
+            jar.from(resourcesDir)
+            jar.from(classsesDir)
+            jar.destinationDir = new File(project.buildDir, "libs")
+            jar.setDescription("Assembles a jar archive containing the profile classes.")
+            jar.setGroup(BUILD_GROUP)
+
+            ArchivePublishArtifact jarArtifact = new ArchivePublishArtifact(jar)
+            project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()));
+        }
+
+        project.tasks.findByName("assemble").dependsOn jarTask
+
     }
 }
