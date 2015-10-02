@@ -68,20 +68,20 @@ class GrailsProfileGradlePlugin extends BasePlugin {
         def spec1 = project.copySpec { CopySpec spec ->
             spec.from(commandsDir)
             spec.exclude("*.groovy")
-            spec.into("META-INF/commands")
+            spec.into("commands")
         }
         def spec2 = project.copySpec { CopySpec spec ->
             spec.from(templatesDir)
-            spec.into("META-INF/templates")
+            spec.into("templates")
         }
         def spec3 = project.copySpec { CopySpec spec ->
             spec.from(skeletonsDir)
-            spec.into("META-INF/skeleton")
+            spec.into("skeleton")
         }
 
         def processResources = project.tasks.create("processResources", Copy) { Copy c ->
             c.with(spec1, spec2, spec3)
-            c.into(resourcesDir)
+            c.into(new File(resourcesDir, "/META-INF/grails-profile"))
         }
 
         def classsesDir = new File(project.buildDir, "classes/profile")
