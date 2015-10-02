@@ -81,7 +81,7 @@ class ProfileCompilerTask extends AbstractCompile {
 
     @Override
     void setDestinationDir(File destinationDir) {
-        profileFile = new File(destinationDir, "META-INF/profile.yml")
+        profileFile = new File(destinationDir, "META-INF/grails-profile/profile.yml")
         super.setDestinationDir(destinationDir)
     }
 
