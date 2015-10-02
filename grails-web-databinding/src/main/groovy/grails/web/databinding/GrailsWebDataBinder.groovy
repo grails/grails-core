@@ -337,7 +337,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     }
                 }
             } else if(grailsApplication != null) { // Fixes bidirectional oneToOne binding issue #9308
-                def domainClass = (GrailsDomainClass) grailsApplication.getArtefact('Domain', obj.getClass().name)
+                def domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
                 if (domainClass != null) {
                     def property = domainClass.getPersistentProperty metaProperty.name
                     if (property != null && property.isBidirectional()) {
@@ -485,7 +485,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             return
         }
 
-        def domainClass = (GrailsDomainClass)grailsApplication.getArtefact('Domain', obj.getClass().name)
+        def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
         if (domainClass != null) {
             def property = domainClass.getPersistentProperty propertyName
             if (property != null && property.isBidirectional()) {
@@ -579,7 +579,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
         // Fix for issue #9308 sets propertyValue's otherside value to the owning object for bidirectional manyToOne relationships
         if (grailsApplication != null) {
-            def domainClass = (GrailsDomainClass) grailsApplication.getArtefact('Domain', obj.getClass().name)
+            def domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
             if (domainClass != null) {
                 def property = domainClass.getPersistentProperty propName
                 if (property != null && property.isBidirectional()) {
