@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.io.support;
 
-package org.grails.gradle.plugin.model
 
 /**
- * Gradle ToolingModel class that is used to return Classpath to Grails cli
+ * Loads relative to a static base resource
  *
- * this file is also in grails-shell project
+ * @author Graeme Rocher
+ * @since 3.1
  */
-interface GrailsClasspath extends Serializable {
-    /**
-     * @return All Grails dependencies, pull from 'testRuntime' scope
-     */
-    List<URL> getDependencies()
+public class StaticResourceLoader implements ResourceLoader {
 
-    /**
-     * @return The profile dependencies
-     */
-    List<URL> getProfileDependencies()
-    /**
-     * @return The error message if one occurred
-     */
-    String getError()
+    private Resource baseResource;
+
+    public StaticResourceLoader(Resource baseResource) {
+        this.baseResource = baseResource;
+    }
+
+    public Resource getResource(String location) {
+        return baseResource.createRelative(location);
+    }
+
+    public ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
 }
+

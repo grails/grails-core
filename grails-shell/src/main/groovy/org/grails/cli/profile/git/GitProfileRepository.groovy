@@ -22,6 +22,8 @@ import groovy.transform.CompileStatic
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.ResetCommand.ResetType
 import org.grails.cli.profile.*
+import org.grails.io.support.FileSystemResource
+import org.grails.io.support.Resource
 
 
 /**
@@ -31,8 +33,10 @@ import org.grails.cli.profile.*
  * @author Lari Hotari
  *
  * @since 3.0
+ * @deprecated Use {@link org.grails.cli.profile.repository.StaticJarProfileRepository} instead
  */
 @CompileStatic
+@Deprecated
 class GitProfileRepository implements ProfileRepository {
     File profilesDirectory = new File(new File(System.getProperty("user.home")), ".grails/repository")
     String originUri = "https://github.com/grails/grails-profile-repository"
@@ -44,9 +48,10 @@ class GitProfileRepository implements ProfileRepository {
     long updateInterval = 10*60000L
     Map<String, Profile> profileCache=[:].asSynchronized()
     
-    File getProfileDirectory(String profile) {
-        File profileDirectory = new File(new File(profilesDirectory, "profiles"), profile)
-        profileDirectory
+    Resource getProfileDirectory(String profile) {
+        File profileDirectory = new File(new File(profilesDirectory, "profiles"), "$profile")
+        def path = profileDirectory.canonicalPath
+        new FileSystemResource("$path/")
     }
     
     Profile getProfile(String profileName) {
@@ -56,7 +61,7 @@ class GitProfileRepository implements ProfileRepository {
             createOrUpdateRepository()
             initialized=true
         }
-        File profileDirectory = getProfileDirectory(profileName)
+        Resource profileDirectory = getProfileDirectory(profileName)
         if(profileDirectory.exists()) {
             profileInstance = DefaultProfile.create(this, profileName, profileDirectory)
             profileCache.put(profileName, profileInstance)

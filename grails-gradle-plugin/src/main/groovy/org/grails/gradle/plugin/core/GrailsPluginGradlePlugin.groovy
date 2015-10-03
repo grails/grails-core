@@ -1,19 +1,5 @@
-package org.grails.gradle.plugin.core
-
-import groovy.transform.CompileStatic
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.TaskContainer
-import org.gradle.api.tasks.bundling.Jar
-import org.gradle.language.jvm.tasks.ProcessResources
-import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
-
-import javax.inject.Inject
-
 /*
- * Copyright 2014 original authors
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +13,23 @@ import javax.inject.Inject
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.gradle.plugin.core
+
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.language.jvm.tasks.ProcessResources
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+
+import javax.inject.Inject
+
+
 
 /**
  * A Gradle plugin for Grails plugins
@@ -57,6 +60,14 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
         configureSourcesJarTask(project)
 
+    }
+
+    @CompileDynamic
+    @Override
+    void addDefaultProfile(Project project, Configuration profileConfig) {
+        project.dependencies {
+            profile  ":${System.getProperty("grails.profile") ?: 'web-plugin'}:"
+        }
     }
 
     @Override

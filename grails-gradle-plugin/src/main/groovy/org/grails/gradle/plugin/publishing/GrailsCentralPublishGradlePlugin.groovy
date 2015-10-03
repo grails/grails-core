@@ -33,8 +33,8 @@ class GrailsCentralPublishGradlePlugin implements Plugin<Project> {
         return """No '$missingSetting' was specified. Please provide a valid publishing configuration. Example:
 
 grailsPublish {
-    bintrayUser = 'user'
-    bintrayKey = 'key'
+    user = 'user'
+    key = 'key'
     userOrg = 'my-company' // optional, otherwise published to personal bintray account
     repo = 'plugins' // optional, defaults to 'plugins'
 
@@ -49,8 +49,8 @@ grailsPublish {
 or
 
 grailsPublish {
-    bintrayUser = 'user'
-    bintrayKey = 'key'
+    user = 'user'
+    key = 'key'
     githubSlug = 'foo/bar'
     license = 'APACHE 2.0'
 }
@@ -70,9 +70,9 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
 
         def bintraySiteUrl = project.hasProperty('websiteUrl') ? project.websiteUrl : ""
         def bintrayIssueTrackerUrl = project.hasProperty('issueTrackerUrl') ? project.issueTrackerUrl : ""
-        def bintrayVcsUrl = project.hasProperty('vcsUrl') ? project.vcsUrl : "havi"
-        def bintrayLicense = project.hasProperty('license') ? [project.license] : ['Apache-2.0']
-        def bintrayOrg = project.hasProperty('userOrg') ? project.userOrg : 'grails'
+        def bintrayVcsUrl = project.hasProperty('vcsUrl') ? project.vcsUrl : ""
+        def bintrayLicense = project.hasProperty('license') ? [project.license] : []
+        def bintrayOrg = project.hasProperty('userOrg') ? project.userOrg : ''
         def signingPassphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
         def bintrayUser = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
         def bintrayKey = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
@@ -90,29 +90,29 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             if(publishExtension.gpgSign) {
                 bintrayExtension.pkg.version.gpg.sign = true
             }
-            if(publishExtension.bintrayUser) {
-                bintrayExtension.user = publishExtension.bintrayUser
+            if(publishExtension.user) {
+                bintrayExtension.user = publishExtension.user
             }
             else if(!bintrayExtension.user) {
-                throw new RuntimeException(getErrorMessage("bintrayUser"))
+                throw new RuntimeException(getErrorMessage("user"))
             }
             if(publishExtension.repo) {
                 bintrayExtension.pkg.repo = publishExtension.repo
             }
             else if(!bintrayExtension.pkg.repo) {
-                bintrayExtension.pkg.repo = "plugins"
+                bintrayExtension.pkg.repo = getDefaultRepo()
             }
             if(publishExtension.desc) {
                 bintrayExtension.pkg.desc = publishExtension.desc
             }
             else if(!bintrayExtension.pkg.desc) {
-                bintrayExtension.pkg.desc = "Grails ${project.name} plugin"
+                bintrayExtension.pkg.desc = getDefaultDescription(project)
             }
-            if(publishExtension.bintrayKey) {
-                bintrayExtension.key = publishExtension.bintrayKey
+            if(publishExtension.key) {
+                bintrayExtension.key = publishExtension.key
             }
             else if(!bintrayExtension.key) {
-                throw new RuntimeException(getErrorMessage("bintrayKey"))
+                throw new RuntimeException(getErrorMessage("key"))
             }
             if(publishExtension.userOrg) {
                 bintrayExtension.pkg.userOrg = publishExtension.userOrg
@@ -187,9 +187,10 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                     if(javadocJar != null) {
                         artifact javadocJar
                     }
-                    artifact source:"${project.sourceSets.main.output.classesDir}/META-INF/grails-plugin.xml",
-                            classifier:"plugin",
-                            extension:'xml'
+                    def extraArtefact = getDefaultExtraArtifact(project)
+                    if(extraArtefact) {
+                        artifact extraArtefact
+                    }
                 }
             }
 
@@ -206,10 +207,10 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                         }
 
                         if(project.version.toString().endsWith('-SNAPSHOT')) {
-                            url "https://repo.grails.org/grails/plugins3-snapshots-local"
+                            url getDefaultGrailsCentralSnapshotRepo()
                         }
                         else {
-                            url "https://repo.grails.org/grails/plugins3-releases-local"
+                            url getDefaultGrailsCentralReleaseRepo()
                         }
                     }
                 }
@@ -233,7 +234,8 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                 licenses = bintrayLicense
                 publicDownloadNumbers = true
                 version {
-                    attributes = ['grails-plugin': "$project.group:$project.name"]
+                    def artifactType = getDefaultArtifactType()
+                    attributes = [(artifactType): "$project.group:$project.name"]
                     name = project.version
                     gpg {
                         sign = false
@@ -253,5 +255,31 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
 
             taskContainer.create(name:"install", dependsOn: taskContainer.withType(PublishToMavenLocal))
         }
+    }
+
+    protected String getDefaultArtifactType() {
+        'grails-plugin'
+    }
+
+    protected String getDefaultGrailsCentralReleaseRepo() {
+        "https://repo.grails.org/grails/plugins3-releases-local"
+    }
+
+    protected String getDefaultGrailsCentralSnapshotRepo() {
+        "https://repo.grails.org/grails/plugins3-snapshots-local"
+    }
+
+    protected Map<String, String> getDefaultExtraArtifact(Project project) {
+        [source: "${project.sourceSets.main.output.classesDir}/META-INF/grails-plugin.xml".toString(),
+         classifier: "plugin",
+         extension: 'xml']
+    }
+
+    protected String getDefaultDescription(Project project) {
+        "Grails ${project.name} plugin"
+    }
+
+    protected String getDefaultRepo() {
+        "plugins"
     }
 }

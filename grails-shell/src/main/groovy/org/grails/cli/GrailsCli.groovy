@@ -27,6 +27,7 @@ import jline.UnixTerminal
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
 import jline.internal.NonBlockingInputStream
+import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
 import org.grails.build.parsing.CommandLine
@@ -35,13 +36,14 @@ import org.grails.build.parsing.DefaultCommandLine
 import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleAsyncInvoker
 import org.grails.cli.gradle.GradleUtil
-import org.grails.cli.gradle.cache.ListReadingCachedGradleOperation
+import org.grails.cli.gradle.cache.MapReadingCachedGradleOperation
 import org.grails.cli.interactive.completers.EscapingFileNameCompletor
 import org.grails.cli.interactive.completers.RegexCompletor
 import org.grails.cli.interactive.completers.SortedAggregateCompleter
 import org.grails.cli.profile.*
 import org.grails.cli.profile.commands.CommandRegistry
-import org.grails.cli.profile.git.GitProfileRepository
+import org.grails.cli.profile.repository.MavenProfileRepository
+import org.grails.cli.profile.repository.StaticJarProfileRepository
 import org.grails.config.CodeGenConfig
 import org.grails.config.NavigableMap
 import org.grails.exceptions.ExceptionUtils
@@ -100,7 +102,7 @@ class GrailsCli {
     Boolean ansiEnabled = null
     boolean integrateGradle = true
     Character defaultInputMask = null
-    GitProfileRepository profileRepository=new GitProfileRepository()
+    ProfileRepository profileRepository
     CodeGenConfig applicationConfig
     ProjectContext projectContext
     Profile profile = null
@@ -200,6 +202,7 @@ class GrailsCli {
 
 
         if(mainCommandLine.hasOption(CommandLine.HELP_ARGUMENT) || mainCommandLine.hasOption('h')) {
+            profileRepository = new MavenProfileRepository()
             def cmd = CommandRegistry.getCommand("help", profileRepository)
             cmd.handle(createExecutionContext(mainCommandLine))
             exit(0)
@@ -212,6 +215,7 @@ class GrailsCli {
         File grailsAppDir=new File("grails-app")
         File applicationGroovy =new File("Application.groovy")
         if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
+            profileRepository = new MavenProfileRepository()
             if(!mainCommandLine || !mainCommandLine.commandName) {
                 return getBaseUsage()
             }
@@ -408,30 +412,46 @@ class GrailsCli {
     protected void populateContextLoader() {
         try {
             if(new File(BuildSettings.BASE_DIR, "build.gradle").exists()) {
-                def urls = new ListReadingCachedGradleOperation<URL>(projectContext, ".dependencies") {
-                    @Override
-                    protected URL createListEntry(String str) {
-                        return new URL(str)
-                    }
+                def dependencyMap = new MapReadingCachedGradleOperation<List<URL>>(projectContext, ".dependencies") {
 
                     @Override
-                    List<URL> readFromGradle(ProjectConnection connection) {
-                        GrailsClasspath grailsClasspath = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction())
+                    List<URL> createMapValue(Object value) {
+                        if(value instanceof List) {
+                            return ((List)value).collect() { new URL(it.toString()) } as List<URL>
+                        }
+                        else {
+                            return []
+                        }
+                    }
+
+
+                    @Override
+                    Map<String, List<URL>> readFromGradle(ProjectConnection connection) {
+                        def config = applicationConfig
+                        GrailsClasspath grailsClasspath = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction()) { BuildActionExecuter<GrailsClasspath> executer ->
+                            executer.withArguments("-Dgrails.profile=${config.navigate("grails", "profile")}")
+                        }
                         if(grailsClasspath.error) {
                             GrailsConsole.instance.error("${grailsClasspath.error} Type 'gradle dependencies' for more information")
                             exit 1
                         }
-                        return grailsClasspath.dependencies
+                        return [
+                            dependencies: grailsClasspath.dependencies,
+                            profiles: grailsClasspath.profileDependencies
+                        ]
                     }
                 }.call()
 
+                def urls = (List<URL>)dependencyMap.get("dependencies")
                 try {
                     // add tools.jar
                     urls.add(new File("${System.getenv('JAVA_HOME')}/lib/tools.jar").toURI().toURL())
                 } catch (Throwable e) {
                     // ignore
                 }
+                def profiles = (List<URL>)dependencyMap.get("profiles")
                 URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+                this.profileRepository = new StaticJarProfileRepository(classLoader, profiles as URL[])
                 Thread.currentThread().contextClassLoader = classLoader
             }
         } catch (Throwable e) {

@@ -94,8 +94,13 @@ class IOUtils extends SpringIOUtils {
      * @return The JAR file
      */
     static File findJarFile(Class targetClass) {
-        def absolutePath = findClassResource(targetClass)?.getPath()
-        if(absolutePath) {
+        def resource = findClassResource(targetClass)
+        findJarFile(resource)
+    }
+
+    static File findJarFile(URL resource) {
+        def absolutePath = resource?.getPath()
+        if (absolutePath) {
             final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
             new File(jarPath)
         }

@@ -26,6 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.lang.reflect.Array;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ import java.util.Map;
  * but also useful for application code.
  *
  * @author Juergen Hoeller
+ * @author Graeme Rocher
+ *
  * @since 06.10.2003
  */
 @SuppressWarnings("unchecked")
@@ -147,6 +150,23 @@ public class SpringIOUtils {
     //---------------------------------------------------------------------
     // Copy methods for java.io.File
     //---------------------------------------------------------------------
+
+    /**
+     * Copies all the resources for the given target directory. The base resource serves to calculate the relative path such that the
+     * directory structure is maintained
+     *
+     * @param base The base resource
+     * @param resources The resources to copy
+     * @param targetDir The target directory
+     */
+    public static void copyAll(Resource base, Resource[] resources, File targetDir) throws IOException {
+        final URL baseUrl = base.getURL();
+        for (Resource resource : resources) {
+            final InputStream input = resource.getInputStream();
+            final File target = new File(targetDir, resource.getURL().toString().substring(baseUrl.toString().length()));
+            copy(new BufferedInputStream(input), new BufferedOutputStream(new FileOutputStream(target)));
+        }
+    }
 
     /**
      * Copy the contents of the given input File to the given output File.

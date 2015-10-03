@@ -1,5 +1,7 @@
 package org.grails.cli.profile
 
+import org.grails.io.support.Resource
+
 /*
  * Copyright 2014 original authors
  *
@@ -40,7 +42,7 @@ interface ProfileRepository {
      * @param profile The name of the profile
      * @return The directory where the profile is located or null if it doesn't exist
      */
-    File getProfileDirectory(String profile)
+    Resource getProfileDirectory(String profile)
 
     /**
      * Returns the given profile with all dependencies in topological order where

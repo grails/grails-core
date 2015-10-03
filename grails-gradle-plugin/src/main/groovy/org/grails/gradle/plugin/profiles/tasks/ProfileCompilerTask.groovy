@@ -167,11 +167,12 @@ class ProfileCompilerTask extends AbstractCompile {
             importCustomizer.addStarImports("grails.codegen.model")
             configuration.addCompilationCustomizers(importCustomizer,new ASTTransformationCustomizer(new GroovyScriptCommandTransform()))
 
-            CompilationUnit compilationUnit = new CompilationUnit(configuration)
+            for(source in groovySourceFiles) {
 
-
-            compilationUnit.addSources(groovySourceFiles)
-            compilationUnit.compile()
+                CompilationUnit compilationUnit = new CompilationUnit(configuration)
+                compilationUnit.addSource(source)
+                compilationUnit.compile()
+            }
         }
     }
 }

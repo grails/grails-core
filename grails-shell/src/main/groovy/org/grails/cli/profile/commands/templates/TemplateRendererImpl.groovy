@@ -237,15 +237,15 @@ class TemplateRendererImpl implements TemplateRenderer, ProfileRepositoryAware {
      * @return The resource or null if it doesn't exist
      */
     Resource template(Object location) {
-        File f = file("src/main/templates/$location")
+        Resource f = resource(file("src/main/templates/$location"))
         if(!f?.exists()) {
             if(profile) {
-                def path = "templates/$location"
-                f = new File(profile.profileDir, path)
+                def path = location.toString()
+                f = profile.getTemplate(path)
                 if(!f.exists()) {
                     def allProfiles = profileRepository.getProfileAndDependencies(profile)
                     for(parent in allProfiles) {
-                        f = new File(parent.profileDir, path)
+                        f = parent.getTemplate(path)
                         if(f.exists()) break
                     }
                 }

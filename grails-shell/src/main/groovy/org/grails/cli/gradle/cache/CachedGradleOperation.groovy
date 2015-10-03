@@ -58,7 +58,7 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
 
             }
         } catch (Throwable e) {
-            // ignore
+            throw e
         }
 
         def data = GradleUtil.withProjectConnection(projectContext.baseDir, true) { ProjectConnection projectConnection -> readFromGradle(projectConnection) }
@@ -68,7 +68,7 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
 
     protected void storeData(T data) {
         try {
-            def depsFile = new File(BuildSettings.TARGET_DIR, ".dependencies")
+            def depsFile = new File(BuildSettings.TARGET_DIR, fileName)
             depsFile.withPrintWriter { PrintWriter writer ->
                 writeToCache(writer, data)
             }

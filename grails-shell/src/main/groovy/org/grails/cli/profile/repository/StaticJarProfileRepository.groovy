@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.grails.gradle.plugin.model
+package org.grails.cli.profile.repository
+import groovy.transform.CompileStatic
+import org.grails.io.support.ClassPathResource
 
 /**
- * Gradle ToolingModel class that is used to return Classpath to Grails cli
+ * A JAR file repository that resolves profiles from a static array of JAR file URLs
  *
- * this file is also in grails-shell project
+ * @author Graeme Rocher
+ * @since 3.1
  */
-interface GrailsClasspath extends Serializable {
-    /**
-     * @return All Grails dependencies, pull from 'testRuntime' scope
-     */
-    List<URL> getDependencies()
+@CompileStatic
+class StaticJarProfileRepository extends AbstractJarProfileRepository {
 
-    /**
-     * @return The profile dependencies
-     */
-    List<URL> getProfileDependencies()
-    /**
-     * @return The error message if one occurred
-     */
-    String getError()
+
+    final URL[] urls
+
+    StaticJarProfileRepository(ClassLoader parent, URL...urls) {
+        this.urls = urls
+        for(url in urls) {
+            registerProfile(url, parent)
+        }
+    }
+
+
 }

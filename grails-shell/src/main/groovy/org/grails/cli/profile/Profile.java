@@ -17,8 +17,10 @@ package org.grails.cli.profile;
 
 import jline.console.completer.Completer;
 import org.grails.config.NavigableMap;
+import org.grails.io.support.Resource;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -27,6 +29,8 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @author Lari Hotari
+ *
+ * @since 3.0
  */
 public interface Profile {
     /**
@@ -37,7 +41,24 @@ public interface Profile {
     /**
      * @return The directory where the profile is located locally
      */
-    File getProfileDir();
+    Resource getProfileDir();
+
+    /**
+     * Obtain a template by path
+     *
+     * @param path The path to template
+     * @return The resource or null if it doesn't exist
+     */
+    Resource getTemplate(String path);
+
+    /**
+     * Obtain a command by name
+     *
+     * @param name Obtain a command by name
+     * @return The command
+     */
+    Command getCommand(ProjectContext context, String name);
+
 
     /**
      * @return The name of the profile
