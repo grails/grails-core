@@ -16,18 +16,13 @@
 package org.grails.gradle.plugin.profiles
 
 import grails.io.IOUtils
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
 import org.gradle.api.internal.java.JavaLibrary
 import org.gradle.api.plugins.BasePlugin
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.configuration.project.ProjectConfigurationActionContainer
@@ -107,6 +102,22 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()));
         }
 
+        project.tasks.create("sourcesJar", Jar) { Jar jar ->
+            jar.from(commandsDir)
+            if(profileYml.exists()) {
+                jar.from(profileYml)
+            }
+            jar.from(templatesDir) { CopySpec spec ->
+                spec.into("templates")
+            }
+            jar.from(skeletonsDir) { CopySpec spec ->
+                spec.into("skeleton")
+            }
+            jar.classifier = "sources"
+            jar.destinationDir = new File(project.buildDir, "libs")
+            jar.setDescription("Assembles a jar archive containing the profile sources.")
+            jar.setGroup(BUILD_GROUP)
+        }
         project.tasks.findByName("assemble").dependsOn jarTask
 
     }

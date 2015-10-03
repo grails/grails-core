@@ -26,6 +26,7 @@ import org.grails.cli.profile.ExecutionContext
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.commands.templates.SimpleTemplate
 import org.grails.cli.profile.support.ArtefactVariableResolver
+import org.grails.io.support.Resource
 
 /**
  * A {@link org.grails.cli.profile.Step} that renders a template
@@ -36,9 +37,11 @@ import org.grails.cli.profile.support.ArtefactVariableResolver
  * @since 3.0
  */
 @InheritConstructors
+@CompileStatic
 class RenderStep extends AbstractStep {
 
     public static final String NAME = "render"
+    public static final String TEMPLATES_DIR = "templates/"
 
     @Override
     @CompileStatic
@@ -50,9 +53,11 @@ class RenderStep extends AbstractStep {
         String nameAsArgument = commandLine.getRemainingArgs()[0]
         String artifactName
         String artifactPackage
-        (artifactName, artifactPackage) = resolveNameAndPackage(context, nameAsArgument)
+        def nameAndPackage = resolveNameAndPackage(context, nameAsArgument)
+        artifactName = nameAndPackage[0]
+        artifactPackage = nameAndPackage[1]
         def variableResolver = new ArtefactVariableResolver(artifactName, (String) parameters.convention,artifactPackage)
-        File destination = variableResolver.resolveFile(parameters.destination, context)
+        File destination = variableResolver.resolveFile(parameters.destination.toString(), context)
 
         try {
 
@@ -72,9 +77,11 @@ class RenderStep extends AbstractStep {
         }
     }
 
-    protected File searchTemplateDepthFirst(Profile profile, String template) {
-        File profileDir = profile.profileDir
-        File templateFile = new File(profileDir, template)
+    protected Resource searchTemplateDepthFirst(Profile profile, String template) {
+        if(template.startsWith(TEMPLATES_DIR)) {
+            return searchTemplateDepthFirst(profile, template.substring(TEMPLATES_DIR.length()))
+        }
+        Resource templateFile = profile.getTemplate(template)
         if(templateFile.exists()) {
             return templateFile
         } else {
@@ -90,11 +97,11 @@ class RenderStep extends AbstractStep {
 
     protected void renderToDestination(File destination, Map variables) {
         Profile profile = command.profile
-        File templateFile = searchTemplateDepthFirst(profile, parameters.template)
+        Resource templateFile = searchTemplateDepthFirst(profile, parameters.template.toString())
         if(!templateFile) {
             throw new IOException("cannot find template " + parameters.template)
         }
-        destination.setText(new SimpleTemplate(templateFile.getText("UTF-8")).render(variables), "UTF-8")
+        destination.setText(new SimpleTemplate(templateFile.inputStream.getText("UTF-8")).render(variables), "UTF-8")
         ClassNameCompleter.refreshAll()
     }
 

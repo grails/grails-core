@@ -18,10 +18,9 @@ package org.grails.cli.profile.commands.factory
 
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Profile
-import org.grails.io.support.FileSystemResource
+import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
-
-import java.util.regex.Pattern
+import org.grails.io.support.StaticResourceLoader
 
 
 /**
@@ -34,29 +33,27 @@ import java.util.regex.Pattern
 class FileSystemCommandResourceResolver implements CommandResourceResolver {
 
     final Collection<String> matchingFileExtensions
-    final Pattern fileNamePatternRegex
 
     FileSystemCommandResourceResolver(Collection<String> matchingFileExtensions) {
         this.matchingFileExtensions = matchingFileExtensions
-        final String fileNamePattern = /^.*\.(${matchingFileExtensions.join('|')})$/
-        this.fileNamePatternRegex = Pattern.compile(fileNamePattern)
     }
 
     @Override
     Collection<Resource> findCommandResources(Profile profile) {
-        File commandsDir = getCommandsDirectory(profile)
-        if(commandsDir.isDirectory()) {
-            Collection<File> commandFiles = commandsDir.listFiles().findAll { File file ->
-                file.isFile() && file.name ==~ fileNamePatternRegex
+        Resource commandsDir = getCommandsDirectory(profile)
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(new StaticResourceLoader(commandsDir))
+        if(commandsDir.exists()) {
+            Collection<Resource> commandFiles = []
+            for(ext in matchingFileExtensions) {
+                commandFiles.addAll resolver.getResources("*.$ext")
             }
-            commandFiles = commandFiles.sort(false) { File file -> file.name }
-            return commandFiles.collect() { File f -> new FileSystemResource(f) }
-        } else {
-            return []
+            commandFiles = commandFiles.sort(false) { Resource file -> file.filename }
+            return commandFiles
         }
+        return []
     }
 
-    protected File getCommandsDirectory(Profile profile) {
-        new File(profile.profileDir, "commands")
+    protected Resource getCommandsDirectory(Profile profile) {
+        profile.profileDir.createRelative("commands/")
     }
 }

@@ -23,19 +23,24 @@ import groovy.transform.InheritConstructors
 import org.gradle.tooling.ProjectConnection
 import org.grails.cli.gradle.FetchAllTaskSelectorsBuildAction
 import org.grails.cli.gradle.cache.ListReadingCachedGradleOperation
+import org.grails.cli.profile.ProjectContext
 
 /**
  * @author Graeme Rocher
  */
 @CompileStatic
-@InheritConstructors
 class ReadGradleTasks extends ListReadingCachedGradleOperation<String> {
+
     private static final Closure<String> taskNameFormatter = { String projectPath, String taskName ->
         if(projectPath == ':') {
             ":$taskName".toString()
         } else {
             "$projectPath:$taskName".toString()
         }
+    }
+
+    ReadGradleTasks(ProjectContext projectContext) {
+        super(projectContext, ".gradle-tasks")
     }
 
     @Override

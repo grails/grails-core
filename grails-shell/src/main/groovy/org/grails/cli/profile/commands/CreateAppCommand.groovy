@@ -17,6 +17,7 @@
 package org.grails.cli.profile.commands
 
 import grails.build.logging.GrailsConsole
+import grails.io.IOUtils
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
@@ -24,6 +25,9 @@ import groovy.transform.TypeCheckingMode
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.profile.*
+import org.grails.io.support.FileSystemResource
+import org.grails.io.support.Resource
+
 /**
  * Command for creating Grails applications
  *
@@ -198,12 +202,26 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    private void copySkeleton(Profile profile, File profileDirectory) {
+    private void copySkeleton(Profile profile, Resource profileDirectory) {
 
         def excludes = profile.configuration.navigate("skeleton", "excludes") ?: []
 
         AntBuilder ant = new GrailsConsoleAntBuilder()
-        File srcDir = new File(profileDirectory, "skeleton")
+
+        def skeletonResource = profileDirectory.createRelative("skeleton")
+        File srcDir
+        if(skeletonResource instanceof FileSystemResource) {
+            srcDir = skeletonResource.file
+        }
+        else {
+            // establish the JAR file name and extract
+            def jarFile = IOUtils.findJarFile(skeletonResource.URL)
+
+            def tmpDir = File.createTempDir()
+            tmpDir.deleteOnExit()
+            ant.unzip(src:jarFile, dest: tmpDir)
+            srcDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
+        }
         ant.copy(file:"${srcDir}/.gitignore", todir: targetDirectory, failonerror:false)
         ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
             fileSet(dir: srcDir, casesensitive: false) {
@@ -215,10 +233,10 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                     exclude(name: "**/*.${ext}")
                 }
             }
-            filterset { 
+            filterset {
                 variables.each { k, v ->
                     filter(token:k, value:v)
-                } 
+                }
             }
             mapper {
                 filtermapper {

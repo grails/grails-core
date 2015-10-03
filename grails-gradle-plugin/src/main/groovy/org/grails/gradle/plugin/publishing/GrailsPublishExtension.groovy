@@ -28,13 +28,13 @@ class GrailsPublishExtension {
      */
     String githubSlug
     /**
-     * The bintray user
+     * The the publishing user
      */
-    String bintrayUser
+    String user
     /**
-     * The bintray key
+     * The the publishing key
      */
-    String bintrayKey
+    String key
     /**
      * The website URL of the plugin
      */

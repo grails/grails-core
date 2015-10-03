@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
+import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 
 import java.util.regex.Pattern
@@ -69,8 +70,8 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
         else {
             def localCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions) {
                 @Override
-                protected File getCommandsDirectory(Profile profile) {
-                    return new File(BuildSettings.BASE_DIR, "src/main/scripts")
+                protected Resource getCommandsDirectory(Profile profile) {
+                    return new FileSystemResource("${BuildSettings.BASE_DIR}/src/main/scripts/" )
                 }
             }
             return [profileCommandsResolver, localCommandsResolver, new ClasspathCommandResourceResolver(matchingFileExtensions) ]

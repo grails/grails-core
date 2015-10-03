@@ -16,7 +16,10 @@
 
 package org.grails.gradle.plugin.model
 
+import grails.util.BuildSettings
+import groovy.transform.CompileStatic
 import org.gradle.api.Project
+import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.tooling.provider.model.ToolingModelBuilder
@@ -24,6 +27,7 @@ import org.gradle.tooling.provider.model.ToolingModelBuilder
 /**
  * Builds the GrailsClasspath instance that contains the URLs of the resolved dependencies
  */
+@CompileStatic
 class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
     @Override
     boolean canBuild(String modelName) {
@@ -34,10 +38,20 @@ class GrailsClasspathToolingModelBuilder implements ToolingModelBuilder {
     Object buildAll(String modelName, Project project) {
         // testRuntime includes provided
         try {
+
             List<URL> runtimeDependencies = project.getConfigurations().getByName("testRuntime").getResolvedConfiguration().getResolvedArtifacts().collect { ResolvedArtifact artifact ->
                 artifact.getFile().toURI().toURL()
             }
-            new DefaultGrailsClasspath(dependencies: runtimeDependencies)
+
+            def grailsClasspath = new DefaultGrailsClasspath(dependencies: runtimeDependencies)
+
+            def profileConfiguration = project.getConfigurations().getByName("profile")
+            if(profileConfiguration != null) {
+                grailsClasspath.profileDependencies = profileConfiguration.getResolvedConfiguration().getResolvedArtifacts().collect() { ResolvedArtifact artifact ->
+                    artifact.getFile().toURI().toURL()
+                }
+            }
+            return grailsClasspath
         } catch (ResolveException e) {
             new DefaultGrailsClasspath(error: e.message)
         }

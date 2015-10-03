@@ -64,7 +64,7 @@ class GradleCommand implements ProjectCommand, Completer, ProjectContextAware {
 
     private void initializeCompleter() {
         if (completer == null && projectContext) {
-            readTasks = new ReadGradleTasks(projectContext, ".gradle-tasks")
+            readTasks = new ReadGradleTasks(projectContext)
             completer = new ClosureCompleter((Closure<Collection<String>>) { readTasks.call() })
         }
     }

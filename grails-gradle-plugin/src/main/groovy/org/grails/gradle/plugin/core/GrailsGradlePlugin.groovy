@@ -1,9 +1,25 @@
+/*
+ * Copyright 2015 original authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.gradle.plugin.core
 
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
@@ -15,6 +31,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.JavaExec
@@ -36,8 +53,15 @@ import org.springframework.boot.gradle.SpringBootPluginExtension
 
 import javax.inject.Inject
 
+/**
+ * The main Grails gradle plugin implementation
+ *
+ * @since 3.0
+ * @author Graeme Rocher
+ */
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
+    public static final String PROFILE_CONFIGURATION = "profile"
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
@@ -51,6 +75,24 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     void apply(Project project) {
         super.apply(project)
+
+        def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
+
+        profileConfiguration.incoming.beforeResolve() {
+            if(!profileConfiguration.allDependencies) {
+                addDefaultProfile(project, profileConfiguration)
+            }
+        }
+
+        profileConfiguration.resolutionStrategy.eachDependency {
+            DependencyResolveDetails details = (DependencyResolveDetails)it
+            def group = details.requested.group ?: "org.grails.profiles"
+            def version = details.requested.version ?: BuildSettings.package.implementationVersion
+            details.useTarget(group: group, name:details.requested.name,version:version)
+        }
+
+
+
 
         def springBoot = project.extensions.findByType(SpringBootPluginExtension)
         if(!springBoot) {
@@ -90,6 +132,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureApplicationCommands(project)
 
         createBuildPropertiesTask(project)
+    }
+
+    @CompileDynamic
+    void addDefaultProfile(Project project, Configuration profileConfig) {
+        project.dependencies {
+            profile  ":${System.getProperty("grails.profile") ?: 'web'}:"
+        }
     }
 
     protected Task createBuildPropertiesTask(Project project) {
@@ -317,7 +366,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected void enableFileWatch(Environment environment, Project project) {
         if (environment.isReloadEnabled()) {
-//            configureWatchPlugin(project)
 
             project.configurations {
                 agent

@@ -18,6 +18,7 @@ package org.grails.cli.gradle.cache
 
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
+import org.grails.cli.profile.ProjectContext
 
 
 /**
@@ -29,6 +30,7 @@ import groovy.transform.InheritConstructors
 @CompileStatic
 @InheritConstructors
 abstract class ListReadingCachedGradleOperation<T> extends CachedGradleOperation<List<T>>{
+
     @Override
     List<T> readFromCached(File f) {
         return f.text.split('\n').collect() { String str -> createListEntry(str) }
