@@ -2,6 +2,7 @@ package org.grails.cli.profile
 
 import org.grails.cli.GrailsCliSpec
 import org.grails.cli.profile.git.GitProfileRepository
+import org.grails.io.support.FileSystemResource
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -18,7 +19,7 @@ class DefaultProfileSpec extends Specification {
         GrailsCliSpec.setupProfileRepositoryForTesting(profileRepository, new File(tempFolder.newFolder(), "repository"), new File("").absoluteFile)
         File webProfileDirectory = new File(profileRepository.profilesDirectory, 'profiles/web')
         assert webProfileDirectory.exists()
-        profile = DefaultProfile.create(profileRepository, 'web', webProfileDirectory)
+        profile = DefaultProfile.create(profileRepository, 'web', new FileSystemResource(webProfileDirectory))
     }
     
     def "should contain known commands in web profile"() {
