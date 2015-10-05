@@ -17,12 +17,15 @@
 package org.grails.cli.profile.repository
 
 import grails.util.BuildSettings
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.resolution.VersionResolutionException
 import org.grails.cli.profile.Profile
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngineFactory
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionFailedException
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
 
 
@@ -67,9 +70,35 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
             profileName = "org.grails.profiles:$profileName:LATEST"
         }
         def art = new DefaultArtifact(profileName)
-        grapeEngine.grab(group: art.groupId ?: 'org.grails.profiles', module: art.artifactId, version: art.version ?: 'LATEST')
+        def groupId = art.groupId ?: 'org.grails.profiles'
+        def artifactId = art.artifactId
+        def version = art.version ?: 'LATEST'
+        try {
+            grapeEngine.grab(group: groupId, module: artifactId, version: version)
+        } catch (DependencyResolutionFailedException e ) {
+
+            def localData = new File(System.getProperty("user.home"),"/.m2/repository/${groupId.replace('.','/')}/$artifactId/maven-metadata-local.xml")
+            if(localData.exists()) {
+                def currentVersion = parseCurrentVersion(localData)
+                def profileFile = new File(localData.parentFile, "$currentVersion/${artifactId}-${currentVersion}.jar")
+                if(profileFile.exists()) {
+                    registerProfile(profileFile.toURI().toURL(), classLoader)
+                }
+                else {
+                    throw e
+                }
+            }
+            else {
+                throw e
+            }
+        }
 
         processUrls()
+    }
+
+    @CompileDynamic
+    protected String parseCurrentVersion(File localData) {
+        new XmlSlurper().parse(localData).versioning.versions.version[0].text()
     }
 
     protected void processUrls() {

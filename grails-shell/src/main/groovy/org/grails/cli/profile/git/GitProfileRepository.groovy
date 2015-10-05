@@ -63,7 +63,7 @@ class GitProfileRepository implements ProfileRepository {
         }
         Resource profileDirectory = getProfileDirectory(profileName)
         if(profileDirectory.exists()) {
-            profileInstance = DefaultProfile.create(this, profileName, profileDirectory)
+            profileInstance = ResourceProfile.create(this, profileName, profileDirectory)
             profileCache.put(profileName, profileInstance)
             return profileInstance
         } else {

@@ -170,6 +170,8 @@ class ProfileCompilerTask extends AbstractCompile {
             for(source in groovySourceFiles) {
 
                 CompilationUnit compilationUnit = new CompilationUnit(configuration)
+                configuration.compilationCustomizers.clear()
+                configuration.compilationCustomizers.addAll(importCustomizer, new ASTTransformationCustomizer(new GroovyScriptCommandTransform()))
                 compilationUnit.addSource(source)
                 compilationUnit.compile()
             }

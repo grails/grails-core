@@ -20,6 +20,7 @@ import org.grails.cli.profile.AbstractProfile
 import org.grails.cli.profile.Command
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.cli.profile.ProjectContext
 import org.grails.cli.profile.ProjectContextAware
 import org.grails.cli.profile.commands.DefaultMultiStepCommand
@@ -72,7 +73,7 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
         def profileYml = classLoader.getResource("META-INF/grails-profile/profile.yml")
         if (profileYml != null) {
             registeredUrls.add(url)
-            def profile = new JarProfile(new ClassPathResource("META-INF/grails-profile/", classLoader), classLoader)
+            def profile = new JarProfile(this, new ClassPathResource("META-INF/grails-profile/", classLoader), classLoader)
             profile.profileRepository = this
             allProfiles.add profile
             profilesByName[profile.name] = profile
@@ -94,8 +95,9 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
         private List<String> parentNames = []
 
 
-        JarProfile(Resource profileDir, ClassLoader classLoader) {
+        JarProfile(ProfileRepository repository, Resource profileDir, ClassLoader classLoader) {
             super(profileDir)
+            this.profileRepository = repository
             this.classLoader = classLoader
             initialize()
         }
@@ -129,6 +131,7 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
                     if(fileName.endsWith(".groovy")) {
                         GroovyScriptCommand cmd = (GroovyScriptCommand)classLoader.loadClass(clsName.toString()).newInstance()
                         cmd.profile = this
+                        cmd.profileRepository = profileRepository
                         internalCommands.add cmd
                     }
                     else if(fileName.endsWith('.yml')) {

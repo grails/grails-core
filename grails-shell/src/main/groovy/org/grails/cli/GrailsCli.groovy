@@ -216,7 +216,8 @@ class GrailsCli {
 
         File grailsAppDir=new File("grails-app")
         File applicationGroovy =new File("Application.groovy")
-        if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
+        File profileYml =new File("profile.yml")
+        if(!grailsAppDir.isDirectory() && !applicationGroovy.exists() && !profileYml.exists()) {
             profileRepository = createMavenProfileRepository()
             if(!mainCommandLine || !mainCommandLine.commandName) {
                 return getBaseUsage()
@@ -239,6 +240,10 @@ class GrailsCli {
 
         } else {
             applicationConfig = loadApplicationConfig()
+            if(profileYml.exists()) {
+                // use the profile for profiles
+                applicationConfig.put(BuildSettings.PROFILE, "profile")
+            }
         
             def commandName = mainCommandLine.commandName
             GrailsConsole console = GrailsConsole.instance
@@ -418,11 +423,16 @@ class GrailsCli {
     }
 
     private initializeProfile() {
-        BuildSettings.TARGET_DIR.mkdirs()
+        BuildSettings.TARGET_DIR?.mkdirs()
 
-        populateContextLoader()
+        if(!new File(BuildSettings.BASE_DIR, "profile.yml").exists()) {
+            populateContextLoader()
+        }
+        else {
+            this.profileRepository = createMavenProfileRepository()
+        }
 
-        String profileName = applicationConfig.navigate('grails', 'profile') ?: getSetting("grails.profile", String, DEFAULT_PROFILE_NAME)
+        String profileName = applicationConfig.get(BuildSettings.PROFILE) ?: getSetting(BuildSettings.PROFILE, String, DEFAULT_PROFILE_NAME)
         this.profile = profileRepository.getProfile(profileName)
 
         if(profile == null) {
