@@ -90,74 +90,16 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
     }
 
     static class JarProfile extends AbstractProfile {
-        final ClassLoader classLoader
-        private final List<Command> internalCommands = []
-        private List<String> parentNames = []
-
 
         JarProfile(ProfileRepository repository, Resource profileDir, ClassLoader classLoader) {
-            super(profileDir)
+            super(profileDir,classLoader)
             this.profileRepository = repository
-            this.classLoader = classLoader
             initialize()
         }
 
         @Override
         String getName() {
             super.name
-        }
-
-        private String initialize() {
-            def profileYml = profileDir.createRelative("profile.yml")
-            profileConfig = (Map<String, Object>) new Yaml().loadAs(profileYml.getInputStream(), Map)
-
-            super.name = profileConfig.get("name")?.toString()
-
-            def parents = profileConfig.get("extends")
-            if(parents) {
-                parentNames = parents.toString().split(',').collect() { String name -> name.trim() }
-            }
-            if(this.name == null) {
-                throw new IllegalStateException("Profile name not set. Profile for path ${profileDir.URL} is invalid")
-            }
-            def map = new NavigableMap()
-            map.merge(profileConfig)
-            navigableConfig = map
-            def commandsByName = profileConfig.get("commands")
-            if(commandsByName instanceof Map) {
-                def commandsMap = (Map) commandsByName
-                for(clsName in  commandsMap.keySet()) {
-                    def fileName = commandsMap[clsName].toString()
-                    if(fileName.endsWith(".groovy")) {
-                        GroovyScriptCommand cmd = (GroovyScriptCommand)classLoader.loadClass(clsName.toString()).newInstance()
-                        cmd.profile = this
-                        cmd.profileRepository = profileRepository
-                        internalCommands.add cmd
-                    }
-                    else if(fileName.endsWith('.yml')) {
-                        def yamlCommand = profileDir.createRelative("commands/$fileName")
-                        if(yamlCommand.exists()) {
-                            def data = new Yaml().loadAs(yamlCommand.getInputStream(), Map.class)
-                            Command cmd = new DefaultMultiStepCommand(clsName.toString(), this, data)
-                            Object minArguments = data?.minArguments
-                            cmd.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
-                            internalCommands.add cmd
-                        }
-
-                    }
-                }
-            }
-        }
-
-        @Override
-        Iterable<Profile> getExtends() {
-            return parentNames.collect() { String name ->
-                def parent = profileRepository.getProfile(name)
-                if(parent == null) {
-                    throw new IllegalStateException("Profile [$name] declares and invalid dependency on parent profile [$name]")
-                }
-                return parent
-            }
         }
 
         @Override

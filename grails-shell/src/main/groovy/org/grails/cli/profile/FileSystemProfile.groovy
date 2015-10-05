@@ -25,11 +25,12 @@ import org.grails.io.support.Resource
  * Simple disk based implementation of the {@link Profile} interface
  *
  * @author Graeme Rocher
+ * @since 1.0
  */
 @CompileStatic
 class FileSystemProfile extends ResourceProfile {
 
-    FileSystemProfile(File profileDir) {
-        super(profileDir.name, new FileSystemResource(profileDir))
+    FileSystemProfile(ProfileRepository repository, File profileDir) {
+        super(repository, profileDir.name, new FileSystemResource(profileDir))
     }
 }

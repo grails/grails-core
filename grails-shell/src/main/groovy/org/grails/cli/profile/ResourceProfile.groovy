@@ -30,9 +30,11 @@ import org.yaml.snakeyaml.Yaml
 @CompileStatic
 class ResourceProfile extends AbstractProfile implements Profile {
 
-    protected ResourceProfile(String name, Resource profileDir) {
+    ResourceProfile(ProfileRepository repository, String name, Resource profileDir) {
         super(profileDir)
         super.name = name
+        this.profileRepository = repository
+        initialize()
     }
 
     @Override
@@ -41,33 +43,10 @@ class ResourceProfile extends AbstractProfile implements Profile {
     }
 
     public static Profile create(ProfileRepository repository, String name, Resource profileDir) {
-        Profile profile = new ResourceProfile(name, profileDir)
-        profile.initialize(repository)
+        Profile profile = new ResourceProfile(repository, name, profileDir)
         return profile
     }
 
-
-    private void initialize(ProfileRepository repository) {
-        this.profileRepository = repository
-        parentProfiles = []
-        Resource profileYml = profileDir.createRelative("profile.yml")
-        if(profileYml.exists()) {
-            profileConfig = (Map<String, Object>) new Yaml().loadAs(profileYml.getInputStream(), Map)
-            def map = new NavigableMap()
-            map.merge(profileConfig)
-            navigableConfig = map
-            String[] extendsProfiles = profileConfig.get("extends")?.toString()?.split(/\s*,\s*/)
-            if(extendsProfiles) {
-                parentProfiles = extendsProfiles.collect { String profileName ->
-                    Profile extendsProfile = repository.getProfile(profileName)
-                    if(extendsProfile==null) {
-                        throw new RuntimeException("Profile $profileName not found. ${this.name} extends it.")
-                    }
-                    extendsProfile
-                }
-            }
-        }
-    }
 
     boolean equals(o) {
         if (this.is(o)) return true
