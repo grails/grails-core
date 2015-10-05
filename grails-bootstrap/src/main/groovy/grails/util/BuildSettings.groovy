@@ -51,19 +51,24 @@ class BuildSettings {
      */
     public static final String MAIN_CLASS_NAME = "org.grails.MAIN_CLASS_NAME"
 
-    static final String BUILD_SCOPE = "build"
-    static final String COMPILE_SCOPE = "compile"
-    static final String RUNTIME_SCOPE = "runtime"
-    static final String TEST_SCOPE = "test"
-    static final String PROVIDED_SCOPE = "provided"
+    /**
+     * Specifies the profile repositories to use
+     */
+    public static final String PROFILE_REPOSITORIES = "grails.profile.repositories"
 
-    static final String BUILD_SCOPE_DESC = "Dependencies for the build system only"
-    static final String COMPILE_SCOPE_DESC = "Dependencies placed on the classpath for compilation"
-    static final String RUNTIME_SCOPE_DESC = "Dependencies needed at runtime but not for compilation"
-    static final String TEST_SCOPE_DESC = "Dependencies needed for test compilation and execution but not at runtime"
-    static final String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment"
+    public static final String BUILD_SCOPE = "build"
+    public static final String COMPILE_SCOPE = "compile"
+    public static final String RUNTIME_SCOPE = "runtime"
+    public static final String TEST_SCOPE = "test"
+    public static final String PROVIDED_SCOPE = "provided"
 
-    static final Map<String, String> SCOPE_TO_DESC = [
+    public static final String BUILD_SCOPE_DESC = "Dependencies for the build system only"
+    public static final String COMPILE_SCOPE_DESC = "Dependencies placed on the classpath for compilation"
+    public static final String RUNTIME_SCOPE_DESC = "Dependencies needed at runtime but not for compilation"
+    public static final String TEST_SCOPE_DESC = "Dependencies needed for test compilation and execution but not at runtime"
+    public static final String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment"
+
+    public static final Map<String, String> SCOPE_TO_DESC = [
             (BUILD_SCOPE): BUILD_SCOPE_DESC,
             (PROVIDED_SCOPE): PROVIDED_SCOPE_DESC,
             (COMPILE_SCOPE): COMPILE_SCOPE_DESC,
@@ -71,7 +76,7 @@ class BuildSettings {
             (TEST_SCOPE): TEST_SCOPE_DESC
     ]
 
-    static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
+    public static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 
     /**
      * The compiler source level to use
