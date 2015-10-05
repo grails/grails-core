@@ -42,6 +42,7 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
     protected final List<Profile> allProfiles = []
     protected final Map<String, Profile> profilesByName = [:]
 
+    private Set<URL> registeredUrls = []
     @Override
     Profile getProfile(String profileName) {
         return profilesByName[profileName]
@@ -65,9 +66,12 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
     }
 
     protected void registerProfile(URL url, ClassLoader parent) {
+        if(registeredUrls.contains(url)) return
+
         def classLoader = new URLClassLoader([url] as URL[], parent)
         def profileYml = classLoader.getResource("META-INF/grails-profile/profile.yml")
         if (profileYml != null) {
+            registeredUrls.add(url)
             def profile = new JarProfile(new ClassPathResource("META-INF/grails-profile/", classLoader), classLoader)
             profile.profileRepository = this
             allProfiles.add profile

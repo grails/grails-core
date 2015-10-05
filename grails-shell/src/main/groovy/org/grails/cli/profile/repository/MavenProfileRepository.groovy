@@ -38,6 +38,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     List<RepositoryConfiguration> repositoryConfigurations
     AetherGrapeEngine grapeEngine
     GroovyClassLoader classLoader
+    private boolean resolved = false
 
     MavenProfileRepository(List<RepositoryConfiguration> repositoryConfigurations) {
         this.repositoryConfigurations = repositoryConfigurations
@@ -53,7 +54,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
     @Override
     Profile getProfile(String profileName) {
-        if(!profilesByName.containsKey(profileName)) {
+        if(!resolved && !profilesByName.containsKey(profileName)) {
             resolveProfile(profileName)
         }
         return super.getProfile(profileName)
@@ -61,11 +62,15 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
     protected void resolveProfile(String profileName) {
         if (!profileName.contains(':')) {
-            profileName = "org.grails.profiles:$profileName:${BuildSettings.package.implementationVersion}"
+            profileName = "org.grails.profiles:$profileName:LATEST"
         }
         def art = new DefaultArtifact(profileName)
-        grapeEngine.grab(group: art.groupId, module: art.artifactId, version: art.version)
+        grapeEngine.grab(group: art.groupId ?: 'org.grails.profiles', module: art.artifactId, version: art.version ?: 'LATEST')
 
+        processUrls()
+    }
+
+    protected void processUrls() {
         def urls = classLoader.getURLs()
         for (URL url in urls) {
             registerProfile(url, new URLClassLoader([url] as URL[], Thread.currentThread().contextClassLoader))
@@ -74,6 +79,26 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
     @Override
     List<Profile> getAllProfiles() {
+
+
+        if(!resolved) {
+            List<String> profileNames = []
+            for(repo in repositoryConfigurations) {
+
+                def baseUri = repo.uri
+                def text = new URL("${baseUri}/org/grails/profiles").text
+                text.eachMatch(/<a href="([a-z-]+)\/">.+/) { List<String> it ->
+                    profileNames.add it[1]
+                }
+            }
+
+            for(name in profileNames) {
+                grapeEngine.grab(group: 'org.grails.profiles', module: name, version: 'LATEST')
+            }
+
+            processUrls()
+            resolved = true
+        }
         return super.getAllProfiles()
     }
 }
