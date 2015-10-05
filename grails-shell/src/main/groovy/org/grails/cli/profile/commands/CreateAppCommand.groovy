@@ -86,7 +86,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
             for(Profile p : profiles) {
                 String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.text : null
-                copySkeleton(profileInstance, profileRepository.getProfileDirectory(p.getName()))
+                copySkeleton(profileInstance, p)
 
 
                 if(!applicationYmlFile.exists()) {
@@ -124,17 +124,17 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         def ln = System.getProperty("line.separator")
         dependencies = dependencies.collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
-            "    ${dep.scope} \"${artifactStr}\""
-        }.join(ln)
+            "    ${dep.scope} \"${artifactStr}\"".toString()
+        }.unique().join(ln)
 
         buildDependencies = buildDependencies.collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
-            "        classpath \"${artifactStr}\""
-        }.join(ln)
+            "        classpath \"${artifactStr}\"".toString()
+        }.unique().join(ln)
 
         def buildPlugins = profile.buildPlugins.collect() { String name ->
             "apply plugin:\"$name\""
-        }.join(ln)
+        }.unique().join(ln)
 
         ant.replace(dir: targetDirectory) {
             replacefilter {
@@ -261,13 +261,14 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    private void copySkeleton(Profile profile, Resource profileDirectory) {
+    private void copySkeleton(Profile profile, Profile participatingProfile) {
 
+        def buildMergeProfileNames = profile.buildMergeProfileNames
         def excludes = profile.configuration.navigate("skeleton", "excludes") ?: []
 
         AntBuilder ant = new GrailsConsoleAntBuilder()
 
-        def skeletonResource = profileDirectory.createRelative("skeleton")
+        def skeletonResource = participatingProfile.profileDir.createRelative("skeleton")
         File srcDir
         if(skeletonResource instanceof FileSystemResource) {
             srcDir = skeletonResource.file
@@ -334,7 +335,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             }
         }
         else {
-            if(srcBuildFile.exists()) {
+            if(srcBuildFile.exists() && buildMergeProfileNames.contains(participatingProfile.name)) {
                 def concatFile = "${targetDirectory}/concat.gradle"
                 ant.move(file:buildFile, tofile: concatFile)
                 ant.concat destfile:buildFile, {
