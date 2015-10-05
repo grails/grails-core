@@ -37,6 +37,10 @@ import java.util.Map;
 public interface Profile {
 
     /**
+     * @return The profile names to participate in build merge
+     */
+    List<String> getBuildMergeProfileNames();
+    /**
      * @return The list of build plugins for this profile
      */
     List<String> getBuildPlugins();

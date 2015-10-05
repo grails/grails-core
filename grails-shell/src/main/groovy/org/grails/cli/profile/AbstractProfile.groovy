@@ -16,6 +16,7 @@
 package org.grails.cli.profile
 
 import grails.util.CosineSimilarity
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
@@ -52,6 +53,7 @@ abstract class AbstractProfile implements Profile {
     protected List<String> buildPlugins = []
     protected List<String> buildExcludes = []
     protected final List<Command> internalCommands = []
+    protected List<String> buildMerge = null
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
 
@@ -137,7 +139,23 @@ abstract class AbstractProfile implements Profile {
 
         this.buildPlugins = (List<String>)navigableConfig.get("build.plugins", [])
         this.buildExcludes = (List<String>)navigableConfig.get("build.excludes", [])
+        this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
 
+    }
+
+    @Override
+    List<String> getBuildMergeProfileNames() {
+        if(buildMerge != null) {
+             return this.buildMerge
+        }
+        else {
+            List<String> mergeNames = []
+            for(parent in getExtends()) {
+                mergeNames.add(parent.name)
+            }
+            mergeNames.add(name)
+            return mergeNames
+        }
     }
 
     @Override
