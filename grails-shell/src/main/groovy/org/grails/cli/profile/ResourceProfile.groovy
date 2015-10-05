@@ -20,16 +20,17 @@ import org.grails.config.NavigableMap
 import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
 /**
- * Simple disk based implementation of the {@link Profile} interface
+ * A profile that operates against abstract {@link Resource} references
+ *
  *
  * @since 3.0
  * @author Lari Hotari
  * @author Graeme Rocher
  */
 @CompileStatic
-class DefaultProfile extends AbstractProfile implements Profile {
+class ResourceProfile extends AbstractProfile implements Profile {
 
-    protected DefaultProfile(String name, Resource profileDir) {
+    protected ResourceProfile(String name, Resource profileDir) {
         super(profileDir)
         super.name = name
     }
@@ -40,7 +41,7 @@ class DefaultProfile extends AbstractProfile implements Profile {
     }
 
     public static Profile create(ProfileRepository repository, String name, Resource profileDir) {
-        Profile profile = new DefaultProfile(name, profileDir)
+        Profile profile = new ResourceProfile(name, profileDir)
         profile.initialize(repository)
         return profile
     }
@@ -72,7 +73,7 @@ class DefaultProfile extends AbstractProfile implements Profile {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
 
-        DefaultProfile that = (DefaultProfile) o
+        ResourceProfile that = (ResourceProfile) o
 
         if (name != that.name) return false
 

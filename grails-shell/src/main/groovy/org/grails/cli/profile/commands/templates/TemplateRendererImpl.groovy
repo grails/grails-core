@@ -239,6 +239,12 @@ class TemplateRendererImpl implements TemplateRenderer, ProfileRepositoryAware {
     Resource template(Object location) {
         Resource f = resource(file("src/main/templates/$location"))
         if(!f?.exists()) {
+            if( file('profile.yml').exists()  ) {
+                f = resource( file("templates/$location") )
+                if(f.exists()) {
+                    return f
+                }
+            }
             if(profile) {
                 def path = location.toString()
                 f = profile.getTemplate(path)

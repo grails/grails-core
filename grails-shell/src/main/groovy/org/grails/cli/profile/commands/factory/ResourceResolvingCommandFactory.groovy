@@ -68,13 +68,19 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
             return [profileCommandsResolver]
         }
         else {
-            def localCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions) {
+            def localCommandsResolver1 = new FileSystemCommandResourceResolver(matchingFileExtensions) {
                 @Override
                 protected Resource getCommandsDirectory(Profile profile) {
                     return new FileSystemResource("${BuildSettings.BASE_DIR}/src/main/scripts/" )
                 }
             }
-            return [profileCommandsResolver, localCommandsResolver, new ClasspathCommandResourceResolver(matchingFileExtensions) ]
+            def localCommandsResolver2 = new FileSystemCommandResourceResolver(matchingFileExtensions) {
+                @Override
+                protected Resource getCommandsDirectory(Profile profile) {
+                    return new FileSystemResource("${BuildSettings.BASE_DIR}/commands/" )
+                }
+            }
+            return [profileCommandsResolver, localCommandsResolver1, localCommandsResolver2, new ClasspathCommandResourceResolver(matchingFileExtensions) ]
         }
     }
 

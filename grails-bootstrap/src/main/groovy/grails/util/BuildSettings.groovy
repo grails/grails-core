@@ -52,9 +52,13 @@ class BuildSettings {
     public static final String MAIN_CLASS_NAME = "org.grails.MAIN_CLASS_NAME"
 
     /**
+     * The name of the profile being used
+     */
+    public static final String PROFILE = "grails.profile"
+    /**
      * Specifies the profile repositories to use
      */
-    public static final String PROFILE_REPOSITORIES = "grails.profile.repositories"
+    public static final String PROFILE_REPOSITORIES = "grails.profiles.repositories"
 
     public static final String BUILD_SCOPE = "build"
     public static final String COMPILE_SCOPE = "compile"
@@ -286,7 +290,7 @@ class BuildSettings {
     /**
      * The target directory of the project, null outside of the development environment
      */
-    public static final File TARGET_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_TARGET_DIR) ? new File(System.getProperty(PROJECT_TARGET_DIR)) : new File(BASE_DIR, "build"))
+    public static final File TARGET_DIR = new File(BASE_DIR, "build")
     /**
      * The resources directory of the project, null outside of the development environment
      */
