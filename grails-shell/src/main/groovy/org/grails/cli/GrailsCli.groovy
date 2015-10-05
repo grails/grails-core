@@ -48,6 +48,7 @@ import org.grails.config.CodeGenConfig
 import org.grails.config.NavigableMap
 import org.grails.exceptions.ExceptionUtils
 import org.grails.gradle.plugin.model.GrailsClasspath
+import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
 
 import java.util.concurrent.*
 
@@ -106,6 +107,7 @@ class GrailsCli {
     CodeGenConfig applicationConfig
     ProjectContext projectContext
     Profile profile = null
+    List<RepositoryConfiguration> profileRepositories = [MavenProfileRepository.DEFAULT_REPO]
 
     /**
      * Obtains a value from USER_HOME/.grails/settings.yml
@@ -202,7 +204,7 @@ class GrailsCli {
 
 
         if(mainCommandLine.hasOption(CommandLine.HELP_ARGUMENT) || mainCommandLine.hasOption('h')) {
-            profileRepository = new MavenProfileRepository()
+            profileRepository = createMavenProfileRepository()
             def cmd = CommandRegistry.getCommand("help", profileRepository)
             cmd.handle(createExecutionContext(mainCommandLine))
             exit(0)
@@ -215,7 +217,7 @@ class GrailsCli {
         File grailsAppDir=new File("grails-app")
         File applicationGroovy =new File("Application.groovy")
         if(!grailsAppDir.isDirectory() && !applicationGroovy.exists()) {
-            profileRepository = new MavenProfileRepository()
+            profileRepository = createMavenProfileRepository()
             if(!mainCommandLine || !mainCommandLine.commandName) {
                 return getBaseUsage()
             }
@@ -255,6 +257,25 @@ class GrailsCli {
             }
         }
         return 0
+    }
+
+    protected MavenProfileRepository createMavenProfileRepository() {
+        def profileRepos = getSetting(BuildSettings.PROFILE_REPOSITORIES, Map.class, Collections.emptyMap())
+        if(!profileRepos.isEmpty()) {
+            profileRepositories.clear()
+            for (repoName in profileRepos.keySet()) {
+                def data = profileRepos.get(repoName)
+                if(data instanceof Map) {
+                    def uri = data.get("url")
+                    def snapshots = data.get('snapshotsEnabled')
+                    if(uri != null) {
+                        boolean enableSnapshots = snapshots != null ? Boolean.valueOf(snapshots.toString()) : false
+                        profileRepositories.add( new RepositoryConfiguration(repoName.toString(), new URI(uri.toString()), enableSnapshots))
+                    }
+                }
+            }
+        }
+        return new MavenProfileRepository(profileRepositories)
     }
 
     protected void outputMissingArgumentsMessage(Command cmd) {
@@ -401,7 +422,7 @@ class GrailsCli {
 
         populateContextLoader()
 
-        String profileName = applicationConfig.navigate('grails', 'profile') ?: DEFAULT_PROFILE_NAME
+        String profileName = applicationConfig.navigate('grails', 'profile') ?: getSetting("grails.profile", String, DEFAULT_PROFILE_NAME)
         this.profile = profileRepository.getProfile(profileName)
 
         if(profile == null) {

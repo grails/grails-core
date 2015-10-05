@@ -35,6 +35,8 @@ import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
 @CompileStatic
 class MavenProfileRepository extends AbstractJarProfileRepository {
 
+    public static final RepositoryConfiguration DEFAULT_REPO = new RepositoryConfiguration("grailsCentral", new URI("https://repo.grails.org/grails/core"), true)
+
     List<RepositoryConfiguration> repositoryConfigurations
     AetherGrapeEngine grapeEngine
     GroovyClassLoader classLoader
@@ -47,7 +49,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     }
 
     MavenProfileRepository() {
-        this.repositoryConfigurations = [new RepositoryConfiguration("grailsCentral", new URI("https://repo.grails.org/grails/core"), true)]
+        this.repositoryConfigurations = [DEFAULT_REPO]
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader)
         this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, new DependencyResolutionContext())
     }
