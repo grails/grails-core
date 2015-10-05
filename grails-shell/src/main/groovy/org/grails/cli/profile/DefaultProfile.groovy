@@ -15,21 +15,10 @@
  */
 package org.grails.cli.profile
 
-import grails.util.CosineSimilarity
-import grails.util.Environment
 import groovy.transform.CompileStatic
-import jline.console.completer.ArgumentCompleter
-import jline.console.completer.Completer
-import org.grails.build.parsing.CommandLine
-import org.grails.build.parsing.ScriptNameResolver
-import org.grails.cli.interactive.completers.StringsCompleter
-import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.config.NavigableMap
-import org.grails.io.support.PathMatchingResourcePatternResolver
 import org.grails.io.support.Resource
-import org.grails.io.support.StaticResourceLoader
-import org.yaml.snakeyaml.Yaml;
-
+import org.yaml.snakeyaml.Yaml
 /**
  * Simple disk based implementation of the {@link Profile} interface
  *

@@ -15,7 +15,6 @@
  */
 package org.grails.cli.profile.repository
 import groovy.transform.CompileStatic
-import org.grails.io.support.ClassPathResource
 
 /**
  * A JAR file repository that resolves profiles from a static array of JAR file URLs
