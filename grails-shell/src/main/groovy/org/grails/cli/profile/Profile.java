@@ -16,11 +16,13 @@
 package org.grails.cli.profile;
 
 import jline.console.completer.Completer;
+import org.eclipse.aether.graph.Dependency;
 import org.grails.config.NavigableMap;
 import org.grails.io.support.Resource;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,6 +35,16 @@ import java.util.Map;
  * @since 3.0
  */
 public interface Profile {
+
+    /**
+     * @return The list of build plugins for this profile
+     */
+    List<String> getBuildPlugins();
+    /**
+     * @return The dependency definitions for this profile
+     */
+    List<Dependency> getDependencies();
+
     /**
      * @return The profiles configuration
      */

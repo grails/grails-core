@@ -20,8 +20,11 @@ import grails.build.logging.GrailsConsole
 import grails.io.IOUtils
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.eclipse.aether.artifact.Artifact
+import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.profile.*
@@ -85,6 +88,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                 String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.text : null
                 copySkeleton(profileInstance, profileRepository.getProfileDirectory(p.getName()))
 
+
                 if(!applicationYmlFile.exists()) {
                     applicationYmlFile = new File('application.yml')
                 }
@@ -92,6 +96,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                     appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
                 }
             }
+            replaceBuildTokens(profileInstance, targetDirectory)
             executionContext.console.addStatus(
                 "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
             )
@@ -100,6 +105,60 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         else {
             System.err.println "Cannot find profile $profileName"
             return false
+        }
+    }
+
+    @CompileDynamic
+    protected void replaceBuildTokens(Profile profile, File targetDirectory) {
+        AntBuilder ant = new GrailsConsoleAntBuilder()
+
+        def profileDependencies = profile.dependencies
+        def dependencies = profileDependencies.findAll() { Dependency dep ->
+            dep.scope != 'build'
+        }
+        def buildDependencies = profileDependencies.findAll() { Dependency dep ->
+            dep.scope == 'build'
+        }
+
+
+        def ln = System.getProperty("line.separator")
+        dependencies = dependencies.collect() { Dependency dep ->
+            String artifactStr = resolveArtifactString(dep)
+            "    ${dep.scope} \"${artifactStr}\""
+        }.join(ln)
+
+        buildDependencies = buildDependencies.collect() { Dependency dep ->
+            String artifactStr = resolveArtifactString(dep)
+            "        classpath \"${artifactStr}\""
+        }.join(ln)
+
+        def buildPlugins = profile.buildPlugins.collect() { String name ->
+            "apply plugin:\"$name\""
+        }.join(ln)
+
+        ant.replace(dir: targetDirectory) {
+            replacefilter {
+                replacetoken("@buildPlugins@")
+                replacevalue(buildPlugins)
+            }
+            replacefilter {
+                replacetoken("@dependencies@")
+                replacevalue(dependencies)
+            }
+            replacefilter {
+                replacetoken("@buildDependencies@")
+                replacevalue(buildDependencies)
+            }
+            replacefilter {
+                replacetoken("@buildPlugins@")
+                replacevalue(buildDependencies)
+            }
+            variables.each { k, v ->
+                replacefilter {
+                    replacetoken("@${k}@".toString())
+                    replacevalue(v)
+                }
+            }
         }
     }
 
@@ -229,6 +288,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                 for(exc in excludes) {
                     exclude name: exc
                 }
+                exclude name:"build.gradle"
                 binaryFileExtensions.each { ext ->
                     exclude(name: "**/*.${ext}")
                 }
@@ -254,6 +314,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                 for(exc in excludes) {
                     exclude name: exc
                 }
+                exclude name:"build.gradle"
             }
             mapper {
                 filtermapper {
@@ -263,6 +324,37 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                 }
             }
         }
+
+
+        def buildFile = new File(targetDirectory, "build.gradle")
+        def srcBuildFile = new File(srcDir, "build.gradle")
+        if(!buildFile.exists()) {
+            if(srcBuildFile.exists()) {
+                ant.copy file:srcBuildFile, tofile:buildFile
+            }
+        }
+        else {
+            if(srcBuildFile.exists()) {
+                def concatFile = "${targetDirectory}/concat.gradle"
+                ant.move(file:buildFile, tofile: concatFile)
+                ant.concat destfile:buildFile, {
+                   path {
+                       pathelement location: concatFile
+                       pathelement location:srcBuildFile
+                   }
+                }
+                ant.delete(file:concatFile, failonerror: false)
+            }
+        }
+
+
         ant.chmod(file: "${targetDirectory}/gradlew", perm: 'u+x')
+    }
+
+    protected String resolveArtifactString(Dependency dep) {
+        def artifact = dep.artifact
+        def v = artifact.version.replace('BOM', '')
+
+        return v ? "${artifact.groupId}:${artifact.artifactId}:${v}" : "${artifact.groupId}:${artifact.artifactId}"
     }
 }

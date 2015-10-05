@@ -19,11 +19,18 @@ import grails.util.CosineSimilarity
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
+import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.graph.Dependency
+import org.eclipse.aether.graph.Exclusion
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
 import org.grails.build.parsing.ScriptNameResolver
 import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.cli.profile.commands.DefaultMultiStepCommand
+import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import org.grails.config.NavigableMap
 import org.grails.io.support.Resource
+import org.yaml.snakeyaml.Yaml
 
 
 /**
@@ -37,13 +44,130 @@ abstract class AbstractProfile implements Profile {
     protected final Resource profileDir
     protected String name
     protected List<Profile> parentProfiles
-    protected Map<String, Object> profileConfig
     protected Map<String, Command> commandsByName
     protected NavigableMap navigableConfig
     protected ProfileRepository profileRepository
+    protected List<Dependency> dependencies = []
+    protected List<String> parentNames = []
+    protected List<String> buildPlugins = []
+    protected List<String> buildExcludes = []
+    protected final List<Command> internalCommands = []
+    final ClassLoader classLoader
+    protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
 
     AbstractProfile(Resource profileDir) {
+        classLoader = Thread.currentThread().contextClassLoader
         this.profileDir = profileDir
+    }
+
+    AbstractProfile(Resource profileDir, ClassLoader classLoader) {
+        this.classLoader = classLoader
+        this.profileDir = profileDir
+    }
+
+    protected void initialize() {
+        def profileYml = profileDir.createRelative("profile.yml")
+        def profileConfig = (Map<String, Object>) new Yaml().loadAs(profileYml.getInputStream(), Map)
+
+        name = profileConfig.get("name")?.toString()
+
+        def parents = profileConfig.get("extends")
+        if(parents) {
+            parentNames = parents.toString().split(',').collect() { String name -> name.trim() }
+        }
+        if(this.name == null) {
+            throw new IllegalStateException("Profile name not set. Profile for path ${profileDir.URL} is invalid")
+        }
+        def map = new NavigableMap()
+        map.merge(profileConfig)
+        navigableConfig = map
+        def commandsByName = profileConfig.get("commands")
+        if(commandsByName instanceof Map) {
+            def commandsMap = (Map) commandsByName
+            for(clsName in  commandsMap.keySet()) {
+                def fileName = commandsMap[clsName].toString()
+                if(fileName.endsWith(".groovy")) {
+                    GroovyScriptCommand cmd = (GroovyScriptCommand)classLoader.loadClass(clsName.toString()).newInstance()
+                    cmd.profile = this
+                    cmd.profileRepository = profileRepository
+                    internalCommands.add cmd
+                }
+                else if(fileName.endsWith('.yml')) {
+                    def yamlCommand = profileDir.createRelative("commands/$fileName")
+                    if(yamlCommand.exists()) {
+                        def data = new Yaml().loadAs(yamlCommand.getInputStream(), Map.class)
+                        Command cmd = new DefaultMultiStepCommand(clsName.toString(), this, data)
+                        Object minArguments = data?.minArguments
+                        cmd.minArguments = minArguments instanceof Integer ? (Integer)minArguments : 1
+                        internalCommands.add cmd
+                    }
+
+                }
+            }
+        }
+
+        def dependencyMap = profileConfig.get("dependencies")
+
+        if(dependencyMap instanceof Map) {
+            for(entry in ((Map)dependencyMap)) {
+                def scope = entry.key
+                def value = entry.value
+                if(value instanceof List) {
+                    if("excludes".equals(scope)) {
+                        List<Exclusion> exclusions =[]
+                        for(dep in ((List)value)) {
+                            def artifact = new DefaultArtifact(dep.toString())
+                            exclusions.add new Exclusion(artifact.groupId ?: null, artifact.artifactId ?: null, artifact.classifier ?: null, artifact.extension ?: null)
+                        }
+                        exclusionDependencySelector = new ExclusionDependencySelector(exclusions)
+                    }
+                    else {
+
+                        for(dep in ((List)value)) {
+                            String coords = dep.toString()
+                            if(coords.count(':') == 1) {
+                                coords = "$coords:BOM"
+                            }
+                            dependencies.add new Dependency(new DefaultArtifact(coords),scope.toString())
+                        }
+                    }
+                }
+            }
+        }
+
+        this.buildPlugins = (List<String>)navigableConfig.get("build.plugins", [])
+        this.buildExcludes = (List<String>)navigableConfig.get("build.excludes", [])
+
+    }
+
+    @Override
+    List<String> getBuildPlugins() {
+        List<String> calculatedPlugins = []
+        def parents = getExtends()
+        for(profile in parents) {
+            def dependencies = profile.buildPlugins
+            for(dep in dependencies) {
+                if(!buildExcludes.contains(dep))
+                    calculatedPlugins.add(dep)
+            }
+        }
+        calculatedPlugins.addAll(buildPlugins)
+        return calculatedPlugins
+    }
+
+    List<Dependency> getDependencies() {
+        List<Dependency> calculatedDependencies = []
+        def parents = getExtends()
+        for(profile in parents) {
+            def dependencies = profile.dependencies
+            for(dep in dependencies) {
+                if(exclusionDependencySelector.selectDependency(dep)) {
+                    calculatedDependencies.add(dep)
+                }
+            }
+        }
+        calculatedDependencies.addAll(dependencies)
+        return calculatedDependencies
     }
 
     ProfileRepository getProfileRepository() {
@@ -71,7 +195,13 @@ abstract class AbstractProfile implements Profile {
 
     @Override
     public Iterable<Profile> getExtends() {
-        return parentProfiles;
+        return parentNames.collect() { String name ->
+            def parent = profileRepository.getProfile(name)
+            if(parent == null) {
+                throw new IllegalStateException("Profile [$name] declares and invalid dependency on parent profile [$name]")
+            }
+            return parent
+        }
     }
 
     @Override
