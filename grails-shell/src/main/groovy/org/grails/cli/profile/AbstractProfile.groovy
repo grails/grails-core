@@ -167,14 +167,7 @@ abstract class AbstractProfile implements Profile {
 
     @Override
     Iterable<Feature> getDefaultFeatures() {
-        Set<String> calculatedFeatureNames = []
-        def parents = getExtends()
-        for(profile in parents) {
-            calculatedFeatureNames.addAll profile.defaultFeatures.collect()  { Feature f -> f.name }
-        }
-        calculatedFeatureNames.addAll(defaultFeaturesNames)
-
-        getFeatures().findAll() { Feature f -> calculatedFeatureNames.contains(f.name) }
+        getFeatures().findAll() { Feature f -> defaultFeaturesNames.contains(f.name) }
     }
 
     @Override
