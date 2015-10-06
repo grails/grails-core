@@ -44,6 +44,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     public static final String NAME = "create-app"
     public static final String PROFILE_FLAG = "profile"
     public static final String FEATURES_FLAG = "features"
+    public static final String ENCODING = System.getProperty("file.encoding") ?: "UTF-8"
     ProfileRepository profileRepository
     Map<String, String> variables = [:]
     String appname
@@ -90,7 +91,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
             for(Profile p : profiles) {
-                String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText("UTF-8") : null
+                String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText(ENCODING) : null
                 copySkeleton(profileInstance, p)
 
                 if(applicationYmlFile.exists()) {
@@ -100,9 +101,15 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
             for(Feature f in features) {
                 def featureConfig = f.location.createRelative("skeleton/grails-app/conf/application.yml")
+                def featureBuild = f.location.createRelative("skeleton/build.gradle")
 
                 if(applicationYmlFile.exists() && featureConfig.exists()) {
-                    appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText("UTF-8"))
+                    appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText(ENCODING))
+                }
+
+                if(featureBuild.exists()) {
+                    def buildFile = new File(targetDirectory, "build.gradle")
+                    buildFile.text = buildFile.getText(ENCODING) + featureBuild.inputStream.getText(ENCODING)
                 }
             }
 
