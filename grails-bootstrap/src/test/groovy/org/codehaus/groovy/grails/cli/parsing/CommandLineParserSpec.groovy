@@ -337,7 +337,7 @@ class CommandLineParserSpec extends Specification {
     void "Test that parseString handles quoted arguments with double quotes"() {
        when:
             def parser = new CommandLineParser()
-            def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml"')
+            def cl = parser.parseString('refresh-dependencies "file with spaces.xml" --include-sources')
 
         then:
             cl.commandName == 'refresh-dependencies'
@@ -349,7 +349,7 @@ class CommandLineParserSpec extends Specification {
     void "Test that parseString handles quoted arguments with single quotes"() {
         when:
             def parser = new CommandLineParser()
-            def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml'")
+            def cl = parser.parseString("refresh-dependencies 'file with spaces.xml' --include-sources")
 
         then:
             cl.commandName == 'refresh-dependencies'
@@ -360,10 +360,24 @@ class CommandLineParserSpec extends Specification {
             cl.optionValue('include-sources') == true
     }
 
+    void "Test that parseString handles quoted flags with single quotes"() {
+        when:
+        def parser = new CommandLineParser()
+        def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml'")
+
+        then:
+        cl.commandName == 'refresh-dependencies'
+        cl.systemProperties.size() == 0
+        cl.remainingArgs.size() == 0
+        cl.hasOption('include-sources')
+        cl.optionValue('include-sources') == 'file with spaces.xml'
+    }
+
+
     void "Test that parseString with unbalanced double quotes throws ParseException"() {
         when:
             def parser = new CommandLineParser()
-            def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml")
+            def cl = parser.parseString("refresh-dependencies 'file with spaces.xml --include-sources")
 
         then:
             thrown ParseException
