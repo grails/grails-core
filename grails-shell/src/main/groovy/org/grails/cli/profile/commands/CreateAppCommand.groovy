@@ -42,6 +42,8 @@ import org.grails.io.support.Resource
 class CreateAppCommand implements Command, ProfileRepositoryAware {
     private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='3.0.0.BUILD-SNAPSHOT'
     public static final String NAME = "create-app"
+    public static final String PROFILE_FLAG = "profile"
+    public static final String FEATURES_FLAG = "features"
     ProfileRepository profileRepository
     Map<String, String> variables = [:]
     String appname
@@ -58,6 +60,8 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     protected void populateDescription() {
         description.argument(name: "Application Name", description: "The name of the application to create.", required: false)
         description.flag(name: "inplace", description: "Used to create an application using the current directory")
+        description.flag(name: PROFILE_FLAG, description: "The profile to use", required:false)
+        description.flag(name: FEATURES_FLAG, description: "The features to use", required:false)
     }
 
     @Override
@@ -75,6 +79,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         def profileName = evaluateProfileName(mainCommandLine)
 
         Profile profileInstance = profileRepository.getProfile(profileName)
+        List<Feature> features = evaluateFeatures(profileInstance, mainCommandLine).toList()
         if(profileInstance) {
 
             if( !initializeVariables(profileInstance, mainCommandLine) ) {
@@ -85,18 +90,23 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
             for(Profile p : profiles) {
-                String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.text : null
+                String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText("UTF-8") : null
                 copySkeleton(profileInstance, p)
 
-
-                if(!applicationYmlFile.exists()) {
-                    applicationYmlFile = new File('application.yml')
-                }
                 if(applicationYmlFile.exists()) {
                     appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
                 }
             }
-            replaceBuildTokens(profileInstance, targetDirectory)
+
+            for(Feature f in features) {
+                def featureConfig = f.location.createRelative("skeleton/grails-app/conf/application.yml")
+
+                if(applicationYmlFile.exists() && featureConfig.exists()) {
+                    appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText("UTF-8"))
+                }
+            }
+
+            replaceBuildTokens(profileInstance, features, targetDirectory)
             executionContext.console.addStatus(
                 "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
             )
@@ -109,7 +119,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
     }
 
     @CompileDynamic
-    protected void replaceBuildTokens(Profile profile, File targetDirectory) {
+    protected void replaceBuildTokens(Profile profile, List<Feature> features, File targetDirectory) {
         AntBuilder ant = new GrailsConsoleAntBuilder()
 
         def profileDependencies = profile.dependencies
@@ -120,6 +130,11 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             dep.scope == 'build'
         }
 
+
+        for(Feature f in features) {
+            dependencies.addAll f.dependencies.findAll(){ Dependency dep -> dep.scope != 'build'}
+            buildDependencies.addAll f.dependencies.findAll(){ Dependency dep -> dep.scope == 'build'}
+        }
 
         def ln = System.getProperty("line.separator")
         dependencies = dependencies.collect() { Dependency dep ->
@@ -134,7 +149,15 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
         def buildPlugins = profile.buildPlugins.collect() { String name ->
             "apply plugin:\"$name\""
-        }.unique().join(ln)
+        }
+
+        for(Feature f in features) {
+            buildPlugins.addAll f.buildPlugins.collect() { String name ->
+                "apply plugin:\"$name\""
+            }
+        }
+
+        buildPlugins = buildPlugins.unique().join(ln)
 
         ant.replace(dir: targetDirectory) {
             replacefilter {
@@ -164,6 +187,17 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
     protected String evaluateProfileName(CommandLine mainCommandLine) {
         mainCommandLine.optionValue('profile')?.toString() ?: getDefaultProfile()
+    }
+
+    protected Iterable<Feature> evaluateFeatures(Profile profile, CommandLine commandLine) {
+        def requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',')
+        if(requestedFeatures) {
+            def featureNames = Arrays.asList(requestedFeatures)
+            return profile.features.findAll() { Feature f -> featureNames.contains(f.name)}
+        }
+        else {
+            return profile.defaultFeatures
+        }
     }
 
     protected String getDefaultProfile() {
