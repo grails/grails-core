@@ -16,6 +16,7 @@
 package org.grails.gradle.plugin.publishing
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.BintrayPlugin
+import grails.util.GrailsNameUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -252,6 +253,10 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
         }
 
         def installTask = taskContainer.findByName("install")
+        def bintrayUploadTask = taskContainer.findByName('bintrayUpload')
+        if(bintrayUploadTask != null) {
+            taskContainer.create(name:"publish${GrailsNameUtils.getClassName(defaultClassifier)}", dependsOn: bintrayUploadTask)
+        }
         if(installTask == null) {
             def publishToMavenLocal = taskContainer.findByName("publishToMavenLocal")
             if(publishToMavenLocal != null) {
@@ -274,12 +279,16 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
 
     protected Map<String, String> getDefaultExtraArtifact(Project project) {
         [source: "${project.sourceSets.main.output.classesDir}/META-INF/grails-plugin.xml".toString(),
-         classifier: "plugin",
+         classifier: getDefaultClassifier(),
          extension: 'xml']
     }
 
+    protected String getDefaultClassifier() {
+        "plugin"
+    }
+
     protected String getDefaultDescription(Project project) {
-        "Grails ${project.name} plugin"
+        "Grails ${project.name} $defaultClassifier"
     }
 
     protected String getDefaultRepo() {

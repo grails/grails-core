@@ -45,13 +45,13 @@ class GrailsProfilePublishGradlePlugin extends GrailsCentralPublishGradlePlugin 
     @Override
     protected Map<String, String> getDefaultExtraArtifact(Project project) {
         [source: "${project.buildDir}/classes/profile/META-INF/grails-profile/profile.yml".toString(),
-         classifier: "profile",
+         classifier: defaultClassifier,
          extension : 'yml']
     }
 
     @Override
-    protected String getDefaultDescription(Project project) {
-        "Grails ${project.name} profile"
+    protected String getDefaultClassifier() {
+        'profile'
     }
 
     @Override
