@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,40 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grails.cli.profile.commands
 
-import groovy.transform.CompileStatic
-import org.grails.build.parsing.CommandLine
 
 
 /**
- * A command for creating a plugin
- *
+ *  Creates a profile
  *
  * @author Graeme Rocher
- * @since 3.0
+ * @since 3.1
  */
-@CompileStatic
-class CreatePluginCommand extends CreateAppCommand {
+class CreateProfileCommand extends CreateAppCommand {
+    public static final String NAME = "create-profile"
 
-    public static final String NAME = "create-plugin"
-
-    CreatePluginCommand() {
-        description.description = "Creates a plugin"
-        description.usage = "create-plugin [NAME]"
+    CreateProfileCommand() {
+        description.description = "Creates a profile"
+        description.usage = "create-profile [NAME]"
     }
 
     @Override
     protected void populateDescription() {
-        description.argument(name: "Plugin Name", description: "The name of the plugin to create.", required: false)
+        description.argument(name: "Profile Name", description: "The name of the plugin to create.", required: false)
     }
 
     @Override
     String getName() { NAME }
 
     @Override
-    protected String getDefaultProfile() { "web-plugin" }
-
+    protected String getDefaultProfile() { "profile" }
 
 }
