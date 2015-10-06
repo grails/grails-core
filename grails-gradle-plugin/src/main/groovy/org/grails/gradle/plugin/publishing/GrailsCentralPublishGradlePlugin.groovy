@@ -225,7 +225,7 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             pkg {
                 repo = bintrayRepo
                 userOrg = bintrayOrg
-                name = "$project.group:$project.name"
+                name = "$project.name"
                 desc = bintrayDescription
                 websiteUrl = bintraySiteUrl
                 issueTrackerUrl = bintrayIssueTrackerUrl
