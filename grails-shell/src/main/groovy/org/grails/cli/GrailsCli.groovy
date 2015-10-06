@@ -24,6 +24,7 @@ import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import jline.UnixTerminal
+import jline.console.ConsoleReader
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
@@ -75,6 +76,7 @@ class GrailsCli {
     private static ExecutionContext currentExecutionContext = null
 
     private static boolean interactiveModeActive
+    private static boolean tiggerAppLoad = false
     private static final NavigableMap SETTINGS_MAP = new NavigableMap()
 
     static {
@@ -172,6 +174,10 @@ class GrailsCli {
         return interactiveModeActive
     }
 
+    static void tiggerAppLoad() {
+        GrailsCli.tiggerAppLoad = true
+    }
+
     private int getBaseUsage() {
         System.out.println "Usage: \n\t $USAGE_MESSAGE \n\t $PLUGIN_USAGE_MESSAGE \n\n"
         this.execute "list-profiles"
@@ -244,6 +250,7 @@ class GrailsCli {
                 } ] as Profile
 
                 startInteractiveMode(console)
+                return 0
             }
             def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
             if(cmd) {
@@ -262,29 +269,33 @@ class GrailsCli {
             }
 
         } else {
-            applicationConfig = loadApplicationConfig()
-            if(profileYml.exists()) {
-                // use the profile for profiles
-                applicationConfig.put(BuildSettings.PROFILE, "profile")
-            }
-        
-            def commandName = mainCommandLine.commandName
-            GrailsConsole console = GrailsConsole.instance
-            console.ansiEnabled = !mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT)
-            console.defaultInputMask = defaultInputMask
-            if(ansiEnabled != null) {
-                console.ansiEnabled = ansiEnabled
-            }
-            File baseDir = new File(".").canonicalFile
-            projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
-            initializeProfile()
-            if(commandName) {
+            initializeApplication(mainCommandLine)
+            if(mainCommandLine.commandName) {
                 return handleCommand(mainCommandLine) ? 0 : 1
             } else {
                 handleInteractiveMode()
             }
         }
         return 0
+    }
+
+    protected void initializeApplication(CommandLine mainCommandLine) {
+        applicationConfig = loadApplicationConfig()
+        File profileYml = new File("profile.yml")
+        if (profileYml.exists()) {
+            // use the profile for profiles
+            applicationConfig.put(BuildSettings.PROFILE, "profile")
+        }
+
+        GrailsConsole console = GrailsConsole.instance
+        console.ansiEnabled = !mainCommandLine.hasOption(CommandLine.NOANSI_ARGUMENT)
+        console.defaultInputMask = defaultInputMask
+        if (ansiEnabled != null) {
+            console.ansiEnabled = ansiEnabled
+        }
+        File baseDir = new File(".").canonicalFile
+        projectContext = new ProjectContextImpl(console, baseDir, applicationConfig)
+        initializeProfile()
     }
 
     protected MavenProfileRepository createMavenProfileRepository() {
@@ -339,6 +350,16 @@ class GrailsCli {
                 }
 
                 if (profile.handleCommand(context)) {
+                    if(tiggerAppLoad) {
+                        console.updateStatus("Initializing application. Please wait...")
+                        try {
+                            initializeApplication(context.commandLine)
+                            GradleUtil.prepareConnection(projectContext.baseDir)
+                            setupCompleters()
+                        } finally {
+                            tiggerAppLoad = false
+                        }
+                    }
                     return true;
                 }
                 return false
@@ -354,20 +375,27 @@ class GrailsCli {
 
 
     private void handleInteractiveMode() {
+        GrailsConsole console = setupCompleters()
+        startInteractiveMode(console)
+    }
+
+    protected GrailsConsole setupCompleters() {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
         GrailsConsole console = projectContext.console
-        console.reader.setHandleUserInterrupt(true)
+
+        def consoleReader = console.reader
+        consoleReader.setHandleUserInterrupt(true)
         def completers = aggregateCompleter.getCompleters()
 
+        console.resetCompleters()
         // add bang operator completer
         completers.add(new ArgumentCompleter(
                 new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
         )
 
-        completers.addAll((profile.getCompleters(projectContext)?:[]) as Collection)
-        console.reader.addCompleter(aggregateCompleter)
-
-        startInteractiveMode(console)
+        completers.addAll((profile.getCompleters(projectContext) ?: []) as Collection)
+        consoleReader.addCompleter(aggregateCompleter)
+        return console
     }
 
     protected void startInteractiveMode(GrailsConsole console) {
@@ -386,8 +414,9 @@ class GrailsCli {
         boolean firstRun = true
         while(keepRunning) {
             try {
-                if(integrateGradle)
+                if(integrateGradle) {
                     GradleUtil.prepareConnection(projectContext.baseDir)
+                }
                 if(firstRun) {
                     console.addStatus("Enter a command name to run. Use TAB for completion:")
                     firstRun = false
@@ -407,8 +436,7 @@ class GrailsCli {
                 console.updateStatus("Build stopped.")
             }catch (UserInterruptException e) {
                 exitInteractiveMode()
-            } catch (Exception e) {
-                e.printStackTrace()
+            } catch (Throwable e) {
                 console.error "Caught exception ${e.message}", e
             }
         }

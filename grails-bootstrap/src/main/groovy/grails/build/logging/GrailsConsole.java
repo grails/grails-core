@@ -23,6 +23,7 @@ import static org.fusesource.jansi.Ansi.Erase.FORWARD;
 import grails.util.Environment;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
@@ -30,6 +31,7 @@ import jline.Terminal;
 import jline.TerminalFactory;
 import jline.UnixTerminal;
 import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
 import jline.internal.Log;
@@ -275,6 +277,21 @@ public class GrailsConsole implements ConsoleLogger {
         return terminal;
     }
 
+    public void resetCompleters() {
+        final ConsoleReader reader = getReader();
+        if(reader != null) {
+            Collection<Completer> completers = reader.getCompleters();
+            for (Completer completer : completers) {
+                reader.removeCompleter(completer);
+            }
+
+            // for some unknown reason / bug in JLine you have to iterate over twice to clear the completers (WTF)
+            completers = reader.getCompleters();
+            for (Completer completer : completers) {
+                reader.removeCompleter(completer);
+            }
+        }
+    }
     /**
      * Prepares a history file to be used by the ConsoleReader. This file
      * will live in the home directory of the user.
