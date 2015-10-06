@@ -56,13 +56,13 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
     CreateAppCommand() {
         populateDescription()
+        description.flag(name: "inplace", description: "Used to create an application using the current directory")
+        description.flag(name: PROFILE_FLAG, description: "The profile to use", required:false)
+        description.flag(name: FEATURES_FLAG, description: "The features to use", required:false)
     }
 
     protected void populateDescription() {
         description.argument(name: "Application Name", description: "The name of the application to create.", required: false)
-        description.flag(name: "inplace", description: "Used to create an application using the current directory")
-        description.flag(name: PROFILE_FLAG, description: "The profile to use", required:false)
-        description.flag(name: FEATURES_FLAG, description: "The features to use", required:false)
     }
 
     @Override
