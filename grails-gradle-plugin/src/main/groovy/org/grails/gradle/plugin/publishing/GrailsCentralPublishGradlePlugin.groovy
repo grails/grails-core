@@ -18,6 +18,7 @@ import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
@@ -252,8 +253,10 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
 
         def installTask = taskContainer.findByName("install")
         if(installTask == null) {
-
-            taskContainer.create(name:"install", dependsOn: taskContainer.withType(PublishToMavenLocal))
+            def publishToMavenLocal = taskContainer.findByName("publishToMavenLocal")
+            if(publishToMavenLocal != null) {
+                taskContainer.create(name:"install", dependsOn: publishToMavenLocal)
+            }
         }
     }
 
