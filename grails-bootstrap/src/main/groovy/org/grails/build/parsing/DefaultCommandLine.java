@@ -17,11 +17,7 @@ package org.grails.build.parsing;
 
 import grails.util.Environment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Implementation of the {@link CommandLine} interface.
@@ -32,8 +28,8 @@ import java.util.Properties;
 public class DefaultCommandLine implements CommandLine {
 
     Properties systemProperties = new Properties();
-    Map<String, Object> undeclaredOptions = new HashMap<String, Object>();
-    Map<String, SpecifiedOption> declaredOptions = new HashMap<String, SpecifiedOption>();
+    LinkedHashMap<String, Object> undeclaredOptions = new LinkedHashMap<>();
+    LinkedHashMap<String, SpecifiedOption> declaredOptions = new LinkedHashMap<String, SpecifiedOption>();
     List<String> remainingArgs = new ArrayList<String>();
     private String environment;
     private String commandName;
@@ -143,6 +139,18 @@ public class DefaultCommandLine implements CommandLine {
         }
         if (undeclaredOptions.containsKey(name)) {
             return undeclaredOptions.get(name);
+        }
+        return null;
+    }
+
+    @Override
+    public Map.Entry<String, Object> lastOption() {
+        final Iterator<Map.Entry<String, Object>> i = undeclaredOptions.entrySet().iterator();
+        while (i.hasNext()) {
+            Map.Entry<String, Object> next = i.next();
+            if(!i.hasNext()) {
+                return next;
+            }
         }
         return null;
     }

@@ -26,6 +26,7 @@ import groovy.transform.CompileStatic
 import jline.UnixTerminal
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
+import jline.console.completer.Completer
 import jline.internal.NonBlockingInputStream
 import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
@@ -40,7 +41,9 @@ import org.grails.cli.gradle.cache.MapReadingCachedGradleOperation
 import org.grails.cli.interactive.completers.EscapingFileNameCompletor
 import org.grails.cli.interactive.completers.RegexCompletor
 import org.grails.cli.interactive.completers.SortedAggregateCompleter
+import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.*
+import org.grails.cli.profile.commands.CommandCompleter
 import org.grails.cli.profile.commands.CommandRegistry
 import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.cli.profile.repository.StaticJarProfileRepository
@@ -220,7 +223,27 @@ class GrailsCli {
         if(!grailsAppDir.isDirectory() && !applicationGroovy.exists() && !profileYml.exists()) {
             profileRepository = createMavenProfileRepository()
             if(!mainCommandLine || !mainCommandLine.commandName) {
-                return getBaseUsage()
+                integrateGradle = false
+                    def console = GrailsConsole.getInstance()
+                // force resolve of all profiles
+                profileRepository.getAllProfiles()
+                def commandNames = CommandRegistry.findCommands(profileRepository).collect() { Command cmd -> cmd.name }
+                console.reader.addCompleter(new StringsCompleter(commandNames))
+                console.reader.addCompleter(new CommandCompleter(CommandRegistry.findCommands(profileRepository)))
+                profile = [handleCommand: { ExecutionContext context ->
+
+                    def name = context.commandLine.commandName
+                    def cmd = CommandRegistry.getCommand(name, profileRepository)
+                    if(cmd != null) {
+                        return cmd.handle(context)
+                    }
+                    else {
+                        console.error("Command not found [$name]")
+                        return false
+                    }
+                } ] as Profile
+
+                startInteractiveMode(console)
             }
             def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
             if(cmd) {
@@ -301,24 +324,27 @@ class GrailsCli {
     }
     
     Boolean handleCommand( ExecutionContext context ) {
+        def console = GrailsConsole.getInstance()
         synchronized(GrailsCli) {
             try {
                 currentExecutionContext = context
-                if(handleBuiltInCommands(context)) {
+                if (handleBuiltInCommands(context)) {
                     return true
                 }
 
-                def console = GrailsConsole.getInstance()
-                if(context.getCommandLine().hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
+                if (context.getCommandLine().hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
                     console.setStacktrace(true);
-                }
-                else {
+                } else {
                     console.setStacktrace(false);
                 }
-        
-                if(profile.handleCommand(context)) {
+
+                if (profile.handleCommand(context)) {
                     return true;
                 }
+                return false
+            }
+            catch(Throwable e) {
+                console.error("Command [${context.commandLine.commandName}] error: ${e.message}", e)
                 return false
             } finally {
                 currentExecutionContext = null
@@ -341,17 +367,20 @@ class GrailsCli {
         completers.addAll((profile.getCompleters(projectContext)?:[]) as Collection)
         console.reader.addCompleter(aggregateCompleter)
 
+        startInteractiveMode(console)
+    }
+
+    protected void startInteractiveMode(GrailsConsole console) {
         console.updateStatus("Starting interactive mode...")
         ExecutorService commandExecutor = Executors.newFixedThreadPool(1)
         try {
-            interactiveModeLoop(commandExecutor)
+            interactiveModeLoop(console, commandExecutor)
         } finally {
             commandExecutor.shutdownNow()
         }
     }
 
-    private void interactiveModeLoop(ExecutorService commandExecutor) {
-        GrailsConsole console = projectContext.console
+    private void interactiveModeLoop(GrailsConsole console, ExecutorService commandExecutor) {
         NonBlockingInputStream nonBlockingInput = (NonBlockingInputStream)console.reader.getInput()
         interactiveModeActive = true
         boolean firstRun = true
@@ -369,7 +398,7 @@ class GrailsCli {
                     exitInteractiveMode()
                 } else if (commandLine.trim()) {
                     if(nonBlockingInput.isNonBlockingEnabled()) {
-                        handleCommandWithCancellationSupport(commandLine, commandExecutor, nonBlockingInput)
+                        handleCommandWithCancellationSupport(console, commandLine, commandExecutor, nonBlockingInput)
                     } else {
                         handleCommand( cliParser.parseString(commandLine))
                     }
@@ -379,15 +408,16 @@ class GrailsCli {
             }catch (UserInterruptException e) {
                 exitInteractiveMode()
             } catch (Exception e) {
+                e.printStackTrace()
                 console.error "Caught exception ${e.message}", e
             }
         }
     }
 
-    private Boolean handleCommandWithCancellationSupport(String commandLine, ExecutorService commandExecutor, NonBlockingInputStream nonBlockingInput) {
+    private Boolean handleCommandWithCancellationSupport(GrailsConsole console, String commandLine, ExecutorService commandExecutor, NonBlockingInputStream nonBlockingInput) {
         ExecutionContext executionContext = createExecutionContext( cliParser.parseString(commandLine))
         Future<?> commandFuture = commandExecutor.submit({ handleCommand(executionContext) } as Callable<Boolean>)
-        def terminal = projectContext.console.reader.terminal
+        def terminal = console.reader.terminal
         if (terminal instanceof UnixTerminal) {
             ((UnixTerminal) terminal).disableInterruptCharacter()
         }
