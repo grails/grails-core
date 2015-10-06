@@ -18,6 +18,7 @@ package org.grails.cli.profile
 import grails.util.CosineSimilarity
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.ToString
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
 import org.eclipse.aether.artifact.DefaultArtifact
@@ -41,6 +42,7 @@ import org.yaml.snakeyaml.Yaml
  * @since 3.1
  */
 @CompileStatic
+@ToString(includes = ['name'])
 abstract class AbstractProfile implements Profile {
     protected final Resource profileDir
     protected String name
@@ -54,6 +56,8 @@ abstract class AbstractProfile implements Profile {
     protected List<String> buildExcludes = []
     protected final List<Command> internalCommands = []
     protected List<String> buildMerge = null
+    protected List<Feature> features = []
+    protected Set<String> defaultFeaturesNames = []
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
 
@@ -108,6 +112,24 @@ abstract class AbstractProfile implements Profile {
             }
         }
 
+        def featuresConfig = profileConfig.get("features")
+        if(featuresConfig instanceof Map) {
+            Map featureMap = (Map) featuresConfig
+            def featureList = (List) featureMap.get("provided") ?: Collections.emptyList()
+            def defaultFeatures = (List) featureMap.get("defaults") ?: Collections.emptyList()
+            for (fn in featureList) {
+                def featureData = profileDir.createRelative("features/${fn}/feature.yml")
+                if(featureData.exists()) {
+                    def f = new DefaultFeature(this, fn.toString(), profileDir.createRelative("features/$fn/"))
+                    features.add f
+                }
+            }
+
+            defaultFeaturesNames.addAll(defaultFeatures)
+        }
+
+
+
         def dependencyMap = profileConfig.get("dependencies")
 
         if(dependencyMap instanceof Map) {
@@ -141,6 +163,29 @@ abstract class AbstractProfile implements Profile {
         this.buildExcludes = (List<String>)navigableConfig.get("build.excludes", [])
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
 
+    }
+
+    @Override
+    Iterable<Feature> getDefaultFeatures() {
+        Set<String> calculatedFeatureNames = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedFeatureNames.addAll profile.defaultFeatures.collect()  { Feature f -> f.name }
+        }
+        calculatedFeatureNames.addAll(defaultFeaturesNames)
+
+        getFeatures().findAll() { Feature f -> calculatedFeatureNames.contains(f.name) }
+    }
+
+    @Override
+    Iterable<Feature> getFeatures() {
+        Set<Feature> calculatedFeatures = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedFeatures.addAll profile.features
+        }
+        calculatedFeatures.addAll(features)
+        return calculatedFeatures
     }
 
     @Override

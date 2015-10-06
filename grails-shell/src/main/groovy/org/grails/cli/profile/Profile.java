@@ -37,13 +37,26 @@ import java.util.Map;
 public interface Profile {
 
     /**
-     * @return The profile names to participate in build merge
+     * @return The name of the profile
      */
-    List<String> getBuildMergeProfileNames();
+    String getName();
+
     /**
-     * @return The list of build plugins for this profile
+     * @return The features for this profile
      */
-    List<String> getBuildPlugins();
+    Iterable<Feature> getFeatures();
+
+    /**
+     * @return The default features for this profile
+     */
+    Iterable<Feature> getDefaultFeatures();
+
+    /**
+     * The other {@link org.grails.cli.profile.Profile} instances that this {@link org.grails.cli.profile.Profile} extends
+     * @return zero or many {@link org.grails.cli.profile.Profile} instance that this profile extends from
+     */
+    Iterable<Profile> getExtends();
+
     /**
      * @return The dependency definitions for this profile
      */
@@ -76,10 +89,6 @@ public interface Profile {
     Command getCommand(ProjectContext context, String name);
 
 
-    /**
-     * @return The name of the profile
-     */
-    String getName();
 
     /**
      * The profile completers
@@ -110,9 +119,14 @@ public interface Profile {
      */
     boolean handleCommand(ExecutionContext context);
 
+
     /**
-     * The other {@link org.grails.cli.profile.Profile} instances that this {@link org.grails.cli.profile.Profile} extends
-     * @return zero or many {@link org.grails.cli.profile.Profile} instance that this profile extends from
+     * @return The profile names to participate in build merge
      */
-    Iterable<Profile> getExtends();
+    List<String> getBuildMergeProfileNames();
+    /**
+     * @return The list of build plugins for this profile
+     */
+    List<String> getBuildPlugins();
+
 }

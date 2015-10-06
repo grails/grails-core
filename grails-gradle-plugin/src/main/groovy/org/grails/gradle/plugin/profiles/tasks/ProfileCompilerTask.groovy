@@ -137,6 +137,27 @@ class ProfileCompilerTask extends AbstractCompile {
             profileData.put(PROFILE_COMMANDS, commandNames)
         }
 
+        if( profileYmlExists ) {
+            def parentDir = config.parentFile.canonicalFile
+            def featureDirs = new File(parentDir, "features").listFiles({ File f -> f.isDirectory() && !f.name.startsWith('.') } as FileFilter)
+            if(featureDirs) {
+                Map map = (Map)profileData.get("features")
+                if(map == null) {
+                    map = [:]
+                    profileData.put("features", map)
+                }
+                List featureNames = []
+                for(f in featureDirs) {
+                    featureNames.add f.name
+                }
+                if(featureNames) {
+                    map.put("provided", featureNames)
+                }
+                profileData.put("features", map)
+            }
+        }
+
+
         List<String> templates = []
         if(templatesDir?.exists()) {
             project.fileTree(templatesDir).visit { FileVisitDetails f ->
