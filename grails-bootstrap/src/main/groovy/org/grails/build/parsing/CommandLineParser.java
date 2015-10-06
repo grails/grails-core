@@ -185,6 +185,7 @@ public class CommandLineParser {
 
     private void parseInternal(DefaultCommandLine cl, String[] args, boolean firstArgumentIsCommand) {
         cl.setRawArguments(args);
+        String lastWasOption = null;
         for (String arg : args) {
             if (arg == null) continue;
             String trimmed = arg.trim();
@@ -193,9 +194,14 @@ public class CommandLineParser {
                     trimmed = trimmed.substring(1, trimmed.length() - 1);
                 }
                 if (trimmed.charAt(0) == '-') {
-                    processOption(cl, trimmed);
+                    lastWasOption = processOption(cl, trimmed);
                 }
                 else {
+                    if(lastWasOption != null) {
+                        cl.addUndeclaredOption(lastWasOption, trimmed);
+                        lastWasOption = null;
+                        continue;
+                    }
                     if (firstArgumentIsCommand && ENV_ARGS.containsKey(trimmed)) {
                         cl.setEnvironment(ENV_ARGS.get(trimmed));
                     }
@@ -237,14 +243,14 @@ public class CommandLineParser {
         return defaultCommandLine;
     }
 
-    protected void processOption(DefaultCommandLine cl, String arg) {
+    protected String processOption(DefaultCommandLine cl, String arg) {
         if (arg.length() < 2) {
-            return;
+            return null;
         }
 
         if (arg.charAt(1) == 'D' && arg.contains("=")) {
             processSystemArg(cl, arg);
-            return;
+            return null;
         }
 
         arg = (arg.charAt(1) == '-' ? arg.substring(2, arg.length()) : arg.substring(1, arg.length())).trim();
@@ -260,7 +266,7 @@ public class CommandLineParser {
             else {
                 cl.addUndeclaredOption(name, value);
             }
-            return;
+            return null;
         }
 
         validateOptionName(arg);
@@ -270,6 +276,7 @@ public class CommandLineParser {
         else {
             cl.addUndeclaredOption(arg);
         }
+        return arg;
     }
 
     private void validateOptionName(String name) {

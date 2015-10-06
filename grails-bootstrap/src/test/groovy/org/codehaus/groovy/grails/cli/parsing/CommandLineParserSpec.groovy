@@ -146,6 +146,38 @@ class CommandLineParserSpec extends Specification {
             cl.optionValue('host') == "localhost"
     }
 
+    void "Test parse command with environment, sys props, arguments and undeclared options with values no equals"() {
+        when:
+        def parser = new CommandLineParser()
+        def cl = parser.parse("prod", "run-app", "-DmyProp=value", "foo", "bar", "--host", "localhost")
+
+        then:
+        cl.commandName == 'run-app'
+        cl.environment == 'production'
+        cl.systemProperties.size() == 1
+        cl.systemProperties['myProp'] == 'value'
+        cl.remainingArgs.size() == 2
+        cl.remainingArgs == ['foo', 'bar']
+        cl.hasOption('host')
+        cl.optionValue('host') == "localhost"
+    }
+
+    void "Test parse multiple flag values"() {
+        when:
+        def parser = new CommandLineParser()
+        def cl = parser.parse("prod", "run-app", "--host", "localhost", "--port", "8081", "foo")
+
+        then:
+        cl.commandName == 'run-app'
+        cl.environment == 'production'
+        cl.remainingArgs.size() == 1
+        cl.remainingArgs[0] == 'foo'
+        cl.hasOption('host')
+        cl.optionValue('host') == "localhost"
+        cl.hasOption('port')
+        cl.optionValue('port') == "8081"
+    }
+
     void "Test parse command with environment, sys props with whitespaces, arguments and undeclared options with values"() {
         when:
             def parser = new CommandLineParser()
