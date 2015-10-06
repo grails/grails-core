@@ -98,18 +98,33 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
                     appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
                 }
             }
-
+            def ant = new GrailsConsoleAntBuilder()
             for(Feature f in features) {
-                def featureConfig = f.location.createRelative("skeleton/grails-app/conf/application.yml")
-                def featureBuild = f.location.createRelative("skeleton/build.gradle")
+                def location = f.location
+                def featureConfig = location.createRelative("skeleton/grails-app/conf/application.yml")
+                def featureBuild = location.createRelative("skeleton/build.gradle")
 
                 if(applicationYmlFile.exists() && featureConfig.exists()) {
                     appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText(ENCODING))
                 }
 
+
                 if(featureBuild.exists()) {
                     def buildFile = new File(targetDirectory, "build.gradle")
                     buildFile.text = buildFile.getText(ENCODING) + featureBuild.inputStream.getText(ENCODING)
+                }
+
+                File skeletonDir
+                if(location instanceof FileSystemResource) {
+                    skeletonDir = location.createRelative("skeleton").file
+                }
+                else {
+                    File tmpDir = unzipProfile(ant, location)
+                    skeletonDir = new File(tmpDir, "META-INF/grails-profile/features/$f.name/skeleton")
+                }
+
+                if(skeletonDir.exists()) {
+                    copySrcToTarget(ant, skeletonDir, ['grails-app/conf/application.yml'])
                 }
             }
 
@@ -123,6 +138,23 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             System.err.println "Cannot find profile $profileName"
             return false
         }
+    }
+
+    private Map<URL, File> unzippedDirectories = new LinkedHashMap<URL, File>()
+    @CompileDynamic
+    protected File unzipProfile(AntBuilder ant, Resource location) {
+
+        def url = location.URL
+        def tmpDir = unzippedDirectories.get(url)
+
+        if(tmpDir == null) {
+            def jarFile = IOUtils.findJarFile(url)
+            tmpDir = File.createTempDir()
+            tmpDir.deleteOnExit()
+            ant.unzip(src: jarFile, dest: tmpDir)
+            unzippedDirectories.put(url, tmpDir)
+        }
+        return tmpDir
     }
 
     @CompileDynamic
@@ -316,56 +348,11 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         }
         else {
             // establish the JAR file name and extract
-            def jarFile = IOUtils.findJarFile(skeletonResource.URL)
-
-            def tmpDir = File.createTempDir()
-            tmpDir.deleteOnExit()
-            ant.unzip(src:jarFile, dest: tmpDir)
+            def tmpDir = unzipProfile(ant, skeletonResource)
             srcDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
         }
         ant.copy(file:"${srcDir}/.gitignore", todir: targetDirectory, failonerror:false)
-        ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
-            fileSet(dir: srcDir, casesensitive: false) {
-                exclude(name: '**/.gitkeep')
-                for(exc in excludes) {
-                    exclude name: exc
-                }
-                exclude name:"build.gradle"
-                binaryFileExtensions.each { ext ->
-                    exclude(name: "**/*.${ext}")
-                }
-            }
-            filterset {
-                variables.each { k, v ->
-                    filter(token:k, value:v)
-                }
-            }
-            mapper {
-                filtermapper {
-                    variables.each { k, v ->
-                        replacestring(from: "@${k}@".toString(), to:v)
-                    }
-                }
-            }
-        }
-        ant.copy(todir: targetDirectory, overwrite: true) {
-            fileSet(dir: srcDir, casesensitive: false) {
-                binaryFileExtensions.each { ext ->
-                    include(name: "**/*.${ext}")
-                }
-                for(exc in excludes) {
-                    exclude name: exc
-                }
-                exclude name:"build.gradle"
-            }
-            mapper {
-                filtermapper {
-                    variables.each { k, v ->
-                        replacestring(from: "@${k}@".toString(), to:v)
-                    }
-                }
-            }
-        }
+        copySrcToTarget(ant, srcDir, excludes)
 
 
         def buildFile = new File(targetDirectory, "build.gradle")
@@ -391,6 +378,52 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
 
         ant.chmod(file: "${targetDirectory}/gradlew", perm: 'u+x')
+    }
+
+    @CompileDynamic
+    protected void copySrcToTarget(GrailsConsoleAntBuilder ant, File srcDir, List excludes) {
+        ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
+            fileSet(dir: srcDir, casesensitive: false) {
+                exclude(name: '**/.gitkeep')
+                for (exc in excludes) {
+                    exclude name: exc
+                }
+                exclude name: "build.gradle"
+                binaryFileExtensions.each { ext ->
+                    exclude(name: "**/*.${ext}")
+                }
+            }
+            filterset {
+                variables.each { k, v ->
+                    filter(token: k, value: v)
+                }
+            }
+            mapper {
+                filtermapper {
+                    variables.each { k, v ->
+                        replacestring(from: "@${k}@".toString(), to: v)
+                    }
+                }
+            }
+        }
+        ant.copy(todir: targetDirectory, overwrite: true) {
+            fileSet(dir: srcDir, casesensitive: false) {
+                binaryFileExtensions.each { ext ->
+                    include(name: "**/*.${ext}")
+                }
+                for (exc in excludes) {
+                    exclude name: exc
+                }
+                exclude name: "build.gradle"
+            }
+            mapper {
+                filtermapper {
+                    variables.each { k, v ->
+                        replacestring(from: "@${k}@".toString(), to: v)
+                    }
+                }
+            }
+        }
     }
 
     protected String resolveArtifactString(Dependency dep) {
