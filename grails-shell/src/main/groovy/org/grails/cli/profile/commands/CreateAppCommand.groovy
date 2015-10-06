@@ -23,10 +23,10 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
+import org.grails.cli.GrailsCli
 import org.grails.cli.profile.*
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
@@ -39,12 +39,13 @@ import org.grails.io.support.Resource
  * @since 3.0
  */
 @CompileStatic
-class CreateAppCommand implements Command, ProfileRepositoryAware {
+class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepositoryAware {
     private static final String GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS ='3.0.0.BUILD-SNAPSHOT'
     public static final String NAME = "create-app"
     public static final String PROFILE_FLAG = "profile"
     public static final String FEATURES_FLAG = "features"
     public static final String ENCODING = System.getProperty("file.encoding") ?: "UTF-8"
+    public static final String INPLACE_FLAG = "inplace"
     ProfileRepository profileRepository
     Map<String, String> variables = [:]
     String appname
@@ -56,7 +57,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
 
     CreateAppCommand() {
         populateDescription()
-        description.flag(name: "inplace", description: "Used to create an application using the current directory")
+        description.flag(name: INPLACE_FLAG, description: "Used to create an application using the current directory")
         description.flag(name: PROFILE_FLAG, description: "The profile to use", required:false)
         description.flag(name: FEATURES_FLAG, description: "The features to use", required:false)
     }
@@ -70,6 +71,60 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         return NAME
     }
 
+    @Override
+    protected int complete(CommandLine commandLine, CommandDescription desc, List<CharSequence> candidates, int cursor) {
+        def lastOption = commandLine.lastOption()
+        if(lastOption != null) {
+            // if value == true it means no profile is specified and only the flag is present
+            def profileNames = profileRepository.allProfiles.collect() { Profile p -> p.name }
+            if(lastOption.key == PROFILE_FLAG) {
+                def val = lastOption.value
+                if( val == true) {
+                    candidates.addAll(profileNames)
+                    return cursor
+                }
+                else if(!profileNames.contains(val)) {
+                    def valStr = val.toString()
+
+                    def candidateProfiles = profileNames.findAll { String pn ->
+                        pn.startsWith(valStr)
+                    }.collect() { String pn ->
+                        "${pn.substring(valStr.size())} ".toString()
+                    }
+                    candidates.addAll candidateProfiles
+                    return cursor
+                }
+            }
+            else if(lastOption.key == FEATURES_FLAG) {
+                def val = lastOption.value
+                def profile = profileRepository.getProfile(commandLine.hasOption(PROFILE_FLAG) ? commandLine.optionValue(PROFILE_FLAG).toString() : getDefaultProfile())
+                def featureNames = profile.features.collect() { Feature f -> f.name }
+                if( val == true) {
+                    candidates.addAll(featureNames)
+                    return cursor
+                }
+                else if(!profileNames.contains(val)) {
+                    def valStr = val.toString()
+                    if(valStr.endsWith(',')) {
+                        def specified = valStr.split(',')
+                        candidates.addAll(featureNames.findAll { String f ->
+                            !specified.contains(f)
+                        })
+                        return cursor
+                    }
+
+                    def candidatesFeatures = featureNames.findAll { String pn ->
+                        pn.startsWith(valStr)
+                    }.collect() { String pn ->
+                        "${pn.substring(valStr.size())} ".toString()
+                    }
+                    candidates.addAll candidatesFeatures
+                    return cursor
+                }
+            }
+        }
+        return super.complete(commandLine, desc, candidates, cursor)
+    }
 
     @Override
     boolean handle(ExecutionContext executionContext) {
@@ -86,7 +141,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
             if( !initializeVariables(profileInstance, mainCommandLine) ) {
                 return false
             }
-            targetDirectory = mainCommandLine.hasOption('inplace') ? new File(".").canonicalFile : new File(appname)
+            targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : new File(appname)
             File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
@@ -261,7 +316,7 @@ class CreateAppCommand implements Command, ProfileRepositoryAware {
         String defaultPackage
 
         def args = commandLine.getRemainingArgs()
-        boolean inPlace = commandLine.hasOption('inplace')
+        boolean inPlace = commandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive()
 
         if(!args && !inPlace) {
             GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")

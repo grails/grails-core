@@ -58,6 +58,7 @@ public interface CommandLine {
      */
     List<String> getRemainingArgs();
 
+
     /**
      * @return The remaining arguments as an array
      */
@@ -80,6 +81,11 @@ public interface CommandLine {
      * @return The value
      */
     Object optionValue(String name);
+
+    /**
+     * @return The last specified option
+     */
+    Map.Entry<String, Object> lastOption();
 
     /**
      * @return The remaining args as one big string

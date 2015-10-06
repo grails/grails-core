@@ -176,6 +176,9 @@ class CommandLineParserSpec extends Specification {
         cl.optionValue('host') == "localhost"
         cl.hasOption('port')
         cl.optionValue('port') == "8081"
+        cl.lastOption().key == 'port'
+        cl.lastOption().value == '8081'
+
     }
 
     void "Test parse command with environment, sys props with whitespaces, arguments and undeclared options with values"() {
