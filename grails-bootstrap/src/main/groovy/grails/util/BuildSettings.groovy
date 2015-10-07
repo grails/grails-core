@@ -308,4 +308,20 @@ class BuildSettings {
 
     public static final File SETTINGS_FILE = new File("${System.getProperty('user.home')}/.grails/settings.groovy")
 
+    /**
+     * @return The version of Grails being used
+     */
+    static String getGrailsVersion() {
+        BuildSettings.package.implementationVersion
+    }
+
+    /**
+     * @return Whether the current version of Grails being used is a development version
+     */
+    static boolean isDevelopmentGrailsVersion() {
+        BuildSettings.package.implementationVersion.endsWith('-SNAPSHOT')
+    }
+
+
+
 }
