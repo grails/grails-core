@@ -45,7 +45,7 @@ class ListProfilesCommand implements Command, ProfileRepositoryAware {
         console.addStatus("Available Profiles")
         console.log('--------------------')
         for(Profile p in allProfiles) {
-            console.log("* $p.name - ${p.configuration.get('description') ?: ''}")
+            console.log("* $p.name - ${p.description}")
         }
 
         return true
