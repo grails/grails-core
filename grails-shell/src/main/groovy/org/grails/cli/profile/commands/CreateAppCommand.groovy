@@ -135,6 +135,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def profileName = evaluateProfileName(mainCommandLine)
 
         Profile profileInstance = profileRepository.getProfile(profileName)
+        if(profileInstance == null) {
+            executionContext.console.error("Profile not found for name [$profileName]")
+            return false
+        }
         List<Feature> features = evaluateFeatures(profileInstance, mainCommandLine).toList()
         if(profileInstance) {
 

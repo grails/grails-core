@@ -42,6 +42,11 @@ public interface Profile {
     String getName();
 
     /**
+     * @return The description of the profile
+     */
+    String getDescription();
+
+    /**
      * @return The features for this profile
      */
     Iterable<Feature> getFeatures();

@@ -238,10 +238,11 @@ class GrailsCli {
                 console.reader.addCompleter(new CommandCompleter(CommandRegistry.findCommands(profileRepository)))
                 profile = [handleCommand: { ExecutionContext context ->
 
-                    def name = context.commandLine.commandName
+                    def cl = context.commandLine
+                    def name = cl.commandName
                     def cmd = CommandRegistry.getCommand(name, profileRepository)
                     if(cmd != null) {
-                        return cmd.handle(context)
+                        return executeCommandWithArgumentValidation(cmd, cl)
                     }
                     else {
                         console.error("Command not found [$name]")
@@ -254,15 +255,7 @@ class GrailsCli {
             }
             def cmd = CommandRegistry.getCommand(mainCommandLine.commandName, profileRepository)
             if(cmd) {
-                def arguments = cmd.description.arguments
-                def requiredArgs = arguments.count { CommandArgument arg -> arg.required }
-                if(mainCommandLine.remainingArgs.size() < requiredArgs) {
-                    outputMissingArgumentsMessage cmd
-                    return 1
-                }
-                else {
-                    return cmd.handle(createExecutionContext( mainCommandLine )) ? 0 : 1
-                }
+                return executeCommandWithArgumentValidation(cmd, mainCommandLine) ? 0 : 1
             }
             else {
                 return getBaseUsage()
@@ -277,6 +270,17 @@ class GrailsCli {
             }
         }
         return 0
+    }
+
+    protected boolean executeCommandWithArgumentValidation(Command cmd, CommandLine mainCommandLine) {
+        def arguments = cmd.description.arguments
+        def requiredArgs = arguments.count { CommandArgument arg -> arg.required }
+        if (mainCommandLine.remainingArgs.size() < requiredArgs) {
+            outputMissingArgumentsMessage cmd
+            return false
+        } else {
+            return cmd.handle(createExecutionContext(mainCommandLine))
+        }
     }
 
     protected void initializeApplication(CommandLine mainCommandLine) {

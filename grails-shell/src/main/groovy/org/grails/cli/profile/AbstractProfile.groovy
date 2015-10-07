@@ -60,6 +60,7 @@ abstract class AbstractProfile implements Profile {
     protected Set<String> defaultFeaturesNames = []
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
+    protected String description = "";
 
     AbstractProfile(Resource profileDir) {
         classLoader = Thread.currentThread().contextClassLoader
@@ -76,6 +77,7 @@ abstract class AbstractProfile implements Profile {
         def profileConfig = (Map<String, Object>) new Yaml().loadAs(profileYml.getInputStream(), Map)
 
         name = profileConfig.get("name")?.toString()
+        description = profileConfig.get("description")?.toString() ?: ''
 
         def parents = profileConfig.get("extends")
         if(parents) {
@@ -163,6 +165,10 @@ abstract class AbstractProfile implements Profile {
         this.buildExcludes = (List<String>)navigableConfig.get("build.excludes", [])
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
 
+    }
+
+    String getDescription() {
+        return description
     }
 
     @Override

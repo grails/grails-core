@@ -59,20 +59,26 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
     @Override
     Profile getProfile(String profileName) {
-        if(!resolved && !profilesByName.containsKey(profileName)) {
-            resolveProfile(profileName)
+        String profileShortName = profileName
+        if(profileName.contains(':')) {
+            def art = new DefaultArtifact(profileName)
+            profileShortName = art.artifactId
         }
-        return super.getProfile(profileName)
+        if(!resolved && !profilesByName.containsKey(profileShortName)) {
+            return resolveProfile(profileName)
+        }
+        return super.getProfile(profileShortName)
     }
 
-    protected void resolveProfile(String profileName) {
+    protected Profile resolveProfile(String profileName) {
+        def defaultProfileVersion = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
         if (!profileName.contains(':')) {
-            profileName = "org.grails.profiles:$profileName:LATEST"
+            profileName = "org.grails.profiles:$profileName:$defaultProfileVersion"
         }
         def art = new DefaultArtifact(profileName)
         def groupId = art.groupId ?: 'org.grails.profiles'
         def artifactId = art.artifactId
-        def version = art.version ?: 'LATEST'
+        def version = art.version ?: defaultProfileVersion
         try {
             grapeEngine.grab(group: groupId, module: artifactId, version: version)
         } catch (DependencyResolutionFailedException e ) {
@@ -94,6 +100,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         }
 
         processUrls()
+        return getProfile(artifactId)
     }
 
     @CompileDynamic
