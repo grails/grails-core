@@ -65,8 +65,12 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         # Tag the Profile Repo
         git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
         cd grails-profile-repository
+        echo "grailsVersion=${TRAVIS_TAG:1}" > profiles/gradle.properties
+        git add profiles/gradle.properties
+        git commit -m "Release $TRAVIS_TAG profile"
         git tag $TRAVIS_TAG
         git push --tags
+        git push
 
         # Tag and release the docs
         cd ..
