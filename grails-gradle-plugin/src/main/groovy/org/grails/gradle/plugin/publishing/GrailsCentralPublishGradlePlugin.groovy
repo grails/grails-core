@@ -271,7 +271,7 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
     }
 
     protected String getDefaultArtifactType() {
-        'grails-plugin'
+        "grails-$defaultClassifier"
     }
 
     protected String getDefaultGrailsCentralReleaseRepo() {
