@@ -18,11 +18,13 @@ package org.grails.cli.profile.commands
 
 import grails.build.logging.GrailsConsole
 import grails.io.IOUtils
+import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
@@ -187,7 +189,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 }
             }
 
-            replaceBuildTokens(profileInstance, features, targetDirectory)
+            replaceBuildTokens(profileName, profileInstance, features, targetDirectory)
             executionContext.console.addStatus(
                 "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
             )
@@ -218,7 +220,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     }
 
     @CompileDynamic
-    protected void replaceBuildTokens(Profile profile, List<Feature> features, File targetDirectory) {
+    protected void replaceBuildTokens(String profileCoords, Profile profile, List<Feature> features, File targetDirectory) {
         AntBuilder ant = new GrailsConsoleAntBuilder()
 
         def profileDependencies = profile.dependencies
@@ -235,6 +237,13 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             buildDependencies.addAll f.dependencies.findAll(){ Dependency dep -> dep.scope == 'build'}
         }
 
+        if(profileCoords.contains(':')) {
+            def art = new DefaultArtifact(profileCoords)
+            def version = art.version ?: BuildSettings.grailsVersion
+            if(version == 'LATEST') version = ''
+            def finalArt = new DefaultArtifact(art.groupId ?: '', art.artifactId, '', version)
+            dependencies.add(new Dependency(finalArt, "profile"))
+        }
         def ln = System.getProperty("line.separator")
         dependencies = dependencies.collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
