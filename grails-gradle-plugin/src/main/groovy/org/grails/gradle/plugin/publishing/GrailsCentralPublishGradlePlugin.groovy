@@ -137,7 +137,7 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                 bintrayExtension.pkg.vcsUrl = publishExtension.vcsUrl
             }
             else if(publishExtension.githubSlug) {
-                bintrayExtension.pkg.websiteUrl = "https://github.com/$publishExtension.githubSlug"
+                bintrayExtension.pkg.vcsUrl = "https://github.com/$publishExtension.githubSlug"
             }
             else if(!bintrayExtension.pkg.vcsUrl) {
                 throw new RuntimeException(getErrorMessage("vcsUrl"))
@@ -147,7 +147,7 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                 bintrayExtension.pkg.issueTrackerUrl = publishExtension.issueTrackerUrl
             }
             else if(publishExtension.githubSlug) {
-                bintrayExtension.pkg.websiteUrl = "https://github.com/$publishExtension.githubSlug/issues"
+                bintrayExtension.pkg.issueTrackerUrl = "https://github.com/$publishExtension.githubSlug/issues"
             }
             else if(!bintrayExtension.pkg.issueTrackerUrl) {
                 throw new RuntimeException(getErrorMessage("issueTrackerUrl"))
