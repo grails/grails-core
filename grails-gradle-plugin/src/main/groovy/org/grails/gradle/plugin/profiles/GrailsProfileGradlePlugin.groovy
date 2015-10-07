@@ -20,6 +20,8 @@ import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.artifacts.DependencyResolveDetails
+import org.gradle.api.artifacts.ModuleVersionSelector
+import org.gradle.api.artifacts.component.ProjectComponentSelector
 import org.gradle.api.file.CopySpec
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
@@ -57,9 +59,16 @@ class GrailsProfileGradlePlugin extends BasePlugin {
 
         profileConfiguration.resolutionStrategy.eachDependency {
             DependencyResolveDetails details = (DependencyResolveDetails)it
-            def group = details.requested.group ?: "org.grails.profiles"
-            def version = details.requested.version ?: BuildSettings.grailsVersion
-            details.useTarget(group: group, name:details.requested.name,version:version)
+            def requested = details.requested
+            def group = requested.group
+            def version = requested.version
+
+            if(!group || !version) {
+                group = group ?: "org.grails.profiles"
+                version = version ?: BuildSettings.grailsVersion
+
+                details.useTarget(group: group, name: requested.name,version:version)
+            }
         }
 
         def profileYml = project.file("profile.yml")
