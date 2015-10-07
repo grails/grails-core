@@ -27,10 +27,6 @@ import org.grails.gradle.plugin.publishing.GrailsCentralPublishGradlePlugin
  */
 class GrailsProfilePublishGradlePlugin extends GrailsCentralPublishGradlePlugin {
 
-    @Override
-    protected String getDefaultArtifactType() {
-        'grails-profile'
-    }
 
     @Override
     protected String getDefaultGrailsCentralReleaseRepo() {
