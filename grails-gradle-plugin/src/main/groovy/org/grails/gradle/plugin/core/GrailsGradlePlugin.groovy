@@ -87,7 +87,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         profileConfiguration.resolutionStrategy.eachDependency {
             DependencyResolveDetails details = (DependencyResolveDetails)it
             def group = details.requested.group ?: "org.grails.profiles"
-            def version = details.requested.version ?: BuildSettings.package.implementationVersion
+            def version = details.requested.version ?: BuildSettings.grailsVersion
             details.useTarget(group: group, name:details.requested.name,version:version)
         }
 
