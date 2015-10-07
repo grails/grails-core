@@ -169,6 +169,11 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             if(publishExtension.sonatypeOssPassword) {
                 bintrayExtension.pkg.version.mavenCentralSync.password = publishExtension.sonatypeOssPassword
             }
+
+            def pkgVersion = bintrayExtension.pkg.version.name
+            if(!pkgVersion || pkgVersion == 'unspecified') {
+                bintrayExtension.pkg.version.name = project.version
+            }
         }
 
 
@@ -227,7 +232,7 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             pkg {
                 repo = bintrayRepo
                 userOrg = bintrayOrg
-                name = "$project.name"
+                name = project.name
                 desc = bintrayDescription
                 websiteUrl = bintraySiteUrl
                 issueTrackerUrl = bintrayIssueTrackerUrl
