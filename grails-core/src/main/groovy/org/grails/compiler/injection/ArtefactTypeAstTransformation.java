@@ -23,6 +23,7 @@ import grails.compiler.ast.GlobalClassInjector;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import groovy.transform.CompilationUnitAware;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +32,10 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -119,13 +122,26 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     protected String resolveArtefactType(SourceUnit sourceUnit, AnnotationNode annotationNode, ClassNode classNode) {
         Expression value = annotationNode.getMember("value");
 
-        if (value != null && (value instanceof ConstantExpression)) {
-            ConstantExpression ce = (ConstantExpression) value;
-            return ce.getText();
+        if (value != null) {
+            if (value instanceof ConstantExpression) {
+                ConstantExpression ce = (ConstantExpression) value;
+                return ce.getText();
+            }
+            if (value instanceof PropertyExpression) {
+                PropertyExpression pe = (PropertyExpression) value;
+
+                Expression objectExpression = pe.getObjectExpression();
+                if (objectExpression instanceof ClassExpression) {
+                    ClassExpression ce = (ClassExpression) objectExpression;
+                    try {
+                        Field field = ce.getType().getTypeClass().getDeclaredField(pe.getPropertyAsString());
+                        return (String)field.get(null);
+                    } catch (Exception e) {}
+                }
+            }
         }
-        else {
-            throw new RuntimeException("Class ["+classNode.getName()+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
-        }
+
+        throw new RuntimeException("Class ["+classNode.getName()+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
     }
 
     protected boolean isArtefactAnnotationNode(AnnotationNode annotationNode) {
