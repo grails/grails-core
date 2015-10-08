@@ -35,13 +35,13 @@ ext {
     datastoreVersion = "4.0.6.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.4"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.5"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
     slf4jVersion = "1.7.10"
-    reactorVersion = '2.0.3.RELEASE'
+    reactorVersion = '2.0.6.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
     springLoadedVersion = "1.2.4.RELEASE"

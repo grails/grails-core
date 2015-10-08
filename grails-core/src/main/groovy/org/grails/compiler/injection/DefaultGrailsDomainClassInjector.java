@@ -188,8 +188,9 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     private void injectToStringMethod(ClassNode classNode) {
         final boolean hasToString = GrailsASTUtils.implementsOrInheritsZeroArgMethod(
                 classNode, "toString", classesWithInjectedToString);
+        final boolean hasToStringAnnotation = GrailsASTUtils.hasAnnotation(classNode, groovy.transform.ToString.class);
 
-        if (!hasToString && !isEnum(classNode)) {
+        if (!hasToString && !isEnum(classNode) && !hasToStringAnnotation) {
             GStringExpression ge = new GStringExpression(classNode.getName() + " : ${id ? id : '(unsaved)'}");
             ge.addString(new ConstantExpression(classNode.getName() + " : "));
             VariableExpression idVariable = new VariableExpression("id");
