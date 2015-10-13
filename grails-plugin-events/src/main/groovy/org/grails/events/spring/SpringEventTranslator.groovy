@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationListener
+import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.support.GenericApplicationContext
 
 import java.util.concurrent.ConcurrentHashMap
@@ -57,7 +58,10 @@ class SpringEventTranslator implements ApplicationListener, Events, ApplicationC
 
     void onApplicationEvent(ApplicationEvent event) {
         def eventName = eventClassToName[event.getClass()]
-        notify(eventName, eventFor(event))
+        // don't relay context closed events because Reactor would have been shutdown
+        if(!(event instanceof ContextClosedEvent)) {
+            notify(eventName, eventFor(event))
+        }
     }
 
     @Override
