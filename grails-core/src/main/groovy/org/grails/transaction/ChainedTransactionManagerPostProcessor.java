@@ -105,7 +105,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         if(transactionManagerBeanNames == null) {
 
             if(registry instanceof ListableBeanFactory) {
-                transactionManagerBeanNames =  ((ListableBeanFactory)registry).getBeanNamesForType(PlatformTransactionManager.class);
+                transactionManagerBeanNames =  ((ListableBeanFactory)registry).getBeanNamesForType(PlatformTransactionManager.class, false, false);
             }
             else {
                 transactionManagerBeanNames = registry.getBeanDefinitionNames();
