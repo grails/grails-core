@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons
 
 import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
 
 /**
  * @author Graeme Rocher
@@ -23,13 +24,6 @@ import groovy.transform.CompileStatic
  */
 @Deprecated
 @CompileStatic
-class ArtefactHandlerAdapter extends grails.core.ArtefactHandlerAdapter{
-
-    ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix) {
-        super(type, grailsClassType, grailsClassImpl, artefactSuffix)
-    }
-
-    ArtefactHandlerAdapter(String type, Class<? extends GrailsClass> grailsClassType, Class<?> grailsClassImpl, String artefactSuffix, boolean allowAbstract) {
-        super(type, grailsClassType, grailsClassImpl, artefactSuffix, allowAbstract)
-    }
+@InheritConstructors
+abstract class ArtefactHandlerAdapter extends grails.core.ArtefactHandlerAdapter{
 }

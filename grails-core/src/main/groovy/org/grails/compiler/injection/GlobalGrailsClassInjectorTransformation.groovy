@@ -152,6 +152,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
     static boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
         if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
+            if(Modifier.isAbstract(classNode.getModifiers())) return false
+
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
             def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
