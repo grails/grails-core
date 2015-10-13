@@ -12,7 +12,7 @@ class DefaultGrailsControllerClassSpec extends Specification {
     static final String SINGLETON = "singleton"
     static final String PROTOTYPE = "prototype"
 
-    void "test getScope & isSingleton when scope is not specified on the controller, but it specified in config"() {
+    void "test getScope when scope is not specified on the controller, but it specified in config"() {
         given:
         def controllerClass = new DefaultGrailsControllerClass(NotSpecifiedController)
         def grailsApplication = new DefaultGrailsApplication()
@@ -24,7 +24,7 @@ class DefaultGrailsControllerClassSpec extends Specification {
         controllerClass.isSingleton()
     }
 
-    void "test getScope & isSingleton when scope is not specified on the controller, and not specified in config"() {
+    void "test getScope when scope is not specified on the controller, and not specified in config"() {
         given:
         def controllerClass = new DefaultGrailsControllerClass(NotSpecifiedController)
         controllerClass.setGrailsApplication(new DefaultGrailsApplication())
