@@ -24,6 +24,7 @@ import org.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
+import org.grails.transaction.TransactionManagerPostProcessor
 import org.grails.validation.DefaultConstraintEvaluator
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
@@ -62,6 +63,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
+            transactionManagerAwarePostProcessor(TransactionManagerPostProcessor)
             grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, '${', grailsApplicationParam.config.toProperties())
             mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer) {
                 grailsApplication = grailsApplicationParam
