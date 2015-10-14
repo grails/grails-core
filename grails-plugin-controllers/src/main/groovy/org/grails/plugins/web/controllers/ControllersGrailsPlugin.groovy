@@ -68,7 +68,6 @@ class ControllersGrailsPlugin extends Plugin {
         def application = grailsApplication
         def config = application.config
 
-        String defaultScope = config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
         boolean useJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
         String uploadTmpDir = config.getProperty(Settings.CONTROLLERS_UPLOAD_LOCATION, System.getProperty("java.io.tmpdir"))
         long maxFileSize = config.getProperty(Settings.CONTROLLERS_UPLOAD_MAX_FILE_SIZE, Long, 128000L)
@@ -152,7 +151,7 @@ class ControllersGrailsPlugin extends Plugin {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
                 "${controller.fullName}"(controller.clazz) { bean ->
-                    def beanScope = controller.getPropertyValue("scope") ?: defaultScope
+                    def beanScope = controller.getScope()
                     bean.scope = beanScope
                     bean.autowire =  "byName"
                     if (beanScope == 'prototype') {
@@ -181,12 +180,11 @@ class ControllersGrailsPlugin extends Plugin {
                 return
             }
 
-            def defaultScope = application.config.getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, 'prototype')
 
             GrailsControllerClass controllerClass = (GrailsControllerClass)application.addArtefact(ControllerArtefactHandler.TYPE, (Class)event.source)
             beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
-                    def beanScope = controllerClass.getPropertyValue("scope") ?: defaultScope
+                    def beanScope = controllerClass.getScope()
                     bean.scope = beanScope
                     bean.autowire = "byName"
                     if (beanScope == 'prototype') {
