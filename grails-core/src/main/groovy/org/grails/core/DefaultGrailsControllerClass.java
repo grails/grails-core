@@ -15,6 +15,8 @@
  */
 package org.grails.core;
 
+import grails.config.Settings;
+import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.util.GrailsClassUtils;
 import grails.web.Action;
@@ -45,7 +47,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     public static final Object[] EMPTY_ARGS = new Object[0];
     public static final String SCOPE = "scope";
     public static final String SCOPE_SINGLETON = "singleton";
-    private final String scope;
+    private String scope;
     private Map<String, FastMethod> actions = new HashMap<String, FastMethod>();
     private String defaultActionName;
     private String namespace;
@@ -57,13 +59,20 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
-        final String t = getStaticPropertyValue(SCOPE, String.class);
-        this.scope = t != null ? t : SCOPE_SINGLETON;
         methodStrategy(actions);
+        this.scope = getStaticPropertyValue(SCOPE, String.class);
     }
 
     public void initialize() {
         // no-op
+    }
+
+    @Override
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+        if (this.scope == null) {
+            this.scope = grailsApplication.getConfig().getProperty(Settings.CONTROLLERS_DEFAULT_SCOPE, "prototype");
+        }
     }
 
     @Override
