@@ -184,6 +184,19 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
         project.publishing {
             publications {
                 maven(MavenPublication) {
+                    pom.withXml {
+                        def pomNode = asNode()
+                        pomNode.dependencyManagement.replaceNode {}
+
+                        // simply remove dependencies without a version
+                        // version-less dependencies are handled with dependencyManagement
+                        // see https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/8 for more complete solutions
+                        pomNode.dependencies.dependency.findAll {
+                            it.version.text().isEmpty()
+                        }.each {
+                            it.replaceNode {}
+                        }
+                    }
                     artifactId project.name
                     from project.components.java
                     def sourcesJar = taskContainer.findByName("sourcesJar")
