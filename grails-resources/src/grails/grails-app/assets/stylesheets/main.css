@@ -594,3 +594,8 @@ a.skip {
 	position: absolute;
 	left: -9999px;
 }
+
+a.skip:focus, a.skip:active {
+	position: relative;
+	left: 0px;
+}
