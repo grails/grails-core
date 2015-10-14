@@ -186,7 +186,9 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                 maven(MavenPublication) {
                     pom.withXml {
                         def pomNode = asNode()
-                        pomNode.dependencyManagement.replaceNode {}
+                        if(pomNode.dependencyManagement) {
+                            pomNode.dependencyManagement[0].replaceNode {}
+                        }
 
                         // simply remove dependencies without a version
                         // version-less dependencies are handled with dependencyManagement
