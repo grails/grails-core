@@ -186,14 +186,19 @@ public abstract class NavigableMapConfig implements Config {
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         Object originalValue = configMap.get(key);
-        if(originalValue != null && !targetType.isInstance(originalValue)) {
-            if(!(originalValue instanceof NavigableMap)) {
+        if(originalValue != null) {
+            if(targetType.isInstance(originalValue)) {
+                return (T)originalValue;
+            }
+            else {
+                if(!(originalValue instanceof NavigableMap)) {
 
-                try {
-                    T value = conversionService.convert(originalValue, targetType);
-                    return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
-                } catch (ConversionException e) {
-                    // ignore, return default value
+                    try {
+                        T value = conversionService.convert(originalValue, targetType);
+                        return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+                    } catch (ConversionException e) {
+                        // ignore, return default value
+                    }
                 }
             }
         }
