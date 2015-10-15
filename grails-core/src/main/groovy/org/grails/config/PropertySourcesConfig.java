@@ -136,14 +136,5 @@ public class PropertySourcesConfig extends NavigableMapConfig {
         return propertySourcesPropertyResolver.resolveRequiredPlaceholders(text);
     }
 
-    public static class ClassConversionException extends ConversionException {
 
-        public ClassConversionException(Class<?> actual, Class<?> expected) {
-            super(String.format("Actual type %s is not assignable to expected type %s", actual.getName(), expected.getName()));
-        }
-
-        public ClassConversionException(String actual, Class<?> expected, Exception ex) {
-            super(String.format("Could not find/load class %s during attempt to convert to %s", actual, expected.getName()), ex);
-        }
-    }
 }

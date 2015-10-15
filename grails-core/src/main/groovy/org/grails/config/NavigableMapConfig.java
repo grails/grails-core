@@ -18,6 +18,7 @@ package org.grails.config;
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.ClassUtils;
@@ -185,19 +186,16 @@ public abstract class NavigableMapConfig implements Config {
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         Object originalValue = configMap.get(key);
-        if(originalValue == null && key.contains(".")) {
-            originalValue = configMap.navigate(key.split("\\."));
-            if(originalValue != null) {
+        if(originalValue != null && !targetType.isInstance(originalValue)) {
+            if(!(originalValue instanceof NavigableMap)) {
+
                 try {
-                    configMap.put(key, originalValue);
-                } catch (Exception e) {
-                    // ignore
+                    T value = conversionService.convert(originalValue, targetType);
+                    return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+                } catch (ConversionException e) {
+                    // ignore, return default value
                 }
             }
-        }
-        if(originalValue != null) {
-            T value = conversionService.convert(originalValue, targetType);
-            return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
         }
         return defaultValue;
     }
@@ -210,11 +208,11 @@ public abstract class NavigableMapConfig implements Config {
             try {
                 Class<T> clazz = (Class<T>) ClassUtils.forName((String) className, classLoader);
                 if(clazz != targetType) {
-                    throw new PropertySourcesConfig.ClassConversionException(clazz, targetType);
+                    throw new ClassConversionException(clazz, targetType);
                 }
                 return clazz;
             } catch (Exception e) {
-                throw new PropertySourcesConfig.ClassConversionException(className, targetType, e);
+                throw new ClassConversionException(className, targetType, e);
             }
         }
         else {
@@ -238,5 +236,16 @@ public abstract class NavigableMapConfig implements Config {
             throw new IllegalStateException("Value for key ["+key+"] cannot be resolved");
         }
         return value;
+    }
+
+    public static class ClassConversionException extends ConversionException {
+
+        public ClassConversionException(Class<?> actual, Class<?> expected) {
+            super(String.format("Actual type %s is not assignable to expected type %s", actual.getName(), expected.getName()));
+        }
+
+        public ClassConversionException(String actual, Class<?> expected, Exception ex) {
+            super(String.format("Could not find/load class %s during attempt to convert to %s", actual, expected.getName()), ex);
+        }
     }
 }
