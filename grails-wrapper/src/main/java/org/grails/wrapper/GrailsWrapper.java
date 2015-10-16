@@ -46,7 +46,7 @@ public class GrailsWrapper {
         final String grailsVersion = applicationBundle.getString("app.grails.version");
         String distUrl = wrapperBundle.getString("wrapper.dist.url");
         if (distUrl == null) {
-            distUrl = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/";
+            distUrl = "https://github.com/grails/grails-core/releases/download/v" + grailsVersion + "/";
         }
         if (!distUrl.endsWith("/")) {
             distUrl += "/";

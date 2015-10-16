@@ -27,11 +27,11 @@ where
 
 examples
     grails wrapper --wrapperDir=grailsWrapper
-    grails wrapper --wrapperDir=grailsWrapper --distributionUrl=http://dist.springframework.org.s3.amazonaws.com/milestone/GRAILS/
+    grails wrapper --wrapperDir=grailsWrapper --distributionUrl=https://github.com/grails/grails-core/releases/download/v$grailsVersion/
 
 optional argument default values
     wrapperDir = 'wrapper'
-    distributionUrl = 'http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/'
+    distributionUrl = 'https://github.com/grails/grails-core/releases/download/v$grailsVersion/'
 
 """
 
@@ -46,7 +46,7 @@ target (generateWrapper: "Generates the Grails wrapper") {
         releaseType = 'snapshot'
     }
 
-    grailsDistUrl =  argsMap.distributionUrl ?: "http://dist.springframework.org.s3.amazonaws.com/${releaseType}/GRAILS/"
+    grailsDistUrl =  argsMap.distributionUrl ?: "https://github.com/grails/grails-core/releases/download/v$grailsVersion/"
     grailsWrapperDir = argsMap.wrapperDir ?: 'wrapper'
 
     def targetDir = "${basedir}/${grailsWrapperDir}"
