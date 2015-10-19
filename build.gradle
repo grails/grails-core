@@ -40,7 +40,7 @@ ext {
     spockVersion = '1.0-groovy-2.4'
     springLoadedVersion = "1.2.4.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.1.6.RELEASE"
+    springVersion = "4.1.8.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4"
