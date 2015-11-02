@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.validation
 
+import org.springframework.util.Assert
+
 
 /**
  * Provides the ability to set contraints against a properties of a class. Constraints can either be
@@ -55,4 +57,20 @@ public class ConstrainedProperty extends grails.validation.ConstrainedProperty {
         super(clazz, propertyName, propertyType)
     }
 
+
+    private static List<Object> getOrInitializeConstraint(String name) {
+        List<Object> objects = constraints.get(name);
+        if (objects == null) {
+            objects = new ArrayList<Object>();
+            constraints.put(name, objects);
+        }
+        return objects;
+    }
+
+    public static void registerNewConstraint(String name, ConstraintFactory factory) {
+        Assert.hasLength(name, "Argument [name] cannot be null or blank");
+        Assert.notNull(factory, "Argument [factory] cannot be null");
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.add(factory);
+    }
 }

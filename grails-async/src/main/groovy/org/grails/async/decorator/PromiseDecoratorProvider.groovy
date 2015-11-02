@@ -20,4 +20,6 @@ package org.grails.async.decorator
  * @deprecated Use {@link grails.async.decorator.PromiseDecoratorProvider} instead
  */
 interface PromiseDecoratorProvider extends grails.async.decorator.PromiseDecoratorProvider{
+    @Override
+    List<PromiseDecorator> getDecorators()
 }
