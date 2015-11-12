@@ -88,7 +88,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
                 def currentVersion = parseCurrentVersion(localData)
                 def profileFile = new File(localData.parentFile, "$currentVersion/${artifactId}-${currentVersion}.jar")
                 if(profileFile.exists()) {
-                    registerProfile(profileFile.toURI().toURL(), classLoader)
+                    classLoader.addURL(profileFile.toURI().toURL())
                 }
                 else {
                     throw e
@@ -132,6 +132,22 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
             for(name in profileNames) {
                 grapeEngine.grab(group: 'org.grails.profiles', module: name, version: 'LATEST')
+            }
+
+            def localData = new File(System.getProperty("user.home"),"/.m2/repository/org/grails/profiles")
+            if(localData.exists()) {
+                localData.eachDir { File dir ->
+                    if(!dir.name.startsWith('.')) {
+                        def profileData = new File(localData, "/maven-metadata-local.xml")
+                        if(profileData.exists()) {
+                            def currentVersion = parseCurrentVersion(localData)
+                            def profileFile = new File(localData.parentFile, "$currentVersion/${dir.name}-${currentVersion}.jar")
+                            if(profileFile.exists()) {
+                                classLoader.addURL(profileFile.toURI().toURL())
+                            }
+                        }
+                    }
+                }
             }
 
             processUrls()
