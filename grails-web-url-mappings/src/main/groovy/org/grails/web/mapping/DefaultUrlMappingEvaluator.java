@@ -219,7 +219,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
 
         private boolean urlDefiningMode = true;
-        private boolean inGroupConstratins = false;
+        private boolean inGroupConstraints = false;
         private List<ConstrainedProperty> previousConstraints = new ArrayList<ConstrainedProperty>();
         private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
         private Map<String, Object> parameterValues = new HashMap<String, Object>();
@@ -557,17 +557,17 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private String establishFullURI(String uri, List<ConstrainedProperty> constrainedList) {
-            if (parentResources.isEmpty() || inGroupConstratins) {
+            if (parentResources.isEmpty() || inGroupConstraints) {
                 return uri;
             }
 
             ParentResource parentResource = parentResources.peek();
             if (CONSTRAINTS.equals(uri) && parentResource.isGroup) {
-                inGroupConstratins = true;
+                inGroupConstraints = true;
                 return uri;
             }
 
-            inGroupConstratins = false;
+            inGroupConstraints = false;
 
             StringBuilder uriBuilder = new StringBuilder();
 
