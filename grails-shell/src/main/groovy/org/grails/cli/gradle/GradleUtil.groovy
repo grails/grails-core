@@ -65,7 +65,13 @@ class GradleUtil {
 
     public static clearPreparedConnection() {
         if (preparedConnection != null) {
-            preparedConnection.close()
+            try {
+                Thread.start {
+                    preparedConnection.close()
+                }.join(2000)
+            } catch (Throwable e) {
+            }
+
             preparedConnection = null
             preparedConnectionBaseDir = null
         }
