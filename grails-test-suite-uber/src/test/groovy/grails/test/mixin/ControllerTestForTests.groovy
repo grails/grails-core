@@ -1,7 +1,7 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-
+import grails.persistence.Entity
 import org.junit.Test
 import org.springframework.web.servlet.support.RequestContextUtils
 
@@ -44,6 +44,7 @@ class SimpleController {
         render "Total = ${Simple.count()}"
     }
 }
+@Entity
 class Simple {
     Long id
     Long version
