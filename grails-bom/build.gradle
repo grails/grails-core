@@ -127,6 +127,15 @@ publishing {
                                 }
                             }
 
+                            ['core', 'gorm', 'gorm-support', 'test-support', 'gorm-cassandra', 'gorm-mongodb', 'gorm-neo4j', 'gorm-hibernate4', 'gorm-hibernate5', 'gorm-hibernate', 'gorm-test'].each { name ->
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails'
+                                    mkp.artifactId "grails-datastore-$name"
+                                    mkp.version( datastoreVersion )
+                                }
+
+                            }
+
                             ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'xml','nio'].each { name ->
                                 mkp.dependency {
                                     mkp.groupId 'org.codehaus.groovy'
