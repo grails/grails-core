@@ -81,13 +81,13 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
         if (config == null) {
             flatConfig = new LinkedHashMap();
         } else {
-            flatConfig = config.flatten();
+            flatConfig = config;
         }
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> getFlatConfig() {
-        return getConfig().flatten();
+        return getConfig();
     }
 
     @Override

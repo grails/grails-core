@@ -15,7 +15,6 @@
  */
 package grails.config
 
-import grails.core.support.GrailsConfigurationAware
 import groovy.transform.CompileStatic
 
 
@@ -26,16 +25,45 @@ import groovy.transform.CompileStatic
  * @since 3.0
  */
 @CompileStatic
-class ConfigProperties implements GrailsConfigurationAware {
+class ConfigProperties extends Properties {
 
-    private Properties properties = new Properties()
+    private final Config config
 
-    Properties resolveProperties() {
-        properties
+    ConfigProperties(Config config) {
+        this.config = config
     }
 
     @Override
-    void setConfiguration(Config co) {
-        properties = co.toProperties()
+    Set<String> stringPropertyNames() {
+        return config.keySet()
+    }
+
+    @Override
+    Enumeration<?> propertyNames() {
+        def i = config.keySet().iterator()
+        return [
+            hasMoreElement: {-> i.hasNext() },
+            nextElement: {-> i.next() }
+        ] as Enumeration
+    }
+
+    @Override
+    String getProperty(String key) {
+        return config.getProperty(key)
+    }
+
+    @Override
+    String getProperty(String key, String defaultValue) {
+        return config.getProperty(key, defaultValue)
+    }
+
+    @Override
+    Enumeration<Object> keys() {
+        return (Enumeration<Object>)propertyNames()
+    }
+
+    @Override
+    Set<Object> keySet() {
+        return (Set<Object>)stringPropertyNames()
     }
 }

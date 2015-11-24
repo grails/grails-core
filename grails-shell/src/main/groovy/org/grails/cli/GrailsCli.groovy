@@ -393,7 +393,7 @@ class GrailsCli {
     }
 
     private initializeProfile() {
-        BuildSettings.TARGET_DIR.mkdirs()
+        BuildSettings.TARGET_DIR?.mkdirs()
 
         populateContextLoader()
 

@@ -18,6 +18,8 @@ package org.grails.config;
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -31,7 +33,9 @@ import java.util.*;
  * @author Graeme Rocher
  * @since 3.0
  */
+
 public abstract class NavigableMapConfig implements Config {
+    protected static final Logger LOG = LoggerFactory.getLogger(NavigableMapConfig.class);
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     protected ConfigurableConversionService conversionService = new DefaultConversionService();
     protected NavigableMap configMap = new NavigableMap() {
@@ -133,8 +137,12 @@ public abstract class NavigableMapConfig implements Config {
     }
 
     @Override
+    @Deprecated
     public Map<String, Object> flatten() {
-        return configMap.toFlatConfig();
+        if(LOG.isWarnEnabled()) {
+            LOG.warn("A plugin or your application called the flatten() method which can degrade startup performance");
+        }
+        return configMap;
     }
 
     @Override

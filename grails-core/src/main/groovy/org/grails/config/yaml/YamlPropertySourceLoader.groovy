@@ -43,6 +43,10 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
 
     @Override
     PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
+        return load(name, resource, profile, true)
+    }
+
+    PropertySource<?> load(String name, Resource resource, String profile, boolean parseFlatKeys ) throws IOException {
         if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
             if (profile == null) {
                 matchDefault = true
@@ -55,7 +59,7 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
             resources = [resource] as Resource[]
             def propertySource = new NavigableMap()
             process { Properties properties, Map<String, Object> map ->
-                propertySource.merge(map, true)
+                propertySource.merge(map, parseFlatKeys)
             }
             if (!propertySource.isEmpty()) {
                 return new NavigableMapPropertySource(name, propertySource)

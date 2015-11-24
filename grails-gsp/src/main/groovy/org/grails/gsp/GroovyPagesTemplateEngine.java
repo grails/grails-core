@@ -811,12 +811,9 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     public String getGspEncoding() {
-    	Map<?, ?> config = Holders.getFlatConfig();
+        Config config = Holders.getConfig();
         if (config != null) {
-            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
-            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                return gspEnc.toString();
-            }
+            return config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING, System.getProperty("file.encoding", "us-ascii"));
         }
         return System.getProperty("file.encoding", "us-ascii");
     }

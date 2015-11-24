@@ -83,7 +83,7 @@ class CoreGrailsPlugin extends Plugin {
         propertySourcesPlaceholderConfigurer(GrailsPlaceholderConfigurer) {
             placeholderPrefix = placeHolderPrefix
         }
-        grailsConfigProperties(ConfigProperties)
+        grailsConfigProperties(ConfigProperties, config)
         legacyGrailsApplication(LegacyGrailsApplication, application)
 
         // replace AutoProxy advisor with Groovy aware one

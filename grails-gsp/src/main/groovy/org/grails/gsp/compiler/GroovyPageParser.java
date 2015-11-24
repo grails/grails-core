@@ -205,13 +205,9 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, String gspSource, String expressionCodecName) throws IOException {
-        Map<?, ?> config = Holders.getFlatConfig();
+        Config config = Holders.getConfig();
         if (config != null) {
-            Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
-            if (sitemeshPreprocessEnabled != null) {
-                final boolean enableSitemeshPreprocessing = GrailsStringUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
-                setEnableSitemeshPreprocessing(enableSitemeshPreprocessing);
-            }
+            setEnableSitemeshPreprocessing(config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean.class, enableSitemeshPreprocessing));
         }
 
         GrailsPluginInfo pluginInfo = null;
