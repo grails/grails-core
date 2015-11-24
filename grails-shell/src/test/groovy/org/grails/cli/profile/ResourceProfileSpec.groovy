@@ -26,6 +26,27 @@ import spock.lang.Specification
  */
 class ResourceProfileSpec extends Specification {
 
+    void "Test resource version"() {
+        given:"A resource profile"
+        def mockResource = Mock(Resource)
+
+        def mockProfileYml = Mock(Resource)
+        mockProfileYml.getInputStream() >> new ByteArrayInputStream(getYaml())
+        mockResource.createRelative("profile.yml") >> mockProfileYml
+        mockResource.getURL() >> new URL("file:/path/to/my-profile-1.0.1.jar!profile.yml")
+        def profileRepository = Mock(ProfileRepository)
+        def profile = new ResourceProfile(profileRepository, "web", mockResource)
+        profileRepository.getProfile("web" ) >> profile
+
+        def baseProfile = Mock(Profile)
+        baseProfile.getDependencies() >> [ new Dependency(new DefaultArtifact("foo:bar:2.0"), "test")]
+        baseProfile.getBuildPlugins() >> [ "foo-plug"]
+        profileRepository.getProfile("base" ) >> baseProfile
+        expect:
+        profile.version == '1.0.1'
+
+    }
+
     void "Test dependencies"() {
         given:"A resource profile"
 

@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile
 
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
@@ -33,4 +34,5 @@ class FileSystemProfile extends ResourceProfile {
     FileSystemProfile(ProfileRepository repository, File profileDir) {
         super(repository, profileDir.name, new FileSystemResource(profileDir))
     }
+
 }

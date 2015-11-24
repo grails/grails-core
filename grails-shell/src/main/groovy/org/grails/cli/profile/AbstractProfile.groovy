@@ -15,6 +15,8 @@
  */
 package org.grails.cli.profile
 
+import grails.io.IOUtils
+import grails.util.BuildSettings
 import grails.util.CosineSimilarity
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -33,6 +35,8 @@ import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import org.grails.config.NavigableMap
 import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
+
+import java.util.regex.Matcher
 
 
 /**
@@ -61,15 +65,29 @@ abstract class AbstractProfile implements Profile {
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
     protected String description = "";
+    protected String version = BuildSettings.package.implementationVersion
 
     AbstractProfile(Resource profileDir) {
-        classLoader = Thread.currentThread().contextClassLoader
-        this.profileDir = profileDir
+        this(profileDir, getClass().getClassLoader())
     }
 
     AbstractProfile(Resource profileDir, ClassLoader classLoader) {
         this.classLoader = classLoader
         this.profileDir = profileDir
+
+        def jarFile = IOUtils.findJarFile(profileDir.getURL())
+        if(jarFile != null) {
+            def pattern = ~/.+-(\d.+)\.jar/
+
+            def matcher = pattern.matcher(jarFile.name)
+            if(matcher.matches()) {
+                this.version = matcher.group(1)
+            }
+        }
+    }
+
+    String getVersion() {
+        return version
     }
 
     protected void initialize() {

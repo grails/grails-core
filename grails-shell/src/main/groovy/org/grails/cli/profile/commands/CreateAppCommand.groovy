@@ -240,11 +240,17 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         if(profileCoords.contains(':')) {
             def art = new DefaultArtifact(profileCoords)
             def version = art.version ?: BuildSettings.grailsVersion
-            if(version == 'LATEST') version = ''
-            def finalArt = new DefaultArtifact(art.groupId ?: '', art.artifactId, '', version)
+            if(version == 'LATEST') version = profile.getVersion()
+            def finalArt = new DefaultArtifact(art.groupId ?: 'org.grails.profiles', art.artifactId, '', version)
             dependencies.add(new Dependency(finalArt, "profile"))
         }
+        else {
+            def art = new DefaultArtifact('org.grails.profiles', profile.name, '', profile.version)
+            depend  encies.add(new Dependency(art, "profile"))
+        }
         def ln = System.getProperty("line.separator")
+        dependencies = dependencies.unique()
+
         dependencies = dependencies.collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
             "    ${dep.scope} \"${artifactStr}\"".toString()
