@@ -246,7 +246,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
         else {
             def art = new DefaultArtifact('org.grails.profiles', profile.name, '', profile.version)
-            depend  encies.add(new Dependency(art, "profile"))
+            dependencies.add(new Dependency(art, "profile"))
         }
         def ln = System.getProperty("line.separator")
         dependencies = dependencies.unique()
