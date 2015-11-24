@@ -196,6 +196,7 @@ class AetherDsl {
         callable.call()
 
         this.aetherDependencyManager.repositories.addAll(rc.repositories)
+        this.aetherDependencyManager.repositories.unique()
     }
 
     /**
