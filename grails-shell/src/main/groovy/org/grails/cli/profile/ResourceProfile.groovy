@@ -30,6 +30,7 @@ import org.yaml.snakeyaml.Yaml
 @CompileStatic
 class ResourceProfile extends AbstractProfile implements Profile {
 
+
     ResourceProfile(ProfileRepository repository, String name, Resource profileDir) {
         super(profileDir)
         super.name = name

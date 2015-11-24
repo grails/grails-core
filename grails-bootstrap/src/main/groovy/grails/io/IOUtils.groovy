@@ -98,8 +98,28 @@ class IOUtils extends SpringIOUtils {
         findJarFile(resource)
     }
 
+    /**
+     * Finds a JAR for the given resource
+     *
+     * @param resource The resource
+     * @return The JAR file or null if it can't be found
+     */
+    static File findJarFile(Resource resource) {
+        def absolutePath = resource?.getFilename()
+        if (absolutePath) {
+            final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
+            new File(jarPath)
+        }
+
+    }
+    /**
+     * Finds a JAR for the given resource
+     *
+     * @param resource The resource
+     * @return The JAR file or null if it can't be found
+     */
     static File findJarFile(URL resource) {
-        def absolutePath = resource?.getPath()
+        def absolutePath = resource?.path
         if (absolutePath) {
             final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
             new File(jarPath)

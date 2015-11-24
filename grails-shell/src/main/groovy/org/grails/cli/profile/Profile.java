@@ -42,6 +42,11 @@ public interface Profile {
     String getName();
 
     /**
+     * @return The version of the profile
+     */
+    String getVersion();
+
+    /**
      * @return The description of the profile
      */
     String getDescription();
