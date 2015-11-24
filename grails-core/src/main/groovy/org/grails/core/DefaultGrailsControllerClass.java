@@ -149,8 +149,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
      */
     @Override
     public void registerUrlConverter(UrlConverter urlConverter) {
-        for (String actionName : actions.keySet()) {
-            actions.put( urlConverter.toUrlElement(actionName), actions.get(actionName));
+        for (String actionName : new ArrayList<String>(actions.keySet())) {
+            actions.put( urlConverter.toUrlElement(actionName), actions.remove(actionName));
         }
     }
 

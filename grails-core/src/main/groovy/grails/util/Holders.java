@@ -138,7 +138,7 @@ public class Holders {
         configs.set(config);
 
         // reset flat config
-        flatConfigs.set(config == null ? null : config.flatten());
+        flatConfigs.set(config == null ? null : config);
     }
 
     public static Config getConfig() {

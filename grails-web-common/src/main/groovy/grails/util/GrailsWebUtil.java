@@ -90,7 +90,7 @@ public class GrailsWebUtil {
      */
     public static Map currentConfiguration() {
         GrailsApplication application = currentApplication();
-        return application == null ? new ConfigObject() : application.getConfig();
+        return application == null ? Collections.emptyMap() : application.getConfig();
     }
 
     /**
@@ -101,7 +101,7 @@ public class GrailsWebUtil {
     @Deprecated
     public static Map currentFlatConfiguration() {
         GrailsApplication application = currentApplication();
-        return application == null ? Collections.emptyMap() : application.getFlatConfig();
+        return application == null ? Collections.emptyMap() : application.getConfig();
     }
 
     /**

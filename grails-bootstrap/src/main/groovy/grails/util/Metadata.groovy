@@ -37,7 +37,7 @@ public class Metadata extends CodeGenConfig  {
     public static final String APPLICATION_GRAILS_VERSION = "info.app.grailsVersion";
     public static final String SERVLET_VERSION = "info.app.servletVersion";
     public static final String WAR_DEPLOYED = "info.app.warDeployed";
-    public static final String DEFAULT_SERVLET_VERSION = "2.5";
+    public static final String DEFAULT_SERVLET_VERSION = "3.0";
 
     private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata");
     public static final String BUILD_INFO_FILE = "META-INF/grails.build.info"

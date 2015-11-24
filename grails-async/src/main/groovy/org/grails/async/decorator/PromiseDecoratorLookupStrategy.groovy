@@ -21,5 +21,6 @@ package org.grails.async.decorator
  * @deprecated Use {@link grails.async.decorator.PromiseDecoratorLookupStrategy} instead
  */
 public interface PromiseDecoratorLookupStrategy extends grails.async.decorator.PromiseDecoratorLookupStrategy {
-
+    @Override
+    List<PromiseDecorator> findDecorators()
 }

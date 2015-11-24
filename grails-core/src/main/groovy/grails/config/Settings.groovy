@@ -162,4 +162,18 @@ interface Settings {
      * Whether serving static HTML pages from src/main/resources/public is enabled
      */
     String RESOURCES_ENABLED = 'grails.resources.enabled'
+
+    /**
+     * Whether to log request parameters in the console
+     */
+    String SETTING_LOG_REQUEST_PARAMETERS = "grails.exceptionresolver.logRequestParameters";
+    /**
+     * The parameters to exclude from logging
+     */
+    String SETTING_EXCEPTION_RESOLVER_PARAM_EXCLUDES = "grails.exceptionresolver.params.exclude";
+    /**
+     * The class to use for stacktrace filtering. Should be an instanceof {@link org.grails.exceptions.reporting.StackTraceFilterer}
+     */
+    String SETTING_LOGGING_STACKTRACE_FILTER_CLASS = "grails.logging.stackTraceFiltererClass";
+
 }

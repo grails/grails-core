@@ -152,11 +152,14 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
             def processResourcesDependencies = []
             if(grailsExtension.packageAssets) {
-                processResourcesDependencies << project.task(type: Copy, "copyAssets") {
-                    from "${project.projectDir}/grails-app/assets/javascripts"
-                    from "${project.projectDir}/grails-app/assets/stylesheets"
-                    from "${project.projectDir}/grails-app/assets/images"
-                    into "${processResources.destinationDir}/META-INF/assets"
+                def assetsDir = new File(project.projectDir,"grails-app/assets")
+                if(assetsDir.exists()) {
+                    processResourcesDependencies << project.task(type: Copy, "copyAssets") {
+                        assetsDir.eachDir { subDirectory ->
+                            from subDirectory.canonicalPath
+                        }
+                        into "${processResources.destinationDir}/META-INF/assets"
+                    }
                 }
             }
 
