@@ -160,7 +160,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     @SuppressWarnings("rawtypes")
     public List<UrlMapping> evaluateMappings(Closure closure) {
-        UrlMappingBuilder builder = new UrlMappingBuilder(null);
+        // Small Hack to prevent ambiguous constructor
+        Binding binding = null;
+        UrlMappingBuilder builder = new UrlMappingBuilder(binding);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         if (closure.getParameterTypes().length == 0) {
@@ -221,8 +223,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private static final String SLASH = "/";
         private static final String CONSTRAINTS = "constraints";
 
-
-
         private boolean urlDefiningMode = true;
         private List<ConstrainedProperty> previousConstraints = new ArrayList<ConstrainedProperty>();
         private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
@@ -235,6 +235,18 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         public UrlMappingBuilder(Binding binding) {
             this.binding = binding;
+        }
+
+        protected UrlMappingBuilder(UrlMappingBuilder parent) {
+            this(parent.binding);
+            urlDefiningMode = parent.urlDefiningMode;
+            previousConstraints = parent.previousConstraints;
+            urlMappings = parent.urlMappings;
+            parameterValues = parent.parameterValues;
+            exception = parent.exception;
+            parseRequest = parent.parseRequest;
+            parentResources = parent.parentResources;
+            mappingInfoDeque = parent.mappingInfoDeque;
         }
 
         public List<UrlMapping> getUrlMappings() {
@@ -344,15 +356,18 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
          * @param mappings The mappings
          */
         public void group(String uri, Closure mappings) {
-
             try {
-                parentResources.push(new ParentResource(null, uri, true));
+                ParentResource parentResource = new ParentResource(null, uri, true);
+                parentResources.push(parentResource);
                 pushNewMetaMappingInfo();
+                UrlGroupMappingRecursionBuilder builder = new UrlGroupMappingRecursionBuilder(this, parentResource);
+                mappings.setDelegate(builder);
+                mappings.setResolveStrategy(Closure.DELEGATE_FIRST);
+
                 mappings.call();
             } finally {
                 mappingInfoDeque.pop();
                 parentResources.pop();
-
             }
         }
 
@@ -1016,6 +1031,24 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 this.uri = uri;
                 isSingle = single;
             }
+        }
+    }
+
+    class UrlGroupMappingRecursionBuilder extends UrlMappingBuilder {
+        private ParentResource parentResource;
+        public UrlGroupMappingRecursionBuilder(UrlMappingBuilder parent, ParentResource parentResource) {
+            super(parent);
+
+            this.parentResource = parentResource;
+        }
+
+        @Override
+        public void group(String uri, Closure mappings) {
+            if (parentResource != null) {
+                uri = parentResource.uri.concat(uri);
+            }
+
+            super.group(uri, mappings);
         }
     }
 }
