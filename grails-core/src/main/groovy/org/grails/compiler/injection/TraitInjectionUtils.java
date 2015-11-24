@@ -76,7 +76,12 @@ public class TraitInjectionUtils {
 
             traitInjectors = TraitInjectionSupport.resolveTraitInjectors(traitInjectors);
         }
-        return Collections.unmodifiableList(traitInjectors);
+        if(traitInjectors != null) {
+            return Collections.unmodifiableList(traitInjectors);
+        }
+        else {
+            return Collections.emptyList();
+        }
     }
     
     public static void processTraitsForNode(final SourceUnit sourceUnit, 

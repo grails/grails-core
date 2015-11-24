@@ -25,6 +25,7 @@ import org.grails.taglib.TagLibraryLookup
 import org.grails.taglib.TagOutput
 import org.grails.taglib.TagLibraryMetaUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 
 /**
  * A trait that adds the ability invoke tags to any class
@@ -39,7 +40,7 @@ trait TagLibraryInvoker extends WebAttributes{
     private TagLibraryLookup tagLibraryLookup
     private boolean developmentMode = Environment.isDevelopmentMode();
 
-    @Autowired
+    @Autowired(required = false)
     void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
         this.tagLibraryLookup = tagLibraryLookup
     }
@@ -47,8 +48,11 @@ trait TagLibraryInvoker extends WebAttributes{
     TagLibraryLookup getTagLibraryLookup() {
         def lookup = this.tagLibraryLookup
         if(lookup == null) {
-            lookup = getGrailsApplication()?.mainContext?.getBean(TagLibraryLookup)
-            setTagLibraryLookup(lookup)
+            def applicationContext = getGrailsApplication()?.mainContext
+            if(applicationContext?.containsBean("gspTagLibraryLookup")) {
+                lookup = applicationContext?.getBean("gspTagLibraryLookup", TagLibraryLookup)
+                setTagLibraryLookup(lookup)
+            }
         }
         return lookup
     }

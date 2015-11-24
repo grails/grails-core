@@ -15,6 +15,7 @@
  */
 package org.grails.taglib.encoder
 
+import grails.config.Config
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 
@@ -51,23 +52,30 @@ class OutputEncodingSettings {
          (TAGLIB_CODEC_NAME):         'none',
          (TAGLIB_DEFAULT_CODEC_NAME): 'none']
 
-    Map flatConfig
+    Config flatConfig
 
-    OutputEncodingSettings(Map flatConfig) {
+    OutputEncodingSettings(Config flatConfig) {
         this.flatConfig = flatConfig
     }
 
     String getCodecSettings(GrailsPluginInfo pluginInfo, String codecWriterName) {
         if (!codecWriterName) return null
 
-        Map codecSettings = getConfigForPrefix(CONFIG_PROPERTY_GSP_CODECS + ".")
+        Map codecSettings = flatConfig?.getProperty(CONFIG_PROPERTY_GSP_CODECS, Map.class)
         if(pluginInfo != null) {
-            codecSettings = mergePluginCodecSettings(pluginInfo, codecSettings)
+            def pluginKey = "${pluginInfo.getName()}.${CONFIG_PROPERTY_GSP_CODECS}"
+
+            def firstTry = flatConfig?.getProperty(pluginKey, Map.class, null)
+            if(firstTry == null) {
+                pluginKey = "${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginInfo.getName())}.${CONFIG_PROPERTY_GSP_CODECS}"
+                firstTry = flatConfig?.getProperty(pluginKey, Map.class, codecSettings)
+            }
+            codecSettings = firstTry
         }
         String codecInfo = null
         if (!codecSettings) {
             if (codecWriterName==EXPRESSION_CODEC_NAME) {
-                codecInfo = flatConfig.get(CONFIG_PROPERTY_DEFAULT_CODEC)?.toString()
+                codecInfo = flatConfig?.getProperty(CONFIG_PROPERTY_DEFAULT_CODEC)?.toString()
             }
         } else {
             codecInfo = codecSettings.get(codecWriterName)?.toString()
@@ -86,35 +94,4 @@ class OutputEncodingSettings {
         codecInfo
     }
 
-    private Map mergePluginCodecSettings(GrailsPluginInfo pluginInfo, Map codecSettings) {
-        if(!codecSettings) {
-            codecSettings = [:]
-        }
-        def pluginName = pluginInfo.getName()
-        // handle lower case hyphen separated name format, for example 'ui-platform'
-        doMergePluginCodecSettings(pluginName, codecSettings)
-        // handle property name format for plugin name, for example 'uiPlatform'
-        doMergePluginCodecSettings(GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName), codecSettings)
-        return codecSettings
-    }
-
-    private void doMergePluginCodecSettings(String pluginName, Map codecSettings) {
-        Map codecSettingsForPlugin = getConfigForPrefix("${pluginName}.${CONFIG_PROPERTY_GSP_CODECS}.".toString())
-        if(codecSettingsForPlugin) {
-            codecSettings.putAll(codecSettingsForPlugin)
-        }
-    }
-
-    private Map getConfigForPrefix(String gspCodecsPrefix) {
-        Map codecSettings = (Map)flatConfig.inject([:]){ Map map, Map.Entry entry ->
-            if(entry.getKey() instanceof CharSequence) {
-                String mapKey = entry.getKey().toString()
-                if(mapKey.startsWith(gspCodecsPrefix)) {
-                    map.put(mapKey.substring(gspCodecsPrefix.length()), entry.getValue())
-                }
-            }
-            map
-        }
-        return codecSettings
-    }
 }

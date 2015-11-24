@@ -43,10 +43,6 @@ class GrailsReactorConfigurationReader implements ConfigurationReader {
     Config configuration
     Properties configurationProperties = new Properties()
 
-    GrailsReactorConfigurationReader(Config configuration, ConfigProperties configurationProperties) {
-        this(configuration, configurationProperties.resolveProperties())
-    }
-
     GrailsReactorConfigurationReader(Config configuration, Properties configurationProperties) {
         this.configuration = configuration
         this.configurationProperties = configurationProperties

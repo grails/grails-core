@@ -18,6 +18,9 @@ package org.grails.config;
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.ClassUtils;
@@ -30,7 +33,9 @@ import java.util.*;
  * @author Graeme Rocher
  * @since 3.0
  */
+
 public abstract class NavigableMapConfig implements Config {
+    protected static final Logger LOG = LoggerFactory.getLogger(NavigableMapConfig.class);
     protected ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     protected ConfigurableConversionService conversionService = new DefaultConversionService();
     protected NavigableMap configMap = new NavigableMap() {
@@ -132,8 +137,12 @@ public abstract class NavigableMapConfig implements Config {
     }
 
     @Override
+    @Deprecated
     public Map<String, Object> flatten() {
-        return configMap.toFlatConfig();
+        if(LOG.isWarnEnabled()) {
+            LOG.warn("A plugin or your application called the flatten() method which can degrade startup performance");
+        }
+        return configMap;
     }
 
     @Override
@@ -185,19 +194,21 @@ public abstract class NavigableMapConfig implements Config {
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         Object originalValue = configMap.get(key);
-        if(originalValue == null && key.contains(".")) {
-            originalValue = configMap.navigate(key.split("\\."));
-            if(originalValue != null) {
-                try {
-                    configMap.put(key, originalValue);
-                } catch (Exception e) {
-                    // ignore
+        if(originalValue != null) {
+            if(targetType.isInstance(originalValue)) {
+                return (T)originalValue;
+            }
+            else {
+                if(!(originalValue instanceof NavigableMap)) {
+
+                    try {
+                        T value = conversionService.convert(originalValue, targetType);
+                        return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+                    } catch (ConversionException e) {
+                        // ignore, return default value
+                    }
                 }
             }
-        }
-        if(originalValue != null) {
-            T value = conversionService.convert(originalValue, targetType);
-            return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
         }
         return defaultValue;
     }
@@ -210,11 +221,11 @@ public abstract class NavigableMapConfig implements Config {
             try {
                 Class<T> clazz = (Class<T>) ClassUtils.forName((String) className, classLoader);
                 if(clazz != targetType) {
-                    throw new PropertySourcesConfig.ClassConversionException(clazz, targetType);
+                    throw new ClassConversionException(clazz, targetType);
                 }
                 return clazz;
             } catch (Exception e) {
-                throw new PropertySourcesConfig.ClassConversionException(className, targetType, e);
+                throw new ClassConversionException(className, targetType, e);
             }
         }
         else {
@@ -238,5 +249,16 @@ public abstract class NavigableMapConfig implements Config {
             throw new IllegalStateException("Value for key ["+key+"] cannot be resolved");
         }
         return value;
+    }
+
+    public static class ClassConversionException extends ConversionException {
+
+        public ClassConversionException(Class<?> actual, Class<?> expected) {
+            super(String.format("Actual type %s is not assignable to expected type %s", actual.getName(), expected.getName()));
+        }
+
+        public ClassConversionException(String actual, Class<?> expected, Exception ex) {
+            super(String.format("Could not find/load class %s during attempt to convert to %s", actual, expected.getName()), ex);
+        }
     }
 }

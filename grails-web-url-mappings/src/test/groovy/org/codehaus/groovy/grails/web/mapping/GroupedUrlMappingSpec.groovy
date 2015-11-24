@@ -25,17 +25,17 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
 
     @Issue('#9138')
     void "Test that group parameters are included in generated links"() {
-        given:"A link generator with a dynamic URL mapping"
+        given: "A link generator with a dynamic URL mapping"
         def linkGenerator = getLinkGenerator {
             group "/events/$alias", {
-                "/" (controller: 'test', action: 'index')
-                "/orders/$id" (controller: 'test', action: 'show')
+                "/"(controller: 'test', action: 'index')
+                "/orders/$id"(controller: 'test', action: 'show')
             }
         }
 
         expect:
-        linkGenerator.link(controller:"test", action: 'index', params:[alias:'foo']) == 'http://localhost/events/foo'
-        linkGenerator.link(controller:"test", action: 'show', id:1, params:[alias:'foo']) == 'http://localhost/events/foo/orders/1'
+        linkGenerator.link(controller: "test", action: 'index', params: [alias: 'foo']) == 'http://localhost/events/foo'
+        linkGenerator.link(controller: "test", action: 'show', id: 1, params: [alias: 'foo']) == 'http://localhost/events/foo/orders/1'
     }
 
     @Issue('#9394')
@@ -54,5 +54,31 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         expect:
         linkGenerator.link(controller:"test", action: 'show', id:1, params:[alias:'foo']) == 'http://localhost/events/foo/orders/1'
         linkGenerator.link(controller:"test", action: 'index', params:[alias:'foo']) == 'http://localhost/events/foo'
+    }
+    @Issue('#9426')
+    void "Test that constraints embedded within groups are properly respected"() {
+        given: "A group with a child URL that contains a constraint"
+        def urlMappingsHolder = getUrlMappingsHolder {
+            group "/group", {
+                "/$id/$page?" {
+                    controller = "test"
+                    action = "index"
+                    constraints {
+                        id(matches: /\d+/)
+                        page(matches: /\d+/)
+                    }
+                }
+            }
+        }
+
+        when: 'Attempting to match some urls to this group'
+        def goodMatch_full = urlMappingsHolder.matchAll("/group/1/2")
+        def goodMatch_optional = urlMappingsHolder.matchAll("/group/1")
+        def badMatch = urlMappingsHolder.matchAll("/group/1/char")
+
+        then: 'Should succeed'
+        goodMatch_full
+        goodMatch_optional
+        !badMatch
     }
 }

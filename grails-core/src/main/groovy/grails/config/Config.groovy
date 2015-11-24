@@ -29,6 +29,7 @@ public interface Config extends PropertyResolver, ConfigMap {
     /**
      * @return The flat version of the config
      */
+    @Deprecated
     Map<String, Object> flatten()
 
     /**

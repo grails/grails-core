@@ -53,6 +53,7 @@ public class CompositeConfig implements Config {
     }
 
     @Override
+    @Deprecated
     public Map<String, Object> flatten() {
         Map<String, Object> flattened = new LinkedHashMap<String, Object>();
         for(Config c : configs) {
