@@ -520,6 +520,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                         Closure callable = (Closure) args[0];
                         callable.setDelegate(builder);
+                        callable.setResolveStrategy(Closure.DELEGATE_FIRST);
                         for (ConstrainedProperty constrainedProperty : currentConstraints) {
                             builder.getConstrainedProperties().put(constrainedProperty.getPropertyName(), constrainedProperty);
                         }
