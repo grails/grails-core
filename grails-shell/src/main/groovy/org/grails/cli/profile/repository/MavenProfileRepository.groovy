@@ -138,10 +138,10 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
             if(localData.exists()) {
                 localData.eachDir { File dir ->
                     if(!dir.name.startsWith('.')) {
-                        def profileData = new File(localData, "/maven-metadata-local.xml")
+                        def profileData = new File(dir, "/maven-metadata-local.xml")
                         if(profileData.exists()) {
-                            def currentVersion = parseCurrentVersion(localData)
-                            def profileFile = new File(localData.parentFile, "$currentVersion/${dir.name}-${currentVersion}.jar")
+                            def currentVersion = parseCurrentVersion(profileData)
+                            def profileFile = new File(dir, "$currentVersion/${dir.name}-${currentVersion}.jar")
                             if(profileFile.exists()) {
                                 classLoader.addURL(profileFile.toURI().toURL())
                             }
