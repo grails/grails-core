@@ -618,4 +618,30 @@ class AetherDependencyManagerSpec extends Specification {
             report != null
             !report.hasError()
     }
+
+    void "Test duplicated repositories"() {
+        given: "A dependency manager instance"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                    mavenRepo "https://repo.grails.org/grails/core"
+                }
+            }
+
+        when: "Another set of dependencies are parsed (like an inline plugin)"
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                    mavenRepo "https://repo.grails.org/grails/core"
+                }
+            }
+
+        then: "only the unique set of repositories remain"
+            dependencyManager.repositories.size == 2
+
+        and: "the declaration order is retained"
+            dependencyManager.repositories[0].id == "mavenCentral"
+            dependencyManager.repositories[1].url == "https://repo.grails.org/grails/core"
+    }
 }
