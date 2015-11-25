@@ -16,7 +16,7 @@ buildscript {
 apply plugin: 'idea'
 
 ext {
-    grailsVersion = '2.5.3.BUILD-SNAPSHOT'
+    grailsVersion = '2.5.3'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
