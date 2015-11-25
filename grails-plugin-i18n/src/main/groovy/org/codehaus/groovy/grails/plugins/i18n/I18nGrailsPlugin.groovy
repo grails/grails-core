@@ -116,14 +116,14 @@ class I18nGrailsPlugin {
                         // the first underscore in the file name
                         int numberOfCharsToRemove = fileName.length() - firstUnderscore
                         int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
-                        path = path[0..lastCharacterToRetain]
+                        fileName = fileName[0..lastCharacterToRetain]
                     } else {
                         // Lop off the extension - the "basenames" property in the
                         // message source cannot have entries with an extension.
-                        path -= ".properties"
+                        fileName -= ".properties"
                     }
 
-                    baseNames << "WEB-INF/$baseDir/$path".toString()
+                    baseNames << "WEB-INF/$baseDir/$fileName".toString()
                 }
             }
         }
