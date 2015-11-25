@@ -365,9 +365,20 @@ public class IOUtils {
             saxParserFactory = FactorySupport.createSaxParserFactory();
             saxParserFactory.setNamespaceAware(true);
             saxParserFactory.setValidating(false);
+            saxParserFactory.setXIncludeAware(false);
 
             try {
-                saxParserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                saxParserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+            } catch (Exception pce) {
+                // ignore, parser doesn't support
+            }
+            try {
+                saxParserFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            } catch (Exception pce) {
+                // ignore, parser doesn't support
+            }
+            try {
+                saxParserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             } catch (Exception pce) {
                 // ignore, parser doesn't support
             }
