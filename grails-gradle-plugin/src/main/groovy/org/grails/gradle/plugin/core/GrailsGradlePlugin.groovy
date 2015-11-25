@@ -128,7 +128,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void applyBasePlugins(Project project) {
-        basePluginClasses.each { Class<Plugin> cls -> project.plugins.apply(cls) }
+        for(Class<Plugin> cls in basePluginClasses) {
+            project.plugins.apply(cls)
+        }
     }
 
     protected GrailsExtension registerGrailsExtension(Project project) {
@@ -175,8 +177,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     protected List<File> resolveGrailsResourceDirs(Project project) {
         List<File> grailsResourceDirs = [project.file("src/main/resources")]
-        grailsAppResourceDirs.each {
-            grailsResourceDirs << project.file("grails-app/${it}")
+        for(f in grailsAppResourceDirs) {
+            grailsResourceDirs.add(project.file("grails-app/${f}"))
         }
         grailsResourceDirs
     }
@@ -186,7 +188,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         List<File> grailsSourceDirs = []
         project.file("grails-app").eachDir { File subdir ->
             if (isGrailsSourceDirectory(subdir)) {
-                grailsSourceDirs << subdir
+                grailsSourceDirs.add(subdir)
             }
         }
         grailsSourceDirs.add(project.file("src/main/groovy"))
