@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.sitemesh;
 
 import java.io.IOException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,8 +28,8 @@ import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
 public class GrailsViewBufferingResponse extends GrailsContentBufferingResponse{
     private static class SimpleWebAppContext extends SiteMeshWebAppContext {
-        public SimpleWebAppContext(HttpServletRequest request, HttpServletResponse response) {
-            super(request, response, request.getServletContext());
+        public SimpleWebAppContext(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
+            super(request, response, servletContext);
         }
     }
     
@@ -49,7 +50,7 @@ public class GrailsViewBufferingResponse extends GrailsContentBufferingResponse{
         }
     }
 
-    public GrailsViewBufferingResponse(HttpServletRequest request, HttpServletResponse response) {
-        super(response, new SimpleHtmlOnlyContentProcessor(), new SimpleWebAppContext(request, response));
+    public GrailsViewBufferingResponse(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
+        super(response, new SimpleHtmlOnlyContentProcessor(), new SimpleWebAppContext(request, response, servletContext));
     }
 }

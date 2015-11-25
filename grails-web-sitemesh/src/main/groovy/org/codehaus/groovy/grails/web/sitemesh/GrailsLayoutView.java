@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.view.AbstractGrailsView;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 
@@ -54,19 +55,12 @@ public class GrailsLayoutView extends AbstractGrailsView {
         Content content = obtainContent(model, webRequest, request, response);
         if (content != null) {
             beforeDecorating(content, model, webRequest, request, response);
-            switch (request.getDispatcherType()) {
-                case INCLUDE:
-                    break;
-                case ASYNC:
-                case ERROR:
-                case FORWARD:
-                case REQUEST:
-            		SpringMVCViewDecorator decorator = (SpringMVCViewDecorator) groovyPageLayoutFinder.findLayout(request, content);
-					if (decorator != null) {
-						decorator.render(content, model, request, response, webRequest.getServletContext());
-						return;
-					}
-                    break;
+            if(!WebUtils.isIncludeRequest(request)) {
+                SpringMVCViewDecorator decorator = (SpringMVCViewDecorator) groovyPageLayoutFinder.findLayout(request, content);
+                if (decorator != null) {
+                    decorator.render(content, model, request, response, webRequest.getServletContext());
+                    return;
+                }
             }
 			PrintWriter writer = response.getWriter();
 			content.writeOriginal(writer);
@@ -126,7 +120,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
 
     protected GrailsContentBufferingResponse createContentBufferingResponse(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
             HttpServletResponse response) {
-        return new GrailsViewBufferingResponse(request, response);
+        return new GrailsViewBufferingResponse(request, response, getServletContext());
     }
 
     @Override
