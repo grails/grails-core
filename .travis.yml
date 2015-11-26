@@ -41,7 +41,7 @@ deploy:
 after_deploy:
 - ./gradlew sdkMajorRelease
 after_success:
-- ./trigger-dependent-build
+- ./trigger-dependent-build.sh
 cache:
   directories:
   - $HOME/.gradle
