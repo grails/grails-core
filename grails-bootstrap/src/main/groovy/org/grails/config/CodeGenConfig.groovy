@@ -16,6 +16,7 @@
 package org.grails.config
 
 import grails.config.ConfigMap
+import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -53,8 +54,6 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     CodeGenConfig clone() {
         new CodeGenConfig(this)
     }
-
-
 
     @Override
     int size() {
@@ -129,6 +128,14 @@ class CodeGenConfig implements Cloneable, ConfigMap {
         ymlFile.withInputStream { InputStream input ->
             loadYml(input)
         }
+
+        def envName = Environment.current.name
+        def environmentSpecific = getProperty("environments.${envName}", Map.class)
+        if(environmentSpecific != null) {
+            if(!environmentSpecific.isEmpty()) {
+                mergeMap(environmentSpecific, false)
+            }
+        }
     }
 
     @CompileDynamic // fails with CompileStatic!
@@ -139,12 +146,9 @@ class CodeGenConfig implements Cloneable, ConfigMap {
                 mergeMap((Map)yamlObject)
             }
         }
-
-        def flatConfig = configMap.toFlatConfig()
-        configMap.putAll(flatConfig)
     }
     
-    void mergeMap(Map sourceMap, boolean parseFlatKeys=false) {
+    void mergeMap(Map sourceMap, boolean parseFlatKeys =false) {
         configMap.merge(sourceMap, parseFlatKeys)
     }
     

@@ -15,6 +15,7 @@
  */
 package org.grails.config.yaml
 
+import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.grails.config.NavigableMap
 import org.grails.config.NavigableMapPropertySource
@@ -48,19 +49,35 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
 
     PropertySource<?> load(String name, Resource resource, String profile, boolean parseFlatKeys ) throws IOException {
         if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
+            boolean matchDefault
             if (profile == null) {
                 matchDefault = true
+                setMatchDefault(matchDefault)
                 setDocumentMatchers(new SpringProfileDocumentMatcher())
             }
             else {
                 matchDefault = false;
+                setMatchDefault(matchDefault)
                 setDocumentMatchers(new SpringProfileDocumentMatcher(profile))
             }
             resources = [resource] as Resource[]
             def propertySource = new NavigableMap()
-            process { Properties properties, Map<String, Object> map ->
-                propertySource.merge(map, parseFlatKeys)
+            def metadata = Metadata.getCurrent()
+            def metadataSource = metadata.getSource()
+            def metadataFile = metadata.getMetadataFile()
+            if(matchDefault && metadataSource != null && metadataFile != null && metadataFile.getURL().equals(resource.getURL())) {
+                for(o in metadataSource) {
+                    if(o instanceof Map) {
+                        propertySource.merge((Map)o, false)
+                    }
+                }
             }
+            else {
+                process { Properties properties, Map<String, Object> map ->
+                    propertySource.merge(map, parseFlatKeys)
+                }
+            }
+
             if (!propertySource.isEmpty()) {
                 return new NavigableMapPropertySource(name, propertySource)
             }

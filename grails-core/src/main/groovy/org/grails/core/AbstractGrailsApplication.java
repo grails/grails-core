@@ -18,6 +18,7 @@ import grails.config.Config;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsConfigurationAware;
+import grails.util.Environment;
 import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyObjectSupport;
@@ -58,7 +59,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @Override
     public boolean isWarDeployed() {
-        return getMetadata().isWarDeployed();
+        return Environment.isWarDeployed();
     }
     
     public Config getConfig() {

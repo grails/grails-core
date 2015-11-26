@@ -21,9 +21,9 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.grails.io.support.GrailsResourceUtils;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
 
@@ -204,7 +204,12 @@ public enum Environment {
      * @return true if is
      */
     public static boolean isWarDeployed() {
-        return Metadata.getCurrent().isWarDeployed();
+        URL loadedLocation = Environment.class.getClassLoader().getResource(Metadata.FILE);
+        if(loadedLocation != null && loadedLocation.getPath().contains("/WEB-INF/classes")) {
+            return true;
+        }
+        return false;
+
     }
 
     /**
