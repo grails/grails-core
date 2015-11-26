@@ -20,6 +20,8 @@ import grails.compiler.DelegatingMethod
 import grails.transaction.Rollback
 import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 
 import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.transaction.NotTransactional
@@ -70,6 +72,7 @@ class TransactionalTransform implements ASTTransformation{
     private static final String METHOD_EXECUTE = "execute"
     private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
     private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), Rollback.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
+    public static final String PROPERTY_DATA_SOURCE = "datasource"
 
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -300,11 +303,15 @@ class TransactionalTransform implements ASTTransformation{
     protected void weaveTransactionManagerAware(SourceUnit source, ClassNode declaringClassNode) {
         ClassNode transactionManagerAwareInterface = ClassHelper.make(TransactionManagerAware)
 
-        if (!GrailsASTUtils.findInterface(declaringClassNode, transactionManagerAwareInterface)) {
-            declaringClassNode.addInterface(transactionManagerAwareInterface)
+        boolean hasDataSourceProperty = hasOrInheritsProperty(declaringClassNode, PROPERTY_DATA_SOURCE)
+        if (!findInterface(declaringClassNode, transactionManagerAwareInterface)) {
+            if(!hasDataSourceProperty) {
+
+                declaringClassNode.addInterface(transactionManagerAwareInterface)
+            }
 
             //add the transactionManager property
-            if (!GrailsASTUtils.hasProperty(declaringClassNode, PROPERTY_TRANSACTION_MANAGER)) {
+            if (!hasOrInheritsProperty(declaringClassNode, PROPERTY_TRANSACTION_MANAGER) ) {
 
                 def transactionManagerClassNode = ClassHelper.make(PlatformTransactionManager)
 
@@ -342,7 +349,20 @@ class TransactionalTransform implements ASTTransformation{
                 )))
 
 
-                declaringClassNode.addMethod("setTransactionManager", Modifier.PUBLIC, ClassHelper.VOID_TYPE, parameters, null, body)
+                def methodNode = declaringClassNode.addMethod("setTransactionManager", Modifier.PUBLIC, ClassHelper.VOID_TYPE, parameters, null, body)
+
+                if(hasDataSourceProperty) {
+                    methodNode.addAnnotation(new AnnotationNode(new ClassNode(Autowired.class)))
+
+                    def qualifier = new AnnotationNode(new ClassNode(Qualifier.class))
+
+                    def expression = declaringClassNode.getProperty(PROPERTY_DATA_SOURCE).getInitialExpression()
+                    if(expression != null) {
+
+                        qualifier.addMember("value", new ConstantExpression("transactionManager_${expression.getText()}".toString()))
+                        methodNode.addAnnotation(qualifier)
+                    }
+                }
 
             }
 
