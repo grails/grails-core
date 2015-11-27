@@ -4,6 +4,7 @@ import grails.boot.GrailsApp
 import grails.config.Settings
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.core.GrailsApplicationClass
 import grails.core.GrailsApplicationLifeCycle
 import grails.plugins.DefaultGrailsPluginManager
 import grails.plugins.GrailsPlugin
@@ -53,8 +54,9 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     final GrailsApplication grailsApplication
     final GrailsApplicationLifeCycle lifeCycle
-    protected GrailsPluginManager pluginManager
-    protected ApplicationContext applicationContext
+    final GrailsApplicationClass applicationClass
+    protected final GrailsPluginManager pluginManager
+    protected final ApplicationContext applicationContext
     boolean loadExternalBeans = true
     boolean reloadingEnabled = RELOADING_ENABLED
 
@@ -72,6 +74,13 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
+        if(lifeCycle instanceof GrailsApplicationClass) {
+            this.applicationClass = (GrailsApplicationClass)lifeCycle
+        }
+        else {
+            this.applicationClass = null
+        }
+        this.applicationContext = applicationContext
         grailsApplication = new DefaultGrailsApplication((classes?:[]) as Class[])
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
@@ -80,7 +89,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     }
 
     protected final void initializeGrailsApplication(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext
+
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
         customizePluginManager(pluginManager)
@@ -113,6 +122,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                 cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
                     @Override
                     public String convert(NavigableMap.NullSafeNavigator source) {
+                        return null;
+                    }
+                });
+                cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
+                    @Override
+                    public Object convert(NavigableMap.NullSafeNavigator source) {
                         return null;
                     }
                 });

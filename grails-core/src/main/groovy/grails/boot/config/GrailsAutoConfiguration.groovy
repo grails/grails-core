@@ -1,6 +1,7 @@
 package grails.boot.config
 
 import grails.config.Settings
+import grails.core.GrailsApplicationClass
 import grails.core.GrailsApplicationLifeCycle
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
@@ -28,7 +29,7 @@ import java.lang.reflect.Field
  *
  */
 @CompileStatic
-class GrailsAutoConfiguration implements GrailsApplicationLifeCycle, ResourceLoaderAware, ApplicationContextAware {
+class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderAware, ApplicationContextAware {
 
     private static final String APC_PRIORITY_LIST_FIELD = "APC_PRIORITY_LIST";
 

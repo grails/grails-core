@@ -102,6 +102,7 @@ public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.g
     }
 
     @Override
+    @Deprecated
     public org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication() {
         return new LegacyGrailsApplication(grailsApplication);
     }

@@ -124,7 +124,7 @@ public class Metadata extends NavigableMap implements ConfigMap  {
             }
             if (url != null) {
                 url.withInputStream { input ->
-                    this.source = loadYml(input);
+                    this.@source = loadYml(input);
                 }
                 this.metadataFile = new UrlResource(url)
             }
