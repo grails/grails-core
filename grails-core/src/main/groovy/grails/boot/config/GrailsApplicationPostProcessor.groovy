@@ -56,21 +56,9 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     final GrailsApplicationLifeCycle lifeCycle
     final GrailsApplicationClass applicationClass
     protected final GrailsPluginManager pluginManager
-    protected final ApplicationContext applicationContext
+    protected ApplicationContext applicationContext
     boolean loadExternalBeans = true
     boolean reloadingEnabled = RELOADING_ENABLED
-
-    GrailsApplicationPostProcessor() {
-        this(null, null, [] as Class[])
-    }
-
-    GrailsApplicationPostProcessor(Class...classes) {
-        this(null, classes)
-    }
-
-    GrailsApplicationPostProcessor(ApplicationContext applicationContext, Class...classes) {
-        this(null, applicationContext, classes)
-    }
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
@@ -80,16 +68,17 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         else {
             this.applicationClass = null
         }
-        this.applicationContext = applicationContext
         grailsApplication = new DefaultGrailsApplication((classes?:[]) as Class[])
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
-            initializeGrailsApplication(applicationContext)
+            setApplicationContext(applicationContext)
         }
     }
 
     protected final void initializeGrailsApplication(ApplicationContext applicationContext) {
-
+        if(applicationContext == null) {
+            throw new IllegalStateException("ApplicationContext should not be null")
+        }
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
         customizePluginManager(pluginManager)
@@ -210,14 +199,14 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @Override
     void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if(this.applicationContext != applicationContext) {
+        if(this.applicationContext != applicationContext && applicationContext != null) {
+            this.applicationContext = applicationContext
             initializeGrailsApplication(applicationContext)
-        }
-
-        if(applicationContext instanceof ConfigurableApplicationContext) {
-            def configurable = (ConfigurableApplicationContext) applicationContext
-            configurable.addApplicationListener(this)
-            configurable.environment.addActiveProfile( grailsApplication.getConfig().getProperty(Settings.PROFILE, String, "web"))
+            if(applicationContext instanceof ConfigurableApplicationContext) {
+                def configurable = (ConfigurableApplicationContext) applicationContext
+                configurable.addApplicationListener(this)
+                configurable.environment.addActiveProfile( grailsApplication.getConfig().getProperty(Settings.PROFILE, String, "web"))
+            }
         }
     }
 

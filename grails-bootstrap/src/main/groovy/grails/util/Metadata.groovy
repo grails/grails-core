@@ -164,13 +164,15 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     private Object loadYml(InputStream input) {
         Yaml yaml = new Yaml()
         def loadedYaml = yaml.loadAll(input)
+        List result = []
         for(Object yamlObject : loadedYaml) {
             if(yamlObject instanceof Map) { // problem here with CompileStatic
+                result.add(yamlObject)
                 merge((Map)yamlObject)
             }
         }
 
-        return loadedYaml
+        return result
     }
 
     private void loadFromInputStream(InputStream inputStream) {
