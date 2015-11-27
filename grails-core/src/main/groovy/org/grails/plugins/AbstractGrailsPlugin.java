@@ -49,6 +49,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
     public static final String PLUGIN_YML = "plugin.yml";
     public static final String PLUGIN_YML_PATH = "/" + PLUGIN_YML;
+    private static final List<String> DEFAULT_CONFIG_IGNORE_LIST = Arrays.asList("dataSource", "hibernate");
     private static Resource basePluginResource = null;
     protected PropertySource<?> propertySource;
     protected org.codehaus.groovy.grails.commons.GrailsApplication application;
@@ -86,7 +87,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         if(resource != null && resource.exists()) {
             YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
             try {
-                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null, false, Arrays.asList("dataSource"));
+                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null, false, DEFAULT_CONFIG_IGNORE_LIST);
             } catch (IOException e) {
                 LOG.warn("Error loading plugin.yml for plugin: " + pluginClass.getName() +": " + e.getMessage(), e);
             }
