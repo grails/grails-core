@@ -17,7 +17,7 @@ package grails.io
 
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
-import org.grails.io.support.Resource
+import groovy.transform.Memoized
 import org.grails.io.support.SpringIOUtils
 import org.grails.io.support.UrlResource
 
@@ -130,6 +130,7 @@ class IOUtils extends SpringIOUtils {
         return null
     }
 
+    @Memoized
     public static File findApplicationDirectoryFile() {
         def directory = findApplicationDirectory()
         if(directory) {
@@ -142,6 +143,7 @@ class IOUtils extends SpringIOUtils {
         return null
     }
 
+    @Memoized
     public static String findApplicationDirectory() {
         if(applicationDirectory) {
             return applicationDirectory
@@ -151,17 +153,21 @@ class IOUtils extends SpringIOUtils {
         try {
             String mainClassName = System.getProperty(BuildSettings.MAIN_CLASS_NAME)
             if(!mainClassName) {
-                def stackTraceElements = Thread.currentThread().getStackTrace()
+                def stackTraceElements = Arrays.asList( Thread.currentThread().getStackTrace() ).reverse()
                 if(stackTraceElements) {
-                    def lastElement = stackTraceElements[-1]
-                    def className = lastElement.className
-                    def methodName = lastElement.methodName
-                    if(className.endsWith(".Application") && methodName == '<clinit>') {
-                        mainClassName = className
+                    for(lastElement in stackTraceElements) {
+
+                        def className = lastElement.className
+                        def methodName = lastElement.methodName
+                        if(className.endsWith(".Application") && methodName == '<clinit>') {
+                            mainClassName = className
+                            break
+                        }
                     }
                 }
             }
             if(mainClassName) {
+
 
                 final Class<?> mainClass = Thread.currentThread().contextClassLoader.loadClass(mainClassName)
                 final URL classResource = mainClass ? findClassResource(mainClass) : null

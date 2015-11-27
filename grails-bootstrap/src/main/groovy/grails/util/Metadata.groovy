@@ -313,7 +313,7 @@ public class Metadata extends NavigableMap implements ConfigMap  {
      * @return True if the development sources are present
      */
     boolean isDevelopmentEnvironmentAvailable() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT;
+        return Environment.isDevelopmentEnvironmentAvailable()
     }
 
 

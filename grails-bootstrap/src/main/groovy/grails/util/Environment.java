@@ -192,6 +192,7 @@ public enum Environment {
 
     /**
      * Returns true if the application is running in development mode (within grails run-app)
+     *
      * @return true if the application is running in development mode
      */
 
@@ -199,6 +200,14 @@ public enum Environment {
         return DEVELOPMENT_MODE;
     }
 
+    /**
+     * This method will return true if the 'grails-app' directory was found, regardless of whether reloading is active or not
+     *
+     * @return True if the development sources are present
+     */
+    public static boolean isDevelopmentEnvironmentAvailable() {
+        return BuildSettings.GRAILS_APP_DIR_PRESENT ;
+    }
     /**
      * Check whether the application is deployed
      * @return true if is
