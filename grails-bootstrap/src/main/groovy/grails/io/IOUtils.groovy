@@ -18,6 +18,7 @@ package grails.io
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
+import org.grails.io.support.Resource
 import org.grails.io.support.SpringIOUtils
 import org.grails.io.support.UrlResource
 
