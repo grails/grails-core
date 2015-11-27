@@ -17,9 +17,6 @@ package org.grails.config
 
 import groovy.transform.CompileStatic
 import org.springframework.core.env.EnumerablePropertySource
-import org.springframework.core.env.MapPropertySource
-
-
 
 /**
  * A {@link org.springframework.core.env.PropertySource} with keys prefixed by the given prefix
@@ -28,17 +25,21 @@ import org.springframework.core.env.MapPropertySource
  * @since 3.0
  */
 
-class PrefixedMapPropertySource extends MapPropertySource {
+@CompileStatic
+class PrefixedMapPropertySource extends EnumerablePropertySource {
+    final EnumerablePropertySource source
+    final String prefix
+    final String[] propertyNames
+
     PrefixedMapPropertySource(String prefix, EnumerablePropertySource source) {
-        super(prefix, prefixMap(prefix, source))
+        super(prefix + "_" + source.getName())
+        this.prefix = prefix
+        this.source = source
+        this.propertyNames = source.propertyNames.collect() { String n -> "${prefix}.$n".toString() } as String[]
     }
 
-    @CompileStatic
-    private static Map<String, Object> prefixMap(String prefix,EnumerablePropertySource map) {
-        Map<String, Object> newMap = [:]
-        for(key in map.propertyNames) {
-            newMap["${prefix}.${key}".toString()] = map.getProperty(key)
-        }
-        return newMap
+    @Override
+    Object getProperty(String name) {
+        return source.getProperty("${prefix}.$name")
     }
 }

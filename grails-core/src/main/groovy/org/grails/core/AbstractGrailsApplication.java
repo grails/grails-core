@@ -18,10 +18,12 @@ import grails.config.Config;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.support.GrailsConfigurationAware;
+import grails.util.Environment;
 import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
+import org.grails.config.FlatConfig;
 import org.grails.config.PropertySourcesConfig;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -57,7 +59,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @Override
     public boolean isWarDeployed() {
-        return getMetadata().isWarDeployed();
+        return Environment.isWarDeployed();
     }
     
     public Config getConfig() {
@@ -87,7 +89,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> getFlatConfig() {
-        return getConfig();
+        return new FlatConfig(getConfig());
     }
 
     @Override

@@ -67,6 +67,8 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes, org.
     String APP_URI_ATTRIBUTE = "org.grails.APP_URI_ATTRIBUTE";
     String RENDERING_ERROR_ATTRIBUTE = "org.grails.RENDERING_ERROR_ATTRIBUTE";
     String REDIRECT_ISSUED = "org.grails.REDIRECT_ISSUED";
+    String FORWARD_ISSUED = "org.grails.FORWARD_CALLED";
+    String FORWARD_IN_PROGRESS = "org.grails.FORWARD_CALLED";
     String GRAILS_CONTROLLER_CLASS_AVAILABLE = "org.grails.GRAILS_CONTROLLER_CLASS_AVAILABLE";
 
     /**

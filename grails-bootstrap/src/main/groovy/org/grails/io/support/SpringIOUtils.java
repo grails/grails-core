@@ -406,6 +406,16 @@ public class SpringIOUtils {
                 // ignore, parser doesn't support
             }
             try {
+                saxParserFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            } catch (Exception pce) {
+                // ignore, parser doesn't support
+            }
+            try {
+                saxParserFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            } catch (Exception pce) {
+                // ignore, parser doesn't support
+            }
+            try {
                 saxParserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             } catch (Exception e) {
                 // ignore, parser doesn't support

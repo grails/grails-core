@@ -11,7 +11,7 @@ class EnvironmentTests extends GroovyTestCase {
         System.setProperty(Environment.RELOAD_ENABLED, "")
         System.setProperty(Environment.RELOAD_LOCATION, "")
 
-        Metadata.getCurrent().getConfigMap().clear()
+        Metadata.reset()
     }
 
     void testExecuteForEnvironment() {
@@ -181,7 +181,8 @@ grails:
 
     void testReloadEnabled() {
         Metadata.getInstance(new ByteArrayInputStream('''
-grails.env=production
+grails:
+    env: production
 '''.bytes))
 
         assertFalse "reload should be disabled by default in production", Environment.getCurrent().isReloadEnabled()

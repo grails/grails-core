@@ -21,8 +21,10 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.SourceUnit;
@@ -127,6 +129,7 @@ public class GrailsApplicationCompilerAutoConfiguration extends CompilerAutoConf
         }
         applicationClassNode.addAnnotation(enableAutoAnnotation);
         applicationClassNode.setModule(source.getAST());
+        applicationClassNode.addMethod("shouldScanDefaultPackage", Modifier.PUBLIC, ClassHelper.Boolean_TYPE, new Parameter[0], null, new ReturnStatement(new ConstantExpression(Boolean.TRUE)));
         source.getAST().getClasses().add(0, applicationClassNode);
         classNode.addAnnotation(new AnnotationNode(ClassHelper.make("org.grails.boot.internal.EnableAutoConfiguration")));
     }

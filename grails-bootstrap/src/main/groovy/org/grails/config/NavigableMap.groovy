@@ -6,9 +6,14 @@ import groovy.transform.EqualsAndHashCode
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
+import java.util.regex.Pattern
+
 @EqualsAndHashCode
 @CompileStatic
 class NavigableMap implements Map<String, Object>, Cloneable {
+
+    private static final Pattern SPLIT_PATTERN = ~/\./
+
     final NavigableMap rootConfig
     final List<String> path
     final Map<String, Object> delegateMap
@@ -149,6 +154,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         }
         if (isNestedSet && newValue == null) {
             if(path) {
+
+                def subMap = rootMap.get(path)
+                if(subMap instanceof Map) {
+                    subMap.remove(sourceKey)
+                }
                 def keysToRemove = rootMap.keySet().findAll() { String key ->
                     key.startsWith("${path}.")
                 }
@@ -208,14 +218,30 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     }
     
     public NavigableMap navigateSubMap(List<String> path, boolean createMissing) {
+        NavigableMap rootMap = this
         NavigableMap currentMap = this
+        StringBuilder accumulatedPath = new StringBuilder()
+        boolean isFirst = true
         for(String pathElement : path) {
+            if(!isFirst) {
+                accumulatedPath.append(".").append(pathElement)
+            }
+            else {
+                isFirst = false
+                accumulatedPath.append(pathElement)
+            }
+
             Object currentItem = currentMap.get(pathElement) 
             if(currentItem instanceof NavigableMap) {
                 currentMap = (NavigableMap)currentItem
             } else if (createMissing) {
                 Map<String, Object> newMap = new NavigableMap( (NavigableMap)currentMap.rootConfig, ((currentMap.path + [pathElement]) as List<String>).asImmutable())
                 currentMap.put(pathElement, newMap)
+
+                def fullPath = accumulatedPath.toString()
+                if(!rootMap.containsKey(fullPath)) {
+                    rootMap.put(fullPath, newMap)
+                }
                 currentMap = newMap
             } else {
                 return null

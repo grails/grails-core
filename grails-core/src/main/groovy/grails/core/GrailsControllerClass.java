@@ -65,6 +65,9 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     String NAMESPACE_PROPERTY = "namespace";
 
 
+    /**
+     * @return The action names
+     */
     Set<String> getActions();
 
     /**

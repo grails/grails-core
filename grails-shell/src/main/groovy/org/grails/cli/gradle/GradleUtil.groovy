@@ -48,7 +48,14 @@ class GradleUtil {
 
         try {
             Runtime.addShutdownHook {
-                clearPreparedConnection()
+                try {
+                    Thread.start {
+                        clearPreparedConnection()
+                    }.join(1000)
+                } catch (Throwable e) {
+                    // ignore
+                }
+
             }
         } catch (e) {
             // ignore

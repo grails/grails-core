@@ -36,16 +36,10 @@ public class PropertySourcesConfig extends NavigableMapConfig {
     protected PropertySources propertySources;
     protected PropertySourcesPropertyResolver propertySourcesPropertyResolver;
 
-    protected String prefix;
 
     public PropertySourcesConfig(PropertySources propertySources) {
-        this(propertySources, null);
-    }
-
-    public PropertySourcesConfig(PropertySources propertySources, String prefix) {
         this.propertySources = propertySources;
         this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
-        this.prefix = prefix;
         initializeFromPropertySources(propertySources);
     }
 
@@ -64,7 +58,13 @@ public class PropertySourcesConfig extends NavigableMapConfig {
         this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
         initializeFromPropertySources(propertySources);
     }
-
+    public PropertySourcesConfig(PropertySource propertySource) {
+        MutablePropertySources mutablePropertySources = new MutablePropertySources();
+        mutablePropertySources.addFirst(propertySource);
+        this.propertySources = mutablePropertySources;
+        this.propertySourcesPropertyResolver = new PropertySourcesPropertyResolver(propertySources);
+        initializeFromPropertySources(propertySources);
+    }
     public PropertySources getPropertySources() {
         return propertySources;
     }
@@ -106,12 +106,7 @@ public class PropertySourcesConfig extends NavigableMapConfig {
                 if(value instanceof CharSequence) {
                     value = resolvePlaceholders(value.toString());
                 }
-                if(prefix != null) {
-                    map.put(prefix + '.' + propertyName, value);
-                }
-                else {
-                    map.put(propertyName, value);
-                }
+                map.put(propertyName, value);
             }
 
             configMap.merge(map, true);

@@ -250,7 +250,7 @@ class DataSourceGrailsPlugin extends Plugin {
 
     @Override
     void onShutdown(Map<String, Object> event) {
-        if (Metadata.getCurrent().isWarDeployed() || Environment.isFork()) {
+        if (Environment.current.isWarDeployed() || Environment.isFork()) {
             deregisterJDBCDrivers()
         }
     }

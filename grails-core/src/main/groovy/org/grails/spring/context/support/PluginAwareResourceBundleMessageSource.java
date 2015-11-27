@@ -25,10 +25,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.plugins.BinaryGrailsPlugin;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -46,11 +49,6 @@ import java.util.concurrent.ConcurrentMap;
  * @since 1.1
  */
 public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBundleMessageSource implements GrailsApplicationAware, PluginManagerAware, InitializingBean {
-    private static final Log LOG = LogFactory.getLog(PluginAwareResourceBundleMessageSource.class);
-
-    private static final Resource[] NO_RESOURCES = {};
-
-    private static final String WEB_INF_PLUGINS_PATH = "/WEB-INF/plugins/";
     private static final String GRAILS_APP_I18N_PATH_COMPONENT = "/grails-app/i18n/";
     protected GrailsApplication application;
     protected GrailsPluginManager pluginManager;
@@ -61,10 +59,12 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedBinaryPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private long pluginCacheMillis = Long.MIN_VALUE;
 
+    @Deprecated
     public List<String> getPluginBaseNames() {
         return pluginBaseNames;
     }
 
+    @Deprecated
     public void setPluginBaseNames(List<String> pluginBaseNames) {
         this.pluginBaseNames = pluginBaseNames;
     }
@@ -86,11 +86,32 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             pluginCacheMillis = cacheMillis;
         }
         
-        if (pluginManager == null || localResourceLoader == null) {
+        if (localResourceLoader == null) {
             return;
         }
 
-        Resource[] resources = resourceResolver.getResources("classpath*:**/*.properties");
+        Resource[] resources;
+        if(Environment.isDevelopmentMode()) {
+            File[] propertiesFiles = new File(BuildSettings.BASE_DIR, GRAILS_APP_I18N_PATH_COMPONENT).listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".properties");
+                }
+            });
+            if(propertiesFiles != null && propertiesFiles.length > 0) {
+                List<Resource> resourceList = new ArrayList<Resource>(propertiesFiles.length);
+                for (File propertiesFile : propertiesFiles) {
+                    resourceList.add(new FileSystemResource(propertiesFile));
+                }
+                resources = resourceList.toArray(new Resource[resourceList.size()]);
+            }
+            else {
+                resources = new Resource[0];
+            }
+        }
+        else {
+            resources = resourceResolver.getResources("classpath*:**/*.properties");
+        }
 
         List<String> basenames = new ArrayList<String>();
         for (Resource resource : resources) {
@@ -106,45 +127,8 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
         setBasenames(basenames.toArray( new String[basenames.size()]));
 
-
-
-        for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
-            for (Resource pluginBundle : getPluginBundles(plugin)) {
-                // If the plugin is an inline plugin, use the abosolute path to the plugin's i18n files.
-                // Otherwise, use the relative path to the plugin from the application's perspective.
-                String basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
-
-                final String baseName = GrailsStringUtils.substringBefore(GrailsStringUtils.getFileBasename(pluginBundle.getFilename()), "_");
-                String pathToAdd = basePath + GRAILS_APP_I18N_PATH_COMPONENT + baseName;
-                if(!pluginBaseNames.contains(pathToAdd)) {
-                    pluginBaseNames.add(pathToAdd);
-                }
-            }
-        }
     }
 
-    /**
-     * Returns the i18n message bundles for the provided plugin or an empty
-     * array if the plugin does not contain any .properties files in its
-     * grails-app/i18n folder.
-     * @param grailsPlugin The grails plugin that may or may not contain i18n internationalization files.
-     * @return An array of {@code Resource} objects representing the internationalization files or
-     *    an empty array if no files are found.
-     */
-    protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
-        if (grailsPlugin instanceof BinaryGrailsPlugin) {
-            return NO_RESOURCES;
-        }
-
-        try {
-            String basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
-            return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
-        }
-        catch (IOException e) {
-            LOG.debug("Could not resolve any resources for plugin " + grailsPlugin.getFileSystemName(), e);
-            return NO_RESOURCES;
-        }
-    }
 
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {
@@ -173,16 +157,6 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 Properties mergedProps = new Properties();
                 PropertiesHolder mergedHolder = new PropertiesHolder(mergedProps);
                 mergeBinaryPluginProperties(locale, mergedProps);
-                for (String basename : pluginBaseNames) {
-                    List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale);
-                    for (int j = filenamesAndResources.size() - 1; j >= 0; j--) {
-                        Pair<String, Resource> filenameAndResource = filenamesAndResources.get(j);
-                        if(filenameAndResource.getbValue() != null) {
-                            PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
-                            mergedProps.putAll(propHolder.getProperties());
-                        }
-                    }
-                }
                 return mergedHolder;
             }
         });
@@ -204,10 +178,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         else {
-            String result = findMessageInSourcePlugins(code, locale);
-            if (result != null) return result;
-
-            result = findCodeInBinaryPlugins(code, locale);
+            String result = findCodeInBinaryPlugins(code, locale);
             if (result != null) return result;
 
         }
@@ -244,32 +215,8 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         return getMergedBinaryPluginProperties(locale).getProperty(code);
     }
 
-    private String findMessageInSourcePlugins(String code, Locale locale) {
-        for (String pluginBaseName : pluginBaseNames) {
-            List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(pluginBaseName, locale);
-            for (Pair<String, Resource> filenameAndResource : filenamesAndResources) {
-                PropertiesHolder holder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
-                String result = holder.getProperty(code);
-                if (result != null) return result;
-            }
-        }
-        return null;
-    }
-
     private MessageFormat findMessageFormatInBinaryPlugins(String code, Locale locale) {
         return getMergedBinaryPluginProperties(locale).getMessageFormat(code, locale);
-    }
-
-    private MessageFormat findMessageFormatInSourcePlugins(String code, Locale locale) {
-        for (String pluginBaseName : pluginBaseNames) {
-            List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(pluginBaseName, locale);
-            for (Pair<String, Resource> filenameAndResource : filenamesAndResources) {
-                PropertiesHolder holder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
-                MessageFormat result = holder.getMessageFormat(code, locale);
-                if (result != null) return result;
-            }
-        }
-        return null;
     }
 
     /**
@@ -288,10 +235,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         else {
-            MessageFormat result = findMessageFormatInSourcePlugins(code, locale);
-            if (result != null) return result;
-
-            result = findMessageFormatInBinaryPlugins(code, locale);
+            MessageFormat result = findMessageFormatInBinaryPlugins(code, locale);
             if (result != null) return result;
         }
         return null;
