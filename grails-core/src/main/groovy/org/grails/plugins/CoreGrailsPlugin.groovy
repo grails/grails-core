@@ -66,8 +66,7 @@ class CoreGrailsPlugin extends Plugin {
 
     @Override
     Closure doWithSpring() { {->
-        xmlns context:"http://www.springframework.org/schema/context"
-        xmlns grailsContext:"http://grails.org/schema/context"
+
         def application = grailsApplication
 
         // Grails config as properties
@@ -101,13 +100,9 @@ class CoreGrailsPlugin extends Plugin {
             packagesToScan += beanPackages
         }
 
-        // Allow the use of Spring annotated components
-        if(!springConfig.unrefreshedApplicationContext.containsBeanDefinition(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME    )) {
-            context.'annotation-config'()
-        }
-
 
         if (packagesToScan) {
+            xmlns grailsContext:"http://grails.org/schema/context"
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
 
