@@ -16,14 +16,19 @@
 package org.grails.plugins.web.controllers.metaclass
 
 import groovy.transform.CompileStatic
+import org.grails.web.util.GrailsApplicationAttributes
+
 /**
  * Implements performing a forward.
  *
  * @author Graeme Rocher
  * @since 1.1
+ *
+ * @deprecated Use {@link GrailsApplicationAttributes} instead
  */
 @CompileStatic
+@Deprecated
 class ForwardMethod {
-    public static final String IN_PROGRESS = "org.codehaus.groovy.grails.FORWARD_IN_PROGRESS"
-    public static final String CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED"
+    public static final String IN_PROGRESS = GrailsApplicationAttributes.FORWARD_IN_PROGRESS
+    public static final String CALLED = GrailsApplicationAttributes.FORWARD_ISSUED
 }
