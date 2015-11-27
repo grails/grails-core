@@ -23,6 +23,7 @@ import org.grails.plugins.web.controllers.metaclass.ForwardMethod
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.UrlMappingUtils
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.DataBinder
@@ -86,12 +87,13 @@ trait RequestForwarder implements WebAttributes {
 
         def request = webRequest.currentRequest
         def response = webRequest.currentResponse
-        request.setAttribute(ForwardMethod.IN_PROGRESS, true)
+
+        request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
 
         if(params.params instanceof Map) {
             urlInfo.parameters.putAll((Map)params.params)
         }
-        request.setAttribute(ForwardMethod.CALLED, true)
+        request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
         String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, (Map)model, true)
         return uri
     }

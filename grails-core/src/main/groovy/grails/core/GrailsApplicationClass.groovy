@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.plugins.web.controllers.metaclass
-
-import groovy.transform.CompileStatic
-import org.grails.web.util.GrailsApplicationAttributes
+package grails.core
 
 /**
- * Implements performing a forward.
+ * Marker interface for the GrailsApplicationClass
  *
  * @author Graeme Rocher
- * @since 1.1
- *
- * @deprecated Use {@link GrailsApplicationAttributes} instead
+ * @since 3.0.10
  */
-@CompileStatic
-@Deprecated
-class ForwardMethod {
-    public static final String IN_PROGRESS = GrailsApplicationAttributes.FORWARD_IN_PROGRESS
-    public static final String CALLED = GrailsApplicationAttributes.FORWARD_ISSUED
+trait GrailsApplicationClass implements GrailsApplicationLifeCycle {
+
+
 }

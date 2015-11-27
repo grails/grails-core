@@ -90,7 +90,13 @@ class GrailsCli {
 
             try {
                 Runtime.addShutdownHook {
-                    currentExecutionContext?.cancel()
+                    try {
+                        Thread.start {
+                            currentExecutionContext?.cancel()
+                        }.join(1000)
+                    } catch (Throwable e) {
+                        // ignore
+                    }
                 }
             } catch (e) {
                 // ignore

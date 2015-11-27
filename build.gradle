@@ -50,7 +50,7 @@ ext {
     springVersion = "4.2.3.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
-    concurrentlinkedhashmapVersion = "1.4"
+    concurrentlinkedhashmapVersion = "1.4.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
     tomcatVersion = "8.0.26"

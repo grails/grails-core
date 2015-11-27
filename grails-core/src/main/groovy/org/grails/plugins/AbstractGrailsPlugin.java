@@ -26,6 +26,8 @@ import org.grails.config.yaml.YamlPropertySourceLoader;
 import org.grails.core.AbstractGrailsClass;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.PropertySource;
@@ -35,10 +37,7 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -46,9 +45,11 @@ import java.util.Map;
  * @author Graeme Rocher
  */
 public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements GrailsPlugin {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractGrailsPlugin.class);
 
     public static final String PLUGIN_YML = "plugin.yml";
     public static final String PLUGIN_YML_PATH = "/" + PLUGIN_YML;
+    private static final List<String> DEFAULT_CONFIG_IGNORE_LIST = Arrays.asList("dataSource", "hibernate");
     private static Resource basePluginResource = null;
     protected PropertySource<?> propertySource;
     protected org.codehaus.groovy.grails.commons.GrailsApplication application;
@@ -86,8 +87,9 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         if(resource != null && resource.exists()) {
             YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
             try {
-                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null, false);
+                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null, false, DEFAULT_CONFIG_IGNORE_LIST);
             } catch (IOException e) {
+                LOG.warn("Error loading plugin.yml for plugin: " + pluginClass.getName() +": " + e.getMessage(), e);
             }
         }
     }

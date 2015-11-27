@@ -335,7 +335,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
     }
 
     private boolean isPrecompiledAvailable() {
-        return precompiledGspMap != null && precompiledGspMap.size() > 0 && !Metadata.getCurrent().isDevelopmentEnvironmentAvailable();
+        return precompiledGspMap != null && precompiledGspMap.size() > 0 && !Environment.isDevelopmentMode();
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

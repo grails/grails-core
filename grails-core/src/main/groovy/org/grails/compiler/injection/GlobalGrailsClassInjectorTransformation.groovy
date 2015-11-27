@@ -309,7 +309,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
         } catch (e) {
             // corrupt, recreate
-            writePluginXml(pluginClassNode, pluginXmlFile, artefactClasses)
+            writePluginXml(pluginClassNode,pluginVersion, pluginXmlFile, artefactClasses)
         }
     }
 

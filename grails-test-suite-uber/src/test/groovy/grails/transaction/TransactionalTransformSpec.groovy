@@ -18,6 +18,9 @@ package grails.transaction
 
 import grails.spring.BeanBuilder
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.transaction.PlatformTransactionManager
 
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
@@ -39,6 +42,44 @@ import spock.lang.Specification
 /**
  */
 class TransactionalTransformSpec extends Specification {
+    @Issue('#701')
+    void "Test @Transactional with a datasource specified isn't TransactionManager aware, but has appropriate autowired and qualifier"() {
+        when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
+        def bookService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import grails.transaction.TransactionManagerAware
+    import org.springframework.transaction.PlatformTransactionManager
+    import org.springframework.transaction.TransactionStatus
+    import org.springframework.transaction.annotation.Isolation
+    import org.springframework.transaction.annotation.Propagation
+
+
+    class BookService {
+        static datasource = 'foo'
+        @Transactional(readOnly = true, timeout = 1000, isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
+        TransactionStatus readBook() {
+             return transactionStatus
+        }
+
+        int add(int a, int b) {
+            a + b
+        }
+    }
+
+    new BookService()
+    ''')
+
+        then:"It implements TransactionManagerAware"
+        !(bookService instanceof TransactionManagerAware)
+        bookService.getClass().getMethod("setTransactionManager", PlatformTransactionManager)
+        bookService.getClass().getMethod("setTransactionManager", PlatformTransactionManager).getAnnotation(Autowired)
+        bookService.getClass().getMethod("setTransactionManager", PlatformTransactionManager).getAnnotation(Qualifier)
+        bookService.getClass().getMethod("setTransactionManager", PlatformTransactionManager).getAnnotation(Qualifier).value() == 'transactionManager_foo'
+
+
+
+    }
+
     @Issue('GRAILS-10402')
     void "Test @Transactional annotation with inheritance"() {
         when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"

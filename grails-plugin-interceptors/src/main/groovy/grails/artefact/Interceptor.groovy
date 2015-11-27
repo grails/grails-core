@@ -32,6 +32,7 @@ import org.grails.plugins.web.interceptors.UrlMappingMatcher
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.WebUtils
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.View
@@ -75,7 +76,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     boolean doesMatch(HttpServletRequest request) {
         String interceptorMatchKey = "${getClass().name}${InterceptorArtefactHandler.MATCH_SUFFIX}"
         def existing = request.getAttribute(interceptorMatchKey)
-        if(existing != null) {
+        if(existing != null && !WebUtils.isForward(request) && !WebUtils.isInclude(request)) {
             return (Boolean)existing
         }
 

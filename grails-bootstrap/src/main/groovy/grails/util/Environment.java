@@ -21,9 +21,9 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.grails.io.support.GrailsResourceUtils;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
 
@@ -192,6 +192,7 @@ public enum Environment {
 
     /**
      * Returns true if the application is running in development mode (within grails run-app)
+     *
      * @return true if the application is running in development mode
      */
 
@@ -200,11 +201,24 @@ public enum Environment {
     }
 
     /**
+     * This method will return true if the 'grails-app' directory was found, regardless of whether reloading is active or not
+     *
+     * @return True if the development sources are present
+     */
+    public static boolean isDevelopmentEnvironmentAvailable() {
+        return BuildSettings.GRAILS_APP_DIR_PRESENT ;
+    }
+    /**
      * Check whether the application is deployed
      * @return true if is
      */
     public static boolean isWarDeployed() {
-        return Metadata.getCurrent().isWarDeployed();
+        URL loadedLocation = Environment.class.getClassLoader().getResource(Metadata.FILE);
+        if(loadedLocation != null && loadedLocation.getPath().contains("/WEB-INF/classes")) {
+            return true;
+        }
+        return false;
+
     }
 
     /**

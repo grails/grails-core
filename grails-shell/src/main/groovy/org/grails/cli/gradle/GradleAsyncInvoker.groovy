@@ -34,8 +34,14 @@ class GradleAsyncInvoker {
 
     static {
         Runtime.addShutdownHook {
-            if(!POOL.isTerminated()) {
-                POOL.shutdownNow()
+            try {
+                Thread.start {
+                    if(!POOL.isTerminated()) {
+                        POOL.shutdownNow()
+                    }
+                }.join(1000)
+            } catch (Throwable e) {
+                // ignore
             }
         }
     }

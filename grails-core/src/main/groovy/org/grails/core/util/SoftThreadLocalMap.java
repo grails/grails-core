@@ -25,8 +25,11 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @since 0.6
+ *
+ * @deprecated Do not use
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
+@Deprecated
 public class SoftThreadLocalMap extends InheritableThreadLocal<Map> {
 
     /**

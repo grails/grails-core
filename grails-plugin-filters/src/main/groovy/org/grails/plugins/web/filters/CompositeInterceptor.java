@@ -15,19 +15,17 @@
  */
 package org.grails.plugins.web.filters;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import grails.artefact.Controller;
-import org.grails.plugins.web.controllers.metaclass.ForwardMethod;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Composed of other HandlerInterceptor instances.
@@ -54,7 +52,7 @@ public class CompositeInterceptor implements HandlerInterceptor {
                 return false;
             }
             // if forward is called, bail out
-            if (request.getAttribute(ForwardMethod.CALLED) != null) {
+            if (request.getAttribute(GrailsApplicationAttributes.FORWARD_ISSUED) != null) {
                 return false;
             }
         }

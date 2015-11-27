@@ -17,6 +17,8 @@ package org.grails.core.io;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
@@ -28,7 +30,7 @@ import org.springframework.util.Assert;
  * @since 0.5
  */
 public class StaticResourceLoader implements ResourceLoader {
-
+    private static final Logger LOG = LoggerFactory.getLogger(StaticResourceLoader.class);
     private Resource baseResource;
 
     public void setBaseResource(Resource baseResource) {
@@ -38,10 +40,20 @@ public class StaticResourceLoader implements ResourceLoader {
     public Resource getResource(String location) {
         Assert.state(baseResource != null, "Property [baseResource] not set!");
 
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Loading resource for path {} from base resource {}", location, baseResource);
+        }
         try {
-            return baseResource.createRelative(location);
+            Resource resource = baseResource.createRelative(location);
+            if(LOG.isDebugEnabled() && resource.exists()) {
+                LOG.debug("Found resource for path {} from base resource {}", location, baseResource);
+            }
+            return resource;
         }
         catch (IOException e) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Error loading resource for path: " + location, e);
+            }
             return null;
         }
     }

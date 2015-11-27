@@ -1,6 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.http.HttpHeaders
 import spock.lang.Issue
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 /*
  * Copyright 2014 original authors
@@ -22,6 +26,48 @@ import spock.lang.Issue
  * @author graemerocher
  */
 class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
+
+    @Issue('#9417')
+    void "Test that redirects to grouped resource mappings work when the method is specified"() {
+        given:
+        def linkGenerator = getLinkGenerator {
+            group "/admin", {
+                "/domains" (resources: 'domain')
+            }
+        }
+        def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
+        HttpServletRequest request = Mock(HttpServletRequest)
+        HttpServletResponse response = Mock(HttpServletResponse)
+
+        when:"The response is redirected"
+        responseRedirector.redirect(request, response, [controller:'domain', action:'index', method:"GET"])
+
+        then:
+        1 * response.setStatus(302)
+        1 * response.setHeader( HttpHeaders.LOCATION, "http://localhost/admin/domains" )
+
+    }
+
+    @Issue('#9417')
+    void "Test that redirects to grouped resource mappings work when the resource is specified"() {
+        given:
+        def linkGenerator = getLinkGenerator {
+            group "/admin", {
+                "/domains" (resources: 'domain')
+            }
+        }
+        def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
+        HttpServletRequest request = Mock(HttpServletRequest)
+        HttpServletResponse response = Mock(HttpServletResponse)
+
+        when:"The response is redirected"
+        responseRedirector.redirect(request, response, [resource:'domain', action:'index'])
+
+        then:
+        1 * response.setStatus(302)
+        1 * response.setHeader( HttpHeaders.LOCATION, "http://localhost/admin/domains" )
+
+    }
 
     @Issue('#9138')
     void "Test that group parameters are included in generated links"() {

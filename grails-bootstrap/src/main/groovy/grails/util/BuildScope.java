@@ -42,7 +42,9 @@ public enum BuildScope {
     /**
      * Returns the current Scope object based on the currently set "grails.scope" System property
      * @return The Scope object
+     * @deprecated Relates to old Grails 2.x build system, do not use
      */
+    @Deprecated
     public static BuildScope getCurrent() {
         String key = System.getProperty(KEY);
         if (key == null) {

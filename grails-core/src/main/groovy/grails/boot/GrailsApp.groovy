@@ -3,6 +3,7 @@ package grails.boot
 import grails.boot.config.tools.SettingsFile
 import grails.compiler.ast.ClassInjector
 import grails.core.GrailsApplication
+import grails.io.IOUtils
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.BuildSettings
@@ -10,8 +11,7 @@ import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
+import groovy.util.logging.Slf4j
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -40,9 +40,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
  */
 @CompileStatic
 @InheritConstructors
+@Slf4j
 class GrailsApp extends SpringApplication {
-
-    private final Log log = LogFactory.getLog(getClass())
 
     private static boolean developmentModeActive = false
     private static DirectoryWatcher directoryWatcher
@@ -52,7 +51,13 @@ class GrailsApp extends SpringApplication {
         def applicationContext = super.run(args)
 
         Environment environment = Environment.getCurrent()
+
+        log.info("Application starting in environment: {}", environment.getName())
+        log.debug("Application directory discovered as: {}", IOUtils.findApplicationDirectory())
+        log.debug("Current base directory is [{}]. Reloading base directory is [{}]", new File("."), BuildSettings.BASE_DIR)
+
         if(environment.isReloadEnabled()) {
+            log.debug("Reloading status: ", environment.isReloadEnabled())
             enableDevelopmentModeWatch(environment, applicationContext)
         }
         printRunStatus(applicationContext)

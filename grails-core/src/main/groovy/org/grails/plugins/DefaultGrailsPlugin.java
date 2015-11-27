@@ -360,9 +360,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             onChangeListener = (Closure) GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, ON_CHANGE);
         }
 
-        final Metadata metadata = Metadata.getCurrent();
-        final boolean warDeployed = metadata.isWarDeployed();
-        final boolean reloadEnabled = Environment.getCurrent().isReloadEnabled();
+        Environment env = Environment.getCurrent();
+        final boolean warDeployed = env.isWarDeployed();
+        final boolean reloadEnabled = env.isReloadEnabled();
 
         if (!((reloadEnabled || !warDeployed))) {
             return;
@@ -387,7 +387,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
 
             List<String> resourceListTmp = new ArrayList<String>();
-            final Environment env = Environment.getCurrent();
             final String baseLocation = env.getReloadLocation();
 
             for (Object ref : resourceList) {
