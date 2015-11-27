@@ -101,6 +101,12 @@ class CoreGrailsPlugin extends Plugin {
         }
 
 
+        // Allow the use of Spring annotated components
+        if(!applicationContext?.containsBean(AnnotationConfigUtils.CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+            xmlns context:"http://www.springframework.org/schema/context"
+            context.'annotation-config'()
+        }
+
         if (packagesToScan) {
             xmlns grailsContext:"http://grails.org/schema/context"
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
