@@ -5,6 +5,8 @@ import grails.core.GrailsApplicationClass
 import grails.core.GrailsApplicationLifeCycle
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
+import groovy.transform.Memoized
+import groovy.util.logging.Slf4j
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.springframework.aop.config.AopConfigUtils
@@ -14,10 +16,12 @@ import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.core.io.UrlResource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory
 import org.springframework.util.ClassUtils
+import org.springframework.util.ResourceUtils
 
 import java.lang.reflect.Field
 
@@ -75,9 +79,11 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
             classes.addAll scanUsingPattern(pattern, readerFactory)
         }
 
-        // try the default package in case of a script without recursing into subpackages
-        String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
-        classes.addAll scanUsingPattern(pattern, readerFactory)
+//        if(shouldScanDefaultPackage()) {
+            // try the default package in case of a script without recursing into subpackages
+            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
+            classes.addAll scanUsingPattern(pattern, readerFactory)
+//        }
 
         def classLoader = Thread.currentThread().contextClassLoader
         for(cls in AbstractGrailsArtefactTransformer.transformedClassNames) {
@@ -89,6 +95,13 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
         }
 
         return classes
+    }
+
+    /**
+     * @return Whether to scan the default package
+     */
+    boolean shouldScanDefaultPackage() {
+        return false;
     }
 
     /**
@@ -158,6 +171,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
 
     @CompileStatic
     @InheritConstructors
+    @Slf4j
     private static class GrailsClasspathIgnoringResourceResolver extends PathMatchingResourcePatternResolver {
         @Override
         protected Set<Resource> doFindAllClassPathResources(String path) throws IOException {
@@ -173,13 +187,26 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
                 }
 
             }
-            if ("".equals(path)) {
-                // The above result is likely to be incomplete, i.e. only containing file system references.
-                // We need to have pointers to each of the jar files on the classpath as well...
-                addAllClassLoaderJarRoots(cl, result)
-            }
+//            if ("".equals(path)) {
+//                // The above result is likely to be incomplete, i.e. only containing file system references.
+//                // We need to have pointers to each of the jar files on the classpath as well...
+//                addAllClassLoaderJarRoots(cl, result)
+//            }
             return result
         }
+
+
+        @Memoized
+        protected Resource[] findAllClassPathResources(String location) throws IOException {
+            return super.findAllClassPathResources(location)
+        }
+
+        @Memoized
+        protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+            return super.findPathMatchingResources(locationPattern)
+        }
     }
+
+
 }
 

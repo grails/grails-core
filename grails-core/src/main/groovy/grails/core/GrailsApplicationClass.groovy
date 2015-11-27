@@ -16,7 +16,7 @@
 package grails.core
 
 /**
- *
+ * Marker interface for the GrailsApplicationClass
  *
  * @author Graeme Rocher
  * @since 3.0.10
