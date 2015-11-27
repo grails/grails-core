@@ -79,11 +79,9 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
             classes.addAll scanUsingPattern(pattern, readerFactory)
         }
 
-//        if(shouldScanDefaultPackage()) {
-            // try the default package in case of a script without recursing into subpackages
-            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
-            classes.addAll scanUsingPattern(pattern, readerFactory)
-//        }
+        // try the default package in case of a script without recursing into subpackages
+        String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
+        classes.addAll scanUsingPattern(pattern, readerFactory)
 
         def classLoader = Thread.currentThread().contextClassLoader
         for(cls in AbstractGrailsArtefactTransformer.transformedClassNames) {
@@ -95,13 +93,6 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
         }
 
         return classes
-    }
-
-    /**
-     * @return Whether to scan the default package
-     */
-    boolean shouldScanDefaultPackage() {
-        return false;
     }
 
     /**
