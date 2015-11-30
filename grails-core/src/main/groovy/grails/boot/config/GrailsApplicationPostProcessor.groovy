@@ -55,10 +55,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     final GrailsApplication grailsApplication
     final GrailsApplicationLifeCycle lifeCycle
     final GrailsApplicationClass applicationClass
+    final Class[] classes
     protected final GrailsPluginManager pluginManager
     protected ApplicationContext applicationContext
     boolean loadExternalBeans = true
     boolean reloadingEnabled = RELOADING_ENABLED
+
 
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
@@ -68,7 +70,8 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         else {
             this.applicationClass = null
         }
-        grailsApplication = new DefaultGrailsApplication((classes?:[]) as Class[])
+        this.classes = classes != null ? classes : [] as Class[]
+        grailsApplication = new DefaultGrailsApplication()
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
             setApplicationContext(applicationContext)
@@ -100,6 +103,10 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     protected void performGrailsInitializationSequence() {
         pluginManager.doArtefactConfiguration()
         grailsApplication.initialise()
+        for(cls in classes) {
+            grailsApplication.addArtefact(cls)
+        }
+
         pluginManager.registerProvidedArtefacts(grailsApplication)
     }
 

@@ -75,12 +75,13 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
     }
 
     public String getLogicalControllerName(GroovyObject controller) {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        String logicalName = webRequest != null ? webRequest.getControllerName() : null;
-        if (logicalName == null) {
-            logicalName = controller != null ? GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE) : null;
+        if(controller != null) {
+            return GrailsNameUtils.getLogicalPropertyName(controller.getClass().getSimpleName(), ControllerArtefactHandler.TYPE);
         }
-        return logicalName;
+        else {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            return webRequest != null ? webRequest.getControllerName() : null;
+        }
     }
 
     /**
