@@ -56,6 +56,9 @@ class GrailsTransactionTemplate {
     
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager, GrailsTransactionAttribute transactionAttribute) {
         this.transactionAttribute = transactionAttribute;
+        if(transactionManager == null) {
+            throw new IllegalStateException("No transactionManager was specified. Using @Transactional or @Rollback requires a valid configured transaction manager. If you are running in a unit test ensure the test has been properly configured and that you run the test suite not an individual test method.")
+        }
         this.transactionTemplate = new TransactionTemplate(transactionManager, this.transactionAttribute)
     }
 

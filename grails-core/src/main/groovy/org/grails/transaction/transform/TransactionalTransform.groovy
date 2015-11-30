@@ -22,6 +22,7 @@ import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.transaction.annotation.Propagation
 
 import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.transaction.NotTransactional
@@ -72,6 +73,7 @@ class TransactionalTransform implements ASTTransformation{
     private static final String METHOD_EXECUTE = "execute"
     private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
     private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), Rollback.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
+    private static final String SPEC_CLASS = "spock.lang.Specification";
     public static final String PROPERTY_DATA_SOURCE = "datasource"
 
     @Override
@@ -127,7 +129,16 @@ class TransactionalTransform implements ASTTransformation{
                 if(hasAnnotation(md, DelegatingMethod.class)) continue
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
+            else if("setup".equals(methodName) && isSpockTest(classNode)) {
+                def requiresNewTransaction = new AnnotationNode(annotationNode.classNode)
+                requiresNewTransaction.addMember("propagation", new PropertyExpression(new ClassExpression(ClassHelper.make(Propagation.class)), "REQUIRES_NEW"))
+                weaveTransactionalMethod(source, classNode, requiresNewTransaction, md, "execute")
+            }
         }
+    }
+
+    public static boolean isSpockTest(ClassNode classNode) {
+        return GrailsASTUtils.isSubclassOf(classNode, SPEC_CLASS);
     }
 
     private boolean hasExcludedAnnotation(MethodNode md) {
@@ -151,7 +162,7 @@ class TransactionalTransform implements ASTTransformation{
         }
     }
 
-    protected void weaveTransactionalMethod(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode, MethodNode methodNode) {
+    protected void weaveTransactionalMethod(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode, MethodNode methodNode, String executeMethodName = getTransactionTemplateMethodName()) {
         if(isApplied(methodNode, this.getClass())) {
             return
         }
@@ -197,9 +208,9 @@ class TransactionalTransform implements ASTTransformation{
 
         final methodArgs = new ArgumentListExpression()
         methodArgs.addExpression(callCallExpression)
-        final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, getTransactionTemplateMethodName(), methodArgs)
+        final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, executeMethodName, methodArgs)
         final executeMethodParameters = [new Parameter(ClassHelper.make(Closure), null)] as Parameter[]
-        final executeMethodNode = transactionTemplateClassNode.getMethod(getTransactionTemplateMethodName(), executeMethodParameters)
+        final executeMethodNode = transactionTemplateClassNode.getMethod(executeMethodName, executeMethodParameters)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
         
         if(methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
