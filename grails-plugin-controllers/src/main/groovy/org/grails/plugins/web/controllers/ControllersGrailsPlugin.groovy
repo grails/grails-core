@@ -91,19 +91,19 @@ class ControllersGrailsPlugin extends Plugin {
                 forceEncoding = filtersForceEncoding
             }
             urlPatterns = catchAllMapping
-            order = Ordered.HIGHEST_PRECEDENCE + 10
+            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 10
         }
 
         hiddenHttpMethodFilter(FilterRegistrationBean) {
             filter = bean(HiddenHttpMethodFilter)
             urlPatterns = catchAllMapping
-            order = Ordered.HIGHEST_PRECEDENCE + 20
+            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 20
         }
 
         grailsWebRequestFilter(FilterRegistrationBean) {
             filter = bean(GrailsWebRequestFilter)
             urlPatterns = catchAllMapping
-            order = Ordered.HIGHEST_PRECEDENCE + 30
+            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
         }
 
 
