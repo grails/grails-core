@@ -2,6 +2,7 @@ package org.grails.io.support
 
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+import groovy.transform.Memoized
 import groovyjarjarasm.asm.ClassReader
 import groovyjarjarasm.asm.ClassVisitor
 import groovyjarjarasm.asm.MethodVisitor
@@ -83,7 +84,10 @@ class MainClassFinder {
 
     static String findMainClass(File rootFolder = BuildSettings.CLASSES_DIR) {
         if(mainClassName) return mainClassName
-
+        if( rootFolder == null) {
+            // try current directory
+            rootFolder = new File("build/classes/main")
+        }
         if (!rootFolder.exists()) {
             return null // nothing to do
         }
