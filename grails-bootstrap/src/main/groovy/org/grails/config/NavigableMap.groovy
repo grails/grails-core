@@ -142,7 +142,10 @@ class NavigableMap implements Map<String, Object>, Cloneable {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue
         if(sourceValue instanceof Map) {
-            NavigableMap subMap = new NavigableMap( (NavigableMap)targetMap.rootConfig, ((targetMap.path + [sourceKey]) as List<String>).asImmutable())
+            List<String> newPathList = []
+            newPathList.addAll( targetMap.getPath() )
+            newPathList.add(sourceKey)
+            NavigableMap subMap = new NavigableMap( (NavigableMap)targetMap.rootConfig, newPathList.asImmutable())
             if(currentValue instanceof Map) {
                 subMap.putAll((Map)currentValue)
             }
@@ -235,7 +238,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             if(currentItem instanceof NavigableMap) {
                 currentMap = (NavigableMap)currentItem
             } else if (createMissing) {
-                Map<String, Object> newMap = new NavigableMap( (NavigableMap)currentMap.rootConfig, ((currentMap.path + [pathElement]) as List<String>).asImmutable())
+                List<String> newPathList = []
+                newPathList.addAll( currentMap.getPath() )
+                newPathList.add(pathElement)
+
+                Map<String, Object> newMap = new NavigableMap( (NavigableMap)currentMap.rootConfig, newPathList.asImmutable())
                 currentMap.put(pathElement, newMap)
 
                 def fullPath = accumulatedPath.toString()
@@ -267,7 +274,11 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             String stringKey = String.valueOf(key)
             if(value != null) {
                 if(value instanceof Map) {
-                    flattenKeys(flatConfig, (Map)value, ((path + [stringKey]) as List<String>).asImmutable(), forceStrings)
+                    List<String> newPathList = []
+                    newPathList.addAll( path )
+                    newPathList.add( stringKey )
+
+                    flattenKeys(flatConfig, (Map)value, newPathList.asImmutable(), forceStrings)
                 } else {
                     String fullKey
                     if(path) {
