@@ -42,6 +42,40 @@ import spock.lang.Specification
 /**
  */
 class TransactionalTransformSpec extends Specification {
+
+    void "Test @Rollback when applied to Spock specifications"() {
+        when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
+        Class mySpec = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import grails.transaction.TransactionManagerAware
+    import org.springframework.transaction.PlatformTransactionManager
+    import org.springframework.transaction.TransactionStatus
+    import org.springframework.transaction.annotation.Isolation
+    import org.springframework.transaction.annotation.Propagation
+    import spock.lang.Specification
+
+    @Rollback
+    class MySpec extends Specification {
+        def setup() {
+
+        }
+
+        void "my test method"() {
+            expect:
+                1 == 1
+        }
+    }
+    MySpec
+    ''')
+
+        then:"It implements TransactionManagerAware"
+        TransactionManagerAware.isAssignableFrom(mySpec)
+        mySpec.getDeclaredMethod('setup')
+        mySpec.getDeclaredMethod('$tt__setup', TransactionStatus)
+        mySpec.getDeclaredMethod('$spock_feature_0_0')
+        mySpec.getDeclaredMethod('$tt__$spock_feature_0_0', TransactionStatus)
+    }
+
     @Issue('#701')
     void "Test @Transactional with a datasource specified isn't TransactionManager aware, but has appropriate autowired and qualifier"() {
         when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
