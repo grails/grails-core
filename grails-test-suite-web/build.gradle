@@ -13,7 +13,13 @@ dependencies {
                 project(':grails-plugin-i18n'),
                 project(':grails-plugin-async'),
                 project(':grails-plugin-url-mappings'),
+                project(':grails-plugin-databinding'),
                 project(':grails-plugin-services'),
+                project(':grails-plugin-interceptors'),
+                project(':grails-plugin-filters'),
+                project(':grails-plugin-gsp'),
+                project(':grails-plugin-controllers'),
+                project(':grails-plugin-rest'),
                 project(':grails-web'),
                 project(':grails-spring')
 

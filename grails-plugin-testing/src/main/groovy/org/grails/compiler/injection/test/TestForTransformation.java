@@ -263,15 +263,28 @@ public class TestForTransformation extends TestMixinTransformation implements Te
         }
 
         // must be a domain class
-        weaveMixinClass(classNode, DomainClassUnitTestMixin.class);
-        if (isClassUnderTest) {
-            testForMethod = addClassUnderTestMethod(classNode, value, DOMAIN_TYPE);
-        }
-        else {
-            addMockCollaboratorToSetup(classNode, value, DOMAIN_TYPE);
+        Class<?> domainClassPresent = null;
+        try {
+            domainClassPresent = Class.forName("org.grails.plugins.domain.DomainClassGrailsPlugin", true, TestForTransformation.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // not on classpath ignore
+        } catch (NoClassDefFoundError e) {
+            // ignore
         }
 
-        return testForMethod;
+        if(domainClassPresent != null) {
+
+            weaveMixinClass(classNode, DomainClassUnitTestMixin.class);
+            if (isClassUnderTest) {
+                testForMethod = addClassUnderTestMethod(classNode, value, DOMAIN_TYPE);
+            }
+            else {
+                addMockCollaboratorToSetup(classNode, value, DOMAIN_TYPE);
+            }
+
+            return testForMethod;
+        }
+        return null;
     }
 
     protected Class getMixinClassForArtefactType(ClassNode classNode) {

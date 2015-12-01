@@ -1,6 +1,10 @@
 dependencies {
 
     compile project(':grails-test-suite-base'),
+            project(':grails-plugin-interceptors'),
+            project(':grails-plugin-filters'),
+            project(':grails-plugin-gsp'),
+            project(':grails-plugin-controllers'),
             project(':grails-plugin-testing')
 
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'

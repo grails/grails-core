@@ -195,6 +195,7 @@ public class TestMixinTransformation implements ASTTransformation{
             if (current instanceof ClassExpression) {
                 ClassExpression ce = (ClassExpression) current;
                 ClassNode mixinClassNode = ce.getType();
+                mixinClassNode.getAllInterfaces();
                 weaveMixinIntoClass(classNode, mixinClassNode, junit3MethodHandler, applicationClassNode);
             }
         }
