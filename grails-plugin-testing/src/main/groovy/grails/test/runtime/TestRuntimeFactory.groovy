@@ -20,6 +20,7 @@ import grails.test.mixin.TestRuntimeAwareMixin
 import grails.test.mixin.UseTestPlugin
 import grails.test.mixin.support.MixinInstance
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import org.grails.core.io.support.GrailsFactoriesLoader
 
 import java.lang.reflect.Field
@@ -39,6 +40,7 @@ import org.springframework.util.ReflectionUtils
  */
 @CompileStatic
 @Singleton
+@Slf4j
 class TestRuntimeFactory {
     private static Set<Class<? extends TestPlugin>> availablePluginClasses = new HashSet<>()
 
@@ -265,7 +267,7 @@ class TestRuntimeFactory {
         
         Set<Class<? extends TestPlugin>> pluginClassesToUse = resolvePluginClassesToUse(runtimeSettings)
         
-        List<TestPlugin> availablePlugins = pluginClassesToUse.collect { Class<? extends TestPlugin> clazz -> clazz.newInstance() }
+        List<TestPlugin> availablePlugins = instantiatePlugins(pluginClassesToUse)
         for(TestPlugin plugin : availablePlugins) {
             for(String feature : plugin.getProvidedFeatures()) {
                 def pluginList = featureToPlugins.get(feature)
@@ -284,6 +286,21 @@ class TestRuntimeFactory {
             }
             [feature, pluginList[0]]
         }
+    }
+
+    protected List<TestPlugin> instantiatePlugins(Set<Class<? extends TestPlugin>> pluginClassesToUse) {
+        List<TestPlugin> plugins = []
+        for(Class<? extends TestPlugin> testPlugin in pluginClassesToUse) {
+            try {
+                plugins.add(
+                        testPlugin.newInstance()
+                )
+
+            } catch (Throwable e) {
+                log.debug("Error creating test plugin: ${e.message} due to missing dependencies. Ignoring.", e)
+            }
+        }
+        return plugins
     }
 
     private Set<Class<? extends TestPlugin>> resolvePluginClassesToUse(TestRuntimeSettings runtimeSettings) {

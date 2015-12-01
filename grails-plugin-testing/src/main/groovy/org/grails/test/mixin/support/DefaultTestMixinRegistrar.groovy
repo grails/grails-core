@@ -15,21 +15,17 @@
  */
 package org.grails.test.mixin.support
 
-import grails.test.mixin.services.ServiceUnitTestMixin
 import grails.test.mixin.support.TestMixinRegistrar
 import grails.test.mixin.support.TestMixinRegistry
-import grails.test.mixin.web.ControllerUnitTestMixin
-import grails.test.mixin.web.FiltersUnitTestMixin
-import grails.test.mixin.web.GroovyPageUnitTestMixin
-import grails.test.mixin.web.InterceptorUnitTestMixin
-import grails.test.mixin.web.UrlMappingsUnitTestMixin
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.ServiceArtefactHandler
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.core.artefact.UrlMappingsArtefactHandler
-import org.grails.plugins.web.filters.FiltersConfigArtefactHandler
-import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
+import org.springframework.util.ClassUtils
+
+//import org.grails.plugins.web.filters.FiltersConfigArtefactHandler
+//import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 
 
 /**
@@ -42,11 +38,24 @@ import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 class DefaultTestMixinRegistrar implements TestMixinRegistrar {
     @Override
     void registerTestMixins(TestMixinRegistry registry) {
-        registry.registerMixin(ControllerArtefactHandler.TYPE, ControllerUnitTestMixin.class);
-        registry.registerMixin(TagLibArtefactHandler.TYPE, GroovyPageUnitTestMixin.class);
-        registry.registerMixin(FiltersConfigArtefactHandler.TYPE, FiltersUnitTestMixin.class);
-        registry.registerMixin(UrlMappingsArtefactHandler.TYPE, UrlMappingsUnitTestMixin.class);
-        registry.registerMixin(ServiceArtefactHandler.TYPE, ServiceUnitTestMixin.class);
-        registry.registerMixin(InterceptorArtefactHandler.TYPE, InterceptorUnitTestMixin.class);
+        def classLoader = getClass().classLoader
+        if(ClassUtils.isPresent("org.grails.plugins.web.controllers.ControllersGrailsPlugin", classLoader)) {
+            registry.registerMixin(ControllerArtefactHandler.TYPE, ClassUtils.forName("grails.test.mixin.web.ControllerUnitTestMixin", classLoader));
+        }
+        if(ClassUtils.isPresent("org.grails.plugins.web.GroovyPagesGrailsPlugin", classLoader)) {
+            registry.registerMixin(TagLibArtefactHandler.TYPE, ClassUtils.forName("grails.test.mixin.web.GroovyPageUnitTestMixin", classLoader));
+        }
+        if(ClassUtils.isPresent("org.grails.plugins.web.mapping.UrlMappingsGrailsPlugin", classLoader)) {
+            registry.registerMixin(UrlMappingsArtefactHandler.TYPE, ClassUtils.forName("grails.test.mixin.web.UrlMappingsUnitTestMixin", classLoader));
+        }
+        if(ClassUtils.isPresent("org.grails.plugins.services.ServicesGrailsPlugin", classLoader)) {
+            registry.registerMixin(ServiceArtefactHandler.TYPE, ClassUtils.forName("grails.test.mixin.services.ServiceUnitTestMixin", classLoader));
+        }
+        if(ClassUtils.isPresent("org.grails.plugins.web.interceptors.InterceptorArtefactHandler", classLoader)) {
+            registry.registerMixin("Interceptor", ClassUtils.forName("grails.test.mixin.web.InterceptorUnitTestMixin", classLoader));
+        }
+        if(ClassUtils.isPresent("org.grails.plugins.web.filters.FiltersConfigArtefactHandler", classLoader)) {
+            registry.registerMixin("Filters", ClassUtils.forName("grails.test.mixin.web.FiltersUnitTestMixin", classLoader));
+        }
     }
 }

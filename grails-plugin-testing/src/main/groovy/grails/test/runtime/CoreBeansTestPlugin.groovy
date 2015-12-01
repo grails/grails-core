@@ -15,12 +15,12 @@
  */
 
 package grails.test.runtime
+
 import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.validation.ConstraintsEvaluator
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
@@ -28,6 +28,8 @@ import org.grails.transaction.TransactionManagerPostProcessor
 import org.grails.validation.DefaultConstraintEvaluator
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
+import org.springframework.util.ClassUtils
+
 /**
  * a TestPlugin for TestRuntime that adds some generic beans that are
  * required in Grails applications
@@ -48,10 +50,12 @@ public class CoreBeansTestPlugin implements TestPlugin {
             conversionService(ConversionServiceFactoryBean)
         }
 
-        def plugin = new DataBindingGrailsPlugin()
-        plugin.grailsApplication = grailsApplicationParam
-        plugin.applicationContext = grailsApplicationParam.mainContext
-        defineBeans(runtime, plugin.doWithSpring())
+        if(ClassUtils.isPresent("org.grails.plugins.databinding.DataBindingGrailsPlugin", CoreBeansTestPlugin.classLoader)) {
+            def plugin = ClassUtils.forName("org.grails.plugins.databinding.DataBindingGrailsPlugin").newInstance()
+            plugin.grailsApplication = grailsApplicationParam
+            plugin.applicationContext = grailsApplicationParam.mainContext
+            defineBeans(runtime, plugin.doWithSpring())
+        }
 
         defineBeans(runtime) {
             xmlns context:"http://www.springframework.org/schema/context"

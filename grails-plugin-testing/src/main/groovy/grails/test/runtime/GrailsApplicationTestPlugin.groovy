@@ -38,30 +38,26 @@ import org.grails.plugins.IncludingPluginFilter
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
-import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.servlet.context.GrailsConfigUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.beans.factory.config.BeanDefinition
+import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.beans.factory.config.ConstructorArgumentValues
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
-import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.boot.test.ConfigFileApplicationContextInitializer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.AnnotationConfigUtils
-import org.springframework.mock.web.MockServletContext
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.MergedContextConfiguration
 import org.springframework.test.context.TestContextManager
-import org.springframework.web.context.support.GenericWebApplicationContext
+import org.springframework.util.ClassUtils
 
-import javax.servlet.ServletContext
 import java.lang.reflect.Modifier
-
 /**
  * A TestPlugin for TestRuntime that builds the GrailsApplication instance for tests
  * 
@@ -72,6 +68,7 @@ import java.lang.reflect.Modifier
 @CompileStatic
 class GrailsApplicationTestPlugin implements TestPlugin {
     protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected static final boolean isServletApiPresent  = ClassUtils.isPresent("javax.servlet.ServletContext", GrailsApplicationTestPlugin.classLoader)
 
     static boolean disableClearSpringTestContextManagerCache = Boolean.getBoolean("grails.test.runtime.disable_clear_spring_tcf_cache")
     String[] requiredFeatures = ['metaClassCleaner']
@@ -89,17 +86,15 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
     
     void initGrailsApplication(final TestRuntime runtime, final Map callerInfo) {
-        ServletContext servletContext = createServletContext(runtime, callerInfo)
+        Object servletContext = createServletContext(runtime, callerInfo)
         runtime.putValue("servletContext", servletContext)
 
-        GenericWebApplicationContext mainContext = createMainContext(runtime, callerInfo, servletContext)
+        ConfigurableApplicationContext mainContext = createMainContext(runtime, callerInfo, servletContext)
 
         GrailsApplication grailsApplication = (GrailsApplication)runtime.getValueIfExists("grailsApplication")
 
-        if(servletContext != null) {
-            Holders.setServletContext(servletContext);
-            Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
-            GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication,  mainContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager), mainContext)
+        if(isServletApiPresent && servletContext != null) {
+            configureServletEnvironment(servletContext, grailsApplication, mainContext)
         }
 
         if(!grailsApplication.isInitialised()) {
@@ -109,9 +104,25 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         applicationInitialized(runtime, grailsApplication)
     }
 
-    protected GenericWebApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final ServletContext servletContext) {
-        GenericWebApplicationContext context = new GenericWebApplicationContext(new OptimizedAutowireCapableBeanFactory(), servletContext);
-        DefaultListableBeanFactory beanFactory = context.getDefaultListableBeanFactory()
+    @CompileDynamic
+    protected void configureServletEnvironment(servletContext, GrailsApplication grailsApplication, ConfigurableApplicationContext mainContext) {
+        Holders.setServletContext(servletContext);
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+        GrailsConfigUtils.configureServletContextAttributes(servletContext, grailsApplication, mainContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager), mainContext)
+    }
+
+    protected ConfigurableApplicationContext createMainContext(final TestRuntime runtime, final Map callerInfo, final servletContext) {
+        ConfigurableApplicationContext context
+
+        if(isServletApiPresent && servletContext != null) {
+            context = (ConfigurableApplicationContext)ClassUtils.forName("org.springframework.web.context.support.GenericWebApplicationContext").newInstance( new OptimizedAutowireCapableBeanFactory(), servletContext);
+        }
+        else {
+            context = (ConfigurableApplicationContext)ClassUtils.forName("org.springframework.context.support.GenericApplicationContext").newInstance( new OptimizedAutowireCapableBeanFactory());
+        }
+
+
+        ConfigurableBeanFactory beanFactory = context.getBeanFactory()
 
         prepareContext(context, beanFactory, runtime, callerInfo);
         customizeContext(context, beanFactory, runtime, callerInfo);
@@ -121,17 +132,17 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         return context
     }
 
-    protected void prepareContext(ConfigurableApplicationContext applicationContext, DefaultListableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
+    protected void prepareContext(ConfigurableApplicationContext applicationContext, ConfigurableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
         registerGrailsAppPostProcessorBean(applicationContext, beanFactory, runtime, callerInfo)
 
-        AnnotationConfigUtils.registerAnnotationConfigProcessors(beanFactory);
+        AnnotationConfigUtils.registerAnnotationConfigProcessors((BeanDefinitionRegistry)beanFactory);
 
         ConfigFileApplicationContextInitializer contextInitializer = new ConfigFileApplicationContextInitializer();
         contextInitializer.initialize(applicationContext);
     }
 
     @CompileDynamic
-    protected void registerGrailsAppPostProcessorBean(ConfigurableApplicationContext applicationContext, DefaultListableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
+    protected void registerGrailsAppPostProcessorBean(ConfigurableApplicationContext applicationContext, ConfigurableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
         Closure doWithSpringClosure = {
             GrailsApplication grailsApplication = (GrailsApplication)runtime.getValueIfExists("grailsApplication")
 
@@ -159,13 +170,14 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         beanFactory.registerBeanDefinition("grailsApplicationPostProcessor", beandef);
     }
 
-    protected void customizeContext(ConfigurableApplicationContext applicationContext, DefaultListableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
+    protected void customizeContext(ConfigurableApplicationContext applicationContext, ConfigurableBeanFactory beanFactory, TestRuntime runtime, Map callerInfo) {
 
     }
 
-    protected ServletContext createServletContext(final TestRuntime runtime, final Map callerInfo) {
-        MockServletContext servletContext = new MockServletContext()
-        return servletContext
+    protected Object createServletContext(final TestRuntime runtime, final Map callerInfo) {
+        if(isServletApiPresent) {
+            return ClassUtils.forName("org.springframework.mock.web.MockServletContext").newInstance()
+        }
     }
 
     protected void customizeGrailsApplication(final GrailsApplication grailsApplication, final TestRuntime runtime, final Map callerInfo) {
@@ -273,7 +285,14 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             ((DefaultGrailsApplication)runtime.getValue('grailsApplication'))?.clear()
         }
         runtime.removeValue("loadedCodecs")
-        ConvertersConfigurationHolder.clear()
+        if(ClassUtils.isPresent("org.grails.web.converters.configuration.ConvertersConfigurationHolder", getClass().classLoader)) {
+            clearConvertersHolder()
+        }
+    }
+
+    @CompileDynamic
+    void clearConvertersHolder() {
+        ClassUtils.forName("org.grails.web.converters.configuration.ConvertersConfigurationHolder", getClass().classLoader).clear()
     }
     
     void shutdownApplicationContext(TestRuntime runtime) {
@@ -296,8 +315,10 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             DeferredBindingActions.clear()
     
             runtime.removeValue("grailsApplication")
-            
-            Holders.setServletContext null
+
+            if(isServletApiPresent) {
+                Holders.setServletContext null
+            }
             runtime.removeValue("servletContext")
             
             Promises.promiseFactory = null

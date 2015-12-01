@@ -1,17 +1,25 @@
 dependencies {
 
-    compile project(':grails-plugin-url-mappings'),
-            project(':grails-plugin-databinding'),
-            project(':grails-plugin-controllers'),
-            project(':grails-plugin-domain-class'),
-            project(':grails-plugin-gsp'),
-            project(':grails-plugin-filters'),
-            project(':grails-plugin-interceptors'),
-            project(':grails-plugin-mimetypes'),
-            project(':grails-plugin-converters'),
-            project(':grails-plugin-rest'),
-            project(':grails-plugin-codecs'),
-            project(':grails-test')
+    provided project(':grails-plugin-url-mappings'),
+             project(':grails-plugin-databinding'),
+             project(':grails-plugin-controllers'),
+             project(':grails-plugin-domain-class'),
+             project(':grails-plugin-gsp'),
+             project(':grails-plugin-filters'),
+             project(':grails-plugin-interceptors'),
+             project(':grails-plugin-mimetypes'),
+             project(':grails-plugin-converters'),
+             project(':grails-plugin-rest'),
+             project(':grails-plugin-codecs')
+
+    compile ( project(':grails-test') ) {
+        exclude group: 'org.grails', module:'grails-web'
+        exclude group: 'org.grails', module:'grails-plugin-mimetypes'
+    }
+    compile ( project(':grails-logging') ) {
+        exclude group: 'org.grails', module:'grails-web'
+    }
+    compile ( project(':grails-async') )
 
     compile("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
