@@ -1,6 +1,3 @@
 dependencies {
-    compile project(":grails-core"),
-            project(':grails-web')
-
-    testCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    compile project(":grails-core")
 }

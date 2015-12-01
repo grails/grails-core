@@ -34,7 +34,7 @@ import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
-import org.springframework.web.context.ConfigurableWebApplicationContext
+import org.springframework.context.ConfigurableApplicationContext
 
 /**
  * a TestPlugin for TestRuntime for adding Grails DomainClass (GORM) support
@@ -69,7 +69,7 @@ class DomainClassTestPlugin implements TestPlugin {
     }
     
     protected void initializeDatastoreImplementation(GrailsApplication grailsApplication) {
-        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.mainContext
+        ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         ((AbstractMappingContext)simpleDatastore.mappingContext).setCanInitializeEntities(false)
         applicationContext.addApplicationListener applicationContext.getBean(GrailsDomainClassCleaner)
@@ -83,7 +83,7 @@ class DomainClassTestPlugin implements TestPlugin {
     }
 
     protected void connectDatastore(TestRuntime runtime, GrailsApplication grailsApplication) {
-        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.mainContext
+        ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
         Session currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
@@ -96,7 +96,7 @@ class DomainClassTestPlugin implements TestPlugin {
             currentSession.disconnect()
             DatastoreUtils.unbindSession(currentSession)
         }
-        ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.mainContext
+        ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         simpleDatastore.clearData()
     }

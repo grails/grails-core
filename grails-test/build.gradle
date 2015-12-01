@@ -18,8 +18,8 @@ dependencies {
         exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
 
-    compile project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
-    compile project(":grails-web")
+    provided project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
+    provided project(":grails-web")
 
     // command line requirements
     provided  "jline:jline:$jlineVersion"
