@@ -45,6 +45,16 @@ class GrailsPublishExtension {
      * The password for the plugin portal
      */
     String portalPassword
+
+    /**
+     * The plugin endpoint for updating plugins
+     */
+    String portalUrl = "https://grails.org/plugin"
+
+    /**
+     * The location of the Grails central repository
+     */
+    String centralRepoUrl = "http://repo.grails.org/grails/core"
     /**
      * The website URL of the plugin
      */
