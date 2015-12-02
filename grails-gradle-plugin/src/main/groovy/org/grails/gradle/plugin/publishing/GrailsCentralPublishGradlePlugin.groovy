@@ -181,8 +181,10 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             }
         }
 
-        def grailsCentralUsername = System.getenv('GRAILS_CENTRAL_USERNAME') ?: project.hasProperty('grailsPluginsUsername') ? project.grailsPluginsUsername : ''
-        def grailsCentralPassword = System.getenv("GRAILS_CENTRAL_PASSWORD") ?: project.hasProperty('grailsPluginsPassword') ? project.grailsPluginsPassword : ''
+        def grailsCentralUsername = System.getenv('GRAILS_CENTRAL_USERNAME') ?: project.hasProperty('grailsCentralUsername') ? project.grailsCentralUsername : ''
+        def grailsCentralPassword = System.getenv("GRAILS_CENTRAL_PASSWORD") ?: project.hasProperty('grailsCentralPassword') ? project.grailsCentralPassword : ''
+        def grailsPortalUsername = System.getenv('GRAILS_PORTAL_USERNAME') ?: project.hasProperty('grailsPortalUsername') ? project.grailsPortalUsername : ''
+        def grailsPortalPassword = System.getenv("GRAILS_PORTALL_PASSWORD") ?: project.hasProperty('grailsPortalPassword') ? project.grailsPortalPassword : ''
 
         project.plugins.apply(BintrayPlugin)
 
@@ -335,7 +337,11 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
         portalNotify << {
 
             GrailsPublishExtension extension = project.extensions.findByType(GrailsPublishExtension)
-            if(extension?.portalUser && extension?.portalPassword) {
+
+            def portalUsername = grailsPortalUsername ?: extension?.portalUser
+            def portalPassword = grailsPortalPassword ?: extension?.portalPassword
+
+            if(portalUsername && portalPassword) {
                 def targetUrl = "${extension.portalUrl}/${project.name}"
                 URL endpoint = new URL(targetUrl)
                 HttpURLConnection conn = endpoint.openConnection()
