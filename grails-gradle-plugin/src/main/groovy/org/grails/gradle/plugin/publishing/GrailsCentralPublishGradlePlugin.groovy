@@ -181,6 +181,8 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             }
         }
 
+        def grailsCentralUsername = System.getenv('GRAILS_CENTRAL_USERNAME') ?: project.hasProperty('grailsPluginsUsername') ? project.grailsPluginsUsername : ''
+        def grailsCentralPassword = System.getenv("GRAILS_CENTRAL_PASSWORD") ?: project.hasProperty('grailsPluginsPassword') ? project.grailsPluginsPassword : ''
 
         project.plugins.apply(BintrayPlugin)
 
@@ -299,8 +301,6 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                 }
             }
 
-            def grailsCentralUsername = System.getenv('GRAILS_CENTRAL_USERNAME') ?: project.hasProperty('grailsPluginsUsername') ? project.grailsPluginsUsername : ''
-            def grailsCentralPassword = System.getenv("GRAILS_CENTRAL_PASSWORD") ?: project.hasProperty('grailsPluginsPassword') ? project.grailsPluginsPassword : ''
 
             if(grailsCentralUsername && grailsCentralPassword) {
 
@@ -322,6 +322,70 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             }
 
         }
+
+
+            // pluginInfo = [name:'..', group:'..', version:'..', isSnapshot: true/false, url: portalUrl]
+
+
+        boolean isSnapshot = project.version.toString().endsWith('-SNAPSHOT')
+
+
+        def portalNotify = project.tasks.create('notifyPluginPortal')
+        portalNotify.dependsOn('generatePomFileForMavenPublication')
+        portalNotify << {
+
+            GrailsPublishExtension extension = project.extensions.findByType(GrailsPublishExtension)
+            if(extension?.portalUser && extension?.portalPassword) {
+                def targetUrl = "${extension.portalUrl}/${project.name}"
+                URL endpoint = new URL(targetUrl)
+                HttpURLConnection conn = endpoint.openConnection()
+                conn.doOutput = true
+                conn.instanceFollowRedirects = false
+                conn.useCaches = false
+                conn.requestMethod = 'PUT'
+
+                String usernameAndPassword = "$extension.portalUser:$extension.portalPassword"
+
+                def sw = new StringWriter()
+                usernameAndPassword.bytes.encodeBase64().writeTo(sw)
+                conn.setRequestProperty "Authorization", "Basic ${sw.toString()}"
+                conn.setRequestProperty "Content-type", "application/json"
+                conn.setRequestProperty "Accept", "application/json"
+
+                String url = extension.centralRepoUrl
+                OutputStream out
+
+                try {
+                    def data = """{"name":"${project.name}","group":"${project.group}","version":"${project.version}","isSnapshot":${isSnapshot},"url":"${url}"}""".toString()
+
+                    conn.setRequestProperty( "Content-Length", Integer.toString( data.length() ));
+
+                    out = conn.outputStream
+                    // write the data
+                    out << data
+                    out.flush()
+
+                    def result = conn.responseCode
+                    if(result.toString().startsWith('2')) {
+                        println "Notification successful."
+                    }
+                    else {
+                        throw new RuntimeException( "(HTTP ${result}) An error occurred. " )
+                    }
+
+                } finally {
+                    try {
+                        out?.close()
+                    } catch (Throwable e) {
+                        // ignore
+                    }
+                }
+            }
+            else {
+                throw new RuntimeException("No Grails 'portalUser' and 'portalPassword' specified")
+            }
+        }
+
         project.bintray {
             user = bintrayUser
             key = bintrayKey
