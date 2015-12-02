@@ -45,7 +45,9 @@ grailsPublish {
     license = 'APACHE 2.0'
     issueTrackerUrl = 'http://github.com/myname/myplugin/issues'
     vcsUrl = 'http://github.com/myname/myplugin'
+    title = "My plugin title"
     desc = "My plugin description"
+    developers = [johndoe:"John Doe"]
 }
 
 or
@@ -55,6 +57,9 @@ grailsPublish {
     key = 'key'
     githubSlug = 'foo/bar'
     license = 'APACHE 2.0'
+    title = "My plugin title"
+    desc = "My plugin description"
+    developers = [johndoe:"John Doe"]
 }
 
 The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gradle.properties
@@ -153,8 +158,8 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                 throw new RuntimeException(getErrorMessage("issueTrackerUrl"))
             }
 
-            if(publishExtension.license) {
-                bintrayExtension.pkg.licenses = [publishExtension.license] as String[]
+            if(publishExtension.license?.name) {
+                bintrayExtension.pkg.licenses = [publishExtension.license.name] as String[]
             }
             else if(!bintrayExtension.pkg.licenses) {
                 throw new RuntimeException(getErrorMessage("license"))
@@ -185,9 +190,87 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             publications {
                 maven(MavenPublication) {
                     pom.withXml {
-                        def pomNode = asNode()
+                        Node pomNode = asNode()
+                        def extension = project.extensions.findByType(GrailsPublishExtension)
                         if(pomNode.dependencyManagement) {
                             pomNode.dependencyManagement[0].replaceNode {}
+                        }
+
+                        if(extension != null) {
+                            pomNode.children().last() + {
+                                def title = extension.title ?: project.name
+                                delegate.name title
+                                delegate.description extension.desc ?: title
+
+                                def websiteUrl = extension.websiteUrl ?: extension.githubSlug ? "https://github.com/$extension.githubSlug" : ''
+                                if(!websiteUrl) {
+                                    throw new RuntimeException(getErrorMessage('websiteUrl'))
+                                }
+
+                                delegate.url websiteUrl
+
+                                if(extension.license?.name == 'Apache-2.0') {
+
+                                    delegate.licenses {
+                                        delegate.license {
+                                            delegate.name 'The Apache Software License, Version 2.0'
+                                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                            delegate.distribution extension.license.distribution
+                                        }
+                                    }
+                                }
+
+                                if(extension.githubSlug) {
+                                    delegate.scm {
+                                        delegate.url "https://github.com/$extension.githubSlug"
+                                        delegate.connection "scm:git@github.com:${extension.githubSlug}.git"
+                                        delegate.developerConnection "scm:git@github.com:${extension.githubSlug}.git"
+                                    }
+                                    delegate.issueManagement {
+                                        delegate.system "Github Issues"
+                                        delegate.url "https://github.com/$extension.githubSlug/issues"
+                                    }
+                                }
+                                else {
+                                    if(extension.vcsUrl) {
+                                        delegate.scm {
+                                            delegate.url extension.vcsUrl
+                                            delegate.connection "scm:$extension.vcsUrl"
+                                            delegate.developerConnection "scm:$extension.vcsUrl"
+                                        }
+                                    }
+                                    else {
+                                        throw new RuntimeException(getErrorMessage('vcsUrl'))
+                                    }
+
+                                    if(extension.issueTrackerUrl) {
+                                        delegate.issueManagement {
+                                            delegate.system "Issue Tracker"
+                                            delegate.url extension.issueTrackerUrl
+                                        }
+                                    }
+                                    else {
+                                        throw new RuntimeException(getErrorMessage('issueTrackerUrl'))
+                                    }
+
+                                }
+
+                                if(extension.developers) {
+
+                                    delegate.developers {
+                                        for(entry in extension.developers.entrySet()) {
+                                            delegate.developer {
+                                                delegate.id entry.key
+                                                delegate.name entry.value
+                                            }
+                                        }
+                                    }
+                                }
+                                else {
+                                    throw new RuntimeException(getErrorMessage('developers'))
+                                }
+                            }
+
                         }
 
                         // simply remove dependencies without a version

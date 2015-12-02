@@ -35,6 +35,16 @@ class GrailsPublishExtension {
      * The the publishing key
      */
     String key
+
+    /**
+     * The username for the plugin portal
+     */
+    String portalUser
+
+    /**
+     * The password for the plugin portal
+     */
+    String portalPassword
     /**
      * The website URL of the plugin
      */
@@ -46,7 +56,17 @@ class GrailsPublishExtension {
     /**
      * The license of the plugin
      */
-    String license
+    License license = new License()
+
+    /**
+     * The developers of the plugin
+     */
+    Map<String, String> developers = [:]
+
+    /**
+     * Title of the plugin, defaults to the project name
+     */
+    String title
 
     /**
      * Description of the plugin
@@ -88,4 +108,30 @@ class GrailsPublishExtension {
      * Password for maven central
      */
     String sonatypeOssPassword
+
+    License getLicense() {
+        return license
+    }
+
+    String getPortalUser() {
+        return portalUser ?: user
+    }
+
+    void setPortalUser(String portalUser) {
+        this.portalUser = portalUser
+    }
+
+    void setLicense(License license) {
+        this.license = license
+    }
+
+    void setLicense(String license) {
+        this.license.name = license
+    }
+
+    static class License {
+        String name
+        String url
+        String distribution = 'repo'
+    }
 }
