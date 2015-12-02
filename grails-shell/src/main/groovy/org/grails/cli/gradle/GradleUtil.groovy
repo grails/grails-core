@@ -74,7 +74,7 @@ class GradleUtil {
         if (preparedConnection != null) {
             try {
                 Thread.start {
-                    preparedConnection.close()
+                    preparedConnection?.close()
                 }.join(2000)
             } catch (Throwable e) {
             }
