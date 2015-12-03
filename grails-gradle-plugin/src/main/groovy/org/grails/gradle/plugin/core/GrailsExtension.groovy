@@ -1,6 +1,7 @@
 package org.grails.gradle.plugin.core
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.util.ConfigureUtil
 
 /**
  * A extension to the Gradle plugin to configure Grails settings
@@ -19,4 +20,31 @@ class GrailsExtension {
      * Whether assets should be packaged in META-INF/assets for plugins
      */
     boolean packageAssets = true
+
+    /**
+     * Configure the reloading agent
+     */
+    Agent agent = new Agent()
+
+    /**
+     * Configure the reloading agent
+     */
+    Agent agent(Closure configurer) {
+        ConfigureUtil.configure(configurer, agent)
+    }
+    /**
+     * Configuration for the reloading agent
+     */
+    static class Agent {
+        File path
+        String inclusions = "grails.plugins..*"
+        String exclusions
+        Boolean logging
+        boolean synchronize = true
+        boolean allowSplitPackages = true
+        File cacheDir = new File("build/springloaded")
+
+        Map<String, String> systemProperties = ['jdk.reflect.allowGetCallerClass': 'true']
+        List<String> jvmArgs = ['-Xverify:none']
+    }
 }

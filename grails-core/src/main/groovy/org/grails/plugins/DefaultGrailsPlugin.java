@@ -544,8 +544,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
         Binding b = new Binding();
-        b.setVariable("application", application);
-        b.setVariable(GrailsApplication.APPLICATION_ID, application);
+        b.setVariable("application", grailsApplication);
+        b.setVariable(GrailsApplication.APPLICATION_ID, grailsApplication);
         b.setVariable("manager", getManager());
         b.setVariable("plugin", this);
         b.setVariable("parentCtx", getParentCtx());
@@ -554,7 +554,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         if(plugin instanceof Plugin) {
             Closure c = ((Plugin) plugin).doWithSpring();
             if(c != null) {
-                BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
+                BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, grailsApplication.getClassLoader());
                 bb.setBinding(b);
                 bb.invokeMethod("beans", new Object[]{c});
             }
@@ -570,7 +570,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             }
 
             Closure c = (Closure)plugin.getProperty(DO_WITH_SPRING);
-            BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
+            BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, grailsApplication.getClassLoader());
             bb.setBinding(b);
             c.setDelegate(bb);
             bb.invokeMethod("beans", new Object[]{c});
