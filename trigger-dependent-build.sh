@@ -34,6 +34,11 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
   exit 0
 fi
 
+# Don't run for tagged releases
+if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
+  exit 0
+fi
+
 # Make an API request using the auth token set above. First argument is the path
 # of the API method, all later arguments are passed to curl directly.
 #

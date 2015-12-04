@@ -34,43 +34,6 @@ class BinaryPluginSpec extends Specification {
             binaryPlugin.binaryDescriptor != null
     }
 
-    def "Test loading properties from a binary plugin"() {
-        given:
-            def str = '''
-    <plugin name='testBinary'>
-      <class>org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin</class>
-      <resources>
-             <resource>org.codehaus.groovy.grails.plugins.TestBinaryResource</resource>
-      </resources>
-    </plugin>
-    '''
-
-            def xml = new XmlSlurper().parseText(str)
-
-        when:
-            def resource = new MockBinaryPluginResource(str.getBytes('UTF-8'))
-            def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
-            resource.relativesResources['views.properties'] = new ByteArrayResource('''
-/WEB-INF/grails-app/views/bar/list.gsp=org.codehaus.groovy.grails.plugins.MyView
-'''.getBytes('UTF-8'))
-            resource.relativesResources['grails-app/i18n'] = new ByteArrayResource(''.bytes)
-            resource.relativesResources['grails-app/i18n/testBinary-messages.properties'] = new ByteArrayResource('''
-foo.bar=one
-'''.getBytes('UTF-8'))
-            def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
-            def properties = binaryPlugin.getProperties(Locale.getDefault())
-
-        then:
-            properties.isEmpty() == false
-            properties['foo.bar'] == 'one'
-
-        when:
-            def viewClass = binaryPlugin.resolveView("/WEB-INF/grails-app/views/bar/list.gsp")
-
-        then:
-            viewClass != null
-            viewClass == MyView
-    }
 
     def "Test load static resource from binary plugin"() {
         given:
