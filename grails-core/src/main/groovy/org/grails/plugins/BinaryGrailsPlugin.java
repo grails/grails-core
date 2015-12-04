@@ -184,11 +184,11 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
      * @return The properties or null if non exist
      */
     public Properties getProperties(final Locale locale) {
-        URL url = IOUtils.findJarResource(pluginClass);
+        Resource url = findPluginJar();
         Properties properties = null;
         if(url != null) {
             StaticResourceLoader resourceLoader = new StaticResourceLoader();
-            resourceLoader.setBaseResource(new UrlResource(url));
+            resourceLoader.setBaseResource(url);
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(resourceLoader);
             try {
                 // first load all properties
@@ -220,6 +220,14 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
             }
         }
         return properties;
+    }
+
+    protected Resource findPluginJar() {
+        URL url = IOUtils.findJarResource(pluginClass);
+        if(url != null) {
+            return new UrlResource(url);
+        }
+        return null;
     }
 
     private Resource[] filterResources(Resource[] resources, Locale locale) {

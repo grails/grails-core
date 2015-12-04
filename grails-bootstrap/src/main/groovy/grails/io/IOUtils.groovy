@@ -122,9 +122,12 @@ class IOUtils extends SpringIOUtils {
         def classUrl = findClassResource(targetClass)
         if(classUrl != null) {
             def urlPath = classUrl.toString()
+            def bang = urlPath.lastIndexOf("!")
 
-            def newPath = urlPath.substring(0, urlPath.lastIndexOf("!"))
-            return new URL("${newPath}!/")
+            if(bang > -1) {
+                def newPath = urlPath.substring(0, bang)
+                return new URL("${newPath}!/")
+            }
         }
         return null
     }
