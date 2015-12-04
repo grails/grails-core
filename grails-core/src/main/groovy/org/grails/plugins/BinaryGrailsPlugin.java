@@ -15,23 +15,24 @@
  */
 package org.grails.plugins;
 
+import grails.io.IOUtils;
 import grails.plugins.exceptions.PluginException;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.util.slurpersupport.Node;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.net.URL;
+import java.util.*;
 
 import grails.core.GrailsApplication;
+import org.grails.core.io.StaticResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Models a pre-compiled binary plugin.
@@ -46,6 +47,8 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
     public static final String VIEWS_PROPERTIES = "views.properties";
     public static final String RELATIVE_VIEWS_PROPERTIES = "../gsp/views.properties";
+    public static final char UNDERSCORE = '_';
+    public static final String PROPERTIES_EXTENSION = ".properties";
 
     private BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts = {};
@@ -180,83 +183,90 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
      * @param locale The locale
      * @return The properties or null if non exist
      */
-    public Properties getProperties(Locale locale) {
-        final Resource descriptorResource = descriptor.getResource();
+    public Properties getProperties(final Locale locale) {
+        Resource url = findPluginJar();
+        Properties properties = null;
+        if(url != null) {
+            StaticResourceLoader resourceLoader = new StaticResourceLoader();
+            resourceLoader.setBaseResource(url);
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(resourceLoader);
+            try {
+                // first load all properties
+                Resource[] resources = resolver.getResources('*' + PROPERTIES_EXTENSION);
+                resources = filterResources(resources, locale);
+                properties = new Properties();
 
-        final Resource i18nDir;
-        try {
-            i18nDir = descriptorResource.createRelative("grails-app/i18n");
-        } catch (IOException e) {
-            return null;
+                Arrays.sort(resources, new Comparator<Resource>() {
+                    @Override
+                    public int compare(Resource o1, Resource o2) {
+                        String f1 = o1.getFilename();
+                        String f2 = o2.getFilename();
+
+                        int firstUnderscoreCount = StringUtils.countOccurrencesOf(f1, "_");
+                        int secondUnderscoreCount = StringUtils.countOccurrencesOf(f2, "_");
+
+                        if(firstUnderscoreCount == secondUnderscoreCount) {
+                            return 0;
+                        }
+                        else {
+                            return firstUnderscoreCount > secondUnderscoreCount ?  1 : -1;
+                        }
+                    }
+                });
+
+                loadFromResources(properties, resources);
+            } catch (IOException e) {
+                return null;
+            }
         }
-
-        if (i18nDir == null) {
-            return null;
-        }
-
-        Properties properties = new Properties();
-        final String defaultName = getBaseMessagesProperties();
-        attemptLoadProperties(descriptorResource, properties, defaultName);
-
-        for (String filename : calculateFilenamesForLocale(defaultName, locale)) {
-            attemptLoadProperties(descriptorResource, properties, filename);
-        }
-
         return properties;
     }
 
-    private void attemptLoadProperties(Resource descriptorResource, Properties properties, String defaultName)  {
-        try {
-            final Resource baseMessagesProperties = descriptorResource.createRelative(defaultName + ".properties");
-            if (baseMessagesProperties != null && baseMessagesProperties.exists()) {
-                properties.load(baseMessagesProperties.getInputStream());
+    protected Resource findPluginJar() {
+        URL url = IOUtils.findJarResource(pluginClass);
+        if(url != null) {
+            return new UrlResource(url);
+        }
+        return null;
+    }
+
+    private Resource[] filterResources(Resource[] resources, Locale locale) {
+        List<Resource> finalResources = new ArrayList<Resource>(resources.length);
+
+        for (Resource resource : resources) {
+            String fn = resource.getFilename();
+
+            if(fn.indexOf(UNDERSCORE) > -1) {
+                if(fn.endsWith(UNDERSCORE + locale.toString() + PROPERTIES_EXTENSION)) {
+                    finalResources.add(resource);
+                }
+                else if(fn.endsWith(UNDERSCORE + locale.getLanguage() + UNDERSCORE + locale.getCountry() + PROPERTIES_EXTENSION)) {
+                    finalResources.add(resource);
+                }
+                else if(fn.endsWith(UNDERSCORE + locale.getLanguage() + PROPERTIES_EXTENSION)) {
+                    finalResources.add(resource);
+                }
             }
-        } catch (IOException e) {
-            LOG.debug("Failed to load plugin [" + this + "] properties for name [" +
-                    defaultName + "]: " + e.getMessage(), e);
+            else {
+                finalResources.add(resource);
+            }
         }
+        return finalResources.toArray(new Resource[finalResources.size()]);
     }
 
-    private String getBaseMessagesProperties() {
-        return "grails-app/i18n/" + getName() + "-messages";
-    }
-
-    /**
-     * Calculate the filenames for the given bundle basename and Locale,
-     * appending language code, country code, and variant code.
-     * E.g.: basename "messages", Locale "de_AT_oo" -> "messages_de_AT_OO",
-     * "messages_de_AT", "messages_de".
-     * <p>Follows the rules defined by {@link java.util.Locale#toString()}.
-     *
-     * @param basename the basename of the bundle
-     * @param locale the locale
-     * @return the List of filenames to check
-     */
-    protected List<String> calculateFilenamesForLocale(String basename, Locale locale) {
-        List<String> result = new ArrayList<String>(3);
-        String language = locale.getLanguage();
-        String country = locale.getCountry();
-        String variant = locale.getVariant();
-        StringBuilder temp = new StringBuilder(basename);
-
-        temp.append('_');
-        if (language.length() > 0) {
-            temp.append(language);
-            result.add(0, temp.toString());
+    private void loadFromResources(Properties properties, Resource[] resources) throws IOException {
+        for (Resource messageResource : resources) {
+            InputStream inputStream = messageResource.getInputStream();
+            try {
+                properties.load(inputStream);
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
         }
-
-        temp.append('_');
-        if (country.length() > 0) {
-            temp.append(country);
-            result.add(0, temp.toString());
-        }
-
-        if (variant.length() > 0 && (language.length() > 0 || country.length() > 0)) {
-            temp.append('_').append(variant);
-            result.add(0, temp.toString());
-        }
-
-        return result;
     }
 
     /**
