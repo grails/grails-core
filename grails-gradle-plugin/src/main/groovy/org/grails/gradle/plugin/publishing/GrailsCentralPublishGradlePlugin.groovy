@@ -42,7 +42,9 @@ grailsPublish {
 
 
     websiteUrl = 'http://foo.com/myplugin'
-    license = 'APACHE 2.0'
+    license {
+        name = 'Apache-2.0'
+    }
     issueTrackerUrl = 'http://github.com/myname/myplugin/issues'
     vcsUrl = 'http://github.com/myname/myplugin'
     title = "My plugin title"
@@ -56,7 +58,9 @@ grailsPublish {
     user = 'user'
     key = 'key'
     githubSlug = 'foo/bar'
-    license = 'APACHE 2.0'
+    license {
+        name = 'Apache-2.0'
+    }
     title = "My plugin title"
     desc = "My plugin description"
     developers = [johndoe:"John Doe"]
@@ -213,13 +217,28 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
 
                                 delegate.url websiteUrl
 
-                                if(extension.license?.name == 'Apache-2.0') {
 
-                                    delegate.licenses {
-                                        delegate.license {
-                                            delegate.name 'The Apache Software License, Version 2.0'
-                                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                                            delegate.distribution extension.license.distribution
+                                def license = extension.license
+                                if(license != null) {
+
+                                    def concreteLicense = GrailsPublishExtension.License.LICENSES.get(license.name)
+                                    if(concreteLicense != null) {
+
+                                        delegate.licenses {
+                                            delegate.license {
+                                                delegate.name concreteLicense.name
+                                                delegate.url concreteLicense.url
+                                                delegate.distribution concreteLicense.distribution
+                                            }
+                                        }
+                                    }
+                                    else if(license.name && license.url )  {
+                                        delegate.licenses {
+                                            delegate.license {
+                                                delegate.name license.name
+                                                delegate.url license.url
+                                                delegate.distribution license.distribution
+                                            }
                                         }
                                     }
                                 }
