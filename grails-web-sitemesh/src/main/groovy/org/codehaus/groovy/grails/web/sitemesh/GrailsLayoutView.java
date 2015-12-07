@@ -120,7 +120,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
 
     protected GrailsContentBufferingResponse createContentBufferingResponse(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
             HttpServletResponse response) {
-        return new GrailsViewBufferingResponse(request, response, getServletContext());
+        return new GrailsViewBufferingResponse(request, response, webRequest.getServletContext());
     }
 
     @Override
