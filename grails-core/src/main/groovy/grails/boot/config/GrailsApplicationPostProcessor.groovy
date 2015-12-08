@@ -132,13 +132,15 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             def plugins = pluginManager.allPlugins
             if(plugins) {
                 for(GrailsPlugin plugin in plugins.reverse()) {
-                    def pluginPropertySource = plugin.propertySource
-                    if(pluginPropertySource) {
-                        if(pluginPropertySource instanceof EnumerablePropertySource) {
-                            propertySources.addLast( new PrefixedMapPropertySource( "grails.plugins.$plugin.name", (EnumerablePropertySource)pluginPropertySource ) )
-                        }
-                        propertySources.addLast pluginPropertySource
-                    }
+                    def pluginPropertySources = plugin.propertySources
+					pluginPropertySources.each { pluginPropertySource ->
+						if (pluginPropertySource) {
+							if (pluginPropertySource instanceof EnumerablePropertySource) {
+								propertySources.addLast(new PrefixedMapPropertySource("grails.plugins.$plugin.name", (EnumerablePropertySource) pluginPropertySource))
+							}
+							propertySources.addLast pluginPropertySource
+						}
+					}
                 }
             }
             ((DefaultGrailsApplication)grailsApplication).config = new PropertySourcesConfig(propertySources)

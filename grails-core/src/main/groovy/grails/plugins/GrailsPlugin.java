@@ -275,7 +275,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String getDependentVersion(String name);
 
 
-    PropertySource<?> getPropertySource();
+    List<PropertySource<?>> getPropertySources();
 
     /**
      * Refreshes this Grails plugin reloading any watched resources as necessary
