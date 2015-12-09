@@ -25,6 +25,12 @@ interface Settings {
     String SPRING_PLACEHOLDER_PREFIX = "grails.spring.placeholder.prefix";
 
     /**
+     * Whether to enable Spring proxy based transaction management. Since {@link grails.transaction.Transactional} uses an AST transform, this makes Spring proxy based transaction management redundant.
+     * However, if Spring proxies are prefer
+     */
+    String SPRING_TRANSACTION_MANAGEMENT = "grails.spring.transactionManagement";
+
+    /**
      * Which plugins to include in the plugin manager
      */
     String PLUGIN_INCLUDES = "grails.plugin.includes";

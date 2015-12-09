@@ -16,6 +16,7 @@
 package org.grails.plugins.services
 
 import grails.config.Config
+import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
@@ -49,11 +50,15 @@ class ServicesGrailsPlugin extends Plugin  {
                             "file:./plugins/*/grails-app/services/**/*Service.groovy"]
 
     Closure doWithSpring() {{->
-        xmlns tx:"http://www.springframework.org/schema/tx"
-        tx.'annotation-driven'('transaction-manager':'transactionManager')
-
         def application = grailsApplication
         Config config = application.config
+
+        final boolean springTransactionManagement = config.getProperty(Settings.SPRING_TRANSACTION_MANAGEMENT, Boolean.class, true)
+
+        if(springTransactionManagement) {
+            xmlns tx:"http://www.springframework.org/schema/tx"
+            tx.'annotation-driven'('transaction-manager':'transactionManager')
+        }
 
         for (GrailsServiceClass serviceClass in application.serviceClasses) {
             def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
@@ -76,7 +81,7 @@ class ServicesGrailsPlugin extends Plugin  {
 
 
             def hasDataSource = (config?.dataSources || application.domainClasses)
-            if (hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
+            if (springTransactionManagement && hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
                 def props = new Properties()
 
                 String attributes = 'PROPAGATION_REQUIRED'
@@ -148,10 +153,12 @@ class ServicesGrailsPlugin extends Plugin  {
             def serviceName = "${serviceClass.propertyName}"
             def scope = serviceClass.getPropertyValue("scope")
 
+            final boolean springTransactionManagement = config.getProperty(Settings.SPRING_TRANSACTION_MANAGEMENT, Boolean.class, true)
+
             String datasourceName = serviceClass.datasource
             String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
 
-            if (shouldCreateTransactionalProxy(serviceClass) && ctx.containsBean("transactionManager$suffix")) {
+            if (springTransactionManagement && shouldCreateTransactionalProxy(serviceClass) && ctx.containsBean("transactionManager$suffix")) {
 
                 def props = new Properties()
                 String attributes = 'PROPAGATION_REQUIRED'
