@@ -32,19 +32,19 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         given:
         def linkGenerator = getLinkGenerator {
             group "/admin", {
-                "/domains" (resources: 'domain')
+                "/domains"(resources: 'domain')
             }
         }
         def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
         HttpServletRequest request = Mock(HttpServletRequest)
         HttpServletResponse response = Mock(HttpServletResponse)
 
-        when:"The response is redirected"
-        responseRedirector.redirect(request, response, [controller:'domain', action:'index', method:"GET"])
+        when: "The response is redirected"
+        responseRedirector.redirect(request, response, [controller: 'domain', action: 'index', method: "GET"])
 
         then:
         1 * response.setStatus(302)
-        1 * response.setHeader( HttpHeaders.LOCATION, "http://localhost/admin/domains" )
+        1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/admin/domains")
 
     }
 
@@ -53,19 +53,19 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         given:
         def linkGenerator = getLinkGenerator {
             group "/admin", {
-                "/domains" (resources: 'domain')
+                "/domains"(resources: 'domain')
             }
         }
         def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
         HttpServletRequest request = Mock(HttpServletRequest)
         HttpServletResponse response = Mock(HttpServletResponse)
 
-        when:"The response is redirected"
-        responseRedirector.redirect(request, response, [resource:'domain', action:'index'])
+        when: "The response is redirected"
+        responseRedirector.redirect(request, response, [resource: 'domain', action: 'index'])
 
         then:
         1 * response.setStatus(302)
-        1 * response.setHeader( HttpHeaders.LOCATION, "http://localhost/admin/domains" )
+        1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/admin/domains")
 
     }
 
@@ -109,5 +109,60 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         goodMatch_full
         goodMatch_optional
         !badMatch
+    }
+
+    void "Test that root mappings in group are properly respected"() {
+        given: "A group with multiple root children"
+        def urlMappingsHolder = getUrlMappingsHolder {
+            group "/group1", {
+                "/"(controller: "test1", action: "index")
+                "/secondLevel1"(controller: "test1SecondLevel", action: "index")
+                "/$id"(controller: "test1", action: "id") {
+                    constraints {
+                        id(matches: /\d+/)
+                    }
+                }
+            }
+            group "/group2", {
+                "/"(controller: "test2", action: "index")
+                "/secondLevel2"(controller: "test2SecondLevel", action: "index")
+                "/$id"(controller: "test2", action: "id") {
+                    constraints {
+                        id(matches: /\d+/)
+                    }
+                }
+            }
+            "/notagroup"(controller: "test3", action: "index")
+        }
+
+        when: 'Attempting to match URLs against nested groups'
+        def root_1 = urlMappingsHolder.match("/group1")
+        def root_2 = urlMappingsHolder.match("/group2")
+
+        def second_level_1 = urlMappingsHolder.match("/group1/secondLevel1")
+        def second_level_2 = urlMappingsHolder.match("/group2/secondLevel2")
+
+        def optional_param_1 = urlMappingsHolder.match("/group1/1234")
+        def optional_param_2 = urlMappingsHolder.match("/group2/1234")
+
+        def not_a_group = urlMappingsHolder.match("/notagroup")
+
+        then: 'URLs should match appropriately'
+        "test1" == root_1.controllerName
+        "index" == root_1.actionName
+
+        "test2" == root_2.controllerName
+        "index" == root_2.actionName
+
+        "test1SecondLevel" == second_level_1.controllerName
+        "test2SecondLevel" == second_level_2.controllerName
+
+        "test1" == optional_param_1.controllerName
+        "id" == optional_param_1.actionName
+
+        "test2" == optional_param_2.controllerName
+        "id" == optional_param_2.actionName
+
+        "test3" == not_a_group.controllerName
     }
 }
