@@ -16,10 +16,6 @@
 
 package org.grails.plugins.web.rest.render.hal
 
-import com.google.gson.GsonBuilder
-import com.google.gson.TypeAdapter
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonWriter
 import grails.config.Config
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
@@ -91,26 +87,26 @@ class HalJsonRendererSpec extends Specification{
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
         response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/products",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "name": "MacBook",
-  "numberInStock": 10,
-  "_embedded": {
-    "category": {
-      "_links": {
+    "_links": {
         "self": {
-          "href": "http://localhost/category/index",
-          "hreflang": "en"
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
         }
-      },
-      "name": "Laptops"
+    },
+    "name": "MacBook",
+    "numberInStock": 10,
+    "_embedded": {
+        "category": {
+            "_links": {
+                "self": {
+                    "href": "http://localhost/category/index",
+                    "hreflang": "en"
+                }
+            },
+            "name": "Laptops"
+        }
     }
-  }
 }'''
 
     }
@@ -137,61 +133,61 @@ class HalJsonRendererSpec extends Specification{
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name,
                     GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/product/Macbook",
-      "hreflang": "en",
-      "type": "application/hal+json"
+    "_links": {
+        "self": {
+            "href": "http://localhost/product/Macbook",
+            "hreflang": "en",
+            "type": "application/hal+json"
+        }
+    },
+    "_embedded": {
+        "product": [
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://localhost/products",
+                        "hreflang": "en",
+                        "type": "application/hal+json"
+                    }
+                },
+                "name": "MacBook",
+                "numberInStock": 10,
+                "_embedded": {
+                    "category": {
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/category/index",
+                                "hreflang": "en"
+                            }
+                        },
+                        "name": "Laptops"
+                    }
+                }
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://localhost/products",
+                        "hreflang": "en",
+                        "type": "application/hal+json"
+                    }
+                },
+                "name": "iMac",
+                "numberInStock": 42,
+                "_embedded": {
+                    "category": {
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/category/index",
+                                "hreflang": "en"
+                            }
+                        },
+                        "name": "Desktops"
+                    }
+                }
+            }
+        ]
     }
-  },
-  "_embedded": {
-    "product": [
-      {
-        "_links": {
-          "self": {
-            "href": "http://localhost/products",
-            "hreflang": "en",
-            "type": "application/hal+json"
-          }
-        },
-        "name": "MacBook",
-        "numberInStock": 10,
-        "_embedded": {
-          "category": {
-            "_links": {
-              "self": {
-                "href": "http://localhost/category/index",
-                "hreflang": "en"
-              }
-            },
-            "name": "Laptops"
-          }
-        }
-      },
-      {
-        "_links": {
-          "self": {
-            "href": "http://localhost/products",
-            "hreflang": "en",
-            "type": "application/hal+json"
-          }
-        },
-        "name": "iMac",
-        "numberInStock": 42,
-        "_embedded": {
-          "category": {
-            "_links": {
-              "self": {
-                "href": "http://localhost/category/index",
-                "hreflang": "en"
-              }
-            },
-            "name": "Desktops"
-          }
-        }
-      }
-    ]
-  }
 }'''
 
     }
@@ -219,61 +215,61 @@ class HalJsonRendererSpec extends Specification{
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name,
                     GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/product/Macbook",
-      "hreflang": "en",
-      "type": "application/hal+json"
+    "_links": {
+        "self": {
+            "href": "http://localhost/product/Macbook",
+            "hreflang": "en",
+            "type": "application/hal+json"
+        }
+    },
+    "_embedded": {
+        "schtuff": [
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://localhost/products",
+                        "hreflang": "en",
+                        "type": "application/hal+json"
+                    }
+                },
+                "name": "MacBook",
+                "numberInStock": 10,
+                "_embedded": {
+                    "category": {
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/category/index",
+                                "hreflang": "en"
+                            }
+                        },
+                        "name": "Laptops"
+                    }
+                }
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://localhost/products",
+                        "hreflang": "en",
+                        "type": "application/hal+json"
+                    }
+                },
+                "name": "iMac",
+                "numberInStock": 42,
+                "_embedded": {
+                    "category": {
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/category/index",
+                                "hreflang": "en"
+                            }
+                        },
+                        "name": "Desktops"
+                    }
+                }
+            }
+        ]
     }
-  },
-  "_embedded": {
-    "schtuff": [
-      {
-        "_links": {
-          "self": {
-            "href": "http://localhost/products",
-            "hreflang": "en",
-            "type": "application/hal+json"
-          }
-        },
-        "name": "MacBook",
-        "numberInStock": 10,
-        "_embedded": {
-          "category": {
-            "_links": {
-              "self": {
-                "href": "http://localhost/category/index",
-                "hreflang": "en"
-              }
-            },
-            "name": "Laptops"
-          }
-        }
-      },
-      {
-        "_links": {
-          "self": {
-            "href": "http://localhost/products",
-            "hreflang": "en",
-            "type": "application/hal+json"
-          }
-        },
-        "name": "iMac",
-        "numberInStock": 42,
-        "_embedded": {
-          "category": {
-            "_links": {
-              "self": {
-                "href": "http://localhost/category/index",
-                "hreflang": "en"
-              }
-            },
-            "name": "Desktops"
-          }
-        }
-      }
-    ]
-  }
 }'''
 
     }
@@ -296,18 +292,18 @@ class HalJsonRendererSpec extends Specification{
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/product/Macbook",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "category": {
-    "name": "Laptops"
-  },
-  "name": "MacBook",
-  "numberInStock": 10
+    "_links": {
+        "self": {
+            "href": "http://localhost/product/Macbook",
+            "hreflang": "en",
+            "type": "application/hal+json"
+        }
+    },
+    "category": {
+        "name": "Laptops"
+    },
+    "name": "MacBook",
+    "numberInStock": 10
 }'''
 
     }
@@ -333,43 +329,43 @@ class HalJsonRendererSpec extends Specification{
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/product/Macbook",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "_embedded": [
-    {
-      "_links": {
+    "_links": {
         "self": {
-          "href": "http://localhost/product/Macbook",
-          "hreflang": "en",
-          "type": "application/hal+json"
+            "href": "http://localhost/product/Macbook",
+            "hreflang": "en",
+            "type": "application/hal+json"
         }
-      },
-      "category": {
-        "name": "Laptops"
-      },
-      "name": "MacBook",
-      "numberInStock": 10
     },
-    {
-      "_links": {
-        "self": {
-          "href": "http://localhost/product/Macbook",
-          "hreflang": "en",
-          "type": "application/hal+json"
+    "_embedded": [
+        {
+            "_links": {
+                "self": {
+                    "href": "http://localhost/product/Macbook",
+                    "hreflang": "en",
+                    "type": "application/hal+json"
+                }
+            },
+            "category": {
+                "name": "Laptops"
+            },
+            "name": "MacBook",
+            "numberInStock": 10
+        },
+        {
+            "_links": {
+                "self": {
+                    "href": "http://localhost/product/Macbook",
+                    "hreflang": "en",
+                    "type": "application/hal+json"
+                }
+            },
+            "category": {
+                "name": "Desktops"
+            },
+            "name": "iMac",
+            "numberInStock": 8
         }
-      },
-      "category": {
-        "name": "Desktops"
-      },
-      "name": "iMac",
-      "numberInStock": 8
-    }
-  ]
+    ]
 }'''
  
     }
@@ -397,32 +393,7 @@ class HalJsonRendererSpec extends Specification{
             Links are not rendered correctly. This seems to be an existing bug in link generation and all other
             tests have same problem. For now, the assertion below is using manipulated links for expected value.
          */
-        response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/employees",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "name": "employee1",
-  "_embedded": {
-    "projects": [
-      {
-        "_links": {
-          "self": {
-            "href": "http://localhost/project/index",
-            "hreflang": "en"
-          }
-        },
-        "name": "project1",
-        "_embedded": {
-          "employees": []
-        }
-      }
-    ]
-  }
-}'''
+        response.contentAsString == '''{"_links":{"self":{"href":"http://localhost/employees","hreflang":"en","type":"application/hal+json"}},"name":"employee1","_embedded":{"projects":[{"_links":{"self":{"href":"http://localhost/project/index","hreflang":"en"}},"name":"project1","_embedded":{"employees":[]}}]}}'''
 
 
     }
@@ -678,16 +649,16 @@ class HalJsonRendererSpec extends Specification{
         then:"The resulting HAL is correct"
         response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
         response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/events",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "date": "2013-11-08T21:12:30Z",
-  "name": "Lollapalooza",
-  "state": "OPEN"
+    "_links": {
+        "self": {
+            "href": "http://localhost/events",
+            "hreflang": "en",
+            "type": "application/hal+json"
+        }
+    },
+    "date": "2013-11-08T21:12:30+0000",
+    "name": "Lollapalooza",
+    "state": "OPEN"
 }'''
 
     }
@@ -734,46 +705,13 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
-    @Issue('GRAILS-10977')
-    void "Test that the HAL renderer allows for custom Gson implementation with custom TypeAdapter"() {
-        given:"A HAL renderer"
-        HalJsonRenderer renderer = getSpecialEventRenderer()
-        renderer.prettyPrint = true
-        GsonBuilder gsonBuilder = new GsonBuilder()
-        gsonBuilder.registerTypeAdapter(SpecialType, new SpecialTypeAdapter())
-        renderer.gson = gsonBuilder.create()
 
-        when:"A domain object is rendered"
-        def webRequest = boundMimeTypeRequest()
-        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/specialEvent/Lollapalooza")
-        webRequest.request.addHeader("ACCEPT", "application/hal+json")
-        def response = webRequest.response
-        def renderContext = new ServletRenderContext(webRequest)
-        def event = new SpecialEvent(name: "Lollapalooza", specialType: new SpecialType())
-
-        renderer.render(event, renderContext)
-
-        then:"The resulting HAL is correct"
-        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-        response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/specialEvents",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "name": "Lollapalooza",
-  "specialType": "special-type"
-}'''
-
-    }
 
     @Issue('GRAILS-11100')
     void "Test that the HAL renderer ignores null values for embedded single ended domain objects" () {
         given:"A HAL renderer"
         HalJsonRenderer renderer = getRenderer()
-        renderer.prettyPrint = true
+        renderer.prettyPrint = false
 
         when:"A domain object is rendered"
         def webRequest = boundMimeTypeRequest()
@@ -786,18 +724,7 @@ class HalJsonRendererSpec extends Specification{
 
         then:"The resulting HAL is correct"
         response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-        response.contentAsString =='''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/products",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    }
-  },
-  "name": "MacBook",
-  "numberInStock": 10,
-  "_embedded": {}
-}'''
+        response.contentAsString =='''{"_links":{"self":{"href":"http://localhost/products","hreflang":"en","type":"application/hal+json"}},"name":"MacBook","numberInStock":10,"_embedded":{}}'''
     }
 
 
@@ -828,7 +755,7 @@ class HalJsonRendererSpec extends Specification{
         renderer.linkGenerator = getLinkGenerator {
             "/employees"(resources: "employee")
         }
-        renderer.prettyPrint = true
+        renderer.prettyPrint = false
         renderer
     }
 
@@ -1039,13 +966,3 @@ class SimpleCategory {
 class SpecialType {
 }
 
-class SpecialTypeAdapter extends TypeAdapter<SpecialType> {
-
-    void write(JsonWriter out, SpecialType value) {
-        out.value("special-type")
-    }
-
-    SpecialType read(JsonReader jsonReader)  {
-        return null
-    }
-}

@@ -20,8 +20,8 @@ import grails.rest.render.RenderContext
 import grails.util.GrailsNameUtils
 
 import grails.web.mime.MimeType
+import org.grails.web.json.StreamingJsonBuilder
 
-import com.google.gson.stream.JsonWriter
 
 /**
  * A HAL JSON renderer for a collection of objects
@@ -32,8 +32,7 @@ import com.google.gson.stream.JsonWriter
 class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRenderer {
 
     final Class componentType
-    String collectionName
-    
+
     HalJsonCollectionRenderer(Class componentType) {
         super(Collection)
         this.componentType = componentType
@@ -45,12 +44,5 @@ class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRend
         this.componentType = componentType
         this.collectionName = GrailsNameUtils.getPropertyName(componentType)
     }
-    
-    @Override
-    protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
-        writer.beginObject()
-        writer.name(collectionName)
-        super.renderEmbeddedAttributes writer, object, context, mimeType
-        writer.endObject()
-    }
+
 }

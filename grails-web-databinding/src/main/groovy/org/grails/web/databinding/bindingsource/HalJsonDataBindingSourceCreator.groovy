@@ -20,9 +20,6 @@ import groovy.transform.CompileStatic
 
 import grails.web.mime.MimeType
 
-import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 
 /**
  * Creates DataBindingSource objects from HAL JSON in the request body
@@ -46,29 +43,22 @@ class HalJsonDataBindingSourceCreator extends JsonDataBindingSourceCreator {
     }
 
     @Override
-    protected Map createJsonObjectMap(JsonElement jsonElement) {
-        jsonElement instanceof JsonObject ? new HalJsonObjectMap(jsonElement, gson) : [:]
-    }
+    protected Map createJsonMap(Object jsonElement) {
+        if(jsonElement instanceof Map) {
 
-    @CompileStatic
-    class HalJsonObjectMap extends JsonDataBindingSourceCreator.JsonObjectMap {
-
-        HalJsonObjectMap(JsonObject jsonObject, Gson gson) {
-            super(jsonObject, gson)
-
-            if (!jsonObject.has(HAL_EMBEDDED_ELEMENT)) {
-                return
-            }
-
-            final embeddedObject = jsonObject.get(HAL_EMBEDDED_ELEMENT)
-            jsonObject.remove(HAL_EMBEDDED_ELEMENT)
-            if (embeddedObject instanceof JsonObject) {
-                JsonObject embeddedJson = (JsonObject)embeddedObject
-
-                for (entry in embeddedJson.entrySet()) {
-                    jsonObject.add(entry.key, entry.value)
+            def jsonMap = (Map) jsonElement
+            if(jsonMap.containsKey(HAL_EMBEDDED_ELEMENT)) {
+                jsonMap = new LinkedHashMap(jsonMap)
+                def embedded = jsonMap.get(HAL_EMBEDDED_ELEMENT)
+                if(embedded instanceof Map) {
+                    jsonMap.putAll((Map)embedded)
                 }
             }
+            return jsonMap
+        }
+        else {
+            return super.createJsonMap(jsonElement)
         }
     }
+
 }

@@ -3,8 +3,6 @@ package org.grails.web.binding.json
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 
-import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator.JsonObjectMap
-
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -91,7 +89,6 @@ class JsonBindingSpec extends Specification {
 
         then:
         model.family.mapData instanceof Map
-        !(model.family.mapData instanceof JsonObjectMap)
         model.family.mapData.name == 'Jeff'
         model.family.mapData.country == 'USA'
     }
@@ -115,7 +112,7 @@ class JsonBindingSpec extends Specification {
         }
         
         then:
-        familyError?.defaultMessage?.contains 'Error occurred initializing command object [family]. com.google.gson.JsonSyntaxException'
+        familyError?.defaultMessage?.contains 'Error occurred initializing command object [family]. groovy.json.JsonException'
     }
     
     @Issue('GRAILS-11646')

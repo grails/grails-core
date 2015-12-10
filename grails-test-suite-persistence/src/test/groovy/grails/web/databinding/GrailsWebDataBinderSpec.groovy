@@ -33,8 +33,6 @@ import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import com.google.gson.internal.LazilyParsedNumber
-
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GrailsWebDataBinderSpec extends Specification {
@@ -561,26 +559,6 @@ class GrailsWebDataBinderSpec extends Specification {
         pub.authors.find { it.name == 'Author Two' } != null
     }
 
-    void 'Test binding a gson LazilyParsedNumber to a domain class object reference'() {
-        given:
-        def author = new Author(name: 'Lewis Black')
-
-        when:
-        author.save()
-
-        then:
-        author.id !=  null
-
-        when:
-        def publication = new Publication()
-        def bindingSource = [title: 'Me Of Little Faith', author: new LazilyParsedNumber(author.id.toString())] as SimpleMapDataBindingSource
-        binder.bind publication, bindingSource
-
-        then:
-        publication.author.name == 'Lewis Black'
-        publication.title == 'Me Of Little Faith'
-        publication.author.is author
-    }
 
     void 'Test binding a String to a domain class object reference'() {
         given:

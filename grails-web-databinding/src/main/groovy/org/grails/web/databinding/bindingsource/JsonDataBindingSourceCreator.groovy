@@ -17,7 +17,10 @@ package org.grails.web.databinding.bindingsource
 
 import grails.databinding.CollectionDataBindingSource;
 import grails.databinding.DataBindingSource;
-import grails.databinding.SimpleMapDataBindingSource;
+import grails.databinding.SimpleMapDataBindingSource
+import groovy.json.JsonException
+import groovy.json.JsonParserType
+import groovy.json.JsonSlurper;
 import groovy.transform.CompileStatic
 
 import java.util.regex.Pattern
@@ -29,14 +32,6 @@ import grails.web.mime.MimeType
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 import org.springframework.beans.factory.annotation.Autowired
 
-import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonParseException
-import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
-import com.google.gson.stream.JsonReader
 
 /**
  * Creates DataBindingSource objects from JSON in the request body
@@ -54,7 +49,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     private static final Pattern INDEX_PATTERN = ~/^(\S+)\[(\d+)\]$/
 
     @Autowired(required = false)
-    Gson gson = new Gson()
+    JsonSlurper jsonSlurper = new JsonSlurper()
 
     @Override
     MimeType[] getMimeTypes() {
@@ -63,8 +58,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     @Override
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
-        if(bindingSource instanceof JsonObject) {
-            return new SimpleMapDataBindingSource(createJsonObjectMap((JsonObject)bindingSource))
+        if(bindingSource instanceof Map) {
+            return new SimpleMapDataBindingSource(createJsonMap(bindingSource))
         }
         else if(bindingSource instanceof JSONObject) {
             return new SimpleMapDataBindingSource((JSONObject)bindingSource)
@@ -76,14 +71,15 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     @Override
     protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
-        def jsonReader = new JsonReader(reader)
-        jsonReader.setLenient true
-        def parser = new JsonParser()
 
-        // TODO Need to decide what to do if the root element is not a JsonArray
-        JsonArray jsonElement = (JsonArray)parser.parse(jsonReader)
-        def dataBindingSources = jsonElement.collect { JsonElement element ->
-            new SimpleMapDataBindingSource(createJsonObjectMap(element))
+        Object jsonElement = jsonSlurper.parse(reader)
+        def dataBindingSources = jsonElement.collect { element ->
+            if(element instanceof Map) {
+                new SimpleMapDataBindingSource(createJsonMap(element))
+            }
+            else {
+                new SimpleMapDataBindingSource(Collections.emptyMap())
+            }
         }
         return new CollectionDataBindingSource() {
             List<DataBindingSource> getDataBindingSources() {
@@ -94,165 +90,26 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     @Override
     protected DataBindingSource createBindingSource(Reader reader) {
-        def jsonReader = new JsonReader(reader)
-        jsonReader.setLenient true
-        def parser = new JsonParser()
-        final jsonElement = parser.parse(jsonReader)
+        final jsonElement = jsonSlurper.parse(reader)
 
-        Map result = createJsonObjectMap(jsonElement)
+        if(jsonElement instanceof Map) {
+            return new SimpleMapDataBindingSource(createJsonMap(jsonElement))
+        }
+        else {
+            return new SimpleMapDataBindingSource(Collections.emptyMap())
+        }
 
-        return new SimpleMapDataBindingSource(result)
 
     }
 
-    /**
-     * Returns a map for the given JsonElement. Subclasses can override to customize the format of the map
-     *
-     * @param jsonElement The JSON element
-     * @return The map
-     */
-    protected Map createJsonObjectMap(JsonElement jsonElement) {
-        Map newMap = [:]
-        if(jsonElement instanceof JsonObject) {
-            def jom = new JsonObjectMap(jsonElement, gson)
-            jom.each { k, v ->
-                def newValue = v instanceof JsonElement ? getValueForJsonElement((JsonElement)v, gson) : v
-                newMap[k] = newValue
-            }   
-        }
-        newMap
+    protected Map createJsonMap(Object jsonElement) {
+        (Map) jsonElement
     }
 
-    Object getValueForJsonElement(JsonElement value, Gson gson) {
-        if (value == null || value.isJsonNull()) {
-            return null
-        }
 
-        if (value.isJsonPrimitive()) {
-            JsonPrimitive prim = (JsonPrimitive) value
-            if (prim.isNumber()) {
-                return value.asNumber
-            }
-            if (prim.isBoolean()) {
-                return value.asBoolean
-            }
-            return value.asString
-        }
-
-        if (value.isJsonObject()) {
-            return createJsonObjectMap((JsonObject) value)
-        }
-
-        if (value.isJsonArray()) {
-            return new JsonArrayList((JsonArray)value, gson)
-        }
-    }
-
-    @CompileStatic
-    class JsonObjectMap implements Map {
-
-        JsonObject jsonObject
-        Gson gson
-
-        JsonObjectMap(JsonObject jsonObject, Gson gson) {
-            this.jsonObject = jsonObject
-            this.gson = gson
-        }
-
-        int size() {
-            jsonObject.entrySet().size()
-        }
-
-        boolean isEmpty() {
-            jsonObject.entrySet().isEmpty()
-        }
-
-        boolean containsKey(Object o) {
-            jsonObject.has(o.toString())
-        }
-
-        boolean containsValue(Object o) {
-            get(o) != null
-        }
-
-        Object get(Object o) {
-            final key = o.toString()
-            final value = jsonObject.get(key)
-            if(value != null) {
-                return getValueForJsonElement(value, gson)
-            }
-            else {
-                final matcher = INDEX_PATTERN.matcher(key)
-                if(matcher.find()) {
-                    String newKey = matcher.group(1)
-                    final listValue = jsonObject.get(newKey)
-                    if(listValue.isJsonArray()) {
-                        JsonArray array = (JsonArray)listValue
-                        int index = matcher.group(2).toInteger()
-                        getValueForJsonElement(array.get(index), gson)
-                    }
-                }
-            }
-        }
-
-
-        Object put(Object k, Object v) {
-            jsonObject.add(k.toString(), gson.toJsonTree(v))
-        }
-
-        Object remove(Object o) {
-            jsonObject.remove(o.toString())
-        }
-
-        void putAll(Map map) {
-            for(entry in map.entrySet()) {
-                put(entry.key, entry.value)
-            }
-        }
-
-        void clear() {
-            for(entry in entrySet())  {
-                remove(entry.key)
-            }
-        }
-
-        Set keySet() {
-            jsonObject.entrySet().collect{ Map.Entry entry -> entry.key }.toSet()
-        }
-
-        Collection values() {
-            jsonObject.entrySet().collect{ Map.Entry entry -> entry.value}
-        }
-
-        Set<Map.Entry> entrySet() {
-            jsonObject.entrySet()
-        }
-    }
-
-    @CompileStatic
-    class JsonArrayList extends AbstractList {
-
-        JsonArray jsonArray
-        Gson gson
-
-        JsonArrayList(JsonArray jsonArray, Gson gson) {
-            this.jsonArray = jsonArray
-            this.gson = gson
-        }
-
-        int size() {
-            jsonArray.size()
-        }
-
-        Object get(int i) {
-            final jsonElement = jsonArray.get(i)
-            return getValueForJsonElement(jsonElement, gson)
-        }
-    }
-    
     @Override
     protected DataBindingSourceCreationException createBindingSourceCreationException(Exception e) {
-        if(e instanceof JsonParseException) {
+        if(e instanceof JsonException) {
             return new InvalidRequestBodyException(e)
         }
         return super.createBindingSourceCreationException(e)
