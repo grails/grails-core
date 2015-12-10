@@ -345,6 +345,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 parentResources.push(new ParentResource(null, uri, true, true));
                 pushNewMetaMappingInfo();
                 mappings.call();
+                inGroupConstraints = false;
             } finally {
                 mappingInfoDeque.pop();
                 parentResources.pop();
