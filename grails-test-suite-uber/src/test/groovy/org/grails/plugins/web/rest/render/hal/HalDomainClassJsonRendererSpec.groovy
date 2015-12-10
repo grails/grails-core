@@ -73,7 +73,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
     void "Test that the HAL renderer renders regular linkable groovy objects with appropriate links"() {
         given:"A HAL renderer"
             HalJsonRenderer renderer = getRenderer()
-            renderer.prettyPrint = true
+            renderer.prettyPrint = false
 
         when:"A domain object is rendered"
             def webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -87,24 +87,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
 
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/product/Macbook",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    },
-    "company": {
-      "href": "http://apple.com",
-      "hreflang": "en",
-      "title": "Made by Apple"
-    }
-  },
-  "category": {
-    "name": "laptop"
-  },
-  "name": "MacBook"
-}'''
+            response.contentAsString == '''{"_links":{"self":{"href":"http://localhost/product/Macbook","hreflang":"en","type":"application/hal+json"},"company":{"href":"http://apple.com","hreflang":"en","title":"Made by Apple"}},"category":{"name":"laptop"},"name":"MacBook"}'''
 
 
     }
