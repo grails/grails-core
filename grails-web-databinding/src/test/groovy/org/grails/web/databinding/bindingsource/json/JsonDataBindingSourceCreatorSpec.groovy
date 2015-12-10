@@ -1,7 +1,7 @@
 package org.grails.web.databinding.bindingsource.json
 
+import groovy.json.JsonException
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
-import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator.JsonObjectMap
 
 import spock.lang.Specification
 
@@ -28,7 +28,7 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource.containsProperty 'name'
         bindingSource['name'] == 'MacBook'
         bindingSource['category'] instanceof Map
-        !(bindingSource['category'] instanceof JsonObjectMap)
+//        !(bindingSource['category'] instanceof JsonObjectMap)
         bindingSource['category'].size() == 5
         bindingSource['category']['name'] == 'laptop'
         bindingSource['category']['shouldBeTrue'] == true
@@ -37,12 +37,26 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource['category']['shouldBeNull'] == null
         bindingSource['languages'] instanceof List
         bindingSource['languages'][0] instanceof Map
-        !(bindingSource['languages'][0] instanceof JsonObjectMap)
+//        !(bindingSource['languages'][0] instanceof JsonObjectMap)
         bindingSource['languages'][1] instanceof Map
-        !(bindingSource['languages'][1] instanceof JsonObjectMap)
+//        !(bindingSource['languages'][1] instanceof JsonObjectMap)
         bindingSource['languages'][0]['name'] == 'Groovy'
         bindingSource['languages'][0]['company'] == 'GoPivotal'
         bindingSource['languages'][1]['name'] == 'Java'
         bindingSource['languages'][1]['company'] == 'Oracle'
+    }
+
+    void 'Test malformed JSON parsing'() {
+        given:
+        def json = '''{"mapData": {"name":"Jeff{{{'''
+
+        def inputStream = new ByteArrayInputStream(json.getBytes("UTF-8"))
+
+
+        when:
+        def bindingSource = new JsonDataBindingSourceCreator().createBindingSource(inputStream, "UTF-8")
+
+        then:
+        thrown JsonException
     }
 }

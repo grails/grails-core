@@ -4,7 +4,5 @@ dependencies {
             project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
 
-    compile 'com.google.code.gson:gson:2.2.4'
-
     testCompile project(":grails-plugin-url-mappings")
 }

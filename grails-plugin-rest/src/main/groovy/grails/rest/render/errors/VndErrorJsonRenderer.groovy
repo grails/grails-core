@@ -15,12 +15,12 @@
  */
 package grails.rest.render.errors
 
-import com.google.gson.Gson
-import com.google.gson.stream.JsonWriter
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
+import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import grails.web.mime.MimeType
+import org.grails.web.json.StreamingJsonBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.validation.BeanPropertyBindingResult
@@ -42,9 +42,6 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
 
     MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_JSON, MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
-    @Autowired(required = false)
-    Gson gson = new Gson()
-
     @Override
     void render(Errors object, RenderContext context) {
         if (messageSource == null) throw new IllegalStateException("messageSource property null")
@@ -55,34 +52,30 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
             Locale locale = context.locale
             final target = object.target
 
+            def responseWriter = context.writer
+            Writer targetWriter = prettyPrint ? new StringWriter() : responseWriter
+            StreamingJsonBuilder writer = new StreamingJsonBuilder(targetWriter)
 
-            JsonWriter writer = new JsonWriter(context.writer)
-            if (prettyPrint) {
-                writer.indent = FOUR_SPACES
-            }
-            writer.beginArray()
-            for(ObjectError oe in object.allErrors) {
+            writer.call(object.allErrors) { ObjectError oe ->
                 final msg = messageSource.getMessage(oe, locale)
                 writer
 
                 String logref = resolveLogRef(target, oe)
-                writer
-                    .beginObject()
-                      .name(LOGREF_ATTRIBUTE).value(logref)
-                      .name(MESSAGE_ATTRIBUTE).value(msg)
-                      .name(LINKS_ATTRIBUTE)
-                         .beginObject()
-                             .name(RESOURCE_ATTRIBUTE)
-                             .beginObject()
-                                .name(HREF_ATTRIBUTE).value(linkGenerator.link(resource: target, method:HttpMethod.GET, absolute: absoluteLinks))
-                             .endObject()
-                         .endObject()
-                      .endObject()
+
+                call(LOGREF_ATTRIBUTE, logref)
+                call(MESSAGE_ATTRIBUTE, msg)
+                call(LINKS_ATTRIBUTE) {
+                    call(RESOURCE_ATTRIBUTE) {
+                        call(HREF_ATTRIBUTE, linkGenerator.link(resource: target, method:HttpMethod.GET, absolute: absoluteLinks))
+                    }
+                }
+
             }
-            writer.endArray()
 
-            writer.flush()
-
+            targetWriter.flush()
+            if(prettyPrint) {
+                responseWriter.write(JsonOutput.prettyPrint(targetWriter.toString()))
+            }
         }
     }
 }
