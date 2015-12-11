@@ -49,6 +49,7 @@ import grails.plugins.VersionComparator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.grails.web.util.WebUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -96,7 +97,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
         this(null, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, grailsApplication);
     }
-
+    public RegexUrlMapping(RegexUrlMapping regexUrlMapping, HttpMethod httpMethod) {
+        this(regexUrlMapping.urlData, regexUrlMapping.controllerName, regexUrlMapping.actionName, regexUrlMapping.namespace, regexUrlMapping.pluginName, regexUrlMapping.viewName, httpMethod.toString(), regexUrlMapping.version, regexUrlMapping.constraints, regexUrlMapping.grailsApplication);
+    }
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
      *
