@@ -251,7 +251,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def ln = System.getProperty("line.separator")
         dependencies = dependencies.unique()
 
-        dependencies = dependencies.collect() { Dependency dep ->
+        dependencies = dependencies.sort({ Dependency dep -> dep.scope }).collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
             "    ${dep.scope} \"${artifactStr}\"".toString()
         }.unique().join(ln)
