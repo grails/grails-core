@@ -16,6 +16,7 @@
 
 package org.grails.cli.profile.repository
 
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -131,7 +132,13 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
             }
 
             for(name in profileNames) {
-                grapeEngine.grab(group: 'org.grails.profiles', module: name, version: 'LATEST')
+                try {
+                    grapeEngine.grab(group: 'org.grails.profiles', module: name, version: 'LATEST')
+                } catch (Throwable e) {
+                    GrailsConsole.instance.error("Failed to load latest version of profile [$name]. Trying Grails release version", e)
+                    GrailsConsole.instance.verbose(e.message)
+                    grapeEngine.grab(group: 'org.grails.profiles', module: name, version: BuildSettings.package.implementationVersion)
+                }
             }
 
             def localData = new File(System.getProperty("user.home"),"/.m2/repository/org/grails/profiles")

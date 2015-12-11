@@ -307,10 +307,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',')
         if(requestedFeatures) {
             def featureNames = Arrays.asList(requestedFeatures)
-            return profile.features.findAll() { Feature f -> featureNames.contains(f.name)}
+            return (profile.features.findAll() { Feature f -> featureNames.contains(f.name)} + profile.requiredFeatures).unique()
         }
         else {
-            return profile.defaultFeatures
+            return (profile.defaultFeatures + profile.requiredFeatures).unique()
         }
     }
 
