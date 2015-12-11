@@ -62,6 +62,7 @@ abstract class AbstractProfile implements Profile {
     protected List<String> buildMerge = null
     protected List<Feature> features = []
     protected Set<String> defaultFeaturesNames = []
+    protected Set<String> requiredFeatureNames = []
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
     protected String description = "";
@@ -137,6 +138,7 @@ abstract class AbstractProfile implements Profile {
             Map featureMap = (Map) featuresConfig
             def featureList = (List) featureMap.get("provided") ?: Collections.emptyList()
             def defaultFeatures = (List) featureMap.get("defaults") ?: Collections.emptyList()
+            def requiredFeatures = (List) featureMap.get("required") ?: Collections.emptyList()
             for (fn in featureList) {
                 def featureData = profileDir.createRelative("features/${fn}/feature.yml")
                 if(featureData.exists()) {
@@ -146,6 +148,7 @@ abstract class AbstractProfile implements Profile {
             }
 
             defaultFeaturesNames.addAll(defaultFeatures)
+            requiredFeatureNames.addAll(requiredFeatures)
         }
 
 
@@ -192,6 +195,15 @@ abstract class AbstractProfile implements Profile {
     @Override
     Iterable<Feature> getDefaultFeatures() {
         getFeatures().findAll() { Feature f -> defaultFeaturesNames.contains(f.name) }
+    }
+
+    @Override
+    Iterable<Feature> getRequiredFeatures() {
+        def requiredFeatureInstances = getFeatures().findAll() { Feature f -> requiredFeatureNames.contains(f.name) }
+        if(requiredFeatureInstances.size() != requiredFeatureNames.size()) {
+            throw new IllegalStateException("One or more required features were not found on the classpath. Required features: $requiredFeatureNames")
+        }
+        return requiredFeatureInstances
     }
 
     @Override

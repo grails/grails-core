@@ -62,6 +62,11 @@ public interface Profile {
     Iterable<Feature> getDefaultFeatures();
 
     /**
+     * @return The default features for this profile
+     */
+    Iterable<Feature> getRequiredFeatures();
+
+    /**
      * The other {@link org.grails.cli.profile.Profile} instances that this {@link org.grails.cli.profile.Profile} extends
      * @return zero or many {@link org.grails.cli.profile.Profile} instance that this profile extends from
      */
