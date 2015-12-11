@@ -91,28 +91,30 @@ class ControllerTestPlugin implements TestPlugin {
                 grailsApplication = grailsApplication
             }
 
-            def lazyBean = { bean ->
-                bean.lazyInit = true
-            }
-            jspTagLibraryResolver(TagLibraryResolverImpl, lazyBean)
-            gspTagLibraryLookup(LazyTagLibraryLookup, lazyBean)
-            groovyPageUnitTestResourceLoader(GroovyPageUnitTestResourceLoader, groovyPages)
-            groovyPageLocator(GrailsConventionGroovyPageLocator) {
-                resourceLoader = ref('groovyPageUnitTestResourceLoader')
-            }
-            groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
-                bean.lazyInit = true
-                tagLibraryLookup = ref("gspTagLibraryLookup")
-                jspTagLibraryResolver = ref("jspTagLibraryResolver")
-                groovyPageLocator = ref("groovyPageLocator")
-            }
+            if(ClassUtils.isPresent("org.grails.plugins.web.GroovyPagesGrailsPlugin", classLoader)) {
+                def lazyBean = { bean ->
+                    bean.lazyInit = true
+                }
+                jspTagLibraryResolver(TagLibraryResolverImpl, lazyBean)
+                gspTagLibraryLookup(LazyTagLibraryLookup, lazyBean)
+                groovyPageUnitTestResourceLoader(GroovyPageUnitTestResourceLoader, groovyPages)
+                groovyPageLocator(GrailsConventionGroovyPageLocator) {
+                    resourceLoader = ref('groovyPageUnitTestResourceLoader')
+                }
+                groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
+                    bean.lazyInit = true
+                    tagLibraryLookup = ref("gspTagLibraryLookup")
+                    jspTagLibraryResolver = ref("jspTagLibraryResolver")
+                    groovyPageLocator = ref("groovyPageLocator")
+                }
 
-            groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
-                bean.lazyInit = true
-                groovyPageLocator = ref("groovyPageLocator")
-                groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
-            }
+                groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+                    bean.lazyInit = true
+                    groovyPageLocator = ref("groovyPageLocator")
+                    groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
+                }
 
+            }
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, grailsApplication)
             
             localeResolver(SessionLocaleResolver)
