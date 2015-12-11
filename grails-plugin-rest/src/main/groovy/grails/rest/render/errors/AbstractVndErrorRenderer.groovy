@@ -37,6 +37,7 @@ import org.springframework.validation.ObjectError
 abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Object> {
     public static final String LOGREF_ATTRIBUTE = 'logref'
     public static final String MESSAGE_ATTRIBUTE = "message"
+    public static final String PATH_ATTRIBUTE = "path"
     public static final String RESOURCE_ATTRIBUTE = "resource"
     public static final String HREF_ATTRIBUTE = "href"
 

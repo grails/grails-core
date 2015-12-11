@@ -101,7 +101,7 @@ class VndErrorRenderingSpec extends Specification{
         then:"The response is correct"
             response.status == HttpStatus.UNPROCESSABLE_ENTITY.value()
             response.contentType == GrailsWebUtil.getContentType(VndErrorJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            response.contentAsString == '[{"logref":"book.title.invalid.1","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"book.title.bad.1","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
+            response.contentAsString == '[{"logref":"book.title.invalid.1","message":"Bad Title","path":"http://localhost/books/1","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"book.title.bad.1","message":"Title Bad","path":"http://localhost/books/1","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
 
     }
 
