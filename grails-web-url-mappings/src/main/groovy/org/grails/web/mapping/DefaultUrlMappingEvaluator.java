@@ -229,6 +229,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object parseRequest;
         private Deque<ParentResource> parentResources = new ArrayDeque<ParentResource>();
         private Deque<MetaMappingInfo> mappingInfoDeque = new ArrayDeque<MetaMappingInfo>();
+        private boolean isInCollection;
 
         public UrlMappingBuilder(Binding binding) {
             this.binding = binding;
@@ -392,6 +393,185 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return parameterValues.get(name);
         }
 
+        /**
+         * Matches the GET method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @param callable the customizer
+         * @return the UrlMapping
+         */
+        public UrlMapping get(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.GET.toString());
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping get(Map arguments, String uri) {
+            return get(arguments, uri, null);
+        }
+        public UrlMapping get(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.GET);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+
+
+        /**
+         * Matches the POST method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @return the UrlMapping
+         */
+        public UrlMapping post(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.POST);
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping post(Map arguments, String uri) {
+            return post(arguments, uri, null);
+        }
+        public UrlMapping post(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.POST);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+
+        /**
+         * Matches the PUT method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @return the UrlMapping
+         */
+        public UrlMapping put(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.PUT);
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping put(Map arguments, String uri) {
+            return put(arguments, uri, null);
+        }
+        public UrlMapping put(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.PUT);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+
+        /**
+         * Matches the PATCH method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @return the UrlMapping
+         */
+        public UrlMapping patch(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.PATCH);
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping patch(Map arguments, String uri) {
+            return patch(arguments, uri, null);
+        }
+        public UrlMapping patch(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.PATCH);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+
+        /**
+         * Matches the PATCH method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @return the UrlMapping
+         */
+        public UrlMapping delete(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.DELETE);
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping delete(Map arguments, String uri) {
+            return delete(arguments, uri, null);
+        }
+        public UrlMapping delete(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.DELETE);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+        /**
+         * Matches the HEAD method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @return the UrlMapping
+         */
+        public UrlMapping head(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.HEAD);
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping head(Map arguments, String uri) {
+            return head(arguments, uri, null);
+        }
+        public UrlMapping head(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.HEAD);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+
+        /**
+         * Matches the HEAD method
+         *
+         * @param arguments The arguments
+         * @param uri The URI
+         * @return the UrlMapping
+         */
+        public UrlMapping options(Map arguments, String uri, Closure callable) {
+            arguments.put(UrlMapping.HTTP_METHOD, HttpMethod.OPTIONS);
+            return (UrlMapping) _invoke(uri, new Object[]{ arguments, callable }, this);
+        }
+        public UrlMapping options(Map arguments, String uri) {
+            return options(arguments, uri, null);
+        }
+        public UrlMapping options(RegexUrlMapping regexUrlMapping) {
+            urlMappings.remove(regexUrlMapping);
+            RegexUrlMapping newMapping = new RegexUrlMapping(regexUrlMapping, HttpMethod.OPTIONS);
+            urlMappings.add(newMapping);
+            return newMapping;
+        }
+        /**
+         * Define Url mapping collections that are nested directly below the parent resource (without the id)
+         *
+         * @param callable The callable
+         */
+        public void collection(Closure callable) {
+            boolean previousState = isInCollection;
+            this.isInCollection = true;
+            try {
+                callable.setDelegate(this);
+                callable.call();
+            } finally {
+                isInCollection = previousState ;
+            }
+        }
+
+        /**
+         * Define Url mapping members that are nested directly below  the parent resource and resource id
+         *
+         * @param callable The callable
+         */
+        public void members(Closure callable) {
+            boolean previousState = isInCollection;
+            this.isInCollection = false;
+            try {
+                callable.setDelegate(this);
+                callable.call();
+            } finally {
+                isInCollection = previousState ;
+            }
+        }
+
         private Object _invoke(String methodName, Object arg, Object delegate) {
             try {
                 MetaMappingInfo mappingInfo = pushNewMetaMappingInfo();
@@ -403,8 +583,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     // Create a new parameter map for this mapping.
                     parameterValues = new HashMap<String, Object>();
                     Map variables = binding != null ? binding.getVariables() : null;
+                    boolean hasParent = !parentResources.isEmpty();
                     try {
-                        if (parentResources.isEmpty()) {
+                        if (!hasParent) {
                             urlDefiningMode = false;
                         }
                         args = args != null && args.length > 0 ? args : new Object[]{Collections.EMPTY_MAP};
@@ -497,7 +678,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 if (controller != null) {
                                     createResourceRestfulMappings(controllerName, mappingInfo.getPlugin(), mappingInfo.getNamespace(), version, urlData, currentConstraints, calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
                                 }
-                            } else {
+                            }
+                            else {
 
                                 invokeLastArgumentIfClosure(args);
                                 UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, mappedURI, isResponseCode, currentConstraints);
@@ -510,7 +692,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         if (binding != null) {
                             variables.clear();
                         }
-                        if (parentResources.isEmpty()) {
+                        if (!hasParent) {
                             urlDefiningMode = true;
                         }
                     }
@@ -592,8 +774,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 uriBuilder.append(parentResource.uri);
             } else {
                 if (parentResource.controllerName != null) {
-                    uriBuilder.append(parentResource.uri).append(SLASH).append(CAPTURING_WILD_CARD);
-                    constrainedList.add(new ConstrainedProperty(UrlMapping.class, parentResource.controllerName + "Id", String.class));
+                    uriBuilder.append(parentResource.uri);
+
+                    if(!isInCollection) {
+                        uriBuilder.append(SLASH).append(CAPTURING_WILD_CARD);
+                        constrainedList.add(new ConstrainedProperty(UrlMapping.class, parentResource.controllerName + "Id", String.class));
+                    }
                 }
             }
 
@@ -936,6 +1122,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private Object getVariableFromNamedArgsOrBinding(Map namedArguments, Map bindingVariables, String variableName, Object defaultValue) {
+
             Object returnValue;
             returnValue = namedArguments.get(variableName);
             if (returnValue == null) {
@@ -953,7 +1140,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private Object getControllerName(Map namedArguments, Map bindingVariables) {
-            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, GrailsControllerClass.CONTROLLER, getMetaMappingInfo().getController());
+            Object fromBinding = getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, GrailsControllerClass.CONTROLLER, getMetaMappingInfo().getController());
+            if(fromBinding == null && !parentResources.isEmpty()) {
+                return parentResources.peekLast().controllerName;
+            }
+            else {
+                return fromBinding;
+            }
         }
 
         private Object getPluginName(Map namedArguments, Map bindingVariables) {

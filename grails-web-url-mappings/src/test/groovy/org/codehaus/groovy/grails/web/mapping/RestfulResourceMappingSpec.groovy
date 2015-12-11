@@ -6,9 +6,9 @@ import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 
-import static org.springframework.http.HttpMethod.*
+//import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
-
+import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
 
 import spock.lang.Ignore
@@ -19,7 +19,62 @@ import spock.lang.Specification
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
-    
+
+    void "Test resource members"() {
+        given:
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/books"(resources: "book") {
+                get "/preview", action:"preview"
+                collection {
+                    get "/about", action:"about"
+                }
+            }
+        }
+
+        expect:
+        urlMappingsHolder.matchAll("/books/1/preview", HttpMethod.GET).iterator().next().actionName == 'preview'
+        urlMappingsHolder.matchAll("/books/about", HttpMethod.GET).iterator().next().actionName == 'about'
+    }
+
+    void "Test using method name prefixes"() {
+        given:
+        def urlMappingsHolder = getUrlMappingsHolder {
+            get "/books", controller:"book"
+            get "/books/$id", controller:"book", action:'show'
+            post "/books", controller:"book", action:'save'
+            patch "/books", controller:"book", action:'update'
+            delete "/books", controller:"book", action:'delete'
+
+
+            get "/moreBooks"(controller:"book")
+            post "/moreBooks"(controller:"book", action:'save') {
+
+            }
+            patch "/moreBooks"(controller:"book", action:'update') {
+
+            }
+            put "/moreBooks"(controller:"book", action:'update') {
+
+            }
+            delete "/moreBooks"(controller:"book", action:'delete') {
+
+            }
+        }
+
+        expect:
+        urlMappingsHolder.match("/books")
+        urlMappingsHolder.matchAll("/books/1", HttpMethod.GET).iterator().next().actionName == 'show'
+        urlMappingsHolder.matchAll("/books", HttpMethod.POST).iterator().next().actionName == 'save'
+        urlMappingsHolder.matchAll("/books", HttpMethod.PATCH).iterator().next().actionName == 'update'
+        urlMappingsHolder.matchAll("/books", HttpMethod.DELETE).iterator().next().actionName == 'delete'
+
+        urlMappingsHolder.match("/moreBooks")
+        urlMappingsHolder.matchAll("/moreBooks", HttpMethod.POST).iterator().next().actionName == 'save'
+        urlMappingsHolder.matchAll("/moreBooks", HttpMethod.PUT).iterator().next().actionName == 'update'
+        urlMappingsHolder.matchAll("/moreBooks", HttpMethod.PATCH).iterator().next().actionName == 'update'
+        urlMappingsHolder.matchAll("/moreBooks", HttpMethod.DELETE).iterator().next().actionName == 'delete'
+    }
+
     @Issue('GRAILS-11748')
     void 'Test params.action'() {
         given:
@@ -318,8 +373,8 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappings.size() == 9
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
-            urlMappingsHolder.allowedMethods('/books') == [POST, GET] as Set
-            urlMappingsHolder.allowedMethods('/books/1') == [GET, DELETE, PUT, PATCH] as Set
+            urlMappingsHolder.allowedMethods('/books') == [HttpMethod.POST, HttpMethod.GET] as Set
+            urlMappingsHolder.allowedMethods('/books/1') == [HttpMethod.GET, HttpMethod.DELETE, HttpMethod.PUT, HttpMethod.PATCH] as Set
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
             urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
