@@ -15,18 +15,18 @@
  */
 package org.grails.plugins.codecs
 
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.apache.commons.codec.binary.Base64
+import org.codehaus.groovy.runtime.NullObject
 
 /**
  * A codec that encodes and decodes Objects using Base64 encoding.
  *
  * @author Drew Varner
  */
-class Base64Codec {
+class Base64CodecExtensionMethods {
 
-    static encode = { theTarget ->
-        if (theTarget == null) {
+    static encodeAsBase64(theTarget) {
+        if (theTarget == null || theTarget instanceof NullObject) {
             return null
         }
 
@@ -37,8 +37,8 @@ class Base64Codec {
         return new String(Base64.encodeBase64(theTarget.toString().getBytes("UTF-8")))
     }
 
-    static decode = { theTarget ->
-        if (theTarget == null) {
+    static decodeBase64(theTarget) {
+        if (theTarget == null || theTarget instanceof NullObject) {
             return null
         }
 

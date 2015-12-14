@@ -1,6 +1,7 @@
 moduleName=grails-codecs
 moduleVersion=3.0
-extensionClasses=org.grails.plugins.codecs.HexCodecExtensionMethods,\
+extensionClasses=org.grails.plugins.codecs.Base64CodecExtensionMethods,\
+  org.grails.plugins.codecs.HexCodecExtensionMethods,\
   org.grails.plugins.codecs.MD5BytesCodecExtensionMethods,\
   org.grails.plugins.codecs.MD5CodecExtensionMethods,\
   org.grails.plugins.codecs.SHA1BytesCodecExtensionMethods,\

@@ -19,7 +19,6 @@ import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import org.grails.plugins.codecs.DefaultCodecLookup
 import org.grails.commons.CodecArtefactHandler
-import org.grails.plugins.codecs.Base64Codec
 import org.grails.encoder.impl.HTML4Codec
 import org.grails.plugins.codecs.HTMLCodec
 import org.grails.encoder.impl.HTMLJSCodec
@@ -47,7 +46,6 @@ class CodecsGrailsPlugin extends Plugin {
             JavaScriptCodec,
             HTMLJSCodec,
             URLCodec,
-            Base64Codec,
             RawCodec
     ]
 
