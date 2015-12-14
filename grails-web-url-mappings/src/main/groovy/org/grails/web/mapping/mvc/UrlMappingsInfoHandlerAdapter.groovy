@@ -97,7 +97,8 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                     return (ModelAndView) modelAndView
                 }
                 else if(result instanceof Map) {
-                    return new ModelAndView(action, new HashMap<String, Object>((Map)result))
+                    String viewName = controllerClass.actionUriToViewName(action)
+                    return new ModelAndView(viewName, new HashMap<String, Object>((Map)result))
                 }
                 else if(result instanceof ModelAndView) {
                     return (ModelAndView) result

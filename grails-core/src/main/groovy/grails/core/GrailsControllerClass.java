@@ -120,4 +120,6 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @param urlConverter The {@link grails.web.UrlConverter} to register
      */
     void registerUrlConverter(UrlConverter urlConverter);
+
+    String actionUriToViewName(String actionUri);
 }
