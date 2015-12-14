@@ -15,7 +15,6 @@
  */
 package org.grails.plugins
 
-import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import org.grails.plugins.codecs.DefaultCodecLookup
@@ -25,15 +24,8 @@ import org.grails.encoder.impl.HTML4Codec
 import org.grails.plugins.codecs.HTMLCodec
 import org.grails.encoder.impl.HTMLJSCodec
 import org.grails.plugins.codecs.JSONCodec
-import org.grails.plugins.codecs.HexCodec
 import org.grails.encoder.impl.JavaScriptCodec
-import org.grails.plugins.codecs.MD5BytesCodec
-import org.grails.plugins.codecs.MD5Codec
 import org.grails.encoder.impl.RawCodec
-import org.grails.plugins.codecs.SHA1BytesCodec
-import org.grails.plugins.codecs.SHA1Codec
-import org.grails.plugins.codecs.SHA256Codec
-import org.grails.plugins.codecs.SHA256BytesCodec
 import org.grails.plugins.codecs.URLCodec
 import org.grails.plugins.codecs.XMLCodec
 
@@ -48,22 +40,15 @@ class CodecsGrailsPlugin extends Plugin {
     def dependsOn = [core:version]
     def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
     def providedArtefacts = [
-        HTMLCodec,
-        HTML4Codec,
-        XMLCodec,
-        JSONCodec,
-        JavaScriptCodec,
-        HTMLJSCodec,
-        URLCodec,
-        Base64Codec,
-        MD5Codec,
-        MD5BytesCodec,
-        HexCodec,
-        SHA1Codec,
-        SHA1BytesCodec,
-        SHA256Codec,
-        SHA256BytesCodec,
-        RawCodec
+            HTMLCodec,
+            HTML4Codec,
+            XMLCodec,
+            JSONCodec,
+            JavaScriptCodec,
+            HTMLJSCodec,
+            URLCodec,
+            Base64Codec,
+            RawCodec
     ]
 
     @Override

@@ -15,14 +15,18 @@
  */
 package org.grails.plugins.codecs
 
-class MD5Codec {
-    // Returns the byte[] of the digest, taken from UTF-8 of the string representation
-    // or the raw data coerced to bytes
-    static encode = { theTarget ->
-        HexCodec.encode(MD5BytesCodec.encode(theTarget))
+import org.codehaus.groovy.runtime.NullObject
+
+class SHA256CodecExtensionMethods extends DigestUtils {
+    // Returns the byte[] of the digest
+    static encodeAsSHA256(theTarget) {
+        if(theTarget == null || theTarget instanceof NullObject) {
+            return null
+        }
+        theTarget.encodeAsSHA256Bytes()?.encodeAsHex()
     }
 
-    static decode = { theTarget ->
-        throw new UnsupportedOperationException("Cannot decode MD5 hashes")
+    static decodeSHA256(theTarget) {
+        throw new UnsupportedOperationException("Cannot decode SHA-256 hashes")
     }
 }
