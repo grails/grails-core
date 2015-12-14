@@ -1,12 +1,6 @@
 package org.grails.web.codecs
 
-import org.grails.plugins.codecs.Base64Codec
-import org.springframework.core.io.*
-
 class Base64CodecTests extends GroovyTestCase {
-
-    def codec = new Base64Codec()
-    def resourceLoader = new DefaultResourceLoader()
 
     byte[] dataPrimitive = new byte[256]
     Byte[] dataWrapper = new Byte[256]
@@ -23,19 +17,19 @@ class Base64CodecTests extends GroovyTestCase {
         def expectedResult = 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w=='
 
         // we want to verify that both Byte[] and byte[] inputs work
-        String primitiveResult = codec.encode(dataPrimitive)
-        String wrapperResult = codec.encode(dataWrapper)
+        String primitiveResult = dataPrimitive.encodeAsBase64()
+        String wrapperResult = dataWrapper.encodeAsBase64()
 
         assertEquals(expectedResult,primitiveResult)
         assertEquals(expectedResult,wrapperResult)
 
         //make sure encoding null returns null
-        assertNull codec.encode(null)
+        assertNull null.encodeAsBase64()
     }
 
     void testDecode() {
         String data = 'd2hhdA=='
-        byte[] result = codec.decode(data)
+        byte[] result = data.decodeBase64()
 
         assertEquals(119, result[0])
         assertEquals(104, result[1])
@@ -43,11 +37,11 @@ class Base64CodecTests extends GroovyTestCase {
         assertEquals(116, result[3])
 
         //make sure decoding null returns null
-        assertNull codec.decode(null)
+        assertNull null.decodeBase64()
     }
 
     void testRountrip() {
-        assertEquals(dataPrimitive, codec.decode(codec.encode(dataPrimitive)))
-        assertEquals(dataWrapper, codec.decode(codec.encode(dataWrapper)))
+        assertEquals(dataPrimitive, dataPrimitive.encodeAsBase64().decodeBase64())
+        assertEquals(dataWrapper, dataWrapper.encodeBase64().decodeBase64())
     }
 }
