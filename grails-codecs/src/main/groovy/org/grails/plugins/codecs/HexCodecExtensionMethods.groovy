@@ -15,13 +15,15 @@
  */
 package org.grails.plugins.codecs
 
-class HexCodec {
+import org.codehaus.groovy.runtime.NullObject
+
+class HexCodecExtensionMethods {
 
     static HEXDIGITS = '0123456789abcdef'
 
     // Expects an array/list of numbers
-    static encode = { theTarget ->
-        if (theTarget == null) {
+    static encodeAsHex(theTarget) {
+        if (theTarget == null || theTarget instanceof NullObject) {
             return null
         }
 
@@ -30,13 +32,13 @@ class HexCodec {
             theTarget = theTarget.getBytes("UTF-8")
         }
         theTarget.each() {
-            result << HexCodec.HEXDIGITS[(it & 0xF0) >> 4]
-            result << HexCodec.HEXDIGITS[it & 0x0F]
+            result << HexCodecExtensionMethods.HEXDIGITS[(it & 0xF0) >> 4]
+            result << HexCodecExtensionMethods.HEXDIGITS[it & 0x0F]
         }
         return result.toString()
     }
 
-    static decode = { theTarget ->
+    static decodeHex(theTarget) {
         if (!theTarget) return null
 
         def output = []
