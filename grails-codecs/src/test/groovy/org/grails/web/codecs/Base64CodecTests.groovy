@@ -44,4 +44,10 @@ class Base64CodecTests extends GroovyTestCase {
         assertEquals(dataPrimitive, dataPrimitive.encodeAsBase64().decodeBase64())
         assertEquals(dataWrapper, dataWrapper.encodeBase64().decodeBase64())
     }
+
+    void testEncodeDecodeAsBase64() {
+        assertEquals "dGVzdA==", "test".bytes.encodeAsBase64()
+        assertEquals "dGVzdA==", "test".encodeAsBase64()
+        assertEquals "test", new String("dGVzdA==".decodeBase64())
+    }
 }
