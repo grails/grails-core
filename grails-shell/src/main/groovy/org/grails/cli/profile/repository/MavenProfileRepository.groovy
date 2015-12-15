@@ -101,7 +101,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         }
 
         processUrls()
-        return getProfile(artifactId)
+        return super.getProfile(artifactId)
     }
 
     @CompileDynamic
