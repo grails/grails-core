@@ -65,7 +65,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
             def art = new DefaultArtifact(profileName)
             profileShortName = art.artifactId
         }
-        if(!resolved && !profilesByName.containsKey(profileShortName)) {
+        if(!resolved || !profilesByName.containsKey(profileShortName)) {
             return resolveProfile(profileName)
         }
         return super.getProfile(profileShortName)
@@ -119,8 +119,8 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     @Override
     List<Profile> getAllProfiles() {
 
-
         if(!resolved) {
+            def defaultProfileVersion = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
             List<String> profileNames = []
             for(repo in repositoryConfigurations) {
 
@@ -133,7 +133,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
             for(name in profileNames) {
                 try {
-                    grapeEngine.grab(group: 'org.grails.profiles', module: name, version: 'LATEST')
+                    grapeEngine.grab(group: 'org.grails.profiles', module: name, version: defaultProfileVersion)
                 } catch (Throwable e) {
                     GrailsConsole.instance.error("Failed to load latest version of profile [$name]. Trying Grails release version", e)
                     GrailsConsole.instance.verbose(e.message)
