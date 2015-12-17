@@ -18,6 +18,7 @@ package org.grails.config;
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
 import groovy.transform.CompileStatic;
+import org.grails.core.exceptions.GrailsConfigurationException;
 import org.springframework.util.ClassUtils;
 
 import java.util.*;
@@ -74,6 +75,15 @@ public class CompositeConfig implements Config {
     @Override
     public Config merge(Map<String, Object> toMerge) {
         throw new UnsupportedOperationException("Config cannot be modified");
+    }
+
+    @Override
+    public <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues) {
+        T v = getProperty(key, targetType, defaultValue);
+        if(!allowedValues.contains(v)) {
+            throw new GrailsConfigurationException("Invalid configuration value [$value] for key [${key}]. Possible values $allowedValues");
+        }
+        return v;
     }
 
     @Override

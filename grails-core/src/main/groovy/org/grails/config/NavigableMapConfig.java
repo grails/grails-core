@@ -18,6 +18,7 @@ package org.grails.config;
 import grails.config.Config;
 import grails.util.GrailsStringUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.grails.core.exceptions.GrailsConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
@@ -189,6 +190,15 @@ public abstract class NavigableMapConfig implements Config {
     @Override
     public <T> T getProperty(String key, Class<T> targetType) {
         return getProperty(key, targetType, null);
+    }
+
+    @Override
+    public <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues) {
+        T value = getProperty(key, targetType, defaultValue);
+        if(!allowedValues.contains(value)) {
+            throw new GrailsConfigurationException("Invalid configuration value [$value] for key [${key}]. Possible values $allowedValues");
+        }
+        return value;
     }
 
     @Override
