@@ -107,7 +107,7 @@ class ConverterConfigurationTests {
 
         JSON.use("with-version") {
             assertEquals(
-                """{"class":"org.grails.web.converters.ConverterBook","id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
+                """{"id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
                 (createBook() as JSON).toString())
         }
         XML.use("with-version") {

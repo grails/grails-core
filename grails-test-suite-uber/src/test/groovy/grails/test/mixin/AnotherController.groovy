@@ -79,7 +79,7 @@ class AnotherController  {
 
     def renderJson = {
         render(contentType:"text/json") {
-            book = "Great"
+            book "Great"
         }
     }
 

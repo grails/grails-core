@@ -512,7 +512,7 @@ class TestController  {
 
     def renderJson = {
         render(contentType:"text/json") {
-            book = "Great"
+            book "Great"
         }
     }
 

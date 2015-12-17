@@ -28,7 +28,7 @@ interface Settings {
      * Whether to enable Spring proxy based transaction management. Since {@link grails.transaction.Transactional} uses an AST transform, this makes Spring proxy based transaction management redundant.
      * However, if Spring proxies are prefer
      */
-    String SPRING_TRANSACTION_MANAGEMENT = "grails.spring.transactionManagement";
+    String SPRING_TRANSACTION_MANAGEMENT = "grails.spring.transactionManagement.proxies";
 
     /**
      * Which plugins to include in the plugin manager

@@ -44,7 +44,7 @@ class ContentFormatControllerTests  {
     void testFormatWithRenderAsJSON() {
         request.setParameter "format", "json"
         controller.testWithFormatRenderAs()
-        assertEquals """{"class":"${Gizmo.name}","id":null,"name":"iPod"}""".toString(), response.contentAsString
+        assertEquals """{"name":"iPod"}""".toString(), response.contentAsString
     }
 
     @Test
