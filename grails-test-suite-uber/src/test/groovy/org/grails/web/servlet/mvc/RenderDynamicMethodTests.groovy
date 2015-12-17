@@ -151,7 +151,9 @@ class RenderDynamicMethodTestController {
 
     def renderJSON = {
         render(contentType:"application/json") {
-            foo = [ { bar = "hello" } ]
+            foo( [ "hello" ] ) {
+                bar it
+            }
         }
     }
     def renderView ={

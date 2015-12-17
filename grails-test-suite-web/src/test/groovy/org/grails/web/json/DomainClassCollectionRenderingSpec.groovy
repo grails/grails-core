@@ -22,6 +22,7 @@ class DomainClassCollectionRenderingSpec extends Specification {
     void "Test rendering nested collection of objects as JSON"() {
         given: 'a JSON renderer'
             def renderer = new JsonRenderer(Album)
+            renderer.grailsApplication = grailsApplication
             renderer.registerCustomConverter()
 
         when: 'a domain object with a reference to a collection of other domain objects is rendered'
@@ -33,9 +34,7 @@ class DomainClassCollectionRenderingSpec extends Specification {
             renderer.render(undertow, new ServletRenderContext(webRequest, [includes:['title', 'companies']]))
 
         then: 'all of the nested elements have fully qualified class names'
-            webRequest.response.contentAsString.contains  '"class":"org.grails.web.json.Company","id":1'
-            webRequest.response.contentAsString.contains  '"class":"org.grails.web.json.Album","id":1'
-            webRequest.response.contentAsString.contains  '"class":"org.grails.web.json.Album","id":2'
+            webRequest.response.contentAsString == '{"companies":[{"id":1,"albums":[{"id":1},{"id":2}],"name":"Tool Inc."}],"title":"Undertow"}'
     }
 }
 
@@ -43,6 +42,7 @@ class DomainClassCollectionRenderingSpec extends Specification {
 class Album {
     String title    
     static belongsTo = Company
+    List companies
     static hasMany = [companies: Company]
 }
 

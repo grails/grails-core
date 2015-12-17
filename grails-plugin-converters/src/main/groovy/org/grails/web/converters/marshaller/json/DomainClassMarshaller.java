@@ -62,6 +62,7 @@ import org.springframework.beans.BeanWrapperImpl;
 public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON> {
 
     private boolean includeVersion = false;
+    private boolean includeClass = false;
     private ProxyHandler proxyHandler;
     private GrailsApplication application;
 
@@ -70,13 +71,22 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
     }
 
     public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler, GrailsApplication application) {
+        this(includeVersion, false, proxyHandler, application);
+    }
+
+    public DomainClassMarshaller(boolean includeVersion, boolean includeClass, ProxyHandler proxyHandler, GrailsApplication application) {
         this.includeVersion = includeVersion;
+        this.includeClass = includeClass;
         this.proxyHandler = proxyHandler;
         this.application = application;
     }
 
     public boolean isIncludeVersion() {
         return includeVersion;
+    }
+
+    public boolean isIncludeClass() {
+        return includeClass;
     }
 
     public void setIncludeVersion(boolean includeVersion) {
@@ -104,7 +114,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
 
         writer.object();
 
-        if(shouldInclude(includeExcludeSupport, includes, excludes, value, "class")) {
+        if(includeClass && shouldInclude(includeExcludeSupport, includes, excludes, value, "class")) {
             writer.key("class").value(domainClass.getClazz().getName());
         }
 
@@ -113,13 +123,17 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
 
         if(shouldInclude(includeExcludeSupport, includes, excludes, value, id.getName())) {
             Object idValue = extractValue(value, id);
-            json.property(GrailsDomainClassProperty.IDENTITY, idValue);
+            if(idValue != null) {
+                json.property(GrailsDomainClassProperty.IDENTITY, idValue);
+            }
         }
 
         if (shouldInclude(includeExcludeSupport, includes, excludes, value, GrailsDomainClassProperty.VERSION) && isIncludeVersion()) {
             GrailsDomainClassProperty versionProperty = domainClass.getVersion();
             Object version = extractValue(value, versionProperty);
-            json.property(GrailsDomainClassProperty.VERSION, version);
+            if(version != null) {
+                json.property(GrailsDomainClassProperty.VERSION, version);
+            }
         }
 
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
@@ -223,8 +237,12 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
         }
         JSONWriter writer = json.getWriter();
         writer.object();
-        writer.key("class").value(referencedDomainClass.getFullName());
-        writer.key("id").value(idValue);
+        if(isIncludeClass()) {
+            writer.key("class").value(referencedDomainClass.getFullName());
+        }
+        if(idValue != null) {
+            writer.key("id").value(idValue);
+        }
         writer.endObject();
     }
 
