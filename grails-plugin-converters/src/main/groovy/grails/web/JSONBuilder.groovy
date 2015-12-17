@@ -24,7 +24,9 @@ import grails.converters.JSON
  * @author Graeme Rocher
  *
  * @since 1.2
+ * @deprecated Use {@link groovy.json.StreamingJsonBuilder} instead
  */
+@Deprecated
 class JSONBuilder {
 
     static NODE_ELEMENT = "element"

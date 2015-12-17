@@ -16,6 +16,7 @@
 package grails.artefact.controller.support
 
 import grails.async.Promise
+import grails.config.Settings
 import grails.converters.JSON
 import grails.io.IOUtils
 import grails.plugins.GrailsPlugin
@@ -27,6 +28,7 @@ import grails.web.api.WebAttributes
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
 import grails.web.mime.MimeUtility
+import groovy.json.StreamingJsonBuilder
 import groovy.text.Template
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
@@ -137,15 +139,35 @@ trait ResponseRenderer extends WebAttributes {
 
         applyContentType response, argMap, closure
         if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
-            def builder = new JSONBuilder()
-            JSON json = builder.build(closure)
-            json.render response
+            renderJsonInternal(response, closure)
             webRequest.renderView = false
         }
         else {
             renderMarkupInternal webRequest, closure, response
         }
         applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
+    }
+
+    private Closure jsonRenderer = null
+    private void renderJsonInternal(HttpServletResponse response, Closure callable) {
+        if(jsonRenderer == null) {
+            boolean legacyBuilder = getGrailsApplication()?.getConfig()?.getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false)
+            if(legacyBuilder) {
+                jsonRenderer = { HttpServletResponse res, Closure c ->
+                    def builder = new JSONBuilder()
+                    JSON json = builder.build(c)
+                    json.render res
+                }
+            }
+            else {
+                jsonRenderer =  { HttpServletResponse res, Closure c ->
+                    res.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), res.getCharacterEncoding() ?: "UTF-8"))
+                    def jsonBuilder = new StreamingJsonBuilder(res.writer)
+                    jsonBuilder.call c
+                }
+            }
+        }
+        jsonRenderer.call( response, callable)
     }
 
     /**
