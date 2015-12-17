@@ -157,7 +157,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     @SuppressWarnings("rawtypes")
     public List<UrlMapping> evaluateMappings(Closure closure) {
-        UrlMappingBuilder builder = new UrlMappingBuilder(null);
+        UrlMappingBuilder builder = new UrlMappingBuilder((Binding) null);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         if (closure.getParameterTypes().length == 0) {
@@ -231,6 +231,19 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         public UrlMappingBuilder(Binding binding) {
             this.binding = binding;
+        }
+
+        protected UrlMappingBuilder(UrlMappingBuilder parent) {
+            this(parent.binding);
+            urlDefiningMode = parent.urlDefiningMode;
+            previousConstraints = parent.previousConstraints;
+            inGroupConstraints = parent.inGroupConstraints;
+            urlMappings = parent.urlMappings;
+            parameterValues = parent.parameterValues;
+            exception = parent.exception;
+            parseRequest = parent.parseRequest;
+            parentResources = parent.parentResources;
+            mappingInfoDeque = parent.mappingInfoDeque;
         }
 
         public List<UrlMapping> getUrlMappings() {
@@ -342,8 +355,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         public void group(String uri, Closure mappings) {
 
             try {
-                parentResources.push(new ParentResource(null, uri, true, true));
+                ParentResource parentResource = new ParentResource(null, uri, true, true);
+                parentResources.push(parentResource);
                 pushNewMetaMappingInfo();
+                UrlGroupMappingRecursionBuilder builder = new UrlGroupMappingRecursionBuilder(this, parentResource);
+                mappings.setDelegate(builder);
+                mappings.setResolveStrategy(Closure.DELEGATE_FIRST);
                 mappings.call();
                 inGroupConstraints = false;
             } finally {
@@ -505,6 +522,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                         Closure callable = (Closure) args[0];
                         callable.setDelegate(builder);
+                        callable.setResolveStrategy(Closure.DELEGATE_FIRST);
                         for (ConstrainedProperty constrainedProperty : currentConstraints) {
                             builder.getConstrainedProperties().put(constrainedProperty.getPropertyName(), constrainedProperty);
                         }
@@ -1024,6 +1042,24 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 isSingle = single;
                 isGroup = group;
             }
+        }
+    }
+
+    class UrlGroupMappingRecursionBuilder extends UrlMappingBuilder {
+        private ParentResource parentResource;
+
+        public UrlGroupMappingRecursionBuilder(UrlMappingBuilder parent, ParentResource parentResource) {
+            super(parent);
+
+            this.parentResource = parentResource;
+        }
+
+        @Override
+        public void group(String uri, Closure mappings) {
+            if (parentResource != null) {
+                uri = parentResource.uri.concat(uri);
+            }
+            super.group(uri, mappings);
         }
     }
 }
