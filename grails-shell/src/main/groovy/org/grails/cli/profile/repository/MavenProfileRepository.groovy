@@ -122,21 +122,29 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         if(!resolved) {
             def defaultProfileVersion = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
             List<String> profileNames = []
+            def grailsConsole = GrailsConsole.instance
             for(repo in repositoryConfigurations) {
 
                 def baseUri = repo.uri
-                def text = new URL("${baseUri}/org/grails/profiles").text
-                text.eachMatch(/<a href="([a-z-]+)\/">.+/) { List<String> it ->
-                    profileNames.add it[1]
+                try {
+                    def text = new URL("${baseUri}/org/grails/profiles").text
+                    text.eachMatch(/<a href="([a-z-]+)\/">.+/) { List<String> it ->
+                        profileNames.add it[1]
+                    }
                 }
+                catch(Throwable e) {
+                    grailsConsole.error("Failed to list profiles from repority: $baseUri. Verify your internet connection and proxy settings and try again. Message: ${e.message}", e)
+                }
+
             }
 
             for(name in profileNames) {
                 try {
                     grapeEngine.grab(group: 'org.grails.profiles', module: name, version: defaultProfileVersion)
                 } catch (Throwable e) {
-                    GrailsConsole.instance.error("Failed to load latest version of profile [$name]. Trying Grails release version", e)
-                    GrailsConsole.instance.verbose(e.message)
+
+                    grailsConsole.error("Failed to load latest version of profile [$name]. Trying Grails release version", e)
+                    grailsConsole.verbose(e.message)
                     grapeEngine.grab(group: 'org.grails.profiles', module: name, version: BuildSettings.package.implementationVersion)
                 }
             }
