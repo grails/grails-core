@@ -2,7 +2,9 @@ package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
+import grails.web.mapping.LinkGeneratorFactory
 import grails.web.mapping.UrlMappings
+import grails.web.mapping.UrlMappingsFactory
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -15,14 +17,9 @@ import spock.lang.Specification
 abstract class AbstractUrlMappingsSpec extends Specification{
 
     LinkGenerator getLinkGenerator(Closure mappings) {
-        def generator = new DefaultLinkGenerator("http://localhost", null)
-        generator.grailsUrlConverter = new CamelCaseUrlConverter()
-        generator.urlMappingsHolder = getUrlMappingsHolder mappings
-        return generator;
+        new LinkGeneratorFactory().create(mappings)
     }
     UrlMappings getUrlMappingsHolder(Closure mappings) {
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
-        def allMappings = evaluator.evaluateMappings mappings
-        return new DefaultUrlMappingsHolder(allMappings)
+        new UrlMappingsFactory().create(mappings)
     }
 }
