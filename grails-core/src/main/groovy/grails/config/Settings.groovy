@@ -181,5 +181,9 @@ interface Settings {
      * The class to use for stacktrace filtering. Should be an instanceof {@link org.grails.exceptions.reporting.StackTraceFilterer}
      */
     String SETTING_LOGGING_STACKTRACE_FILTER_CLASS = "grails.logging.stackTraceFiltererClass";
+    /**
+     * Whether to use the legacy JSON builder
+     */
+    String SETTING_LEGACY_JSON_BUILDER = "grails.json.legacy.builder";
 
 }
