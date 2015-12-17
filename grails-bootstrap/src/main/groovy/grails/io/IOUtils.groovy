@@ -22,6 +22,8 @@ import org.grails.io.support.Resource
 import org.grails.io.support.SpringIOUtils
 import org.grails.io.support.UrlResource
 
+import java.nio.file.Paths
+
 /**
  * Utility methods for performing I/O operations.
  *
@@ -122,8 +124,7 @@ class IOUtils extends SpringIOUtils {
     static File findJarFile(URL resource) {
         def absolutePath = resource?.path
         if (absolutePath) {
-            final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
-            new File(jarPath)
+            return Paths.get(new URL(absolutePath.substring(0, absolutePath.lastIndexOf("!"))).toURI()).toFile()
         }
     }
 
