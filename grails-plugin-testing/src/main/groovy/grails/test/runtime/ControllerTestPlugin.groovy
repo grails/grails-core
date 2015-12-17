@@ -86,6 +86,12 @@ class ControllerTestPlugin implements TestPlugin {
             if (ClassUtils.isPresent("UrlMappings", classLoader)) {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass("UrlMappings"))
             }
+
+            def urlMappingsClass = "${config.getProperty('grails.codegen.defaultPackage', 'null')}.UrlMappings"
+            if (ClassUtils.isPresent(urlMappingsClass, classLoader)) {
+                grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass(urlMappingsClass))
+            }
+
             multipartResolver(StandardServletMultipartResolver)
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = grailsApplication
