@@ -20,6 +20,7 @@ import grails.core.GrailsApplication;
 import grails.io.IOUtils;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 import org.grails.config.yaml.YamlPropertySourceLoader;
@@ -37,7 +38,13 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -47,11 +54,11 @@ import java.util.*;
 public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implements GrailsPlugin {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractGrailsPlugin.class);
 
-    public static final String PLUGIN_YML = "plugin.yml";
+    public static final String PLUGIN_YML = "plugin{0}.yml";
     public static final String PLUGIN_YML_PATH = "/" + PLUGIN_YML;
     private static final List<String> DEFAULT_CONFIG_IGNORE_LIST = Arrays.asList("dataSource", "hibernate");
     private static Resource basePluginResource = null;
-    protected PropertySource<?> propertySource;
+    protected List<PropertySource<?>> propertySources = new ArrayList<PropertySource<?>>();
     protected org.codehaus.groovy.grails.commons.GrailsApplication application;
     protected GrailsApplication grailsApplication;
     protected boolean isBase = false;
@@ -83,20 +90,24 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         this.application = new LegacyGrailsApplication(application);
         this.grailsApplication = application;
         this.pluginClass = pluginClass;
-        Resource resource = readPluginConfiguration(pluginClass);
-        if(resource != null && resource.exists()) {
+
+        for (String environmentSuffix : getEnvironmentSuffixes()) {
+            Resource resource = readPluginConfiguration(pluginClass, environmentSuffix);
+
             YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
-            try {
-                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null, false, DEFAULT_CONFIG_IGNORE_LIST);
-            } catch (IOException e) {
-                LOG.warn("Error loading plugin.yml for plugin: " + pluginClass.getName() +": " + e.getMessage(), e);
+            if (resource != null && resource.exists()) {
+                try {
+                    this.propertySources.add(propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-" + MessageFormat.format(PLUGIN_YML, environmentSuffix), resource, null, false, DEFAULT_CONFIG_IGNORE_LIST));
+                } catch (IOException e) {
+                    LOG.warn("Error loading plugin.yml for plugin: " + pluginClass.getName() + ": " + e.getMessage(), e);
+                }
             }
         }
     }
 
     @Override
-    public PropertySource<?> getPropertySource() {
-        return propertySource;
+    public List<PropertySource<?>> getPropertySources() {
+        return propertySources;
     }
 
     /* (non-Javadoc)
@@ -112,14 +123,32 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         return true;
     }
 
-    protected Resource readPluginConfiguration(Class<?> pluginClass) {
-        final URL urlToPluginYml = IOUtils.findResourceRelativeToClass(pluginClass, PLUGIN_YML_PATH);
-
+    protected Resource readPluginConfiguration(Class<?> pluginClass, String environmentSuffix) {
+        final URL urlToPluginYml = IOUtils.findResourceRelativeToClass(pluginClass, MessageFormat.format(PLUGIN_YML_PATH, environmentSuffix));
         Resource urlResource = urlToPluginYml != null ? new UrlResource(urlToPluginYml) : null;
-        if(urlResource != null && urlResource.exists()) {
+        if (urlResource != null && urlResource.exists()) {
             return urlResource;
         }
+
         return null;
+    }
+
+    /**
+     * Get the non-environment and environment suffix list to load for the plugin
+     *
+     * @return list of environments to load plugin
+     */
+    private List<String> getEnvironmentSuffixes() {
+        List<String> environmentSuffixes = new ArrayList<String>();
+        try {
+            //Suffix for simple plugin-[environment].yml will be addedLast first and take precedent over plugin.yml
+            environmentSuffixes.add("-" + Environment.getCurrent().getName().toLowerCase());
+        } catch (Exception e) {
+            LOG.warn("Error getting current environment for plugin: " + pluginClass.getName() + ": " + e.getMessage(), e);
+        }
+        //Suffix for simple plugin.yml will load last due to addLast later where the last added is lowest precedent
+        environmentSuffixes.add("");
+        return environmentSuffixes;
     }
 
     public String getFileSystemName() {
