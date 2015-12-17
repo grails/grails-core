@@ -46,4 +46,15 @@ public interface Config extends PropertyResolver, ConfigMap {
      */
     Config merge(Map<String,Object> toMerge)
 
+    /**
+     * Return the property value associated with the given key, or
+     * {@code defaultValue} if the key cannot be resolved.
+     * @param key the property name to resolve
+     * @param targetType the expected type of the property value
+     * @param defaultValue the default value to return if no value is found
+     * @param the allowable values
+     *
+     * @see #getRequiredProperty(String, Class)
+     */
+    public <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues);
 }

@@ -241,6 +241,11 @@ public class PrefixedConfig implements Config {
     }
 
     @Override
+    public <T> T getProperty(String key, Class<T> targetType, T defaultValue, List<T> allowedValues) {
+        return delegate.getProperty(key,targetType,defaultValue,allowedValues);
+    }
+
+    @Override
     public void setAt(Object key, Object value) {
         throw new UnsupportedOperationException("Config cannot be modified");
     }
