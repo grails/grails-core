@@ -123,8 +123,12 @@ class IOUtils extends SpringIOUtils {
      */
     static File findJarFile(URL resource) {
         def absolutePath = resource?.path
-        if (absolutePath) {
-            return Paths.get(new URL(absolutePath.substring(0, absolutePath.lastIndexOf("!"))).toURI()).toFile()
+            if (absolutePath) {
+            try {
+                return Paths.get(new URL(absolutePath.substring(0, absolutePath.lastIndexOf("!"))).toURI()).toFile()
+            } catch (MalformedURLException e) {
+                return null
+            }
         }
     }
 
