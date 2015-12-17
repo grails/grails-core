@@ -76,11 +76,22 @@ abstract class AbstractProfile implements Profile {
         this.classLoader = classLoader
         this.profileDir = profileDir
 
-        def jarFile = IOUtils.findJarFile(profileDir.getURL())
-        if(jarFile != null) {
-            def pattern = ~/.+-(\d.+)\.jar/
 
-            def matcher = pattern.matcher(jarFile.name)
+        def url = profileDir.getURL()
+        def jarFile = IOUtils.findJarFile(url)
+        def pattern = ~/.+-(\d.+)\.jar/
+
+
+        def path
+        if(jarFile != null) {
+            path = jarFile.name
+        }
+        else if(url != null){
+            def p = url.path
+            path = p.substring(0, p.indexOf('.jar') + 4)
+        }
+        if(path) {
+            def matcher = pattern.matcher(path)
             if(matcher.matches()) {
                 this.version = matcher.group(1)
             }
