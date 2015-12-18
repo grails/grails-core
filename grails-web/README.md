@@ -8,4 +8,4 @@ apply plugin: "org.grails.grails-web"
 
 Dependencies
 -----
-To see what additional subproject will be included with this, you can view this project's [build.gradle](https://github.com/grails/grails-core/blob/master/grails-web/build.gradle)
+To see what additional subprojects will be included with this, you can view this project's [build.gradle](https://github.com/grails/grails-core/blob/master/grails-web/build.gradle)
