@@ -17,6 +17,11 @@ class GrailsExtension {
     boolean native2ascii = !Os.isFamily(Os.FAMILY_WINDOWS)
 
     /**
+     * Whether to use Ant to do the conversion
+     */
+    boolean native2asciiAnt = false
+
+    /**
      * Whether assets should be packaged in META-INF/assets for plugins
      */
     boolean packageAssets = true
