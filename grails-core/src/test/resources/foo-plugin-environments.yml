@@ -2,6 +2,7 @@ one: 1
 two: 2
 three.four: 34
 empty.value:
+dataSource: dataSource
 
 ---
 environments:
@@ -10,8 +11,14 @@ environments:
     two: 3
     three.four: 45
     empty.value: development
+    dataSource: dataSource
   test:
     one: 3
     two: 4
     three.four: 56
     empty.value: test
+    dataSource: dataSource
+
+---
+environments:
+    development: bad
