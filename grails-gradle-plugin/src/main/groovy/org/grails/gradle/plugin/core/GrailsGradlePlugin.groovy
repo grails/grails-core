@@ -34,6 +34,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.CopySpec
 import org.gradle.api.plugins.GroovyPlugin
+import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
@@ -47,6 +48,7 @@ import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
+import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
 import org.springframework.boot.gradle.SpringBootPlugin
 import org.springframework.boot.gradle.SpringBootPluginExtension
@@ -394,46 +396,73 @@ class GrailsGradlePlugin extends GroovyPlugin {
      **/
     protected void enableNative2Ascii(Project project, grailsVersion) {
         project.afterEvaluate {
-            for (SourceSet sourceSet in project.sourceSets) {
+            SourceSet sourceSet = SourceSets.findMainSourceSet(project)
 
-                project.tasks.getByName(sourceSet.processResourcesTaskName) { CopySpec task ->
-                    def grailsExt = project.extensions.getByType(GrailsExtension)
-//                    def destinationDir = ((ProcessResources) task).destinationDir
+            def taskContainer = project.tasks
 
-                    def replaceTokens = [
-                            'info.app.name': project.name,
-                            'info.app.version': project.version,
-                            'info.app.grailsVersion': grailsVersion
-                    ]
+            taskContainer.getByName(sourceSet.processResourcesTaskName) { AbstractCopyTask task ->
 
-                    task.from(project.relativePath("src/main/templates")) {
-                        into("META-INF/templates")
-                    }
+                def grailsExt = project.extensions.getByType(GrailsExtension)
+                def native2ascii = grailsExt.native2ascii
+                if(native2ascii && grailsExt.native2asciiAnt && !taskContainer.findByName('native2ascii')) {
+                    def destinationDir = ((ProcessResources) task).destinationDir
+                    Task native2asciiTask = createNative2AsciiTask(taskContainer, project.file('grails-app/i18n'), destinationDir)
+                    task.dependsOn(native2asciiTask)
+                }
 
+
+                def replaceTokens = [
+                        'info.app.name'         : project.name,
+                        'info.app.version'      : project.version,
+                        'info.app.grailsVersion': grailsVersion
+                ]
+
+                task.from(project.relativePath("src/main/templates")) {
+                    into("META-INF/templates")
+                }
+
+
+                if (!native2ascii) {
                     task.from(sourceSet.resources) {
                         include '**/*.properties'
-                        filter( ReplaceTokens, tokens: replaceTokens )
-                        if(grailsExt.native2ascii) {
-                            filter(EscapeUnicode)
-                        }
+                        filter(ReplaceTokens, tokens: replaceTokens)
                     }
+                }
+                else if(!grailsExt.native2asciiAnt) {
                     task.from(sourceSet.resources) {
-                        filter( ReplaceTokens, tokens: replaceTokens )
-                        include '**/*.groovy'
-                        include '**/*.yml'
-                        include '**/*.xml'
+                        include '**/*.properties'
+                        filter(ReplaceTokens, tokens: replaceTokens)
+                        filter(EscapeUnicode)
                     }
+                }
 
-                    task.from(sourceSet.resources) {
-                        exclude '**/*.properties'
-                        exclude '**/*.groovy'
-                        exclude '**/*.yml'
-                        exclude '**/*.xml'
-                    }
+                task.from(sourceSet.resources) {
+                    filter( ReplaceTokens, tokens: replaceTokens )
+                    include '**/*.groovy'
+                    include '**/*.yml'
+                    include '**/*.xml'
+                }
+
+                task.from(sourceSet.resources) {
+                    exclude '**/*.properties'
+                    exclude '**/*.groovy'
+                    exclude '**/*.yml'
+                    exclude '**/*.xml'
                 }
             }
         }
 
+    }
+
+    protected Task createNative2AsciiTask(TaskContainer taskContainer, src, dest) {
+        def native2asciiTask = taskContainer.create('native2ascii')
+        native2asciiTask << {
+            ant.native2ascii(src: src, dest: dest,
+                    includes: "**/*.properties", encoding: "UTF-8")
+        }
+        native2asciiTask.inputs.dir(src)
+        native2asciiTask.outputs.dir(dest)
+        native2asciiTask
     }
 
 }

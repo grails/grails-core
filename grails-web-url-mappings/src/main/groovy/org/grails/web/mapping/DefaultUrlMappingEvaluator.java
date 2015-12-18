@@ -157,9 +157,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     @SuppressWarnings("rawtypes")
     public List<UrlMapping> evaluateMappings(Closure closure) {
-        // Small Hack to prevent ambiguous constructor
-        Binding binding = null;
-        UrlMappingBuilder builder = new UrlMappingBuilder(binding);
+        UrlMappingBuilder builder = new UrlMappingBuilder((Binding) null);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         if (closure.getParameterTypes().length == 0) {
@@ -239,6 +237,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             this(parent.binding);
             urlDefiningMode = parent.urlDefiningMode;
             previousConstraints = parent.previousConstraints;
+            inGroupConstraints = parent.inGroupConstraints;
             urlMappings = parent.urlMappings;
             parameterValues = parent.parameterValues;
             exception = parent.exception;
@@ -361,8 +360,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 UrlGroupMappingRecursionBuilder builder = new UrlGroupMappingRecursionBuilder(this, parentResource);
                 mappings.setDelegate(builder);
                 mappings.setResolveStrategy(Closure.DELEGATE_FIRST);
-
                 mappings.call();
+                inGroupConstraints = false;
             } finally {
                 mappingInfoDeque.pop();
                 parentResources.pop();
