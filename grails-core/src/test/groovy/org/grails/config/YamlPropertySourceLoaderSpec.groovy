@@ -31,6 +31,9 @@ class YamlPropertySourceLoaderSpec extends Specification {
         config.getProperty('three.four') == '45'
         config.getProperty('three.four', Date) == null
         config.empty.value == 'development'
+        !config.dataSource
+        !config.getProperty('dataSource')
+        !config.get('dataSource')
     }
 
     def "ensure the config for environment is merged with single environment block with parseFlatMap false"() {
@@ -56,6 +59,9 @@ class YamlPropertySourceLoaderSpec extends Specification {
         config.get('three.four') == 45
         config.getProperty('three.four') == '45'
         config.getProperty('three.four', Date) == null
+        !config.dataSource
+        !config.getProperty('dataSource')
+        !config.get('dataSource')
     }
 
     def "ensure the config for environment is merged with multiple environment block"() {
@@ -81,5 +87,8 @@ class YamlPropertySourceLoaderSpec extends Specification {
         config.getProperty('three.four', Date) == null
         config.getProperty('four.five') == '45'
         config.empty.value == 'development'
+        !config.dataSource
+        !config.getProperty('dataSource')
+        !config.get('dataSource')
     }
 }
