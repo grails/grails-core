@@ -51,7 +51,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private Map<String, FastMethod> actions = new HashMap<String, FastMethod>();
     private String defaultActionName;
     private String namespace;
-
+    protected Map<String, String> actionUriToViewName = new HashMap<String, String>();
+    
     public DefaultGrailsControllerClass(Class<?> clazz) {
         super(clazz, CONTROLLER);
         namespace = getStaticPropertyValue(NAMESPACE_PROPERTY, String.class);
@@ -150,6 +151,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     @Override
     public void registerUrlConverter(UrlConverter urlConverter) {
         for (String actionName : new ArrayList<String>(actions.keySet())) {
+            actionUriToViewName.put(urlConverter.toUrlElement(actionName), actionName);
             actions.put( urlConverter.toUrlElement(actionName), actions.remove(actionName));
         }
     }
@@ -170,4 +172,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return handle.invoke(controller, EMPTY_ARGS);
     }
 
+    public String actionUriToViewName(String actionUri) {
+        String actionName = actionUriToViewName.get(actionUri);
+
+        return actionName != null ? actionName : actionUri;
+    }
 }
