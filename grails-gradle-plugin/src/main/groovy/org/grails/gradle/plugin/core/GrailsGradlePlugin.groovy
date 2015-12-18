@@ -41,6 +41,7 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.process.JavaForkOptions
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.build.parsing.CommandLineParser
