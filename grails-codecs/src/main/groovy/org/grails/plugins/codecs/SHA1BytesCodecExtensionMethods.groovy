@@ -15,13 +15,18 @@
  */
 package org.grails.plugins.codecs
 
-class SHA1Codec{
+import org.codehaus.groovy.runtime.NullObject
+
+class SHA1BytesCodecExtensionMethods {
     // Returns the byte[] of the digest
-    static encode = { theTarget ->
-        HexCodec.encode(SHA1BytesCodec.encode(theTarget))
+    static encodeAsSHA1Bytes(theTarget) {
+        if(theTarget == null || theTarget instanceof NullObject) {
+            return null
+        }
+        DigestUtils.digest("SHA-1", theTarget)
     }
 
-    static decode = { theTarget ->
+    static decodeSHA1Bytes(theTarget) {
         throw new UnsupportedOperationException("Cannot decode SHA-1 hashes")
     }
 }

@@ -15,13 +15,14 @@
  */
 package org.grails.plugins.codecs
 
-class SHA256Codec extends DigestUtils {
-    // Returns the byte[] of the digest
-    static encode = { theTarget ->
-        HexCodec.encode(SHA256BytesCodec.encode(theTarget))
+class MD5CodecExtensionMethods {
+    // Returns the byte[] of the digest, taken from UTF-8 of the string representation
+    // or the raw data coerced to bytes
+    static encodeAsMD5(theTarget) {
+        theTarget.encodeAsMD5Bytes()?.encodeAsHex()
     }
 
-    static decode = { theTarget ->
-        throw new UnsupportedOperationException("Cannot decode SHA-256 hashes")
+    static decodeMD5(theTarget) {
+        throw new UnsupportedOperationException("Cannot decode MD5 hashes")
     }
 }
