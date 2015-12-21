@@ -162,10 +162,10 @@ public class UrlMappingUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
-        org.springframework.web.util.WebUtils.exposeRequestAttributes(request, model);
 
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
 
+        org.springframework.web.util.WebUtils.exposeRequestAttributes(request, model);
         //populateParamsForMapping(info);
         RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
 

@@ -17,16 +17,23 @@ package grails.artefact.controller.support
 
 import grails.web.UrlConverter
 import grails.web.api.WebAttributes
+import grails.web.mapping.LinkGenerator
 import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.controllers.metaclass.ForwardMethod
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.UrlMappingUtils
+import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.WebUtils
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.DataBinder
+import org.springframework.web.context.request.WebRequest
+import org.springframework.web.filter.OncePerRequestFilter
+
+import javax.servlet.RequestDispatcher
 
 /**
  * A Trait for classes that forward the request
@@ -37,10 +44,18 @@ import org.springframework.validation.DataBinder
 @CompileStatic
 trait RequestForwarder implements WebAttributes {
     private UrlConverter urlConverter
+    private LinkGenerator linkGenerator
 
     @Autowired(required=false)
     void setUrlConverter(UrlConverter urlConverter) {
         this.urlConverter = urlConverter
+    }
+
+    private LinkGenerator lookupLinkGenerator() {
+        if(this.linkGenerator == null) {
+            this.linkGenerator = webRequest.getApplicationContext().getBean(LinkGenerator)
+        }
+        return this.linkGenerator
     }
 
     /**
@@ -50,9 +65,6 @@ trait RequestForwarder implements WebAttributes {
      * @return The forwarded URL
      */
     String forward(Map params) {
-        def urlInfo = new ForwardUrlMappingInfo()
-        DataBinder binder = new DataBinder(urlInfo)
-        binder.bind(new MutablePropertyValues(params))
 
         GrailsWebRequest webRequest = getWebRequest()
 
@@ -68,18 +80,18 @@ trait RequestForwarder implements WebAttributes {
                 def convertedControllerName = convert(controllerName.toString())
                 webRequest.controllerName = convertedControllerName
             }
-            urlInfo.controllerName = webRequest.controllerName
+            params.controller = webRequest.controllerName
 
             if(params.action) {
-                urlInfo.actionName = convert(params.action.toString())
+                params.action = convert(params.action.toString())
             }
 
             if(params.namespace) {
-                urlInfo.namespace = params.namespace
+                params.namespace = params.namespace
             }
 
             if(params.plugin) {
-                urlInfo.pluginName = params.plugin
+                params.plugin = params.plugin
             }
         }
 
@@ -88,14 +100,21 @@ trait RequestForwarder implements WebAttributes {
         def request = webRequest.currentRequest
         def response = webRequest.currentResponse
 
-        request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
+        WebUtils.exposeRequestAttributes(request, (Map)model);
 
-        if(params.params instanceof Map) {
-            urlInfo.parameters.putAll((Map)params.params)
-        }
+        request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
         request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
-        String uri = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, (Map)model, true)
-        return uri
+
+        def fowardURI = lookupLinkGenerator().link(params)
+
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher(fowardURI)
+        webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+        webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
+        webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, WebRequest.SCOPE_REQUEST);
+        dispatcher.forward(request, response);
+        return fowardURI
     }
 
 
