@@ -198,7 +198,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     }
     
     protected <T> T convertToOtherTypes(Object value, Class<T> requiredType) {
-        throw new RuntimeException("conversion to $requiredType.name not implemented")
+        throw new RuntimeException("conversion of $value to $requiredType.name not implemented")
     }
 
     public Object navigate(String... path) {

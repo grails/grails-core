@@ -117,7 +117,14 @@ class TransactionalTransform implements ASTTransformation{
             if (!md.isSynthetic() && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
                 if(hasExcludedAnnotation(md)) continue
 
-                if( methodName.contains('$') && !methodName.startsWith('$spock') ) continue
+                def startsWithSpock = methodName.startsWith('$spock')
+                if( methodName.contains('$') && !startsWithSpock) continue
+
+                if(startsWithSpock && methodName.endsWith('proc') ) continue
+
+                if(md.getAnnotations().any { AnnotationNode an -> an.classNode.name == "org.spockframework.runtime.model.DataProviderMetadata"}) {
+                    continue
+                }
 
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
                 
@@ -129,7 +136,7 @@ class TransactionalTransform implements ASTTransformation{
                 if(hasAnnotation(md, DelegatingMethod.class)) continue
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
-            else if("setup".equals(methodName) && isSpockTest(classNode)) {
+            else if(("setup".equals(methodName) ||  "cleanup".equals(methodName)) && isSpockTest(classNode)) {
                 def requiresNewTransaction = new AnnotationNode(annotationNode.classNode)
                 requiresNewTransaction.addMember("propagation", new PropertyExpression(new ClassExpression(ClassHelper.make(Propagation.class)), "REQUIRES_NEW"))
                 weaveTransactionalMethod(source, classNode, requiresNewTransaction, md, "execute")
