@@ -21,7 +21,7 @@ class ForwardMethodTests extends AbstractGrailsControllerTests {
         webRequest.controllerName = "fowarding"
         assertEquals "/fowarding/two",testController.one()
         assertEquals "/next/go",testController.three()
-        assertEquals "/next/go?id=10",testController.four()
+        assertEquals "/next/go/10",testController.four()
         assertEquals "bar", request.foo
     }
 }
