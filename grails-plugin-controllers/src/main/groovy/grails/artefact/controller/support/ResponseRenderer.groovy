@@ -23,6 +23,7 @@ import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.GrailsStringUtils
 import grails.util.GrailsWebUtil
+import grails.util.Holders
 import grails.web.JSONBuilder
 import grails.web.api.WebAttributes
 import grails.web.http.HttpHeaders
@@ -148,26 +149,17 @@ trait ResponseRenderer extends WebAttributes {
         applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
     }
 
-    private Closure jsonRenderer = null
     private void renderJsonInternal(HttpServletResponse response, Closure callable) {
-        if(jsonRenderer == null) {
-            boolean legacyBuilder = getGrailsApplication()?.getConfig()?.getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false)
-            if(legacyBuilder) {
-                jsonRenderer = { HttpServletResponse res, Closure c ->
-                    def builder = new JSONBuilder()
-                    JSON json = builder.build(c)
-                    json.render res
-                }
-            }
-            else {
-                jsonRenderer =  { HttpServletResponse res, Closure c ->
-                    res.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), res.getCharacterEncoding() ?: "UTF-8"))
-                    def jsonBuilder = new StreamingJsonBuilder(res.writer)
-                    jsonBuilder.call c
-                }
-            }
+        if( Holders.getConfig().getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false) ) {
+            def builder = new JSONBuilder()
+            JSON json = builder.build(callable)
+            json.render response
         }
-        jsonRenderer.call( response, callable)
+        else {
+            response.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), response.getCharacterEncoding() ?: "UTF-8"))
+            def jsonBuilder = new StreamingJsonBuilder(response.writer)
+            jsonBuilder.call callable
+        }
     }
 
     /**
