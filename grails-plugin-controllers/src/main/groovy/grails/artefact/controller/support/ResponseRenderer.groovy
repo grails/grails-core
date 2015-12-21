@@ -150,7 +150,7 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void renderJsonInternal(HttpServletResponse response, Closure callable) {
-        if( Holders.getConfig().getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false) ) {
+        if( Holders.getConfig()?.getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false) ) {
             def builder = new JSONBuilder()
             JSON json = builder.build(callable)
             json.render response
