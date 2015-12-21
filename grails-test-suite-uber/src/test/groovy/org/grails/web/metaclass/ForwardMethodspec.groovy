@@ -1,6 +1,7 @@
 package org.grails.web.metaclass
 
 import grails.artefact.Controller
+import grails.web.mapping.LinkGenerator
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.RequestDispatcher
@@ -36,6 +37,13 @@ class ForwardMethodSpec extends Specification {
         response = Mock(HttpServletResponse)
         dispatcher = Mock(RequestDispatcher)
         urlConverter = Mock(UrlConverter)
+
+        def linkGenerator = Mock(LinkGenerator)
+        linkGenerator.link(_) >> { args ->
+            def map = args[0]
+            "/$map.controller/$map.action"
+        }
+        appContext.getBean(LinkGenerator) >> linkGenerator
  
         webRequest = new GrailsWebRequest(request, response, servletContext, appContext)
         RequestContextHolder.setRequestAttributes(webRequest)
