@@ -21,6 +21,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.util.ReflectionUtils
 
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
@@ -60,6 +61,10 @@ class TransactionalTransformSpec extends Specification {
 
         }
 
+        def cleanup() {
+
+        }
+
         void "my test method"() {
             expect:
                 1 == 1
@@ -72,9 +77,90 @@ class TransactionalTransformSpec extends Specification {
         TransactionManagerAware.isAssignableFrom(mySpec)
         mySpec.getDeclaredMethod('setup')
         mySpec.getDeclaredMethod('$tt__setup', TransactionStatus)
+        mySpec.getDeclaredMethod('cleanup')
+        mySpec.getDeclaredMethod('$tt__cleanup', TransactionStatus)
+
         mySpec.getDeclaredMethod('$spock_feature_0_0')
         mySpec.getDeclaredMethod('$tt__$spock_feature_0_0', TransactionStatus)
     }
+
+    void "Test @Rollback when applied to Spock specifications and where blocks"() {
+        when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
+        Class mySpec = new GroovyShell().evaluate('''
+import grails.test.mixin.integration.Integration
+import grails.transaction.Rollback
+import spock.lang.Specification
+
+@Integration
+@Rollback
+class DemoSpec extends Specification {
+
+    def "test toUpperCase"() {
+        given:
+        def result = value.toUpperCase()
+
+        expect:
+        result == expectedResult
+
+        where:
+        value | expectedResult
+        'King Crimson' | 'KING CRIMSON\'
+        'Riverside'    | 'RIVERSIDE\'
+    }
+}
+    DemoSpec
+    ''')
+
+        then:"It implements TransactionManagerAware"
+        TransactionManagerAware.isAssignableFrom(mySpec)
+        mySpec.getDeclaredMethod('$spock_feature_0_0', Object, Object)
+        mySpec.getDeclaredMethod('$spock_feature_0_0proc', Object, Object)
+        mySpec.getDeclaredMethod('$spock_feature_0_0prov0')
+
+        !ReflectionUtils.findMethod(mySpec, '$tt__$spock_feature_0_0prov0', TransactionStatus)
+        ReflectionUtils.findMethod(mySpec, '$tt__$spock_feature_0_0', Object, Object, TransactionStatus)
+        !ReflectionUtils.findMethod(mySpec, '$tt__$spock_feature_0_0proc', Object, Object, TransactionStatus)
+    }
+
+    void "Test @Rollback when applied to Spock specifications on a method and where blocks"() {
+        when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
+        Class mySpec = new GroovyShell().evaluate('''
+import grails.test.mixin.integration.Integration
+import grails.transaction.Rollback
+import spock.lang.Specification
+
+@Integration
+
+class DemoSpec extends Specification {
+
+    @Rollback
+    def "test toUpperCase"() {
+        given:
+        def result = value.toUpperCase()
+
+        expect:
+        result == expectedResult
+
+        where:
+        value | expectedResult
+        'King Crimson' | 'KING CRIMSON\'
+        'Riverside'    | 'RIVERSIDE\'
+    }
+}
+    DemoSpec
+    ''')
+
+        then:"It implements TransactionManagerAware"
+        TransactionManagerAware.isAssignableFrom(mySpec)
+        mySpec.getDeclaredMethod('$spock_feature_0_0', Object, Object)
+        mySpec.getDeclaredMethod('$spock_feature_0_0proc', Object, Object)
+        mySpec.getDeclaredMethod('$spock_feature_0_0prov0')
+
+        !ReflectionUtils.findMethod(mySpec, '$tt__$spock_feature_0_0prov0', TransactionStatus)
+        ReflectionUtils.findMethod(mySpec, '$tt__$spock_feature_0_0', Object, Object, TransactionStatus)
+        !ReflectionUtils.findMethod(mySpec, '$tt__$spock_feature_0_0proc', Object, Object, TransactionStatus)
+    }
+
 
     @Issue('#701')
     void "Test @Transactional with a datasource specified isn't TransactionManager aware, but has appropriate autowired and qualifier"() {
