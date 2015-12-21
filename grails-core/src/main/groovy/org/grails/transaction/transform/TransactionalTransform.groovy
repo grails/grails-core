@@ -117,7 +117,10 @@ class TransactionalTransform implements ASTTransformation{
             if (!md.isSynthetic() && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
                 if(hasExcludedAnnotation(md)) continue
 
-                if( methodName.contains('$') && !methodName.startsWith('$spock') ) continue
+                def startsWithSpock = methodName.startsWith('$spock')
+                if( methodName.contains('$') && !startsWithSpock) continue
+
+                if(startsWithSpock && methodName.endsWith('proc') ) continue
 
                 if(md.getAnnotations().any { AnnotationNode an -> an.classNode.name == "org.spockframework.runtime.model.DataProviderMetadata"}) {
                     continue
