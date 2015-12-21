@@ -66,7 +66,19 @@ grailsPublish {
     developers = [johndoe:"John Doe"]
 }
 
-The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gradle.properties
+Your publishing user and key can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gradle.properties. For example:
+
+bintrayUser=user
+bintrayKey=key
+grailsPortalUsername=myusername
+grailsPortalPassword=mypassword
+
+Or using environment variables:
+
+BINTRAY_USER=user
+BINTRAY_KEY=key
+GRAILS_PORTAL_USERNAME=myusername
+GRAILS_PORTAL_PASSWORD=mypassword
 """
     }
 
@@ -104,9 +116,6 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             if(publishExtension.user) {
                 bintrayExtension.user = publishExtension.user
             }
-            else if(!bintrayExtension.user) {
-                throw new RuntimeException(getErrorMessage("user"))
-            }
             if(publishExtension.repo) {
                 bintrayExtension.pkg.repo = publishExtension.repo
             }
@@ -122,9 +131,6 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             if(publishExtension.key) {
                 bintrayExtension.key = publishExtension.key
             }
-            else if(!bintrayExtension.key) {
-                throw new RuntimeException(getErrorMessage("key"))
-            }
             if(publishExtension.userOrg) {
                 bintrayExtension.pkg.userOrg = publishExtension.userOrg
             }
@@ -138,18 +144,12 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             else if(publishExtension.githubSlug) {
                 bintrayExtension.pkg.websiteUrl = "https://github.com/$publishExtension.githubSlug"
             }
-            else if(!bintrayExtension.pkg.websiteUrl) {
-                throw new RuntimeException(getErrorMessage("websiteUrl"))
-            }
 
             if(publishExtension.vcsUrl) {
                 bintrayExtension.pkg.vcsUrl = publishExtension.vcsUrl
             }
             else if(publishExtension.githubSlug) {
                 bintrayExtension.pkg.vcsUrl = "https://github.com/$publishExtension.githubSlug"
-            }
-            else if(!bintrayExtension.pkg.vcsUrl) {
-                throw new RuntimeException(getErrorMessage("vcsUrl"))
             }
 
             if(publishExtension.issueTrackerUrl) {
@@ -158,15 +158,9 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
             else if(publishExtension.githubSlug) {
                 bintrayExtension.pkg.issueTrackerUrl = "https://github.com/$publishExtension.githubSlug/issues"
             }
-            else if(!bintrayExtension.pkg.issueTrackerUrl) {
-                throw new RuntimeException(getErrorMessage("issueTrackerUrl"))
-            }
 
             if(publishExtension.license?.name) {
                 bintrayExtension.pkg.licenses = [publishExtension.license.name] as String[]
-            }
-            else if(!bintrayExtension.pkg.licenses) {
-                throw new RuntimeException(getErrorMessage("license"))
             }
 
             if(publishExtension.signingPassphrase) {
@@ -241,6 +235,9 @@ The values can also be placed in PROJECT_HOME/gradle.properties or USER_HOME/gra
                                             }
                                         }
                                     }
+                                }
+                                else {
+                                    throw new RuntimeException(getErrorMessage('license'))
                                 }
 
                                 if(extension.githubSlug) {

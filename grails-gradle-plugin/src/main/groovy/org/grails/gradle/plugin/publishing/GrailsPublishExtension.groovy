@@ -139,8 +139,8 @@ class GrailsPublishExtension {
         return portalUser ?: user
     }
 
-    void setPortalUser(String portalUser) {
-        this.portalUser = portalUser
+    void setPortalUsername(String portalUser) {
+        setPortalUser(portalUser)
     }
 
     void setLicense(License license) {
