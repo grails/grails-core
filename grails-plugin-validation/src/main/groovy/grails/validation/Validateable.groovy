@@ -116,11 +116,12 @@ trait Validateable {
     boolean validate(List fieldsToValidate) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
-        def constraints = getConstraintsMap()
+        //initialize errors before constraints block, because this block may be empty
+        def localErrors = new ValidationErrors(this, this.class.name)
 
+        def constraints = getConstraintsMap()
         if (constraints) {
             Object messageSource = findMessageSource()
-            def localErrors = new ValidationErrors(this, this.class.name)
             def originalErrors = getErrors()
             for (originalError in originalErrors.allErrors) {
                 if (originalError instanceof FieldError) {
@@ -142,9 +143,11 @@ trait Validateable {
                     }
                 }
             }
-            errors = localErrors
         }
 
+        //set errors instance even if constraints were not verified
+        //object should must have it initialized after validate()
+        errors = localErrors
         return !errors.hasErrors()
     }
 

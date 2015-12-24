@@ -134,6 +134,15 @@ class ValidateableTraitSpec extends Specification {
         expect: 'property accessors are not invoked for properties which are not explicitly constrained (getName() would throw an exception)'
         obj.validate()
     }
+
+    void 'ensure class without any constraints can be validated'(){
+        NoConstraintsValidateable obj = new NoConstraintsValidateable()
+
+        expect:
+        obj.validate() == true
+        !obj.hasErrors()
+        obj.errors != null
+    }
 }
 
 class MyValidateable implements Validateable {
@@ -179,5 +188,11 @@ class MyNullableValidateable implements Validateable {
     
     static boolean defaultNullable() {
         true
+    }
+}
+
+class NoConstraintsValidateable implements Validateable {
+    static constraints = {
+
     }
 }
