@@ -143,6 +143,45 @@ class ValidateableTraitSpec extends Specification {
         !obj.hasErrors()
         obj.errors != null
     }
+
+    void 'ensure only getters are considered as validateable properties'(){
+
+        expect:
+        propertyGetter == ValidatableGetters.isPropertyGetter(ValidatableGetters.getDeclaredMethod(methodName))
+
+        where:
+        propertyGetter  |   methodName
+        true            |   'getTown'
+        true            |   'getName'
+        false           |   'getSurname'
+        false           |   'getEmail'
+        false           |   'getDay'
+        false           |   'getEaster'
+        false           |   'getChristmas'
+        false           |   'getNewYear'
+    }
+
+    @Issue('9513')
+    void 'ensure validation may be done for classes with private and protected getters'(){
+        ValidatableGetters obj = new ValidatableGetters()
+
+        expect: 'validation is executed and public properties/getters are marked nullable in errors'
+        obj.validate() == false
+        obj.errors['name'].code == 'nullable'
+        !obj.errors['surname']
+        !obj.errors['email']
+    }
+
+    void 'ensure private and protected getter is not handled as not-nullable property by default'(){
+        when:
+        Map constraints = new ValidatableGetters().getConstraintsMap()
+
+        then: 'only public properties and public getters should be considered validateable properties by default'
+        constraints
+        constraints.size() == 2
+        constraints.name
+        constraints.town
+    }
 }
 
 class MyValidateable implements Validateable {
@@ -195,4 +234,22 @@ class NoConstraintsValidateable implements Validateable {
     static constraints = {
 
     }
+}
+
+class ValidatableGetters implements Validateable {
+    //standard properties - private/protected will not have getter
+    String town
+
+    //properties from getters
+    String getName(){}
+    protected String getSurname(){}
+    private String getEmail(){}
+
+    //static properties
+    static Integer day
+
+    //static properties from getters
+    static Date getEaster() {}
+    protected static Date getChristmas() {}
+    private static Date getNewYear() {}
 }

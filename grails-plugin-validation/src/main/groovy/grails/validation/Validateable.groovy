@@ -80,22 +80,30 @@ trait Validateable {
                     ignoredProperties << 'id' << 'version'
                 }
                 for(Method method : methods) {
-                    if(!Modifier.isStatic(method.modifiers) && !method.parameterTypes) {
-                        def methodName = method.name
-                        if(GrailsClassUtils.isGetter(methodName, method.parameterTypes)) {
-                            def propertyName = NameUtils.getPropertyNameForGetterOrSetter(methodName)
-                            if( !ignoredProperties.contains(propertyName) &&
-                                !this.constraintsMapInternal.containsKey(propertyName)) {
-                                def cp = new ConstrainedProperty(this, propertyName, method.returnType)
-                                cp.applyConstraint 'nullable', false
-                                this.constraintsMapInternal.put propertyName, cp
-                            }
+                    //verify if method is property getter
+                    if(isPropertyGetter(method)) {
+                        def propertyName = NameUtils.getPropertyNameForGetterOrSetter(method.name)
+                        if( !ignoredProperties.contains(propertyName) &&
+                            !this.constraintsMapInternal.containsKey(propertyName)) {
+                            def cp = new ConstrainedProperty(this, propertyName, method.returnType)
+                            cp.applyConstraint 'nullable', false
+                            this.constraintsMapInternal.put propertyName, cp
                         }
                     }
                 }
             }
         }
         this.constraintsMapInternal
+    }
+
+    /**
+     * Public, non-static getters without parameters should be considered validateable properties
+     * 
+     * @return if given object method should be considered property getter and validateable object
+     */
+    static boolean isPropertyGetter(Method method){
+        !Modifier.isStatic(method.modifiers) && Modifier.isPublic(method.modifiers) &&
+        !method.parameterTypes && GrailsClassUtils.isGetter(method.name, method.parameterTypes)
     }
 
     @CompileStatic
