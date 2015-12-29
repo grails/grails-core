@@ -97,7 +97,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
             "org.grails.plugins.web.controllers.ControllersGrailsPlugin",
             "org.grails.plugins.web.GroovyPagesGrailsPlugin",
             "org.grails.plugins.web.mime.MimeTypesGrailsPlugin",
-            "org.grails.plugins.web.filters.FiltersGrailsPlugin",
             "org.grails.plugins.converters.ConvertersGrailsPlugin",
             "org.grails.plugins.web.rest.plugin.RestResponderGrailsPlugin"
         ].collect { className ->
@@ -130,7 +129,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(ga))
         ga.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
-        
+
         dependentPlugins*.doWithApplicationContext(appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
@@ -145,7 +144,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     protected setCurrentController(controller) {
         RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
     }
-    
+
     protected void tearDown() {
         ga.mainContext.close()
         RequestContextHolder.resetRequestAttributes()
@@ -203,5 +202,5 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         app.mainContext = mainContext
         app
     }
-    
+
 }
