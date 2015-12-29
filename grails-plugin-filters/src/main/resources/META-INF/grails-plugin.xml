@@ -1,3 +1,0 @@
-<plugin name='filters'>
-  <type>org.grails.plugins.web.filters.FiltersGrailsPlugin</type>
-</plugin>
