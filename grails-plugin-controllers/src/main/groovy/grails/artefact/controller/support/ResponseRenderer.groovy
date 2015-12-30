@@ -139,6 +139,8 @@ trait ResponseRenderer extends WebAttributes {
         String explicitSiteMeshLayout = argMap[ARGUMENT_LAYOUT]?.toString() ?: null
 
         applyContentType response, argMap, closure
+        handleStatusArgument argMap, webRequest, response
+
         if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
             renderJsonInternal(response, closure)
             webRequest.renderView = false
