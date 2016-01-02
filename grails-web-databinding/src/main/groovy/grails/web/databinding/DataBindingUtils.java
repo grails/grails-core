@@ -109,11 +109,11 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source) {
-        return bindObjectToInstance(object, source, getBindingIncludeList(object), Collections.EMPTY_LIST, null);
+        return bindObjectToInstance(object, source, getBindingIncludeList(object), Collections.emptyList(), null);
     }
 
     private static List getBindingIncludeList(final Object object) {
-        List includeList = Collections.EMPTY_LIST;
+        List includeList = Collections.emptyList();
         try {
             final Class<? extends Object> objectClass = object.getClass();
             if (CLASS_TO_BINDING_INCLUDE_LIST.containsKey(objectClass)) {
@@ -149,7 +149,7 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object, Object source) {
-        return bindObjectToDomainInstance(domain,object, source, getBindingIncludeList(object), Collections.EMPTY_LIST, null);
+        return bindObjectToDomainInstance(domain,object, source, getBindingIncludeList(object), Collections.emptyList(), null);
     }
 
     /**
@@ -171,7 +171,7 @@ public class DataBindingUtils {
         final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
         for(final DataBindingSource dataBindingSource : dataBindingSources) {
             final T newObject = targetType.newInstance();
-            bindObjectToDomainInstance(domain, newObject, dataBindingSource, getBindingIncludeList(newObject), Collections.EMPTY_LIST, null);
+            bindObjectToDomainInstance(domain, newObject, dataBindingSource, getBindingIncludeList(newObject), Collections.emptyList(), null);
             collectionToPopulate.add(newObject);
         }
     }

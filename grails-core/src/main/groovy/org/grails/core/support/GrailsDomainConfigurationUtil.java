@@ -216,7 +216,7 @@ public class GrailsDomainConfigurationUtil {
 
         Map<?, ?> associationMap = cpf.getPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
         if (associationMap == null) {
-            associationMap = Collections.EMPTY_MAP;
+            associationMap = Collections.emptyMap();
         }
         return associationMap;
     }
@@ -232,7 +232,7 @@ public class GrailsDomainConfigurationUtil {
 
         Map<?, ?> mappedByMap = cpf.getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
         if (mappedByMap == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         return mappedByMap;
     }
