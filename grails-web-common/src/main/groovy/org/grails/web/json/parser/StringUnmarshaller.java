@@ -22,6 +22,9 @@ package org.grails.web.json.parser;
  */
 final class StringUnmarshaller {
 
+    private StringUnmarshaller() {
+    }
+
     static String unmarshall(String str) {
         str = str.substring(1, str.length() - 1);
 

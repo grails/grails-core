@@ -41,6 +41,9 @@ public class DeferredBindingActions {
         }, true);
     }
 
+    private DeferredBindingActions() {
+    }
+
     public static void addBindingAction(Runnable runnable) {
         List<Runnable> bindingActions = getDeferredBindingActions();
         bindingActions.add(runnable);
