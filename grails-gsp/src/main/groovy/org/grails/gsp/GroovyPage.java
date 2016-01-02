@@ -78,7 +78,7 @@ public abstract class GroovyPage extends Script {
     private static final String BINDING = "binding";
     private static final String BLANK_STRING = "";
     @SuppressWarnings("rawtypes")
-    private Map jspTags = Collections.EMPTY_MAP;
+    private Map jspTags = Collections.emptyMap();
     private TagLibraryResolver jspTagLibraryResolver;
     private TagLibraryLookup gspTagLibraryLookup;
     private String[] htmlParts;
