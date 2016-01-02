@@ -16,40 +16,26 @@
 package org.grails.plugins;
 
 import grails.artefact.Enhanced;
-import grails.plugins.PluginFilter;
-import org.grails.config.NavigableMap;
+import grails.core.ArtefactHandler;
+import grails.core.GrailsApplication;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.GrailsVersionUtils;
-import grails.util.BuildScope;
-import grails.util.Environment;
-import grails.util.GrailsNameUtils;
-import grails.util.Metadata;
+import grails.plugins.PluginFilter;
+import grails.plugins.exceptions.PluginException;
+import grails.util.*;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import grails.core.ArtefactHandler;
-import grails.core.GrailsApplication;
-
-import org.grails.core.legacy.LegacyGrailsApplication;
-import org.grails.spring.RuntimeSpringConfiguration;
-import org.grails.io.support.GrailsResourceUtils;
-
-import grails.plugins.exceptions.PluginException;
-
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.grails.config.NavigableMap;
+import org.grails.core.legacy.LegacyGrailsApplication;
+import org.grails.io.support.GrailsResourceUtils;
+import org.grails.spring.RuntimeSpringConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -59,11 +45,17 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Abstract implementation of the GrailsPluginManager interface
@@ -79,6 +71,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     protected List<GrailsPlugin> pluginList = new ArrayList<GrailsPlugin>();
     protected GrailsApplication application;
     protected Resource[] pluginResources = new Resource[0];
+    protected Resource basePluginDescriptor;
     protected Map<String, GrailsPlugin> plugins = new HashMap<String, GrailsPlugin>();
     protected Map<String, GrailsPlugin> classNameToPluginMap = new HashMap<String, GrailsPlugin>();
     protected Class<?>[] pluginClasses = new Class[0];
@@ -419,6 +412,80 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             }
         }
         return null;
+    }
+
+    /**
+     * Obtains the 'base' plugin descriptor, which is the plugin descriptor of the current plugin project.
+     * The file is expected to reside in src/main/groovy (or below) of the current project.
+     */
+    public Resource getBasePluginDescriptor() {
+        if (basePluginDescriptor == null) {
+            String potentialPluginLocation = BuildSettings.BASE_DIR.getAbsolutePath() + "/src/main/groovy";
+            File f = getDescriptorForPlugin(new FileSystemResource(potentialPluginLocation));
+            if (f != null) {
+                try {
+                    ResourceLoader loader = new DefaultResourceLoader();
+                    basePluginDescriptor = loader.getResource(f.getCanonicalPath());
+                } catch (IOException e) {
+                    LOG.error("Unable to load base plugin descriptor " + f.getName() + " : " + e.getLocalizedMessage());
+                }
+            }
+        }
+        return basePluginDescriptor;
+    }
+
+    public ArrayList<File> findFiles(String path, String containing) {
+        ArrayList<File> foundFiles = new ArrayList<File>();
+        File root = new File(path);
+        File[] filesList = root.listFiles();
+
+        if (filesList == null) {
+            return foundFiles;
+        }
+
+        for (File f : filesList) {
+            if (f.isDirectory()) {
+                findFiles(f.getAbsolutePath(), containing);
+            }
+            else {
+                if (f.getName().contains(containing)) {
+                    foundFiles.add(f);
+                }
+            }
+        }
+        return foundFiles;
+    }
+
+
+    /**
+     * Returns the descriptor location for the given plugin directory. The descriptor is the Groovy
+     * file that ends with *GrailsPlugin.groovy
+     */
+    public File getDescriptorForPlugin(Resource pluginDir) {
+        File descriptor = null;
+        ArrayList<File> foundFiles = null;
+        try {
+            foundFiles = findFiles(pluginDir.getFile().getPath(), "GrailsPlugin.groovy");
+        } catch (IOException e) {
+            LOG.error("Unable to use path " + pluginDir.getFilename());
+            return null;
+        }
+        if (foundFiles.size() == 0) {
+            LOG.warn("Unable to find any plugin descriptors in path " + pluginDir);
+        }
+        if (foundFiles.size() == 1) {
+            descriptor = foundFiles.get(0);
+            LOG.info("Found plugin descriptor " + descriptor.getName());
+        }
+        if (foundFiles.size() > 1) {
+            descriptor = foundFiles.get(0);
+            LOG.warn("Found more than one plugin descriptor:");
+            for (File f: foundFiles) {
+                LOG.warn(f.getName());
+            }
+            LOG.warn("Using the first: " + descriptor.getName());
+        }
+        return descriptor;
     }
 
     @Override

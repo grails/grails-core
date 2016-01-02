@@ -15,6 +15,9 @@
  */
 package grails.plugins;
 
+import grails.core.GrailsApplication;
+import grails.core.support.ParentApplicationContextAware;
+import grails.plugins.exceptions.PluginException;
 import grails.util.Environment;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
@@ -22,16 +25,13 @@ import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import grails.core.GrailsApplication;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
+import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.io.support.GrailsResourceUtils;
 import org.grails.plugins.*;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
-import org.grails.core.exceptions.GrailsConfigurationException;
-import org.grails.io.support.GrailsResourceUtils;
-import grails.plugins.exceptions.PluginException;
-import grails.core.support.ParentApplicationContextAware;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -361,6 +361,22 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         }
     }
 
+    private GrailsPlugin determineBasePlugin() {
+        String groovyExtension = ".groovy";
+        Resource baseDescriptor = getBasePluginDescriptor();
+        if (baseDescriptor != null) {
+            String groovyFileName = baseDescriptor.getFilename();
+            if (groovyFileName.endsWith(groovyExtension)) {
+                groovyFileName = groovyFileName.substring(0, groovyFileName.indexOf(groovyExtension));
+            }
+            GrailsPlugin p = getGrailsPluginForClassName(groovyFileName);
+            if (p != null) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     private List<GrailsPlugin> findCorePlugins() {
         CorePluginFinder finder = new CorePluginFinder(application);
         finder.setParentApplicationContext(parentCtx);
@@ -481,6 +497,19 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                             DefaultGroovyMethods.inspect(plugin.getDependencyNames()) + "] cannot be resolved");
                 }
             }
+        }
+
+        // Now that plugins are loaded, determine which (if any) is "base"
+        GrailsPlugin basePlugin = determineBasePlugin();
+        if (basePlugin != null) {
+            basePlugin.setBasePlugin(true);
+        }
+        if (LOG.isInfoEnabled()) {
+            String basePluginName = "absent";
+            if (basePlugin != null) {
+                basePluginName = basePlugin.getName();
+            }
+            LOG.info("Base plugin determined to be " + basePluginName);
         }
     }
 
