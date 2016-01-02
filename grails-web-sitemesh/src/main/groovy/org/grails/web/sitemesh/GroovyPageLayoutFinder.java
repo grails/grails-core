@@ -212,7 +212,7 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
             d = getNamedDecorator(request, layoutProperty.toString());
         }
         else {
-            if (d == null && !GrailsStringUtils.isBlank(actionUri)) {
+            if (!GrailsStringUtils.isBlank(actionUri)) {
                 d = getNamedDecorator(request, actionUri.substring(1), true);
             }
 
