@@ -27,6 +27,9 @@ import java.io.Writer;
  *
  */
 public class CharSequences {
+    private CharSequences() {
+    }
+
     public static CharSequence createCharSequence(char[] chars) {
         return new CharArrayCharSequence(chars, 0, chars.length);
     }

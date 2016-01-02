@@ -24,6 +24,9 @@ import org.grails.core.io.support.GrailsFactoriesLoader;
 public class OutputContextLookupHelper {
     private static OutputContextLookup outputContextLookup = GrailsFactoriesLoader.loadFactory(OutputContextLookup.class, OutputContextLookupHelper.class.getClassLoader());
 
+    private OutputContextLookupHelper() {
+    }
+
     public static OutputContext lookupOutputContext() {
         return outputContextLookup.lookupOutputContext();
     }

@@ -24,6 +24,9 @@ public class TestStacktraceSanitizer {
 
     private static final String TEST_RUNNING_CLASS = "_GrailsTest";
 
+    private TestStacktraceSanitizer() {
+    }
+
     public static Throwable sanitize(Throwable t) {
         new DefaultStackTraceFilterer().filter(t, true);
         StackTraceElement[] trace = t.getStackTrace();

@@ -21,6 +21,9 @@ public class TagOutput {
     public static final Closure<?> EMPTY_BODY_CLOSURE = new ConstantClosure("");
     public static final String DEFAULT_NAMESPACE = "g";
 
+    private TagOutput() {
+    }
+
     @SuppressWarnings("rawtypes")
     public final static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace,
                                                 String tagName, Map attrs, Object body, OutputContext outputContext) {
