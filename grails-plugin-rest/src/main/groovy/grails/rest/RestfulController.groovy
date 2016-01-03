@@ -15,16 +15,13 @@
  */
 package grails.rest
 
-import grails.web.mapping.LinkGenerator
-import org.springframework.beans.factory.annotation.Autowired
-
-import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
-
 import grails.web.http.HttpHeaders
 import org.springframework.http.HttpStatus
+
+import static org.springframework.http.HttpStatus.*
 
 /**
  * Base class that can be extended to get the basic CRUD operations needed for a RESTful API.
@@ -100,7 +97,7 @@ class RestfulController<T> {
             return
         }
 
-        instance.save flush:true
+        saveResource instance
 
         request.withFormat {
             form multipartForm {
@@ -157,7 +154,7 @@ class RestfulController<T> {
             return
         }
 
-        instance.save flush:true
+        updateResource instance
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
@@ -297,5 +294,25 @@ class RestfulController<T> {
             }
             '*'{ render status: NOT_FOUND }
         }
+    }
+
+    /**
+     * Saves a resource
+     *
+     * @param resource The resource to be saved
+     * @return The saved resource or null if can't save it
+     */
+    protected T saveResource(T resource) {
+        resource.save flush: true
+    }
+
+    /**
+     * Updates a resource
+     *
+     * @param resource The resource to be updated
+     * @return The updated resource or null if can't save it
+     */
+    protected T updateResource(T resource) {
+        saveResource resource
     }
 }
