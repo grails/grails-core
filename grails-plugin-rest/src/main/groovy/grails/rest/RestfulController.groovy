@@ -15,13 +15,16 @@
  */
 package grails.rest
 
+import grails.web.mapping.LinkGenerator
+import org.springframework.beans.factory.annotation.Autowired
+
+import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
+
 import grails.web.http.HttpHeaders
 import org.springframework.http.HttpStatus
-
-import static org.springframework.http.HttpStatus.*
 
 /**
  * Base class that can be extended to get the basic CRUD operations needed for a RESTful API.
