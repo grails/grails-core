@@ -45,6 +45,9 @@ public class RuntimeSpringConfigUtilities {
 
     private static volatile BeanBuilder springGroovyResourcesBeanBuilder = null;
 
+    private RuntimeSpringConfigUtilities() {
+    }
+
     /**
      * Attempt to load the beans defined by a BeanBuilder DSL closure in "resources.groovy".
      *

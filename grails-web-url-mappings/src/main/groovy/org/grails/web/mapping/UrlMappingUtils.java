@@ -56,6 +56,9 @@ import java.util.Map;
  * @since 2.4
  */
 public class UrlMappingUtils {
+    private UrlMappingUtils() {
+    }
+
     /**
      * Looks up the UrlMappingsHolder instance
      *

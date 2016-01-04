@@ -23,7 +23,10 @@ import org.springframework.context.ApplicationContext;
 
 public class CodecLookupHelper {
     private static final Logger log = LoggerFactory.getLogger(CodecLookupHelper.class);
-    
+
+    private CodecLookupHelper() {
+    }
+
     /**
      * Lookup encoder.
      *
