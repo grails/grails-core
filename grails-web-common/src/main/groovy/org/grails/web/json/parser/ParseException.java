@@ -159,31 +159,31 @@ public class ParseException extends Exception {
         switch (str.charAt(i))
         {
            case 0 :
-              continue;
+              break;
            case '\b':
               retval.append("\\b");
-              continue;
+               break;
            case '\t':
               retval.append("\\t");
-              continue;
+               break;
            case '\n':
               retval.append("\\n");
-              continue;
+               break;
            case '\f':
               retval.append("\\f");
-              continue;
+               break;
            case '\r':
               retval.append("\\r");
-              continue;
+               break;
            case '\"':
               retval.append("\\\"");
-              continue;
+               break;
            case '\'':
               retval.append("\\\'");
-              continue;
+               break;
            case '\\':
               retval.append("\\\\");
-              continue;
+               break;
            default:
               if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
                  String s = "0000" + Integer.toString(ch, 16);
@@ -191,7 +191,7 @@ public class ParseException extends Exception {
               } else {
                  retval.append(ch);
               }
-              continue;
+               break;
         }
       }
       return retval.toString();
