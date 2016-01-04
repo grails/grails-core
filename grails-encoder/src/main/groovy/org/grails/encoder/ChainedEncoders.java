@@ -24,6 +24,9 @@ import org.grails.buffer.StreamCharBuffer;
 
 public class ChainedEncoders {
 
+    private ChainedEncoders() {
+    }
+
     public static List<StreamingEncoder> toStreamingEncoders(List<Encoder> encoders) {
         if(encoders == null || encoders.isEmpty()) {
             return null;

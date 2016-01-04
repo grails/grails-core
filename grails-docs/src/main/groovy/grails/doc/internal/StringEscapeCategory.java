@@ -6,6 +6,9 @@ import java.net.URISyntaxException;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class StringEscapeCategory {
+    private StringEscapeCategory() {
+    }
+
     public static String encodeAsUrlPath(String str) {
         try {
             String uri = new URI("http", "localhost", '/' + str, "").toASCIIString();

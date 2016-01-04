@@ -37,6 +37,9 @@ public class TraitInjectionUtils {
 
     private static List<TraitInjector> traitInjectors;
 
+    private TraitInjectionUtils() {
+    }
+
     private static void doInjectionInternal(CompilationUnit unit, SourceUnit source, ClassNode classNode,
             List<TraitInjector> injectorsToUse) {
         boolean traitsAdded = false;

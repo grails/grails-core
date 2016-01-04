@@ -73,6 +73,9 @@ public class StringCharArrayAccessor {
         }
     }
 
+    private StringCharArrayAccessor() {
+    }
+
     /**
      * Writes a portion of a string to a target java.io.Writer with direct access to the char[] of the java.lang.String
      *

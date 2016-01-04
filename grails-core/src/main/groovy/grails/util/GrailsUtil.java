@@ -94,6 +94,8 @@ public class GrailsUtil {
         GRAILS_VERSION = version;
     }
 
+    private GrailsUtil() {
+    }
 
 
     /**

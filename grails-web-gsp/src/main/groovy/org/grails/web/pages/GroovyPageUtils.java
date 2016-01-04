@@ -37,6 +37,9 @@ public class GroovyPageUtils {
 
     public static final String PATH_TO_VIEWS = GroovyPagesUriSupport.PATH_TO_VIEWS;
 
+    private GroovyPageUtils() {
+    }
+
     private static GroovyPagesUriSupport getInstance() {
         try {
             GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();

@@ -27,6 +27,9 @@ public class GrailsNameUtils {
     private static final String PROPERTY_SET_PREFIX = "set";
     private static final String PROPERTY_GET_PREFIX = "get";
 
+    private GrailsNameUtils() {
+    }
+
     /**
      * Retrieves the name of a setter for the specified property name
      * @param propertyName The property name

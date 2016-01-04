@@ -46,6 +46,9 @@ public class Promises {
         }
     }
 
+    private Promises() {
+    }
+
     public static PromiseFactory getPromiseFactory() {
         if (promiseFactory == null) {
             if (GparsPromiseFactory.isGparsAvailable()) {

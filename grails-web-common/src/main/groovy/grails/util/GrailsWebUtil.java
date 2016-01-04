@@ -47,6 +47,9 @@ public class GrailsWebUtil {
     private static final String CHARSET_ATTRIBUTE = ";charset=";
     private static final Pattern CHARSET_IN_CONTENT_TYPE_REGEXP = Pattern.compile(";\\s*charset\\s*=", Pattern.CASE_INSENSITIVE);
 
+    private GrailsWebUtil() {
+    }
+
     /**
      * Looks up a GrailsApplication instance from the ServletContext.
      *
