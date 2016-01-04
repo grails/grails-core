@@ -82,6 +82,14 @@ class RenderMethodTests {
     }
 
     @Test
+    void testRenderClosureWithStatus() {
+        controller.renderClosureWithStatus()
+
+        def response = controller.response
+        assertEquals 500, response.status
+    }
+
+    @Test
     void testRenderList() {
         controller.renderList()
 
@@ -205,6 +213,10 @@ class RenderController {
     }
     def renderObject() {
         render new RenderTest(foo:"bar")
+    }
+    def renderClosureWithStatus() {
+        render(status: 500) {
+        }
     }
     def renderMessageWithStatus() {
         render text:"test", status:500
