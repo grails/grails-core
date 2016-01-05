@@ -18,23 +18,16 @@ package grails.artefact.controller.support
 import grails.web.UrlConverter
 import grails.web.api.WebAttributes
 import grails.web.mapping.LinkGenerator
-import grails.web.servlet.mvc.GrailsParameterMap
 import groovy.transform.CompileStatic
-import org.grails.plugins.web.controllers.metaclass.ForwardMethod
-import org.grails.web.mapping.ForwardUrlMappingInfo
-import org.grails.web.mapping.UrlMappingUtils
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
-import org.springframework.beans.MutablePropertyValues
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.validation.DataBinder
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.filter.OncePerRequestFilter
 
 import javax.servlet.RequestDispatcher
-
 /**
  * A Trait for classes that forward the request
  *
@@ -105,6 +98,7 @@ trait RequestForwarder implements WebAttributes {
         request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
         request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
 
+        params.includeContext = false
         def fowardURI = lookupLinkGenerator().link(params)
 
 
