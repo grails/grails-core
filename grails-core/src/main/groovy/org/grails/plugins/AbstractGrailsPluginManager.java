@@ -300,9 +300,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public void registerProvidedArtefacts(GrailsApplication app) {
         checkInitialised();
-        List<GrailsPlugin> plugins = new ArrayList<GrailsPlugin>(pluginList);
-        Collections.reverse(plugins);
-        for (GrailsPlugin plugin : plugins) {
+
+        for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 if(isPluginDisabledForProfile(plugin)) continue;
                 for (Class<?> artefact : plugin.getProvidedArtefacts()) {
