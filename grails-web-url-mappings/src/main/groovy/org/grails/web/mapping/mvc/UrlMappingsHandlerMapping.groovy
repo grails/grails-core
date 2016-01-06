@@ -138,9 +138,6 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
             for(UrlMappingInfo info in infos) {
                 if(info) {
                     if(info.redirectInfo) return info
-
-                    webRequest.resetParams()
-                    info.configure(webRequest)
                     if(info instanceof GrailsControllerUrlMappingInfo) {
                         request.setAttribute(MATCHED_REQUEST, info)
                         return info
