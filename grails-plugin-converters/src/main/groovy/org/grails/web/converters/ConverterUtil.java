@@ -81,13 +81,13 @@ public class ConverterUtil {
         return createConverter(converterClass, target, null);
     }
 
-    public static Object createConverter(Class<?> converterClass, Object target, ApplicationContext applicationContext) throws ConverterException{
+    public static <T> T createConverter(Class<T> converterClass, Object target, ApplicationContext applicationContext) throws ConverterException{
         try {
-            AbstractConverter<?> converter = (AbstractConverter<?>)converterClass.newInstance();
+            T converter = converterClass.newInstance();
             if (converter instanceof ApplicationContextAware && applicationContext != null) {
                 ((ApplicationContextAware)converter).setApplicationContext(applicationContext);
             }
-            converter.setTarget(target);
+            ((AbstractConverter)converter).setTarget(target);
             return converter;
         }
         catch (Exception e) {
