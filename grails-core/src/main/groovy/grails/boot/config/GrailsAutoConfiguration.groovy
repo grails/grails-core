@@ -70,7 +70,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
     Collection<Class> classes() {
         def readerFactory = new CachingMetadataReaderFactory(resourcePatternResolver)
         def packages = packageNames().unique()
-        Collection<Class> classes = [] as Set
+        Collection<Class> classes = new HashSet()
         for (pkg in packages) {
             if(pkg == null) continue
             String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
@@ -178,11 +178,6 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ResourceLoaderA
                 }
 
             }
-//            if ("".equals(path)) {
-//                // The above result is likely to be incomplete, i.e. only containing file system references.
-//                // We need to have pointers to each of the jar files on the classpath as well...
-//                addAllClassLoaderJarRoots(cl, result)
-//            }
             return result
         }
 
