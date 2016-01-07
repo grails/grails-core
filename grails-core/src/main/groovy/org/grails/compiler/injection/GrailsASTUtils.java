@@ -796,7 +796,7 @@ public class GrailsASTUtils {
         }
         else if(exclude != null) {
             ListExpression list = new ListExpression();
-            list.addExpression(list);
+            list.addExpression(exclude);
             list.addExpression(expression);
             annotationNode.setMember(memberName, list);
         }

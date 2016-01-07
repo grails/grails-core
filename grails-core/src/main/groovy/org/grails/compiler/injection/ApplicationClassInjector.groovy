@@ -111,6 +111,10 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                         def dataSourceAutoConfig = new ClassExpression(ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration')))
                         GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, "exclude", dataSourceAutoConfig)
                     }
+                    if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration', classLoader)) {
+                        def messageSourceAutoConfig = new ClassExpression(ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration')))
+                        GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, "exclude", messageSourceAutoConfig)
+                    }
                 }
             }
         }

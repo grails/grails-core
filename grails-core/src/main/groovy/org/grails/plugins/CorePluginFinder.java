@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.io.support.SpringIOUtils;
 import grails.core.support.ParentApplicationContextAware;
 import org.springframework.context.ApplicationContext;
@@ -52,7 +53,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
     private static final Log LOG = LogFactory.getLog(CorePluginFinder.class);
     public static final String CORE_PLUGIN_PATTERN = "classpath*:META-INF/grails-plugin.xml";
 
-    private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private PathMatchingResourcePatternResolver resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
     private final Set<Class<?>> foundPluginClasses = new HashSet<Class<?>>();
     @SuppressWarnings("unused")
     private final GrailsApplication application;

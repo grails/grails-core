@@ -15,21 +15,25 @@
  */
 package grails.util;
 
+import grails.io.IOUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Writable;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
 import org.grails.exceptions.reporting.StackTraceFilterer;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -51,19 +55,17 @@ public class GrailsUtil {
         Package p = GrailsUtil.class.getPackage();
         String version = p != null ? p.getImplementationVersion() : null;
         if (version == null || isBlank(version)) {
-            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             try {
-                Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
+                URL manifestURL = IOUtils.findResourceRelativeToClass(GrailsUtil.class, "META-INF/MANIFEST.MF");
                 Manifest grailsManifest = null;
-                for (int i = 0; i < manifests.length; i++) {
-                    Resource r = manifests[i];
+                if(manifestURL != null) {
+                    Resource r = new UrlResource(manifestURL);
                     InputStream inputStream = null;
                     Manifest mf = null;
                     try {
                         inputStream = r.getInputStream();
                         mf = new Manifest(inputStream);
-                    }
-                    finally {
+                    } finally {
                         try {
                             inputStream.close();
                         } catch (IOException e) {
@@ -73,7 +75,6 @@ public class GrailsUtil {
                     String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
                     if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE)) {
                         grailsManifest = mf;
-                        break;
                     }
                 }
 
