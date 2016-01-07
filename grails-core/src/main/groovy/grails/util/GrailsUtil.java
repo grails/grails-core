@@ -46,54 +46,8 @@ import java.util.jar.Manifest;
 public class GrailsUtil {
 
     private static final Log LOG = LogFactory.getLog(GrailsUtil.class);
-    private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
-    private static final String GRAILS_VERSION;
-    private static final StackTraceFilterer stackFilterer = new DefaultStackTraceFilterer();
     private static final boolean LOG_DEPRECATED = Boolean.valueOf(System.getProperty("grails.log.deprecated", String.valueOf(Environment.isDevelopmentMode())));
-
-    static {
-        Package p = GrailsUtil.class.getPackage();
-        String version = p != null ? p.getImplementationVersion() : null;
-        if (version == null || isBlank(version)) {
-            try {
-                URL manifestURL = IOUtils.findResourceRelativeToClass(GrailsUtil.class, "META-INF/MANIFEST.MF");
-                Manifest grailsManifest = null;
-                if(manifestURL != null) {
-                    Resource r = new UrlResource(manifestURL);
-                    InputStream inputStream = null;
-                    Manifest mf = null;
-                    try {
-                        inputStream = r.getInputStream();
-                        mf = new Manifest(inputStream);
-                    } finally {
-                        try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                    String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
-                    if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE)) {
-                        grailsManifest = mf;
-                    }
-                }
-
-                if (grailsManifest != null) {
-                    version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                }
-
-                if (isBlank(version)) {
-                    LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure the grails-core jar is on the classpath? ");
-                    version = "Unknown";
-                }
-            }
-            catch (Exception e) {
-                version = "Unknown";
-                LOG.error("Unable to read Grails version from MANIFEST.MF. Are you sure it the grails-core jar is on the classpath? " + e.getMessage(), e);
-            }
-        }
-        GRAILS_VERSION = version;
-    }
+    private static final StackTraceFilterer stackFilterer = new DefaultStackTraceFilterer();
 
 
 
@@ -118,7 +72,7 @@ public class GrailsUtil {
     }
 
     public static String getGrailsVersion() {
-        return GRAILS_VERSION;
+        return Environment.getGrailsVersion();
     }
 
     private static boolean isBlank(String value) {

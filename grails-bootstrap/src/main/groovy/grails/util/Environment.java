@@ -21,11 +21,17 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.grails.io.support.Resource;
+import org.grails.io.support.UrlResource;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * Represents the current environment.
@@ -105,6 +111,54 @@ public enum Environment {
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT;
     private static boolean initializingState = false;
+
+    private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
+    private static final String GRAILS_VERSION;
+
+    static {
+        Package p = Environment.class.getPackage();
+        String version = p != null ? p.getImplementationVersion() : null;
+        if (version == null || isBlank(version)) {
+            try {
+                URL manifestURL = IOUtils.findResourceRelativeToClass(Environment.class, "/META-INF/MANIFEST.MF");
+                Manifest grailsManifest = null;
+                if(manifestURL != null) {
+                    Resource r = new UrlResource(manifestURL);
+                    if(r.exists()) {
+                        InputStream inputStream = null;
+                        Manifest mf = null;
+                        try {
+                            inputStream = r.getInputStream();
+                            mf = new Manifest(inputStream);
+                        } finally {
+                            try {
+                                inputStream.close();
+                            } catch (IOException e) {
+                                // ignore
+                            }
+                        }
+                        String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
+                        if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE)) {
+                            grailsManifest = mf;
+                        }
+                    }
+                }
+
+                if (grailsManifest != null) {
+                    version = grailsManifest.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                }
+
+                if (isBlank(version)) {
+                    version = "Unknown";
+                }
+            }
+            catch (Exception e) {
+                version = "Unknown";
+            }
+        }
+        GRAILS_VERSION = version;
+    }
+
     public static Throwable currentReloadError = null;
     public static MultipleCompilationErrorsException currentCompilationError = null;
     private String name;
@@ -114,6 +168,12 @@ public enum Environment {
         initialize();
     }
 
+    /**
+     * @return The current Grails version
+     */
+    public static String getGrailsVersion() {
+        return GRAILS_VERSION;
+    }
     public static void setCurrentReloadError(Throwable currentReloadError) {
         Environment.currentReloadError = currentReloadError;
     }
