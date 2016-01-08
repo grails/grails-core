@@ -42,6 +42,16 @@ class HttpServletRequestExtension {
         mp ? mp.getProperty(request) : request.getAttribute(name)
     }
 
+    static void setProperty(HttpServletRequest request, String name, val) {
+        def mp = request.getClass().metaClass.getMetaProperty(name)
+        if(mp != null) {
+            mp.setProperty(request, val)
+        }
+        else {
+            request.setAttribute(name, val)
+        }
+    }
+
     static propertyMissing(HttpServletRequest request, String name) {
         getProperty request, name
     }
@@ -58,6 +68,10 @@ class HttpServletRequestExtension {
 
     static getAt(HttpServletRequest request, String name) {
         getProperty request, name
+    }
+
+    static putAt(HttpServletRequest request, String name, val) {
+        setProperty request, name, val
     }
 
     static each(HttpServletRequest request, Closure c) {
