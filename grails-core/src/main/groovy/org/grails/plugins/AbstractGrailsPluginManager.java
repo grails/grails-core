@@ -389,9 +389,17 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     }
 
     public String getPluginPath(String name) {
+        return getPluginPath(name, false);
+    }
+
+    public String getPluginPath(String name, boolean forceCamelCase) {
         GrailsPlugin plugin = getGrailsPlugin(name);
         if (plugin != null && !plugin.isBasePlugin()) {
-            return plugin.getPluginPath();
+            if(forceCamelCase){
+                return plugin.getPluginPathCamelCase();
+            } else {
+                return plugin.getPluginPath();
+            }
         }
         return BLANK;
     }
