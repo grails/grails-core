@@ -121,7 +121,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             if(i > -1) {
                 baseName = baseName.substring(0, i);
             }
-            if(!basenames.contains(baseName))
+            if(!basenames.contains(baseName) && !baseName.equals(""))
                 basenames.add(baseName);
         }
 
