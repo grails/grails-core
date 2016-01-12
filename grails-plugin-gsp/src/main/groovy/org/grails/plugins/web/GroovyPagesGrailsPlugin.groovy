@@ -298,20 +298,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
         return location
     }
 
-
-    /**
-     * Sets up dynamic methods required by the GSP implementation including dynamic tag method dispatch
-     */
-    @CompileStatic
-    @Override
-    void doWithDynamicMethods() {
-        TagLibraryLookup gspTagLibraryLookup = applicationContext.getBean('gspTagLibraryLookup',TagLibraryLookup)
-
-        for(GrailsClass cls in grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE)) {
-            TagLibraryMetaUtils.enhanceTagLibMetaClass((GrailsTagLibClass)cls, gspTagLibraryLookup)
-        }
-    }
-
     @Override
     void onChange(Map<String, Object> event) {
         def application = grailsApplication
