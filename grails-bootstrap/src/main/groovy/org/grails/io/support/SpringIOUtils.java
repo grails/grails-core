@@ -23,6 +23,7 @@ import org.xml.sax.SAXNotSupportedException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.lang.reflect.Array;
@@ -369,8 +370,12 @@ public class SpringIOUtils {
     }
 
     public static XmlSlurper createXmlSlurper() throws ParserConfigurationException, SAXException {
+        return new XmlSlurper(newSAXParser());
+    }
+
+    public static SAXParser newSAXParser() throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = createParserFactory();
-        return new XmlSlurper(factory.newSAXParser());
+        return factory.newSAXParser();
     }
 
     private static SAXParserFactory saxParserFactory = null;
