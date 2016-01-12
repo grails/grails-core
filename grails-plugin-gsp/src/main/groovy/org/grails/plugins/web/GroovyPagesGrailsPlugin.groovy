@@ -88,15 +88,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
 
 
     /**
-     * Clear the page cache with the ApplicationContext is loaded
-     */
-    @CompileStatic
-    @Override
-    void doWithApplicationContext() {
-        applicationContext.getBean("groovyPagesTemplateEngine", GroovyPagesTemplateEngine).clearPageCache()
-    }
-
-    /**
      * Configures the various Spring beans required by GSP
      */
     Closure doWithSpring() {{->
@@ -204,6 +195,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
 
         // Setup the main templateEngine used to render GSPs
         groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
+            bean.lazyInit = true
             classLoader = ref("classLoader")
             groovyPageLocator = groovyPageLocator
             if (enableReload) {
@@ -222,15 +214,18 @@ class GroovyPagesGrailsPlugin extends Plugin {
         }
 
         groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+            bean.lazyInit = true
             bean.autowire = true
         }
 
 
 
-        groovyPageLayoutFinder(GroovyPageLayoutFinder) {
+        groovyPageLayoutFinder(GroovyPageLayoutFinder) { bean ->
+            bean.lazyInit = true
             gspReloadEnabled = enableReload
             defaultDecoratorName = defaultDecoratorNameSetting ?: null
             enableNonGspViews = sitemeshEnableNonGspViews
+            viewResolver = ref("jspViewResolver")
         }
 
         // Setup the GroovyPagesUriService
@@ -298,19 +293,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
         return location
     }
 
-
-    /**
-     * Sets up dynamic methods required by the GSP implementation including dynamic tag method dispatch
-     */
-    @CompileStatic
-    @Override
-    void doWithDynamicMethods() {
-        TagLibraryLookup gspTagLibraryLookup = applicationContext.getBean('gspTagLibraryLookup',TagLibraryLookup)
-
-        for(GrailsClass cls in grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE)) {
-            TagLibraryMetaUtils.enhanceTagLibMetaClass((GrailsTagLibClass)cls, gspTagLibraryLookup)
-        }
-    }
 
     @Override
     void onChange(Map<String, Object> event) {

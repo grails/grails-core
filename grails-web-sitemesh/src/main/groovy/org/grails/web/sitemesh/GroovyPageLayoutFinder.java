@@ -49,7 +49,7 @@ import com.opensymphony.sitemesh.Content;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefreshedEvent>{
+public class GroovyPageLayoutFinder {
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
     public static final String NONE_LAYOUT = "_none_";
     public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
@@ -282,11 +282,4 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
         }
     }
 
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (!(viewResolver instanceof GrailsViewResolver)) {
-            setViewResolver(event.getApplicationContext().getBean(GrailsViewResolver.class));
-        }
-        
-    }
 }

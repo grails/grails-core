@@ -49,6 +49,7 @@ import org.springframework.scripting.ScriptSource;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.util.Assert;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -756,6 +757,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     /**
      * Clears the page cache. Views will be re-compiled.
      */
+    @PostConstruct
     public void clearPageCache() {
         for(Iterator<Map.Entry<String, CacheEntry<GroovyPageMetaInfo>>> it = pageCache.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, CacheEntry<GroovyPageMetaInfo>> entry = it.next();
