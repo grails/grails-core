@@ -26,7 +26,7 @@ import grails.util.Metadata
 import grails.web.pages.GroovyPagesUriService
 import groovy.transform.CompileStatic
 import groovy.util.logging.Commons
-import org.grails.buffer.StreamCharBufferMetaUtils
+
 import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.gsp.GroovyPageResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
@@ -47,7 +47,6 @@ import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
-import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
@@ -129,7 +128,9 @@ class GroovyPagesGrailsPlugin extends Plugin {
         // resolves JSP tag libraries
         jspTagLibraryResolver(TagLibraryResolverImpl)
         // resolves GSP tag libraries
-        gspTagLibraryLookup(TagLibraryLookup)
+        gspTagLibraryLookup(TagLibraryLookup) { bean ->
+            bean.lazyInit = true
+        }
 
 
         boolean customResourceLoader = false
@@ -304,7 +305,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
     @CompileStatic
     @Override
     void doWithDynamicMethods() {
-        StreamCharBufferMetaUtils.registerStreamCharBufferMetaClass()
         TagLibraryLookup gspTagLibraryLookup = applicationContext.getBean('gspTagLibraryLookup',TagLibraryLookup)
 
         for(GrailsClass cls in grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE)) {
