@@ -18,7 +18,6 @@ package org.grails.web.servlet.view;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 
@@ -40,7 +39,7 @@ import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.compatability.PageParser2ContentProcessor;
 
-public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver implements GrailsApplicationAware, DisposableBean, Ordered{
+public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver implements GrailsApplicationAware, DisposableBean, Ordered, ApplicationListener<ContextRefreshedEvent>{
     private static final String FACTORY_SERVLET_CONTEXT_ATTRIBUTE = "sitemesh.factory";
     private ContentProcessor contentProcessor;
     protected GrailsApplication grailsApplication;
@@ -59,8 +58,7 @@ public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver impleme
     protected View createLayoutView(View innerView) {
         return new SitemeshLayoutView(groovyPageLayoutFinder, innerView, contentProcessor);
     }
-
-    @PostConstruct
+    
     public void init() {
         if(servletContext == null) return;
 
@@ -143,4 +141,8 @@ public class SitemeshLayoutViewResolver extends GrailsLayoutViewResolver impleme
         this.order = order;
     }
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        init();
+    }
 }

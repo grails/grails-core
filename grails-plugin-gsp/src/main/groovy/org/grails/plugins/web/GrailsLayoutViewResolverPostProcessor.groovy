@@ -61,7 +61,6 @@ class GrailsLayoutViewResolverPostProcessor implements BeanDefinitionRegistryPos
             registry.removeBeanDefinition(GRAILS_VIEW_RESOLVER_BEAN_NAME);
             
             GenericBeanDefinition beanDefinition = new GenericBeanDefinition()
-            beanDefinition.setLazyInit(true);
             beanDefinition.beanClass = layoutViewResolverClass
             if(layoutViewResolverBeanParentName) {
                 beanDefinition.parentName = layoutViewResolverBeanParentName

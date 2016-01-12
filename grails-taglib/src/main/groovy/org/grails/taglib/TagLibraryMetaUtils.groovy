@@ -1,7 +1,6 @@
 package org.grails.taglib
 import grails.core.GrailsTagLibClass
 import grails.util.GrailsClassUtils
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.reflection.CachedMethod
@@ -122,7 +121,7 @@ class TagLibraryMetaUtils {
         args instanceof Object[] ? (Object[])args : [args] as Object[]
     }
 
-    @CompileDynamic
+    @CompileStatic(TypeCheckingMode.SKIP) // workaround for GROOVY-6147 bug
     static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, Object argsParam, boolean addMethodsToMetaClass) {
         Object[] args = makeObjectArray(argsParam)
         final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
