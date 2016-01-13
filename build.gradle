@@ -19,6 +19,7 @@ buildscript {
 
 apply plugin: 'idea'
 
+
 ext {
     bintrayPublish = false
     // Sets release version
@@ -66,6 +67,8 @@ ext {
 }
 
 version = grailsVersion
+group = "org.grails"
+apply plugin: 'io.codearte.nexus-staging'
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
@@ -204,7 +207,6 @@ subprojects { project ->
         apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
         apply plugin: 'com.jfrog.bintray'
-        apply plugin: 'io.codearte.nexus-staging'
     }
     apply plugin: 'eclipse'
     apply plugin: 'idea'
