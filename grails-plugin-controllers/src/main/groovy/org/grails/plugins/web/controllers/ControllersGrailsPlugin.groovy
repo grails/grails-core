@@ -79,6 +79,7 @@ class ControllersGrailsPlugin extends Plugin {
         String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, '/')
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
         boolean resourcesEnabled = config.getProperty(Settings.RESOURCES_ENABLED, Boolean, true)
+        String resourcesPattern = config.getProperty(Settings.RESOURCES_PATTERN, String, '/static/**')
 
         bootStrapClassRunner(BootStrapClassRunner)
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
@@ -133,7 +134,7 @@ class ControllersGrailsPlugin extends Plugin {
         annotationHandlerAdapter(RequestMappingHandlerAdapter)
 
         // add Grails webmvc config
-        webMvcConfig(GrailsWebMvcConfigurer, resourcesCachePeriod, resourcesEnabled)
+        webMvcConfig(GrailsWebMvcConfigurer, resourcesCachePeriod, resourcesEnabled, resourcesPattern)
 
         // add the dispatcher servlet
         dispatcherServlet(GrailsDispatcherServlet)
@@ -217,10 +218,12 @@ class ControllersGrailsPlugin extends Plugin {
 
         boolean addMappings = true
         Integer cachePeriod
+        String resourcesPattern
 
-        GrailsWebMvcConfigurer(Integer cachePeriod, boolean addMappings = true) {
+        GrailsWebMvcConfigurer(Integer cachePeriod, boolean addMappings = true, String resourcesPattern = '/static/**') {
             this.addMappings = addMappings
             this.cachePeriod = cachePeriod
+            this.resourcesPattern = resourcesPattern
         }
 
         @Override
@@ -235,8 +238,8 @@ class ControllersGrailsPlugin extends Plugin {
                         .addResourceLocations("classpath:/META-INF/resources/webjars/")
                         .setCachePeriod(cachePeriod)
             }
-            if (!registry.hasMappingForPattern("/**")) {
-                registry.addResourceHandler("/**")
+            if (!registry.hasMappingForPattern(resourcesPattern)) {
+                registry.addResourceHandler(resourcesPattern)
                         .addResourceLocations(RESOURCE_LOCATIONS)
                         .setCachePeriod(cachePeriod)
             }

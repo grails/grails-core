@@ -164,6 +164,11 @@ interface Settings {
     String RESOURCES_ENABLED = 'grails.resources.enabled'
 
     /**
+     * The path pattern to serve static resources under
+     */
+    String RESOURCES_PATTERN = 'grails.resources.pattern'
+
+    /**
      * Whether to log request parameters in the console
      */
     String SETTING_LOG_REQUEST_PARAMETERS = "grails.exceptionresolver.logRequestParameters";
