@@ -103,7 +103,7 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         if (!ex) {
             //Attempting to find an existing exception in the request
-            ex = request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE) as Exception
+            ex = (Exception)request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE)
         }
         request.setAttribute(Matcher.THROWABLE, ex)
         if(reverseInterceptors) {
