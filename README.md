@@ -60,9 +60,6 @@ After pushing these changes to the repository you must wait for [the build](http
 
 The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatically upload the tagged release to Github and be available of the [Releases page](https://github.com/grails/grails-core/releases).
 
-Note: Although by default Grails uses Artefactory to resolve dependencies, it is useful to have them in Maven Central too. To ensure they go to Maven Central login to [Sonatype OSS Nexus](https://oss.sonatype.org) with your account details then "Close" and "Release" the staged JAR files.
-
-
 License
 ---
 
