@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,19 @@
 
 package org.codehaus.groovy.grails.compiler.injection.test
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.transform.GroovyASTTransformation
-import org.codehaus.groovy.control.CompilePhase
-import org.codehaus.groovy.transform.ASTTransformation
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.AnnotatedNode
-import org.codehaus.groovy.ast.ClassNode
-import grails.test.mixin.TestMixin
 import grails.test.mixin.integration.Integration
-import org.codehaus.groovy.ast.expr.ListExpression
-import org.codehaus.groovy.ast.expr.ClassExpression
 import grails.test.mixin.integration.IntegrationTestMixin
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ASTNode
+import org.codehaus.groovy.ast.AnnotatedNode
+import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.expr.ClassExpression
+import org.codehaus.groovy.ast.expr.ListExpression
+import org.codehaus.groovy.control.CompilePhase
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.transform.ASTTransformation
+import org.codehaus.groovy.transform.GroovyASTTransformation
 
 /**
  * An AST transformation that automatically applies the IntegrationTestMixin to integration tests
@@ -39,9 +38,11 @@ import grails.test.mixin.integration.IntegrationTestMixin
  */
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-class IntegrationTestMixinTransformation implements ASTTransformation{
+class IntegrationTestMixinTransformation implements ASTTransformation {
+
     public static final String OBJECT_CLASS = "java.lang.Object";
     private static final ClassNode MY_TYPE = new ClassNode(Integration);
+
     @Override
     void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
         final node = astNodes[0]
@@ -58,9 +59,22 @@ class IntegrationTestMixinTransformation implements ASTTransformation{
         ClassNode classNode = (ClassNode) parent;
         ListExpression listExpression = new ListExpression()
         listExpression.addExpression(new ClassExpression(new ClassNode(IntegrationTestMixin).getPlainNodeReference()))
-        if(!isSubclassOf(classNode, "grails.test.spock.IntegrationSpec")) {
+        if (isApplicableTo(classNode)) {
             new TestMixinTransformation().weaveMixinsIntoClass(classNode, listExpression)
         }
+    }
+
+    private static boolean isApplicableTo(ClassNode classNode) {
+        // isInterface covers "interface", "trait" and "annotation"
+        // we could also identify "annotations" among them,
+        // but there is no special treatment needed here
+        return !classNode.isInterface() &&
+                !isInnerClass(classNode) &&
+                !isSubclassOf(classNode, "grails.test.spock.IntegrationSpec")
+    }
+
+    private static boolean isInnerClass(ClassNode classNode) {
+        return classNode.getOuterClass() != null
     }
 
     private static boolean isSubclassOf(ClassNode classNode, String testType) {

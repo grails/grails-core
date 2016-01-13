@@ -30,6 +30,8 @@ dependencies {
     runtime "cglib:cglib:${cglibVersion}"
 
     provided "org.apache.ant:ant:${antVersion}"
+
+    testCompile "jline:jline:$jlineVersion"
 }
 
 eclipse {
