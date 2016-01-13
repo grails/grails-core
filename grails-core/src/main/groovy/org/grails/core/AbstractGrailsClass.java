@@ -247,9 +247,6 @@ public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.g
      */
     public <T> T getStaticPropertyValue(String propName, Class<T> type) {
         T value = classPropertyFetcher.getStaticPropertyValue(propName, type);
-        if (value == null) {
-            return getGroovyProperty(propName, type, true);
-        }
         return value;
     }
 
@@ -262,29 +259,9 @@ public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.g
      */
     public <T> T getPropertyValue(String propName, Class<T> type) {
         T value = classPropertyFetcher.getPropertyValue(propName, type);
-        if (value == null) {
-            // Groovy workaround
-            return getGroovyProperty(propName, type, false);
-        }
         return returnOnlyIfInstanceOf(value, type);
     }
 
-    private <T> T  getGroovyProperty(String propName, Class<T> type, boolean onlyStatic) {
-        Object value = null;
-        if (GroovyObject.class.isAssignableFrom(getClazz())) {
-            MetaProperty metaProperty = getMetaClass().getMetaProperty(propName);
-            if (metaProperty != null) {
-                int modifiers = metaProperty.getModifiers();
-                if (Modifier.isStatic(modifiers)) {
-                    value = metaProperty.getProperty(clazz);
-                }
-                else if (!onlyStatic) {
-                    value = metaProperty.getProperty(getReferenceInstance());
-                }
-            }
-        }
-        return returnOnlyIfInstanceOf(value, type);
-    }
 
     public Object getPropertyValueObject(String propertyNAme) {
         return getPropertyValue(propertyNAme, Object.class);

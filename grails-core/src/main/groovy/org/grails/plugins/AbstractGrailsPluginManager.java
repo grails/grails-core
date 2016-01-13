@@ -300,9 +300,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public void registerProvidedArtefacts(GrailsApplication app) {
         checkInitialised();
-        List<GrailsPlugin> plugins = new ArrayList<GrailsPlugin>(pluginList);
-        Collections.reverse(plugins);
-        for (GrailsPlugin plugin : plugins) {
+
+        for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 if(isPluginDisabledForProfile(plugin)) continue;
                 for (Class<?> artefact : plugin.getProvidedArtefacts()) {
@@ -389,9 +388,17 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     }
 
     public String getPluginPath(String name) {
+        return getPluginPath(name, false);
+    }
+
+    public String getPluginPath(String name, boolean forceCamelCase) {
         GrailsPlugin plugin = getGrailsPlugin(name);
         if (plugin != null && !plugin.isBasePlugin()) {
-            return plugin.getPluginPath();
+            if(forceCamelCase){
+                return plugin.getPluginPathCamelCase();
+            } else {
+                return plugin.getPluginPath();
+            }
         }
         return BLANK;
     }

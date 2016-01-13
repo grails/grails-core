@@ -15,24 +15,20 @@
  */
 package org.grails.plugins;
 
+import grails.core.GrailsApplication;
 import grails.io.IOUtils;
 import grails.plugins.exceptions.PluginException;
-import groovy.util.slurpersupport.GPathResult;
-import groovy.util.slurpersupport.Node;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.*;
-
-import grails.core.GrailsApplication;
 import org.grails.core.io.StaticResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.util.ResourceUtils;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Models a pre-compiled binary plugin.
@@ -66,7 +62,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         this.descriptor = descriptor;
 
         if (descriptor != null) {
-            initializeProvidedArtefacts(descriptor.getParsedXml());
+            initializeProvidedArtefacts(descriptor.getProvidedlassNames());
             initializeViewMap(descriptor);
         }
     }
@@ -119,24 +115,18 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         }
     }
 
-    protected void initializeProvidedArtefacts(GPathResult descriptor) {
+    protected void initializeProvidedArtefacts(List<String> classNames) {
 
         List<Class> artefacts = new ArrayList<Class>();
-        if (descriptor != null) {
-            GPathResult resources = (GPathResult) descriptor.getProperty("resources");
-            if (!resources.isEmpty()) {
-                GPathResult allResources = (GPathResult) resources.getProperty("resource");
-                if (!allResources.isEmpty()) {
-                    final ClassLoader classLoader = application.getClassLoader();
-                    for (Iterator i = allResources.nodeIterator(); i.hasNext();) {
-                        final String className = ((Node)i.next()).text();
-                        try {
-                            artefacts.add(classLoader.loadClass(className));
-                        } catch (Throwable e) {
-                            throw new PluginException("Failed to initialize class ["+className+"] from plugin ["+ getName()+ "] : " + e.getMessage(), e);
-                        }
-                    }
+        if (!classNames.isEmpty()) {
+            final ClassLoader classLoader = application.getClassLoader();
+            for (String className : classNames) {
+                try {
+                    artefacts.add(classLoader.loadClass(className));
+                } catch (Throwable e) {
+                    throw new PluginException("Failed to initialize class ["+className+"] from plugin ["+ getName()+ "] : " + e.getMessage(), e);
                 }
+
             }
         }
         artefacts.addAll(Arrays.asList(super.getProvidedArtefacts()));

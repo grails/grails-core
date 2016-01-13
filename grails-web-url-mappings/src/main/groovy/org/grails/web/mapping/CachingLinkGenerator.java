@@ -17,8 +17,10 @@ package org.grails.web.mapping;
 
 import java.util.Map;
 
+import grails.web.mapping.LinkGenerator;
 import grails.web.mapping.UrlMapping;
 import grails.util.GrailsMetaClassUtils;
+import grails.web.servlet.mvc.GrailsParameterMap;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -43,9 +45,6 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     private static final String COMMA_SEPARATOR = ", ";
     private static final String KEY_VALUE_SEPARATOR = ":";
     private static final String THIS_MAP = "(this Map)";
-    private static final String URL_ATTRIBUTE = "url";
-    private static final String URI_ATTRIBUTE = "uri";
-    private static final String BASE = "base";
 
     private Map<String, Object> linkCache;
 
@@ -85,7 +84,10 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     }
 
     private boolean isCacheable(Map attrs) {
-        Object urlAttr = attrs.get(URL_ATTRIBUTE);
+        if(attrs.get(LinkGenerator.ATTRIBUTE_PARAMS) instanceof GrailsParameterMap) {
+            return false;
+        }
+        Object urlAttr = attrs.get(ATTRIBUTE_URL);
         if (urlAttr instanceof Map) {
             return isCacheable((Map) urlAttr);
         }
@@ -93,7 +95,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         return attrs.get(UrlMapping.CONTROLLER) != null ||
                 attrs.get(UrlMapping.ACTION) != null ||
                 urlAttr != null ||
-                attrs.get(URI_ATTRIBUTE) != null;
+                attrs.get(ATTRIBUTE_URI) != null;
     }
 
     // Based on DGM toMapString, but with StringBuilder instead of StringBuffer
@@ -167,8 +169,8 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         StringBuilder sb=new StringBuilder();
         sb.append(prefix);
         if (getConfiguredServerBaseURL()==null && isAbsolute(attrs)) {
-            if (attrs.get(BASE) != null) {
-                sb.append(attrs.get(BASE));
+            if (attrs.get(ATTRIBUTE_BASE) != null) {
+                sb.append(attrs.get(ATTRIBUTE_BASE));
             } else {
                 GrailsWebRequest webRequest = GrailsWebRequest.lookup();
             if(webRequest != null) {

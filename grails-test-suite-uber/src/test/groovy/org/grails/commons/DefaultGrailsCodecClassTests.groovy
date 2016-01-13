@@ -29,8 +29,8 @@ class DefaultGrailsCodecClassTests extends GroovyTestCase {
 }
 
 class CodecWithClosuresCodec {
-    def encode = { "encoded" }
-    def decode = { "decoded" }
+    static encode = { "encoded" }
+    static decode = { "decoded" }
 }
 
 class CodecWithMethodsCodec {

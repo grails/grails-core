@@ -61,7 +61,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     boolean loadExternalBeans = true
     boolean reloadingEnabled = RELOADING_ENABLED
 
-
     GrailsApplicationPostProcessor(GrailsApplicationLifeCycle lifeCycle, ApplicationContext applicationContext, Class...classes) {
         this.lifeCycle = lifeCycle
         if(lifeCycle instanceof GrailsApplicationClass) {
@@ -106,7 +105,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         for(cls in classes) {
             grailsApplication.addArtefact(cls)
         }
-
         pluginManager.registerProvidedArtefacts(grailsApplication)
     }
 

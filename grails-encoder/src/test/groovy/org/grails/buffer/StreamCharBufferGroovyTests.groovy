@@ -1,14 +1,9 @@
-package org.grails.web.util
+package org.grails.buffer
 
 import org.grails.buffer.StreamCharBuffer
-import org.grails.buffer.StreamCharBufferMetaUtils
 
 
 class StreamCharBufferGroovyTests extends GroovyTestCase {
-
-    protected void setUp() {
-        StreamCharBufferMetaUtils.registerStreamCharBufferMetaClass()
-    }
 
     void testStringDelegatingMetaClass() {
         def charBuffer = new StreamCharBuffer()

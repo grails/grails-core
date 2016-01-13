@@ -63,19 +63,20 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     private void initializeCodec() {
         if (initialized) return;
         initialized = true;
-        Integer orderSetting = getPropertyOrStaticPropertyOrFieldValue("order", Integer.class);
+        Integer orderSetting = getStaticPropertyValue("order", Integer.class);
         if (orderSetting != null) {
             order = orderSetting;
         }
+        Object instance = getReferenceInstance();
         if (Encoder.class.isAssignableFrom(getClazz())) {
-            encoder = (Encoder)getReferenceInstance();
+            encoder = (Encoder) instance;
             encoder = (Encoder)autowireCodecBean(encoder);
             if (encoder instanceof Ordered) {
                 order = ((Ordered)encoder).getOrder();
             }
         }
         if (Decoder.class.isAssignableFrom(getClazz())) {
-            decoder = (Decoder)getReferenceInstance();
+            decoder = (Decoder) instance;
             decoder = (Decoder)autowireCodecBean(decoder);
             if (decoder instanceof Ordered) {
                 order = ((Ordered)decoder).getOrder();
@@ -84,15 +85,15 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         if (encoder==null && decoder==null) {
             CodecFactory codecFactory=null;
             if (CodecFactory.class.isAssignableFrom(getClazz())) {
-                codecFactory=(CodecFactory)getReferenceInstance();
+                codecFactory=(CodecFactory) instance;
                 codecFactory=(CodecFactory)autowireCodecBean(codecFactory);
             }
             if (codecFactory==null) {
-                codecFactory=getPropertyOrStaticPropertyOrFieldValue("codecFactory", CodecFactory.class);
+                codecFactory=getStaticPropertyValue("codecFactory", CodecFactory.class);
                 codecFactory=(CodecFactory)autowireCodecBean(codecFactory);
             }
             if (codecFactory==null) {
-                codecFactory=new ClosureCodecFactory();
+                codecFactory=new ClosureCodecFactory(instance);
             }
             encoder=codecFactory.getEncoder();
             decoder=codecFactory.getDecoder();
@@ -122,8 +123,10 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     private class ClosureCodecFactory implements CodecFactory {
         private Encoder encoder;
         private Decoder decoder;
+        private final Object codecInstance;
 
-        ClosureCodecFactory() {
+        ClosureCodecFactory(Object codecInstance) {
+            this.codecInstance = codecInstance;
             Closure<Object> encoderClosure = getMethodOrClosureMethod(getClazz(), "encode");
             if (encoderClosure != null) {
                 encoder=new ClosureEncoder(getName(), encoderClosure);
@@ -144,7 +147,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
         private Closure<Object> getMethodOrClosureMethod(Class<?> clazz, String methodName) {
             @SuppressWarnings("unchecked")
-            Closure<Object> closure = getPropertyOrStaticPropertyOrFieldValue(methodName, Closure.class);
+            Closure<Object> closure = getStaticPropertyValue(methodName, Closure.class);
             if (closure == null) {
                 Method method = ReflectionUtils.findMethod(clazz, methodName, (Class<?>[])null);
                 if (method != null) {
@@ -152,7 +155,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
                     if (Modifier.isStatic(method.getModifiers())) {
                         owner=clazz;
                     } else {
-                        owner=getReferenceInstance();
+                        owner=codecInstance;
                     }
                     return new MethodCallingClosure(owner, method);
                 }

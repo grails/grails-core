@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping
 
+import grails.util.GrailsClassUtils
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlCreator
@@ -106,21 +107,24 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
     String link(Map attrs, String encoding = 'UTF-8') {
         def writer = new StringBuilder()
         // prefer URI attribute
+        boolean includeContext = GrailsClassUtils.getBooleanFromMap(ATTRIBUTE_INCLUDE_CONTEXT, attrs, true)
+
         if (attrs.get(ATTRIBUTE_URI) != null) {
             def uri = attrs.get(ATTRIBUTE_URI).toString()
             if(!isUriAbsolute(uri)){
                 final base = handleAbsolute(attrs)
                 if (base != null) {
-                    writer << base
+                    writer.append base
                 }
-                else {
+                else if(includeContext) {
+
                     def cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     if (cp == null) cp = getContextPath()
                     if (cp != null)
-                        writer << cp
+                        writer.append cp
                 }
             }
-            writer << uri
+            writer.append uri
             
             def params = attrs.get(ATTRIBUTE_PARAMS)
 
@@ -131,8 +135,8 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
                     def encodedValue = URLEncoder.encode(entry.value as String, charset)
                     "$encodedKey=$encodedValue"
                 }.join('&')
-                writer << (uri.indexOf('?') >= 0 ? '&' : '?')
-                writer << paramString
+                writer.append(uri.indexOf('?') >= 0 ? '&' : '?')
+                      .append paramString
             }
         }
         else if (attrs.get(ATTRIBUTE_RELATIVE_URI) != null) {
@@ -140,9 +144,9 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
             String forwardUri = WebUtils.getForwardURI(requestStateLookupStrategy.webRequest.request)
             int index = forwardUri.lastIndexOf('/')
             if (index != -1) {
-                writer << forwardUri.substring(0, index + 1)
+                writer.append forwardUri.substring(0, index + 1)
             }
-            writer << attrs.get(ATTRIBUTE_RELATIVE_URI)
+            writer.append relativeUri
         }
         else {
             // prefer a URL attribute
@@ -254,20 +258,20 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
                     final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
-                        writer << handleAbsolute(attrs)
+                        writer.append handleAbsolute(attrs)
                     }
-                    else {
-                        writer << cp
+                    else if(includeContext) {
+                        writer.append cp
                     }
-                    writer << url
+                    writer.append url
                 }
                 else {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
-                    writer << handleAbsolute(attrs)
-                    writer << url
+                    writer.append handleAbsolute(attrs)
+                    writer.append url
                 }
             } else {
-                writer << urlAttribute
+                writer.append urlAttribute
             }
         }
         return writer.toString()

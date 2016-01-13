@@ -21,25 +21,25 @@ import groovy.util.slurpersupport.Node;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
 import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.io.support.SpringIOUtils;
 import grails.core.support.ParentApplicationContextAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.StringUtils;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Loads core plugin classes. Contains functionality moved in from <code>DefaultGrailsPluginManager</code>.
@@ -52,7 +52,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
     private static final Log LOG = LogFactory.getLog(CorePluginFinder.class);
     public static final String CORE_PLUGIN_PATTERN = "classpath*:META-INF/grails-plugin.xml";
 
-    private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private PathMatchingResourcePatternResolver resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
     private final Set<Class<?>> foundPluginClasses = new HashSet<Class<?>>();
     @SuppressWarnings("unused")
     private final GrailsApplication application;
@@ -96,29 +96,23 @@ public class CorePluginFinder implements ParentApplicationContextAware {
 
         LOG.debug("Attempting to load [" + resources.length + "] core plugins");
         try {
-            XmlSlurper slurper = SpringIOUtils.createXmlSlurper();
+            SAXParser saxParser = SpringIOUtils.newSAXParser();
             for (Resource resource : resources) {
                 InputStream input = null;
 
                 try {
                     input = resource.getInputStream();
-                    final GPathResult result = slurper.parse(input);
-                    GPathResult pluginClass = (GPathResult) result.getProperty("type");
-                    if (pluginClass.size() == 1) {
-                        final String pluginClassName = pluginClass.text();
-                        if (StringUtils.hasText(pluginClassName)) {
-                            loadCorePlugin(pluginClassName, resource, result);
-                        }
-                    } else {
-                        final Iterator iterator = pluginClass.nodeIterator();
-                        while (iterator.hasNext()) {
-                            Node node = (Node) iterator.next();
-                            final String pluginClassName = node.text();
-                            if (StringUtils.hasText(pluginClassName)) {
-                                loadCorePlugin(pluginClassName, resource, result);
-                            }
+                    PluginHandler ph = new PluginHandler();
+                    saxParser.parse(input, ph);
+
+                    for (String pluginType : ph.pluginTypes) {
+                        Class<?> pluginClass = attemptCorePluginClassLoad(pluginType);
+                        if(pluginClass != null) {
+                            addPlugin(pluginClass);
+                            binaryDescriptors.put(pluginClass, new BinaryGrailsPluginDescriptor(resource, ph.pluginClasses));
                         }
                     }
+
                 } finally {
                     if (input != null) {
                         input.close();
@@ -132,13 +126,6 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         }
     }
 
-    private void loadCorePlugin(String pluginClassName, Resource resource, GPathResult result) {
-        Class<?> pluginClass = attemptCorePluginClassLoad(pluginClassName);
-        if (pluginClass != null) {
-            addPlugin(pluginClass);
-            binaryDescriptors.put(pluginClass, new BinaryGrailsPluginDescriptor(resource, result));
-        }
-    }
 
     private Class<?> attemptCorePluginClassLoad(String pluginClassName) {
         try {
@@ -154,9 +141,6 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         return null;
     }
 
-    private void loadCorePlugin(String pluginClassName) {
-        loadCorePlugin(pluginClassName, null, null);
-    }
 
     private void addPlugin(Class<?> plugin) {
         foundPluginClasses.add(plugin);
@@ -165,6 +149,55 @@ public class CorePluginFinder implements ParentApplicationContextAware {
     public void setParentApplicationContext(ApplicationContext parent) {
         if (parent != null) {
             resolver = new PathMatchingResourcePatternResolver(parent);
+        }
+    }
+
+    private enum PluginParseState {
+        PARSING, TYPE, RESOURCE
+    }
+
+    class PluginHandler extends DefaultHandler {
+        PluginParseState state = PluginParseState.PARSING;
+
+        List<String> pluginTypes = new ArrayList<>();
+        List<String> pluginClasses = new ArrayList<>();
+        private StringBuilder buff = new StringBuilder();
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if(localName.equals("type")) {
+                state = PluginParseState.TYPE;
+                buff = new StringBuilder();
+            }
+            else if(localName.equals("resource")) {
+                state = PluginParseState.RESOURCE;
+                buff = new StringBuilder();
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            switch (state) {
+                case TYPE:
+                    buff.append(String.valueOf(ch, start, length));
+                    break;
+                case RESOURCE:
+                    buff.append(String.valueOf(ch, start, length));
+                    break;
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            switch (state) {
+                case TYPE:
+                    pluginTypes.add(buff.toString());
+                    break;
+                case RESOURCE:
+                    pluginClasses.add(buff.toString());
+                    break;
+            }
+            state = PluginParseState.PARSING;
         }
     }
 }

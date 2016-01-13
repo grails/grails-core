@@ -1,6 +1,7 @@
 package grails.ui.console.support
 
 import grails.core.GrailsApplication
+import grails.persistence.support.PersistenceContextInterceptor
 import grails.ui.support.DevelopmentWebApplicationContext
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
@@ -56,6 +57,18 @@ class GroovyConsoleWebApplicationContext extends DevelopmentWebApplicationContex
             }
         }
 
+        def interceptors = getBeansOfType(PersistenceContextInterceptor).values()
+        groovyConsole.beforeExecution = {
+            for(i in interceptors) {
+                i.init()
+            }
+        }
+
+        groovyConsole.afterExecution = {
+            for(i in interceptors) {
+                i.destroy()
+            }
+        }
         groovyConsole.run()
 
     }

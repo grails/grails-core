@@ -235,9 +235,16 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     /**
      * Returns the path of the plug-in
      *
-     * @return A String that makes up the path to the plug-in in the format /plugins/PLUGIN_NAME-PLUGIN_VERSION
+     * @return A String that makes up the path to the plug-in in the format /plugins/plugin-name-PLUGIN_VERSION
      */
     String getPluginPath();
+
+    /**
+     * Returns the path of the plug-in using camel case
+     *
+     * @return A String that makes up the path to the plug-in in the format /plugins/pluginName-PLUGIN_VERSION
+     */
+    String getPluginPathCamelCase();
 
     /**
      * @return The names of the plugins this plugin is dependant on

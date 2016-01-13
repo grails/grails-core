@@ -16,7 +16,15 @@
 package org.grails.plugins;
 
 import groovy.util.slurpersupport.GPathResult;
+import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.io.support.SpringIOUtils;
 import org.springframework.core.io.Resource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * Holds a reference to the parsed grails-plugin.xml descriptor and the
@@ -25,12 +33,13 @@ import org.springframework.core.io.Resource;
  */
 public class BinaryGrailsPluginDescriptor {
 
-    private Resource resource;
+    private final Resource resource;
+    private final List<String> providedlassNames;
     private GPathResult parsedXml;
 
-    public BinaryGrailsPluginDescriptor(Resource resource, GPathResult parsedXml) {
+    public BinaryGrailsPluginDescriptor(Resource resource, List<String> providedlassNames) {
         this.resource = resource;
-        this.parsedXml = parsedXml;
+        this.providedlassNames = providedlassNames;
     }
 
     /**
@@ -43,9 +52,35 @@ public class BinaryGrailsPluginDescriptor {
     }
 
     /**
+     * @return The class names provided by the plugin
+     */
+    public List<String> getProvidedlassNames() {
+        return providedlassNames;
+    }
+
+    /**
      * @return The parsed descriptor
      */
     public GPathResult getParsedXml() {
+        if(parsedXml == null) {
+            InputStream inputStream;
+            try {
+                inputStream = resource.getInputStream();
+            } catch (IOException e) {
+                throw new GrailsConfigurationException("Error parsing plugin descript: " + resource.getFilename(), e);
+            }
+            try {
+                parsedXml = SpringIOUtils.createXmlSlurper().parse(inputStream);
+            } catch (Throwable e) {
+                throw new GrailsConfigurationException("Error parsing plugin descript: " + resource.getFilename(), e);
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
         return parsedXml;
     }
 }

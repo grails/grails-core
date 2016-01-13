@@ -44,6 +44,7 @@ import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.util.GrailsArrayUtils;
 import grails.util.GrailsClassUtils;
+import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.io.SpringResource;
 import org.grails.core.exceptions.GrailsConfigurationException;
@@ -116,7 +117,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         // create properties
         dependencies = Collections.emptyMap();
         pluginDescriptor = resource;
-        resolver = new PathMatchingResourcePatternResolver();
+        resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
 
         try {
             initialisePlugin(pluginClass);
