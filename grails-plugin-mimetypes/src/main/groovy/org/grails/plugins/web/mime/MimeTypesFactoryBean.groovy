@@ -41,7 +41,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
 
     private MimeType[] mimeTypes
 
-    @Autowired
+    @Autowired(required = false)
     Collection<MimeTypeProvider> mimeTypeProviders = []
 
     MimeType[] getObject() {
