@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
@@ -22,7 +20,7 @@ ext {
 
     antTraxVersion = "1.7.1"
     antVersion = "1.9.4"
-    aspectjVersion = "1.8.5"  // use same version as org.springframework:spring-aspects uses
+    aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
@@ -40,7 +38,7 @@ ext {
     spockVersion = '1.0-groovy-2.4'
     springLoadedVersion = "1.2.4.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.1.8.RELEASE"
+    springVersion = "4.1.8.RELEASE" // ensure to sync "aspectjVersion" (see commend above)
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4"
