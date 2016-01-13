@@ -219,8 +219,12 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
 
             this.rootResource = getURLs()[0]
             def urlStr = rootResource.toString()
-            def withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
-            addURL(withoutBang)
+            try {
+                def withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
+                addURL(withoutBang)
+            } catch (MalformedURLException e) {
+                // ignore, running as a WAR
+            }
         }
 
         @Override
