@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.grails.web.util.GrailsApplicationAttributes
+import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.OrderComparator
 import org.springframework.web.servlet.HandlerInterceptor
@@ -100,6 +101,10 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     @Override
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        if (!ex) {
+            //Attempting to find an existing exception in the request
+            ex = (Exception)request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE)
+        }
         request.setAttribute(Matcher.THROWABLE, ex)
         if(reverseInterceptors) {
             for(i in reverseInterceptors) {
