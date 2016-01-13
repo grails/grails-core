@@ -253,6 +253,17 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     String getPluginPath(String name);
 
     /**
+     * Returns the pluginContextPath for the given plugin and will force name to camel case instead of '-' lower case
+     *
+     * my-plug-web would resolve to myPlugWeb if forceCamelCase is true.
+     *
+     * @param name The plugin name
+     * @param forceCamelCase Force camel case for name
+     * @return the context path
+     */
+    String getPluginPath(String name, boolean forceCamelCase);
+
+    /**
      * Looks up the plugin that defined the given instance. If no plugin
      * defined the instance then null is returned.
      *
