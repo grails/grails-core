@@ -218,9 +218,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
             super([ IOUtils.findRootResource(applicationClass)] as URL[])
 
             this.rootResource = getURLs()[0]
-            def urlStr = rootResource.toString()
-            def withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
-            addURL(withoutBang)
+            addURL(this.rootResource)
         }
 
         @Override
