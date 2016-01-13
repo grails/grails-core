@@ -26,6 +26,7 @@ import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.taglib.WebRequestTemplateVariableBinding;
 import org.grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.WebUtils;
 import org.springframework.core.Ordered;
 import org.springframework.web.context.request.RequestAttributes;
 
@@ -105,8 +106,9 @@ public class WebOutputContextLookup implements OutputContextLookup, Ordered {
 
         @Override
         public boolean isContentTypeAlreadySet() {
-            HttpServletResponse response = lookupResponse();
-            return response.isCommitted() || response.getContentType() != null;
+            GrailsWebRequest webRequest = lookupWebRequest();
+            HttpServletResponse response = webRequest.getResponse();
+            return response.isCommitted() || (response.getContentType() != null && webRequest.getRequest().getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE) == null);
         }
 
         protected GrailsWebRequest lookupWebRequest() {
