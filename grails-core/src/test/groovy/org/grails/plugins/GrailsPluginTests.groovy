@@ -15,6 +15,70 @@ import grails.plugins.DefaultGrailsPluginManager
  */
 class GrailsPluginTests extends GroovyTestCase {
 
+    void testPluginPath() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOneGrailsPlugin {
+    def version = 0.1
+    def scopes = 'test'
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "/plugins/test-one-0.1", plugin.pluginPath
+    }
+
+    void testPluginPathLongName() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOnetwoThreeFourfiveGrailsPlugin {
+    def version = 0.1
+    def scopes = 'test'
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "/plugins/test-onetwo-three-fourfive-0.1", plugin.pluginPath
+    }
+
+    void testPluginPathCamelCase() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOneGrailsPlugin {
+    def version = 0.1
+    def scopes = 'test'
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "/plugins/testOne-0.1", plugin.pluginPathCamelCase
+    }
+
+    void testPluginPathCamelCaseLongName() {
+
+        def gcl = new GroovyClassLoader()
+        def test1 = gcl.parseClass('''
+class TestOnetwoThreeFourfiveGrailsPlugin {
+    def version = 0.1
+    def scopes = 'test'
+}
+''')
+
+        DefaultGrailsApplication application = new DefaultGrailsApplication()
+        def plugin = new DefaultGrailsPlugin(test1, application)
+
+        assertEquals "/plugins/testOnetwoThreeFourfive-0.1", plugin.pluginPathCamelCase
+    }
+
     void testFileSystemName() {
 
         def gcl = new GroovyClassLoader()
