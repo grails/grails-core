@@ -12,11 +12,13 @@ buildscript {
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
         classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.1'
     }
 }
 
 apply plugin: 'idea'
+
 
 ext {
     bintrayPublish = false
@@ -65,6 +67,8 @@ ext {
 }
 
 version = grailsVersion
+group = "org.grails"
+apply plugin: 'io.codearte.nexus-staging'
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME

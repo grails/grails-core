@@ -6,10 +6,13 @@ def libsConfigurations = []
 subprojects { subproject ->
     if(subproject.name == 'grails-dependencies') return
     if(subproject.name == 'grails-bom') return
-    configurations {
-        libsConfigurations << libs {
-            extendsFrom compile, runtime
-            ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
+    if(subproject.name == 'grails-shell') {
+
+        configurations {
+            libsConfigurations << libs {
+                extendsFrom compile, runtime
+                ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
+            }
         }
     }
 }

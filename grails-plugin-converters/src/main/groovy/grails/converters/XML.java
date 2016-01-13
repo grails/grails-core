@@ -128,12 +128,12 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
             writer.startNode(getElementName(target));
             convertAnother(target);
             writer.end();
+            finalizeRender(out);
         }
         catch (Exception e) {
             throw new ConverterException(e);
         }
         finally {
-            finalizeRender(out);
             isRendering = false;
         }
     }
