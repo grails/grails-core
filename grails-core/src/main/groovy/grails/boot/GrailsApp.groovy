@@ -18,6 +18,7 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.grails.boot.internal.JavaCompiler
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.compiler.injection.GrailsAwareInjectionOperation
+import org.grails.core.util.BeanCreationProfilingPostProcessor
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.support.WatchPattern
@@ -46,6 +47,8 @@ class GrailsApp extends SpringApplication {
     private static boolean developmentModeActive = false
     private static DirectoryWatcher directoryWatcher
 
+    boolean enableBeanCreationProfiler = false
+
     @Override
     ConfigurableApplicationContext run(String... args) {
         def applicationContext = super.run(args)
@@ -68,7 +71,13 @@ class GrailsApp extends SpringApplication {
     @Override
     protected ConfigurableApplicationContext createApplicationContext() {
         ConfigurableApplicationContext applicationContext = super.createApplicationContext()
+
         applyAutowireByNamePerformanceOptimization(applicationContext)
+        if(enableBeanCreationProfiler) {
+            def processor = new BeanCreationProfilingPostProcessor()
+            applicationContext.getBeanFactory().addBeanPostProcessor(processor)
+            applicationContext.addApplicationListener(processor)
+        }
         return applicationContext
     }
 
@@ -77,7 +86,9 @@ class GrailsApp extends SpringApplication {
         if(configurableApplicationContext instanceof GenericApplicationContext) {
             Field beanFactoryField = ReflectionUtils.findField(GenericApplicationContext, "beanFactory", DefaultListableBeanFactory)
             ReflectionUtils.makeAccessible(beanFactoryField)
-            ReflectionUtils.setField(beanFactoryField, configurableApplicationContext, new OptimizedAutowireCapableBeanFactory())
+
+            def beanFactory = new OptimizedAutowireCapableBeanFactory()
+            ReflectionUtils.setField(beanFactoryField, configurableApplicationContext, beanFactory)
         }
     }
 

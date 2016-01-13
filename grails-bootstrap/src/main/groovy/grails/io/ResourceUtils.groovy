@@ -17,6 +17,7 @@ package grails.io
 
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+import groovy.transform.Memoized
 import org.grails.io.support.GrailsResourceUtils
 
 
@@ -38,6 +39,7 @@ class ResourceUtils extends GrailsResourceUtils {
         return getProjectPackageNames(BuildSettings.BASE_DIR)
     }
 
+    @Memoized
     static Iterable<String> getProjectPackageNames(File baseDir) {
         File rootDir = baseDir ? new File(baseDir, "grails-app") : null
         Set<String> packageNames = []

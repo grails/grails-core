@@ -42,6 +42,9 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.grails.encoder.AbstractEncodedAppender;
 import org.grails.encoder.ChainedEncoders;
 import org.grails.charsequences.CharArrayAccessible;
@@ -2917,5 +2920,29 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             current = current.next;
         }
         allocBuffer.encodeTo(writer, encoder);
+    }
+
+    /**
+     * Delegates methodMissing to String object
+     *
+     * @param name The name of the method
+     * @param args The arguments
+     * @return The return value
+     */
+    public Object methodMissing(String name, Object args) {
+        String str = this.toString();
+        return InvokerHelper.invokeMethod(str, name, args);
+    }
+
+    public Object asType(Class clazz) {
+        if (clazz == String.class) {
+            return toString();
+        } else if (clazz == char[].class) {
+            return toCharArray();
+        } else if (clazz == Boolean.class || clazz == boolean.class ) {
+            return asBoolean();
+        } else {
+            return StringGroovyMethods.asType(toString(), clazz);
+        }
     }
 }

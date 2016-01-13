@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import grails.core.GrailsApplication;
+import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.plugins.*;
 import org.grails.spring.DefaultRuntimeSpringConfiguration;
 import org.grails.spring.RuntimeSpringConfiguration;
@@ -103,7 +104,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         super(application);
         Assert.notNull(application, "Argument [application] cannot be null!");
 
-        resolver = new PathMatchingResourcePatternResolver();
+        resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
         try {
             pluginResources = resolver.getResources(resourcePath);
         }
@@ -117,7 +118,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
 
     public DefaultGrailsPluginManager(String[] pluginResources, GrailsApplication application) {
         super(application);
-        resolver = new PathMatchingResourcePatternResolver();
+        resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
 
         List<Resource> resourceList = new ArrayList<Resource>();
         for (String resourcePath : pluginResources) {
@@ -137,7 +138,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     public DefaultGrailsPluginManager(Class<?>[] plugins, GrailsApplication application) {
         super(application);
         pluginClasses = plugins;
-        resolver = new PathMatchingResourcePatternResolver();
+        resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
         //this.corePlugins = new PathMatchingResourcePatternResolver().getResources("classpath:org/codehaus/groovy/grails/**/plugins/**GrailsPlugin.groovy");
         this.application = application;
         setPluginFilter();
@@ -145,7 +146,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
 
     public DefaultGrailsPluginManager(Resource[] pluginFiles, GrailsApplication application) {
         super(application);
-        resolver = new PathMatchingResourcePatternResolver();
+        resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
         pluginResources = pluginFiles;
         this.application = application;
         setPluginFilter();

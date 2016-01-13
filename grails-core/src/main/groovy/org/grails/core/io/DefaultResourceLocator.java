@@ -64,7 +64,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
 
     public void setSearchLocation(String searchLocation) {
         ResourceLoader resourceLoader = getDefaultResourceLoader();
-        patchMatchingResolver = new PathMatchingResourcePatternResolver(resourceLoader);
+        patchMatchingResolver = new CachingPathMatchingResourcePatternResolver(resourceLoader);
         initializeForSearchLocation(searchLocation);
     }
 
@@ -73,7 +73,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     }
 
     public void setSearchLocations(Collection<String> searchLocations) {
-        patchMatchingResolver = new PathMatchingResourcePatternResolver(getDefaultResourceLoader());
+        patchMatchingResolver = new CachingPathMatchingResourcePatternResolver(getDefaultResourceLoader());
         for (String searchLocation : searchLocations) {
             initializeForSearchLocation(searchLocation);
         }

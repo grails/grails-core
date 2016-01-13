@@ -60,7 +60,7 @@ class ResourceLocatorSpec extends Specification {
             def xml = new XmlSlurper().parseText(str)
 
             def resource = new MockBinaryPluginResource(str.bytes)
-            def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
+            def descriptor = new BinaryGrailsPluginDescriptor(resource, ['org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin'])
             resource.relativesResources['static/css/main.css'] = new ByteArrayResource(''.bytes)
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
     }

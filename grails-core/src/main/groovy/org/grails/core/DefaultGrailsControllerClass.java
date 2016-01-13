@@ -22,10 +22,14 @@ import grails.util.GrailsClassUtils;
 import grails.web.Action;
 import grails.web.UrlConverter;
 import groovy.lang.GroovyObject;
+import org.grails.core.exceptions.GrailsConfigurationException;
 import org.springframework.cglib.reflect.FastClass;
 import org.springframework.cglib.reflect.FastMethod;
 import org.springframework.util.ReflectionUtils;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -48,7 +52,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     public static final String SCOPE = "scope";
     public static final String SCOPE_SINGLETON = "singleton";
     private String scope;
-    private Map<String, FastMethod> actions = new HashMap<String, FastMethod>();
+    private Map<String, MethodHandle> actions = new HashMap<String, MethodHandle>();
     private String defaultActionName;
     private String namespace;
     protected Map<String, String> actionUriToViewName = new HashMap<String, String>();
@@ -100,17 +104,23 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return this.defaultActionName;
     }
 
-    private void methodStrategy(Map<String, FastMethod> methodNames) {
+    private void methodStrategy(Map<String, MethodHandle> methodNames) {
 
         Class superClass = getClazz();
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
         while (superClass != Object.class && superClass != GroovyObject.class) {
-            FastClass fastClass = GrailsClassUtils.fastClass(superClass);
             for (Method method : superClass.getMethods()) {
                 if (Modifier.isPublic(method.getModifiers()) && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
 
                     ReflectionUtils.makeAccessible(method);
-                    methodNames.put(methodName, fastClass.getMethod(method));
+                    MethodHandle mh;
+                    try {
+                        mh = lookup.findVirtual(superClass, methodName, MethodType.methodType(method.getReturnType()));
+                        methodNames.put(methodName, mh);
+                    } catch (NoSuchMethodException | IllegalAccessException e) {
+                        throw new GrailsConfigurationException("Cannot find invokable controller action: " + methodName, e);
+                    }
                 }
             }
             superClass = superClass.getSuperclass();
@@ -167,9 +177,9 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     @Override
     public Object invoke(Object controller, String action) throws Throwable {
         if(action == null) action = this.defaultActionName;
-        FastMethod handle = actions.get(action);
+        MethodHandle handle = actions.get(action);
         if(handle == null) throw new IllegalArgumentException("Invalid action name: " + action);
-        return handle.invoke(controller, EMPTY_ARGS);
+        return handle.invoke(controller);
     }
 
     public String actionUriToViewName(String actionUri) {

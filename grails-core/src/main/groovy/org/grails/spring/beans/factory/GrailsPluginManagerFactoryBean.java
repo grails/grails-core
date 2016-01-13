@@ -42,7 +42,10 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  * @author Chanwit Kaewkasi
  * @since 0.4
+ *
+ * @deprecated Will be removed in a future version of Grails
  */
+@Deprecated
 public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginManager>, InitializingBean, ApplicationContextAware {
 
     public static final String PLUGIN_LOADER_CLASS = "org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader";

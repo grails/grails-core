@@ -34,6 +34,7 @@ public interface LinkGenerator {
     String ATTRIBUTE_METHOD = "method";
     String ATTRIBUTE_URI = "uri";
     String ATTRIBUTE_RELATIVE_URI = "relativeUri";
+    String ATTRIBUTE_INCLUDE_CONTEXT = "includeContext";
     String ATTRIBUTE_CONTEXT_PATH = "contextPath";
     String ATTRIBUTE_URL = "url";
     String ATTRIBUTE_BASE = "base";

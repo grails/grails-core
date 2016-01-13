@@ -355,7 +355,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
     private boolean isDomainAssociation() {
         return (Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) &&
-            referencedPropertyType != null;
+                referencedPropertyType != null;
     }
 
     /* (non-Javadoc)
@@ -391,10 +391,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     public boolean isAssociation() {
         return isOneToMany() ||
-               isOneToOne() ||
-               isManyToOne() ||
-               isManyToMany() ||
-               isEmbedded();
+                isOneToOne() ||
+                isManyToOne() ||
+                isManyToMany() ||
+                isEmbedded();
     }
 
     public boolean isEnum() {
@@ -427,14 +427,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             assType = "embedded";
         }
         return new ToStringCreator(this)
-                   .append("name", name)
-                   .append("type", type)
-                   .append("persistent", isPersistent())
-                   .append("optional", isOptional())
-                   .append("association", isAssociation())
-                   .append("bidirectional", isBidirectional())
-                   .append("association-type", assType)
-                   .toString();
+                .append("name", name)
+                .append("type", type)
+                .append("persistent", isPersistent())
+                .append("optional", isOptional())
+                .append("association", isAssociation())
+                .append("bidirectional", isBidirectional())
+                .append("association-type", assType)
+                .toString();
     }
 
     /* (non-Javadoc)
@@ -529,7 +529,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /**
-     * Overriddent equals to take into account inherited properties
+     * Overridden equals to take into account inherited properties
      * e.g. childClass.propertyName is equal to parentClass.propertyName if the types match and
      * childClass.property.isInherited
      *
@@ -545,13 +545,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if (o instanceof GrailsDomainClassProperty) {
             if (!super.equals(o)) {
                 GrailsDomainClassProperty otherProp = (GrailsDomainClassProperty) o;
-                boolean namesMatch = otherProp.getName().equals(getName());
-                boolean typesMatch = otherProp.getReferencedPropertyType().equals(getReferencedPropertyType());
                 Class<?> myActualClass = getDomainClass().getClazz();
                 Class<?> otherActualClass = otherProp.getDomainClass().getClazz();
-                boolean classMatch = otherActualClass.isAssignableFrom(myActualClass) ||
-                    myActualClass.isAssignableFrom(otherActualClass);
-                return namesMatch && typesMatch && classMatch;
+                return otherProp.getName().equals(getName()) &&
+                        otherProp.getReferencedPropertyType().equals(getReferencedPropertyType()) &&
+                        (otherActualClass.isAssignableFrom(myActualClass) ||
+                        myActualClass.isAssignableFrom(otherActualClass));
             }
 
             return true;

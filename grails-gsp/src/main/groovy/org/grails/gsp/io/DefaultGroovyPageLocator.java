@@ -110,10 +110,21 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
         if (scriptSource == null) {
             scriptSource = findResourceScriptSource(uri);
         }
+
+        //last effort to resolve and force name of plugin to use camel case
+        if (scriptSource == null) {
+            contextPath = resolveContextPath(pluginName, uri, binding, true);
+            scriptSource = findPageInBinding(GrailsResourceUtils.appendPiecesForUri(contextPath, uri), binding);
+        }
+
         return scriptSource;
     }
 
     protected String resolveContextPath(String pluginName, String uri, TemplateVariableBinding binding) {
+        return resolveContextPath(pluginName, uri, binding, false);
+    }
+
+    protected String resolveContextPath(String pluginName, String uri, TemplateVariableBinding binding, boolean forceCamelCase) {
         String contextPath = null;
 
         if (uri.startsWith("/plugins/")) {
@@ -121,7 +132,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
         } else if (pluginName != null && pluginManager != null) {
             contextPath = pluginManager.getPluginPath(pluginName);
         } else if (binding instanceof GroovyPageBinding) {
-            String pluginContextPath = ((GroovyPageBinding)binding).getPluginContextPath();
+            String pluginContextPath = ((GroovyPageBinding) binding).getPluginContextPath();
             contextPath = pluginContextPath != null ? pluginContextPath : BLANK;
         } else {
             contextPath = BLANK;
@@ -138,15 +149,14 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
     }
 
     public GroovyPageScriptSource findPageInBinding(String uri, TemplateVariableBinding binding) {
-         GroovyPageScriptSource scriptSource = findResourceScriptSource(uri);
+        GroovyPageScriptSource scriptSource = findResourceScriptSource(uri);
 
         if (scriptSource == null) {
-            GrailsPlugin pagePlugin = binding instanceof GroovyPageBinding ? ((GroovyPageBinding)binding).getPagePlugin() : null;
+            GrailsPlugin pagePlugin = binding instanceof GroovyPageBinding ? ((GroovyPageBinding) binding).getPagePlugin() : null;
             if (pagePlugin instanceof BinaryGrailsPlugin) {
                 BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) pagePlugin;
                 scriptSource = resolveViewInBinaryPlugin(binaryPlugin, uri);
-            }
-            else if (pagePlugin != null) {
+            } else if (pagePlugin != null) {
                 scriptSource = findResourceScriptSource(resolvePluginViewPath(uri, pagePlugin));
             }
         }
@@ -164,13 +174,13 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
         uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
         Class<?> viewClass = binaryPlugin.resolveView(uri);
         if (viewClass != null && !reloadedPrecompiledGspClassNames.contains(viewClass.getName())) {
-             scriptSource = createGroovyPageCompiledScriptSource(uri, uri, viewClass);
+            scriptSource = createGroovyPageCompiledScriptSource(uri, uri, viewClass);
         }
         return scriptSource;
     }
 
     protected GroovyPageCompiledScriptSource createGroovyPageCompiledScriptSource(final String uri, String fullPath, Class<?> viewClass) {
-        GroovyPageCompiledScriptSource scriptSource = new GroovyPageCompiledScriptSource(uri, fullPath,viewClass);
+        GroovyPageCompiledScriptSource scriptSource = new GroovyPageCompiledScriptSource(uri, fullPath, viewClass);
         if (reloadEnabled) {
             scriptSource.setResourceCallable(new PrivilegedAction<Resource>() {
                 public Resource run() {
@@ -271,21 +281,20 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
                 PluginViewPathInfo pathInfo = getPluginViewPathInfo(uri);
 
                 searchPaths = CollectionUtils.newList(
-                    GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, PLUGINS_PATH, pathInfo.pluginName,GrailsResourceUtils.VIEWS_DIR_PATH, pathInfo.path),
-                    GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, uri),
-                    uri);
-            }
-            else {
+                        GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, PLUGINS_PATH, pathInfo.pluginName, GrailsResourceUtils.VIEWS_DIR_PATH, pathInfo.path),
+                        GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, uri),
+                        uri);
+            } else {
                 searchPaths = CollectionUtils.newList(
-                    GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
-                    uri);
+                        GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
+                        uri);
             }
-        }
-        else {
+        } else {
             searchPaths = CollectionUtils.newList(
                 GrailsResourceUtils.appendPiecesForUri(SLASHED_VIEWS_DIR_PATH, uri),
                 GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
-                uri);
+                uri,
+                GrailsResourceUtils.CLASSPATH_URL_PREFIX + uri);
         }
         return searchPaths;
     }
@@ -298,9 +307,8 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
                 if (gspClassName != null && !reloadedPrecompiledGspClassNames.contains(gspClassName)) {
                     Class<GroovyPage> gspClass = null;
                     try {
-                        gspClass = (Class<GroovyPage>)Class.forName(gspClassName, true, Thread.currentThread().getContextClassLoader());
-                    }
-                    catch (ClassNotFoundException e) {
+                        gspClass = (Class<GroovyPage>) Class.forName(gspClassName, true, Thread.currentThread().getContextClassLoader());
+                    } catch (ClassNotFoundException e) {
                         LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
                     }
                     if (gspClass != null) {
@@ -311,7 +319,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
         }
 
         Resource foundResource = findResource(searchPaths);
-        return foundResource == null ? null : new GroovyPageResourceScriptSource(uri,foundResource);
+        return foundResource == null ? null : new GroovyPageResourceScriptSource(uri, foundResource);
     }
 
     protected Resource findResource(String uri) {
@@ -359,7 +367,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
             basePath = uri.substring(PLUGINS_PATH.length(), uri.length());
             int i = basePath.indexOf("/");
             if (i > -1) {
-                pluginName = basePath.substring(0,i);
+                pluginName = basePath.substring(0, i);
                 path = basePath.substring(i, basePath.length());
             }
         }

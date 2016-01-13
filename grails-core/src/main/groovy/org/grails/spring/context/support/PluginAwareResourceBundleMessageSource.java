@@ -23,6 +23,7 @@ import grails.plugins.PluginManagerAware;
 import grails.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
 import org.grails.plugins.BinaryGrailsPlugin;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.FileSystemResource;
@@ -121,7 +122,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             if(i > -1) {
                 baseName = baseName.substring(0, i);
             }
-            if(!basenames.contains(baseName))
+            if(!basenames.contains(baseName) && !baseName.equals(""))
                 basenames.add(baseName);
         }
 
@@ -247,7 +248,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
         this.localResourceLoader = resourceLoader;
         if (resourceResolver == null) {
-            resourceResolver = new PathMatchingResourcePatternResolver(localResourceLoader);
+            resourceResolver = new CachingPathMatchingResourcePatternResolver(localResourceLoader);
         }
     }
 

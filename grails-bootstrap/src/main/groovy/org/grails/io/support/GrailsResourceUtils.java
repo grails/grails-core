@@ -16,7 +16,9 @@
 package org.grails.io.support;
 
 import grails.util.BuildSettings;
+import groovy.lang.Closure;
 import groovy.util.ConfigObject;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,12 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -179,6 +176,27 @@ public class GrailsResourceUtils {
             GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH
     };
 
+    private static Map<String, Boolean> KNOWN_PATHS = new LinkedHashMap<String, Boolean>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return this.size() > 100;
+        }
+    };
+
+    private static Map<String, Boolean> KNOWN_DOMAIN_CLASSES = DefaultGroovyMethods.withDefault(new LinkedHashMap<String, Boolean>(){
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
+            return this.size() > 100;
+        }
+    }, new Closure(GrailsResourceUtils.class) {
+
+        @Override
+        public Object call(Object... args) {
+            String path = args[0].toString();
+            return DOMAIN_PATH_PATTERN.matcher(path).find();
+        }
+    });
+
     private static String createGrailsResourcePattern(String separator, String base) {
         return ".+" + separator + base + separator + "(.+)\\.(groovy|java)$";
     }
@@ -189,10 +207,10 @@ public class GrailsResourceUtils {
      * @param url The URL instance
      * @return true if it is a domain class
      */
+
     public static boolean isDomainClass(URL url) {
         if (url == null) return false;
-
-        return DOMAIN_PATH_PATTERN.matcher(url.getFile()).find();
+        return KNOWN_DOMAIN_CLASSES.get(url.getFile());
     }
 
     /**
@@ -634,13 +652,19 @@ public class GrailsResourceUtils {
      * @param path The path to check
      * @return true if it is a Grails path
      */
+
     public static boolean isGrailsPath(String path) {
+        if(KNOWN_PATHS.containsKey(path)) {
+            return KNOWN_PATHS.get(path);
+        }
         for (Pattern grailsAppResourcePattern : grailsAppResourcePatterns) {
             Matcher m = grailsAppResourcePattern.matcher(path);
             if (m.find()) {
+                KNOWN_PATHS.put(path, true);
                 return true;
             }
         }
+        KNOWN_PATHS.put(path, false);
         return false;
     }
 

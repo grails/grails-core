@@ -40,6 +40,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -77,7 +79,8 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
         List excludePatterns = new ArrayList();
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
-
+        List<GrailsClass> mappingList = Arrays.asList(mappings);
+        Collections.reverse(mappingList);
         final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator(applicationContext);
         mappingEvaluator.setPluginManager(pluginManager);
 
@@ -85,7 +88,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, I
             urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
         }
         else {
-            for (GrailsClass mapping : mappings) {
+            for (GrailsClass mapping : mappingList) {
                 GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
                 List grailsClassMappings;
                 if (Script.class.isAssignableFrom(mappingClass.getClazz())) {

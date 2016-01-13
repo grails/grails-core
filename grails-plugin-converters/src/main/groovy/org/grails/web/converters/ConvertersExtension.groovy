@@ -17,6 +17,7 @@ package org.grails.web.converters
 
 import grails.converters.JSON
 import grails.converters.XML
+import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
@@ -25,11 +26,16 @@ import org.springframework.context.ApplicationContext
 
 
 /**
- * 
+ *
+ *
+ *
  * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 3.0
  *
  */
+@CompileStatic
 class ConvertersExtension {
     
     static getJSON(HttpServletRequest request) {
@@ -40,16 +46,18 @@ class ConvertersExtension {
         XML.parse(request)
     }
     
-    static asType(instance, Class<?> clazz) {
+    static <T> T asType(instance, Class<T> clazz) {
         if (ConverterUtil.isConverterClass(clazz)) {
             return ConverterUtil.createConverter(clazz, 
                                                  instance, 
                                                  GrailsWebRequest.lookup()?.applicationContext)
         }
-        ConverterUtil.invokeOriginalAsTypeMethod(instance, clazz)
+        else {
+            return (T)ConverterUtil.invokeOriginalAsTypeMethod(instance, clazz)
+        }
     }
     
-    static asType(Object[] array, Class<?> clazz) {
+    static <T> T  asType(Object[] array, Class<T> clazz) {
         asType((Object)array, clazz)
     }
 }

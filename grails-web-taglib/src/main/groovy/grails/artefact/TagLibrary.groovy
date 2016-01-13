@@ -52,7 +52,9 @@ trait TagLibrary implements WebAttributes, ServletAttributes, TagLibraryInvoker 
 
     @PostConstruct
     void initializeTagLibrary() {
-        TagLibraryMetaUtils.enhanceTagLibMetaClass(GrailsMetaClassUtils.getExpandoMetaClass(getClass()), tagLibraryLookup, getTaglibNamespace())
+        if(!Environment.isDevelopmentMode()) {
+            TagLibraryMetaUtils.enhanceTagLibMetaClass(GrailsMetaClassUtils.getExpandoMetaClass(getClass()), tagLibraryLookup, getTaglibNamespace())
+        }
     }
 
     @CompileDynamic

@@ -157,6 +157,11 @@ final class NoOpGrailsPluginManager implements GrailsPluginManager {
     }
 
     @Override
+    public String getPluginPath(String name, boolean forceCamelCase) {
+        return null;
+    }
+
+    @Override
     public GrailsPlugin getPluginForInstance(Object instance) {
         return null;
     }

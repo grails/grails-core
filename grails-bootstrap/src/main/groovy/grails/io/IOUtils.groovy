@@ -142,6 +142,22 @@ class IOUtils extends SpringIOUtils {
         targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class")
     }
 
+    /**
+     * Returns a URL that represents the root classpath resource where the given class was loaded from
+     *
+     * @param targetClass The target class
+     * @return The URL to class file or null
+     */
+    static URL findRootResource(Class targetClass) {
+        def pathToClassFile = '/' + targetClass.name.replace(".", "/") + ".class"
+        def classRes = targetClass.getResource(pathToClassFile)
+        if(classRes) {
+            def rootPath = classRes.toString() - pathToClassFile
+            return new URL("$rootPath/")
+        }
+        throw new IllegalStateException("Root classpath resource not found! Check your disk permissions")
+
+    }
 
     /**
      * Returns the URL resource for the location on disk of the given class or null if it cannot be found
