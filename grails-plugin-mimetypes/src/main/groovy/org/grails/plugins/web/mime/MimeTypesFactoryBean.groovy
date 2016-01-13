@@ -23,6 +23,7 @@ import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeProvider
 import org.springframework.beans.factory.FactoryBean
 import grails.core.GrailsApplication
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
 
@@ -40,8 +41,10 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
 
     private MimeType[] mimeTypes
 
+    @Autowired
+    Collection<MimeTypeProvider> mimeTypeProviders = []
+
     MimeType[] getObject() {
-        Collection<MimeTypeProvider> mimeTypeProviders = applicationContext ? applicationContext.getBeansOfType(MimeTypeProvider).values() : new ArrayList<MimeTypeProvider>()
         final grailsApplication = this.grailsApplication ?: applicationContext.getBean(GrailsApplication)
         def config = grailsApplication?.config
         def mimeConfig = getMimeConfig(config)
