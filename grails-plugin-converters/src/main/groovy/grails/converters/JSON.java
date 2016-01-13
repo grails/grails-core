@@ -116,12 +116,8 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      */
     public void render(Writer out) throws ConverterException {
         prepareRender(out);
-        try {
-            value(target);
-        }
-        finally {
-            finalizeRender(out);
-        }
+        value(target);
+        finalizeRender(out);
     }
 
     /**
