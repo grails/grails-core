@@ -1,10 +1,12 @@
 package grails.artefact
 
+import grails.interceptors.Matcher
 import grails.util.GrailsWebMockUtil
 import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
+import spock.lang.Issue
 import spock.lang.Specification
 
 /*
@@ -104,8 +106,21 @@ class GrailsInterceptorHandlerInterceptorAdapterSpec extends Specification{
             webRequest.request.getAttribute('executed') == ['lowest afterView', 'highest afterView']
     }
 
-    void "Test that an interceptor can handle exceptions"() {
+    @Issue('https://github.com/grails/grails-core/issues/9548')
+    void "Test the exception is set in the request if thrown"() {
+        given:"An interceptor"
+        def adapter = new GrailsInterceptorHandlerInterceptorAdapter()
+        adapter.setInterceptors([new MyInterceptor()] as Interceptor[])
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
 
+        expect:
+        !webRequest.request.getAttribute(Matcher.THROWABLE)
+
+        when:
+        adapter.afterCompletion(webRequest.request, webRequest.response, this, new Exception("foo"))
+
+        then:
+        webRequest.request.getAttribute(Matcher.THROWABLE) instanceof Exception
     }
 }
 class MyInterceptor implements Interceptor {
