@@ -15,6 +15,7 @@
  */
 package org.grails.core.artefact;
 
+import grails.artefact.Artefact;
 import grails.core.*;
 import grails.core.support.GrailsApplicationAware;
 import grails.persistence.Entity;
@@ -31,6 +32,7 @@ import org.grails.io.support.Resource;
 import org.grails.validation.ConstraintEvalUtils;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Map;
@@ -149,6 +151,11 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         if (clazz.isEnum()) return false;
 
         if (clazz.getAnnotation(Entity.class) != null) {
+            return true;
+        }
+
+        Artefact artefactAnn = clazz.getAnnotation(Artefact.class);
+        if(artefactAnn != null && artefactAnn.value().equals(DomainClassArtefactHandler.TYPE)) {
             return true;
         }
 
