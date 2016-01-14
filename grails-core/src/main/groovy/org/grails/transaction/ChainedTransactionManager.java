@@ -47,6 +47,9 @@ import org.springframework.util.Assert;
  * 
  * @author Michael Hunger
  * @author Oliver Gierke
+ * @author Lari Hotari
+ * @author Graeme Rocher
+ *
  * @since  2.3.6
  */
 public class ChainedTransactionManager implements PlatformTransactionManager {
@@ -92,7 +95,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 		MultiTransactionStatus mts = new MultiTransactionStatus(transactionManagers.get(0));
 
-		if (!synchronizationManager.isSynchronizationActive()) {
+		if (!synchronizationManager.isSynchronizationActive() && canCreateTransaction(definition)) {
 			synchronizationManager.initSynchronization();
 			mts.setNewSynchonization();
 		}
@@ -125,6 +128,12 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		}
 
 		return mts;
+	}
+
+	protected boolean canCreateTransaction(TransactionDefinition definition) {
+		return definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRED ||
+				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
+				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED;
 	}
 
 	/*
