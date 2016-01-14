@@ -43,13 +43,13 @@ class GrailsDomainClassCleaner implements ApplicationListener<ContextClosedEvent
             if(GormEntity.isAssignableFrom(clz)) {
                 try {
                     clz.initInternalApi null
-                } catch (e) {
-                    log.warn("Error clearing instance api property in ${clz.name}", e)
+                } catch (Throwable e) {
+                    // ignore, GORM 5 doesn't have these methods
                 }
                 try {
                     clz.initInternalStaticApi null
-                } catch (e) {
-                    log.warn("Error clearing static api property in ${clz.name}", e)
+                } catch (Throwable e) {
+                    // ignore, GORM 5 doesn't have these methods
                 }
             } else {
                 clearStaticApiInstances(clz)
