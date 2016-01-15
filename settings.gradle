@@ -43,7 +43,6 @@ include (
         'grails-plugin-domain-class',
         'grails-plugin-interceptors',
         'grails-plugin-events',
-        'grails-plugin-filters',
         'grails-plugin-gsp',
         'grails-plugin-i18n',
         'grails-plugin-mimetypes',
