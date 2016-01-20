@@ -16,6 +16,7 @@
 package org.grails.plugins.web.filters;
 
 import org.grails.web.util.GrailsApplicationAttributes;
+import org.grails.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -52,7 +53,8 @@ public class CompositeInterceptor implements HandlerInterceptor {
                 return false;
             }
             // if forward is called, bail out
-            if (request.getAttribute(GrailsApplicationAttributes.FORWARD_ISSUED) != null) {
+            if (request.getAttribute(GrailsApplicationAttributes.FORWARD_ISSUED) != null && !WebUtils.isForwardOrInclude(request)) {
+                request.removeAttribute(GrailsApplicationAttributes.FORWARD_ISSUED);
                 return false;
             }
         }
@@ -65,6 +67,12 @@ public class CompositeInterceptor implements HandlerInterceptor {
         for (HandlerInterceptor handler : handlersReversed) {
             handler.postHandle(request, response, o, modelAndView);
         }
+
+        // remove the FORWARD_ISSUED attribute just in case forward was called from an action
+        // this will ensure the subsequent action works since FORWARD_ISSUED is only used
+        // to know whether forward was called from within a filter
+        request.removeAttribute(GrailsApplicationAttributes.FORWARD_ISSUED);
+
     }
 
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws Exception {

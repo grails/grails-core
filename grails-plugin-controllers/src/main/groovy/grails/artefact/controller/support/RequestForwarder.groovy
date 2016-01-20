@@ -96,8 +96,6 @@ trait RequestForwarder implements WebAttributes {
         WebUtils.exposeRequestAttributes(request, (Map)model);
 
         request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
-        request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
-
         params.includeContext = false
         def fowardURI = lookupLinkGenerator().link(params)
 
@@ -108,6 +106,7 @@ trait RequestForwarder implements WebAttributes {
         webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
         webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, WebRequest.SCOPE_REQUEST);
         dispatcher.forward(request, response);
+        request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
         return fowardURI
     }
 
