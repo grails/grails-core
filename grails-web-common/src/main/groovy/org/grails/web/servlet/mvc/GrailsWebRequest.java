@@ -68,7 +68,6 @@ import org.springframework.web.util.UrlPathHelper;
  */
 public class GrailsWebRequest extends DispatcherServletWebRequest  {
 
-    private static final String FORWARD_CALLED = GrailsApplicationAttributes.FORWARD_ISSUED;
     private static final String REDIRECT_CALLED = GrailsApplicationAttributes.REDIRECT_ISSUED;
 
     private static final Class<? extends GrailsApplicationAttributes> grailsApplicationAttributesClass = GrailsFactoriesLoader.loadFactoryClasses(GrailsApplicationAttributes.class, GrailsWebRequest.class.getClassLoader()).get(0);

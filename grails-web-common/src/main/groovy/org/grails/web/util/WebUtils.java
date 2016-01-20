@@ -495,4 +495,14 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return request.getAttribute(INCLUDE_REQUEST_URI_ATTRIBUTE) != null;
     }
 
+    /**
+     * Check whether the given request is an include or forward request
+     *
+     * @param request The request
+     * @return True if it is an include or forward request
+     */
+    public static boolean isForwardOrInclude(HttpServletRequest request) {
+        return isForward(request) || isInclude(request);
+    }
+
 }
