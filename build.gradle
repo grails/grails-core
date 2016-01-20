@@ -32,7 +32,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "5.0.0.RC3"
+    datastoreVersion = "5.0.0.RC4"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.5"
@@ -67,6 +67,10 @@ ext {
 version = grailsVersion
 group = "org.grails"
 apply plugin: 'io.codearte.nexus-staging'
+
+nexusStaging {
+    delayBetweenRetriesInMillis = 5000
+}
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
