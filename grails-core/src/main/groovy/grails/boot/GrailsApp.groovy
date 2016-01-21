@@ -145,7 +145,14 @@ class GrailsApp extends SpringApplication {
                 def projectPaths = binding.getVariables().get('projectPaths')
                 if(projectPaths) {
                     for(path in projectPaths) {
-                        watchBaseDirectories << new File(parentDir, path.toString())
+                        if(path) {
+
+                            def pathStr = path.toString()
+                            if(pathStr.startsWith(':')) {
+                                pathStr = pathStr.substring(1)
+                            }
+                            watchBaseDirectories << new File(parentDir, pathStr)
+                        }
                     }
                 }
             }
