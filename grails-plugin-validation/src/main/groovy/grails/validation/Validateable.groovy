@@ -71,7 +71,7 @@ trait Validateable {
     static Map<String, ConstrainedProperty> getConstraintsMap() {
         if(this.constraintsMapInternal == null) {
             ConstraintsEvaluator evaluator = findConstraintsEvaluator()
-            this.constraintsMapInternal = evaluator.evaluate this, defaultNullable()
+            def evaluatedConstraints = evaluator.evaluate(this, defaultNullable())
 
             if(!defaultNullable()) {
                 def methods = this.getDeclaredMethods()
@@ -84,14 +84,15 @@ trait Validateable {
                     if(isPropertyGetter(method)) {
                         def propertyName = NameUtils.getPropertyNameForGetterOrSetter(method.name)
                         if( !ignoredProperties.contains(propertyName) &&
-                            !this.constraintsMapInternal.containsKey(propertyName)) {
+                            !evaluatedConstraints.containsKey(propertyName)) {
                             def cp = new ConstrainedProperty(this, propertyName, method.returnType)
                             cp.applyConstraint 'nullable', false
-                            this.constraintsMapInternal.put propertyName, cp
+                            evaluatedConstraints.put propertyName, cp
                         }
                     }
                 }
             }
+            this.constraintsMapInternal = evaluatedConstraints
         }
         this.constraintsMapInternal
     }
