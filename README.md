@@ -57,10 +57,9 @@ Next, update the Grails version in `build.gradle` and `grails-core/src/test/groo
     $ git push --tags
     $ git push
 
-After pushing these changes to the repository you must wait for [the build](https://travis-ci.org/grails/grails-core) to complete. During this phase the JAR files will be uploaded  to the [Grails Artefactory Repository](https://repo.grails.org/grails/libs-releases-local/).
+By tagging the release Travis will perform all the necessary steps to release a new version of Grails, just wait for [the build](https://travis-ci.org/grails/grails-core) to complete.
 
-
-The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatically upload the tagged release to Github and be available of the [Releases page](https://github.com/grails/grails-core/releases).
+The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatically upload the tagged release to Github and be available on the [Releases page](https://github.com/grails/grails-core/releases).
 
 License
 ---
