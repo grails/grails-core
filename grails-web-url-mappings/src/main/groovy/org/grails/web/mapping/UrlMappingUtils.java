@@ -137,7 +137,7 @@ public class UrlMappingUtils {
      */
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
-        return forwardRequestForUrlMappingInfo(request, response, info, Collections.EMPTY_MAP);
+        return forwardRequestForUrlMappingInfo(request, response, info, Collections.emptyMap());
     }
 
     /**
