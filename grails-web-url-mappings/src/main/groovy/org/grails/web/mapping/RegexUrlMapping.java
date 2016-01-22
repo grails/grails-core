@@ -321,7 +321,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 contextPath = webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest());
             }
         }
-        if (paramValues == null) paramValues = Collections.EMPTY_MAP;
+        if (paramValues == null) paramValues = Collections.emptyMap();
         StringBuilder uri = new StringBuilder(contextPath);
         Set usedParams = new HashSet();
 

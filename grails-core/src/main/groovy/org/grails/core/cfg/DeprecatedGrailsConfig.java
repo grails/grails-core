@@ -183,7 +183,7 @@ public class DeprecatedGrailsConfig implements Settings {
     @SuppressWarnings("rawtypes")
     public Map getFlatConfig() {
         if(grailsApplication == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         return grailsApplication.getFlatConfig();
     }

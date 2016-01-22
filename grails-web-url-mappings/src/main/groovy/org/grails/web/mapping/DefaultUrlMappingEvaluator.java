@@ -587,7 +587,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         if (!hasParent) {
                             urlDefiningMode = false;
                         }
-                        args = args != null && args.length > 0 ? args : new Object[]{Collections.EMPTY_MAP};
+                        args = args != null && args.length > 0 ? args : new Object[]{Collections.emptyMap()};
                         if (args[0] instanceof Closure) {
                             UrlMappingData urlData = createUrlMappingData(mappedURI, isResponseCode);
 
@@ -623,7 +623,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                             if (binding != null) {
                                 Map bindingVariables = variables;
-                                Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
+                                Object parse = getParseRequest(Collections.emptyMap(), bindingVariables);
                                 if (parse instanceof Boolean) {
                                     urlMapping.setParseRequest((Boolean) parse);
                                 }

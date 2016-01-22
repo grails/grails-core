@@ -47,7 +47,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected ServletContext servletContext;
     protected GrailsApplication grailsApplication;
     @SuppressWarnings("rawtypes")
-    protected Map parameterValues = Collections.EMPTY_MAP;
+    protected Map parameterValues = Collections.emptyMap();
     protected boolean parseRequest;
     protected String mappingName;
     protected String httpMethod = ANY_HTTP_METHOD;
