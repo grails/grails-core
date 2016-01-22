@@ -487,7 +487,7 @@ public class GrailsResourceUtils {
         return collectionToDelimitedString(coll, delim, "", "");
     }
     private static String collectionToDelimitedString(Collection<?> coll, String delim, String prefix, String suffix) {
-        if (coll != null && coll.isEmpty()) {
+        if (coll == null || coll.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
