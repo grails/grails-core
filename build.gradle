@@ -21,7 +21,7 @@ apply plugin: 'idea'
 ext {
     bintrayPublish = false
     // Sets release version
-    grailsVersion = '3.0.12'
+    grailsVersion = '3.0.13.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -67,6 +67,10 @@ ext {
 version = grailsVersion
 group = "org.grails"
 apply plugin: 'io.codearte.nexus-staging'
+
+nexusStaging {
+    delayBetweenRetriesInMillis = 5000
+}
 
 // directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
