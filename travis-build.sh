@@ -58,8 +58,18 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
     echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 
     if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives closeAndPromoteRepository || EXIT_STATUS=$?
-        ./gradlew assemble || EXIT_STATUS=$?
+        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
+        ./gradlew closeAndPromoteRepository
+
+        if [[ $EXIT_STATUS == 0 ]]; then
+            ./gradlew --stop
+            ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
+            ./gradlew closeAndPromoteRepository
+        fi
+
+        if [[ $EXIT_STATUS == 0 ]]; then
+            ./gradlew assemble || EXIT_STATUS=$?
+        fi
 
         # Configure GIT
         git config --global user.name "$GIT_NAME"
