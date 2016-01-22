@@ -258,20 +258,18 @@ public abstract class GroovyPage extends Script {
             return value;
         }
 
-        if (value == null) {
-            value = gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
-            if (value == null && jspTags.containsKey(property)) {
-                TagLibraryResolver tagResolver = getTagLibraryResolver();
+        value = gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
+        if (value == null && jspTags.containsKey(property)) {
+            TagLibraryResolver tagResolver = getTagLibraryResolver();
 
-                String uri = (String) jspTags.get(property);
-                if (uri != null) {
-                    value = tagResolver.resolveTagLibrary(uri);
-                }
+            String uri = (String) jspTags.get(property);
+            if (uri != null) {
+                value = tagResolver.resolveTagLibrary(uri);
             }
-            if (value != null) {
-                // cache lookup for next execution
-                setVariableDirectly(property, value);
-            }
+        }
+        if (value != null) {
+            // cache lookup for next execution
+            setVariableDirectly(property, value);
         }
 
         return value;
