@@ -69,9 +69,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         # Tag the Profile Repo
         git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
         cd grails-profile-repository
-        echo "grailsVersion=${TRAVIS_TAG:1}" > profiles/gradle.properties
-        git add profiles/gradle.properties
-        git commit -m "Release $TRAVIS_TAG profile"
+        git branch --track 3.1.x remotes/origin/3.1.x
+        git checkout 3.1.x
         git tag $TRAVIS_TAG
         git push --tags
         git push
@@ -80,6 +79,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         cd ..
         git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
         cd grails-doc
+        git branch --track 3.1.x remotes/origin/3.1.x
+        git checkout 3.1.x
         
         echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
         git add gradle.properties
