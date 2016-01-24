@@ -2,7 +2,6 @@ dependencies {
 
     compile project(':grails-test-suite-base'),
             project(':grails-plugin-interceptors'),
-            project(':grails-plugin-filters'),
             project(':grails-plugin-gsp'),
             project(':grails-plugin-controllers'),
             project(':grails-plugin-testing')
@@ -101,7 +100,7 @@ task isolatedDefaultGrailsControllerClassTests(type: Test) {
 }
 
 task isolatedPersonTests(type: Test) {
-    includes = ['**/grails/test/PersonTests.class', 
+    includes = ['**/grails/test/PersonTests.class',
                 "**/TestingValidationSpec.class",
                 "**/CascadingErrorCountSpec"
                 ]
@@ -113,4 +112,3 @@ task isolatedRestfulControllerTests(type:Test) {
 }
 
 test.dependsOn isolatedPersonTests, isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedDefaultGrailsControllerClassTests, isolatedRestfulControllerTests
-
