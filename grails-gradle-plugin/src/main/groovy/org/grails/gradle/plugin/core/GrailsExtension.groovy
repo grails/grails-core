@@ -41,6 +41,7 @@ class GrailsExtension {
      * Configuration for the reloading agent
      */
     static class Agent {
+        boolean enabled = true
         File path
         String inclusions = "grails.plugins..*"
         String exclusions
