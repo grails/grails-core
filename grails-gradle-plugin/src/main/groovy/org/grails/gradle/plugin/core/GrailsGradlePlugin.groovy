@@ -53,6 +53,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     void apply(Project project) {
         super.apply(project)
+
         registerToolingModelBuilder(project, registry)
 
         registerGrailsExtension(project)
@@ -136,7 +137,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected GrailsExtension registerGrailsExtension(Project project) {
-        project.extensions.create("grails", GrailsExtension)
+        project.extensions.add("grails", new GrailsExtension(project))
     }
 
     protected void configureFileWatch(Project project) {

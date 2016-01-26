@@ -74,6 +74,11 @@ public enum Environment {
     public static String RELOAD_ENABLED = "grails.reload.enabled";
 
     /**
+     * Constant indicating whether run-app or test-app was executed
+     */
+    public static String RUN_ACTIVE = "grails.run.active";
+
+    /**
      * Whether the display of full stack traces is needed
      */
     public static String FULL_STACKTRACE = "grails.full.stacktrace";
@@ -267,6 +272,15 @@ public enum Environment {
      */
     public static boolean isDevelopmentEnvironmentAvailable() {
         return BuildSettings.GRAILS_APP_DIR_PRESENT ;
+    }
+
+    /**
+     * This method will return true the application is run
+     *
+     * @return True if the development sources are present
+     */
+    public static boolean isDevelopmentRun() {
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE);
     }
     /**
      * Check whether the application is deployed

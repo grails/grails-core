@@ -3,10 +3,15 @@ package org.grails.gradle.plugin.core
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
@@ -57,6 +62,28 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
         configureSourcesJarTask(project)
 
+        configureExplodedDirConfiguration(project)
+
+    }
+
+
+    /**
+     * Configures an exploded configuration that can be used to build the classpath of the application from subprojects that are plugins without contructing a JAR file
+     *
+     * @param project The project instance
+     */
+    @CompileStatic
+    protected void configureExplodedDirConfiguration(Project project) {
+        def configurationName = "exploded"
+        project.configurations.create(configurationName)
+
+        // add the subproject classes as outputs
+        GroovyCompile groovyCompile = (GroovyCompile)project.tasks.findByName('compileGroovy')
+        project.artifacts.add(configurationName, new ExplodedDir( groovyCompile.destinationDir, groovyCompile) )
+
+        // add the subproject resources as outputs
+        ProcessResources processResources = (ProcessResources)project.tasks.findByName("processResources")
+        project.artifacts.add(configurationName, new ExplodedDir( processResources.destinationDir, processResources) )
     }
 
     @Override
@@ -196,6 +223,31 @@ withConfig(configuration) {
         project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
+        }
+    }
+
+    @CompileStatic
+    static class ExplodedDir implements PublishArtifact {
+        final String extension = ""
+        final String type = "dir"
+        final Date date = new Date()
+
+        final File file
+        final TaskDependency buildDependencies
+
+        ExplodedDir(File file, Object...tasks) {
+            this.file = file
+            this.buildDependencies = new DefaultTaskDependency().add(tasks)
+        }
+
+        @Override
+        String getName() {
+            file.name
+        }
+
+        @Override
+        String getClassifier() {
+            ""
         }
     }
 }
