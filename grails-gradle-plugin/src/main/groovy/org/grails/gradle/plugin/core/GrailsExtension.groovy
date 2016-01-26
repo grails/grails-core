@@ -1,6 +1,7 @@
 package org.grails.gradle.plugin.core
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
 
 /**
@@ -10,7 +11,11 @@ import org.gradle.util.ConfigureUtil
  * @since 3.0
  */
 class GrailsExtension {
+    Project project
 
+    GrailsExtension(Project project) {
+        this.project = project
+    }
     /**
      * Whether to invoke native2ascii on resource bundles
      */
@@ -34,8 +39,16 @@ class GrailsExtension {
     /**
      * Configure the reloading agent
      */
-    Agent agent(Closure configurer) {
+    Agent agent(@DelegatesTo(Agent) Closure configurer) {
         ConfigureUtil.configure(configurer, agent)
+    }
+
+    /**
+     * Allows defining plugins in the available scopes
+     */
+    void plugins(Closure pluginDefinitions) {
+        def definer = new PluginDefiner(project)
+        ConfigureUtil.configure(pluginDefinitions, definer, Closure.DELEGATE_FIRST)
     }
     /**
      * Configuration for the reloading agent
@@ -52,4 +65,6 @@ class GrailsExtension {
         Map<String, String> systemProperties = ['jdk.reflect.allowGetCallerClass': 'true']
         List<String> jvmArgs = ['-Xverify:none']
     }
+
+
 }
