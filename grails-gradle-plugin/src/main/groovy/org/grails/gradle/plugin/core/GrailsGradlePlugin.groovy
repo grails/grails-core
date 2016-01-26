@@ -79,32 +79,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
     void apply(Project project) {
         super.apply(project)
 
-        def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
+        configureProfile(project)
 
-        profileConfiguration.incoming.beforeResolve() {
-            if(!profileConfiguration.allDependencies) {
-                addDefaultProfile(project, profileConfiguration)
-            }
-        }
-
-        profileConfiguration.resolutionStrategy.eachDependency {
-            DependencyResolveDetails details = (DependencyResolveDetails)it
-            def group = details.requested.group ?: "org.grails.profiles"
-            def version = details.requested.version ?: BuildSettings.grailsVersion
-            details.useTarget(group: group, name:details.requested.name,version:version)
-        }
-
-
-
-
-        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
-        if(!springBoot) {
-            project.plugins.apply(SpringBootPlugin)
-        }
-
-        if(!project.plugins.findPlugin(DependencyManagementPlugin)) {
-            project.plugins.apply(DependencyManagementPlugin)
-        }
+        applyDefaultPlugins(project)
 
         registerToolingModelBuilder(project, registry)
 
@@ -137,11 +114,38 @@ class GrailsGradlePlugin extends GroovyPlugin {
         createBuildPropertiesTask(project)
     }
 
-    @CompileDynamic
-    void addDefaultProfile(Project project, Configuration profileConfig) {
-        project.dependencies {
-            profile  ":${System.getProperty("grails.profile") ?: 'web'}:"
+    protected void configureProfile(Project project) {
+        def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
+
+        profileConfiguration.incoming.beforeResolve() {
+            if (!profileConfiguration.allDependencies) {
+                addDefaultProfile(project, profileConfiguration)
+            }
         }
+
+        profileConfiguration.resolutionStrategy.eachDependency {
+            DependencyResolveDetails details = (DependencyResolveDetails) it
+            def group = details.requested.group ?: "org.grails.profiles"
+            def version = details.requested.version ?: BuildSettings.grailsVersion
+            details.useTarget(group: group, name: details.requested.name, version: version)
+        }
+    }
+
+    @CompileStatic
+    protected void applyDefaultPlugins(Project project) {
+        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+        if (!springBoot) {
+            project.plugins.apply(SpringBootPlugin)
+        }
+
+        if (!project.plugins.findPlugin(DependencyManagementPlugin)) {
+            project.plugins.apply(DependencyManagementPlugin)
+        }
+    }
+
+    @CompileStatic
+    void addDefaultProfile(Project project, Configuration profileConfig) {
+        project.dependencies.add('profile', ":${System.getProperty("grails.profile") ?: 'web'}:")
     }
 
     protected Task createBuildPropertiesTask(Project project) {
@@ -196,7 +200,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected GrailsExtension registerGrailsExtension(Project project) {
-        project.extensions.create("grails", GrailsExtension)
+        project.extensions.add("grails", new GrailsExtension(project))
     }
 
     protected void configureFileWatch(Project project) {
