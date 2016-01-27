@@ -24,7 +24,6 @@ import org.grails.core.artefact.TagLibArtefactHandler
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.springframework.util.ClassUtils
 
-//import org.grails.plugins.web.filters.FiltersConfigArtefactHandler
 //import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 
 
@@ -53,9 +52,6 @@ class DefaultTestMixinRegistrar implements TestMixinRegistrar {
         }
         if(ClassUtils.isPresent("org.grails.plugins.web.interceptors.InterceptorArtefactHandler", classLoader)) {
             registry.registerMixin("Interceptor", ClassUtils.forName("grails.test.mixin.web.InterceptorUnitTestMixin", classLoader));
-        }
-        if(ClassUtils.isPresent("org.grails.plugins.web.filters.FiltersConfigArtefactHandler", classLoader)) {
-            registry.registerMixin("Filters", ClassUtils.forName("grails.test.mixin.web.FiltersUnitTestMixin", classLoader));
         }
     }
 }

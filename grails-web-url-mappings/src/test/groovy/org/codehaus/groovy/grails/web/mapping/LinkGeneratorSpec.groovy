@@ -23,12 +23,29 @@ class LinkGeneratorSpec extends Specification {
 
     def baseUrl = "http://myserver.com/foo"
     def context = "/bar"
+    def resourcePath = ''
     def someAbsoluteUrl = "http://www.grails.org/"
     def resource = null
     def linkParams = [:]
     def pluginManager
 
     def mainCssResource = [dir:'css', file:'main.css']
+
+
+    def "relative links contain the context with resource path"() {
+        when:
+        resource = mainCssResource
+
+        then:
+        link == "$context/$resource.dir/$resource.file"
+
+        when:
+        resourcePath = '/foo'
+        resource = mainCssResource
+
+        then:
+        link == "$context$resourcePath/$resource.dir/$resource.file"
+    }
 
     def "Test absolute link"() {
         when:
@@ -284,6 +301,9 @@ class LinkGeneratorSpec extends Specification {
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         def urlMappingsHolder = [getReverseMapping: callable,getReverseMappingNoDefault: callable] as UrlMappingsHolder
 
+        if(resourcePath != null) {
+            generator.resourcePath = resourcePath
+        }
         generator.urlMappingsHolder = urlMappingsHolder
         if (pluginManager) {
             generator.pluginManager = pluginManager

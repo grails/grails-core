@@ -58,8 +58,18 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
     echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 
     if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives closeAndPromoteRepository || EXIT_STATUS=$?
-        ./gradlew assemble || EXIT_STATUS=$?
+        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
+        ./gradlew closeAndPromoteRepository
+
+        if [[ $EXIT_STATUS == 0 ]]; then
+            ./gradlew --stop
+            ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
+            ./gradlew closeAndPromoteRepository
+        fi
+
+        if [[ $EXIT_STATUS == 0 ]]; then
+            ./gradlew assemble || EXIT_STATUS=$?
+        fi
 
         # Configure GIT
         git config --global user.name "$GIT_NAME"
@@ -69,9 +79,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         # Tag the Profile Repo
         git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
         cd grails-profile-repository
-        echo "grailsVersion=${TRAVIS_TAG:1}" > profiles/gradle.properties
-        git add profiles/gradle.properties
-        git commit -m "Release $TRAVIS_TAG profile"
+        git branch --track 3.1.x remotes/origin/3.1.x
+        git checkout 3.1.x
         git tag $TRAVIS_TAG
         git push --tags
         git push
@@ -80,6 +89,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         cd ..
         git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
         cd grails-doc
+        git branch --track 3.1.x remotes/origin/3.1.x
+        git checkout 3.1.x
         
         echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
         git add gradle.properties
