@@ -98,7 +98,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     }
 
     GrailsWebRequest buildMockRequest(ConfigObject co) throws Exception {
+        co.grails.resources.pattern = '/**'
         def config = new PropertySourcesConfig().merge(co)
+
         ga.config = config
         Holders.config = config
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
@@ -222,6 +224,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         grailsApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
         ga = grailsApplication
+        ga.config.grails.resources.pattern = '/**'
         ga.config.grails.gsp.tldScanPattern = 'classpath*:/META-INF/spring*.tld,classpath*:/META-INF/fmt.tld,classpath*:/META-INF/c.tld,classpath*:/META-INF/core.tld,classpath*:/META-INF/c-1_0-rt.tld'
         grailsApplication.initialise()
         mockManager = new MockGrailsPluginManager(grailsApplication)
