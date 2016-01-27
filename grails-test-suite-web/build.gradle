@@ -16,7 +16,6 @@ dependencies {
                 project(':grails-plugin-databinding'),
                 project(':grails-plugin-services'),
                 project(':grails-plugin-interceptors'),
-                project(':grails-plugin-filters'),
                 project(':grails-plugin-gsp'),
                 project(':grails-plugin-controllers'),
                 project(':grails-plugin-rest'),
