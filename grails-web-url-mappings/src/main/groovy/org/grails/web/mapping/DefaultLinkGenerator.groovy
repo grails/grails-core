@@ -15,13 +15,16 @@
  */
 package org.grails.web.mapping
 
+import grails.config.Settings
 import grails.util.GrailsClassUtils
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlCreator
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingsHolder
+import org.springframework.beans.factory.annotation.Value
 
+import javax.annotation.PostConstruct
 import java.util.regex.Pattern
 
 import grails.util.Environment
@@ -76,6 +79,7 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
     ]
     String configuredServerBaseURL
     String contextPath
+    String resourcePath
 
     GrailsRequestStateLookupStrategy requestStateLookupStrategy = new DefaultRequestStateLookupStrategy()
 
@@ -92,6 +96,11 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
     @Autowired(required = false)
     UrlConverter grailsUrlConverter = new CamelCaseUrlConverter()
 
+    @Value('${grails.resources.pattern:/static/**}')
+    String resourcePattern = Settings.DEFAULT_RESOURCE_PATTERN
+
+
+
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
         configuredServerBaseURL = serverBaseURL
         this.contextPath = contextPath
@@ -99,6 +108,13 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
 
     DefaultLinkGenerator(String serverBaseURL) {
         configuredServerBaseURL = serverBaseURL
+    }
+
+    @PostConstruct
+    void initializeResourcePath() {
+        if(resourcePattern?.endsWith('/**')) {
+            resourcePath = resourcePattern.substring(0, resourcePattern.length() - 3)
+        }
     }
 
     /**
@@ -324,7 +340,7 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
         StringBuilder url = new StringBuilder(absolutePath?.toString() ?: '')
         def dir = attrs.dir?.toString()
         if (attrs.plugin) {
-            url << pluginManager?.getPluginPath(attrs.plugin?.toString()) ?: ''
+            url.append pluginManager?.getPluginPath(attrs.plugin?.toString()) ?: ''
         }
         else {
             if (contextPathAttribute == null) {
@@ -335,19 +351,24 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
             }
         }
 
+
+        def slash = '/'
+        if(resourcePath != null) {
+            url.append(resourcePath)
+        }
         if (dir) {
-            if (!dir.startsWith('/')) {
-                url << '/'
+            if (!dir.startsWith(slash)) {
+                url.append slash
             }
-            url << dir
+            url.append dir
         }
 
         def file = attrs.file?.toString()
         if (file) {
-            if (!(file.startsWith('/') || (dir != null && dir.endsWith('/')))) {
-                url << '/'
+            if (!(file.startsWith(slash) || (dir != null && dir.endsWith(slash)))) {
+                url.append slash
             }
-            url << file
+            url.append file
         }
 
         return url.toString()

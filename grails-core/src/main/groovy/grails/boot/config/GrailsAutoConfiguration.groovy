@@ -15,6 +15,7 @@ import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Bean
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.core.io.Resource
+import org.springframework.core.io.UrlResource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory
@@ -213,15 +214,20 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
     private static class ApplicationRelativeClassLoader extends URLClassLoader {
 
         final URL rootResource
+        final Class applicationClass
+        final boolean jarDeployed
 
         ApplicationRelativeClassLoader(Class applicationClass) {
             super([ IOUtils.findRootResource(applicationClass)] as URL[])
 
             this.rootResource = getURLs()[0]
+            this.applicationClass = applicationClass
             def urlStr = rootResource.toString()
+            jarDeployed = urlStr.startsWith("jar:")
             try {
                 def withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
                 addURL(withoutBang)
+
             } catch (MalformedURLException e) {
                 // ignore, running as a WAR
             }
@@ -229,7 +235,12 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
 
         @Override
         Enumeration<URL> getResources(String name) throws IOException {
-            return super.findResources(name)
+            if(jarDeployed && name == '') {
+                return applicationClass.getClassLoader().getResources(name)
+            }
+            else {
+                return super.findResources(name)
+            }
         }
     }
 

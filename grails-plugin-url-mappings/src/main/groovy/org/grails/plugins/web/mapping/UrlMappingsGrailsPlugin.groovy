@@ -74,8 +74,6 @@ class UrlMappingsGrailsPlugin extends Plugin {
         urlMappingsErrorPageCustomizer(UrlMappingsErrorPageCustomizer)
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
-
-
         if (isReloadEnabled) {
             urlMappingsTargetSource(HotSwappableTargetSourceFactoryBean) {
                 it.lazyInit = true
