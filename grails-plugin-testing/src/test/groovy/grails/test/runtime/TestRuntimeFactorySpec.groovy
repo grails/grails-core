@@ -7,7 +7,6 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.mixin.support.MixinInstance
 import grails.test.mixin.support.TestMixinRuntimeSupport
 import grails.test.mixin.web.ControllerUnitTestMixin
-import grails.test.mixin.web.FiltersUnitTestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
 import grails.test.mixin.webflow.WebFlowUnitTestMixin
 import spock.lang.Specification
@@ -29,32 +28,28 @@ class TestRuntimeFactorySpec extends Specification {
             SampleDomainTestClass | ['coreBeans','domainClass','grailsApplication'] | ['CoreBeansTestPlugin','DomainClassTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin']
             SampleServiceTestClass | ['coreBeans','domainClass','grailsApplication'] | ['CoreBeansTestPlugin','DomainClassTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin']
             SampleControllerTestClass | ['coreBeans','controller','grailsApplication'] | ['CoreBeansTestPlugin','ControllerTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin']
-            SampleFiltersTestClass | ['coreBeans','controller','filters','grailsApplication'] | ['CoreBeansTestPlugin','ControllerTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin','FiltersTestPlugin']
             SampleGroovyPageTestClass | ['coreBeans','controller','groovyPage','grailsApplication'] | ['CoreBeansTestPlugin','ControllerTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin','GroovyPageTestPlugin']
             SampleWebflowTestClass | ['coreBeans','controller','webFlow','grailsApplication'] | ['CoreBeansTestPlugin','ControllerTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin','WebFlowTestPlugin']
-            SampleDomainAndFiltersTestClass | ['coreBeans','domainClass','controller','filters','grailsApplication'] | ['CoreBeansTestPlugin','DomainClassTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin','ControllerTestPlugin','FiltersTestPlugin']
-            SampleDomainWithFiltersUsageTestClass | ['coreBeans','domainClass','filters','grailsApplication'] | ['CoreBeansTestPlugin','DomainClassTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin','ControllerTestPlugin','FiltersTestPlugin']
             SampleDomainWithCustomPluginProvidingFeatureTestClass | ['coreBeans','domainClass','grailsApplication'] | ['CoreBeansTestPlugin','SampleDomainClassTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin']
             SampleDomainWithCustomPluginRegisteredByRegistrarTestClass | ['coreBeans','domainClass','grailsApplication'] | ['CoreBeansTestPlugin','SampleDomainClassTestPlugin','GrailsApplicationTestPlugin','MetaClassCleanerTestPlugin']
-    } 
-    
+    }
+
     @Unroll
     def "should throw exception when feature is missing for #testClass.simpleName"() {
         when:
             def testRuntime = TestRuntimeFactory.getRuntimeForTestClass(testClass)
         then:
             TestRuntimeFactoryException e = thrown()
-            e.message == "No plugin available for feature $missingFeature"              
+            e.message == "No plugin available for feature $missingFeature"
         where:
             testClass | missingFeature
-            SampleDomainAndFiltersWithExcludedDomainPluginTestClass | 'domainClass'
             SampleTestWithMissingFeatureTestClass | 'myMissingFeature'
     }
 }
 
-// emulate test classes that have an instance of a test mixin target class 
-// the instance gets annotated with @MixinInstance by the TestMixinTransform 
- 
+// emulate test classes that have an instance of a test mixin target class
+// the instance gets annotated with @MixinInstance by the TestMixinTransform
+
 class SampleGrailsTestClass {
     @MixinInstance
     private static GrailsUnitTestMixin mixinInstance = new GrailsUnitTestMixin()
@@ -71,10 +66,6 @@ class SampleControllerTestClass {
     @MixinInstance
     private static ControllerUnitTestMixin mixinInstance = new ControllerUnitTestMixin()
 }
-class SampleFiltersTestClass {
-    @MixinInstance
-    private static FiltersUnitTestMixin mixinInstance = new FiltersUnitTestMixin()
-}
 class SampleGroovyPageTestClass {
     @MixinInstance
     private static GroovyPageUnitTestMixin mixinInstance = new GroovyPageUnitTestMixin()
@@ -82,24 +73,6 @@ class SampleGroovyPageTestClass {
 class SampleWebflowTestClass {
     @MixinInstance
     private static WebFlowUnitTestMixin mixinInstance = new WebFlowUnitTestMixin()
-}
-class SampleDomainAndFiltersTestClass {
-    @MixinInstance
-    private static DomainClassUnitTestMixin domainClassMixinInstance = new DomainClassUnitTestMixin()
-    @MixinInstance
-    private static FiltersUnitTestMixin filtersMixinInstance = new FiltersUnitTestMixin()
-}
-@UseTestPlugin(FiltersTestPlugin)
-class SampleDomainWithFiltersUsageTestClass {
-    @MixinInstance
-    private static DomainClassUnitTestMixin domainClassMixinInstance = new DomainClassUnitTestMixin()
-}
-@UseTestPlugin(value=[DomainClassTestPlugin], exclude=true)
-class SampleDomainAndFiltersWithExcludedDomainPluginTestClass {
-    @MixinInstance
-    private static DomainClassUnitTestMixin domainClassMixinInstance = new DomainClassUnitTestMixin()
-    @MixinInstance
-    private static FiltersUnitTestMixin filtersMixinInstance = new FiltersUnitTestMixin()
 }
 @UseTestPlugin(SampleDomainClassTestPlugin)
 class SampleDomainWithCustomPluginProvidingFeatureTestClass {
@@ -110,13 +83,13 @@ class SampleBaseTestPlugin implements TestPlugin {
     String[] requiredFeatures
     String[] providedFeatures
     int ordinal=1
-    
+
     void onTestEvent(TestEvent event) {
-        
+
     }
-    
+
     void close(TestRuntime runtime) {
-        
+
     }
 }
 class SampleDomainClassTestPlugin extends SampleBaseTestPlugin {
@@ -129,7 +102,7 @@ class SampleTestMixinWithRegistrar extends TestMixinRuntimeSupport implements Te
     SampleTestMixinWithRegistrar() {
         super(['coreBeans','domainClass','grailsApplication'])
     }
-    
+
     Iterable<TestPluginUsage> getTestPluginUsages() {
         [new TestPluginUsage(pluginClasses:[SampleDomainClassTestPlugin], requestActivation:true)]
     }

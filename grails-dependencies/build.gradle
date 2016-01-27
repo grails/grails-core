@@ -113,7 +113,7 @@ publishing {
                                 }
                             }
                         }
-                        for(sub in ['rest', 'databinding', 'i18n', 'filters', 'gsp', 'services', 'url-mappings', 'interceptors']) {
+                        for(sub in ['rest', 'databinding', 'i18n', 'gsp', 'services', 'url-mappings', 'interceptors']) {
                             delegate.dependency {
                                 delegate.groupId "org.grails"
                                 delegate.artifactId "grails-plugin-${sub}"
