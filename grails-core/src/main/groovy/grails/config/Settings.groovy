@@ -169,6 +169,11 @@ interface Settings {
     String RESOURCES_PATTERN = 'grails.resources.pattern'
 
     /**
+     * The default pattern for static resources
+     */
+    String DEFAULT_RESOURCE_PATTERN = '/static/**'
+
+    /**
      * Whether to log request parameters in the console
      */
     String SETTING_LOG_REQUEST_PARAMETERS = "grails.exceptionresolver.logRequestParameters";

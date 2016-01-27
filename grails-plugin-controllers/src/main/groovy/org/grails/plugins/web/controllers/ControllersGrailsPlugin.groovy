@@ -79,7 +79,7 @@ class ControllersGrailsPlugin extends Plugin {
         String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, '/')
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
         boolean resourcesEnabled = config.getProperty(Settings.RESOURCES_ENABLED, Boolean, true)
-        String resourcesPattern = config.getProperty(Settings.RESOURCES_PATTERN, String, '/static/**')
+        String resourcesPattern = config.getProperty(Settings.RESOURCES_PATTERN, String, Settings.DEFAULT_RESOURCE_PATTERN)
 
         bootStrapClassRunner(BootStrapClassRunner)
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
