@@ -128,13 +128,13 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     public DefaultUrlMappingInfo(Object uri, UrlMappingData data, GrailsApplication grailsApplication) {
-        this(Collections.EMPTY_MAP, data, grailsApplication);
+        this(Collections.emptyMap(), data, grailsApplication);
         this.uri = uri;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
 
     public DefaultUrlMappingInfo(Object uri,String httpMethod, UrlMappingData data, GrailsApplication grailsApplication) {
-        this(Collections.EMPTY_MAP, data, grailsApplication);
+        this(Collections.emptyMap(), data, grailsApplication);
         this.uri = uri;
         this.httpMethod = httpMethod;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");

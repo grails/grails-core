@@ -104,21 +104,23 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
             buffer.append(EMPTY_MAP_STRING);
         }
         buffer.append(OPENING_BRACKET);
-        boolean first = true;
-        for (Object o : map.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
-            Object value = entry.getValue();
-            if (value == null) continue;
-            first = appendCommaIfNotFirst(buffer, first);
-            Object key = entry.getKey();
-            if (UrlMapping.ACTION.equals(key) && map.get(UrlMapping.CONTROLLER) == null) {
-                appendKeyValue(buffer, map, UrlMapping.CONTROLLER, getRequestStateLookupStrategy().getControllerName());
-                appendCommaIfNotFirst(buffer, false);
+        if (map != null) {
+            boolean first = true;
+            for (Object o : map.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                Object value = entry.getValue();
+                if (value == null) continue;
+                first = appendCommaIfNotFirst(buffer, first);
+                Object key = entry.getKey();
+                if (UrlMapping.ACTION.equals(key) && map.get(UrlMapping.CONTROLLER) == null) {
+                    appendKeyValue(buffer, map, UrlMapping.CONTROLLER, getRequestStateLookupStrategy().getControllerName());
+                    appendCommaIfNotFirst(buffer, false);
+                }
+                if (RESOURCE_PREFIX.equals(key)) {
+                    value = getCacheKeyValueForResource(value);
+                }
+                appendKeyValue(buffer, map, key, value);
             }
-            if(RESOURCE_PREFIX.equals(key)) {
-                value = getCacheKeyValueForResource(value);
-            }
-            appendKeyValue(buffer, map, key, value);
         }
         buffer.append(CLOSING_BRACKET);
     }

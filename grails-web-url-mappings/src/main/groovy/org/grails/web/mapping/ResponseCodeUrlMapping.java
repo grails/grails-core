@@ -39,7 +39,7 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
 
     private final ResponseCodeMappingData urlData;
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    private Map parameterValues = Collections.EMPTY_MAP;
+    private Map parameterValues = Collections.emptyMap();
     private Class<?> exceptionType;
 
     public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {

@@ -230,7 +230,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
 
     @Override
     public UrlCreator getReverseMapping(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
-        if (params == null) params = Collections.EMPTY_MAP;
+        if (params == null) params = Collections.emptyMap();
 
         if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, namespace, pluginName, httpMethod,params);
@@ -265,7 +265,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
 
     @Override
     public UrlCreator getReverseMappingNoDefault(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
-        if (params == null) params = Collections.EMPTY_MAP;
+        if (params == null) params = Collections.emptyMap();
 
         if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, namespace, pluginName, httpMethod, params);
@@ -306,7 +306,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
             }
         }
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            UrlMappingKey lookupKey = new UrlMappingKey(controller, action, namespace, pluginName, httpMethod,version, Collections.EMPTY_SET);
+            UrlMappingKey lookupKey = new UrlMappingKey(controller, action, namespace, pluginName, httpMethod,version, Collections.<String>emptySet());
             mapping = mappingsLookup.get(lookupKey);
             if (mapping == null) {
                 lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -643,7 +643,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
         String pluginName;
         String httpMethod;
         String version;
-        Set<String> paramNames = Collections.EMPTY_SET;
+        Set<String> paramNames = Collections.emptySet();
 
         public UrlMappingKey(String controller, String action, String namespace, String pluginName, String httpMethod, String version,Set<String> paramNames) {
             this.controller = controller;
