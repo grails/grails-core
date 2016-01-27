@@ -172,7 +172,7 @@ public class TagLibraryTransformer implements GrailsArtefactClassInjector, Annot
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,GrailsASTUtils.OBJECT_CLASS_NODE, MAP_CLOSURE_PARAMETERS, null, methodBody));
             }
         }
-        else if (includeAttrs && !includeBody) {
+        else if (includeAttrs) {
             if (!methodExists(classNode, tagName, MAP_PARAMETERS)) {
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,GrailsASTUtils.OBJECT_CLASS_NODE, MAP_PARAMETERS, null, methodBody));
             }

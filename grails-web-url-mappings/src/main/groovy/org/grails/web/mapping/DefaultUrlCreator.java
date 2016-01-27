@@ -57,7 +57,7 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     public String createURL(Map parameterValues, String encoding) {
-        if (parameterValues == null) parameterValues = Collections.EMPTY_MAP;
+        if (parameterValues == null) parameterValues = Collections.emptyMap();
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
         return createURLWithWebRequest(parameterValues, webRequest, true);
     }

@@ -229,7 +229,7 @@ public class ConstrainedProperty implements Constrained {
     private String widget; // the widget to use to render the property
     private boolean password; // whether the property is a password
     @SuppressWarnings("rawtypes")
-    private Map attributes = Collections.EMPTY_MAP; // a map of attributes of property
+    private Map attributes = Collections.emptyMap(); // a map of attributes of property
     protected MessageSource messageSource;
     private Map<String, Object> metaConstraints = new HashMap<String, Object>();
 
