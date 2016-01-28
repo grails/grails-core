@@ -134,39 +134,23 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         def plugin = hasUrlConverter ? urlConverter.toUrlElement( controller.pluginName ) : controller.pluginName
         def controllerName = hasUrlConverter ? urlConverter.toUrlElement( controller.logicalPropertyName ) : controller.logicalPropertyName
         String pluginNameToRegister = plugin ? GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(plugin) : null
-        final boolean hasNamespace = namespace == null
-        if(!hasNamespace) {
-            mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, plugin), controller)
-            if(plugin) {
-                mappingsToGrailsControllerMap.put(new ControllerKey(namespace, controllerName, null, pluginNameToRegister), controller)
-                def controllerKeyWithoutPlugin = new ControllerKey(namespace, controllerName, null, null)
-                if(!mappingsToGrailsControllerMap.containsKey(controllerKeyWithoutPlugin)) {
-                    mappingsToGrailsControllerMap.put(controllerKeyWithoutPlugin, controller)
-                }
-            }
-        }
+        final boolean hasNamespace = namespace != null
 
+        def defaultActionKey = new ControllerKey(namespace, controllerName, null, pluginNameToRegister)
+        def noPluginDefaultActionKey = new ControllerKey(namespace, controllerName, null, null)
+        def noNamespaceDefaultActionKey = new ControllerKey(null, controllerName, null, pluginNameToRegister)
+        def noNamespaceNoPluginDefaultActionKey = new ControllerKey(null, controllerName, null, null)
 
-        def noNamespaceNoPluginKey = new ControllerKey(null, controllerName, null, null)
-        def noNamespaceDefaultActionKey = new ControllerKey(null, controllerName, null, plugin)
-
-
-        if(hasNamespace) {
-            mappingsToGrailsControllerMap.put(noNamespaceNoPluginKey, controller)
+        mappingsToGrailsControllerMap.put(defaultActionKey, controller)
+        if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(noNamespaceDefaultActionKey)) {
             mappingsToGrailsControllerMap.put(noNamespaceDefaultActionKey, controller)
         }
-        else {
-            if(!mappingsToGrailsControllerMap.containsKey(noNamespaceNoPluginKey)) {
-                mappingsToGrailsControllerMap.put(noNamespaceNoPluginKey, controller)
-            }
-            if(!mappingsToGrailsControllerMap.containsKey(noNamespaceDefaultActionKey)) {
-                mappingsToGrailsControllerMap.put(noNamespaceDefaultActionKey, controller)
+        if(plugin != null && !mappingsToGrailsControllerMap.containsKey(noPluginDefaultActionKey)) {
+            mappingsToGrailsControllerMap.put(noPluginDefaultActionKey, controller)
+            if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(noNamespaceNoPluginDefaultActionKey)) {
+                mappingsToGrailsControllerMap.put(noNamespaceNoPluginDefaultActionKey, controller)
             }
         }
-
-
-
-
 
         for(action in controller.actions) {
             action = hasUrlConverter ? urlConverter.toUrlElement(action) : action
