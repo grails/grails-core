@@ -63,6 +63,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
 
         if [[ $EXIT_STATUS == 0 ]]; then
             ./gradlew --stop
+            # wait 30 seconds to ensure the previous promotion completes
+            sleep 30
             ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
             ./gradlew closeAndPromoteRepository
         fi
