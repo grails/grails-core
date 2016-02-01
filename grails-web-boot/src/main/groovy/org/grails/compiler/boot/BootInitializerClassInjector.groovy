@@ -22,6 +22,7 @@ import org.grails.boot.context.web.GrailsAppServletInitializer
 import org.grails.compiler.injection.GrailsASTUtils
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.context.web.SpringBootServletInitializer
+import org.springframework.web.WebApplicationInitializer
 
 import java.lang.reflect.Modifier
 
@@ -61,6 +62,7 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
                 if(Modifier.isStatic(mn.modifiers) && Modifier.isPublic(mn.modifiers)) {
                     def loaderClassNode = new ClassNode("${classNode.name}Loader", Modifier.PUBLIC, ClassHelper.make(GrailsAppServletInitializer))
 
+                    loaderClassNode.addInterface(ClassHelper.make(WebApplicationInitializer))
 
                     def springApplicationBuilder = ClassHelper.make(SpringApplicationBuilder)
 
