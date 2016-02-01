@@ -99,7 +99,24 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes, org.
      */
     String getApplicationUri(ServletRequest request);
 
+    /**
+     * Resolve the URI for a template
+     *
+     * @param controller The controller
+     * @param templateName The name of the template
+     * @return The template name
+     */
     String getTemplateURI(GroovyObject controller, String templateName);
+
+    /**
+     * Resolve the URI for a template
+     *
+     * @param controller The controller
+     * @param templateName The name of the template
+     * @param includeExtension Whether to include the GSP etension
+     * @return The template name
+     */
+    String getTemplateURI(GroovyObject controller, String templateName, boolean includeExtension);
 
     String getNoSuffixViewURI(GroovyObject controller, String viewName);
 

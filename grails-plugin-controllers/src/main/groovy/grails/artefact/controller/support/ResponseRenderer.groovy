@@ -30,20 +30,18 @@ import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
 import grails.web.mime.MimeUtility
 import groovy.json.StreamingJsonBuilder
-import groovy.text.Template
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.gsp.GroovyPageTemplate
-import org.grails.gsp.ResourceAwareTemplateEngine
-import org.grails.io.support.GrailsResourceUtils
 import org.grails.io.support.SpringIOUtils
 import org.grails.web.converters.Converter
 import org.grails.web.json.JSONElement
 import org.grails.web.servlet.mvc.ActionResultTransformer
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.servlet.view.GroovyPageView
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.sitemesh.GrailsLayoutView
@@ -300,46 +298,32 @@ trait ResponseRenderer extends WebAttributes {
                 modelObject = argMap[ARGUMENT_MODEL]
             }
             String templateName = argMap[ARGUMENT_TEMPLATE].toString()
-            String contextPath = getContextPath(webRequest, argMap)
-
             String var
             if (argMap.containsKey(ARGUMENT_VAR)) {
                 var = String.valueOf( argMap[ARGUMENT_VAR] )
             }
 
             // get the template uri
-            String templateUri = applicationAttributes.getTemplateURI((GroovyObject)this, templateName)
+            String templateUri = applicationAttributes.getTemplateURI((GroovyObject)this, templateName, false)
 
-            // retrieve gsp engine
-            ResourceAwareTemplateEngine engine = applicationAttributes.getPagesTemplateEngine()
+            // retrieve view resolver
+            def applicationContext = applicationAttributes.getApplicationContext()
+            def viewResolver = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver)
             try {
-                Template t = engine.createTemplateForUri([
-                        GrailsResourceUtils.appendPiecesForUri(contextPath, templateUri),
-                        GrailsResourceUtils.appendPiecesForUri(contextPath, "/grails-app/views/", templateUri)] as String[])
 
-                if (t == null) {
+                View view = viewResolver.resolveView(templateUri, webRequest.locale)
+                if(view instanceof GroovyPageView) {
+                    ((GroovyPageTemplate)((GroovyPageView)view).template).allowSettingContentType = true
+                }
+                if (view == null) {
                     throw new ControllerExecutionException("Unable to load template for uri [$templateUri]. Template not found.")
                 }
 
-                if (t instanceof GroovyPageTemplate) {
-                    ((GroovyPageTemplate)t).allowSettingContentType = true
-                }
-
-                def gspView = new GroovyPageView()
-                gspView.template = t
-
-                try {
-                    gspView.afterPropertiesSet()
-                } catch (Exception e) {
-                    throw new RuntimeException("Problem initializing view", e)
-                }
-
-                View view = gspView
                 boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE))
                 if(renderWithLayout && groovyPageLayoutFinder) {
                     applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
                     try {
-                        view = new GrailsLayoutView(groovyPageLayoutFinder, gspView)
+                        view = new GrailsLayoutView(groovyPageLayoutFinder, view)
                     } catch (NoSuchBeanDefinitionException e) {
                         // ignore
                     }

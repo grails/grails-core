@@ -50,6 +50,11 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
         return getTemplateURI(getLogicalControllerName(controller),templateName);
     }
 
+    @Override
+    public String getTemplateURI(GroovyObject controller, String templateName, boolean includeExtension) {
+        return getTemplateURI(getLogicalControllerName(controller),templateName, includeExtension);
+    }
+
     public void clear() {
         // do nothing
     }
@@ -98,6 +103,16 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
      * @return The template URI
      */
     public String getTemplateURI(String controllerName, String templateName) {
+        return getTemplateURI(controllerName, templateName, true);
+    }
+    /**
+     * Obtains the URI to a template using the controller name and template name
+     * @param controllerName The controller name
+     * @param templateName The template name
+     * @return The template URI
+     */
+    @Override
+    public String getTemplateURI(String controllerName, String templateName, boolean includeExtension) {
         if (templateName.startsWith(SLASH_STR)) {
             return getAbsoluteTemplateURI(templateName);
         }
@@ -112,14 +127,21 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
         }
         if(controllerName != null) {
             buf.append(SLASH)
-               .append(controllerName);
+                    .append(controllerName);
         }
         buf.append(SLASH)
-           .append(pathToTemplate)
-           .append(UNDERSCORE)
-           .append(templateName);
-        return buf.append(EXTENSION).toString();
+                .append(pathToTemplate)
+                .append(UNDERSCORE)
+                .append(templateName);
+
+        if(includeExtension) {
+            return buf.append(EXTENSION).toString();
+        }
+        else {
+            return buf.toString();
+        }
     }
+
 
     /**
      * Used to resolve template names that are not relative to a controller.
