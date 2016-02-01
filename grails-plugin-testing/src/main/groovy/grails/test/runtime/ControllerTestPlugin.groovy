@@ -26,6 +26,9 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.grails.web.servlet.view.CompositeViewResolver
+import org.grails.web.servlet.view.GroovyPageViewResolver
+import org.grails.web.util.GrailsApplicationAttributes
 
 import javax.servlet.ServletContext
 
@@ -92,10 +95,13 @@ class ControllerTestPlugin implements TestPlugin {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass(urlMappingsClass))
             }
 
+            localeResolver(SessionLocaleResolver)
             multipartResolver(StandardServletMultipartResolver)
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = grailsApplication
             }
+
+            "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
 
             if(ClassUtils.isPresent("org.grails.plugins.web.GroovyPagesGrailsPlugin", classLoader)) {
                 def lazyBean = { bean ->
@@ -120,6 +126,13 @@ class ControllerTestPlugin implements TestPlugin {
                     groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
                 }
 
+                // Configure a Spring MVC view resolver
+                jspViewResolver(GroovyPageViewResolver) { bean ->
+                    prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
+                    suffix = GroovyPageViewResolver.GSP_SUFFIX
+                    templateEngine = groovyPagesTemplateEngine
+                    groovyPageLocator = groovyPageLocator
+                }
             }
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, grailsApplication)
             

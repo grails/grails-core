@@ -31,6 +31,7 @@ import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.grails.web.servlet.mvc.TokenResponseActionResultTransformer
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.context.embedded.FilterRegistrationBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
@@ -123,6 +124,9 @@ class ControllersGrailsPlugin extends Plugin {
         }
 
         multipartResolver(StandardServletMultipartResolver)
+
+        "${CompositeViewResolver.BEAN_NAME}"(CompositeViewResolver)
+
         multipartConfigElement(MultipartConfigElement, uploadTmpDir, maxFileSize, maxRequestSize, fileSizeThreashold)
 
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []

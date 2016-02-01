@@ -46,6 +46,8 @@ public interface GroovyPagesUriService {
 
     void clear();
 
+    String getTemplateURI(String controllerName, String templateName, boolean includeExtension);
+
     String getAbsoluteTemplateURI(String templateName);
 
     String getAbsoluteViewURI(String viewName);
@@ -60,4 +62,6 @@ public interface GroovyPagesUriService {
      * @return The view URI
      */
     String getViewURI(String controllerName, String viewName);
+
+    String getTemplateURI(GroovyObject controller, String templateName, boolean includeExtension);
 }

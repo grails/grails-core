@@ -242,6 +242,11 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return getGroovyPagesUriService().getTemplateURI(controller, templateName);
     }
 
+    @Override
+    public String getTemplateURI(GroovyObject controller, String templateName, boolean includeExtension) {
+        return getGroovyPagesUriService().getTemplateURI(controller, templateName, includeExtension);
+    }
+
     public GroovyPagesUriService getGroovyPagesUriService() {
         if (groovyPagesUriService == null) {
             groovyPagesUriService = fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
