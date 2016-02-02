@@ -281,7 +281,7 @@ public enum Environment {
      */
     public static boolean isDevelopmentRun() {
         Environment env = Environment.getCurrent();
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT || env == Environment.TEST);
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
     }
     /**
      * Check whether the application is deployed
