@@ -111,6 +111,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         git push
         cd ..
 
+        # Rebuild Artifactory index
+        curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
 
     elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
