@@ -3,12 +3,10 @@ package org.grails.gradle.plugin.core
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -16,7 +14,6 @@ import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
 import javax.inject.Inject
-
 /*
  * Copyright 2014 original authors
  *
@@ -75,8 +72,11 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     @CompileStatic
     protected void configureExplodedDirConfiguration(Project project) {
         def configurationName = "exploded"
-        project.configurations.create(configurationName)
 
+        def allConfigurations = project.configurations
+
+        def explodedConfig = allConfigurations.create(configurationName)
+        explodedConfig.extendsFrom(allConfigurations.findByName('compile'))
         // add the subproject classes as outputs
         GroovyCompile groovyCompile = (GroovyCompile)project.tasks.findByName('compileGroovy')
         project.artifacts.add(configurationName, new ExplodedDir( groovyCompile.destinationDir, groovyCompile) )
