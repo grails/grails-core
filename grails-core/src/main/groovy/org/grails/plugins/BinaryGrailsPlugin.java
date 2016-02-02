@@ -212,30 +212,32 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
             try {
                 // first load all properties
                 Resource[] resources = resolver.getResources('*' + PROPERTIES_EXTENSION);
-                resources = filterResources(resources, locale);
-                properties = new Properties();
+                resources = resources.length > 0 ? filterResources(resources, locale) : resources;
+                if(resources.length > 0) {
+                    properties = new Properties();
 
-                // message bundles are locale specific. The more underscores the locale has the more specific the locale
-                // so we order by the number of underscores present so that the most specific appears
-                Arrays.sort(resources, new Comparator<Resource>() {
-                    @Override
-                    public int compare(Resource o1, Resource o2) {
-                        String f1 = o1.getFilename();
-                        String f2 = o2.getFilename();
+                    // message bundles are locale specific. The more underscores the locale has the more specific the locale
+                    // so we order by the number of underscores present so that the most specific appears
+                    Arrays.sort(resources, new Comparator<Resource>() {
+                        @Override
+                        public int compare(Resource o1, Resource o2) {
+                            String f1 = o1.getFilename();
+                            String f2 = o2.getFilename();
 
-                        int firstUnderscoreCount = StringUtils.countOccurrencesOf(f1, "_");
-                        int secondUnderscoreCount = StringUtils.countOccurrencesOf(f2, "_");
+                            int firstUnderscoreCount = StringUtils.countOccurrencesOf(f1, "_");
+                            int secondUnderscoreCount = StringUtils.countOccurrencesOf(f2, "_");
 
-                        if(firstUnderscoreCount == secondUnderscoreCount) {
-                            return 0;
+                            if(firstUnderscoreCount == secondUnderscoreCount) {
+                                return 0;
+                            }
+                            else {
+                                return firstUnderscoreCount > secondUnderscoreCount ?  1 : -1;
+                            }
                         }
-                        else {
-                            return firstUnderscoreCount > secondUnderscoreCount ?  1 : -1;
-                        }
-                    }
-                });
+                    });
 
-                loadFromResources(properties, resources);
+                    loadFromResources(properties, resources);
+                }
             } catch (IOException e) {
                 return null;
             }

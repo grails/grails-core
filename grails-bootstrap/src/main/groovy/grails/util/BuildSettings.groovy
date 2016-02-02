@@ -297,6 +297,11 @@ class BuildSettings {
      */
     public static final String BUILD_CLASSES_PATH = "build/classes/main"
 
+    /**
+     * The path to the build resources directory
+     */
+    public static final String BUILD_RESOURCES_PATH = "build/resources/main"
+
     public static final File SETTINGS_FILE = new File("${System.getProperty('user.home')}/.grails/settings.groovy")
 
 }

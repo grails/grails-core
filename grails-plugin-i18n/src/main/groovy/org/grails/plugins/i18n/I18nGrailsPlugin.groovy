@@ -106,13 +106,20 @@ class I18nGrailsPlugin extends Plugin {
 
         def nativeascii = application.config.getProperty('grails.enable.native2ascii', Boolean, true)
         def resourcesDir = BuildSettings.RESOURCES_DIR
+        def classesDir = BuildSettings.CLASSES_DIR
+
         if (resourcesDir.exists() && event.source instanceof Resource) {
-            def eventFile = event.source.file.canonicalFile
+            File eventFile = event.source.file.canonicalFile
             def ant = getClass().classLoader.loadClass("groovy.util.AntBuilder").newInstance()
-            File i18nDir = new File("${Environment.current.reloadLocation}/grails-app/i18n").canonicalFile
+            File i18nDir = eventFile.parentFile
             if (isChildOfFile(eventFile, i18nDir)) {
-                executeMessageBundleCopy(ant, eventFile, i18nDir, BuildSettings.RESOURCES_DIR, nativeascii)
-                executeMessageBundleCopy(ant, eventFile, i18nDir, BuildSettings.CLASSES_DIR, nativeascii)
+                if( i18nDir.name == 'i18n' && i18nDir.parentFile.name == 'grails-app') {
+                    def appDir = i18nDir.parentFile.parentFile
+                    resourcesDir = new File(appDir, BuildSettings.BUILD_RESOURCES_PATH)
+                    classesDir = new File(appDir, BuildSettings.BUILD_CLASSES_PATH)
+                }
+                executeMessageBundleCopy(ant, eventFile, i18nDir, resourcesDir, nativeascii)
+                executeMessageBundleCopy(ant, eventFile, i18nDir, classesDir, nativeascii)
             }
         }
 
