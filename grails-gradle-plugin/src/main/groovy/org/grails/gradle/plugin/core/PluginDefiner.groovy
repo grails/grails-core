@@ -14,10 +14,12 @@ import org.gradle.api.artifacts.Dependency
  */
 @PackageScope
 class PluginDefiner {
-    Project project
+    final Project project
+    final exploded
 
-    PluginDefiner(Project project) {
+    PluginDefiner(Project project, boolean exploded = true) {
         this.project = project
+        this.exploded = exploded
     }
 
     void methodMissing(String name, args) {
@@ -46,7 +48,7 @@ class PluginDefiner {
 
     @CompileStatic
     Dependency project(String path) {
-        if(Environment.isDevelopmentRun()) {
+        if(Environment.isDevelopmentRun() && exploded) {
             project.dependencies.project(path:path, configuration:'exploded')
         }
         else {
