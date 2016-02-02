@@ -25,6 +25,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -46,9 +47,14 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     public static final char UNDERSCORE = '_';
     public static final String PROPERTIES_EXTENSION = ".properties";
 
-    private BinaryGrailsPluginDescriptor descriptor;
+    private final BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts = {};
-    private Map<String, Class> precompiledViewMap = new HashMap<String, Class>();
+    private final Map<String, Class> precompiledViewMap = new HashMap<String, Class>();
+    private final Resource baseResource;
+    private final Resource baseResourcesResource;
+    private final String baseResourceString;
+    private final boolean isJar;
+    private final File projectDirectory;
 
     /**
      * Creates a binary plugin instance.
@@ -60,11 +66,34 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     public BinaryGrailsPlugin(Class<?> pluginClass, BinaryGrailsPluginDescriptor descriptor, GrailsApplication application) {
         super(pluginClass, application);
         this.descriptor = descriptor;
+        URL rootResource = IOUtils.findRootResource(pluginClass);
+        if(rootResource == null) {
+            throw new PluginException("Cannot evaluate plugin location for plugin " + pluginClass);
+        }
+        this.baseResource = new UrlResource(rootResource);
+        try {
+            this.baseResourceString = baseResource.getURL().toString();
+        } catch (IOException e) {
+            throw new PluginException("Cannot evaluate plugin location for plugin " + pluginClass, e);
+        }
 
+        this.isJar = baseResourceString.startsWith("jar:");
+        this.projectDirectory = isJar ? null : IOUtils.findApplicationDirectoryFile(pluginClass);
+
+        URL rootResourcesURL = IOUtils.findRootResourcesURL(pluginClass);
+        if(rootResourcesURL == null) {
+            throw new PluginException("Cannot evaluate plugin location for plugin " + pluginClass);
+        }
+
+        this.baseResourcesResource= new UrlResource(rootResourcesURL);
         if (descriptor != null) {
             initializeProvidedArtefacts(descriptor.getProvidedlassNames());
             initializeViewMap(descriptor);
         }
+    }
+
+    public File getProjectDirectory() {
+        return projectDirectory;
     }
 
     protected void initializeViewMap(BinaryGrailsPluginDescriptor descriptor) {
@@ -174,7 +203,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
      * @return The properties or null if non exist
      */
     public Properties getProperties(final Locale locale) {
-        Resource url = findPluginJar();
+        Resource url = this.baseResourcesResource;
         Properties properties = null;
         if(url != null) {
             StaticResourceLoader resourceLoader = new StaticResourceLoader();
@@ -186,6 +215,8 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
                 resources = filterResources(resources, locale);
                 properties = new Properties();
 
+                // message bundles are locale specific. The more underscores the locale has the more specific the locale
+                // so we order by the number of underscores present so that the most specific appears
                 Arrays.sort(resources, new Comparator<Resource>() {
                     @Override
                     public int compare(Resource o1, Resource o2) {
@@ -212,13 +243,6 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         return properties;
     }
 
-    protected Resource findPluginJar() {
-        URL url = IOUtils.findJarResource(pluginClass);
-        if(url != null) {
-            return new UrlResource(url);
-        }
-        return null;
-    }
 
     private Resource[] filterResources(Resource[] resources, Locale locale) {
         List<Resource> finalResources = new ArrayList<Resource>(resources.length);

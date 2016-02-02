@@ -32,9 +32,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+import java.io.File;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.List;
@@ -200,12 +202,29 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
             if (!(plugin instanceof BinaryGrailsPlugin)) {
                 continue;
             }
-            GroovyPageScriptSource scriptSource = resolveViewInBinaryPlugin((BinaryGrailsPlugin) plugin, uri);
+
+            BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+            GroovyPageScriptSource scriptSource = resolveViewInBinaryPlugin(binaryPlugin, uri);
             if (scriptSource != null) {
                 return scriptSource;
             }
+            else if(binaryPlugin.getProjectDirectory() != null) {
+                scriptSource = resolveViewInPluginProjectDirectory(binaryPlugin, uri);
+                if(scriptSource != null) {
+                    return scriptSource;
+                }
+            }
         }
 
+        return null;
+    }
+
+    private GroovyPageScriptSource resolveViewInPluginProjectDirectory(BinaryGrailsPlugin binaryPlugin, String uri) {
+        File projectDirectory = binaryPlugin.getProjectDirectory();
+        File f = new File(projectDirectory, "grails-app/views" + uri);
+        if(f.exists()) {
+            return new GroovyPageResourceScriptSource(uri, new FileSystemResource(f));
+        }
         return null;
     }
 

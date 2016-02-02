@@ -193,6 +193,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             processResources.dependsOn(*processResourcesDependencies)
             project.processResources {
                 exclude "spring/resources.groovy"
+                exclude "**/*.gsp"
             }
         }
 
