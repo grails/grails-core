@@ -123,14 +123,19 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     }
 
     protected Resource readPluginConfiguration(Class<?> pluginClass) {
-        Resource ymlResource = getConfigurationResource(pluginClass, PLUGIN_YML_PATH);
-        Resource groovyResource = getConfigurationResource(pluginClass, PLUGIN_GROOVY_PATH);
+        Resource ymlUrlResource = getConfigurationResource(pluginClass, PLUGIN_YML_PATH);
+        Resource groovyUrlResource = getConfigurationResource(pluginClass, PLUGIN_GROOVY_PATH);
 
-        if(ymlResource != null && ymlResource.exists()) {
-            return ymlResource;
+        Boolean groovyUrlResourceExists = groovyUrlResource != null && groovyUrlResource.exists();
+
+        if(ymlUrlResource != null && ymlUrlResource.exists()) {
+            if (groovyUrlResourceExists) {
+                throw new RuntimeException("A plugin may define a plugin.yml or a plugin.groovy, but not both");
+            }
+            return ymlUrlResource;
         }
-        if(groovyResource != null && groovyResource.exists()) {
-            return groovyResource;
+        if(groovyUrlResourceExists) {
+            return groovyUrlResource;
         }
         return null;
     }

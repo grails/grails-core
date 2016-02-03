@@ -51,16 +51,15 @@ class BinaryPluginSpec extends Specification {
             cssResource == null
     }
 
-    //This should never occur because the GrailsPluginGradlePlugin.groovy should catch it
-    def "Test plugin with both plugin.yml and plugin.groovy, yml is used"() {
+    def "Test plugin with both plugin.yml and plugin.groovy throws exception"() {
         when:
         def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(testBinary.getBytes('UTF-8')), ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
         MockConfigBinaryGrailsPlugin.YAML_EXISTS = true
         MockConfigBinaryGrailsPlugin.GROOVY_EXISTS = true
-        def binaryPlugin = new MockConfigBinaryGrailsPlugin(descriptor)
+        new MockConfigBinaryGrailsPlugin(descriptor)
 
         then:
-        binaryPlugin.propertySource.getProperty('foo') == "bar"
+        thrown(RuntimeException)
     }
 
     def "Test plugin with only plugin.yml"() {
