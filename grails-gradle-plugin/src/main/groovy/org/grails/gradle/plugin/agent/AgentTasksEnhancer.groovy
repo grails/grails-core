@@ -34,28 +34,30 @@ class AgentTasksEnhancer implements Action<Project> {
     private void addAgent(Project project, JavaExec exec, File agent) {
 
         GrailsExtension.Agent agentConfig = project.extensions.findByType(GrailsExtension)?.agent ?: new GrailsExtension.Agent()
+        if(agentConfig.enabled) {
+            exec.jvmArgs "-javaagent:${agentConfig.path?.absolutePath ?: agent.absolutePath}"
 
-        exec.jvmArgs "-javaagent:${agentConfig.path?.absolutePath ?: agent.absolutePath}"
+            for(arg in agentConfig.jvmArgs) {
+                exec.jvmArgs arg
+            }
+            for(entry in agentConfig.systemProperties) {
+                exec.systemProperty(entry.key, entry.value)
+            }
 
-        for(arg in agentConfig.jvmArgs) {
-            exec.jvmArgs arg
-        }
-        for(entry in agentConfig.systemProperties) {
-            exec.systemProperty(entry.key, entry.value)
+            Map<String, String> agentArgs= [
+                    inclusions: agentConfig.inclusions,
+                    synchronize: String.valueOf( agentConfig.synchronize ),
+                    allowSplitPackages: String.valueOf( agentConfig.allowSplitPackages ),
+                    cacheDir: agentConfig.cacheDir ? project.mkdir(agentConfig.cacheDir) : project.mkdir("build/springloaded")
+            ]
+            if(agentConfig.logging != null) {
+                agentArgs.put("logging", String.valueOf(agentConfig.logging))
+            }
+            if(agentConfig.exclusions) {
+                agentArgs.put('exclusions', agentConfig.exclusions)
+            }
+            exec.systemProperty('springloaded', agentArgs.collect { entry -> "$entry.key=$entry.value"}.join(';'))
         }
 
-        Map<String, String> agentArgs= [
-                inclusions: agentConfig.inclusions,
-                synchronize: String.valueOf( agentConfig.synchronize ),
-                allowSplitPackages: String.valueOf( agentConfig.allowSplitPackages ),
-                cacheDir: agentConfig.cacheDir ? project.mkdir(agentConfig.cacheDir) : project.mkdir("build/springloaded")
-        ]
-        if(agentConfig.logging != null) {
-            agentArgs.put("logging", String.valueOf(agentConfig.logging))
-        }
-        if(agentConfig.exclusions) {
-            agentArgs.put('exclusions', agentConfig.exclusions)
-        }
-        exec.systemProperty('springloaded', agentArgs.collect { entry -> "$entry.key=$entry.value"}.join(';'))
     }
 }

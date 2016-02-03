@@ -32,6 +32,11 @@ class GrailsExtension {
     boolean packageAssets = true
 
     /**
+     * Whether to include subproject dependencies as directories directly on the classpath, instead of as JAR files
+     */
+    boolean exploded = true
+
+    /**
      * Configure the reloading agent
      */
     Agent agent = new Agent()
@@ -47,13 +52,14 @@ class GrailsExtension {
      * Allows defining plugins in the available scopes
      */
     void plugins(Closure pluginDefinitions) {
-        def definer = new PluginDefiner(project)
+        def definer = new PluginDefiner(project,exploded)
         ConfigureUtil.configure(pluginDefinitions, definer, Closure.DELEGATE_FIRST)
     }
     /**
      * Configuration for the reloading agent
      */
     static class Agent {
+        boolean enabled = true
         File path
         String inclusions = "grails.plugins..*"
         String exclusions

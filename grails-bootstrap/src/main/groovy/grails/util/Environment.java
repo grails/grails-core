@@ -280,7 +280,8 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentRun() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE);
+        Environment env = Environment.getCurrent();
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
     }
     /**
      * Check whether the application is deployed

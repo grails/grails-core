@@ -21,6 +21,7 @@ import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.grails.core.util.BeanCreationProfilingPostProcessor
 import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
+import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.support.WatchPattern
 import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
@@ -123,53 +124,46 @@ class GrailsApp extends SpringApplication {
                 }
             })
 
+            def pluginManager = applicationContext.getBean(GrailsPluginManager)
             def pluginManagerListener = createPluginManagerListener(applicationContext)
             directoryWatcher.addListener(pluginManagerListener)
 
             File baseDir = new File(location).canonicalFile
 
             List<File> watchBaseDirectories = [baseDir]
-            def parentDir = baseDir.parentFile
-            File settingsFile = new File(parentDir, "settings.gradle")
-
-            if(settingsFile.exists()) {
-                def cc = new CompilerConfiguration()
-                cc.scriptBaseClass = SettingsFile.name
-                def binding = new Binding()
-                def shell = new GroovyShell(Thread.currentThread().contextClassLoader, binding, cc)
-                try {
-                    shell.evaluate(settingsFile)
-                } catch (Throwable e) {
-                    // ignore
-                }
-                def projectPaths = binding.getVariables().get('projectPaths')
-                if(projectPaths) {
-                    for(path in projectPaths) {
-                        if(path) {
-
-                            def pathStr = path.toString()
-                            if(pathStr.startsWith(':')) {
-                                pathStr = pathStr.substring(1)
-                            }
-                            watchBaseDirectories << new File(parentDir, pathStr)
-                        }
+            for(GrailsPlugin plugin in pluginManager.allPlugins) {
+                if(plugin instanceof BinaryGrailsPlugin) {
+                    BinaryGrailsPlugin binaryGrailsPlugin = (BinaryGrailsPlugin)plugin
+                    def pluginDirectory = binaryGrailsPlugin.projectDirectory
+                    if(pluginDirectory != null) {
+                        watchBaseDirectories << pluginDirectory
                     }
                 }
             }
 
             def locationLength = location.length() + 1
-            def pluginManager = applicationContext.getBean(GrailsPluginManager)
-            for(GrailsPlugin plugin in pluginManager.allPlugins) {
-                for(WatchPattern wp in plugin.watchedResourcePatterns) {
-                    for(watchBase in watchBaseDirectories) {
-                        if(wp.file) {
-                            def resolvedPath = new File(watchBase, wp.file.path.substring(locationLength))
-                            directoryWatcher.addWatchFile(resolvedPath)
-                        }
-                        else if(wp.directory && wp.extension) {
 
-                            def resolvedPath = new File(watchBase, wp.directory.path.substring(locationLength))
-                            directoryWatcher.addWatchDirectory(resolvedPath, wp.extension)
+            for(GrailsPlugin plugin in pluginManager.allPlugins) {
+                def watchedResourcePatterns = plugin.getWatchedResourcePatterns()
+                if(watchedResourcePatterns != null) {
+
+                    for(WatchPattern wp in new ArrayList<WatchPattern>(watchedResourcePatterns)) {
+                        boolean first = true
+                        for(watchBase in watchBaseDirectories) {
+                            if(!first) {
+                                // the base project will already been in the list of watch patterns, but we add any subprojects here
+                                plugin.watchedResourcePatterns.add(new WatchPattern(directory: watchBase, extension: wp.extension))
+                            }
+                            first = false
+                            if(wp.file) {
+                                def resolvedPath = new File(watchBase, wp.file.path.substring(locationLength))
+                                directoryWatcher.addWatchFile(resolvedPath)
+                            }
+                            else if(wp.directory && wp.extension) {
+
+                                def resolvedPath = new File(watchBase, wp.directory.path.substring(locationLength))
+                                directoryWatcher.addWatchDirectory(resolvedPath, wp.extension)
+                            }
                         }
                     }
                 }

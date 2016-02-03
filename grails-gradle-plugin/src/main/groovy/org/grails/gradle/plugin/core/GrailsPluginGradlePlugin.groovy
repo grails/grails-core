@@ -16,6 +16,7 @@
 package org.grails.gradle.plugin.core
 
 import groovy.transform.CompileDynamic
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -24,15 +25,14 @@ import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+import org.grails.gradle.plugin.util.SourceSets
 
 import javax.inject.Inject
-
 
 
 /**
@@ -83,16 +83,23 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
      */
     @CompileStatic
     protected void configureExplodedDirConfiguration(Project project) {
-        def configurationName = "exploded"
-        project.configurations.create(configurationName)
 
-        // add the subproject classes as outputs
-        GroovyCompile groovyCompile = (GroovyCompile)project.tasks.findByName('compileGroovy')
-        project.artifacts.add(configurationName, new ExplodedDir( groovyCompile.destinationDir, groovyCompile) )
+        def allConfigurations = project.configurations
 
-        // add the subproject resources as outputs
-        ProcessResources processResources = (ProcessResources)project.tasks.findByName("processResources")
-        project.artifacts.add(configurationName, new ExplodedDir( processResources.destinationDir, processResources) )
+        def runtimeConfiguration = allConfigurations.findByName('runtime')
+        if(Environment.isDevelopmentRun()) {
+            def explodedConfig = allConfigurations.create('exploded')
+            runtimeConfiguration.artifacts.clear()
+            explodedConfig.extendsFrom(runtimeConfiguration)
+            // add the subproject classes as outputs
+            def allTasks = project.tasks
+
+            GroovyCompile groovyCompile = (GroovyCompile) allTasks.findByName('compileGroovy')
+            ProcessResources processResources = (ProcessResources) allTasks.findByName("processResources")
+
+            runtimeConfiguration.artifacts.add(new ExplodedDir( groovyCompile.destinationDir, groovyCompile, processResources) )
+            explodedConfig.artifacts.add(new ExplodedDir( processResources.destinationDir, groovyCompile, processResources) )
+        }
     }
 
     @Override
@@ -100,20 +107,19 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         // no-op
     }
 
+    @CompileStatic
     protected void configureSourcesJarTask(Project project) {
         def taskContainer = project.tasks
         if(taskContainer.findByName('sourcesJar') == null) {
-            taskContainer.create("sourcesJar", Jar).configure {
-                classifier = 'sources'
-                from project.sourceSets.main.allSource
-            }
+            def jarTask = taskContainer.create("sourcesJar", Jar)
+            jarTask.classifier = 'sources'
+            jarTask.from SourceSets.findMainSourceSet(project).allSource
         }
     }
 
     protected void configureAstSources(Project project) {
-        def sourceSets = project.sourceSets
-        def mainSourceSet = sourceSets.main
-
+        def mainSourceSet = SourceSets.findMainSourceSet(project)
+        def sourceSets = SourceSets.findSourceSets(project)
         project.sourceSets {
             ast {
                 groovy {
@@ -202,6 +208,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             processResources.dependsOn(*processResourcesDependencies)
             project.processResources {
                 exclude "spring/resources.groovy"
+                exclude "**/*.gsp"
             }
         }
 
