@@ -49,6 +49,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     void apply(Project project) {
         super.apply(project)
 
+        checkForConfigurationClash(project)
+
         configureAstSources(project)
 
         configureProjectNameAndVersionASTMetadata(project)
@@ -224,6 +226,14 @@ withConfig(configuration) {
         project.tasks.getByName('compileGroovy').dependsOn(configScriptTask)
         project.compileGroovy {
             groovyOptions.configurationScript = configFile
+        }
+    }
+
+    protected void checkForConfigurationClash(Project project) {
+        File yamlConfig = new File(project.projectDir,"grails-app/conf/plugin.yml")
+        File groovyConfig = new File(project.projectDir,"grails-app/conf/plugin.groovy")
+        if (yamlConfig.exists() && groovyConfig.exists()) {
+            throw new RuntimeException("A plugin may define a plugin.yml or a plugin.groovy, but not both")
         }
     }
 
