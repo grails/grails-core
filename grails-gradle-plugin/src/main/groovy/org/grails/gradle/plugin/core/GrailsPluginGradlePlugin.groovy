@@ -1,19 +1,3 @@
-package org.grails.gradle.plugin.core
-
-import groovy.transform.CompileStatic
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.artifacts.PublishArtifact
-import org.gradle.api.internal.tasks.DefaultTaskDependency
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.JavaExec
-import org.gradle.api.tasks.TaskDependency
-import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.compile.GroovyCompile
-import org.gradle.language.jvm.tasks.ProcessResources
-import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
-
-import javax.inject.Inject
 /*
  * Copyright 2014 original authors
  *
@@ -29,6 +13,29 @@ import javax.inject.Inject
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.grails.gradle.plugin.core
+
+import grails.util.Environment
+import groovy.transform.CompileStatic
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.artifacts.dsl.ArtifactHandler
+import org.gradle.api.internal.tasks.DefaultTaskDependency
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.TaskDependency
+import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.compile.GroovyCompile
+import org.gradle.language.jvm.tasks.ProcessResources
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
+import org.grails.gradle.plugin.util.SourceSets
+
+import javax.inject.Inject
+
 
 /**
  * A Gradle plugin for Grails plugins
@@ -76,14 +83,22 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         def allConfigurations = project.configurations
 
         def explodedConfig = allConfigurations.create(configurationName)
-        explodedConfig.extendsFrom(allConfigurations.findByName('compile'))
+
+        def parent = allConfigurations.findByName('runtime')
+        if(Environment.isDevelopmentRun()) {
+            parent.artifacts.clear()
+        }
+        explodedConfig.extendsFrom(parent)
         // add the subproject classes as outputs
-        GroovyCompile groovyCompile = (GroovyCompile)project.tasks.findByName('compileGroovy')
-        project.artifacts.add(configurationName, new ExplodedDir( groovyCompile.destinationDir, groovyCompile) )
+        def allTasks = project.tasks
+        GroovyCompile groovyCompile = (GroovyCompile) allTasks.findByName('compileGroovy')
+
+        def allArtifacts = project.artifacts
+        allArtifacts.add(configurationName, new ExplodedDir( groovyCompile.destinationDir, groovyCompile) )
 
         // add the subproject resources as outputs
-        ProcessResources processResources = (ProcessResources)project.tasks.findByName("processResources")
-        project.artifacts.add(configurationName, new ExplodedDir( processResources.destinationDir, processResources) )
+        ProcessResources processResources = (ProcessResources) allTasks.findByName("processResources")
+        allArtifacts.add(configurationName, new ExplodedDir( processResources.destinationDir, processResources) )
     }
 
     @Override
@@ -91,20 +106,19 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         // no-op
     }
 
+    @CompileStatic
     protected void configureSourcesJarTask(Project project) {
         def taskContainer = project.tasks
         if(taskContainer.findByName('sourcesJar') == null) {
-            taskContainer.create("sourcesJar", Jar).configure {
-                classifier = 'sources'
-                from project.sourceSets.main.allSource
-            }
+            def jarTask = taskContainer.create("sourcesJar", Jar)
+            jarTask.classifier = 'sources'
+            jarTask.from SourceSets.findMainSourceSet(project).allSource
         }
     }
 
     protected void configureAstSources(Project project) {
-        def sourceSets = project.sourceSets
-        def mainSourceSet = sourceSets.main
-
+        def mainSourceSet = SourceSets.findMainSourceSet(project)
+        def sourceSets = SourceSets.findSourceSets(project)
         project.sourceSets {
             ast {
                 groovy {
