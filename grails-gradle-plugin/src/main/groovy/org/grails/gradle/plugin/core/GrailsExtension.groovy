@@ -34,7 +34,7 @@ class GrailsExtension {
     /**
      * Whether to include subproject dependencies as directories directly on the classpath, instead of as JAR files
      */
-    boolean exploded = true
+    boolean exploded = false
 
     /**
      * Configure the reloading agent
