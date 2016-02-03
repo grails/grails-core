@@ -4,15 +4,15 @@ import grails.core.DefaultGrailsApplication
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.BinaryGrailsPluginDescriptor
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-
+import spock.lang.Shared
 import spock.lang.Specification
 
 class BinaryPluginSpec extends Specification {
 
-    def "Test creation of a binary plugin"() {
-        given:
-            def str = '''
+    @Shared
+    String testBinary = '''
     <plugin name='testBinary'>
       <class>org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin</class>
       <resources>
@@ -21,10 +21,9 @@ class BinaryPluginSpec extends Specification {
     </plugin>
     '''
 
-            def xml = new XmlSlurper().parseText(str)
-
+    def "Test creation of a binary plugin"() {
         when:
-            def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(str.getBytes('UTF-8')), ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
+            def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(testBinary.getBytes('UTF-8')), ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
 
         then:
@@ -36,20 +35,8 @@ class BinaryPluginSpec extends Specification {
 
 
     def "Test load static resource from binary plugin"() {
-        given:
-            def str = '''
-    <plugin name='testBinary'>
-      <class>org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin</class>
-      <resources>
-             <resource>org.codehaus.groovy.grails.plugins.TestBinaryResource</resource>
-      </resources>
-    </plugin>
-    '''
-
-            def xml = new XmlSlurper().parseText(str)
-
         when:
-            def resource = new MockBinaryPluginResource(str.getBytes('UTF-8'))
+            def resource = new MockBinaryPluginResource(testBinary.getBytes('UTF-8'))
             def descriptor = new BinaryGrailsPluginDescriptor(resource, ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
             resource.relativesResources['static/css/main.css'] = new ByteArrayResource(''.bytes)
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
@@ -62,6 +49,68 @@ class BinaryPluginSpec extends Specification {
 
         then:
             cssResource == null
+    }
+
+    def "Test plugin with both plugin.yml and plugin.groovy throws exception"() {
+        when:
+        def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(testBinary.getBytes('UTF-8')), ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
+        MockConfigBinaryGrailsPlugin.YAML_EXISTS = true
+        MockConfigBinaryGrailsPlugin.GROOVY_EXISTS = true
+        new MockConfigBinaryGrailsPlugin(descriptor)
+
+        then:
+        thrown(RuntimeException)
+    }
+
+    def "Test plugin with only plugin.yml"() {
+        when:
+        def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(testBinary.getBytes('UTF-8')), ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
+        MockConfigBinaryGrailsPlugin.YAML_EXISTS = true
+        MockConfigBinaryGrailsPlugin.GROOVY_EXISTS = false
+        def binaryPlugin = new MockConfigBinaryGrailsPlugin(descriptor)
+
+        then:
+        binaryPlugin.propertySource.getProperty('foo') == "bar"
+    }
+
+    def "Test plugin with only plugin.groovy"() {
+        when:
+        def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(testBinary.getBytes('UTF-8')), ['org.codehaus.groovy.grails.plugins.TestBinaryResource'])
+        MockConfigBinaryGrailsPlugin.YAML_EXISTS = false
+        MockConfigBinaryGrailsPlugin.GROOVY_EXISTS = true
+        def binaryPlugin = new MockConfigBinaryGrailsPlugin(descriptor)
+
+        then:
+        binaryPlugin.propertySource.getProperty('bar') == "foo"
+    }
+
+}
+
+class MockConfigBinaryGrailsPlugin extends BinaryGrailsPlugin {
+    static Boolean YAML_EXISTS = false
+    static Boolean GROOVY_EXISTS = false
+
+    MockConfigBinaryGrailsPlugin(BinaryGrailsPluginDescriptor descriptor) {
+        super(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
+    }
+
+    protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
+        String tempDir = System.getProperty("java.io.tmpdir")
+        if (YAML_EXISTS && path == PLUGIN_YML_PATH) {
+            File file = new File(tempDir, "plugin.yml")
+            file.write("foo: bar")
+            return new FileSystemResource(file)
+        }
+        if (GROOVY_EXISTS && path == PLUGIN_GROOVY_PATH) {
+            File file = new File(tempDir, "plugin.groovy")
+            file.write("bar = 'foo'")
+            return new FileSystemResource(file)
+        }
+        return null
+    }
+
+    public String getVersion() {
+        super.getVersion()
     }
 }
 
@@ -91,3 +140,4 @@ class MyView extends Script {
         return "Good"
     }
 }
+

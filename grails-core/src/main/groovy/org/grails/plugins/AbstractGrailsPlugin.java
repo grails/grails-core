@@ -125,11 +125,8 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     }
 
     protected Resource readPluginConfiguration(Class<?> pluginClass) {
-        final URL urlToPluginYml = IOUtils.findResourceRelativeToClass(pluginClass, PLUGIN_YML_PATH);
-        final URL urlToPluginGroovy = IOUtils.findResourceRelativeToClass(pluginClass, PLUGIN_GROOVY_PATH);
-
-        Resource ymlUrlResource = urlToPluginYml != null ? new UrlResource(urlToPluginYml) : null;
-        Resource groovyUrlResource = urlToPluginGroovy != null ? new UrlResource(urlToPluginGroovy) : null;
+        Resource ymlUrlResource = getConfigurationResource(pluginClass, PLUGIN_YML_PATH);
+        Resource groovyUrlResource = getConfigurationResource(pluginClass, PLUGIN_GROOVY_PATH);
 
         Boolean groovyUrlResourceExists = groovyUrlResource != null && groovyUrlResource.exists();
 
@@ -143,6 +140,11 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
             return groovyUrlResource;
         }
         return null;
+    }
+
+    protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
+        final URL urlToConfig = IOUtils.findResourceRelativeToClass(pluginClass, path);
+        return urlToConfig != null ? new UrlResource(urlToConfig) : null;
     }
 
     public String getFileSystemName() {
