@@ -156,7 +156,32 @@ class IOUtils extends SpringIOUtils {
             return new URL("$rootPath/")
         }
         throw new IllegalStateException("Root classpath resource not found! Check your disk permissions")
+    }
 
+
+    /**
+     * This method differs from {@link #findRootResource(java.lang.Class)} in that it will find the root URL where to load resources defined in src/main/resources
+     *
+     * At development time this with be build/main/resources, but in production it will be relative to the class.
+     *
+     * @param targetClass
+     * @param path
+     * @return
+     */
+    static URL findRootResourcesURL(Class targetClass) {
+        def pathToClassFile = '/' + targetClass.name.replace(".", "/") + ".class"
+        def classRes = targetClass.getResource(pathToClassFile)
+        if(classRes) {
+            String rootPath = classRes.toString() - pathToClassFile
+            if(rootPath.endsWith(BuildSettings.BUILD_CLASSES_PATH)) {
+                rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+            }
+            else {
+                rootPath = "$rootPath/"
+            }
+            return new URL(rootPath)
+        }
+        return null
     }
 
     /**
@@ -180,6 +205,7 @@ class IOUtils extends SpringIOUtils {
     }
     /**
      * Finds a URL within a JAR relative (from the root) to the given class
+     *
      * @param targetClass
      * @param path
      * @return
@@ -197,6 +223,7 @@ class IOUtils extends SpringIOUtils {
         return null
     }
 
+
     @Memoized
     public static File findApplicationDirectoryFile() {
         def directory = findApplicationDirectory()
@@ -205,6 +232,27 @@ class IOUtils extends SpringIOUtils {
             if(f.exists()) {
 
                 return f
+            }
+        }
+        return null
+    }
+
+    /**
+     * Finds the application directory for the given class
+     *
+     * @param targetClass The target class
+     * @return The application directory or null if it can't be found
+     */
+    public static File findApplicationDirectoryFile(Class targetClass) {
+
+        def rootResource = findRootResource(targetClass)
+        if(rootResource != null) {
+
+            def rootFile = new UrlResource(rootResource).file.canonicalFile
+
+            def rootPath = rootFile.path
+            if(rootPath.contains(BuildSettings.BUILD_CLASSES_PATH)) {
+                return new File(rootPath - BuildSettings.BUILD_CLASSES_PATH)
             }
         }
         return null
