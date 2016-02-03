@@ -78,27 +78,23 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
      */
     @CompileStatic
     protected void configureExplodedDirConfiguration(Project project) {
-        def configurationName = "exploded"
 
         def allConfigurations = project.configurations
 
-        def explodedConfig = allConfigurations.create(configurationName)
-
-        def parent = allConfigurations.findByName('runtime')
+        def runtimeConfiguration = allConfigurations.findByName('runtime')
         if(Environment.isDevelopmentRun()) {
-            parent.artifacts.clear()
+            def explodedConfig = allConfigurations.create('exploded')
+            runtimeConfiguration.artifacts.clear()
+            explodedConfig.extendsFrom(runtimeConfiguration)
+            // add the subproject classes as outputs
+            def allTasks = project.tasks
+
+            GroovyCompile groovyCompile = (GroovyCompile) allTasks.findByName('compileGroovy')
+            ProcessResources processResources = (ProcessResources) allTasks.findByName("processResources")
+
+            runtimeConfiguration.artifacts.add(new ExplodedDir( groovyCompile.destinationDir, groovyCompile, processResources) )
+            explodedConfig.artifacts.add(new ExplodedDir( processResources.destinationDir, groovyCompile, processResources) )
         }
-        explodedConfig.extendsFrom(parent)
-        // add the subproject classes as outputs
-        def allTasks = project.tasks
-        GroovyCompile groovyCompile = (GroovyCompile) allTasks.findByName('compileGroovy')
-
-        def allArtifacts = project.artifacts
-        allArtifacts.add(configurationName, new ExplodedDir( groovyCompile.destinationDir, groovyCompile) )
-
-        // add the subproject resources as outputs
-        ProcessResources processResources = (ProcessResources) allTasks.findByName("processResources")
-        allArtifacts.add(configurationName, new ExplodedDir( processResources.destinationDir, processResources) )
     }
 
     @Override
