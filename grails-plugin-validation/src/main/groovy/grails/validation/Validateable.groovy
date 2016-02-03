@@ -15,25 +15,18 @@
  */
 package grails.validation
 
-import grails.util.GrailsClassUtils
-
 import grails.util.Holders
 import grails.validation.ConstrainedProperty
 import grails.validation.ConstraintsEvaluator
 import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
-import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.gorm.support.BeforeValidateHelper
-import org.grails.datastore.mapping.reflect.NameUtils
 import org.grails.validation.DefaultConstraintEvaluator
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
-
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
 
 /**
  * A trait that can be applied to make any object Validateable
@@ -62,49 +55,19 @@ trait Validateable {
         errors = null
     }
 
-    private void initErrors()  {
+    private void initErrors() {
         if (errors == null) {
             errors = new ValidationErrors(this, this.getClass().getName())
         }
     }
 
     static Map<String, ConstrainedProperty> getConstraintsMap() {
-        if(this.constraintsMapInternal == null) {
+        if (constraintsMapInternal == null) {
             ConstraintsEvaluator evaluator = findConstraintsEvaluator()
             def evaluatedConstraints = evaluator.evaluate(this, defaultNullable())
-
-            if(!defaultNullable()) {
-                def methods = this.getDeclaredMethods()
-                def ignoredProperties = ['metaClass', 'errors']
-                if(DomainClassArtefactHandler.isDomainClass(this)) {
-                    ignoredProperties << 'id' << 'version'
-                }
-                for(Method method : methods) {
-                    //verify if method is property getter
-                    if(isPropertyGetter(method)) {
-                        def propertyName = NameUtils.getPropertyNameForGetterOrSetter(method.name)
-                        if( !ignoredProperties.contains(propertyName) &&
-                            !evaluatedConstraints.containsKey(propertyName)) {
-                            def cp = new ConstrainedProperty(this, propertyName, method.returnType)
-                            cp.applyConstraint 'nullable', false
-                            evaluatedConstraints.put propertyName, cp
-                        }
-                    }
-                }
-            }
-            this.constraintsMapInternal = evaluatedConstraints
+            constraintsMapInternal = evaluatedConstraints
         }
-        this.constraintsMapInternal
-    }
-
-    /**
-     * Public, non-static getters without parameters should be considered validateable properties
-     * 
-     * @return if given object method should be considered property getter and validateable object
-     */
-    static boolean isPropertyGetter(Method method){
-        !Modifier.isStatic(method.modifiers) && Modifier.isPublic(method.modifiers) &&
-        !method.parameterTypes && GrailsClassUtils.isGetter(method.name, method.parameterTypes)
+        constraintsMapInternal
     }
 
     @CompileStatic
@@ -144,7 +107,7 @@ trait Validateable {
             for (prop in constraints.values()) {
                 if (fieldsToValidate == null || fieldsToValidate.contains(prop.propertyName)) {
                     def fieldError = originalErrors.getFieldError(prop.propertyName)
-                    if(fieldError == null || !fieldError.bindingFailure) {
+                    if (fieldError == null || !fieldError.bindingFailure) {
                         prop.messageSource = messageSource
 
                         def value = getPropertyValue(prop)
