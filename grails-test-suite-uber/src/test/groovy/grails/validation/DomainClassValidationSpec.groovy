@@ -1,135 +1,140 @@
 package grails.validation
 
+import grails.core.GrailsDomainClass
+import grails.persistence.Entity
+import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.ClosureToMapPopulator
+import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
+import org.hibernate.Hibernate
 import org.springframework.validation.FieldError
-import spock.lang.Issue
+import spock.lang.Ignore
 import spock.lang.Specification
+
 /**
- * Ensure validation logic for command object with {@code Validateable} and whether or not compatible with domain class.
+ * Ensure validation logic for domain class and whether or not compatible with command object with {@code Validateable}.
  *
- * @see grails.validation.DomainClassValidationSpec
+ * @see grails.validation.ValidateableTraitSpec
  */
 @TestMixin(GrailsUnitTestMixin)
-class ValidateableTraitSpec extends Specification {
+@Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
+class DomainClassValidationSpec extends Specification {
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
         when: 'an object is valid'
-        def validateable = new MyValidateable(name: 'Kirk', age: 47, town: 'STL')
+        def domainClass = new MyDomainClass(name: 'Kirk', age: 47, town: 'STL')
 
         then: 'validate() returns true and there are no errors'
-        validateable.validate()
-        !validateable.hasErrors()
-        validateable.errors.errorCount == 0
+        domainClass.validate()
+        !domainClass.hasErrors()
+        domainClass.errors.errorCount == 0
 
         when: 'an object is invalid'
-        validateable.name = 'kirk'
+        domainClass.name = 'kirk'
 
         then: 'validate() returns false and the appropriate error is created'
-        !validateable.validate()
-        validateable.hasErrors()
-        validateable.errors.errorCount == 1
-        validateable.errors.getFieldError('name').code == 'matches.invalid'
+        !domainClass.validate()
+        domainClass.hasErrors()
+        domainClass.errors.errorCount == 1
+        domainClass.errors.getFieldError('name').code == 'matches.invalid'
 
         when: 'the clearErrors() is called'
-        validateable.clearErrors()
+        domainClass.clearErrors()
 
         then: 'the errors are gone'
-        !validateable.hasErrors()
-        validateable.errors.errorCount == 0
+        !domainClass.hasErrors()
+        domainClass.errors.errorCount == 0
 
         when: 'the object is put back in a valid state'
-        validateable.name = 'Kirk'
+        domainClass.name = 'Kirk'
 
         then: 'validate() returns true and there are no errors'
-        validateable.validate()
-        !validateable.hasErrors()
-        validateable.errors.errorCount == 0
+        domainClass.validate()
+        !domainClass.hasErrors()
+        domainClass.errors.errorCount == 0
     }
 
-    @Issue('GRAILS-10871')
     void 'Test that binding failures are retained during validation and that the corresponding property is not validated'() {
         given:
-        def validateable = new MyValidateable()
+        def domainClass = new MyDomainClass()
 
         when:
-        def fieldError = new FieldError(MyValidateable.name, 'age', 'type mismatched', true, null, null, null)
-        validateable.errors.addError fieldError
+        def fieldError = new FieldError(MyDomainClass.name, 'age', 'type mismatched', true, null, null, null)
+        domainClass.errors.addError fieldError
 
         then:
-        validateable.hasErrors()
-        validateable.errors.errorCount == 1
-        validateable.errors.getFieldError('age').rejectedValue == 'type mismatched'
+        domainClass.hasErrors()
+        domainClass.errors.errorCount == 1
+        domainClass.errors.getFieldError('age').rejectedValue == 'type mismatched'
 
         when:
-        validateable.name = 'lower case'
-        validateable.age = -1  // invalid value
-        validateable.town = ''
+        domainClass.name = 'lower case'
+        domainClass.age = -1  // invalid value
+        domainClass.town = ''
 
         then:
-        !validateable.validate()
-        validateable.hasErrors()
-        validateable.errors.errorCount == 2
-        validateable.errors.getFieldError('age').rejectedValue == 'type mismatched'
-        validateable.errors.getFieldError('name').rejectedValue == 'lower case'
+        !domainClass.validate()
+        domainClass.hasErrors()
+        domainClass.errors.errorCount == 2
+        domainClass.errors.getFieldError('age').rejectedValue == 'type mismatched'
+        domainClass.errors.getFieldError('name').rejectedValue == 'lower case'
     }
 
     void 'Test that validation failures are not retained during validation'() {
         given:
-        def validateable = new MyValidateable()
+        def domainClass = new MyDomainClass()
 
         when:
         def fieldError = new FieldError(MyValidateable.name, 'age', 'any validation failure', false, null, null, null)
-        validateable.errors.addError fieldError
+        domainClass.errors.addError fieldError
 
         then:
-        validateable.hasErrors()
-        validateable.errors.errorCount == 1
-        validateable.errors.getFieldError('age').rejectedValue == 'any validation failure'
+        domainClass.hasErrors()
+        domainClass.errors.errorCount == 1
+        domainClass.errors.getFieldError('age').rejectedValue == 'any validation failure'
 
         when:
-        validateable.name = 'lower case'
-        validateable.age = -1  // invalid value
-        validateable.town = ''
+        domainClass.name = 'lower case'
+        domainClass.age = -1  // invalid value
+        domainClass.town = ''
 
         then:
-        !validateable.validate()
-        validateable.hasErrors()
-        validateable.errors.errorCount == 2
-        validateable.errors.getFieldError('age')?.rejectedValue == -1
-        validateable.errors.getFieldError('name').rejectedValue == 'lower case'
+        !domainClass.validate()
+        domainClass.hasErrors()
+        domainClass.errors.errorCount == 2
+        domainClass.errors.getFieldError('age')?.rejectedValue == -1
+        domainClass.errors.getFieldError('name').rejectedValue == 'lower case'
 
         when:
-        validateable.age = 1  // valid value
+        domainClass.age = 1  // valid value
 
         then:
-        !validateable.validate()
-        validateable.hasErrors()
-        validateable.errors.errorCount == 1
-        validateable.errors.getFieldError('name').rejectedValue == 'lower case'
+        !domainClass.validate()
+        domainClass.hasErrors()
+        domainClass.errors.errorCount == 1
+        domainClass.errors.getFieldError('name').rejectedValue == 'lower case'
     }
 
-    @Issue('GRAILS-11601')
     void 'Test that only the expected properties are constrained'() {
         when:
-        def constraints = MyValidateable.getConstraintsMap()
+        def constraints = getAssociatedDomainClassFromApplication(new MyDomainClass()).getConstrainedProperties()
 
         then:
-        constraints.size() == 5
+        constraints.size() == 4
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
         constraints.containsKey 'someProperty'
-        constraints.containsKey 'twiceAge' // only getter method
+        //constraints.containsKey 'twiceAge' // TODO only getter method is not supported yet
 
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
         constraints.someProperty.appliedConstraints.size() == 1
-        constraints.twiceAge.appliedConstraints.size() == 1
+        //constraints.twiceAge.appliedConstraints.size() == 1 // TODO
 
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -138,19 +143,20 @@ class ValidateableTraitSpec extends Specification {
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
         constraints.someProperty.hasAppliedConstraint 'nullable'
-        constraints.twiceAge.hasAppliedConstraint 'nullable'
+        //constraints.twiceAge.hasAppliedConstraint 'nullable' // TODO
 
         and: 'implicit defaultNullable is nullable:false'
         !constraints.name.nullable
         !constraints.age.nullable
         !constraints.town.nullable
         !constraints.someProperty.nullable
-        !constraints.twiceAge.nullable
+        //!constraints.twiceAge.nullable // TODO
     }
 
+    @Ignore('defaultNullable is not supported yet')
     void 'Test that constraints are nullable by default if overridden and ensure nullable:true constraint is not applied when no other constraints were defined by user'() {
         when:
-        def constraints = MyNullableValidateable.getConstraintsMap()
+        def constraints = getAssociatedDomainClassFromApplication(new MyNullableDomainClass()).getConstrainedProperties()
 
         then: 'not including "name" because there is no constraints by user'
         constraints.size() == 3
@@ -169,10 +175,10 @@ class ValidateableTraitSpec extends Specification {
         constraints.age.nullable
     }
 
-    @Issue('GRAILS-11625')
+    @Ignore('defaultNullable is not supported yet')
     void 'Test that properties defined in a class with overridden defaultNullable which are not explicitly constrained are not accessed during validation'() {
         given: 'an instance of a class with overridden defaultNullable returning true'
-        def obj = new MyNullableValidateable(town: 'St. Louis', age: 18)
+        def obj = new MyNullableDomainClass(town: 'St. Louis', age: 18)
 
         expect: 'property accessors are not invoked for properties which are not explicitly constrained (getName() would throw an exception)'
         obj.validate()
@@ -180,7 +186,7 @@ class ValidateableTraitSpec extends Specification {
 
     void 'Ensure class without any constraints can be validated'() {
         given:
-        NoConstraintsValidateable obj = new NoConstraintsValidateable()
+        NoConstraintsDomainClass obj = new NoConstraintsDomainClass()
 
         expect:
         obj.validate()
@@ -188,28 +194,27 @@ class ValidateableTraitSpec extends Specification {
         obj.errors != null
     }
 
-    @Issue('9513')
     void 'Ensure validation may be done for classes with private and protected getters'() {
         given:
-        ValidateableGetters obj = new ValidateableGetters()
+        DomainClassGetters obj = new DomainClassGetters()
 
         expect: 'validation is executed and public properties/getters are marked nullable in errors'
         !obj.validate()
         obj.hasErrors()
-        obj.errors.errorCount == 2
+        obj.errors.errorCount == 1
         obj.errors['town']?.code == 'nullable' // public property
-        obj.errors['name']?.code == 'nullable' // only public getter method
+        //obj.errors['name']?.code == 'nullable' // TODO only public getter method is not supported yet
         !obj.errors['surname'] // only protected getter method
         !obj.errors['email'] // only private getter method
     }
 
     void 'Ensure private and protected getter is not handled as not-nullable property by default'() {
         when:
-        Map constraints = new ValidateableGetters().getConstraintsMap()
+        Map constraints = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
-        then: 'only public properties and public getters should be considered validateable properties by default'
-        constraints.size() == 2
-        constraints.name
+        then: 'only public properties and public getters should be considered domainClass properties by default'
+        constraints.size() == 1
+        //constraints.name // TODO only public getter method is not supported yet
         constraints.town
     }
 
@@ -225,7 +230,7 @@ class ValidateableTraitSpec extends Specification {
         }
 
         and:
-        def constraints = SharedConstraintsValidateable.getConstraintsMap()
+        def constraints = getAssociatedDomainClassFromApplication(new SharedConstraintsDomainClass()).getConstrainedProperties()
 
         expect:
         constraints.size() == 2
@@ -236,10 +241,9 @@ class ValidateableTraitSpec extends Specification {
         constraints.name.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
 
-        // TODO default constraints for Validateable not yet supported
-        //and: 'default constraints "*"'
-        //constraints.name.hasAppliedConstraint 'blank'
-        //constraints.town.hasAppliedConstraint 'blank'
+        and: 'default constraints "*"'
+        constraints.name.hasAppliedConstraint 'blank'
+        constraints.town.hasAppliedConstraint 'blank'
 
         and: 'shared constraints'
         constraints.town.hasAppliedConstraint 'matches'
@@ -255,7 +259,7 @@ class ValidateableTraitSpec extends Specification {
 
     void 'Ensure properties of super class is inherited'() {
         when:
-        Map constraints = new SubClassValidateable().getConstraintsMap()
+        def constraints = getAssociatedDomainClassFromApplication(new SubClassDomainClass()).getConstrainedProperties()
 
         then:
         constraints.size() == 2
@@ -269,18 +273,25 @@ class ValidateableTraitSpec extends Specification {
 
     void 'Ensure properties of super class can be validated'() {
         given:
-        def validateable = new SubClassValidateable()
+        def obj = new SubClassDomainClass()
 
         expect:
-        !validateable.validate()
-        validateable.hasErrors()
-        validateable.errors.errorCount == 2
-        validateable.errors['superName']?.code == 'nullable'
-        validateable.errors['subName']?.code == 'nullable'
+        !obj.validate()
+        obj.hasErrors()
+        obj.errors.errorCount == 2
+        obj.errors['superName']?.code == 'nullable'
+        obj.errors['subName']?.code == 'nullable'
+    }
+
+    // FIXME domainClass.getConstrainedProperty() cannot be used. this is workaround.
+    private GrailsDomainClass getAssociatedDomainClassFromApplication(Object associatedObject) {
+        String associatedObjectType = Hibernate.getClass(associatedObject).getName();
+        return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, associatedObjectType);
     }
 }
 
-class MyValidateable implements Validateable {
+@Entity
+class MyDomainClass {
     String name
     Integer age
     String town
@@ -306,7 +317,8 @@ class MyValidateable implements Validateable {
     }
 }
 
-class MyNullableValidateable implements Validateable {
+@Entity
+class MyNullableDomainClass {
     Integer age
     String town
     String country
@@ -321,18 +333,20 @@ class MyNullableValidateable implements Validateable {
         country nullable: true
     }
 
-    static boolean defaultNullable() {
+    static boolean defaultNullable() { // TODO not supported yet
         true
     }
 }
 
-class NoConstraintsValidateable implements Validateable {
+@Entity
+class NoConstraintsDomainClass {
     static constraints = {
 
     }
 }
 
-class ValidateableGetters implements Validateable {
+@Entity
+class DomainClassGetters {
     //standard properties - private/protected will not have getter
     String town
 
@@ -354,7 +368,8 @@ class ValidateableGetters implements Validateable {
     private static Date getNewYear() {}
 }
 
-class SharedConstraintsValidateable implements Validateable {
+@Entity
+class SharedConstraintsDomainClass {
     String name
     String town
 
@@ -364,7 +379,8 @@ class SharedConstraintsValidateable implements Validateable {
     }
 }
 
-class SuperClassValidateable {
+@Entity
+class SuperClassDomainClass {
     String superName
 
     static constraints = {
@@ -372,7 +388,8 @@ class SuperClassValidateable {
     }
 }
 
-class SubClassValidateable extends SuperClassValidateable implements Validateable {
+@Entity
+class SubClassDomainClass extends SuperClassDomainClass {
     String subName
 
     static constraints = {
