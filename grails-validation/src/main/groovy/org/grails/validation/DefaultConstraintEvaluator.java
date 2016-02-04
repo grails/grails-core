@@ -164,7 +164,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
 
         for (String propertyName : constrainablePropertyMap.keySet()) {
             GrailsDomainClassProperty domainClassProperty = domainClassPropertyMap.get(propertyName);
-            boolean isPersistentProperty = domainClassProperty != null;
+            boolean isPersistentProperty = isDomainClass && domainClassProperty != null;
 
             // ignore the property which should not be validated for domain class.
             if (isDomainClass) {
@@ -180,9 +180,6 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
                             continue;
                         }
                     }
-                } else {
-                    // TODO a property as only getter method is not supported yet.
-                    continue;
                 }
             }
 
@@ -199,13 +196,13 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
             }
 
             // apply default constraints '*'
-            if (isDomainClass && isPersistentProperty) {
+            if (isPersistentProperty) {
                 // TODO all properties of command object and an property by only getter method of domain class is not supported.
                 applyDefaultConstraints(domainClassProperty, constrained, defaultConstraints);
             }
 
             // apply default nullable
-            if (isDomainClass && isPersistentProperty) {
+            if (isPersistentProperty) {
                 // TODO want to unify the two overload methods
                 applyDefaultNullableConstraint(domainClassProperty, constrained); // default configuration for domain class is fixed as nullable:false
             } else {
