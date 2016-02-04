@@ -197,8 +197,10 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
 
             // apply default constraints '*'
             if (isPersistentProperty) {
-                // TODO all properties of command object and an property by only getter method of domain class is not supported.
+                // TODO want to unify the two overload methods
                 applyDefaultConstraints(domainClassProperty, constrained, defaultConstraints);
+            } else {
+                applyDefaultConstraints(propertyName, constrained);
             }
 
             // apply default nullable
@@ -302,6 +304,17 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
         }
     }
 
+    @SuppressWarnings("unchecked")
+    protected void applyDefaultConstraints(String propertyName, Constrained constrained) {
+        if (defaultConstraints.containsKey("*")) {
+            final Object o = defaultConstraints.get("*");
+            if (o instanceof Map) {
+                Map<String, Object> globalConstraints = (Map<String, Object>) o;
+                applyMapOfConstraints(globalConstraints, propertyName, null, constrained);
+            }
+        }
+    }
+
     protected void applyDefaultNullableConstraint(GrailsDomainClassProperty domainClassProperty, Constrained constrained) {
         if (canApplyNullableConstraint(domainClassProperty.getName(), domainClassProperty, constrained)) {
             applyDefaultNullableConstraint(constrained, false);
@@ -373,6 +386,9 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
     }
 
     protected boolean isConstrainableProperty(GrailsDomainClassProperty domainClassProperty, String propertyName) {
+        if (domainClassProperty == null) return true;
+
+        // there is some properties to have to ignore "nullable" if it's domain class.
         return !propertyName.equals(GrailsDomainClassProperty.DATE_CREATED) &&
             !propertyName.equals(GrailsDomainClassProperty.LAST_UPDATED) &&
             !((domainClassProperty.isOneToOne() || domainClassProperty.isManyToOne()) && domainClassProperty.isCircular());
