@@ -85,7 +85,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         git branch --track 3.1.x remotes/origin/3.1.x
         git checkout 3.1.x
 
-        echo "grails.version=${TRAVIS_TAG:1}" > profiles/gradle.properties
+        echo "grailsVersion=${TRAVIS_TAG:1}" > profiles/gradle.properties
         git add profiles/gradle.properties
         git commit -m "Release $TRAVIS_TAG profiles"
 
