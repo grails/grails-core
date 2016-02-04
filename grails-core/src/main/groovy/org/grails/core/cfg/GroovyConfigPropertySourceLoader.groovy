@@ -41,7 +41,11 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
     final String[] fileExtensions = ['groovy'] as String[]
 
     @Override
-    PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
+    PropertySource<?> load(String name, Resource resource, String profile) {
+        load(name, resource, profile, [])
+    }
+
+    PropertySource<?> load(String name, Resource resource, String profile, List<String> filteredKeys) throws IOException {
         def env = Environment.current.name
         if(profile == null || env == profile) {
 
@@ -55,6 +59,11 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                         appVersion: Metadata.getCurrent().getApplicationVersion() )
                 try {
                     def configObject = configSlurper.parse(resource.URL)
+
+                    filteredKeys?.each { key ->
+                        configObject.remove(key)
+                    }
+
                     def propertySource = new NavigableMap()
                     propertySource.merge(configObject, false)
                     return new NavigableMapPropertySource(name, propertySource)
