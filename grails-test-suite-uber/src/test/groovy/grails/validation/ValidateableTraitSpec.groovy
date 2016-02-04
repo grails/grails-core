@@ -7,6 +7,7 @@ import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.springframework.validation.FieldError
 import spock.lang.Issue
 import spock.lang.Specification
+
 /**
  * Ensure validation logic for command object with {@code Validateable} and whether or not compatible with domain class.
  *
@@ -236,10 +237,9 @@ class ValidateableTraitSpec extends Specification {
         constraints.name.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
 
-        // TODO default constraints for Validateable not yet supported
-        //and: 'default constraints "*"'
-        //constraints.name.hasAppliedConstraint 'blank'
-        //constraints.town.hasAppliedConstraint 'blank'
+        and: 'default constraints "*"'
+        constraints.name.hasAppliedConstraint 'blank'
+        constraints.town.hasAppliedConstraint 'blank'
 
         and: 'shared constraints'
         constraints.town.hasAppliedConstraint 'matches'
