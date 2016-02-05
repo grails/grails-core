@@ -16,6 +16,7 @@
 package org.grails.config.yaml
 
 import grails.plugins.GrailsPlugin
+import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.grails.config.NavigableMap
@@ -28,6 +29,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.core.env.PropertySource
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
+
 /**
  * @author Graeme Rocher
  * @since 3.0
@@ -35,78 +37,81 @@ import org.springframework.util.ClassUtils
 @CompileStatic
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLoader {
-    @Override
-    String[] getFileExtensions() {
-        ['yml', 'yaml'] as String[]
-    }
+	@Override
+	String[] getFileExtensions() {
+		['yml', 'yaml'] as String[]
+	}
 
-    @Override
-    PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
-        return load(name, resource, profile, true, Collections.<String>emptyList())
-    }
+	@Override
+	PropertySource<?> load(String name, Resource resource, String profile) throws IOException {
+		return load(name, resource, profile, true, Collections.<String> emptyList())
+	}
 
-    PropertySource<?> load(String name, Resource resource, String profile, boolean parseFlatKeys ) throws IOException {
-        return load(name, resource, profile, true, Collections.<String>emptyList())
-    }
+	PropertySource<?> load(String name, Resource resource, String profile, boolean parseFlatKeys) throws IOException {
+		return load(name, resource, profile, true, Collections.<String> emptyList())
+	}
 
-    PropertySource<?> load(String name, Resource resource, String profile, boolean parseFlatKeys, List<String> filteredKeys ) throws IOException {
-        if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
-            boolean matchDefault
-            if (profile == null) {
-                matchDefault = true
-                setMatchDefault(matchDefault)
-                setDocumentMatchers(new SpringProfileDocumentMatcher())
-            }
-            else {
-                matchDefault = false;
-                setMatchDefault(matchDefault)
-                setDocumentMatchers(new SpringProfileDocumentMatcher(profile))
-            }
-            resources = [resource] as Resource[]
-            def propertySource = new NavigableMap()
-            if(matchDefault && resource.filename == Metadata.FILE) {
-                def metadata = Metadata.getCurrent()
-                def metadataSource = metadata.getSource()
-                def metadataFile = metadata.getMetadataFile()
-                if(metadataSource != null && metadataFile != null && metadataFile.getURL().equals(resource.getURL())) {
-                    for(o in metadataSource) {
-                        if(o instanceof Map) {
-                            propertySource.merge((Map)o, false)
-                        }
-                    }
-                }
-                else {
-                    process { Properties properties, Map<String, Object> map ->
-                        propertySource.merge(map, parseFlatKeys)
-                    }
-                }
-            }
-            else {
-                process { Properties properties, Map<String, Object> map ->
-                    if(!filteredKeys.isEmpty()) {
-                        def env = map.get(GrailsPlugin.ENVIRONMENTS)
-                        for(key in filteredKeys) {
-                            map.remove(key)
-                            if(env instanceof Map) {
-                                Map envMap = (Map)env
-                                for(envSpecific in envMap.values()) {
-                                    if(envSpecific instanceof Map) {
-                                        ((Map)envSpecific).remove(key)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    propertySource.merge(map, parseFlatKeys)
-                }
-            }
+	PropertySource<?> load(String name, Resource resource, String profile, boolean parseFlatKeys, List<String> filteredKeys) throws IOException {
+		if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
+			boolean matchDefault
+			if (profile == null) {
+				matchDefault = true
+				setMatchDefault(matchDefault)
+				setDocumentMatchers(new SpringProfileDocumentMatcher())
+			} else {
+				matchDefault = false;
+				setMatchDefault(matchDefault)
+				setDocumentMatchers(new SpringProfileDocumentMatcher(profile))
+			}
+			resources = [resource] as Resource[]
+			def propertySource = new NavigableMap()
+			if (matchDefault && resource.filename == Metadata.FILE) {
+				def metadata = Metadata.getCurrent()
+				def metadataSource = metadata.getSource()
+				def metadataFile = metadata.getMetadataFile()
+				if (metadataSource != null && metadataFile != null && metadataFile.getURL().equals(resource.getURL())) {
+					for (o in metadataSource) {
+						if (o instanceof Map) {
+							propertySource.merge((Map) o, false)
+						}
+					}
+				} else {
+					process { Properties properties, Map<String, Object> map ->
+						propertySource.merge(map, parseFlatKeys)
+					}
+				}
+			} else {
+				process { Properties properties, Map<String, Object> map ->
+					//Now merge the environment config over the top of the normal stuff
+					def environments = map.get(GrailsPlugin.ENVIRONMENTS)
+					if (environments instanceof Map) {
+						Map envMap = (Map) environments
+						for (envSpecific in envMap) {
+							if (envSpecific instanceof Map || envSpecific instanceof Map.Entry) {
+								def environmentEntries = environments.get(envSpecific.key)
+								if (environmentEntries instanceof Map) {
+									if (envSpecific?.key?.toString()?.equalsIgnoreCase(Environment.getCurrentEnvironment()?.name)) {
+										map.putAll(environmentEntries)
+									}
+								}
+							}
+						}
+					}
 
-            if (!propertySource.isEmpty()) {
-                return new NavigableMapPropertySource(name, propertySource)
-            }
-        }
-        return null
-    }
+					filteredKeys?.each { key ->
+						map.remove(key)
+					}
+
+					propertySource.merge(map, parseFlatKeys)
+				}
+			}
+
+			if (!propertySource.isEmpty()) {
+				return new NavigableMapPropertySource(name, propertySource)
+			}
+		}
+		return null
+	}
 
 
 }
