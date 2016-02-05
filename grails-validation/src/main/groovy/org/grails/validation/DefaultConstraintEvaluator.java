@@ -38,6 +38,7 @@ import org.grails.core.support.GrailsDomainConfigurationUtil;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,6 +85,12 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
 
     @Override
     @SuppressWarnings("unchecked")
+    public Map<String, Constrained> evaluate(Class<?> cls, boolean defaultNullable, boolean useOnlyAdHocConstraints, Closure... adHocConstraintsClosures) {
+        return evaluateConstraints(cls, null, defaultNullable, useOnlyAdHocConstraints, adHocConstraintsClosures);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Constrained> evaluate(GrailsDomainClass cls) {
         return evaluateConstraints(cls.getClazz(), cls.getPersistentProperties());
     }
@@ -102,53 +109,36 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
      * Evaluates the constraints closure to build the list of constraints
      *
      * @param theClass   The domain class to evaluate constraints for
-     * @param properties The properties of the instance
+     * @param domainClassProperties The properties of the instance
      * @return A Map of constraints
      */
-    protected Map<String, Constrained> evaluateConstraints(final Class<?> theClass, GrailsDomainClassProperty[] properties) {
-        return evaluateConstraints(theClass, properties, false);
+    protected Map<String, Constrained> evaluateConstraints(final Class<?> theClass, GrailsDomainClassProperty[] domainClassProperties) {
+        return evaluateConstraints(theClass, domainClassProperties, false);
     }
 
     /**
      * Evaluates the constraints closure to build the list of constraints
      *
      * @param theClass        The domain class to evaluate constraints for
-     * @param properties      The properties of the instance
+     * @param domainClassProperties      The properties of the instance
      * @param defaultNullable Indicates if properties are nullable by default
      * @return A Map of constraints
      */
-    protected Map<String, Constrained> evaluateConstraints(final Class<?> theClass, GrailsDomainClassProperty[] properties, boolean defaultNullable) {
-        // Evaluate all the constraints closures in the inheritance chain
-        List<Closure> constraintsClosureList = new ArrayList<>();
-        for (Object aClassChain : GrailsDomainConfigurationUtil.getSuperClassChain(theClass)) {
-            Class<?> clazz = (Class<?>) aClassChain;
-            Closure<?> c = (Closure<?>) GrailsClassUtils.getStaticFieldValue(clazz, ConstraintsEvaluator.PROPERTY_NAME);
-            if (c == null) {
-                c = getConstraintsFromScript(theClass);
-            }
-            if (c != null) {
-                constraintsClosureList.add(c);
-            } else {
-                LOG.debug("User-defined constraints not found on class [" + clazz + "], applying default constraints");
-            }
-        }
-        return evaluateConstraints(constraintsClosureList, theClass, properties, defaultNullable);
+    protected Map<String, Constrained> evaluateConstraints(final Class<?> theClass, GrailsDomainClassProperty[] domainClassProperties, boolean defaultNullable) {
+        List<Closure> constraintsClosures = retrieveConstraintsClosures(theClass);
+        Map<String, Constrained> constraintMap = evaluateConstraintsMap(constraintsClosures, theClass);
+        return evaluateConstraints(constraintMap, theClass, domainClassProperties, defaultNullable);
     }
 
-    protected Map<String, Constrained> evaluateConstraints(List<Closure> constraintsClosureList, final Class<?> theClass, GrailsDomainClassProperty[] domainClassProperties, boolean defaultNullable) {
-        // build constraintMap just specified by user.
-        ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(theClass);
-        for (Closure<?> c : constraintsClosureList) {
-            c = (Closure<?>) c.clone();
-            c.setResolveStrategy(Closure.DELEGATE_ONLY);
-            c.setDelegate(delegate);
-            c.call();
+    protected Map<String, Constrained> evaluateConstraints(final Class<?> theClass, GrailsDomainClassProperty[] domainClassProperties, boolean defaultNullable, boolean useOnlyAdHocConstraints, Closure[] adHocConstraintsClosures) {
+        List<Closure> constraintsClosures = new ArrayList<>();
+        if (!useOnlyAdHocConstraints) {
+            constraintsClosures.addAll(retrieveConstraintsClosures(theClass));
         }
-        Map<String, Constrained> constraintMap = delegate.getConstrainedProperties();
-
-        // resolve shared constraints
-        applySharedConstraints(delegate, constraintMap);
-
+        if (adHocConstraintsClosures != null) {
+            constraintsClosures.addAll(Arrays.asList(adHocConstraintsClosures));
+        }
+        Map<String, Constrained> constraintMap = evaluateConstraintsMap(constraintsClosures, theClass);
         return evaluateConstraints(constraintMap, theClass, domainClassProperties, defaultNullable);
     }
 
@@ -213,6 +203,41 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
         }
         return constraintMap;
     }
+
+    protected List<Closure> retrieveConstraintsClosures(Class<?> theClass) {
+        // Evaluate all the constraints closures in the inheritance chain
+        List<Closure> constraintsClosureList = new ArrayList<>();
+        for (Object aClassChain : GrailsDomainConfigurationUtil.getSuperClassChain(theClass)) {
+            Class<?> clazz = (Class<?>) aClassChain;
+            Closure<?> c = (Closure<?>) GrailsClassUtils.getStaticFieldValue(clazz, ConstraintsEvaluator.PROPERTY_NAME);
+            if (c == null) {
+                c = getConstraintsFromScript(theClass);
+            }
+            if (c != null) {
+                constraintsClosureList.add(c);
+            } else {
+                LOG.debug("User-defined constraints not found on class [" + clazz + "], applying default constraints");
+            }
+        }
+        return constraintsClosureList;
+    }
+
+    protected Map<String, Constrained> evaluateConstraintsMap(List<Closure> constraintsClosureList, Class<?> theClass) {
+        // build constraintMap just specified by user.
+        ConstrainedPropertyBuilder delegate = new ConstrainedPropertyBuilder(theClass);
+        for (Closure<?> c : constraintsClosureList) {
+            c = (Closure<?>) c.clone();
+            c.setResolveStrategy(Closure.DELEGATE_ONLY);
+            c.setDelegate(delegate);
+            c.call();
+        }
+        Map<String, Constrained> constraintMap = delegate.getConstrainedProperties();
+
+        // resolve shared constraints
+        applySharedConstraints(delegate, constraintMap);
+        return constraintMap;
+    }
+
 
     protected boolean isAssociationIdProperty(String propertyName, Map<String, GrailsDomainClassProperty> domainClassPropertyMap) {
         boolean isPersistentProperty = (domainClassPropertyMap.get(propertyName) != null);

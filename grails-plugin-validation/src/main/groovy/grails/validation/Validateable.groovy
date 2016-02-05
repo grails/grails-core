@@ -16,9 +16,6 @@
 package grails.validation
 
 import grails.util.Holders
-import grails.validation.ConstrainedProperty
-import grails.validation.ConstraintsEvaluator
-import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.grails.validation.DefaultConstraintEvaluator
@@ -81,17 +78,38 @@ trait Validateable {
         }
     }
 
-    boolean validate() {
-        validate(null)
+    boolean validate(Closure... adHocConstraintsClosures) {
+        validate(null, null, adHocConstraintsClosures)
     }
 
-    boolean validate(List fieldsToValidate) {
+    boolean validate(Map<String, Object> params, Closure... adHocConstraintsClosures) {
+        validate(null, params, adHocConstraintsClosures)
+    }
+
+    boolean validate(List fieldsToValidate, Closure... adHocConstraintsClosures) {
+        validate(fieldsToValidate, null, adHocConstraintsClosures)
+    }
+
+    boolean validate(List fieldsToValidate, Map<String, Object> params, Closure... adHocConstraintsClosures) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
-        //initialize errors before constraints block, because this block may be empty
-        def localErrors = new ValidationErrors(this, this.class.name)
+        boolean shouldInherit = Boolean.valueOf(params?.inherit?.toString() ?: 'true')
+        ConstraintsEvaluator evaluator = findConstraintsEvaluator()
+        Map<String, ConstrainedProperty> constraints = evaluator.evaluate(this.class, defaultNullable(), !shouldInherit, adHocConstraintsClosures)
 
-        def constraints = getConstraintsMap()
+        def localErrors = doValidate(constraints, fieldsToValidate)
+
+        boolean clearErrors = Boolean.valueOf(params?.clearErrors?.toString() ?: 'true')
+        if (errors && !clearErrors) {
+            errors.addAllErrors(localErrors)
+        } else {
+            errors = localErrors
+        }
+        return !errors.hasErrors()
+    }
+
+    private ValidationErrors doValidate(Map<String, ConstrainedProperty> constraints, List fieldsToValidate) {
+        def localErrors = new ValidationErrors(this, this.class.name)
         if (constraints) {
             Object messageSource = findMessageSource()
             def originalErrors = getErrors()
@@ -116,11 +134,7 @@ trait Validateable {
                 }
             }
         }
-
-        //set errors instance even if constraints were not verified
-        //object should must have it initialized after validate()
-        errors = localErrors
-        return !errors.hasErrors()
+        localErrors
     }
 
     private Object getPropertyValue(ConstrainedProperty prop) {
