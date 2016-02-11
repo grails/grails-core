@@ -24,6 +24,7 @@ import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
 import org.gradle.tooling.*
 import org.gradle.tooling.internal.consumer.DefaultCancellationTokenSource
+import org.gradle.tooling.internal.consumer.DefaultGradleConnector
 import org.grails.build.logging.GrailsConsoleErrorPrintStream
 import org.grails.build.logging.GrailsConsolePrintStream
 import org.grails.cli.profile.ExecutionContext
@@ -79,7 +80,16 @@ class GradleUtil {
     }
 
     public static ProjectConnection openGradleConnection(File baseDir) {
-        GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
+        DefaultGradleConnector connector = (DefaultGradleConnector)GradleConnector.newConnector()
+
+        GradleConnector gradleConnector
+
+        SystemOutErrCapturer.withNullOutput {
+            gradleConnector = connector
+                    .embedded(true)
+                    .forProjectDirectory(baseDir)
+        }
+
         if (System.getenv("GRAILS_GRADLE_HOME")) {
             gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
         }
