@@ -38,6 +38,7 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
     CachedGradleOperation(ProjectContext projectContext, String fileName) {
         this.fileName = fileName
         this.projectContext = projectContext
+        GradleUtil.refreshConnection(projectContext.baseDir)
     }
 
     abstract T readFromCached(File f)
