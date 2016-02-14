@@ -84,13 +84,14 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
                 process { Properties properties, Map<String, Object> map ->
                     //Now merge the environment config over the top of the normal stuff
                     def environments = map.get(GrailsPlugin.ENVIRONMENTS)
+                    def currentEnvironment = Environment.getCurrentEnvironment()?.name
                     if (environments instanceof Map) {
                         Map envMap = (Map) environments
                         for (envSpecific in envMap) {
                             if (envSpecific instanceof Map || envSpecific instanceof Map.Entry) {
                                 def environmentEntries = environments.get(envSpecific.key)
                                 if (environmentEntries instanceof Map) {
-                                    if (envSpecific?.key?.toString()?.equalsIgnoreCase(Environment.getCurrentEnvironment()?.name)) {
+                                    if (envSpecific?.key?.toString()?.equalsIgnoreCase(currentEnvironment)) {
                                         map.putAll(environmentEntries)
                                     }
                                 }
@@ -98,7 +99,7 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
                         }
                     }
 
-                    filteredKeys?.each { key ->
+                    for (String key in filteredKeys) {
                         map.remove(key)
                     }
 
@@ -112,6 +113,4 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
         }
         return null
     }
-
-
 }
