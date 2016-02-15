@@ -1,7 +1,7 @@
-package grails.databinding
+package org.grails.databinding
 
-import grails.databinding.errors.BindingError
-import grails.databinding.events.DataBindingListenerAdapter
+import org.grails.databinding.errors.BindingError
+import org.grails.databinding.events.DataBindingListenerAdapter
 import spock.lang.Specification
 
 import java.text.ParseException
