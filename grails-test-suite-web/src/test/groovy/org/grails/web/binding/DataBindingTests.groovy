@@ -312,7 +312,7 @@ class DataBindingTests  {
 
         assertEquals "wrong number of errors before validation", 2, myBean.errors.errorCount
         assertFalse 'validation should have failed', myBean.validate()
-        assertEquals 'wrong number of errors after validation', 4, myBean.errors.errorCount
+        assertEquals 'wrong number of errors after validation', 3, myBean.errors.errorCount
     }
 
     @Test
