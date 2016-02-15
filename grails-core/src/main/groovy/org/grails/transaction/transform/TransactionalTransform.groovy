@@ -309,7 +309,7 @@ class TransactionalTransform implements ASTTransformation{
         methodNode.setCode(null)
         classNode.addMethod(renamedMethodNode)
         
-        processVariableScopes(source, classNode, renamedMethodNode)
+//        processVariableScopes(source, classNode, renamedMethodNode)
         
         final originalMethodCall = new MethodCallExpression(new VariableExpression("this"), renamedMethodName, new ArgumentListExpression(renamedMethodNode.parameters))
         originalMethodCall.setImplicitThis(false)
