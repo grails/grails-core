@@ -18,6 +18,7 @@ import grails.util.GrailsClassUtils;
 import junit.framework.TestCase;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * @author Graeme Rocher
@@ -301,6 +302,15 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, null));
         assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(null, int.class));
     }
+
+    public void testIsPropertyGetter() throws Exception {
+        assertTrue(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getName", null)));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("setName", null)));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getSurname", null)));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getNewYear", null)));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getFilename", String.class)));
+        assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getTitle", null)));
+    }
 }
 
 class ClassWithStaticFieldAndStaticPropertyWithSameName {
@@ -309,4 +319,18 @@ class ClassWithStaticFieldAndStaticPropertyWithSameName {
     public static String getName() {
         return "SomePropertyValue";
     }
+}
+
+class ClassHavingPropertyGetters {
+    public String getName() { return ""; }
+
+    public void setName() {  }
+
+    protected String getSurname() { return ""; }
+
+    private Date getNewYear() { return null; }
+
+    public String getFilename(String prefix) { return ""; }
+
+    public static String getTitle() { return ""; }
 }
