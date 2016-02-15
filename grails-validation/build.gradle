@@ -6,6 +6,7 @@ dependencies {
         exclude group: 'commons-beanutils', module:'commons-beanutils'
     }
 
+    provided ("org.fusesource.jansi:jansi:$jansiVersion")
     compile project(":grails-core")
 }
 
