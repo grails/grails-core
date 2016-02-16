@@ -31,6 +31,7 @@ import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.plugins.web.interceptors.UrlMappingMatcher
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 import org.springframework.core.Ordered
@@ -251,7 +252,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
             ResponseRenderer.super.render(argMap)
             def mav = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
             if(mav != null) {
-                def view = applicationContext.getBean(ViewResolver).resolveViewName(mav.viewName, request.getLocale())
+                def view = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver).resolveView(mav.viewName, request.getLocale())
                 if(view != null) {
                     def resp = response
                     view.render(mav.model, req, resp)
