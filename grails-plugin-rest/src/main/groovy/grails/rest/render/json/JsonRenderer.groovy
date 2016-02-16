@@ -23,6 +23,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.ProxyHandler
+import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.web.converters.marshaller.ObjectMarshaller
 import org.grails.web.converters.marshaller.json.DeepDomainClassMarshaller
 import org.grails.web.converters.marshaller.json.GroovyBeanMarshaller
@@ -73,7 +74,7 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
         ObjectMarshaller<JSON> marshaller  = null
 
         if (domain) {
-            marshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
+            DeepDomainClassMarshaller domainClassMarshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
                 @Override
                 protected boolean includesProperty(Object o, String property) {
                     return includes == null || includes.contains(property)
@@ -84,6 +85,14 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
                     return excludes.contains(property)
                 }
             }
+            if(includes?.contains(GormProperties.VERSION)) {
+                domainClassMarshaller.includeVersion = true
+            }
+            if(includes?.contains('class')) {
+                domainClassMarshaller.includeClass = true
+            }
+
+            marshaller = domainClassMarshaller
         } else if(!Collection.isAssignableFrom(targetType) && !Map.isAssignableFrom(targetType)) {
             marshaller = (ObjectMarshaller<JSON>)new GroovyBeanMarshaller() {
                 @Override
@@ -98,6 +107,7 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
             }
         }
         if(marshaller) {
+
             registerCustomMarshaller(marshaller)
         }
     }
