@@ -67,10 +67,8 @@ import java.lang.reflect.Modifier
  */
 @CompileStatic
 class GrailsApplicationTestPlugin implements TestPlugin {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
     protected static final boolean isServletApiPresent  = ClassUtils.isPresent("javax.servlet.ServletContext", GrailsApplicationTestPlugin.classLoader)
 
-    static boolean disableClearSpringTestContextManagerCache = Boolean.getBoolean("grails.test.runtime.disable_clear_spring_tcf_cache")
     String[] requiredFeatures = ['metaClassCleaner']
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
@@ -192,7 +190,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
 
     void initialState() {
-        closeCachedSpringTestContexts()
         Holders.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
@@ -324,26 +321,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             Promises.promiseFactory = null
             
             Holders.clear()
-        }
-    }
-
-    void closeCachedSpringTestContexts() {
-        if(!disableClearSpringTestContextManagerCache) {
-            try {
-                doCloseCachedSpringTestContexts()
-            } catch (Exception e) {
-                log.warn("Problem in clearing Spring TestContext cache", e)
-            }
-        }
-    }
-
-    @CompileDynamic
-    void doCloseCachedSpringTestContexts() {
-        def contextCache = TestContextManager.contextCache
-        List<MergedContextConfiguration> keys = []
-        keys.addAll(contextCache.contextMap.keySet())
-        keys.each {
-            contextCache.remove(it, DirtiesContext.HierarchyMode.EXHAUSTIVE)
         }
     }
 
