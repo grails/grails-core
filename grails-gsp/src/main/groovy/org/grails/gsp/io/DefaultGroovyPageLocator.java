@@ -311,6 +311,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
         } else {
             searchPaths = CollectionUtils.newList(
                 GrailsResourceUtils.appendPiecesForUri(SLASHED_VIEWS_DIR_PATH, uri),
+                GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
                 uri);
         }
         return searchPaths;
