@@ -38,10 +38,7 @@ import org.springframework.core.io.ResourceLoader;
 
 import java.io.File;
 import java.security.PrivilegedAction;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
@@ -198,7 +195,10 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
             return null;
         }
 
-        for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
+        List<GrailsPlugin> allPlugins = Arrays.asList(pluginManager.getAllPlugins());
+        Collections.reverse(allPlugins);
+
+        for (GrailsPlugin plugin : allPlugins) {
             if (!(plugin instanceof BinaryGrailsPlugin)) {
                 continue;
             }
