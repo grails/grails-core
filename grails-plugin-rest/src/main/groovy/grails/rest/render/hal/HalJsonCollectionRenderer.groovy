@@ -16,9 +16,11 @@
 package grails.rest.render.hal
 
 import grails.rest.render.ContainerRenderer
+import grails.rest.render.RenderContext
 import grails.util.GrailsNameUtils
 
 import grails.web.mime.MimeType
+import org.grails.web.json.StreamingJsonBuilder
 
 
 /**
