@@ -18,10 +18,9 @@ package grails.rest.render.errors
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
 import groovy.json.JsonOutput
+import groovy.json.StreamingJsonBuilder
 import groovy.transform.CompileStatic
 import grails.web.mime.MimeType
-import org.grails.web.json.StreamingJsonBuilder
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
