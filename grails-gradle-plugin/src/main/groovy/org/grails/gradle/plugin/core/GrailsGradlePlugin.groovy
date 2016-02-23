@@ -414,8 +414,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected Jar createPathingJarTask(Project project, String name, Configuration...configurations) {
-        File assets = new File(project.buildDir, 'assets')
-
         project.tasks.create(name, Jar) { Jar task ->
             task.dependsOn(configurations)
             task.appendix = 'pathing'
@@ -431,13 +429,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                         file.toURI().toURL().toString().replaceFirst(/file:\/+/, '/')
                     }.join(' ')
                 }
-            }
-
-            // assetCompile will be execute for all Jar-type tasks
-            // (see https://github.com/bertramdev/asset-pipeline/blob/master/asset-pipeline-gradle/src/main/groovy/asset/pipeline/gradle/AssetPipelinePlugin.groovy#L85)
-            // exclude the assets from pathing jar
-            task.exclude {
-                it.file.absolutePath.startsWith(assets.absolutePath)
             }
         }
     }
