@@ -64,8 +64,10 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
 
     protected Collection<CommandResourceResolver> getCommandResolvers(boolean inherited) {
         def profileCommandsResolver = new FileSystemCommandResourceResolver(matchingFileExtensions)
+        Collection<CommandResourceResolver> commandResolvers = []
         if(inherited) {
-            return [profileCommandsResolver]
+            commandResolvers.add(profileCommandsResolver)
+            return commandResolvers
         }
         else {
             def localCommandsResolver1 = new FileSystemCommandResourceResolver(matchingFileExtensions) {
@@ -80,7 +82,8 @@ abstract class ResourceResolvingCommandFactory<T> implements CommandFactory {
                     return new FileSystemResource("${BuildSettings.BASE_DIR}/commands/" )
                 }
             }
-            return [profileCommandsResolver, localCommandsResolver1, localCommandsResolver2, new ClasspathCommandResourceResolver(matchingFileExtensions) ]
+            commandResolvers.addAll([profileCommandsResolver, localCommandsResolver1, localCommandsResolver2, new ClasspathCommandResourceResolver(matchingFileExtensions) ])
+            return commandResolvers
         }
     }
 
