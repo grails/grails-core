@@ -37,6 +37,11 @@ class GrailsExtension {
     boolean exploded = false
 
     /**
+     * Whether to create a jar file to reference the classpath to prevent classpath too long issues in Windows
+     */
+    boolean pathingJar = false
+
+    /**
      * Configure the reloading agent
      */
     Agent agent = new Agent()
