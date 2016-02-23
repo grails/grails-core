@@ -120,6 +120,11 @@ class GrailsApp extends SpringApplication {
                 @Override
                 void onNew(File file, List<String> extensions) {
                     changedFiles << file.canonicalFile
+                    // For some bizarro reason Windows fires onNew events even for files that have
+                    // just been modified and not created
+                    if(System.getProperty("os.name").toLowerCase().indexOf("windows") != -1) {
+                        return
+                    }
                     newFiles << file.canonicalFile
                 }
             })
@@ -129,7 +134,7 @@ class GrailsApp extends SpringApplication {
             directoryWatcher.addListener(pluginManagerListener)
 
             File baseDir = new File(location).canonicalFile
-
+            String baseDirPath = baseDir.canonicalPath
             List<File> watchBaseDirectories = [baseDir]
             for(GrailsPlugin plugin in pluginManager.allPlugins) {
                 if(plugin instanceof BinaryGrailsPlugin) {
@@ -155,8 +160,18 @@ class GrailsApp extends SpringApplication {
                         boolean first = true
                         for(watchBase in watchBaseDirectories) {
                             if(!first) {
-                                // the base project will already been in the list of watch patterns, but we add any subprojects here
-                                plugin.watchedResourcePatterns.add(new WatchPattern(directory: watchBase, extension: wp.extension))
+                                if(wp.file != null) {
+                                    String relativePath = wp.file.canonicalPath - baseDirPath
+                                    File watchFile = new File(watchBase, relativePath)
+                                    // the base project will already been in the list of watch patterns, but we add any subprojects here
+                                    plugin.watchedResourcePatterns.add(new WatchPattern(file: watchFile, extension: wp.extension))
+                                }
+                                else if(wp.directory != null) {
+                                    String relativePath = wp.directory.canonicalPath - baseDirPath
+                                    File watchDir = new File(watchBase, relativePath)
+                                    // the base project will already been in the list of watch patterns, but we add any subprojects here
+                                    plugin.watchedResourcePatterns.add(new WatchPattern(directory: watchDir, extension: wp.extension))
+                                }
                             }
                             first = false
                             if(wp.file) {
@@ -202,7 +217,8 @@ class GrailsApp extends SpringApplication {
                             def changedFile = uniqueChangedFiles[0]
                             changedFile = changedFile.canonicalFile
                             // Groovy files within the 'conf' directory are not compiled
-                            if(changedFile.path.contains('/grails-app/conf/')) {
+                            String confPath = "${File.pathSeparator}grails-app${File.pathSeparator}conf${File.pathSeparator}"
+                            if(changedFile.path.contains(confPath)) {
                                 pluginManager.informOfFileChange(changedFile)
                             }
                             else {

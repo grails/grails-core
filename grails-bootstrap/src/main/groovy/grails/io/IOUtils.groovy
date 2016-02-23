@@ -221,8 +221,9 @@ class IOUtils extends SpringIOUtils {
                 def rootFile = new UrlResource(rootResource).file.canonicalFile
 
                 def rootPath = rootFile.path
-                if(rootPath.contains(BuildSettings.BUILD_CLASSES_PATH)) {
-                    return new File(rootPath - BuildSettings.BUILD_CLASSES_PATH)
+                def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
+                if(rootPath.contains(buildClassespath)) {
+                    return new File(rootPath - buildClassespath)
                 }
             } catch (FileNotFoundException fnfe) {
                 return null
@@ -262,8 +263,10 @@ class IOUtils extends SpringIOUtils {
                 if(classResource) {
                     def file = new UrlResource(classResource).getFile()
                     def path = file.canonicalPath
-                    if(path.contains(BuildSettings.BUILD_CLASSES_PATH)) {
-                        location = path.substring(0, path.indexOf(BuildSettings.BUILD_CLASSES_PATH) - 1)
+
+                    def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
+                    if(path.contains(buildClassespath)) {
+                        location = path.substring(0, path.indexOf(buildClassespath) - 1)
                     }
                 }
             }
