@@ -259,7 +259,7 @@ class TransactionalTransform implements ASTTransformation{
     }
 
     protected MethodCallExpression moveOriginalCodeToNewMethod(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
-        String renamedMethodName = '$tt__' + methodNode.getName()
+        String renamedMethodName = getTransactionHandlingMethodName(methodNode)
         final transactionStatusParameter = new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")
         def newParameters = methodNode.getParameters() ? (copyParameters(((methodNode.getParameters() as List) + [transactionStatusParameter]) as Parameter[])) : [transactionStatusParameter] as Parameter[]
 
@@ -287,6 +287,10 @@ class TransactionalTransform implements ASTTransformation{
         originalMethodCall.setMethodTarget(renamedMethodNode)
         
         originalMethodCall
+    }
+
+    static String getTransactionHandlingMethodName(MethodNode methodNode) {
+        '$tt__' + methodNode.getName()
     }
 
     protected void weaveTransactionManagerAware(SourceUnit source, ClassNode declaringClassNode) {
