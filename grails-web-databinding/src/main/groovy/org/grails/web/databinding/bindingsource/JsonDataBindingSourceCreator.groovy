@@ -83,7 +83,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         }
         return new CollectionDataBindingSource() {
             List<DataBindingSource> getDataBindingSources() {
-                dataBindingSources
+                (List<DataBindingSource>)dataBindingSources
             }
         }
     }

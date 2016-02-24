@@ -118,7 +118,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
      */
     Collection<Package> packages() {
         def thisPackage = getClass().package
-        thisPackage ? [ thisPackage ] : []
+        thisPackage ? [ thisPackage ] : new ArrayList<Package>()
     }
 
     /**
