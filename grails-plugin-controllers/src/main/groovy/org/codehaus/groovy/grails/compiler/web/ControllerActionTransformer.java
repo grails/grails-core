@@ -357,6 +357,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         MethodNode method = null;
         if (methodNode.getParameters().length > 0) {
+            final BlockStatement newCodeForExistingMethod = new BlockStatement();
+            final BlockStatement codeToInitializeCommandObjects = getCodeToInitializeCommandObjects(methodNode, methodNode.getName(), methodNode.getParameters(), classNode, source, context);
+            newCodeForExistingMethod.addStatement(codeToInitializeCommandObjects);
+            newCodeForExistingMethod.addStatement(methodNode.getCode());
+            methodNode.setCode(newCodeForExistingMethod);
             final BlockStatement methodCode = new BlockStatement();
             
             final BlockStatement codeToHandleAllowedMethods = getCodeToHandleAllowedMethods(classNode, methodNode.getName());
@@ -383,6 +388,26 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         wrapMethodBodyWithExceptionHandling(classNode, methodNode);
 
         return method;
+    }
+
+    protected BlockStatement getCodeToInitializeCommandObjects(final ASTNode actionNode,
+                                                               final String actionName,
+                                                               final Parameter[] parameters,
+                                                               final ClassNode controllerNode,
+                                                               final SourceUnit source,
+                                                               final GeneratorContext context) {
+        final BlockStatement body = new BlockStatement();
+        for(Parameter p : parameters) {
+            final String paramName = p.getName();
+            final ClassNode paramTypeClassNode = p.getType();
+            if (!(PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) ||
+                    TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode)) &&
+            !paramTypeClassNode.equals(new ClassNode(String.class)) &&
+            !paramTypeClassNode.equals(OBJECT_CLASS)) {
+                initializeAndValidateCommandObjectParameter(body, controllerNode, paramTypeClassNode, actionNode, actionName, paramName, source, context);
+            }
+        }
+        return body;
     }
 
     private Statement addOriginalMethodCall(MethodNode methodNode, BlockStatement blockStatement) {
@@ -438,7 +463,16 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         MethodNode method = controllerClassNode.getMethod(closureProperty.getName(), ZERO_PARAMETERS);
         if (method == null || !method.getDeclaringClass().equals(controllerClassNode)) {
-            ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
+            final ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
+            final BlockStatement newClosureCode = new BlockStatement();
+            final Statement originalClosureCode = closureExpression.getCode();
+            final BlockStatement codeToInitializeCommandObjects = getCodeToInitializeCommandObjects(closureProperty, closureProperty.getName(), closureExpression.getParameters(), controllerClassNode, source, context);
+
+            newClosureCode.addStatement(codeToInitializeCommandObjects);
+            newClosureCode.addStatement(originalClosureCode);
+
+            closureExpression.setCode(newClosureCode);
+
             final Parameter[] parameters = closureExpression.getParameters();
             final BlockStatement newMethodCode = initializeActionParameters(
                     controllerClassNode, closureProperty, closureProperty.getName(),
@@ -705,8 +739,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(classNode, wrapper, param, requestParameterName);
         } else if (!paramTypeClassNode.equals(OBJECT_CLASS)) {
-            initializeAndValidateCommandObjectParameter(wrapper, classNode, paramTypeClassNode,
-                    actionNode, actionName, paramName, source, context);
+            final DeclarationExpression declareCoExpression = new DeclarationExpression(
+                    new VariableExpression(paramName, paramTypeClassNode), Token.newSymbol(Types.EQUALS, 0, 0), new ConstantExpression(null));
+            wrapper.addStatement(new ExpressionStatement(declareCoExpression));
         }
     }
 
@@ -714,9 +749,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final ClassNode controllerNode, final ClassNode commandObjectNode,
             final ASTNode actionNode, final String actionName, final String paramName,
             final SourceUnit source, final GeneratorContext context) {
-        final DeclarationExpression declareCoExpression = new DeclarationExpression(
-                new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
-        wrapper.addStatement(new ExpressionStatement(declareCoExpression));
 
         if(commandObjectNode.isInterface() || Modifier.isAbstract(commandObjectNode.getModifiers())) {
             final String warningMessage = "The [" + actionName + "] action in [" +
@@ -804,8 +836,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         applyDefaultMethodTarget(initializeCommandObjectMethodCall, commandObjectNode);
         
         final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
-        
-        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
+
+        final BinaryExpression isParamNullExression = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null));
+        final Statement initializeCommandObjectIfNull = new IfStatement(new BooleanExpression(isParamNullExression), new ExpressionStatement(assignCommandObjectToParameter), new EmptyStatement());
+        wrapper.addStatement(initializeCommandObjectIfNull);
     }
 
     /**
