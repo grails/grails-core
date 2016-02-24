@@ -111,7 +111,7 @@ trait ModelBuilder {
 
         @Override
         Map<String, Object> asMap() {
-            [ className: className, fullName: fullName, propertyName: propertyName, modelName: propertyName, packageName: packageName, packagePath: packagePath, simpleName: simpleName, lowerCaseName: lowerCaseName]
+            (Map<String,Object>) [ className: className, fullName: fullName, propertyName: propertyName, modelName: propertyName, packageName: packageName, packagePath: packagePath, simpleName: simpleName, lowerCaseName: lowerCaseName]
         }
     }
 
