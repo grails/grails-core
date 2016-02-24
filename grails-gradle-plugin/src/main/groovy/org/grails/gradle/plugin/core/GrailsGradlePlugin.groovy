@@ -13,8 +13,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
+import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.JavaExec
@@ -35,6 +37,8 @@ import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
 import org.springframework.boot.gradle.SpringBootPluginExtension
+import org.apache.tools.ant.taskdefs.condition.Os
+
 
 import javax.inject.Inject
 
@@ -83,6 +87,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureApplicationCommands(project)
 
         createBuildPropertiesTask(project)
+
+        configurePathingJar(project)
     }
 
     protected Task createBuildPropertiesTask(Project project) {
@@ -405,6 +411,56 @@ class GrailsGradlePlugin extends GroovyPlugin {
         native2asciiTask.inputs.dir(src)
         native2asciiTask.outputs.dir(dest)
         native2asciiTask
+    }
+
+    protected Jar createPathingJarTask(Project project, String name, Configuration...configurations) {
+        project.tasks.create(name, Jar) { Jar task ->
+            task.dependsOn(configurations)
+            task.appendix = 'pathing'
+
+            Set files = []
+            configurations.each {
+                files.addAll(it.files)
+            }
+
+            task.doFirst {
+                manifest { Manifest manifest ->
+                    manifest.attributes "Class-Path": files.collect { File file ->
+                        file.toURI().toURL().toString().replaceFirst(/file:\/+/, '/')
+                    }.join(' ')
+                }
+            }
+        }
+    }
+
+    protected void configurePathingJar(Project project) {
+        project.afterEvaluate {
+            ConfigurationContainer configurations =  project.configurations
+            Configuration runtime = configurations.getByName('runtime')
+            Configuration console = configurations.getByName('console')
+
+            Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
+            Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
+
+            GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
+
+            if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
+
+                TaskContainer tasks = project.tasks
+
+                tasks.withType(JavaExec) { JavaExec task ->
+                    task.dependsOn(pathingJar)
+                    task.doFirst {
+                        classpath = project.files("${project.buildDir}/classes/main", "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath)
+                    }
+                }
+
+                tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
+                    task.dependsOn(pathingJarCommand)
+                    task.systemProperties = ['grails.env': 'development']
+                }
+            }
+        }
     }
 
 }
