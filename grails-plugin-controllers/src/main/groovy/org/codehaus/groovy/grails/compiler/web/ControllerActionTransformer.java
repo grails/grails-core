@@ -87,6 +87,7 @@ import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.codehaus.groovy.grails.transaction.transform.TransactionalTransform;
 import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.grails.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
@@ -404,7 +405,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         MethodNode node = methodNode;
         if(GrailsASTUtils.hasAnnotation(methodNode, Transactional.class)) {
             final ClassNode declaringClass = methodNode.getDeclaringClass();
-            final String txHandlingMethodName = "$tt__" + methodNode.getName();
+            final String txHandlingMethodName = TransactionalTransform.getTransactionHandlingMethodName(methodNode);
             final Parameter[] originalMethodParameters = methodNode.getParameters();
             final Parameter[] txHandlingMethodParams = new Parameter[originalMethodParameters.length + 1];
             System.arraycopy(originalMethodParameters, 0, txHandlingMethodParams, 0, originalMethodParameters.length);
