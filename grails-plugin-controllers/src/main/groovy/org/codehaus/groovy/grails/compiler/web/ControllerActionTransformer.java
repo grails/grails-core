@@ -21,6 +21,7 @@ import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.build
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
+import grails.transaction.Transactional;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -92,6 +93,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
@@ -357,11 +359,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         MethodNode method = null;
         if (methodNode.getParameters().length > 0) {
-            final BlockStatement newCodeForExistingMethod = new BlockStatement();
-            final BlockStatement codeToInitializeCommandObjects = getCodeToInitializeCommandObjects(methodNode, methodNode.getName(), methodNode.getParameters(), classNode, source, context);
-            newCodeForExistingMethod.addStatement(codeToInitializeCommandObjects);
-            newCodeForExistingMethod.addStatement(methodNode.getCode());
-            methodNode.setCode(newCodeForExistingMethod);
+            populateMethodWithCommandObjectInitializationCode(classNode, methodNode, source, context);
             final BlockStatement methodCode = new BlockStatement();
             
             final BlockStatement codeToHandleAllowedMethods = getCodeToHandleAllowedMethods(classNode, methodNode.getName());
@@ -388,6 +386,34 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         wrapMethodBodyWithExceptionHandling(classNode, methodNode);
 
         return method;
+    }
+
+    protected void populateMethodWithCommandObjectInitializationCode(final ClassNode classNode,
+                                                                     final MethodNode methodNode,
+                                                                     final SourceUnit source,
+                                                                     final GeneratorContext context) {
+        final MethodNode methodToUse = getMethodToIncludeCommandObjectInitializationCode(methodNode);
+        final BlockStatement newCodeForExistingMethod = new BlockStatement();
+        final BlockStatement codeToInitializeCommandObjects = getCodeToInitializeCommandObjects(methodToUse, methodToUse.getName(), methodToUse.getParameters(), classNode, source, context);
+        newCodeForExistingMethod.addStatement(codeToInitializeCommandObjects);
+        newCodeForExistingMethod.addStatement(methodToUse.getCode());
+        methodToUse.setCode(newCodeForExistingMethod);
+    }
+
+    protected MethodNode getMethodToIncludeCommandObjectInitializationCode(final MethodNode methodNode) {
+        MethodNode node = methodNode;
+        if(GrailsASTUtils.hasAnnotation(methodNode, Transactional.class)) {
+            final ClassNode declaringClass = methodNode.getDeclaringClass();
+            final String txHandlingMethodName = "$tt__" + methodNode.getName();
+            final Parameter[] originalMethodParameters = methodNode.getParameters();
+            final Parameter[] txHandlingMethodParams = new Parameter[originalMethodParameters.length + 1];
+            System.arraycopy(originalMethodParameters, 0, txHandlingMethodParams, 0, originalMethodParameters.length);
+            txHandlingMethodParams[txHandlingMethodParams.length-1] = new Parameter(ClassHelper.make(TransactionStatus.class), "transactionStatus");
+            if(declaringClass.hasMethod(txHandlingMethodName, txHandlingMethodParams)) {
+                node = declaringClass.getMethod(txHandlingMethodName, txHandlingMethodParams);
+            }
+        }
+        return node;
     }
 
     protected BlockStatement getCodeToInitializeCommandObjects(final ASTNode actionNode,
