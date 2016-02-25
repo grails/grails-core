@@ -111,7 +111,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         # Update the website
         git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
         cd grails-static-website
-        echo -e "\n${TRAVIS_TAG:1}" >> generator/src/main/resources/versions
+        echo -e "${TRAVIS_TAG:1}" >> generator/src/main/resources/versions
         git add generator/src/main/resources/versions
         git commit -m "Release Grails $TRAVIS_TAG"
         git push

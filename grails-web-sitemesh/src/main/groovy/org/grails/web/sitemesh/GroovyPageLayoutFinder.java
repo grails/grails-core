@@ -16,6 +16,7 @@
 package org.grails.web.sitemesh;
 
 import grails.util.Environment;
+import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
 
 import java.util.Map;
@@ -27,8 +28,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsStringUtils;
+import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.view.AbstractGrailsView;
 import org.grails.web.servlet.view.GrailsViewResolver;
@@ -110,33 +113,40 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
 
             if (GrailsStringUtils.isBlank(layoutName)) {
                 GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
-                if (controller != null) {
-                    String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
-                    String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
-
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Found controller in request, location layout for controller [" + controllerName
-                                + "] and action [" + actionUri + "]");
+                if (controller != null ) {
+                    GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+                    String controllerName = webRequest.getControllerName();
+                    if(controllerName == null) {
+                        controllerName = GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
                     }
+                    String actionUri = webRequest.getAttributes().getControllerActionUri(request);
 
-                    LayoutCacheKey cacheKey = null;
-                    boolean cachedIsNull = false;
+                    if(controllerName != null && actionUri != null) {
 
-                    if (cacheEnabled) {
-                        cacheKey = new LayoutCacheKey(controllerName, actionUri);
-                        DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
-                        if (cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
-                            d = cacheValue.getDecorator();
-                            if (d == null) {
-                                cachedIsNull = true;
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Found controller in request, location layout for controller [" + controllerName
+                                    + "] and action [" + actionUri + "]");
+                        }
+
+                        LayoutCacheKey cacheKey = null;
+                        boolean cachedIsNull = false;
+
+                        if (cacheEnabled) {
+                            cacheKey = new LayoutCacheKey(controllerName, actionUri);
+                            DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
+                            if (cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
+                                d = cacheValue.getDecorator();
+                                if (d == null) {
+                                    cachedIsNull = true;
+                                }
                             }
                         }
-                    }
 
-                    if (d == null && !cachedIsNull) {
-                        d = resolveDecorator(request, controller, controllerName, actionUri);
-                        if (cacheEnabled) {
-                            layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
+                        if (d == null && !cachedIsNull) {
+                            d = resolveDecorator(request, controller, controllerName, actionUri);
+                            if (cacheEnabled) {
+                                layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
+                            }
                         }
                     }
                 }
