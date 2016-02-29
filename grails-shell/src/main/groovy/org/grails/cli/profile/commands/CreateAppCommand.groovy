@@ -222,6 +222,11 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     @CompileDynamic
     protected void replaceBuildTokens(String profileCoords, Profile profile, List<Feature> features, File targetDirectory) {
         AntBuilder ant = new GrailsConsoleAntBuilder()
+        def ln = System.getProperty("line.separator")
+
+        def repositories = profile.repositories.collect() { String url ->
+            "    maven { url \"${url}\" }".toString()
+        }.unique().join(ln)
 
         def profileDependencies = profile.dependencies
         def dependencies = profileDependencies.findAll() { Dependency dep ->
@@ -248,12 +253,15 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             def art = new DefaultArtifact('org.grails.profiles', profile.name, '', profile.version)
             dependencies.add(new Dependency(art, "profile"))
         }
-        def ln = System.getProperty("line.separator")
         dependencies = dependencies.unique()
 
         dependencies = dependencies.sort({ Dependency dep -> dep.scope }).collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
             "    ${dep.scope} \"${artifactStr}\"".toString()
+        }.unique().join(ln)
+
+        def buildRepositories = profile.buildRepositories.collect() { String url ->
+            "        maven { url \"${url}\" }".toString()
         }.unique().join(ln)
 
         buildDependencies = buildDependencies.collect() { Dependency dep ->
@@ -287,8 +295,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 replacevalue(buildDependencies)
             }
             replacefilter {
-                replacetoken("@buildPlugins@")
-                replacevalue(buildDependencies)
+                replacetoken("@buildRepositories@")
+                replacevalue(buildRepositories)
+            }
+            replacefilter {
+                replacetoken("@repositories@")
+                replacevalue(repositories)
             }
             variables.each { k, v ->
                 replacefilter {

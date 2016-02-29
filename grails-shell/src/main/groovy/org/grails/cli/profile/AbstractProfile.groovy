@@ -55,7 +55,9 @@ abstract class AbstractProfile implements Profile {
     protected NavigableMap navigableConfig
     protected ProfileRepository profileRepository
     protected List<Dependency> dependencies = []
+    protected List<String> repositories = []
     protected List<String> parentNames = []
+    protected List<String> buildRepositories = []
     protected List<String> buildPlugins = []
     protected List<String> buildExcludes = []
     protected final List<Command> internalCommands = []
@@ -193,6 +195,9 @@ abstract class AbstractProfile implements Profile {
             }
         }
 
+        this.repositories = (List<String>)navigableConfig.get("repositories", [])
+
+        this.buildRepositories = (List<String>)navigableConfig.get("build.repositories", [])
         this.buildPlugins = (List<String>)navigableConfig.get("build.plugins", [])
         this.buildExcludes = (List<String>)navigableConfig.get("build.excludes", [])
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
@@ -244,6 +249,17 @@ abstract class AbstractProfile implements Profile {
     }
 
     @Override
+    List<String> getBuildRepositories() {
+        List<String> calculatedRepositories = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedRepositories.addAll(profile.buildRepositories)
+        }
+        calculatedRepositories.addAll(buildRepositories)
+        return calculatedRepositories
+    }
+
+    @Override
     List<String> getBuildPlugins() {
         List<String> calculatedPlugins = []
         def parents = getExtends()
@@ -256,6 +272,17 @@ abstract class AbstractProfile implements Profile {
         }
         calculatedPlugins.addAll(buildPlugins)
         return calculatedPlugins
+    }
+
+    @Override
+    List<String> getRepositories() {
+        List<String> calculatedRepositories = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedRepositories.addAll(profile.repositories)
+        }
+        calculatedRepositories.addAll(repositories)
+        return calculatedRepositories
     }
 
     List<Dependency> getDependencies() {
