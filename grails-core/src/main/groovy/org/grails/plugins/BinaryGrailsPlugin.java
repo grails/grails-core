@@ -17,6 +17,7 @@ package org.grails.plugins;
 
 import grails.core.GrailsApplication;
 import grails.io.IOUtils;
+import grails.io.ResourceUtils;
 import grails.plugins.exceptions.PluginException;
 import org.grails.core.io.StaticResourceLoader;
 import org.springframework.core.io.Resource;
@@ -52,7 +53,6 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     private final Map<String, Class> precompiledViewMap = new HashMap<String, Class>();
     private final Resource baseResource;
     private final Resource baseResourcesResource;
-    private final String baseResourceString;
     private final boolean isJar;
     private final File projectDirectory;
 
@@ -72,12 +72,10 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         }
         this.baseResource = new UrlResource(rootResource);
         try {
-            this.baseResourceString = baseResource.getURL().toString();
+            this.isJar = ResourceUtils.isJarURL(baseResource.getURL());
         } catch (IOException e) {
             throw new PluginException("Cannot evaluate plugin location for plugin " + pluginClass, e);
         }
-
-        this.isJar = baseResourceString.startsWith("jar:");
         this.projectDirectory = isJar ? null : IOUtils.findApplicationDirectoryFile(pluginClass);
 
         URL rootResourcesURL = IOUtils.findRootResourcesURL(pluginClass);
