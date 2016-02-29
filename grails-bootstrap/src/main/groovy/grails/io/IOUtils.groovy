@@ -217,11 +217,15 @@ class IOUtils extends SpringIOUtils {
         def rootResource = findRootResource(targetClass)
         if(rootResource != null) {
 
-            def rootFile = new UrlResource(rootResource).file.canonicalFile
+            try {
+                def rootFile = new UrlResource(rootResource).file.canonicalFile
 
-            def rootPath = rootFile.path
-            if(rootPath.contains(BuildSettings.BUILD_CLASSES_PATH)) {
-                return new File(rootPath - BuildSettings.BUILD_CLASSES_PATH)
+                def rootPath = rootFile.path
+                if(rootPath.contains(BuildSettings.BUILD_CLASSES_PATH)) {
+                    return new File(rootPath - BuildSettings.BUILD_CLASSES_PATH)
+                }
+            } catch (FileNotFoundException fnfe) {
+                return null
             }
         }
         return null
