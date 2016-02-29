@@ -198,9 +198,12 @@ class CoreGrailsPlugin extends Plugin {
             }
         }
         else if (event.source instanceof Class) {
-            RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(applicationContext)
-            RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, (Class) event.source)
-            springConfig.registerBeansWithContext(applicationContext)
+            def clazz = (Class) event.source
+            if(Script.isAssignableFrom(clazz)) {
+                RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(applicationContext)
+                RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(springConfig, grailsApplication, clazz)
+                springConfig.registerBeansWithContext(applicationContext)
+            }
         }
     }
 

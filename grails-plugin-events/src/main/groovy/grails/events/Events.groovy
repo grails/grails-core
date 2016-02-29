@@ -96,7 +96,7 @@ trait Events {
      */
     public <E extends Event<?> > Registration<Object, Consumer<E>> on(Selector sel, Consumer<E> consumer) {
         if(eventBus == null) throw new IllegalStateException("EventBus not present. Event registration attempted outside of application context.")
-        eventBus.on sel, consumer
+        return ( Registration<Object, Consumer<E>>) eventBus.on( sel, consumer )
     }
 
     /**

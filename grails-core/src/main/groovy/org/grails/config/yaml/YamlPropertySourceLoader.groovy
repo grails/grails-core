@@ -113,5 +113,4 @@ class YamlPropertySourceLoader extends YamlProcessor implements PropertySourceLo
 		return null
 	}
 
-
 }
