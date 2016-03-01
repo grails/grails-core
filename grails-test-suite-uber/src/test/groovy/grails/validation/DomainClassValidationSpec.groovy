@@ -24,7 +24,7 @@ import spock.lang.Specification
 class DomainClassValidationSpec extends Specification {
 
     @Issue('grails/grails-core#9749')
-    void 'test that properties expressed in transients list are not constrained by default but can be explictly constrained'() {
+    void 'test that properties expressed in transients list are not constrained by default but can be explicitly constrained'() {
         when:
         def props = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
