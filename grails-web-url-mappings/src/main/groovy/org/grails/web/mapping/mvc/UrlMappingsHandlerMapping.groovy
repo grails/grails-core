@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping.mvc
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingInfo
@@ -61,6 +62,15 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         setOrder(-5)
     }
 
+    @Autowired
+    void setHandlerInterceptors(HandlerInterceptor[] handlerInterceptors) {
+        for(hi in handlerInterceptors) {
+            if(!(hi instanceof MappedInterceptor)) {
+                setInterceptors(hi)
+            }
+        }
+    }
+
     @Autowired(required = false)
     void setWebRequestInterceptors(WebRequestInterceptor[] webRequestInterceptors) {
         webRequestHandlerInterceptors = webRequestInterceptors.collect( { WebRequestInterceptor wri ->
@@ -75,14 +85,40 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
 
     @Override
     protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
-        def chain = super.getHandlerExecutionChain(handler, request)
+        HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
+                (HandlerExecutionChain) handler : new HandlerExecutionChain(handler))
 
         // WebRequestInterceptor need to come first, as these include things like Hibernate OSIV
         if(webRequestHandlerInterceptors) {
             chain.addInterceptors webRequestHandlerInterceptors
         }
+
+        String lookupPath = this.urlPathHelper.getLookupPathForRequest(request)
+        for (HandlerInterceptor interceptor in this.adaptedInterceptors) {
+            if (interceptor instanceof MappedInterceptor) {
+                MappedInterceptor mappedInterceptor = mappedInterceptor(interceptor)
+                if (mappedInterceptor.matches(lookupPath, this.pathMatcher)) {
+                    chain.addInterceptor(mappedInterceptor.getInterceptor())
+                }
+            }
+            else {
+                chain.addInterceptor(interceptor)
+            }
+        }
+
+        for(MappedInterceptor mi in getMappedInterceptors()) {
+            if (mi.matches(lookupPath, this.pathMatcher)) {
+                chain.addInterceptor(mi.getInterceptor())
+            }
+        }
+
         chain.addInterceptor(new ErrorHandlingHandler())
         return chain
+    }
+
+    @CompileDynamic
+    protected MappedInterceptor mappedInterceptor(HandlerInterceptor interceptor) {
+        (MappedInterceptor) interceptor
     }
 
     @Override
