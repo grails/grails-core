@@ -35,6 +35,7 @@ import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.ViewResolver
 
 import javax.annotation.PostConstruct
 import javax.servlet.http.HttpServletRequest
