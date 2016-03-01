@@ -24,13 +24,17 @@ import spock.lang.Specification
 class DomainClassValidationSpec extends Specification {
 
     @Issue('grails/grails-core#9749')
-    void 'test that properties expressed in transients list are not constrained by default but can be explicitly constrained'() {
+    void 'test that transient properties are not constrained by default but can be explicitly constrained'() {
         when:
         def props = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
         then:
         !props.foo
+        !props.baz
+        !props.transientString1
         props.bar
+        props.qux
+        props.transientString2
     }
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
@@ -224,10 +228,12 @@ class DomainClassValidationSpec extends Specification {
         Map constraints = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
         then: 'only public properties and public getters should be considered domainClass properties by default'
-        constraints.size() == 3
+        constraints.size() == 5
         constraints.name
         constraints.town
         constraints.bar
+        constraints.qux
+        constraints.transientString2
     }
 
     void "Test that default and shared constraints can be applied from configuration"() {
@@ -385,8 +391,17 @@ class DomainClassGetters {
 
     String getBar() {}
 
+    transient String getBaz() {}
+
+    transient String getQux() {}
+
+    transient String transientString1;
+    transient String transientString2;
+
     static constraints = {
         bar size: 3..10
+        qux size: 3..10
+        transientString2 size: 3..10
     }
 }
 
