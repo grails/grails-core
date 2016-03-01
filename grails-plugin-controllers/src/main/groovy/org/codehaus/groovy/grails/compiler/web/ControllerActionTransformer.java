@@ -21,7 +21,6 @@ import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.build
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
-import grails.transaction.Transactional;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -403,16 +402,14 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected MethodNode getMethodToIncludeCommandObjectInitializationCode(final MethodNode methodNode) {
         MethodNode node = methodNode;
-        if(GrailsASTUtils.hasAnnotation(methodNode, Transactional.class)) {
-            final ClassNode declaringClass = methodNode.getDeclaringClass();
-            final String txHandlingMethodName = TransactionalTransform.getTransactionHandlingMethodName(methodNode);
-            final Parameter[] originalMethodParameters = methodNode.getParameters();
-            final Parameter[] txHandlingMethodParams = new Parameter[originalMethodParameters.length + 1];
-            System.arraycopy(originalMethodParameters, 0, txHandlingMethodParams, 0, originalMethodParameters.length);
-            txHandlingMethodParams[txHandlingMethodParams.length-1] = new Parameter(ClassHelper.make(TransactionStatus.class), "transactionStatus");
-            if(declaringClass.hasMethod(txHandlingMethodName, txHandlingMethodParams)) {
-                node = declaringClass.getMethod(txHandlingMethodName, txHandlingMethodParams);
-            }
+        final ClassNode declaringClass = methodNode.getDeclaringClass();
+        final String txHandlingMethodName = TransactionalTransform.getTransactionHandlingMethodName(methodNode);
+        final Parameter[] originalMethodParameters = methodNode.getParameters();
+        final Parameter[] txHandlingMethodParams = new Parameter[originalMethodParameters.length + 1];
+        System.arraycopy(originalMethodParameters, 0, txHandlingMethodParams, 0, originalMethodParameters.length);
+        txHandlingMethodParams[txHandlingMethodParams.length - 1] = new Parameter(ClassHelper.make(TransactionStatus.class), "transactionStatus");
+        if (declaringClass.hasMethod(txHandlingMethodName, txHandlingMethodParams)) {
+            node = declaringClass.getMethod(txHandlingMethodName, txHandlingMethodParams);
         }
         return node;
     }

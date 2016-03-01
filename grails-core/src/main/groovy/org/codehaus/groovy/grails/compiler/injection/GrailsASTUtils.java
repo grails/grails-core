@@ -874,16 +874,6 @@ public class GrailsASTUtils {
     }
 
     /**
-     * Returns true if classNode is marked with annotationClass
-     * @param methodNode A MethodNode to inspect
-     * @param annotationClass an annotation to look for
-     * @return true if methodNode is marked with annotationClass, otherwise false
-     */
-    public static boolean hasAnnotation(final MethodNode methodNode, final Class<? extends Annotation> annotationClass) {
-        return !methodNode.getAnnotations(new ClassNode(annotationClass)).isEmpty();
-    }
-
-    /**
      * @param classNode a ClassNode to search
      * @param annotationsToLookFor Annotations to look for
      * @return true if classNode is marked with any of the annotations in annotationsToLookFor
