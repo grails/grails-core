@@ -16,6 +16,7 @@
 package org.grails.web.plugins.support
 
 import grails.util.Holders
+import grails.validation.Constrained
 import grails.validation.ConstrainedProperty
 import grails.validation.ConstraintsEvaluator
 import grails.validation.ValidationErrors
@@ -74,7 +75,7 @@ class ValidationSupport {
     }
     
     @CompileStatic
-    static Map<String, ConstrainedProperty> getConstrainedPropertiesForClass(Class<?> clazz, boolean defaultNullable = false) {
+    static Map<String, Constrained> getConstrainedPropertiesForClass(Class<?> clazz, boolean defaultNullable = false) {
         BeanFactory ctx = Holders.applicationContext
         ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
         evaluator.evaluate clazz, defaultNullable

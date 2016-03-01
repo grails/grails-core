@@ -222,6 +222,11 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     @CompileDynamic
     protected void replaceBuildTokens(String profileCoords, Profile profile, List<Feature> features, File targetDirectory) {
         AntBuilder ant = new GrailsConsoleAntBuilder()
+        def ln = System.getProperty("line.separator")
+
+        def repositories = profile.repositories.collect() { String url ->
+            "    maven { url \"${url}\" }".toString()
+        }.unique().join(ln)
 
         def profileDependencies = profile.dependencies
         def dependencies = profileDependencies.findAll() { Dependency dep ->
@@ -248,12 +253,15 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             def art = new DefaultArtifact('org.grails.profiles', profile.name, '', profile.version)
             dependencies.add(new Dependency(art, "profile"))
         }
-        def ln = System.getProperty("line.separator")
         dependencies = dependencies.unique()
 
         dependencies = dependencies.sort({ Dependency dep -> dep.scope }).collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
             "    ${dep.scope} \"${artifactStr}\"".toString()
+        }.unique().join(ln)
+
+        def buildRepositories = profile.buildRepositories.collect() { String url ->
+            "        maven { url \"${url}\" }".toString()
         }.unique().join(ln)
 
         buildDependencies = buildDependencies.collect() { Dependency dep ->
@@ -287,8 +295,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 replacevalue(buildDependencies)
             }
             replacefilter {
-                replacetoken("@buildPlugins@")
-                replacevalue(buildDependencies)
+                replacetoken("@buildRepositories@")
+                replacevalue(buildRepositories)
+            }
+            replacefilter {
+                replacetoken("@repositories@")
+                replacevalue(repositories)
             }
             variables.each { k, v ->
                 replacefilter {
@@ -343,45 +355,23 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             return false
         }
         String groupAndAppName = args ? args[0] : null
-
-
-
         if(inPlace) {
             appname = new File(".").canonicalFile.name
-            if(groupAndAppName) {
-                groupname = groupAndAppName
-                defaultPackage = groupname
-            }
-            else {
-                try {
-                    defaultPackage = createValidPackageName()
-                } catch (IllegalArgumentException e ) {
-                    GrailsConsole.instance.error(e.message)
-                    return false
-                }
-                groupname = defaultPackage
+            if(!groupAndAppName) {
+                groupAndAppName = appname
             }
         }
-        else {
-            if(!groupAndAppName) {
-                GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")
-                return false
-            }
-            List<String> parts = groupAndAppName.split(/\./) as List
-            if(parts.size() == 1) {
-                appname = parts[0]
-                try {
-                    defaultPackage = createValidPackageName()
-                } catch (IllegalArgumentException e ) {
-                    GrailsConsole.instance.error(e.message)
-                    return false
-                }
-                groupname = defaultPackage
-            } else {
-                appname = parts[-1]
-                groupname = parts[0..-2].join('.')
-                defaultPackage = groupname
-            }
+        
+        if(!groupAndAppName) {
+            GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")
+            return false
+        }
+
+        try {
+            defaultPackage = establishGroupAndAppName(groupAndAppName)
+        } catch (IllegalArgumentException e ) {
+            GrailsConsole.instance.error(e.message)
+            return false
         }
 
 
@@ -398,6 +388,21 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         variables['grails.version'] = Environment.getPackage().getImplementationVersion() ?: GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS
         variables['grails.app.name'] = appname
         variables['grails.app.group'] = groupname
+    }
+
+    private String establishGroupAndAppName(String groupAndAppName) {
+        String defaultPackage
+        List<String> parts = groupAndAppName.split(/\./) as List
+        if (parts.size() == 1) {
+            appname = parts[0]
+            defaultPackage = createValidPackageName()
+            groupname = defaultPackage
+        } else {
+            appname = parts[-1]
+            groupname = parts[0..-2].join('.')
+            defaultPackage = groupname
+        }
+        return defaultPackage
     }
 
     private String createValidPackageName() {

@@ -101,10 +101,13 @@ trait RequestForwarder implements WebAttributes {
 
 
         RequestDispatcher dispatcher = request.getRequestDispatcher(fowardURI)
-        webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-        webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
-        webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, WebRequest.SCOPE_REQUEST);
+
+        def requestScope = WebRequest.SCOPE_REQUEST
+        webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, requestScope)
+        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, requestScope)
+        webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, requestScope)
+        webRequest.removeAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, requestScope)
+        webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, requestScope)
         dispatcher.forward(request, response);
         request.setAttribute(GrailsApplicationAttributes.FORWARD_ISSUED, true)
         return fowardURI

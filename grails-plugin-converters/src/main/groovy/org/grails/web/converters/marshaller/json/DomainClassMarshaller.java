@@ -89,6 +89,10 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
         return includeClass;
     }
 
+    public void setIncludeClass(boolean includeClass) {
+        this.includeClass = includeClass;
+    }
+
     public void setIncludeVersion(boolean includeVersion) {
         this.includeVersion = includeVersion;
     }

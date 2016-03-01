@@ -24,6 +24,7 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 import org.grails.config.yaml.YamlPropertySourceLoader;
 import org.grails.core.AbstractGrailsClass;
+import org.grails.core.cfg.GroovyConfigPropertySourceLoader;
 import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.slf4j.Logger;
@@ -49,6 +50,8 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
     public static final String PLUGIN_YML = "plugin.yml";
     public static final String PLUGIN_YML_PATH = "/" + PLUGIN_YML;
+    public static final String PLUGIN_GROOVY = "plugin.groovy";
+    public static final String PLUGIN_GROOVY_PATH = "/" + PLUGIN_GROOVY;
     private static final List<String> DEFAULT_CONFIG_IGNORE_LIST = Arrays.asList("dataSource", "hibernate");
     private static Resource basePluginResource = null;
     protected PropertySource<?> propertySource;
@@ -84,12 +87,19 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         this.grailsApplication = application;
         this.pluginClass = pluginClass;
         Resource resource = readPluginConfiguration(pluginClass);
+
         if(resource != null && resource.exists()) {
-            YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
+            final String filename = resource.getFilename();
             try {
-                this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-plugin.yml", resource, null, true, DEFAULT_CONFIG_IGNORE_LIST);
+                if (filename.equals(PLUGIN_YML)) {
+                    YamlPropertySourceLoader propertySourceLoader = new YamlPropertySourceLoader();
+                    this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-" + PLUGIN_YML, resource, null, true, DEFAULT_CONFIG_IGNORE_LIST);
+                } else if (filename.equals(PLUGIN_GROOVY)) {
+                    GroovyConfigPropertySourceLoader propertySourceLoader = new GroovyConfigPropertySourceLoader();
+                    this.propertySource = propertySourceLoader.load(GrailsNameUtils.getLogicalPropertyName(pluginClass.getSimpleName(), "GrailsPlugin") + "-" + PLUGIN_GROOVY, resource, null, DEFAULT_CONFIG_IGNORE_LIST);
+                }
             } catch (IOException e) {
-                LOG.warn("Error loading plugin.yml for plugin: " + pluginClass.getName() +": " + e.getMessage(), e);
+                LOG.warn("Error loading " + filename + " for plugin: " + pluginClass.getName() +": " + e.getMessage(), e);
             }
         }
     }
@@ -113,13 +123,26 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     }
 
     protected Resource readPluginConfiguration(Class<?> pluginClass) {
-        final URL urlToPluginYml = IOUtils.findResourceRelativeToClass(pluginClass, PLUGIN_YML_PATH);
+        Resource ymlResource = getConfigurationResource(pluginClass, PLUGIN_YML_PATH);
+        Resource groovyResource = getConfigurationResource(pluginClass, PLUGIN_GROOVY_PATH);
 
-        Resource urlResource = urlToPluginYml != null ? new UrlResource(urlToPluginYml) : null;
-        if(urlResource != null && urlResource.exists()) {
-            return urlResource;
+        Boolean groovyResourceExists = groovyResource != null && groovyResource.exists();
+
+        if(ymlResource != null && ymlResource.exists()) {
+            if (groovyResourceExists) {
+                throw new RuntimeException("A plugin may define a plugin.yml or a plugin.groovy, but not both");
+            }
+            return ymlResource;
+        }
+        if(groovyResourceExists) {
+            return groovyResource;
         }
         return null;
+    }
+
+    protected Resource getConfigurationResource(Class<?> pluginClass, String path) {
+        final URL urlToConfig = IOUtils.findResourceRelativeToClass(pluginClass, path);
+        return urlToConfig != null ? new UrlResource(urlToConfig) : null;
     }
 
     public String getFileSystemName() {

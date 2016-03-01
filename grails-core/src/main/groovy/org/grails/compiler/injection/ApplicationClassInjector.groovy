@@ -52,6 +52,9 @@ import java.lang.reflect.Modifier
 @AstTransformer
 class ApplicationClassInjector implements GrailsArtefactClassInjector {
 
+    public static final String EXCLUDE_MEMBER = "exclude"
+    public static final List<String> EXCLUDED_AUTO_CONFIGURE_CLASSES = ['org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration', 'org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration', 'org.springframework.boot.autoconfigure.reactor.ReactorAutoConfiguration']
+
     ApplicationArtefactHandler applicationArtefactHandler = new ApplicationArtefactHandler()
 
     private static final List<Integer> transformedInstances = []
@@ -107,13 +110,12 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                 }
                 if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.EnableAutoConfiguration', classLoader) ) {
                     def enableAutoConfigurationAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.EnableAutoConfiguration')))
-                    if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration', classLoader)) {
-                        def dataSourceAutoConfig = new ClassExpression(ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration')))
-                        GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, "exclude", dataSourceAutoConfig)
-                    }
-                    if(ClassUtils.isPresent('org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration', classLoader)) {
-                        def messageSourceAutoConfig = new ClassExpression(ClassHelper.make(classLoader.loadClass('org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration')))
-                        GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, "exclude", messageSourceAutoConfig)
+
+                    for(autoConfigureClassName in EXCLUDED_AUTO_CONFIGURE_CLASSES) {
+                        if(ClassUtils.isPresent(autoConfigureClassName, classLoader)) {
+                            def autoConfigClassExpression = new ClassExpression(ClassHelper.make(classLoader.loadClass(autoConfigureClassName)))
+                            GrailsASTUtils.addExpressionToAnnotationMember(enableAutoConfigurationAnnotation, EXCLUDE_MEMBER, autoConfigClassExpression)
+                        }
                     }
                 }
             }

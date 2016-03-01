@@ -156,7 +156,32 @@ class IOUtils extends SpringIOUtils {
             return new URL("$rootPath/")
         }
         throw new IllegalStateException("Root classpath resource not found! Check your disk permissions")
+    }
 
+
+    /**
+     * This method differs from {@link #findRootResource(java.lang.Class)} in that it will find the root URL where to load resources defined in src/main/resources
+     *
+     * At development time this with be build/main/resources, but in production it will be relative to the class.
+     *
+     * @param targetClass
+     * @param path
+     * @return
+     */
+    static URL findRootResourcesURL(Class targetClass) {
+        def pathToClassFile = '/' + targetClass.name.replace(".", "/") + ".class"
+        def classRes = targetClass.getResource(pathToClassFile)
+        if(classRes) {
+            String rootPath = classRes.toString() - pathToClassFile
+            if(rootPath.endsWith(BuildSettings.BUILD_CLASSES_PATH)) {
+                rootPath = rootPath.replace('/build/classes/', '/build/resources/')
+            }
+            else {
+                rootPath = "$rootPath/"
+            }
+            return new URL(rootPath)
+        }
+        return null
     }
 
     /**
@@ -180,6 +205,7 @@ class IOUtils extends SpringIOUtils {
     }
     /**
      * Finds a URL within a JAR relative (from the root) to the given class
+     *
      * @param targetClass
      * @param path
      * @return
@@ -197,6 +223,7 @@ class IOUtils extends SpringIOUtils {
         return null
     }
 
+
     @Memoized
     public static File findApplicationDirectoryFile() {
         def directory = findApplicationDirectory()
@@ -205,6 +232,32 @@ class IOUtils extends SpringIOUtils {
             if(f.exists()) {
 
                 return f
+            }
+        }
+        return null
+    }
+
+    /**
+     * Finds the application directory for the given class
+     *
+     * @param targetClass The target class
+     * @return The application directory or null if it can't be found
+     */
+    public static File findApplicationDirectoryFile(Class targetClass) {
+
+        def rootResource = findRootResource(targetClass)
+        if(rootResource != null) {
+
+            try {
+                def rootFile = new UrlResource(rootResource).file.canonicalFile
+                def rootPath = rootFile.path
+                def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
+                if(rootPath.contains(buildClassespath)) {
+                    return new File(rootPath - buildClassespath)
+
+                }
+            } catch (FileNotFoundException fnfe) {
+                return null
             }
         }
         return null
@@ -241,8 +294,10 @@ class IOUtils extends SpringIOUtils {
                 if(classResource) {
                     def file = new UrlResource(classResource).getFile()
                     def path = file.canonicalPath
-                    if(path.contains(BuildSettings.BUILD_CLASSES_PATH)) {
-                        location = path.substring(0, path.indexOf(BuildSettings.BUILD_CLASSES_PATH) - 1)
+
+                    def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
+                    if(path.contains(buildClassespath)) {
+                        location = path.substring(0, path.indexOf(buildClassespath) - 1)
                     }
                 }
             }

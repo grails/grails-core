@@ -24,13 +24,6 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaProperty;
 import groovy.util.ConfigObject;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
-
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -42,6 +35,23 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Utility methods for dealing with Grails class artifacts.
@@ -924,6 +934,16 @@ public class GrailsClassUtils {
     }
 
     /**
+     * Check whether the specified method is a property getter
+     *
+     * @param method The method
+     * @return true if the method is a property getter
+     */
+    public static boolean isPropertyGetter(Method method) {
+        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && isGetter(method.getName(), method.getParameterTypes());
+    }
+
+    /**
      * Creates a concrete collection for the suppied interface
      * @param interfaceType The interface
      * @return ArrayList for List, TreeSet for SortedSet, HashSet for Set etc.
@@ -1250,11 +1270,11 @@ public class GrailsClassUtils {
         }
         return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader()).newInstance();
     }
-    
+
     /**
      * Checks to see if a class is marked with @grails.artefact.Enhanced and if the enhancedFor
      * attribute of the annotation contains a specific feature name
-     * 
+     *
      * @param controllerClass The class to inspect
      * @param featureName The name of a feature to check for
      * @return true if controllerClass is marked with Enhanced and the enhancedFor attribute includes featureName, otherwise returns false
