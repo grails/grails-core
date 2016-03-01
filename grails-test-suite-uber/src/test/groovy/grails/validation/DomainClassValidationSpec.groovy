@@ -11,6 +11,7 @@ import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.hibernate.Hibernate
 import org.springframework.validation.FieldError
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -21,6 +22,16 @@ import spock.lang.Specification
 @TestMixin(GrailsUnitTestMixin)
 @Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
 class DomainClassValidationSpec extends Specification {
+
+    @Issue('grails/grails-core#9749')
+    void 'test that properties expressed in transients list are not constrained by default but can be explictly constrained'() {
+        when:
+        def props = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
+
+        then:
+        !props.foo
+        props.bar
+    }
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
         when: 'an object is valid'
@@ -213,9 +224,10 @@ class DomainClassValidationSpec extends Specification {
         Map constraints = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
         then: 'only public properties and public getters should be considered domainClass properties by default'
-        constraints.size() == 2
+        constraints.size() == 3
         constraints.name
         constraints.town
+        constraints.bar
     }
 
     void "Test that default and shared constraints can be applied from configuration"() {
@@ -366,6 +378,16 @@ class DomainClassGetters {
     protected static Date getChristmas() {}
 
     private static Date getNewYear() {}
+
+    static transients = ['foo', 'bar']
+
+    String getFoo() {}
+
+    String getBar() {}
+
+    static constraints = {
+        bar size: 3..10
+    }
 }
 
 @Entity

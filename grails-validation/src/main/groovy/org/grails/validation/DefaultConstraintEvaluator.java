@@ -366,6 +366,13 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
             ignoredProperties.add(GrailsDomainClassProperty.DIRTY);
             ignoredProperties.add(GrailsDomainClassProperty.ATTACHED);
         }
+
+        final Object transients = GrailsClassUtils.getStaticPropertyValue(theClass,
+                                                                          GrailsDomainClassProperty.TRANSIENT);
+        if(transients instanceof List) {
+            ignoredProperties.addAll((List) transients);
+        }
+
         Map<String, Method> propertyMap = new HashMap<>();
         for (Object aClassChain : GrailsDomainConfigurationUtil.getSuperClassChain(theClass)) {
             Class<?> clazz = (Class<?>) aClassChain;
