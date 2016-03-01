@@ -35,8 +35,14 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -371,6 +377,25 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
                                                                           GrailsDomainClassProperty.TRANSIENT);
         if(transients instanceof List) {
             ignoredProperties.addAll((List) transients);
+        }
+        try {
+            final BeanInfo beanInfo = Introspector.getBeanInfo(theClass);
+            final PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+            for(PropertyDescriptor descriptor : propertyDescriptors) {
+                final Method readMethod = descriptor.getReadMethod();
+                if(readMethod != null && Modifier.isTransient(readMethod.getModifiers())) {
+                    ignoredProperties.add(descriptor.getName());
+                }
+            }
+        } catch (IntrospectionException e) {
+            LOG.error("An error occurred introspecting properties", e);
+        }
+
+        Field[] declaredFields = theClass.getDeclaredFields();
+        for(Field field : declaredFields) {
+            if(Modifier.isTransient(field.getModifiers())) {
+                ignoredProperties.add(field.getName());
+            }
         }
 
         Map<String, Method> propertyMap = new HashMap<>();
