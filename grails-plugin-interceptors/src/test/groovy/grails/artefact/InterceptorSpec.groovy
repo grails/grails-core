@@ -39,6 +39,7 @@ class InterceptorSpec extends Specification {
     void "Test the default interceptor mappings"() {
         given:"A test interceptor"
             def i = new TestInterceptor()
+            i.defaultMatcher()
             def webRequest = GrailsWebMockUtil.bindMockWebRequest()
             HttpServletRequest request = webRequest.request
         when:"The current request is for a controller called test"

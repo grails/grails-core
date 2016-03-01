@@ -61,11 +61,6 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         setOrder(-5)
     }
 
-    @Autowired
-    void setHandlerInterceptors(HandlerInterceptor[] handlerInterceptors) {
-        setInterceptors(handlerInterceptors)
-    }
-
     @Autowired(required = false)
     void setWebRequestInterceptors(WebRequestInterceptor[] webRequestInterceptors) {
         webRequestHandlerInterceptors = webRequestInterceptors.collect( { WebRequestInterceptor wri ->
@@ -80,23 +75,12 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
 
     @Override
     protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
-        HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
-                (HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
+        def chain = super.getHandlerExecutionChain(handler, request)
 
         // WebRequestInterceptor need to come first, as these include things like Hibernate OSIV
         if(webRequestHandlerInterceptors) {
             chain.addInterceptors webRequestHandlerInterceptors
         }
-
-        chain.addInterceptors getAdaptedInterceptors()
-
-        String lookupPath = this.urlPathHelper.getLookupPathForRequest(request)
-        for (MappedInterceptor mappedInterceptor in getMappedInterceptors()) {
-            if (mappedInterceptor.matches(lookupPath, this.pathMatcher)) {
-                chain.addInterceptor(mappedInterceptor.interceptor)
-            }
-        }
-
         chain.addInterceptor(new ErrorHandlingHandler())
         return chain
     }

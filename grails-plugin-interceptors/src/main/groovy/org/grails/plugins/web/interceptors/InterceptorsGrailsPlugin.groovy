@@ -22,6 +22,8 @@ import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.springframework.web.servlet.HandlerInterceptor
+import org.springframework.web.servlet.handler.MappedInterceptor
 
 
 /**
@@ -45,7 +47,7 @@ class InterceptorsGrailsPlugin extends Plugin {
             GrailsClass[] interceptors = grailsApplication.getArtefacts(InterceptorArtefactHandler.TYPE)
             if(interceptors.length == 0) return
 
-            grailsInterceptorHandlerInterceptorAdapter(GrailsInterceptorHandlerInterceptorAdapter)
+            grailsInterceptorMappedInterceptor(MappedInterceptor, ['/**'] as String[], bean(GrailsInterceptorHandlerInterceptorAdapter))
 
             def enableJsessionId = config.getProperty(Settings.GRAILS_VIEWS_ENABLE_JSESSIONID, Boolean, false)
             for(GrailsClass i in interceptors) {
@@ -61,8 +63,8 @@ class InterceptorsGrailsPlugin extends Plugin {
 
     @Override
     void doWithApplicationContext() {
-        if(applicationContext.containsBeanDefinition("grailsInterceptorHandlerInterceptorAdapter")) {
-            interceptorAdapter = applicationContext.getBean("grailsInterceptorHandlerInterceptorAdapter", GrailsInterceptorHandlerInterceptorAdapter)
+        if(applicationContext.containsBeanDefinition("grailsInterceptorMappedInterceptor")) {
+            interceptorAdapter = (GrailsInterceptorHandlerInterceptorAdapter)applicationContext.getBean("grailsInterceptorMappedInterceptor", MappedInterceptor).getInterceptor()
         }
     }
 
@@ -76,7 +78,7 @@ class InterceptorsGrailsPlugin extends Plugin {
             def interceptorClass = (Class) source
             def grailsClass = grailsApplication.addArtefact(InterceptorArtefactHandler.TYPE, interceptorClass)
 
-            def interceptorAdapter = this.interceptorAdapter ?: applicationContext.getBean(GrailsInterceptorHandlerInterceptorAdapter)
+            def interceptorAdapter = this.interceptorAdapter ?: (GrailsInterceptorHandlerInterceptorAdapter)applicationContext.getBean("grailsInterceptorMappedInterceptor", MappedInterceptor).getInterceptor()
             defineInterceptorBean(grailsClass, interceptorClass, enableJsessionId)
             interceptorAdapter.setInterceptors(
                     applicationContext.getBeansOfType(Interceptor).values() as Interceptor[]
