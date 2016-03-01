@@ -58,7 +58,7 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
 
 
-        compileGroovyPages.dependsOn( allTasks.withType(GroovyCompile) )
+        compileGroovyPages.dependsOn( allTasks.findByName("classes") )
         compileGroovyPages.dependsOn( compileWebappGroovyPages )
 
         allTasks.withType(War) { War war ->

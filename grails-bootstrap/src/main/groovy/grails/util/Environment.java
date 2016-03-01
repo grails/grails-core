@@ -291,8 +291,11 @@ public enum Environment {
         if(loadedLocation != null && loadedLocation.getPath().contains("/WEB-INF/classes")) {
             return true;
         }
+        // Workaround for weblogic who repacks files from 'classes' into a new jar under lib/
+        if (loadedLocation != null && loadedLocation.getPath().contains("_wl_cls_gen.jar!/")) {
+            return true;
+        }
         return false;
-
     }
 
     /**

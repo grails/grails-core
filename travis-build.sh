@@ -63,6 +63,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
 
         if [[ $EXIT_STATUS == 0 ]]; then
             ./gradlew --stop
+            # wait 30 seconds to ensure the previous promotion completes
+            sleep 30
             ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
             ./gradlew closeAndPromoteRepository
         fi
@@ -79,8 +81,14 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         # Tag the Profile Repo
         git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
         cd grails-profile-repository
+
         git branch --track 3.1.x remotes/origin/3.1.x
         git checkout 3.1.x
+
+        echo "grailsVersion=${TRAVIS_TAG:1}" > profiles/gradle.properties
+        git add profiles/gradle.properties
+        git commit -m "Release $TRAVIS_TAG profiles"
+
         git tag $TRAVIS_TAG
         git push --tags
         git push
@@ -103,12 +111,14 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         # Update the website
         git clone https://${GH_TOKEN}@github.com/grails/grails-static-website.git
         cd grails-static-website
-        echo -e "\n${TRAVIS_TAG:1}" >> generator/src/main/resources/versions
+        echo -e "${TRAVIS_TAG:1}" >> generator/src/main/resources/versions
         git add generator/src/main/resources/versions
         git commit -m "Release Grails $TRAVIS_TAG"
         git push
         cd ..
 
+        # Rebuild Artifactory index
+        curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
 
     elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?

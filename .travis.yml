@@ -25,6 +25,7 @@ env:
   - secure: M2WGEzaA4K64HCuNaXbEsg9aKg9Uo5VJOUBSiNmBQQfracqDWoPW6BlC+uD8dqBkFG4z3L4rJWnPoUNDZrqIUmInNLXGQrlkmfHTrAvCs6V+Jj4ilIRfc/bZnasoTmLxT4PPFZGCLcRJ3QwAJ+36EOZPDcXPXpN0hw4hB1hOx9Q=
   - secure: Frvf9gLJ/pfy3SWMm9LXdprO/snMFfDO9pTd1bl2GN3QBmkF40G20NzoFI6jbYeyg+gwJQmnC6NVi/KDAkJ/EBO05Xk/qMKwWWsASgdDzdnUNTynFPH0zcnv64d6qZAaLWeH/gWQPZ+99zmbVzFqSNDggEo+cPBm9QjqJ608Yx4=
   - secure: JM8mzEz6+UtRnG68vbitVoPzcrSHbEIa0z7Nfhu3RKMDOmQgfGNIF+ZDZPAa/tYpNBTJWKjeIJc8opCfd1p1+s6ISc7B29ymulQ3ztwFWcetunrSmxl8H96aqzjc+82DO6huj4Tzi0u2MADnh9wVm+A1+tcqLjpaLGmskMlvdbw=
+  - secure: ICWgIGwHFH37nlY9k094qnnKy0tW2XDSOtGsvHb65AxsPsXB1zqj7Qd76Fboo1xFGQGpg+S6AHekY6Ch1prNOpkpPHw35UaQzaRqUxFUhfZYiD0rlmvzKrvKTesrFLy4LJwrTzGCQrViYgqfHvCeQ3r53wWff6nu8uFmMOPmGNY=
 script: ./travis-build.sh
 install: /bin/true
 after_failure: ./travis-after-failure.sh

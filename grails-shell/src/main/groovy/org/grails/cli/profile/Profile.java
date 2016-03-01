@@ -62,7 +62,7 @@ public interface Profile {
     Iterable<Feature> getDefaultFeatures();
 
     /**
-     * @return The default features for this profile
+     * @return The required features for this profile
      */
     Iterable<Feature> getRequiredFeatures();
 
@@ -71,6 +71,11 @@ public interface Profile {
      * @return zero or many {@link org.grails.cli.profile.Profile} instance that this profile extends from
      */
     Iterable<Profile> getExtends();
+
+    /**
+     * @return The maven repository definitions for this profile
+     */
+    List<String> getRepositories();
 
     /**
      * @return The dependency definitions for this profile
@@ -134,11 +139,16 @@ public interface Profile {
      */
     boolean handleCommand(ExecutionContext context);
 
+    /**
+     * @return The buildscript maven repository definitions for this profile
+     */
+    List<String> getBuildRepositories();
 
     /**
      * @return The profile names to participate in build merge
      */
     List<String> getBuildMergeProfileNames();
+
     /**
      * @return The list of build plugins for this profile
      */

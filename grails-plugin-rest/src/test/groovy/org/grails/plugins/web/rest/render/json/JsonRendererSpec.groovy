@@ -1,6 +1,7 @@
 package org.grails.plugins.web.rest.render.json
 
 import grails.core.DefaultGrailsApplication
+import grails.persistence.Entity
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebMockUtil
 import org.grails.core.lifecycle.ShutdownOperations
@@ -69,9 +70,51 @@ class JsonRendererSpec extends Specification {
             webRequest.response.contentAsString == '{"title":"Undertow"}'
 
     }
+
+    void "Test render domain class with JsonRenderer"() {
+        given:"A new JsonRenderer instance is created with the defaults"
+        def renderer = new JsonRenderer(Song)
+        def app = new DefaultGrailsApplication(Song)
+        app.initialise()
+        renderer.grailsApplication = app
+        renderer.registerCustomConverter()
+
+        when:"The renderer renders an object"
+        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render(new Song(title: "Undertow"), new ServletRenderContext(webRequest))
+
+        then:"Only included properties are rendered"
+        webRequest.response.contentAsString == '{"title":"Undertow"}'
+
+    }
+
+    void "Test render domain class with JsonRenderer and including version and class"() {
+        given:"A new JsonRenderer instance is created with the defaults"
+        def renderer = new JsonRenderer(Song)
+        renderer.includes = ['version', 'class', 'title']
+        def app = new DefaultGrailsApplication(Song)
+        app.initialise()
+        renderer.grailsApplication = app
+        renderer.registerCustomConverter()
+
+        when:"The renderer renders an object"
+        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        renderer.render(new Song(title: "Undertow"), new ServletRenderContext(webRequest))
+
+        then:"Only included properties are rendered"
+        webRequest.response.contentAsString == '{"class":"org.grails.plugins.web.rest.render.json.Song","title":"Undertow"}'
+
+    }
 }
 
 class Album {
     String title
     String isbn
+}
+
+@Entity
+class Song {
+    Long id
+    Long version
+    String title
 }

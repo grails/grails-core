@@ -263,7 +263,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
             grailsLayoutViewResolverPostProcessor(GrailsLayoutViewResolverPostProcessor)
         }
 
-        final pluginManager = manager
         // Now go through tag libraries and configure them in Spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
 
