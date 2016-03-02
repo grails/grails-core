@@ -114,6 +114,13 @@ class Person {
     String name
     Integer age
     String email
+
+    static transients = ['images']
+
+    Collection getImages() {
+        throw new UnsupportedOperationException()
+    }
+
     static constraints = {
         email email: true, size: 5..35
     }
