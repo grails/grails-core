@@ -395,7 +395,6 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
             }
         }
 
-
         Field[] declaredFields = theClass.getDeclaredFields();
         for(Field field : declaredFields) {
             if(Modifier.isTransient(field.getModifiers())) {
@@ -409,8 +408,12 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
             for (Method method : clazz.getDeclaredMethods()) {
                 if (GrailsClassUtils.isPropertyGetter(method)) {
                     String propertyName = GrailsClassUtils.getPropertyForGetter(method.getName());
-                    if (!ignoredProperties.contains(propertyName)) {
-                        propertyMap.put(propertyName, method);
+                    PropertyDescriptor propertyDescriptor = BeanUtils.getPropertyDescriptor(theClass, propertyName);
+                    if(propertyDescriptor != null) {
+                        Method writeMethod = propertyDescriptor.getWriteMethod();
+                        if (writeMethod != null && !ignoredProperties.contains(propertyName)) {
+                            propertyMap.put(propertyName, method);
+                        }
                     }
                 }
             }
