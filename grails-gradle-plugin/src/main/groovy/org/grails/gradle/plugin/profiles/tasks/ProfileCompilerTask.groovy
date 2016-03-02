@@ -111,7 +111,7 @@ class ProfileCompilerTask extends AbstractCompile {
         if(!profileData.containsKey("extends")) {
             List<String> dependencies = []
             project.configurations.getByName("runtime").allDependencies.all() { Dependency d ->
-                dependencies.add(d.name)
+                dependencies.add("${d.group}:${d.name}:${d.version}".toString())
             }
             profileData.put("extends", dependencies.join(','))
         }
