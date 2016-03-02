@@ -118,19 +118,17 @@ class ValidateableTraitSpec extends Specification {
         def constraints = MyValidateable.getConstraintsMap()
 
         then:
-        constraints.size() == 5
+        constraints.size() == 4
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
         constraints.containsKey 'someProperty'
-        constraints.containsKey 'twiceAge' // only getter method
 
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
         constraints.someProperty.appliedConstraints.size() == 1
-        constraints.twiceAge.appliedConstraints.size() == 1
 
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -139,14 +137,12 @@ class ValidateableTraitSpec extends Specification {
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
         constraints.someProperty.hasAppliedConstraint 'nullable'
-        constraints.twiceAge.hasAppliedConstraint 'nullable'
 
         and: 'implicit defaultNullable is nullable:false'
         !constraints.name.nullable
         !constraints.age.nullable
         !constraints.town.nullable
         !constraints.someProperty.nullable
-        !constraints.twiceAge.nullable
     }
 
     void 'Test that constraints are nullable by default if overridden and ensure nullable:true constraint is not applied when no other constraints were defined by user'() {
@@ -197,11 +193,8 @@ class ValidateableTraitSpec extends Specification {
         expect: 'validation is executed and public properties/getters are marked nullable in errors'
         !obj.validate()
         obj.hasErrors()
-        obj.errors.errorCount == 2
+        obj.errors.errorCount == 1
         obj.errors['town']?.code == 'nullable' // public property
-        obj.errors['name']?.code == 'nullable' // only public getter method
-        !obj.errors['surname'] // only protected getter method
-        !obj.errors['email'] // only private getter method
     }
 
     void 'Ensure private and protected getter is not handled as not-nullable property by default'() {
@@ -209,8 +202,7 @@ class ValidateableTraitSpec extends Specification {
         Map constraints = new ValidateableGetters().getConstraintsMap()
 
         then: 'only public properties and public getters should be considered validateable properties by default'
-        constraints.size() == 2
-        constraints.name
+        constraints.size() == 1
         constraints.town
     }
 
