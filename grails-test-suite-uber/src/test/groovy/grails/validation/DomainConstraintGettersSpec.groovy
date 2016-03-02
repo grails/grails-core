@@ -229,7 +229,6 @@ class DomainConstraintGettersSpec extends Specification {
 
     // DOMAIN WITH TRANSIENTS
 
-    @Ignore
     void 'ensure transient properties and methods are not validated'() {
         DomainWithTransients domain = new DomainWithTransients()
         when: 'domain with transient methods and properties is validated'
@@ -239,7 +238,6 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 0
     }
 
-    @Ignore
     void 'ensure transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
@@ -250,7 +248,6 @@ class DomainConstraintGettersSpec extends Specification {
 
     // DOMAIN WITH SUPER CLASS WITH TRANSIENTS
 
-    @Ignore
     void 'ensure inherited transient properties and methods are not validated'() {
         DomainWithTransients domain = new DomainWithTransients()
         when: 'domain with superclass properties and methods is validated'
@@ -260,7 +257,6 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 0
     }
 
-    @Ignore
     void 'ensure inherited transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
