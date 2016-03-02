@@ -1,5 +1,6 @@
 package grails.validation
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 import grails.persistence.Entity
@@ -156,6 +157,7 @@ class DomainConstraintGettersSpec extends Specification {
 
     // BOOL METHODS DOMAIN OBJECT
 
+    @Ignore
     void 'ensure only public non-static bool properties with getter and setter are constrained properties'() {
         BoolMethodPropertiesDomain domain = new BoolMethodPropertiesDomain()
         when: 'empty domain with method properties is validated'
@@ -167,6 +169,7 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained bool method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = BoolMethodPropertiesDomain.getConstrainedProperties()
@@ -178,6 +181,7 @@ class DomainConstraintGettersSpec extends Specification {
 
     // BOOL DOMAIN OBJECT WITH SUPER CLASS
 
+    @Ignore
     void 'ensure only public non-static inherited bool properties with getter and setter are constrained properties'() {
         InheritedBoolMethodPropertiesDomain domain = new InheritedBoolMethodPropertiesDomain()
         when: 'empty domain with method properties is validated'
@@ -189,6 +193,7 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained inherited bool method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedBoolMethodPropertiesDomain.getConstrainedProperties()
@@ -200,6 +205,7 @@ class DomainConstraintGettersSpec extends Specification {
 
     // BOOL DOMAIN OBJECT WITH TRAIT
 
+    @Ignore
     void 'ensure only public non-static bool properties from trait with getter and setter are constrained properties'() {
         TraitBoolMethodPropertiesDomain domain = new TraitBoolMethodPropertiesDomain()
         when: 'empty domain with simple properties is validated'
@@ -211,6 +217,7 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained bool method properties from trait are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitBoolMethodPropertiesDomain.getConstrainedProperties()
@@ -222,6 +229,7 @@ class DomainConstraintGettersSpec extends Specification {
 
     // DOMAIN WITH TRANSIENTS
 
+    @Ignore
     void 'ensure transient properties and methods are not validated'() {
         DomainWithTransients domain = new DomainWithTransients()
         when: 'domain with transient methods and properties is validated'
@@ -231,6 +239,7 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 0
     }
 
+    @Ignore
     void 'ensure transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
@@ -241,6 +250,7 @@ class DomainConstraintGettersSpec extends Specification {
 
     // DOMAIN WITH SUPER CLASS WITH TRANSIENTS
 
+    @Ignore
     void 'ensure inherited transient properties and methods are not validated'() {
         DomainWithTransients domain = new DomainWithTransients()
         when: 'domain with superclass properties and methods is validated'
@@ -250,6 +260,7 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 0
     }
 
+    @Ignore
     void 'ensure inherited transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
@@ -260,6 +271,7 @@ class DomainConstraintGettersSpec extends Specification {
 
     // DOMAIN WITH TRAIT WITH TRANSIENTS
 
+    @Ignore
     void 'ensure trait transient properties and methods are not validated'() {
         TraitDomainWithTransients domain = new TraitDomainWithTransients()
         when: 'domain with trait transient properties and methods'
@@ -269,6 +281,7 @@ class DomainConstraintGettersSpec extends Specification {
         domain.errors.getErrorCount() == 0
     }
 
+    @Ignore
     void 'ensure trait transient methods and properties are not constrained'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitDomainWithTransients.getConstrainedProperties()

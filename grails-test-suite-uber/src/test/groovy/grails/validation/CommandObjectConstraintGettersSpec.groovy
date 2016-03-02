@@ -1,5 +1,6 @@
 package grails.validation
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 import grails.validation.Validateable
@@ -52,6 +53,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         constrainedProperties.containsKey('book')
     }
 
+    @Ignore
     void 'ensure only public non-static properties with getter and setter are constrained properties'() {
         MethodPropertiesCommand command = new MethodPropertiesCommand()
         when: 'empty command with method properties is validated'
@@ -63,6 +65,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = MethodPropertiesCommand.getConstraintsMap()
@@ -74,6 +77,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // COMMAND OBJECT WITH SUPER CLASS
 
+    @Ignore
     void 'ensure all inherited public properties are by default constraint properties'() {
         InheritedPropertiesCommand command = new InheritedPropertiesCommand()
 
@@ -89,6 +93,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 4
     }
 
+    @Ignore
     void 'ensure inherited constrained properties are only public ones'() {
         when: 'constrained properties map is get on child class'
         Map constrainedProperties = InheritedPropertiesCommand.getConstraintsMap()
@@ -101,6 +106,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         constrainedProperties.containsKey('book')
     }
 
+    @Ignore
     void 'ensure only public non-static inherited properties with getter and setter are constrained properties'() {
         InheritedMethodPropertiesCommand command = new InheritedMethodPropertiesCommand()
         when: 'empty command with method properties is validated'
@@ -112,6 +118,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained inherited method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedMethodPropertiesCommand.getConstraintsMap()
@@ -150,6 +157,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         constrainedProperties.containsKey('book')
     }
 
+    @Ignore
     void 'ensure only public non-static properties from trait with getter and setter are constrained properties'() {
         TraitMethodPropertiesCommand command = new TraitMethodPropertiesCommand()
         when: 'empty command with simple properties is validated'
@@ -161,6 +169,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained method properties from trait are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitMethodPropertiesCommand.getConstraintsMap()
@@ -172,6 +181,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // BOOL METHODS COMMAND OBJECT
 
+    @Ignore
     void 'ensure only public non-static bool properties with getter and setter are constrained properties'() {
         BoolMethodPropertiesCommand command = new BoolMethodPropertiesCommand()
         when: 'empty command with method properties is validated'
@@ -183,6 +193,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained bool method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = BoolMethodPropertiesCommand.getConstraintsMap()
@@ -194,6 +205,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // BOOL COMMAND OBJECT WITH SUPER CLASS
 
+    @Ignore
     void 'ensure only public non-static inherited bool properties with getter and setter are constrained properties'() {
         InheritedBoolMethodPropertiesCommand command = new InheritedBoolMethodPropertiesCommand()
         when: 'empty command with method properties is validated'
@@ -205,6 +217,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained inherited bool method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedBoolMethodPropertiesCommand.getConstraintsMap()
@@ -216,6 +229,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // BOOL COMMAND OBJECT WITH TRAIT
 
+    @Ignore
     void 'ensure only public non-static bool properties from trait with getter and setter are constrained properties'() {
         TraitBoolMethodPropertiesCommand command = new TraitBoolMethodPropertiesCommand()
         when: 'empty command with simple properties is validated'
@@ -227,6 +241,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 1
     }
 
+    @Ignore
     void 'ensure constrained bool method properties from trait are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitBoolMethodPropertiesCommand.getConstraintsMap()
