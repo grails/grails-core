@@ -137,19 +137,17 @@ class DomainClassValidationSpec extends Specification {
         def constraints = getAssociatedDomainClassFromApplication(new MyDomainClass()).getConstrainedProperties()
 
         then:
-        constraints.size() == 5
+        constraints.size() == 4
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
         constraints.containsKey 'someProperty'
-        constraints.containsKey 'twiceAge' // only getter method
 
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
         constraints.someProperty.appliedConstraints.size() == 1
-        constraints.twiceAge.appliedConstraints.size() == 1
 
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -158,14 +156,12 @@ class DomainClassValidationSpec extends Specification {
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
         constraints.someProperty.hasAppliedConstraint 'nullable'
-        constraints.twiceAge.hasAppliedConstraint 'nullable'
 
         and: 'implicit defaultNullable is nullable:false'
         !constraints.name.nullable
         !constraints.age.nullable
         !constraints.town.nullable
         !constraints.someProperty.nullable
-        !constraints.twiceAge.nullable
     }
 
     @Ignore('defaultNullable is not supported yet')
@@ -216,9 +212,8 @@ class DomainClassValidationSpec extends Specification {
         expect: 'validation is executed and public properties/getters are marked nullable in errors'
         !obj.validate()
         obj.hasErrors()
-        obj.errors.errorCount == 2
+        obj.errors.errorCount == 1
         obj.errors['town']?.code == 'nullable' // public property
-        obj.errors['name']?.code == 'nullable' // only public getter method
         !obj.errors['surname'] // only protected getter method
         !obj.errors['email'] // only private getter method
     }
@@ -228,8 +223,7 @@ class DomainClassValidationSpec extends Specification {
         Map constraints = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
         then: 'only public properties and public getters should be considered domainClass properties by default'
-        constraints.size() == 5
-        constraints.name
+        constraints.size() == 4
         constraints.town
         constraints.bar
         constraints.qux
