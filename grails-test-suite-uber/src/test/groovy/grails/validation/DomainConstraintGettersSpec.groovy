@@ -9,273 +9,273 @@ import grails.test.mixin.Mock
 /**
  * Test is similar to CommandObjectConstraintGettersSpec but for domain classes.
  * Check more detailed description in CommandObjectConstraintGettersSpec
- * 
+ *
  * @see grails.validation.CommandObjectConstraintGettersSpec
  */
 @Issue(['grails/grails-core#9749', 'grails/grails-core#9754'])
 @TestFor(SimplePropertiesDomain)
-@Mock([SimplePropertiesDomain, MethodPropertiesDomain, InheritedPropertiesDomain, 
-	InheritedMethodPropertiesDomain, TraitPropertiesDomain, TraitMethodPropertiesDomain, 
-	BoolMethodPropertiesDomain, InheritedBoolMethodPropertiesDomain, TraitBoolMethodPropertiesDomain,
-	DomainWithTransients, InheritedDomainWithTransients, TraitDomainWithTransients])
+@Mock([SimplePropertiesDomain, MethodPropertiesDomain, InheritedPropertiesDomain,
+        InheritedMethodPropertiesDomain, TraitPropertiesDomain, TraitMethodPropertiesDomain,
+        BoolMethodPropertiesDomain, InheritedBoolMethodPropertiesDomain, TraitBoolMethodPropertiesDomain,
+        DomainWithTransients, InheritedDomainWithTransients, TraitDomainWithTransients])
 class DomainConstraintGettersSpec extends Specification {
 
-	// STANDARD DOMAIN
-	void 'ensure all public properties are by default constraint properties'(){
-		SimplePropertiesDomain domain = new SimplePropertiesDomain()
+    // STANDARD DOMAIN
+    void 'ensure all public properties are by default constraint properties'() {
+        SimplePropertiesDomain domain = new SimplePropertiesDomain()
 
-		when: 'empty domain with simple properties is validated'
-		domain.validate()
+        when: 'empty domain with simple properties is validated'
+        domain.validate()
 
-		then: 'only public should fail on nullable constraint'
-		domain.hasErrors()
-		domain.errors['string']?.code == 'nullable'
-		domain.errors['pages']?.code == 'nullable'
-		domain.errors.getErrorCount() == 2
-	}
+        then: 'only public should fail on nullable constraint'
+        domain.hasErrors()
+        domain.errors['string']?.code == 'nullable'
+        domain.errors['pages']?.code == 'nullable'
+        domain.errors.getErrorCount() == 2
+    }
 
-	void 'ensure constrained properties are only public ones'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = SimplePropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained properties are only public ones'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = SimplePropertiesDomain.getConstrainedProperties()
 
-		then: 'only 4 defined public properties are there'
-		constrainedProperties.size() == 2
-		constrainedProperties.containsKey('string')
-		constrainedProperties.containsKey('pages')
-	}
+        then: 'only 4 defined public properties are there'
+        constrainedProperties.size() == 2
+        constrainedProperties.containsKey('string')
+        constrainedProperties.containsKey('pages')
+    }
 
-	void 'ensure only public non-static properties with getter and setter are constrained properties'(){
-		MethodPropertiesDomain domain = new MethodPropertiesDomain()
-		when: 'empty domain with method properties is validated'
-		domain.validate()
+    void 'ensure only public non-static properties with getter and setter are constrained properties'() {
+        MethodPropertiesDomain domain = new MethodPropertiesDomain()
+        when: 'empty domain with method properties is validated'
+        domain.validate()
 
-		then: 'only public with getter and setter should fail'
-		domain.hasErrors()
-		domain.errors['publicProperty']?.code == 'nullable'
-		domain.errors.getErrorCount() == 1
-	}
+        then: 'only public with getter and setter should fail'
+        domain.hasErrors()
+        domain.errors['publicProperty']?.code == 'nullable'
+        domain.errors.getErrorCount() == 1
+    }
 
-	void 'ensure constrained method properties are only public ones with both getter and setter'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = MethodPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained method properties are only public ones with both getter and setter'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = MethodPropertiesDomain.getConstrainedProperties()
 
-		then: 'only public property with getter and setter should fail'
-		constrainedProperties.size() == 1
-		constrainedProperties.containsKey('publicProperty')
-	}
+        then: 'only public property with getter and setter should fail'
+        constrainedProperties.size() == 1
+        constrainedProperties.containsKey('publicProperty')
+    }
 
-	// DOMAIN WITH SUPER CLASS
+    // DOMAIN WITH SUPER CLASS
 
-	void 'ensure all inherited public properties are by default constraint properties'(){
-		InheritedPropertiesDomain domain = new InheritedPropertiesDomain()
+    void 'ensure all inherited public properties are by default constraint properties'() {
+        InheritedPropertiesDomain domain = new InheritedPropertiesDomain()
 
-		when: 'empty domain with simple properties from parent class inheriteds validated'
-		domain.validate()
+        when: 'empty domain with simple properties from parent class inheriteds validated'
+        domain.validate()
 
-		then: 'all public should fail on nullable constraint'
-		domain.hasErrors()
-		domain.errors['string']?.code == 'nullable'
-		domain.errors['pages']?.code == 'nullable'
-		domain.errors.getErrorCount() == 2
-	}
+        then: 'all public should fail on nullable constraint'
+        domain.hasErrors()
+        domain.errors['string']?.code == 'nullable'
+        domain.errors['pages']?.code == 'nullable'
+        domain.errors.getErrorCount() == 2
+    }
 
-	void 'ensure inherited constrained properties are only public ones'(){
-		when: 'constrained properties map is get on child class'
-		Map constrainedProperties = InheritedPropertiesDomain.getConstrainedProperties()
+    void 'ensure inherited constrained properties are only public ones'() {
+        when: 'constrained properties map is get on child class'
+        Map constrainedProperties = InheritedPropertiesDomain.getConstrainedProperties()
 
-		then: 'only 4 defined public properties are there'
-		constrainedProperties.size() == 2
-		constrainedProperties.containsKey('string')
-		constrainedProperties.containsKey('pages')
-	}
+        then: 'only 4 defined public properties are there'
+        constrainedProperties.size() == 2
+        constrainedProperties.containsKey('string')
+        constrainedProperties.containsKey('pages')
+    }
 
-	void 'ensure only public non-static inherited properties with getter and setter are constrained properties'(){
-		InheritedMethodPropertiesDomain domain = new InheritedMethodPropertiesDomain()
-		when: 'empty domain with method properties is validated'
-		domain.validate()
+    void 'ensure only public non-static inherited properties with getter and setter are constrained properties'() {
+        InheritedMethodPropertiesDomain domain = new InheritedMethodPropertiesDomain()
+        when: 'empty domain with method properties is validated'
+        domain.validate()
 
-		then: 'only public with getter and setter should fail'
-		domain.hasErrors()
-		domain.errors['publicProperty']?.code == 'nullable'
-		domain.errors.getErrorCount() == 1
-	}
+        then: 'only public with getter and setter should fail'
+        domain.hasErrors()
+        domain.errors['publicProperty']?.code == 'nullable'
+        domain.errors.getErrorCount() == 1
+    }
 
-	void 'ensure constrained inherited method properties are only public ones with both getter and setter'(){
-		when: 'constrained properties map is get from child class'
-		Map constrainedProperties = InheritedMethodPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained inherited method properties are only public ones with both getter and setter'() {
+        when: 'constrained properties map is get from child class'
+        Map constrainedProperties = InheritedMethodPropertiesDomain.getConstrainedProperties()
 
-		then: 'only public with getter and setter should be there'
-		constrainedProperties.size() == 1
-		constrainedProperties.containsKey('publicProperty')
-	}
+        then: 'only public with getter and setter should be there'
+        constrainedProperties.size() == 1
+        constrainedProperties.containsKey('publicProperty')
+    }
 
-	// DOMAIN WITH TRAIT
+    // DOMAIN WITH TRAIT
 
-	void 'ensure all trait public properties are by default constraint properties'(){
-		TraitPropertiesDomain domain = new TraitPropertiesDomain()
+    void 'ensure all trait public properties are by default constraint properties'() {
+        TraitPropertiesDomain domain = new TraitPropertiesDomain()
 
-		when: 'empty domain with trait properties is validated'
-		domain.validate()
+        when: 'empty domain with trait properties is validated'
+        domain.validate()
 
-		then: 'only public should fail on nullable constraint'
-		domain.hasErrors()
-		domain.errors['string']?.code == 'nullable'
-		domain.errors['pages']?.code == 'nullable'
-		domain.errors.getErrorCount() == 2
-	}
+        then: 'only public should fail on nullable constraint'
+        domain.hasErrors()
+        domain.errors['string']?.code == 'nullable'
+        domain.errors['pages']?.code == 'nullable'
+        domain.errors.getErrorCount() == 2
+    }
 
-	void 'ensure constrained properties are only traits public ones'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = TraitPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained properties are only traits public ones'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = TraitPropertiesDomain.getConstrainedProperties()
 
-		then: 'only 4 defined public properties are there'
-		constrainedProperties.size() == 2
-		constrainedProperties.containsKey('string')
-		constrainedProperties.containsKey('pages')
-	}
+        then: 'only 4 defined public properties are there'
+        constrainedProperties.size() == 2
+        constrainedProperties.containsKey('string')
+        constrainedProperties.containsKey('pages')
+    }
 
-	void 'ensure only public non-static properties from trait with getter and setter are constrained properties'(){
-		TraitMethodPropertiesDomain domain = new TraitMethodPropertiesDomain()
-		when: 'empty domain with simple properties is validated'
-		domain.validate()
+    void 'ensure only public non-static properties from trait with getter and setter are constrained properties'() {
+        TraitMethodPropertiesDomain domain = new TraitMethodPropertiesDomain()
+        when: 'empty domain with simple properties is validated'
+        domain.validate()
 
-		then: 'all should fail on nullable constraint'
-		domain.hasErrors()
-		domain.errors['publicProperty']?.code == 'nullable'
-		domain.errors.getErrorCount() == 1
-	}
+        then: 'all should fail on nullable constraint'
+        domain.hasErrors()
+        domain.errors['publicProperty']?.code == 'nullable'
+        domain.errors.getErrorCount() == 1
+    }
 
-	void 'ensure constrained method properties from trait are only public ones with both getter and setter'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = TraitMethodPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained method properties from trait are only public ones with both getter and setter'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = TraitMethodPropertiesDomain.getConstrainedProperties()
 
-		then: 'only 4 defined public properties are there'
-		constrainedProperties.size() == 1
-		constrainedProperties.containsKey('publicProperty')
-	}
+        then: 'only 4 defined public properties are there'
+        constrainedProperties.size() == 1
+        constrainedProperties.containsKey('publicProperty')
+    }
 
-	// BOOL METHODS DOMAIN OBJECT
+    // BOOL METHODS DOMAIN OBJECT
 
-	void 'ensure only public non-static bool properties with getter and setter are constrained properties'(){
-		BoolMethodPropertiesDomain domain = new BoolMethodPropertiesDomain()
-		when: 'empty domain with method properties is validated'
-		domain.validate()
+    void 'ensure only public non-static bool properties with getter and setter are constrained properties'() {
+        BoolMethodPropertiesDomain domain = new BoolMethodPropertiesDomain()
+        when: 'empty domain with method properties is validated'
+        domain.validate()
 
-		then: 'only public with getter and setter should fail'
-		domain.hasErrors()
-		domain.errors['publicProperty']?.code == 'nullable'
-		domain.errors.getErrorCount() == 1
-	}
+        then: 'only public with getter and setter should fail'
+        domain.hasErrors()
+        domain.errors['publicProperty']?.code == 'nullable'
+        domain.errors.getErrorCount() == 1
+    }
 
-	void 'ensure constrained bool method properties are only public ones with both getter and setter'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = BoolMethodPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained bool method properties are only public ones with both getter and setter'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = BoolMethodPropertiesDomain.getConstrainedProperties()
 
-		then: 'only public property with getter and setter should fail'
-		constrainedProperties.size() == 1
-		constrainedProperties.containsKey('publicProperty')
-	}
+        then: 'only public property with getter and setter should fail'
+        constrainedProperties.size() == 1
+        constrainedProperties.containsKey('publicProperty')
+    }
 
-	// BOOL DOMAIN OBJECT WITH SUPER CLASS
+    // BOOL DOMAIN OBJECT WITH SUPER CLASS
 
-	void 'ensure only public non-static inherited bool properties with getter and setter are constrained properties'(){
-		InheritedBoolMethodPropertiesDomain domain = new InheritedBoolMethodPropertiesDomain()
-		when: 'empty domain with method properties is validated'
-		domain.validate()
+    void 'ensure only public non-static inherited bool properties with getter and setter are constrained properties'() {
+        InheritedBoolMethodPropertiesDomain domain = new InheritedBoolMethodPropertiesDomain()
+        when: 'empty domain with method properties is validated'
+        domain.validate()
 
-		then: 'only public with getter and setter should fail'
-		domain.hasErrors()
-		domain.errors['publicProperty']?.code == 'nullable'
-		domain.errors.getErrorCount() == 1
-	}
+        then: 'only public with getter and setter should fail'
+        domain.hasErrors()
+        domain.errors['publicProperty']?.code == 'nullable'
+        domain.errors.getErrorCount() == 1
+    }
 
-	void 'ensure constrained inherited bool method properties are only public ones with both getter and setter'(){
-		when: 'constrained properties map is get from child class'
-		Map constrainedProperties = InheritedBoolMethodPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained inherited bool method properties are only public ones with both getter and setter'() {
+        when: 'constrained properties map is get from child class'
+        Map constrainedProperties = InheritedBoolMethodPropertiesDomain.getConstrainedProperties()
 
-		then: 'only public with getter and setter should be there'
-		constrainedProperties.size() == 1
-		constrainedProperties.containsKey('publicProperty')
-	}
+        then: 'only public with getter and setter should be there'
+        constrainedProperties.size() == 1
+        constrainedProperties.containsKey('publicProperty')
+    }
 
-	// BOOL DOMAIN OBJECT WITH TRAIT
+    // BOOL DOMAIN OBJECT WITH TRAIT
 
-	void 'ensure only public non-static bool properties from trait with getter and setter are constrained properties'(){
-		TraitBoolMethodPropertiesDomain domain = new TraitBoolMethodPropertiesDomain()
-		when: 'empty domain with simple properties is validated'
-		domain.validate()
+    void 'ensure only public non-static bool properties from trait with getter and setter are constrained properties'() {
+        TraitBoolMethodPropertiesDomain domain = new TraitBoolMethodPropertiesDomain()
+        when: 'empty domain with simple properties is validated'
+        domain.validate()
 
-		then: 'all should fail on nullable constraint'
-		domain.hasErrors()
-		domain.errors['publicProperty']?.code == 'nullable'
-		domain.errors.getErrorCount() == 1
-	}
+        then: 'all should fail on nullable constraint'
+        domain.hasErrors()
+        domain.errors['publicProperty']?.code == 'nullable'
+        domain.errors.getErrorCount() == 1
+    }
 
-	void 'ensure constrained bool method properties from trait are only public ones with both getter and setter'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = TraitBoolMethodPropertiesDomain.getConstrainedProperties()
+    void 'ensure constrained bool method properties from trait are only public ones with both getter and setter'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = TraitBoolMethodPropertiesDomain.getConstrainedProperties()
 
-		then: 'only 4 defined public properties are there'
-		constrainedProperties.size() == 1
-		constrainedProperties.containsKey('publicProperty')
-	}
+        then: 'only 4 defined public properties are there'
+        constrainedProperties.size() == 1
+        constrainedProperties.containsKey('publicProperty')
+    }
 
-	// DOMAIN WITH TRANSIENTS
+    // DOMAIN WITH TRANSIENTS
 
-	void 'ensure transient properties and methods are not validated'(){
-		DomainWithTransients domain = new DomainWithTransients()
-		when: 'domain with transient methods and properties is validated'
-		domain.validate()
+    void 'ensure transient properties and methods are not validated'() {
+        DomainWithTransients domain = new DomainWithTransients()
+        when: 'domain with transient methods and properties is validated'
+        domain.validate()
 
-		then: 'nothing should fail'
-		domain.errors.getErrorCount() == 0
-	}
+        then: 'nothing should fail'
+        domain.errors.getErrorCount() == 0
+    }
 
-	void 'ensure transient methods and properties are not constrained'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
+    void 'ensure transient methods and properties are not constrained'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
 
-		then: 'nothing is constrained'
-		constrainedProperties.size() == 0
-	}
+        then: 'nothing is constrained'
+        constrainedProperties.size() == 0
+    }
 
-	// DOMAIN WITH SUPER CLASS WITH TRANSIENTS
+    // DOMAIN WITH SUPER CLASS WITH TRANSIENTS
 
-	void 'ensure inherited transient properties and methods are not validated'(){
-		DomainWithTransients domain = new DomainWithTransients()
-		when: 'domain with superclass properties and methods is validated'
-		domain.validate()
+    void 'ensure inherited transient properties and methods are not validated'() {
+        DomainWithTransients domain = new DomainWithTransients()
+        when: 'domain with superclass properties and methods is validated'
+        domain.validate()
 
-		then: 'nothing should fail'
-		domain.errors.getErrorCount() == 0
-	}
+        then: 'nothing should fail'
+        domain.errors.getErrorCount() == 0
+    }
 
-	void 'ensure inherited transient methods and properties are not constrained'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
+    void 'ensure inherited transient methods and properties are not constrained'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = DomainWithTransients.getConstrainedProperties()
 
-		then: 'nothing is constrained'
-		constrainedProperties.size() == 0
-	}
+        then: 'nothing is constrained'
+        constrainedProperties.size() == 0
+    }
 
-	// DOMAIN WITH TRAIT WITH TRANSIENTS
+    // DOMAIN WITH TRAIT WITH TRANSIENTS
 
-	void 'ensure trait transient properties and methods are not validated'(){
-		TraitDomainWithTransients domain = new TraitDomainWithTransients()
-		when: 'domain with trait transient properties and methods'
-		domain.validate()
+    void 'ensure trait transient properties and methods are not validated'() {
+        TraitDomainWithTransients domain = new TraitDomainWithTransients()
+        when: 'domain with trait transient properties and methods'
+        domain.validate()
 
-		then: 'nothing should fail'
-		domain.errors.getErrorCount() == 0
-	}
+        then: 'nothing should fail'
+        domain.errors.getErrorCount() == 0
+    }
 
-	void 'ensure trait transient methods and properties are not constrained'(){
-		when: 'constrained properties map is get'
-		Map constrainedProperties = TraitDomainWithTransients.getConstrainedProperties()
+    void 'ensure trait transient methods and properties are not constrained'() {
+        when: 'constrained properties map is get'
+        Map constrainedProperties = TraitDomainWithTransients.getConstrainedProperties()
 
-		then: 'nothing is constrained'
-		constrainedProperties.size() == 0
-	}
+        then: 'nothing is constrained'
+        constrainedProperties.size() == 0
+    }
 }
 
 /**
@@ -283,14 +283,14 @@ class DomainConstraintGettersSpec extends Specification {
  */
 @Entity
 class SimplePropertiesDomain {
-	String string
-	Integer pages
+    String string
+    Integer pages
 
-	private String firstName
-	protected String secondName
-	static String finalName
-	private static String foo
-	protected static String bar
+    private String firstName
+    protected String secondName
+    static String finalName
+    private static String foo
+    protected static String bar
 }
 
 /**
@@ -299,49 +299,62 @@ class SimplePropertiesDomain {
 @Entity
 class InheritedPropertiesDomain extends SimplePropertiesDomain {}
 
-
 /**
  * Domain with getter/setter methods
  */
 @Entity
 class MethodPropertiesDomain {
-	
-	/**
-	 * publicProperty should be constrained because those getter and setter
-	 */
-	String getPublicProperty() {}
-	void setPublicProperty(String value) {}
 
-	protected String getProtectedProperty() {}
-	protected void setProtectedProperty(String value) {}
+    /**
+     * publicProperty should be constrained because those getter and setter
+     */
+    String getPublicProperty() {}
 
-	private String getPrivateProperty() {}
-	private void setPrivateProperty(String value) {}	
+    void setPublicProperty(String value) {}
 
-	static String getStaticPublicProperty() {}
-	static void setStaticPublicProperty(String value) {}
+    protected String getProtectedProperty() {}
 
-	static protected String getStaticProtectedProperty() {}
-	static protected void setStaticProtectedProperty(String value) {}
+    protected void setProtectedProperty(String value) {}
 
-	static private String getStaticPrivateProperty() {}
-	static private void setStaticPrivateProperty(String value) {}	
+    private String getPrivateProperty() {}
 
-	String getGetterOnly() {}
-	protected String getProtectedGetterOnly() {}
-	private String getPrivateGetterOnly() {}
+    private void setPrivateProperty(String value) {}
 
-	static String getStaticGetterOnly() {}
-	static protected String getStaticProtectedGetterOnly() {}
-	static private String getStaticPrivateGetterOnly() {}
+    static String getStaticPublicProperty() {}
 
-	void setSetterOnly(String value) {}
-	protected void setProtectedSetterOnly(String value) {}
-	private void setPrivateSetterOnly(String value) {}
+    static void setStaticPublicProperty(String value) {}
 
-	static void setStaticSetterOnly(String value) {}
-	static protected void setStaticProtectedSetterOnly(String value) {}
-	static private void setStaticPrivateSetterOnly(String value) {}
+    static protected String getStaticProtectedProperty() {}
+
+    static protected void setStaticProtectedProperty(String value) {}
+
+    static private String getStaticPrivateProperty() {}
+
+    static private void setStaticPrivateProperty(String value) {}
+
+    String getGetterOnly() {}
+
+    protected String getProtectedGetterOnly() {}
+
+    private String getPrivateGetterOnly() {}
+
+    static String getStaticGetterOnly() {}
+
+    static protected String getStaticProtectedGetterOnly() {}
+
+    static private String getStaticPrivateGetterOnly() {}
+
+    void setSetterOnly(String value) {}
+
+    protected void setProtectedSetterOnly(String value) {}
+
+    private void setPrivateSetterOnly(String value) {}
+
+    static void setStaticSetterOnly(String value) {}
+
+    static protected void setStaticProtectedSetterOnly(String value) {}
+
+    static private void setStaticPrivateSetterOnly(String value) {}
 }
 
 /**
@@ -354,45 +367,53 @@ class InheritedMethodPropertiesDomain extends MethodPropertiesDomain {}
  * Trait with properties only
  */
 trait SimpleDomainPropertiesTrait {
-	String string
-	Integer pages
+    String string
+    Integer pages
 
-	private String firstName
-	static String finalName
-	private static String foo
+    private String firstName
+    static String finalName
+    private static String foo
 }
 
 /**
  * Trait with getter/setter methods
  */
 trait MethodPropertiesDomainTrait {
-	
-	/**
-	 * publicProperty should be constrained because those getter and setter
-	 */
-	String getPublicProperty() {}
-	void setPublicProperty(String value) {}
 
-	private String getPrivateProperty() {}
-	private void setPrivateProperty(String value) {}	
+    /**
+     * publicProperty should be constrained because those getter and setter
+     */
+    String getPublicProperty() {}
 
-	static String getStaticPublicProperty() {}
-	static void setStaticPublicProperty(String value) {}
+    void setPublicProperty(String value) {}
 
-	static private String getStaticPrivateProperty() {}
-	static private void setStaticPrivateProperty(String value) {}	
+    private String getPrivateProperty() {}
 
-	String getGetterOnly() {}
-	private String getPrivateGetterOnly() {}
+    private void setPrivateProperty(String value) {}
 
-	static String getStaticGetterOnly() {}
-	static private String getStaticPrivateGetterOnly() {}
+    static String getStaticPublicProperty() {}
 
-	void setSetterOnly(String value) {}
-	private void setPrivateSetterOnly(String value) {}
+    static void setStaticPublicProperty(String value) {}
 
-	static void setStaticSetterOnly(String value) {}
-	static private void setStaticPrivateSetterOnly(String value) {}
+    static private String getStaticPrivateProperty() {}
+
+    static private void setStaticPrivateProperty(String value) {}
+
+    String getGetterOnly() {}
+
+    private String getPrivateGetterOnly() {}
+
+    static String getStaticGetterOnly() {}
+
+    static private String getStaticPrivateGetterOnly() {}
+
+    void setSetterOnly(String value) {}
+
+    private void setPrivateSetterOnly(String value) {}
+
+    static void setStaticSetterOnly(String value) {}
+
+    static private void setStaticPrivateSetterOnly(String value) {}
 }
 
 /**
@@ -412,76 +433,98 @@ class TraitMethodPropertiesDomain implements MethodPropertiesDomainTrait {}
  */
 @Entity
 class BoolMethodPropertiesDomain {
-	
-	/**
-	 * publicProperty should be constrained because those getter and setter
-	 */
-	Boolean isPublicProperty() {}
-	void setPublicProperty(Boolean value) {}
 
-	protected Boolean isProtectedProperty() {}
-	protected void setProtectedProperty(Boolean value) {}
+    /**
+     * publicProperty should be constrained because those getter and setter
+     */
+    Boolean isPublicProperty() {}
 
-	private Boolean isPrivateProperty() {}
-	private void setPrivateProperty(Boolean value) {}	
+    void setPublicProperty(Boolean value) {}
 
-	static Boolean isStaticPublicProperty() {}
-	static void setStaticPublicProperty(Boolean value) {}
+    protected Boolean isProtectedProperty() {}
 
-	static protected Boolean isStaticProtectedProperty() {}
-	static protected void setStaticProtectedProperty(Boolean value) {}
+    protected void setProtectedProperty(Boolean value) {}
 
-	static private Boolean isStaticPrivateProperty() {}
-	static private void setStaticPrivateProperty(Boolean value) {}	
+    private Boolean isPrivateProperty() {}
 
-	Boolean isGetterOnly() {}
-	protected Boolean isProtectedGetterOnly() {}
-	private Boolean isPrivateGetterOnly() {}
+    private void setPrivateProperty(Boolean value) {}
 
-	static Boolean isStaticGetterOnly() {}
-	static protected Boolean isStaticProtectedGetterOnly() {}
-	static private Boolean isStaticPrivateGetterOnly() {}
+    static Boolean isStaticPublicProperty() {}
 
-	void setSetterOnly(Boolean value) {}
-	protected void setProtectedSetterOnly(Boolean value) {}
-	private void setPrivateSetterOnly(Boolean value) {}
+    static void setStaticPublicProperty(Boolean value) {}
 
-	static void setStaticSetterOnly(Boolean value) {}
-	static protected void setStaticProtectedSetterOnly(Boolean value) {}
-	static private void setStaticPrivateSetterOnly(Boolean value) {}
+    static protected Boolean isStaticProtectedProperty() {}
+
+    static protected void setStaticProtectedProperty(Boolean value) {}
+
+    static private Boolean isStaticPrivateProperty() {}
+
+    static private void setStaticPrivateProperty(Boolean value) {}
+
+    Boolean isGetterOnly() {}
+
+    protected Boolean isProtectedGetterOnly() {}
+
+    private Boolean isPrivateGetterOnly() {}
+
+    static Boolean isStaticGetterOnly() {}
+
+    static protected Boolean isStaticProtectedGetterOnly() {}
+
+    static private Boolean isStaticPrivateGetterOnly() {}
+
+    void setSetterOnly(Boolean value) {}
+
+    protected void setProtectedSetterOnly(Boolean value) {}
+
+    private void setPrivateSetterOnly(Boolean value) {}
+
+    static void setStaticSetterOnly(Boolean value) {}
+
+    static protected void setStaticProtectedSetterOnly(Boolean value) {}
+
+    static private void setStaticPrivateSetterOnly(Boolean value) {}
 }
 
 /**
  * Trait with getter/setter methods
  */
 trait BoolMethodPropertiesDomainTrait {
-	
-	/**
-	 * publicProperty should be constrained because those getter and setter
-	 */
-	Boolean isPublicProperty() {}
-	void setPublicProperty(Boolean value) {}
 
-	private Boolean isPrivateProperty() {}
-	private void setPrivateProperty(Boolean value) {}	
+    /**
+     * publicProperty should be constrained because those getter and setter
+     */
+    Boolean isPublicProperty() {}
 
-	static Boolean isStaticPublicProperty() {}
-	static void setStaticPublicProperty(Boolean value) {}
+    void setPublicProperty(Boolean value) {}
 
-	static private Boolean isStaticPrivateProperty() {}
-	static private void setStaticPrivateProperty(Boolean value) {}	
+    private Boolean isPrivateProperty() {}
 
-	Boolean isGetterOnly() {}
-	private Boolean isPrivateGetterOnly() {}
+    private void setPrivateProperty(Boolean value) {}
 
-	static Boolean isStaticGetterOnly() {}
-	static private Boolean isStaticPrivateGetterOnly() {}
+    static Boolean isStaticPublicProperty() {}
 
-	void setSetterOnly(Boolean value) {}
-	private void setPrivateSetterOnly(Boolean value) {}
+    static void setStaticPublicProperty(Boolean value) {}
 
-	static void setStaticSetterOnly(Boolean value) {}
-	static private void setStaticPrivateSetterOnly(Boolean value) {}
+    static private Boolean isStaticPrivateProperty() {}
+
+    static private void setStaticPrivateProperty(Boolean value) {}
+
+    Boolean isGetterOnly() {}
+
+    private Boolean isPrivateGetterOnly() {}
+
+    static Boolean isStaticGetterOnly() {}
+
+    static private Boolean isStaticPrivateGetterOnly() {}
+
+    void setSetterOnly(Boolean value) {}
+
+    private void setPrivateSetterOnly(Boolean value) {}
+
+    static void setStaticSetterOnly(Boolean value) {}
+
+    static private void setStaticPrivateSetterOnly(Boolean value) {}
 }
 
 /**
@@ -498,37 +541,47 @@ class TraitBoolMethodPropertiesDomain implements BoolMethodPropertiesDomainTrait
 
 @Entity
 class DomainWithTransients {
-	static transients = ['simpleProperty', 'methodProperty', 'boolMethodProperty']
+    static transients = ['simpleProperty', 'methodProperty', 'boolMethodProperty']
 
-	String simpleProperty
-	String getMethodProperty(){}
-	void setMethodProperty(String value){}
+    String simpleProperty
 
-	transient String getTransientMethodProperty(){}
-	transient void setTransientMethodProperty(String value){}
+    String getMethodProperty() {}
 
-	Boolean isBoolMethodProperty(){}
-	void setBoolMethodProperty(Boolean value){}
+    void setMethodProperty(String value) {}
 
-	transient Boolean isTransientBoolMethodProperty(){}
-	transient void setTransientBoolMethodProperty(Boolean value){}
+    transient String getTransientMethodProperty() {}
+
+    transient void setTransientMethodProperty(String value) {}
+
+    Boolean isBoolMethodProperty() {}
+
+    void setBoolMethodProperty(Boolean value) {}
+
+    transient Boolean isTransientBoolMethodProperty() {}
+
+    transient void setTransientBoolMethodProperty(Boolean value) {}
 }
 
 trait TraitWithTransients {
-	static transients = ['simpleProperty', 'methodProperty', 'boolMethodProperty']
+    static transients = ['simpleProperty', 'methodProperty', 'boolMethodProperty']
 
-	String simpleProperty
-	String getMethodProperty(){}
-	void setMethodProperty(String value){}
+    String simpleProperty
 
-	transient String getTransientMethodProperty(){}
-	transient void setTransientMethodProperty(String value){}
+    String getMethodProperty() {}
 
-	Boolean isBoolMethodProperty(){}
-	void setBoolMethodProperty(Boolean value){}
+    void setMethodProperty(String value) {}
 
-	transient Boolean isTransientBoolMethodProperty(){}
-	transient void setTransientBoolMethodProperty(Boolean value){}
+    transient String getTransientMethodProperty() {}
+
+    transient void setTransientMethodProperty(String value) {}
+
+    Boolean isBoolMethodProperty() {}
+
+    void setBoolMethodProperty(Boolean value) {}
+
+    transient Boolean isTransientBoolMethodProperty() {}
+
+    transient void setTransientBoolMethodProperty(Boolean value) {}
 }
 
 @Entity
