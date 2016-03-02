@@ -11,6 +11,7 @@ import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.hibernate.Hibernate
 import org.springframework.validation.FieldError
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -21,6 +22,20 @@ import spock.lang.Specification
 @TestMixin(GrailsUnitTestMixin)
 @Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
 class DomainClassValidationSpec extends Specification {
+
+    @Issue('grails/grails-core#9749')
+    void 'test that transient properties are not constrained by default but can be explicitly constrained'() {
+        when:
+        def props = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
+
+        then:
+        !props.foo
+        !props.baz
+        !props.transientString1
+        props.bar
+        props.qux
+        props.transientString2
+    }
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
         when: 'an object is valid'
@@ -213,9 +228,12 @@ class DomainClassValidationSpec extends Specification {
         Map constraints = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
         then: 'only public properties and public getters should be considered domainClass properties by default'
-        constraints.size() == 2
+        constraints.size() == 5
         constraints.name
         constraints.town
+        constraints.bar
+        constraints.qux
+        constraints.transientString2
     }
 
     void "Test that default and shared constraints can be applied from configuration"() {
@@ -366,6 +384,25 @@ class DomainClassGetters {
     protected static Date getChristmas() {}
 
     private static Date getNewYear() {}
+
+    static transients = ['foo', 'bar']
+
+    String getFoo() {}
+
+    String getBar() {}
+
+    transient String getBaz() {}
+
+    transient String getQux() {}
+
+    transient String transientString1;
+    transient String transientString2;
+
+    static constraints = {
+        bar size: 3..10
+        qux size: 3..10
+        transientString2 size: 3..10
+    }
 }
 
 @Entity
