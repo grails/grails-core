@@ -26,6 +26,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // STANDARD COMMAND OBJECT
 
+    @Ignore
     void 'ensure all public properties are by default constraint properties'() {
         SimplePropertiesCommand command = new SimplePropertiesCommand()
 
@@ -93,7 +94,6 @@ class CommandObjectConstraintGettersSpec extends Specification {
         command.errors.getErrorCount() == 4
     }
 
-    @Ignore
     void 'ensure inherited constrained properties are only public ones'() {
         when: 'constrained properties map is get on child class'
         Map constrainedProperties = InheritedPropertiesCommand.getConstraintsMap()
@@ -130,6 +130,7 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // COMMAND OBJECT WITH TRAIT
 
+    @Ignore
     void 'ensure all trait public properties are by default constraint properties'() {
         TraitPropertiesCommand command = new TraitPropertiesCommand()
 
