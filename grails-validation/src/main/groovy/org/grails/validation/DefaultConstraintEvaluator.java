@@ -18,6 +18,7 @@ package org.grails.validation;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.io.IOUtils;
+import grails.persistence.PersistenceMethod;
 import grails.util.GrailsClassUtils;
 import grails.validation.Constrained;
 import grails.validation.ConstrainedProperty;
@@ -34,6 +35,8 @@ import org.grails.core.artefact.AnnotationDomainClassArtefactHandler;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.CachedIntrospectionResults;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -43,13 +46,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Default implementation of the {@link grails.validation.ConstraintsEvaluator} interface.
@@ -156,7 +153,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
 
         boolean isDomainClass = DomainClassArtefactHandler.isDomainClass(theClass);
         Map<String, GrailsDomainClassProperty> domainClassPropertyMap = indexPropertiesByPropertyName(domainClassProperties);
-        Map<String, Method> constrainablePropertyMap = getConstrainablePropertyMap(theClass);
+        Map<String, Method> constrainablePropertyMap = getConstrainablePropertyMap(theClass, isDomainClass);
 
         for (String propertyName : constrainablePropertyMap.keySet()) {
             GrailsDomainClassProperty domainClassProperty = domainClassPropertyMap.get(propertyName);
@@ -176,6 +173,10 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
                             continue;
                         }
                     }
+                }
+                else {
+                    // for domain class, a constraint of a property as only getter method is not supported
+                    continue;
                 }
             }
 
@@ -359,37 +360,41 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
         }
     }
 
-    protected Map<String, Method> getConstrainablePropertyMap(Class theClass) {
-        List<String> ignoredProperties = new ArrayList<>();
+    protected Map<String, Method> getConstrainablePropertyMap(Class theClass, boolean isDomainClass) {
+        Set<String> ignoredProperties = new HashSet<>();
         ignoredProperties.add(GrailsDomainClassProperty.CLASS);
         ignoredProperties.add(GrailsDomainClassProperty.META_CLASS);
         ignoredProperties.add(GrailsDomainClassProperty.ERRORS);
-        if (DomainClassArtefactHandler.isDomainClass(theClass)) {
+
+        if (isDomainClass) {
             ignoredProperties.add(GrailsDomainConfigurationUtil.PROPERTIES_PROPERTY);
             ignoredProperties.add(GrailsDomainClassProperty.IDENTITY);
             ignoredProperties.add(GrailsDomainClassProperty.VERSION);
             ignoredProperties.add(GrailsDomainClassProperty.DIRTY_PROPERTY_NAMES);
             ignoredProperties.add(GrailsDomainClassProperty.DIRTY);
             ignoredProperties.add(GrailsDomainClassProperty.ATTACHED);
-        }
-
-        final Object transients = GrailsClassUtils.getStaticPropertyValue(theClass,
-                                                                          GrailsDomainClassProperty.TRANSIENT);
-        if(transients instanceof List) {
-            ignoredProperties.addAll((List) transients);
-        }
-        try {
-            final BeanInfo beanInfo = Introspector.getBeanInfo(theClass);
-            final PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+            final Object transients = GrailsClassUtils.getStaticPropertyValue(theClass,
+                    GrailsDomainClassProperty.TRANSIENT);
+            if(transients instanceof List) {
+                ignoredProperties.addAll((List) transients);
+            }
+            final PropertyDescriptor[] propertyDescriptors = BeanUtils.getPropertyDescriptors(theClass);
             for(PropertyDescriptor descriptor : propertyDescriptors) {
                 final Method readMethod = descriptor.getReadMethod();
-                if(readMethod != null && Modifier.isTransient(readMethod.getModifiers())) {
+
+                final Method writeMethod = descriptor.getWriteMethod();
+                if( readMethod == null ) {
                     ignoredProperties.add(descriptor.getName());
                 }
+                else if(writeMethod == null || (Modifier.isTransient(readMethod.getModifiers()))) {
+                    PersistenceMethod annotation = readMethod.getAnnotation(PersistenceMethod.class);
+                    if(annotation == null) {
+                        ignoredProperties.add(descriptor.getName());
+                    }
+                }
             }
-        } catch (IntrospectionException e) {
-            LOG.error("An error occurred introspecting properties", e);
         }
+
 
         Field[] declaredFields = theClass.getDeclaredFields();
         for(Field field : declaredFields) {
