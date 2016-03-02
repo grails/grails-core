@@ -26,7 +26,6 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // STANDARD COMMAND OBJECT
 
-    @Ignore
     void 'ensure all public properties are by default constraint properties'() {
         SimplePropertiesCommand command = new SimplePropertiesCommand()
 
@@ -35,11 +34,9 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
         then: 'only public should fail on nullable constraint'
         command.hasErrors()
-        command.errors['list']?.code == 'nullable'
-        command.errors['map']?.code == 'nullable'
         command.errors['string']?.code == 'nullable'
         command.errors['book']?.code == 'nullable'
-        command.errors.getErrorCount() == 4
+        command.errors.getErrorCount() == 2
     }
 
     void 'ensure constrained properties are only public ones'() {
@@ -78,20 +75,17 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // COMMAND OBJECT WITH SUPER CLASS
 
-    @Ignore
     void 'ensure all inherited public properties are by default constraint properties'() {
         InheritedPropertiesCommand command = new InheritedPropertiesCommand()
 
         when: 'empty command with simple properties from parent class inheriteds validated'
         command.validate()
 
-        then: 'all public should fail on nullable constraint'
+        then: 'all non collection public properties should fail on nullable constraint'
         command.hasErrors()
-        command.errors['list']?.code == 'nullable'
-        command.errors['map']?.code == 'nullable'
         command.errors['string']?.code == 'nullable'
         command.errors['book']?.code == 'nullable'
-        command.errors.getErrorCount() == 4
+        command.errors.getErrorCount() == 2
     }
 
     void 'ensure inherited constrained properties are only public ones'() {
@@ -130,7 +124,6 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
     // COMMAND OBJECT WITH TRAIT
 
-    @Ignore
     void 'ensure all trait public properties are by default constraint properties'() {
         TraitPropertiesCommand command = new TraitPropertiesCommand()
 
@@ -139,11 +132,9 @@ class CommandObjectConstraintGettersSpec extends Specification {
 
         then: 'only public should fail on nullable constraint'
         command.hasErrors()
-        command.errors['list']?.code == 'nullable'
-        command.errors['map']?.code == 'nullable'
         command.errors['string']?.code == 'nullable'
         command.errors['book']?.code == 'nullable'
-        command.errors.getErrorCount() == 4
+        command.errors.getErrorCount() == 2
     }
 
     void 'ensure constrained properties are only traits public ones'() {
