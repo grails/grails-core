@@ -154,6 +154,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     private static final String ALLOWED_METHODS_HANDLED_ATTRIBUTE_NAME = "ALLOWED_METHODS_HANDLED";
     private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
+    private static final ClassNode TRANSACTION_STATUS_CLASS = ClassHelper.make(TransactionStatus.class);
     public static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(
             new ClassNode(Action.class));
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
@@ -426,14 +427,20 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         for(Parameter p : parameters) {
             final String paramName = p.getName();
             final ClassNode paramTypeClassNode = p.getType();
-            if (!(PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) ||
-                    TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode)) &&
-            !paramTypeClassNode.equals(new ClassNode(String.class)) &&
-            !paramTypeClassNode.equals(OBJECT_CLASS)) {
+            boolean isCommandObjectType = isCommandObjectType(paramTypeClassNode);
+            if (isCommandObjectType) {
                 initializeAndValidateCommandObjectParameter(body, controllerNode, paramTypeClassNode, actionNode, actionName, paramName, source, context);
             }
         }
         return body;
+    }
+
+    protected boolean isCommandObjectType(ClassNode paramTypeClassNode) {
+        return !PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) &&
+               !TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode) &&
+               !paramTypeClassNode.equals(new ClassNode(String.class)) &&
+               !paramTypeClassNode.equals(OBJECT_CLASS) &&
+               !paramTypeClassNode.equals(TRANSACTION_STATUS_CLASS);
     }
 
     private Statement addOriginalMethodCall(MethodNode methodNode, BlockStatement blockStatement) {
@@ -777,13 +784,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final SourceUnit source, final GeneratorContext context) {
 
         if(commandObjectNode.isInterface() || Modifier.isAbstract(commandObjectNode.getModifiers())) {
-            if(!ClassHelper.make(TransactionStatus.class).equals(commandObjectNode)) {
-                final String warningMessage = "The [" + actionName + "] action in [" +
-                        controllerNode.getName() + "] accepts a parameter of type [" +
-                        commandObjectNode.getName() +
-                        "].  Interface types and abstract class types are not supported as command objects.  This parameter will be ignored.";
-                GrailsASTUtils.warning(source, actionNode, warningMessage);
-            }
+            final String warningMessage = "The [" + actionName + "] action in [" +
+                    controllerNode.getName() + "] accepts a parameter of type [" +
+                    commandObjectNode.getName() +
+                    "].  Interface types and abstract class types are not supported as command objects.  This parameter will be ignored.";
+            GrailsASTUtils.warning(source, actionNode, warningMessage);
         } else {
             initializeCommandObjectParameter(wrapper, commandObjectNode, paramName, source);
 
