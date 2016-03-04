@@ -21,6 +21,7 @@ import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.build
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
+import grails.transaction.Transactional;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -392,9 +393,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                                                                      final MethodNode methodNode,
                                                                      final SourceUnit source,
                                                                      final GeneratorContext context) {
+        final String actionName = methodNode.getName();
         final MethodNode methodToUse = getMethodToIncludeCommandObjectInitializationCode(methodNode);
         final BlockStatement newCodeForExistingMethod = new BlockStatement();
-        final BlockStatement codeToInitializeCommandObjects = getCodeToInitializeCommandObjects(methodToUse, methodToUse.getName(), methodToUse.getParameters(), classNode, source, context);
+        final BlockStatement codeToInitializeCommandObjects = getCodeToInitializeCommandObjects(methodToUse, actionName, methodToUse.getParameters(), classNode, source, context);
         newCodeForExistingMethod.addStatement(codeToInitializeCommandObjects);
         newCodeForExistingMethod.addStatement(methodToUse.getCode());
         methodToUse.setCode(newCodeForExistingMethod);
@@ -775,11 +777,13 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final SourceUnit source, final GeneratorContext context) {
 
         if(commandObjectNode.isInterface() || Modifier.isAbstract(commandObjectNode.getModifiers())) {
-            final String warningMessage = "The [" + actionName + "] action in [" +
-                    controllerNode.getName() + "] accepts a parameter of type [" +
-                    commandObjectNode.getName() +
-                    "].  Interface types and abstract class types are not supported as command objects.  This parameter will be ignored.";
-            GrailsASTUtils.warning(source, actionNode, warningMessage);
+            if(!ClassHelper.make(TransactionStatus.class).equals(commandObjectNode)) {
+                final String warningMessage = "The [" + actionName + "] action in [" +
+                        controllerNode.getName() + "] accepts a parameter of type [" +
+                        commandObjectNode.getName() +
+                        "].  Interface types and abstract class types are not supported as command objects.  This parameter will be ignored.";
+                GrailsASTUtils.warning(source, actionNode, warningMessage);
+            }
         } else {
             initializeCommandObjectParameter(wrapper, commandObjectNode, paramName, source);
 
