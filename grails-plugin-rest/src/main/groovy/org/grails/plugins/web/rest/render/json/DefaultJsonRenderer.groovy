@@ -24,6 +24,7 @@ import groovy.transform.CompileStatic
 import grails.web.mime.MimeType
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.grails.web.json.JSONWriter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.validation.Errors
@@ -100,6 +101,9 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
      */
     protected void renderJson(T object, RenderContext context) {
         JSON converter
+        def out = context.writer
+        JSONWriter writer = new JSONWriter(out)
+
         if (namedConfiguration) {
             JSON.use(namedConfiguration) {
                 converter = object as JSON
@@ -107,7 +111,21 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         } else {
             converter = object as JSON
         }
-        renderJson(converter, context)
+
+        writer.object()
+        writer.key("entity")
+        converter.renderPartial(writer)
+
+        if(context.arguments?.paging) {
+            writer.key("paging")
+            converter = context.arguments.paging as JSON
+            converter.renderPartial(writer)
+        }
+
+        writer.endObject()
+        out.flush()
+        out.close()
+//        renderJson(converter, context)
     }
 
     protected void renderJson(JSON converter, RenderContext context) {
