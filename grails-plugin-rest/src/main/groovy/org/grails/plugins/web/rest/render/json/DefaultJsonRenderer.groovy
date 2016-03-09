@@ -16,6 +16,7 @@
 package org.grails.plugins.web.rest.render.json
 
 import grails.converters.JSON
+import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
@@ -50,6 +51,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     String namedConfiguration
     HttpStatus errorsHttpStatus = HttpStatus.UNPROCESSABLE_ENTITY
+    String label
 
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
@@ -113,7 +115,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         }
 
         writer.object()
-        writer.key("entity")
+        writer.key(getLabel())
         converter.renderPartial(writer)
 
         if(context.arguments?.paging) {
@@ -132,5 +134,17 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         converter.setExcludes(context.excludes)
         converter.setIncludes(context.includes)
         converter.render(context.getWriter())
+    }
+
+    private String getLabel() {
+        if(label) {
+            label
+        }
+        else if(this instanceof ContainerRenderer) {
+            "entities"
+        }
+        else {
+            "entity"
+        }
     }
 }
