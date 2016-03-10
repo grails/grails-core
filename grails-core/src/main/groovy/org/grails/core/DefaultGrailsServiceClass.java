@@ -31,25 +31,25 @@ public class DefaultGrailsServiceClass extends AbstractInjectableGrailsClass imp
     public DefaultGrailsServiceClass(Class<?> clazz) {
         super(clazz, SERVICE);
 
-        Object tmpTransactional = getPropertyOrStaticPropertyOrFieldValue(TRANSACTIONAL, Boolean.class);
-        transactional = tmpTransactional == null || tmpTransactional.equals(Boolean.TRUE);
+        Boolean tmpTransactional = getPropertyOrStaticPropertyOrFieldValue(TRANSACTIONAL, Boolean.class);
+        transactional = Boolean.TRUE.equals(tmpTransactional);
     }
 
     public boolean isTransactional() {
         return transactional;
     }
 
+    /**
+     * If service is transactional then get data source will always apply
+     *
+     * @return name of data source
+     */
     public String getDatasource() {
         if (datasourceName == null) {
-            if (isTransactional()) {
-                CharSequence name = getStaticPropertyValue(DATA_SOURCE, CharSequence.class);
-                datasourceName = name == null ? null : name.toString();
-                if (datasourceName == null) {
-                    datasourceName = DEFAULT_DATA_SOURCE;
-                }
-            }
-            else {
-                datasourceName = "";
+            CharSequence name = getStaticPropertyValue(DATA_SOURCE, CharSequence.class);
+            datasourceName = name == null ? null : name.toString();
+            if (datasourceName == null) {
+                datasourceName = DEFAULT_DATA_SOURCE;
             }
         }
 
