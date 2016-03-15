@@ -16,7 +16,16 @@ class GrailsConfigSpec extends Specification{
         config.configMap.grails.profile == 'web'
         config.configMap.grails.containsKey('somekey') == true
     }
-    
+
+    def "Should support conversion from null to other objects"() {
+        given:
+        CodeGenConfig config = new CodeGenConfig()
+        config.put('foo.bar', null)
+
+        expect:
+        config.getProperty("foo.bar", Map.class) == null
+
+    }
     def "should support merging maps"() {
         given:
         CodeGenConfig config = new CodeGenConfig()
