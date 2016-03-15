@@ -78,16 +78,31 @@ trait Validateable {
         }
     }
 
+    boolean validate() {
+        validate null
+    }
     boolean validate(Closure<?>... adHocConstraintsClosures) {
         validate(null, null, adHocConstraintsClosures)
+    }
+
+    boolean validate(Map<String, Object> params) {
+        validate params, null
     }
 
     boolean validate(Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         validate(null, params, adHocConstraintsClosures)
     }
 
+    boolean validate(List fieldsToValidate) {
+        validate fieldsToValidate, null
+    }
+
     boolean validate(List fieldsToValidate, Closure<?>... adHocConstraintsClosures) {
         validate(fieldsToValidate, null, adHocConstraintsClosures)
+    }
+
+    boolean validate(List fieldsToValidate, Map<String, Object> params) {
+        validate fieldsToValidate, params, null
     }
 
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
