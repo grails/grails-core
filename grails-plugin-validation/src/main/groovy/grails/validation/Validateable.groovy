@@ -79,8 +79,9 @@ trait Validateable {
     }
 
     boolean validate() {
-        validate null
+        validate null, null, null
     }
+
     boolean validate(Closure<?>... adHocConstraintsClosures) {
         validate(null, null, adHocConstraintsClosures)
     }
@@ -94,7 +95,7 @@ trait Validateable {
     }
 
     boolean validate(List fieldsToValidate) {
-        validate fieldsToValidate, null
+        validate fieldsToValidate, null, null
     }
 
     boolean validate(List fieldsToValidate, Closure<?>... adHocConstraintsClosures) {
