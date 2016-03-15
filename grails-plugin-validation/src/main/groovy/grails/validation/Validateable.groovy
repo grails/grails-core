@@ -78,19 +78,19 @@ trait Validateable {
         }
     }
 
-    boolean validate(Closure... adHocConstraintsClosures) {
+    boolean validate(Closure<?>... adHocConstraintsClosures) {
         validate(null, null, adHocConstraintsClosures)
     }
 
-    boolean validate(Map<String, Object> params, Closure... adHocConstraintsClosures) {
+    boolean validate(Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         validate(null, params, adHocConstraintsClosures)
     }
 
-    boolean validate(List fieldsToValidate, Closure... adHocConstraintsClosures) {
+    boolean validate(List fieldsToValidate, Closure<?>... adHocConstraintsClosures) {
         validate(fieldsToValidate, null, adHocConstraintsClosures)
     }
 
-    boolean validate(List fieldsToValidate, Map<String, Object> params, Closure... adHocConstraintsClosures) {
+    boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
         boolean shouldInherit = Boolean.valueOf(params?.inherit?.toString() ?: 'true')
