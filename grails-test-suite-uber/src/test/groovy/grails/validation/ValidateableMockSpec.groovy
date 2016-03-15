@@ -12,9 +12,9 @@ class ValidateableMockSpec extends Specification {
         1 * command.validate() >> true
         1 * command.validate() >> false
         1 * command.validate() >> true
-        1 * command.validate(_) >> true
-        1 * command.validate(_) >> false
-        1 * command.validate(_, _) >> true
+        1 * command.validate(_ as List) >> true
+        1 * command.validate(_ as Map) >> false
+        1 * command.validate(_ as List, _ as Map) >> true
 
         expect:
         command.validate()
