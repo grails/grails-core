@@ -64,7 +64,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     /**
      * The matchers defined by this interceptor
      */
-    Collection<Matcher> matchers = new ConcurrentLinkedQueue<>()
+    final Collection<Matcher> matchers = new ConcurrentLinkedQueue<>()
 
     /**
      * @return Whether the current interceptor does match
@@ -76,6 +76,14 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      * @return Whether the current interceptor does match
      */
     boolean doesMatch(HttpServletRequest request) {
+        def allMatchers = matchers
+        if(allMatchers.isEmpty()) {
+            // default to map just the controller by convention
+            def matcher = new UrlMappingMatcher(this)
+            matcher.matches(controller:Pattern.compile(GrailsNameUtils.getLogicalPropertyName(getClass().simpleName, InterceptorArtefactHandler.TYPE)))
+            allMatchers << matcher
+        }
+
         String interceptorMatchKey = "${getClass().name}${InterceptorArtefactHandler.MATCH_SUFFIX}"
         def existing = request.getAttribute(interceptorMatchKey)
         if(existing != null && !WebUtils.isForward(request) && !WebUtils.isInclude(request)) {
@@ -88,7 +96,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         def matchedInfo = request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
         UrlMappingInfo grailsMappingInfo = (UrlMappingInfo)matchedInfo
 
-        for(Matcher matcher in matchers) {
+        for(Matcher matcher in allMatchers) {
             if(matcher.doesMatch(uri, grailsMappingInfo)) {
                 request.setAttribute(interceptorMatchKey, Boolean.TRUE)
                 return true
@@ -263,17 +271,4 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         }
     }
 
-    /**
-     * Registers the default match strategy if non has been registered
-     */
-    @Autowired
-    void setGrailsApplication(GrailsApplication grailsApplication) {
-        if(matchers.isEmpty()) {
-            // default to map just the controller by convention
-            def matcher = new UrlMappingMatcher(this)
-            matcher.matches(controller:Pattern.compile(GrailsNameUtils.getLogicalPropertyName(getClass().simpleName, InterceptorArtefactHandler.TYPE)))
-            matchers << matcher
-        }
-
-    }
 }
