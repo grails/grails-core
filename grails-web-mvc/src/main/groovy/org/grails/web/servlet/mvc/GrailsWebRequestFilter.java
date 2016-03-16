@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import grails.web.mvc.FlashScope;
-import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -63,7 +62,7 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter implements Appl
         try {
             WebUtils.storeGrailsWebRequest(webRequest);
 
-            if(!Boolean.TRUE.equals(request.getAttribute(GrailsApplicationAttributes.FORWARD_ISSUED))) {
+            if(WebUtils.isForward(request)) {
                 // Set the flash scope instance to its next state. We do
                 // this here so that the flash is available from Grails
                 // filters in a valid state.
