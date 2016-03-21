@@ -418,6 +418,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         attrs.remove('method')
         // process remaining attributes
         if (attrs.id == null) attrs.remove('id')
+        
+        def elementId = attrs.remove('elementId')
+        if (elementId) {
+            attrs.id = elementId
+        }
 
         outputAttributes(attrs, writer, true)
 
