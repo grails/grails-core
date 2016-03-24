@@ -19,7 +19,9 @@ import grails.async.Promise;
 import grails.async.PromiseFactory;
 import grails.async.PromiseList;
 import grails.async.PromiseMap;
-import groovy.lang.Closure;
+import groovy.lang.Closure
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +41,7 @@ import org.grails.async.factory.BoundPromise;
  * @author Graeme Rocher
  * @since 2.3
  */
+@CompileStatic
 public abstract class AbstractPromiseFactory implements PromiseFactory {
 
     protected Collection<PromiseDecoratorLookupStrategy> lookupStrategies = new ConcurrentLinkedQueue<PromiseDecoratorLookupStrategy>();
@@ -54,14 +57,12 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
-    @SuppressWarnings("unchecked")
     public <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
         c = applyDecorators(c, decorators);
 
-        return createPromise(c);
+        return createPromiseInternal(c);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T> Closure<T> applyDecorators(Closure<T> c, List<PromiseDecorator> decorators) {
         List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
         for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
@@ -85,7 +86,6 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
-    @SuppressWarnings("unchecked")
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
 
         List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
@@ -115,7 +115,6 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
-    @SuppressWarnings("unchecked")
     public <K, V> Promise<Map<K, V>> createPromise(Map<K, V> map) {
         PromiseMap<K,V> promiseMap = new PromiseMap<K,V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -126,7 +125,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
             }
             else if (value instanceof Closure) {
                 Closure<?> c = (Closure<?>) value;
-                promiseMap.put(key, createPromise(c));
+                promiseMap.put(key, createPromiseInternal(c));
             }
             else {
                 promiseMap.put(key, new BoundPromise<V>((V)value));
@@ -136,9 +135,15 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
         return promiseMap;
     }
 
+    @CompileDynamic
+    protected Promise createPromiseInternal(Closure c) {
+        return createPromise(c)
+    }
+
     /**
      * @see PromiseFactory#waitAll(grails.async.Promise[])
      */
+    @CompileDynamic
     public <T> List<T> waitAll(Promise<T>... promises) {
         return waitAll(Arrays.asList(promises));
     }
