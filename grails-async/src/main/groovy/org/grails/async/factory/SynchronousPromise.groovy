@@ -35,6 +35,21 @@ class SynchronousPromise<T> implements Promise<T> {
         this.callable = callable
     }
 
+    @Override
+    boolean cancel(boolean mayInterruptIfRunning) {
+        return false
+    }
+
+    @Override
+    boolean isCancelled() {
+        return false
+    }
+
+    @Override
+    boolean isDone() {
+        return true
+    }
+
     T get() throws Throwable {
         if (value == null) {
             try {

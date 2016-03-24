@@ -47,6 +47,21 @@ class ReactorPromise<T> implements Promise<T> {
     }
 
     @Override
+    boolean cancel(boolean mayInterruptIfRunning) {
+        throw new UnsupportedOperationException("Cancellation not supported")
+    }
+
+    @Override
+    boolean isCancelled() {
+        return false
+    }
+
+    @Override
+    boolean isDone() {
+        return internalPromise.isComplete()
+    }
+
+    @Override
     Promise<T> accept(T value) {
         this.internalPromise.accept(value)
         return this

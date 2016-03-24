@@ -16,7 +16,8 @@
 package grails.async;
 
 
-import groovy.lang.Closure;
+import groovy.lang.Closure
+import groovy.transform.CompileStatic;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.grails.async.factory.reactor.ReactorPromiseFactory;
  * @author Graeme Rocher
  * @since 2.3
  */
+@CompileStatic
 public class Promises {
 
     static PromiseFactory promiseFactory;
@@ -62,7 +64,7 @@ public class Promises {
     }
 
     public static void setPromiseFactory(PromiseFactory promiseFactory) {
-        Promises.promiseFactory = promiseFactory;
+        Promises.@promiseFactory = promiseFactory;
     }
 
     /**

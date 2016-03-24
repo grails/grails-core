@@ -34,6 +34,21 @@ class BoundPromise<T> implements Promise<T> {
         this.value = value
     }
 
+    @Override
+    boolean cancel(boolean mayInterruptIfRunning) {
+        return false
+    }
+
+    @Override
+    boolean isCancelled() {
+        return false
+    }
+
+    @Override
+    boolean isDone() {
+        return true
+    }
+
     T get() throws Throwable {
         if (value instanceof Throwable) {
             throw value
