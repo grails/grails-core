@@ -331,6 +331,12 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
             }
             task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
+
+            // Copy GRAILS_FORK_OPTS into the fork. Or use GRAILS_OPTS if no fork options provided
+            // This allows run-app etc. to run using appropriate settings and allows users to provided
+            // different FORK JVM options to the build options.
+            String opts = System.env.GRAILS_FORK_OPTS ?: System.env.GRAILS_OPTS
+            if(opts) task.jvmArgs opts.split(' ')
         }
 
         def tasks = project.tasks
