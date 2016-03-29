@@ -16,6 +16,7 @@ package org.grails.web.pages;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
+import groovy.lang.GroovyObjectSupport;
 import junit.framework.TestCase;
 import org.grails.web.pages.GroovyPagesUriSupport;
 
@@ -23,8 +24,13 @@ import org.grails.web.pages.GroovyPagesUriSupport;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class GroovyPageUtilsTests extends TestCase {
+public class GroovyPagesUriSupportTests extends TestCase {
 
+    public void testGetLogicalControllerNameWithNonController() {
+        GroovyPagesUriSupport uriSupport = new DefaultGroovyPagesUriService();
+
+        assertNull(uriSupport.getLogicalControllerName(new FooInterceptor()));
+    }
     public void testGetViewURI() {
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar.gsp", uriSupport.getViewURI("foo", "bar"));
@@ -69,4 +75,6 @@ public class GroovyPageUtilsTests extends TestCase {
         assertEquals("/bar/foo", uriSupport.getNoSuffixViewURI(controller, "/bar/foo"));
         assertEquals("/foo/bar/foo", uriSupport.getNoSuffixViewURI(controller, "bar/foo"));
     }
+
+    class FooInterceptor extends GroovyObjectSupport {}
 }
