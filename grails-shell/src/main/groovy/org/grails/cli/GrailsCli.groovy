@@ -190,6 +190,7 @@ class GrailsCli {
 
         if(mainCommandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)) {
             System.setProperty("grails.verbose", "true")
+            System.setProperty("grails.full.stacktrace", "true")
         }
         if(mainCommandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
             System.setProperty("grails.show.stacktrace", "true")
@@ -285,11 +286,22 @@ class GrailsCli {
                 }
 
                 def console = GrailsConsole.getInstance()
-                if(context.getCommandLine().hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
+
+                def mainCommandLine = context.getCommandLine()
+                if(mainCommandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
                     console.setStacktrace(true);
                 }
                 else {
                     console.setStacktrace(false);
+                }
+
+                if(mainCommandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)) {
+                    System.setProperty("grails.verbose", "true")
+                    System.setProperty("grails.full.stacktrace", "true")
+                }
+                else {
+                    System.setProperty("grails.verbose", "false")
+                    System.setProperty("grails.full.stacktrace", "false")
                 }
         
                 if(profile.handleCommand(context)) {
