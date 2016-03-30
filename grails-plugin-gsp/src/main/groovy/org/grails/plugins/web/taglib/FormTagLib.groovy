@@ -909,7 +909,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
      * @attr readonly boolean value indicating whether the select is read only or editable (defaults to false - editable)
-     * @attr dataAttrs a Map that adds data-* attributes to the &lt;option&gt; elements. Map's keys will be used as names of the data-* attributes like so: data-${key} (i.e. with a "data-" prefix). The value belonging to a Map's key determines the value of the data-* attribute. It can be a List that contains a value for each of the &lt;option&gt;s or a Closure that accepts an object from {@code from} and returns the value.
+     * @attr dataAttrs a Map that adds data-* attributes to the &lt;option&gt; elements. Map's keys will be used as names of the data-* attributes like so: data-${key} (i.e. with a "data-" prefix). The object belonging to a Map's key determines the value of the data-* attribute. It can be a string referring to a property of beans in {@code from}, a Closure that accepts an item from {@code from} and returns the value or a List that contains a value for each of the &lt;option&gt;s.
      */
     Closure select = { attrs ->
         if (!attrs.name) {
@@ -1086,7 +1086,10 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         Map ret = [:]
         if(dataAttrs) {
             dataAttrs.each { k, v ->
-                if (v instanceof Closure) {
+                if (v instanceof CharSequence) {
+                    //in case of bean property
+                    ret[k] = el[v]
+                } else if(v instanceof Closure) {
                     ret[k] = v(el)
                 } else {
                     //in case of collection
