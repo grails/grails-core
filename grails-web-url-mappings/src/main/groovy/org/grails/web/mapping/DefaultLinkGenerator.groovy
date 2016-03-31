@@ -58,25 +58,6 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
 
     private static final Pattern absoluteUrlPattern = Pattern.compile('^[A-Za-z][A-Za-z0-9+\\-.]*:.*$')
 
-    private static final Map<String, String> REST_RESOURCE_ACTION_TO_HTTP_METHOD_MAP = [
-        create:"GET",
-        save:"POST",
-        show:"GET",
-        index:"GET",
-        edit:"GET",
-        update:"PUT",
-        patch:"PATCH",
-        delete:"DELETE"
-    ]
-
-    private static final Map<String, String> REST_RESOURCE_HTTP_METHOD_TO_ACTION_MAP = [
-        GET_ID:"show",
-        GET:"index",
-        POST:"save",
-        DELETE:"delete",
-        PUT:"update",
-        PATCH:"patch"
-    ]
     String configuredServerBaseURL
     String contextPath
     String resourcePath
@@ -207,7 +188,12 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
                     if (tokens.size()>1) {
                         for(t in tokens[0..-2]) {
                             final key = "${t}Id".toString()
-                            params[key] = urlAttrs.remove(key)
+                            final attr = urlAttrs.remove(key)
+                            // the params value might not be null
+                            // only overwrite if urlAttrs actually had the key
+                            if (attr) {
+                                params[key] = attr
+                            }
                         }
                     }
                     if (!methodAttribute && action) {
