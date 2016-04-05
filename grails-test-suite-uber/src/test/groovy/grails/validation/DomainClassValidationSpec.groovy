@@ -11,6 +11,7 @@ import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.hibernate.Hibernate
 import org.springframework.validation.FieldError
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -21,6 +22,20 @@ import spock.lang.Specification
 @TestMixin(GrailsUnitTestMixin)
 @Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
 class DomainClassValidationSpec extends Specification {
+
+    @Issue('grails/grails-core#9749')
+    void 'test that transient properties are not constrained by default but can be explicitly constrained'() {
+        when:
+        def props = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
+
+        then:
+        !props.foo
+        !props.baz
+        !props.transientString1
+        props.bar
+        props.qux
+        props.transientString2
+    }
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
         when: 'an object is valid'
@@ -122,19 +137,17 @@ class DomainClassValidationSpec extends Specification {
         def constraints = getAssociatedDomainClassFromApplication(new MyDomainClass()).getConstrainedProperties()
 
         then:
-        constraints.size() == 5
+        constraints.size() == 4
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
         constraints.containsKey 'someProperty'
-        constraints.containsKey 'twiceAge' // only getter method
 
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
         constraints.someProperty.appliedConstraints.size() == 1
-        constraints.twiceAge.appliedConstraints.size() == 1
 
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -143,14 +156,12 @@ class DomainClassValidationSpec extends Specification {
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
         constraints.someProperty.hasAppliedConstraint 'nullable'
-        constraints.twiceAge.hasAppliedConstraint 'nullable'
 
         and: 'implicit defaultNullable is nullable:false'
         !constraints.name.nullable
         !constraints.age.nullable
         !constraints.town.nullable
         !constraints.someProperty.nullable
-        !constraints.twiceAge.nullable
     }
 
     @Ignore('defaultNullable is not supported yet')
@@ -201,9 +212,8 @@ class DomainClassValidationSpec extends Specification {
         expect: 'validation is executed and public properties/getters are marked nullable in errors'
         !obj.validate()
         obj.hasErrors()
-        obj.errors.errorCount == 2
+        obj.errors.errorCount == 1
         obj.errors['town']?.code == 'nullable' // public property
-        obj.errors['name']?.code == 'nullable' // only public getter method
         !obj.errors['surname'] // only protected getter method
         !obj.errors['email'] // only private getter method
     }
@@ -213,9 +223,11 @@ class DomainClassValidationSpec extends Specification {
         Map constraints = getAssociatedDomainClassFromApplication(new DomainClassGetters()).getConstrainedProperties()
 
         then: 'only public properties and public getters should be considered domainClass properties by default'
-        constraints.size() == 2
-        constraints.name
+        constraints.size() == 4
         constraints.town
+        constraints.bar
+        constraints.qux
+        constraints.transientString2
     }
 
     void "Test that default and shared constraints can be applied from configuration"() {
@@ -366,6 +378,25 @@ class DomainClassGetters {
     protected static Date getChristmas() {}
 
     private static Date getNewYear() {}
+
+    static transients = ['foo', 'bar']
+
+    String getFoo() {}
+
+    String getBar() {}
+
+    transient String getBaz() {}
+
+    transient String getQux() {}
+
+    transient String transientString1;
+    transient String transientString2;
+
+    static constraints = {
+        bar size: 3..10
+        qux size: 3..10
+        transientString2 size: 3..10
+    }
 }
 
 @Entity

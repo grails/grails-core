@@ -40,6 +40,21 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
     }
 
     @Override
+    boolean cancel(boolean mayInterruptIfRunning) {
+        return false
+    }
+
+    @Override
+    boolean isCancelled() {
+        return false
+    }
+
+    @Override
+    boolean isDone() {
+        return promisesKeys.keySet().every() { Promise p -> p.isDone() }
+    }
+
+    @Override
     Promise<Map<K, V>> accept(Map<K, V> values) {
         values.each { K key, value ->
             if (value instanceof Promise) {

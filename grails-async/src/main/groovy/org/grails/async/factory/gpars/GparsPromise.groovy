@@ -42,6 +42,26 @@ class  GparsPromise<T> implements Promise<T> {
         internalPromise = Dataflow.task(callable)
     }
 
+    @Override
+    boolean cancel(boolean mayInterruptIfRunning) {
+        if(isDone()) {
+            return false
+        }
+        else {
+            throw new UnsupportedOperationException("Cancellation not supported")
+        }
+    }
+
+    @Override
+    boolean isCancelled() {
+        return false
+    }
+
+    @Override
+    boolean isDone() {
+        return internalPromise.isBound() || internalPromise.isError()
+    }
+
     T get() {
         internalPromise.get()
     }

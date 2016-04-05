@@ -16,6 +16,8 @@
 package grails.async
 
 import groovy.transform.CompileStatic
+
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 /**
@@ -25,24 +27,7 @@ import java.util.concurrent.TimeUnit
  * @since 2.3
  */
 @CompileStatic
-interface Promise<T> {
-
-    /**
-     * Retrieves the result, blocking until the value is available
-     *
-     * @return The result
-     */
-    T get() throws Throwable
-
-    /**
-     * Retrieves the result, blocking until the value is available or the timeout is reached
-     *
-     * @param timeout The timeout
-     * @param units The timeout units
-     * @return The value
-     * @throws Throwable
-     */
-    T get(final long timeout, final TimeUnit units) throws Throwable
+interface Promise<T> extends Future<T> {
 
     /**
      * Assigns a value to an unfulfilled promise
