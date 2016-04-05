@@ -15,6 +15,8 @@
  */
 package org.grails.cli.profile.repository
 import groovy.transform.CompileStatic
+import org.eclipse.aether.artifact.DefaultArtifact
+import org.grails.cli.profile.Profile
 
 /**
  * A JAR file repository that resolves profiles from a static array of JAR file URLs
@@ -35,5 +37,12 @@ class StaticJarProfileRepository extends AbstractJarProfileRepository {
         }
     }
 
-
+    Profile getProfile(String profileName) {
+        def profile = super.getProfile(profileName)
+        if(profile == null && profileName.contains(':')) {
+            def art = new DefaultArtifact(profileName)
+            profile = super.getProfile(art.artifactId)
+        }
+        return profile
+    }
 }

@@ -106,12 +106,6 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
             }
         }
 
-        for(MappedInterceptor mi in getMappedInterceptors()) {
-            if (mi.matches(lookupPath, this.pathMatcher)) {
-                chain.addInterceptor(mi.getInterceptor())
-            }
-        }
-
         chain.addInterceptor(new ErrorHandlingHandler())
         return chain
     }

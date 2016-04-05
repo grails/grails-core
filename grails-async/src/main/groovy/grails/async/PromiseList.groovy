@@ -122,6 +122,21 @@ class PromiseList<T> implements Promise<List<T>> {
      * Synchronously obtains all the values from all the promises
      * @return The values
      */
+    @Override
+    boolean cancel(boolean mayInterruptIfRunning) {
+        return false
+    }
+
+    @Override
+    boolean isCancelled() {
+        return false
+    }
+
+    @Override
+    boolean isDone() {
+        return promises.every() { Promise p -> p.isDone() }
+    }
+
     List get() {
         if(initialized != null) {
             return initialized

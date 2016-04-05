@@ -161,7 +161,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     }
     
     protected <T> T convertToType(Object value, Class<T> requiredType) {
-        if(value instanceof NavigableMap.NullSafeNavigator) {
+        if(value == null || value instanceof NavigableMap.NullSafeNavigator) {
             return null
         }
         else if(requiredType.isInstance(value)) {
