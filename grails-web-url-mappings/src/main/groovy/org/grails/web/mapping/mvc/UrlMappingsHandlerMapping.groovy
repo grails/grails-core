@@ -119,7 +119,8 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
     protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
 
         def matchedInfo = request.getAttribute(MATCHED_REQUEST)
-        if(matchedInfo != null) return matchedInfo
+        def errorStatus = request.getAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE)
+        if(matchedInfo != null && errorStatus == null) return matchedInfo
 
         String uri = urlHelper.getPathWithinApplication(request);
         def webRequest = GrailsWebRequest.lookup(request)
@@ -128,22 +129,26 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
 
         String version = findRequestedVersion(webRequest)
 
-        def errorStatus = request.getAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE)
+
         if(errorStatus) {
             def exception = request.getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE)
+            UrlMappingInfo info
             if(exception instanceof Throwable) {
                 exception = ExceptionUtils.getRootCause(exception)
                 def exceptionSpecificMatch = urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger(), (Throwable) exception)
                 if(exceptionSpecificMatch) {
-                    return exceptionSpecificMatch
+                    info = exceptionSpecificMatch
                 }
                 else {
-                    return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
+                    info = urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
                 }
             }
             else {
-                return urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
+                info = urlMappingsHolder.matchStatusCode(errorStatus.toString().toInteger())
             }
+
+            request.setAttribute(MATCHED_REQUEST, info)
+            return info
         }
         else {
 
