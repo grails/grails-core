@@ -292,7 +292,7 @@ public interface GrailsApplication extends ApplicationContextAware {
     boolean isInitialised();
 
     /**
-     * <p>Get access to the project's metadata, specified in application.properties</p>
+     * <p>Get access to the project's metadata, specified in application.yml and grails.build.info if it is present</p>
      * <p>This provides access to information like required grails version, application name, version etc
      * but <b>NOT</b> general application settings.</p>
      * @return A read-only Map of data about the application, not environment specific
