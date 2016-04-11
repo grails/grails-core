@@ -177,7 +177,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
                 def defaultViews = getClass().classLoader.getResource('gsp/views.properties')
                 List<Resource> allViewsProperties = []
 
-                for(plugin in pluginManager.allPlugins) {
+                for(plugin in pluginManager?.allPlugins) {
 
                     def pluginViews = IOUtils.findResourceRelativeToClass(plugin.getPluginClass(), '/gsp/views.properties')
                     if(pluginViews != null) {
