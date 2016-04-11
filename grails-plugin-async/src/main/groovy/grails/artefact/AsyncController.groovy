@@ -15,9 +15,13 @@
  */
 package grails.artefact
 
+import grails.async.web.AsyncGrailsWebRequest
 import grails.events.Events
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
+import org.springframework.web.context.request.async.AsyncWebRequest
+import org.springframework.web.context.request.async.WebAsyncManager
+import org.springframework.web.context.request.async.WebAsyncUtils
 
 import javax.servlet.AsyncContext
 import javax.servlet.http.HttpServletRequest
@@ -42,9 +46,15 @@ trait AsyncController extends Events {
      */
     AsyncContext startAsync() {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
+
         HttpServletRequest request = webRequest.currentRequest
-        def ctx = request.startAsync(request, webRequest.currentResponse)
+        WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request)
+
+        AsyncWebRequest asyncWebRequest = new AsyncGrailsWebRequest(request, webRequest.currentResponse, webRequest.servletContext)
+        asyncManager.setAsyncWebRequest(asyncWebRequest)
+
+        asyncWebRequest.startAsync()
         request.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
-        new GrailsAsyncContext(ctx, webRequest)
+        new GrailsAsyncContext(asyncWebRequest.asyncContext, webRequest)
     }
 }
