@@ -44,7 +44,7 @@ ext {
     reactorVersion = '2.0.6.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
-    springLoadedVersion = "1.2.5.RELEASE"
+    springLoadedVersion = "1.2.6.RELEASE"
     springBootVersion = "1.2.7.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.1.8.RELEASE" // ensure to sync "aspectjVersion" (see commend above)
