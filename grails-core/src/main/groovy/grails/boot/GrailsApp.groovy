@@ -107,7 +107,7 @@ class GrailsApp extends SpringApplication {
 
         if(location) {
             directoryWatcher = new DirectoryWatcher()
-            configureDirectoryWatcher(directoryWatcher, location)
+
             Queue<File> changedFiles = new ConcurrentLinkedQueue<>()
             Queue<File> newFiles = new ConcurrentLinkedQueue<>()
 
@@ -139,6 +139,10 @@ class GrailsApp extends SpringApplication {
                         watchBaseDirectories << pluginDirectory
                     }
                 }
+            }
+
+            for(dir in watchBaseDirectories) {
+                configureDirectoryWatcher(directoryWatcher, dir.absolutePath)
             }
 
             def locationLength = location.length() + 1
@@ -239,8 +243,15 @@ class GrailsApp extends SpringApplication {
     protected void recompile(File changedFile, CompilerConfiguration compilerConfig, String location) {
         File appDir = null
         def changedPath = changedFile.path
-        if (changedPath.contains('/grails-app')) {
-            appDir = new File(changedPath.substring(0, changedPath.indexOf('/grails-app')))
+
+        String grailsAppDir = "${File.separator}grails-app"
+        String sourceMainGroovy = "${File.separator}src${File.separator}main${File.separator}groovy"
+
+        if (changedPath.contains(grailsAppDir)) {
+            appDir = new File(changedPath.substring(0, changedPath.indexOf(grailsAppDir)))
+        }
+        else if(changedPath.contains(sourceMainGroovy)) {
+            appDir = new File(changedPath.substring(0, changedPath.indexOf(sourceMainGroovy)))
         }
         def baseFileLocation = appDir?.absolutePath ?: location
         compilerConfig.setTargetDirectory(new File(baseFileLocation, BuildSettings.BUILD_CLASSES_PATH))
