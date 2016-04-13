@@ -121,6 +121,41 @@ class InterceptorSpec extends Specification {
 
     }
 
+    void "Test the match all interceptor mappings exception an exact controller action pair"() {
+        given:"A test interceptor"
+        def i = new Test4Interceptor()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def request = webRequest.request
+
+        when:"The current request is for a controller called test"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test"))
+        then:"We match"
+        i.doesMatch()
+
+        when:"The current request is for a controller called test and action called bar"
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
+        then:"We match"
+        i.doesMatch()
+
+        when:"The current request is for a controller called test and action called bar"
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName: "bar"))
+        then:"We match"
+        !i.doesMatch()
+
+        when:"The current request is for another controller"
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "other"))
+        then:"We match"
+        i.doesMatch()
+
+        when:"The current request is for an excluded controller controller"
+        clearMatch(i,request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
+        then:"We don't match"
+        i.doesMatch()
+    }
     void clearMatch(i, HttpServletRequest request) {
         request.removeAttribute(i.getClass().name + InterceptorArtefactHandler.MATCH_SUFFIX)
     }
@@ -154,5 +189,12 @@ class Test3Interceptor implements Interceptor {
     Test3Interceptor() {
         matchAll()
         .excludes(controller:"foo")
+    }
+}
+
+class Test4Interceptor implements Interceptor {
+    Test4Interceptor() {
+        matchAll()
+            .excludes(controller:"foo", action:"bar")
     }
 }
