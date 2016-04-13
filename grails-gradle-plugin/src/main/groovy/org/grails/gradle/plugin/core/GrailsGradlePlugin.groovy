@@ -36,6 +36,7 @@ import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.CopySpec
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
+import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
@@ -56,7 +57,7 @@ import org.grails.io.support.FactoriesLoaderSupport
 import org.springframework.boot.gradle.SpringBootPlugin
 import org.springframework.boot.gradle.SpringBootPluginExtension
 import org.apache.tools.ant.taskdefs.condition.Os
-
+import org.springframework.boot.gradle.repackage.RepackageTask
 
 import javax.inject.Inject
 
@@ -491,6 +492,19 @@ class GrailsGradlePlugin extends GroovyPlugin {
             ConfigurationContainer configurations =  project.configurations
             Configuration runtime = configurations.getByName('runtime')
             Configuration console = configurations.getByName('console')
+
+            if( project.plugins.findPlugin(WarPlugin) ) {
+                def allTasks = project.tasks
+                allTasks.withType(RepackageTask) { RepackageTask t ->
+                    t.withJarTask = allTasks.findByName('war')
+                }
+            }
+            else {
+                def allTasks = project.tasks
+                allTasks.withType(RepackageTask) { RepackageTask t ->
+                    t.withJarTask = allTasks.findByName('jar')
+                }
+            }
 
             Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
             Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
