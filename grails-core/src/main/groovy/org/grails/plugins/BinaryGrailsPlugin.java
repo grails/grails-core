@@ -19,7 +19,9 @@ import grails.core.GrailsApplication;
 import grails.io.IOUtils;
 import grails.io.ResourceUtils;
 import grails.plugins.exceptions.PluginException;
+import grails.util.BuildSettings;
 import org.grails.core.io.StaticResourceLoader;
+import org.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -77,6 +79,16 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
             throw new PluginException("Cannot evaluate plugin location for plugin " + pluginClass, e);
         }
         this.projectDirectory = isJar ? null : IOUtils.findApplicationDirectoryFile(pluginClass);
+
+        if(BuildSettings.BASE_DIR != null && projectDirectory != null) {
+            try {
+                if(projectDirectory.getCanonicalPath().startsWith(BuildSettings.BASE_DIR.getCanonicalPath())) {
+                    isBase = true;
+                }
+            } catch (IOException e) {
+                // ignore
+            }
+        }
 
         URL rootResourcesURL = IOUtils.findRootResourcesURL(pluginClass);
         if(rootResourcesURL == null) {
