@@ -59,10 +59,10 @@ class UrlMappingMatcher implements Matcher {
     boolean doesMatch(String uri, UrlMappingInfo info) {
         boolean hasUriPatterns = !uriPatterns.isEmpty()
 
-        boolean isNotExcluded = !isExcluded(uri, info)
-        if(matchAll && isNotExcluded) return true
+        boolean isExcluded = this.isExcluded(uri, info)
+        if(matchAll && !isExcluded) return true
 
-        if(isNotExcluded) {
+        if(!isExcluded) {
             if (hasUriPatterns) {
                 uri = uri.replace(';', '')
                 for (pattern in uriPatterns) {
@@ -200,10 +200,15 @@ class UrlMappingMatcher implements Matcher {
         Pattern methodExcludesRegex
         @Override
         boolean isExcluded(UrlMappingInfo info) {
-            (controllerExcludesRegex != null && ((info.controllerName ?: '') ==~ controllerExcludesRegex)) ||
-            (actionExcludesRegex != null && ((info.actionName ?: '') ==~ actionExcludesRegex)) ||
-            (namespaceExcludesRegex != null && ((info.namespace ?: '') ==~ namespaceExcludesRegex)) ||
-            (methodExcludesRegex != null && ((info.httpMethod ?: '') ==~ methodExcludesRegex))
+            boolean controllerExclude = controllerExcludesRegex == null || ((info.controllerName ?: '') ==~ controllerExcludesRegex)
+            boolean actionExclude = actionExcludesRegex == null  || ((info.actionName ?: '') ==~ actionExcludesRegex)
+            boolean namespaceExclude = namespaceExcludesRegex == null || ((info.namespace ?: '') ==~ namespaceExcludesRegex)
+            boolean methodExclude = methodExcludesRegex == null || ((info.httpMethod ?: '') ==~ methodExcludesRegex)
+
+            controllerExclude &&
+                    actionExclude &&
+                    namespaceExclude &&
+                    methodExclude
         }
     }
 
