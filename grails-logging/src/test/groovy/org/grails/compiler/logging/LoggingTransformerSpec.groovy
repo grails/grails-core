@@ -1,6 +1,6 @@
 package org.grails.compiler.logging
 
-import org.apache.commons.logging.Log
+import org.slf4j.Logger
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
@@ -27,10 +27,10 @@ class LoggingController extends BaseController{
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
             def controller = cls.newInstance()
-            Log log = controller.index()
+            Logger log = controller.index()
 
         then:
-            log instanceof Log
+            log instanceof Logger
     }
     def "Test added log field"() {
         given:
@@ -48,10 +48,10 @@ class LoggingController {
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
             def controller = cls.newInstance()
-            Log log = controller.index()
+            Logger log = controller.index()
 
         then:
-            log instanceof Log
+            log instanceof Logger
 
     }
 
@@ -69,10 +69,10 @@ class LoggingController {
 }
 ''', "foo/grails-app/controllers/LoggingController.groovy")
             def controller = cls.newInstance()
-            Log log = controller.index()
+            Logger log = controller.index()
 
         then:
-            log instanceof Log
+            log instanceof Logger
 
     }
 }

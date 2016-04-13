@@ -1,6 +1,6 @@
 package grails.test.mixin
 
-import org.apache.commons.logging.Log
+import org.slf4j.Logger
 import org.junit.Test
 
 import spock.lang.Specification
@@ -14,7 +14,7 @@ class TestForSpec extends Specification{
         then:
             test != null
             test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test.class) != null
-            test.retrieveLog() instanceof Log
+            test.retrieveLog() instanceof Logger
     }
 
     void "Test junit 3 test doesn't get annotation"() {
@@ -24,7 +24,7 @@ class TestForSpec extends Specification{
         then:
             test != null
             test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test.class) == null
-            test.retrieveLog() instanceof Log
+            test.retrieveLog() instanceof Logger
     }
 
     void "Test spock test doesn't get annotation"() {
@@ -33,7 +33,7 @@ class TestForSpec extends Specification{
 
         then:
             test != null
-            test.retrieveLog() instanceof Log
+            test.retrieveLog() instanceof Logger
     }
 
     def getSpockTest() {
