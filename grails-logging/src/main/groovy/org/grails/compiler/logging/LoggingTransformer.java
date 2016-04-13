@@ -15,8 +15,8 @@
  */
 package org.grails.compiler.logging;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
@@ -65,9 +65,9 @@ public class LoggingTransformer implements AllArtefactClassInjector{
     public static void addLogField(ClassNode classNode, String logName) {
         FieldNode logVariable = new FieldNode(LOG_PROPERTY,
                                               Modifier.STATIC | Modifier.PRIVATE,
-                                              new ClassNode(Log.class),
+                                              new ClassNode(Logger.class),
                                               classNode,
-                                              new MethodCallExpression(new ClassExpression(new ClassNode(LogFactory.class)), "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
+                                              new MethodCallExpression(new ClassExpression(new ClassNode(LoggerFactory.class)), "getLogger", new ArgumentListExpression(new ConstantExpression(logName))));
 
         classNode.addField(logVariable);
     }
