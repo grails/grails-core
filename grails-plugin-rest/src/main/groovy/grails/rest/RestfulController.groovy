@@ -111,7 +111,7 @@ class RestfulController<T> {
                 response.addHeader(HttpHeaders.LOCATION,
                         grailsLinkGenerator.link( resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
                                             namespace: hasProperty('namespace') ? this.namespace : null ))
-                respond instance, [status: CREATED]
+                respond instance, [status: CREATED, view:'show']
             }
         }
     }
