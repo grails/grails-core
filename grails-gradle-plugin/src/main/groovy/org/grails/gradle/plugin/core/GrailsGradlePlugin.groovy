@@ -289,21 +289,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 compileDir = 'build/assetCompile/assets'
             }
         }
-
-        def tasks = project.tasks
-        project.afterEvaluate {
-            def assetCompile = tasks.findByName('assetCompile')
-            if(assetCompile) {
-                tasks.withType(Jar) { Jar bundleTask ->
-                    bundleTask.dependsOn assetCompile
-                    bundleTask.from "${project.buildDir}/assetCompile", {
-                        // if(!(bundleTask instanceof War)) {
-                        //     into "META-INF"
-                        // }
-                    }
-                }
-            }
-        }
     }
 
     protected void configureForkSettings(project, grailsVersion) {
