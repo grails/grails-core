@@ -118,10 +118,10 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
                             referenceObject = new TreeSet((SortedSet) referenceObject);
                         }
                         else if (referenceObject instanceof Set) {
-                            referenceObject = new HashSet((Set) referenceObject);
+                            referenceObject = new LinkedHashSet((Set) referenceObject);
                         }
                         else if (referenceObject instanceof Map) {
-                            referenceObject = new HashMap((Map) referenceObject);
+                            referenceObject = new LinkedHashMap((Map) referenceObject);
                         }
                         else if (referenceObject instanceof Collection) {
                             referenceObject = new ArrayList((Collection) referenceObject);
