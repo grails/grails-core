@@ -26,8 +26,41 @@ import javax.sql.DataSource
  */
 class TransactionalTransformSpec extends Specification {
 
+    @Issue('https://github.com/grails/grails-core/issues/9837')
+    void "Test @Rollback when applied to Spock specifications with closures combined with where queries"() {
+        when: "A new instance of a class with a @Transactional method is created that subclasses another transactional class"
+        Class mySpec = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import spock.lang.Specification
+
+    @Rollback
+    class MySpec extends Specification {
+        void 'test something'() {
+            expect:
+            def someClosure = { println x }
+            x + y == sum
+
+            where:
+            x | y | sum
+            4 | 2 | 6
+        }
+    }
+    MySpec
+    ''')
+
+        then: "It implements TransactionManagerAware"
+        TransactionManagerAware.isAssignableFrom(mySpec)
+        mySpec.getDeclaredMethod('$spock_feature_0_0', Object, Object, Object)
+        mySpec.getDeclaredMethod('$tt__$spock_feature_0_0', Object, Object, Object, TransactionStatus)
+
+        and:"The spec can be called"
+        mySpec.newInstance().'$tt__$spock_feature_0_0'(2,2,4,new DefaultTransactionStatus(new Object(), true, true, false, false, null))
+
+
+    }
+
     @Issue('https://github.com/grails/grails-core/issues/9646')
-    void "Test @Rollback when applied to Spock specifications with closures in there blocks"() {
+    void "Test @Rollback when applied to Spock specifications with closures in then blocks"() {
         when: "A new instance of a class with a @Transactional method is created that subclasses another transactional class"
         Class mySpec = new GroovyShell().evaluate('''
     import grails.transaction.*

@@ -434,7 +434,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     }
 
     /**
-     * Output application metadata that is loaded from application.properties.
+     * Output application metadata that is loaded from application.yml and grails.build.info if it is present.
      *
      * @emptyTag
      *

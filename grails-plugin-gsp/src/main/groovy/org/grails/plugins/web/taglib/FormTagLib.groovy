@@ -404,7 +404,12 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         }
 
         // default to post
-        def method = linkAttrs[LinkGenerator.ATTRIBUTE_METHOD]?.toUpperCase() ?: 'POST'
+        def method
+        if (linkAttrs[LinkGenerator.ATTRIBUTE_RESOURCE] && linkAttrs[LinkGenerator.ATTRIBUTE_ACTION]) {
+            method = LinkGenerator.REST_RESOURCE_ACTION_TO_HTTP_METHOD_MAP.get(linkAttrs[LinkGenerator.ATTRIBUTE_ACTION].toString())
+        } else {
+            method = linkAttrs[LinkGenerator.ATTRIBUTE_METHOD]?.toUpperCase() ?: 'POST'
+        }
         def httpMethod = HttpMethod.valueOf(method)
         boolean notGet = httpMethod != HttpMethod.GET
 

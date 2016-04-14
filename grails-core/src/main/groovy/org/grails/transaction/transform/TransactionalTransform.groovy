@@ -20,6 +20,8 @@ import grails.compiler.DelegatingMethod
 import grails.transaction.Rollback
 import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
+import org.codehaus.groovy.classgen.VariableScopeVisitor
+import org.codehaus.groovy.control.ErrorCollector
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.transaction.annotation.Propagation
@@ -292,13 +294,25 @@ class TransactionalTransform implements ASTTransformation{
         final transactionStatusParameter = new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")
         def newParameters = methodNode.getParameters() ? (copyParameters(((methodNode.getParameters() as List) + [transactionStatusParameter]) as Parameter[])) : [transactionStatusParameter] as Parameter[]
 
+
+        def body = methodNode.code
         MethodNode renamedMethodNode = new MethodNode(
                 renamedMethodName,
                 Modifier.PROTECTED, methodNode.getReturnType().getPlainNodeReference(),
                 newParameters,
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
-                methodNode.code
+                body
                 );
+
+
+        def newVariableScope = new VariableScope()
+        for(p in newParameters) {
+            newVariableScope.putDeclaredVariable(p)
+        }
+
+        renamedMethodNode.setVariableScope(
+                newVariableScope
+        )
 
         // GrailsCompileStatic and GrailsTypeChecked are not explicitly addressed
         // here but they will be picked up because they are @AnnotationCollector annotations
@@ -309,14 +323,19 @@ class TransactionalTransform implements ASTTransformation{
         methodNode.setCode(null)
         classNode.addMethod(renamedMethodNode)
 
-        if( !isSpockTest(classNode) ) {
-            processVariableScopes(source, classNode, renamedMethodNode)
+        // Use a dummy source unit to process the variable scopes to avoid the issue where this is run twice producing an error
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(new SourceUnit("dummy", "dummy", source.getConfiguration(), source.getClassLoader(), new ErrorCollector(source.getConfiguration())));
+        if(methodNode == null) {
+            scopeVisitor.visitClass(classNode);
+        } else {
+            scopeVisitor.prepareVisit(classNode);
+            scopeVisitor.visitMethod(renamedMethodNode);
         }
 
         final originalMethodCall = new MethodCallExpression(new VariableExpression("this"), renamedMethodName, new ArgumentListExpression(renamedMethodNode.parameters))
         originalMethodCall.setImplicitThis(false)
         originalMethodCall.setMethodTarget(renamedMethodNode)
-        
+
         originalMethodCall
     }
 

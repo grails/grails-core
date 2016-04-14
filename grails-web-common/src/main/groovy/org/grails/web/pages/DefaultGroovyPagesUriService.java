@@ -40,7 +40,7 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport {
         String keyPart1;
         String keyPart2;
 
-        public TupleStringKey(String keyPart1, String keyPart2) {
+        TupleStringKey(String keyPart1, String keyPart2) {
             this.keyPart1 = keyPart1;
             this.keyPart2 = keyPart2;
         }
@@ -79,8 +79,8 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport {
         private long controllerHashCode;
         private String controllerClassName;
 
-        public ControllerObjectKey(GroovyObject controller) {
-            controllerHashCode = System.identityHashCode(controller.getClass());
+        ControllerObjectKey(GroovyObject controller) {
+            controllerHashCode = controller.getClass().hashCode();
             controllerClassName = controller.getClass().getName();
         }
 
@@ -145,7 +145,7 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport {
         String name = controllerNameCache.get(key);
         if (name == null) {
             name = super.getLogicalControllerName(controller);
-            String prevname = controllerNameCache.putIfAbsent(key, name);
+            String prevname = name != null ? controllerNameCache.putIfAbsent(key, name) : null;
             if (prevname != null) {
                 return prevname;
             }

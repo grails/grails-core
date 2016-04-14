@@ -18,6 +18,7 @@ import grails.config.Config
 import grails.core.GrailsClass
 import grails.core.GrailsTagLibClass
 import grails.gsp.PageRenderer
+import grails.io.IOUtils
 import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
@@ -32,6 +33,7 @@ import org.grails.gsp.GroovyPageResourceLoader
 import org.grails.gsp.GroovyPagesTemplateEngine
 import org.grails.gsp.io.CachingGroovyPageStaticResourceLocator
 import org.grails.gsp.jsp.TagLibraryResolverImpl
+import org.grails.io.support.MainClassFinder
 import org.grails.plugins.web.taglib.*
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.taglib.TagLibraryLookup
@@ -48,6 +50,7 @@ import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.boot.context.embedded.ServletRegistrationBean
 import org.springframework.core.io.Resource
+import org.springframework.core.io.UrlResource
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
 /**
@@ -171,8 +174,23 @@ class GroovyPagesGrailsPlugin extends Plugin {
                 resourceLoader = groovyPageResourceLoader
             }
             if (deployed) {
-                def context = grailsApplication?.mainContext
-                def allViewsProperties = context?.getResources("classpath*:gsp/views.properties")
+                def defaultViews = getClass().classLoader.getResource('gsp/views.properties')
+                List<Resource> allViewsProperties = []
+
+                for(plugin in pluginManager?.allPlugins) {
+
+                    def pluginViews = IOUtils.findResourceRelativeToClass(plugin.getPluginClass(), '/gsp/views.properties')
+                    if(pluginViews != null) {
+                        def res = new UrlResource(pluginViews)
+                        if(res.exists()) {
+                            allViewsProperties.add(res)
+                        }
+                    }
+                }
+                if(defaultViews != null) {
+                    allViewsProperties.add(new UrlResource(defaultViews))
+                }
+
                 allViewsProperties = allViewsProperties?.findAll { Resource r ->
                     def p = r.URL.path
                     if(warDeployed && p.contains('/WEB-INF/classes')) {
