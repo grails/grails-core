@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.web.async
 
+import grails.async.web.AsyncGrailsWebRequest
+
 import javax.servlet.AsyncContext
 import javax.servlet.AsyncListener
 
@@ -39,17 +41,19 @@ class GrailsAsyncContext implements AsyncContext {
 
     private static final String PERSISTENCE_INTERCEPTORS = 'org.codehaus.groovy.grails.PERSISTENCE_INTERCEPTORS'
 
-    @Delegate AsyncContext delegate
-    GrailsWebRequest originalWebRequest
-    GroovyPageLayoutFinder groovyPageLayoutFinder
+    final @Delegate AsyncContext delegate
+    final GrailsWebRequest originalWebRequest
+    final GroovyPageLayoutFinder groovyPageLayoutFinder
+    final AsyncGrailsWebRequest asyncGrailsWebRequest
 
-    GrailsAsyncContext(AsyncContext delegate, GrailsWebRequest webRequest) {
+    GrailsAsyncContext(AsyncContext delegate, GrailsWebRequest webRequest, AsyncGrailsWebRequest asyncGrailsWebRequest = null) {
         this.delegate = delegate
         originalWebRequest = webRequest
         def applicationContext = webRequest.getApplicationContext()
         if (applicationContext && applicationContext.containsBean("groovyPageLayoutFinder")) {
             groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
         }
+        this.asyncGrailsWebRequest = asyncGrailsWebRequest
     }
 
     def <T extends AsyncListener> T createListener(Class<T> tClass) {
@@ -58,7 +62,7 @@ class GrailsAsyncContext implements AsyncContext {
 
     void start(Runnable runnable) {
         delegate.start {
-            GrailsWebRequest webRequest = new GrailsWebRequest((HttpServletRequest)request, (HttpServletResponse)response, request.getServletContext())
+            GrailsWebRequest webRequest =  asyncGrailsWebRequest ?: new GrailsWebRequest((HttpServletRequest)request, (HttpServletResponse)response, request.getServletContext())
             WebUtils.storeGrailsWebRequest(webRequest)
             def interceptors = getPersistenceInterceptors(webRequest)
 
