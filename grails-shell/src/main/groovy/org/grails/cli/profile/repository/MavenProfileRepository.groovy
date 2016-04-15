@@ -22,6 +22,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.resolution.VersionResolutionException
+import org.grails.cli.GrailsCli
 import org.grails.cli.profile.Profile
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngineFactory
@@ -71,23 +72,37 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         return super.getProfile(profileShortName)
     }
 
-    protected Profile resolveProfile(String profileName) {
-        def defaultProfileVersion = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
-        if (!profileName.contains(':')) {
-            profileName = "org.grails.profiles:$profileName:$defaultProfileVersion"
+    protected DefaultArtifact resolveProfileArtifact(String profileName) {
+        if (profileName.contains(':')) {
+            return new DefaultArtifact(profileName)
         }
-        def art = new DefaultArtifact(profileName)
-        def groupId = art.groupId ?: 'org.grails.profiles'
-        def artifactId = art.artifactId
-        def version = art.version ?: defaultProfileVersion
+
+        def artifactId = profileName
+        def groupId = "org.grails.profiles"
+        def version = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
+
+        Map<String, Map> defaultValues = GrailsCli.getSetting("grails.profiles", Map, [:])
+        defaultValues.remove("repositories")
+        def data = defaultValues.get(profileName)
+        if(data instanceof Map) {
+            groupId = data.get("groupId")
+            version = data.get("version")
+        }
+
+        return new DefaultArtifact("$groupId:$artifactId:$version")
+    }
+
+    protected Profile resolveProfile(String profileName) {
+        DefaultArtifact art = resolveProfileArtifact(profileName)
+
         try {
-            grapeEngine.grab(group: groupId, module: artifactId, version: version)
+            grapeEngine.grab(group: art.groupId, module: art.artifactId, version: art.version)
         } catch (DependencyResolutionFailedException e ) {
 
-            def localData = new File(System.getProperty("user.home"),"/.m2/repository/${groupId.replace('.','/')}/$artifactId/maven-metadata-local.xml")
+            def localData = new File(System.getProperty("user.home"),"/.m2/repository/${art.groupId.replace('.','/')}/$art.artifactId/maven-metadata-local.xml")
             if(localData.exists()) {
                 def currentVersion = parseCurrentVersion(localData)
-                def profileFile = new File(localData.parentFile, "$currentVersion/${artifactId}-${currentVersion}.jar")
+                def profileFile = new File(localData.parentFile, "$currentVersion/${art.artifactId}-${currentVersion}.jar")
                 if(profileFile.exists()) {
                     classLoader.addURL(profileFile.toURI().toURL())
                 }
@@ -101,7 +116,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         }
 
         processUrls()
-        return super.getProfile(artifactId)
+        return super.getProfile(art.artifactId)
     }
 
     @CompileDynamic
