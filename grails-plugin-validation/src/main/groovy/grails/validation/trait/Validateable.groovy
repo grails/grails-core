@@ -63,7 +63,7 @@ trait Validateable {
         if(this.constraintsMapInternal == null) {
             BeanFactory ctx = Holders.applicationContext
             ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
-            this.constraintsMapInternal = evaluator.evaluate this, defaultNullable()
+            def evaluatedConstraints = evaluator.evaluate(this, defaultNullable())
 
             if(!defaultNullable()) {
                 def methods = this.getDeclaredMethods()
@@ -74,15 +74,16 @@ trait Validateable {
                             def propertyName = GrailsNameUtils.getPropertyName(methodName[3..-1])
                             if(propertyName != 'metaClass' &&
                             propertyName != 'errors' &&
-                            !this.constraintsMapInternal.containsKey(propertyName)) {
+                            !evaluatedConstraints.containsKey(propertyName)) {
                                 def cp = new ConstrainedProperty(this, propertyName, method.returnType)
                                 cp.applyConstraint 'nullable', false
-                                this.constraintsMapInternal.put propertyName, cp
+                                evaluatedConstraints.put propertyName, cp
                             }
                         }
                     }
                 }
             }
+            this.constraintsMapInternal = evaluatedConstraints
         }
         this.constraintsMapInternal
     }
