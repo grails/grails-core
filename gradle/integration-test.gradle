@@ -24,6 +24,10 @@ task integrationTest(type: Test) {
   reports.html.enabled = false
 }
 
+configure(integrationTest) {
+    group =  JavaBasePlugin.VERIFICATION_GROUP
+}
+
 // Make sure 'check' task calls integration test
 check.dependsOn integrationTest
 
