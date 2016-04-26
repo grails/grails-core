@@ -1,7 +1,6 @@
-<!--
 Thanks for reporting an issue for Grails framework, please review the task list below before submitting the 
 issue. Your issue report will be closed if the issue is incomplete and the below tasks not completed.
---> 
+
 ### 
 - [ ] Steps to reproduce provided
 - [ ] Stacktrace (if present) provided
