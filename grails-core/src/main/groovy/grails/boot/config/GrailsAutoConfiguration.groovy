@@ -211,6 +211,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
         }
 
     }
+
     private static class ApplicationRelativeClassLoader extends URLClassLoader {
 
         final URL rootResource
@@ -240,6 +241,15 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
             }
             else {
                 return super.findResources(name)
+            }
+        }
+
+                @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            try {
+                return super.loadClass(name, resolve)
+            } catch (ClassNotFoundException cnfe) {
+                return applicationClass.getClassLoader().loadClass(name)
             }
         }
     }
