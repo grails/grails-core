@@ -15,6 +15,9 @@
  */
 package org.grails.plugins.support;
 
+import grails.io.ResourceUtils;
+import grails.util.BuildSettings;
+import grails.util.GrailsStringUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -37,12 +40,24 @@ public class WatchPatternParser {
         for (String pattern : patterns) {
             WatchPattern watchPattern = new WatchPattern();
             watchPattern.setPattern(pattern);
-            if (pattern.startsWith("file:")) {
-                pattern = pattern.substring(5);
+            boolean isClasspath = false;
+            if (pattern.startsWith(ResourceUtils.FILE_URL_PREFIX)) {
+                pattern = pattern.substring(ResourceUtils.FILE_URL_PREFIX.length());
+            }
+            else if (pattern.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
+                pattern = pattern.substring(ResourceUtils.CLASSPATH_URL_PREFIX.length());
+                isClasspath = true;
             }
 
             if (pattern.contains(WILD_CARD)) {
-                watchPattern.setDirectory(new File(pattern.substring(0, pattern.indexOf(WILD_CARD))));
+                String dirPath = pattern.substring(0, pattern.indexOf(WILD_CARD));
+                if(!GrailsStringUtils.isBlank(dirPath)) {
+                    watchPattern.setDirectory(new File(dirPath));
+                }
+                else if(isClasspath && BuildSettings.BASE_DIR != null) {
+                    watchPattern.setDirectory(new File(BuildSettings.BASE_DIR, "src/main/resources"));
+                }
+
                 setExtension(pattern, watchPattern);
                 watchPatterns.add(watchPattern);
             }
