@@ -16,12 +16,14 @@
 package org.grails.plugins.support
 
 import groovy.transform.CompileStatic
+import groovy.transform.ToString
 
 /**
  * @author Graeme Rocher
  * @since 2.0
  */
 @CompileStatic
+@ToString
 class WatchPattern {
 
     /**
