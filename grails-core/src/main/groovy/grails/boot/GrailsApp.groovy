@@ -150,7 +150,7 @@ class GrailsApp extends SpringApplication {
                 configureDirectoryWatcher(directoryWatcher, dir.absolutePath)
             }
 
-            def locationLength = location.length() + 1
+            def locationLength = baseDirPath.length() + 1
 
             for(GrailsPlugin plugin in pluginManager.allPlugins) {
                 def watchedResourcePatterns = plugin.getWatchedResourcePatterns()
@@ -175,12 +175,12 @@ class GrailsApp extends SpringApplication {
                             }
                             first = false
                             if(wp.file) {
-                                def resolvedPath = new File(watchBase, wp.file.path.substring(locationLength))
+                                def resolvedPath = new File(watchBase, wp.file.canonicalPath.substring(locationLength))
                                 directoryWatcher.addWatchFile(resolvedPath)
                             }
                             else if(wp.directory && wp.extension) {
 
-                                def resolvedPath = new File(watchBase, wp.directory.path.substring(locationLength))
+                                def resolvedPath = new File(watchBase, wp.directory.canonicalPath.substring(locationLength))
                                 directoryWatcher.addWatchDirectory(resolvedPath, wp.extension)
                             }
                         }
