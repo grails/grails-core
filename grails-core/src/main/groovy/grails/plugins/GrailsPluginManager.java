@@ -224,6 +224,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
      * @return true if the plugin supports the current build scope
      * @see grails.util.BuildScope#getCurrent()
      */
+    @Deprecated
     boolean supportsCurrentBuildScope(String pluginName);
 
     /**
