@@ -109,6 +109,13 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     void doDynamicMethods();
 
     /**
+     * Executes the {@link Plugin#onStartup(Map)} hook for all plugins
+     *
+     * @param event the Event
+     */
+    void onStartup(Map<String, Object> event);
+
+    /**
      * Retrieves a name Grails plugin instance
      *
      * @param name The name of the plugin

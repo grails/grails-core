@@ -16,6 +16,7 @@
 package org.grails.plugins;
 
 import grails.artefact.Enhanced;
+import grails.plugins.Plugin;
 import grails.plugins.PluginFilter;
 import org.grails.config.NavigableMap;
 import grails.plugins.GrailsPlugin;
@@ -336,6 +337,14 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     protected boolean isPluginDisabledForProfile(GrailsPlugin plugin) {
         return applicationContext != null && !plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles());
+    }
+
+    public void onStartup(Map<String, Object> event) {
+        for (GrailsPlugin plugin : pluginList) {
+            if (plugin.getInstance() instanceof Plugin) {
+                ((Plugin)plugin.getInstance()).onStartup(event);
+            }
+        }
     }
 
     public void shutdown() {
