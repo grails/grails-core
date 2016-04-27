@@ -5,6 +5,7 @@ import grails.util.Environment
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.ResponseRedirector
 import grails.web.mapping.UrlMappingInfo
+import grails.web.mvc.FlashScope
 import groovy.transform.CompileStatic
 import org.grails.web.servlet.mvc.ActionResultTransformer
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -98,7 +99,17 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 }
                 else if(result instanceof Map) {
                     String viewName = controllerClass.actionUriToViewName(action)
-                    return new ModelAndView(viewName, new HashMap<String, Object>((Map)result))
+                    def finalModel = new HashMap<String, Object>()
+                    def flashScope = webRequest.getFlashScope()
+                    if(!flashScope.isEmpty()) {
+                        def chainModel = flashScope.get(FlashScope.CHAIN_MODEL)
+                        if(chainModel instanceof Map) {
+                            finalModel.putAll((Map)chainModel)
+                        }
+                    }
+                    finalModel.putAll((Map)result)
+
+                    return new ModelAndView(viewName, finalModel)
                 }
                 else if(result instanceof ModelAndView) {
                     return (ModelAndView) result

@@ -28,7 +28,12 @@ import java.util.Map;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public interface FlashScope extends Map, Serializable {
+public interface FlashScope extends Map<String, Object>, Serializable {
+
+    /**
+     * The attribute containing the chain model
+     */
+    String CHAIN_MODEL = "chainModel";
 
     /**
      * Sets the flash scope to the next state upon a new request
