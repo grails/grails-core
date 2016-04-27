@@ -236,6 +236,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             Map<String,Object> eventMap = [:]
             eventMap.put('source', pluginManager)
 
+            pluginManager.onStartup(eventMap)
             for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
                 lifeCycle.onStartup(eventMap)
             }
