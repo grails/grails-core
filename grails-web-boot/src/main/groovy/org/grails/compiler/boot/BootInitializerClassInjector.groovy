@@ -1,5 +1,6 @@
 package org.grails.compiler.boot
 
+import grails.boot.GrailsPluginApplication
 import grails.boot.config.GrailsAutoConfiguration
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GlobalClassInjectorAdapter
@@ -56,7 +57,7 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
         // don't generate for plugins
         if( classNode.getNodeMetaData('isPlugin') ) return
 
-        if(GrailsASTUtils.isAssignableFrom(GRAILS_CONFIGURATION_CLASS_NODE, classNode)) {
+        if(GrailsASTUtils.isAssignableFrom(GRAILS_CONFIGURATION_CLASS_NODE, classNode) && !GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, GrailsPluginApplication.name)) {
             def methods = classNode.getMethods("main")
             for(MethodNode mn in methods) {
                 if(Modifier.isStatic(mn.modifiers) && Modifier.isPublic(mn.modifiers)) {
