@@ -40,7 +40,7 @@ deploy:
     tags: true
     all_branches: true
 after_deploy:
-- ./gradlew sdkMinorRelease
+- ./gradlew sdkMajorRelease
 after_success:
 - ./trigger-dependent-build.sh
 cache:
