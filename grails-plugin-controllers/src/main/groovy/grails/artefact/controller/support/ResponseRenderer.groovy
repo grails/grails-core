@@ -46,6 +46,7 @@ import org.grails.web.servlet.view.GroovyPageView
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.sitemesh.GrailsLayoutView
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.grails.web.sitemesh.SitemeshLayoutView
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
@@ -319,7 +320,13 @@ trait ResponseRenderer extends WebAttributes {
                     throw new ControllerExecutionException("Unable to load template for uri [$templateUri]. Template not found.")
                 }
 
+
                 boolean renderWithLayout = (explicitSiteMeshLayout || webRequest.getCurrentRequest().getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE))
+                // if automatic decoration occurred unwrap, since this is a partial
+                if(view instanceof GrailsLayoutView) {
+                    view = ((GrailsLayoutView)view).getInnerView()
+                }
+
                 if(renderWithLayout && groovyPageLayoutFinder) {
                     applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
                     try {
@@ -328,6 +335,7 @@ trait ResponseRenderer extends WebAttributes {
                         // ignore
                     }
                 }
+
 
                 Map binding = [:]
 
