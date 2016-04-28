@@ -11,7 +11,7 @@ buildscript {
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
-        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.1'
+        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
     }
 }
 
@@ -497,8 +497,8 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     }
 }
 
-apply plugin: 'net.gvmtool.sdkvendor'
-gvm {
+apply plugin: "io.sdkman.vendors"
+sdkman {
     api = "https://gvm-vendor.herokuapp.com"
     consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
     consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
