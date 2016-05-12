@@ -35,7 +35,7 @@ import org.springframework.http.HttpStatus
 @Artefact("Controller")
 @Transactional(readOnly = true)
 class RestfulController<T> {
-    static allowedMethods = [save: "POST", update: "PUT", patch: "PATCH", delete: "DELETE"]
+    static allowedMethods = [save: "POST", update: ["PUT", "POST"], patch: "PATCH", delete: "DELETE"]
 
     Class<T> resource
     String resourceName
