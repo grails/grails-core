@@ -18,6 +18,7 @@ package org.grails.cli.gradle
 import grails.build.logging.GrailsConsole
 import grails.io.support.SystemOutErrCapturer
 import grails.io.support.SystemStreamsRedirector
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
@@ -91,7 +92,7 @@ class GradleUtil {
             gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
         }
 
-        gradleConnector.embedded(true)
+        gradleConnector.embedded(!Environment.isInteractiveMode())
                        .connect()
     }
 
