@@ -41,50 +41,6 @@ import org.grails.cli.profile.ProjectContext
 @CompileStatic
 class GradleUtil {
     private static final boolean DEFAULT_SUPPRESS_OUTPUT = true
-    private static ProjectConnection preparedConnection = null
-    private static File preparedConnectionBaseDir = null
-
-    public static ProjectConnection refreshConnection(File baseDir) {
-        preparedConnection = openGradleConnection(baseDir)
-        preparedConnectionBaseDir = baseDir.getAbsoluteFile()
-
-        try {
-            Runtime.addShutdownHook {
-                try {
-                    Thread.start {
-                        clearPreparedConnection()
-                    }.join(1000)
-                } catch (Throwable e) {
-                    // ignore
-                }
-
-            }
-        } catch (e) {
-            // ignore
-        }
-        return preparedConnection
-    }
-
-    public static ProjectConnection prepareConnection(File baseDir) {
-        if (preparedConnection == null || preparedConnectionBaseDir != baseDir.getAbsoluteFile()) {
-            refreshConnection(baseDir)
-        }
-        return preparedConnection
-    }
-
-    public static clearPreparedConnection() {
-        if (preparedConnection != null) {
-            try {
-                Thread.start {
-                    preparedConnection?.close()
-                }.join(2000)
-            } catch (Throwable e) {
-            }
-
-            preparedConnection = null
-            preparedConnectionBaseDir = null
-        }
-    }
 
     public static ProjectConnection openGradleConnection(File baseDir) {
         DefaultGradleConnector gradleConnector = (DefaultGradleConnector)GradleConnector.newConnector().forProjectDirectory(baseDir)
@@ -98,8 +54,7 @@ class GradleUtil {
 
     public static <T> T withProjectConnection(File baseDir, boolean suppressOutput = DEFAULT_SUPPRESS_OUTPUT,
                                               @ClosureParams(value = SimpleType.class, options = "org.gradle.tooling.ProjectConnection") Closure<T> closure) {
-        boolean preparedConnectionExisted = preparedConnection != null
-        ProjectConnection projectConnection = prepareConnection(baseDir)
+        ProjectConnection projectConnection = openGradleConnection(baseDir)
         try {
             if (suppressOutput) {
                 SystemOutErrCapturer.withNullOutput {
@@ -111,8 +66,7 @@ class GradleUtil {
                 }
             }
         } finally {
-            if (!preparedConnectionExisted)
-                clearPreparedConnection()
+            projectConnection.close();
         }
     }
 
