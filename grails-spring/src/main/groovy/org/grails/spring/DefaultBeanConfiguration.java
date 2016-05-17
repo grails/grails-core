@@ -31,6 +31,7 @@ import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.Assert;
 
 /**
@@ -217,7 +218,10 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
             }
             bd.setConstructorArgumentValues(cav);
         }
-        bd.setBeanClass(clazz);
+        if(clazz != null) {
+            bd.setLazyInit( clazz.getAnnotation(Lazy.class) != null);
+            bd.setBeanClass(clazz);
+        }
         bd.setScope(singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE);
         if (parentName != null) {
             bd.setParentName(parentName);

@@ -653,6 +653,7 @@ public class BeanBuilder extends GroovyObjectSupport {
                     currentBeanConfig = springConfig.addSingletonBean(name, beanClass, resolveConstructorArguments(args, 1, args.length));
                 }
             }
+
         }
         else if (args[0] instanceof RuntimeBeanReference) {
             currentBeanConfig = springConfig.addSingletonBean(name);
