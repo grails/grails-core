@@ -74,6 +74,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 @SuppressWarnings("rawtypes")
 public class RegexUrlMapping extends AbstractUrlMapping {
 
+    public static final String FORMAT_PARAMETER = "format";
     private Pattern[] patterns;
     private Map<Integer, List<Pattern>> patternByTokenCount = new HashMap<Integer, List<Pattern>>();
     private UrlMappingData urlData;
@@ -251,9 +252,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
             // Now replace "*" with "[^/]" and "**" with ".*".
             pattern = "^" + urlRoot
-                    .replace("(\\.(*))", "\\.?([^/]+)?")
-                    .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
-                    .replaceAll("([^\\*])\\*$", "$1[^/]+")
+                    .replace("(\\.(*))", "(\\.[^/]+)?")
+                    .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+?$2")
+                    .replaceAll("([^\\*])\\*$", "$1[^/]+?")
                     .replaceAll("\\*\\*", ".*");
 
             if("/(*)(\\.(*))".equals(urlEnd)) {
@@ -263,12 +264,12 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 pattern += "/([^/]+)\\.([^/.]+)?";
             } else {
                 pattern += urlEnd
-                        .replace("(\\.(*))", "\\.?([^/]+)?")
-                        .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
-                        .replaceAll("([^\\*])\\*$", "$1[^/]+")
+                        .replace("(\\.(*))", "(\\.[^/]+)?")
+                        .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+?$2")
+                        .replaceAll("([^\\*])\\*$", "$1[^/]+?")
                         .replaceAll("\\*\\*", ".*")
-                        .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
-                        .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
+                        .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+?)\\\\.")
+                        .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+?)\\?\\\\.")
                 ;
             }
             pattern += "/??$";
@@ -634,7 +635,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                     return null;
                 }
 
-                params.put(cp.getPropertyName(), lastGroup);
+                String propertyName = cp.getPropertyName();
+                if(lastGroup != null) {
+                    if(FORMAT_PARAMETER.equals(propertyName) && lastGroup.startsWith(".")) {
+                        lastGroup = lastGroup.substring(1);
+                    }
+                }
+                params.put(propertyName, lastGroup);
                 break;
             }
             else {
@@ -651,7 +658,11 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                         return null;
                     }
 
-                    params.put(cp.getPropertyName(), lastGroup);
+                    String propertyName = cp.getPropertyName();
+                    if(FORMAT_PARAMETER.equals(propertyName) && lastGroup.startsWith(".")) {
+                        lastGroup = lastGroup.substring(1);
+                    }
+                    params.put(propertyName, lastGroup);
                 }
             }
 
