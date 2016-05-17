@@ -31,6 +31,17 @@ class DateConversionHelperSpec extends Specification {
         9 == date.hours
         24 == date.minutes
         22 == date.seconds
+
+        when:
+        date = helper.convert '2012-06-12T09:24:22.222Z'
+
+        then:
+        Calendar.JUNE == date.month
+        12 == date.date
+        112 == date.year
+        9 == date.hours
+        24 == date.minutes
+        22 == date.seconds
     }
 
     void 'Test custom formats'() {
