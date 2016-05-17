@@ -137,8 +137,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def profileName = evaluateProfileName(mainCommandLine)
 
         Profile profileInstance = profileRepository.getProfile(profileName)
-        if(profileInstance == null) {
-            executionContext.console.error("Profile not found for name [$profileName]")
+        if( !validateProfile(profileInstance, profileName, executionContext)) {
             return false
         }
         List<Feature> features = evaluateFeatures(profileInstance, mainCommandLine).toList()
@@ -200,6 +199,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             System.err.println "Cannot find profile $profileName"
             return false
         }
+    }
+
+    protected boolean validateProfile(Profile profileInstance, String profileName, ExecutionContext executionContext) {
+        if (profileInstance == null) {
+            executionContext.console.error("Profile not found for name [$profileName]")
+            return false
+        }
+        return true
     }
 
     private Map<URL, File> unzippedDirectories = new LinkedHashMap<URL, File>()
