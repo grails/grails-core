@@ -156,6 +156,7 @@ class ControllersGrailsPlugin extends Plugin {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
                 "${controller.fullName}"(controller.clazz) { bean ->
+                    bean.lazyInit = true
                     def beanScope = controller.getScope()
                     bean.scope = beanScope
                     bean.autowire =  "byName"
