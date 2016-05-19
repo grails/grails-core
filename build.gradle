@@ -500,7 +500,7 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
 
 apply plugin: "io.sdkman.vendors"
 sdkman {
-    api = "https://gvm-vendor.herokuapp.com"
+    api = "https://vendors.sdkman.io"
     consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
     consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
     candidate = "grails"
