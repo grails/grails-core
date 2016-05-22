@@ -8,8 +8,9 @@
 echo "Project Version: '$grailsVersion'"
 echo "EXIT STATUS of build: '$EXIT_STATUS'"
 
-if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
-    && $TRAVIS_REPO_SLUG == grails/grails-core && ( $TRAVIS_TAG =~ ^v[[:digit:]] || $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ )  ]]; then
+if [[ $TRAVIS_PULL_REQUEST == 'false'
+    && $TRAVIS_REPO_SLUG == grails/grails-core
+    && ( $TRAVIS_TAG =~ ^v[[:digit:]] || $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ )  ]]; then
     # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
     openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
     openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in pubring.gpg.enc -out pubring.gpg -d
