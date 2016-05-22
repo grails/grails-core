@@ -11,9 +11,6 @@ grailsVersion="${grailsVersion//[[:blank:]\'\"]/}"
 
 echo "Project Version: '$grailsVersion'"
 
-git config --global credential.helper "store --file=~/.git-credentials"
-echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
-
 EXIT_STATUS=0
 ./gradlew --stop
 
