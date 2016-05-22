@@ -30,6 +30,7 @@ install: /bin/true
 script:
 - ./travis-build.sh
 after_success:
+- ./travis-publish-archives.sh
 - ./trigger-dependent-build.sh
 after_failure:
 - ./travis-after-failure.sh
