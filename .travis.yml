@@ -34,9 +34,13 @@ install: /bin/true
 script:
 - ./travis-build.sh
 after_success:
+- python ./travis/travis_after_all.py
+- export $(cat .to_export_back)
 - ./travis-publish-archives.sh
 - ./trigger-dependent-build.sh
 after_failure:
+- python ./travis/travis_after_all.py
+- export $(cat .to_export_back)
 - ./travis-after-failure.sh
 deploy:
   provider: releases
