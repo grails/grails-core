@@ -4,11 +4,12 @@
 # This also means that the later modifications to EXIT_STATUS will not affect
 # the build status: Build could now be success, even though the later steps here will
 # change EXIT_STATUS variable
+set -x
 
 echo "Project Version: '$grailsVersion'"
 echo "EXIT STATUS of build: '$EXIT_STATUS'"
 
-# use travis_after_all.py for publishing only after all builds are successfull.
+# use travis_after_all.py for publishing only after all builds are successful.
 if [[ "$BUILD_LEADER" == "YES" ]]; then
   if [[ "$BUILD_AGGREGATE_STATUS" != "others_succeeded" ]]; then
     echo "Some builds failed, not publishing."
