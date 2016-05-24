@@ -254,7 +254,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         if (controller == null) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
             if (webRequest == null) {
-                return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName), binding);
+                return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName, true), binding);
             }
             return findPageInBinding(pluginName, uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
         }
@@ -285,7 +285,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     public GroovyPageScriptSource findTemplateInBinding(String templateName, TemplateVariableBinding binding) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest == null) {
-            return findPageInBinding(uriService.getAbsoluteTemplateURI(templateName), binding);
+            return findPageInBinding(uriService.getAbsoluteTemplateURI(templateName, true), binding);
         }
         return findPageInBinding(uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
     }
@@ -301,7 +301,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     public GroovyPageScriptSource findTemplateInBinding(String pluginName, String templateName, TemplateVariableBinding binding) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest == null) {
-            return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName), binding);
+            return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName, true), binding);
         }
         return findPageInBinding(pluginName, uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
     }
@@ -314,7 +314,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * @return The script source
      */
     public GroovyPageScriptSource findTemplateByPath(String uri) {
-        return findPage(uriService.getAbsoluteTemplateURI(uri));
+        return findPage(uriService.getAbsoluteTemplateURI(uri, true));
     }
 
     protected String lookupRequestFormat() {
