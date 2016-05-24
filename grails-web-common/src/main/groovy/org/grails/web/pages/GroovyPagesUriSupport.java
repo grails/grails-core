@@ -109,12 +109,13 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
      * Obtains the URI to a template using the controller name and template name
      * @param controllerName The controller name
      * @param templateName The template name
+     * @param includeExtension The flag to include the template extension
      * @return The template URI
      */
     @Override
     public String getTemplateURI(String controllerName, String templateName, boolean includeExtension) {
         if (templateName.startsWith(SLASH_STR)) {
-            return getAbsoluteTemplateURI(templateName);
+            return getAbsoluteTemplateURI(templateName, includeExtension);
         }
 
         FastStringWriter buf = new FastStringWriter();
@@ -147,9 +148,10 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
      * Used to resolve template names that are not relative to a controller.
      *
      * @param templateName The template name normally beginning with /
+     * @param includeExtension The flag to include the template extension
      * @return The template URI
      */
-    public String getAbsoluteTemplateURI(String templateName) {
+    public String getAbsoluteTemplateURI(String templateName, boolean includeExtension) {
         FastStringWriter buf = new FastStringWriter();
         String tmp = templateName.substring(1,templateName.length());
         if (tmp.indexOf(SLASH) > -1) {
@@ -163,7 +165,10 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
             buf.append(SLASH_UNDR);
             buf.append(templateName.substring(1,templateName.length()));
         }
-        String uri = buf.append(EXTENSION).toString();
+        if (includeExtension) {
+            buf.append(EXTENSION);
+        }
+        String uri = buf.toString();
         buf.close();
         return uri;
     }
