@@ -30,6 +30,7 @@ import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod
 import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
 import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.plugins.web.interceptors.UrlMappingMatcher
+import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
@@ -95,10 +96,11 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         def uri = req.requestURI
 
         def matchedInfo = request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
+
         UrlMappingInfo grailsMappingInfo = (UrlMappingInfo)matchedInfo
 
         for(Matcher matcher in allMatchers) {
-            if(matcher.doesMatch(uri, grailsMappingInfo)) {
+            if(matcher.doesMatch(uri, grailsMappingInfo, req.method)) {
                 request.setAttribute(interceptorMatchKey, Boolean.TRUE)
                 return true
             }
