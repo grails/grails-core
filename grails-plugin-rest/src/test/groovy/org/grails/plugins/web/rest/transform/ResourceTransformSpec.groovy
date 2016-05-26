@@ -122,6 +122,27 @@ class Book {
             superClass << ['', RestfulController.name, SubclassRestfulController.name]
     }
 
+    void "Test that the resource transform creates a controller class with the correct default formats"() {
+        given:"A parsed class with a @Resource annotation"
+        def gcl = createGroovyClassLoader()
+        gcl.parseClass("""
+import grails.rest.*
+import grails.persistence.*
+
+@Entity
+@Resource()
+class Book {
+}
+""")
+
+        when:"The controller class is loaded"
+        def ctrl = gcl.loadClass('BookController')
+
+        then:"It exists"
+        ctrl != null
+        ctrl.responseFormats == ["json", "xml"] as String[]
+    }
+
     private Method getMethod(Class clazz, String methodName, Class[] paramTypes) {
         try {
             clazz.getMethod(methodName, paramTypes)
