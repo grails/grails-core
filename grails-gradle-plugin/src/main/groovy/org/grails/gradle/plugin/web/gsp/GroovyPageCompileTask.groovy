@@ -66,6 +66,10 @@ class GroovyPageCompileTask extends AbstractCompile {
                     packagename: packagename,
                     serverpath: serverpath,
                     tmpdir: tmpdir) {
+                delegate.configs {
+                    pathelement(path: gradleProject.file('grails-app/conf/application.yml').absolutePath)
+                    pathelement(path: gradleProject.file('grails-app/conf/application.groovy').absolutePath)
+                }
                 delegate.classpath {
                     pathelement(path: dest.absolutePath)
                     pathelement(path: compileTask.classpath.asPath)

@@ -17,12 +17,10 @@ package org.grails.taglib.encoder
 
 import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
-
+import groovy.util.logging.Slf4j
 import org.grails.encoder.CodecLookupHelper
 import org.grails.encoder.Encoder
 import org.grails.taglib.encoder.OutputEncodingStackAttributes.Builder
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Helper methods for {@link #withCodec} feature.
@@ -31,8 +29,8 @@ import org.slf4j.LoggerFactory
  * @since 2.3
  */
 @CompileStatic
+@Slf4j
 class WithCodecHelper {
-    private static final Logger log = LoggerFactory.getLogger(WithCodecHelper)
 
     /** all is the key to set all codecs at once */
     public static final String ALL_CODECS_FALLBACK_KEY_NAME = "all"

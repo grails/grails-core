@@ -15,11 +15,7 @@
  */
 package org.grails.taglib.encoder
 
-import grails.config.Config
-import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
-
-import grails.plugins.GrailsPluginInfo
 
 @CompileStatic
 class OutputEncodingSettings {
@@ -52,46 +48,10 @@ class OutputEncodingSettings {
          (TAGLIB_CODEC_NAME):         'none',
          (TAGLIB_DEFAULT_CODEC_NAME): 'none']
 
-    Config flatConfig
 
-    OutputEncodingSettings(Config flatConfig) {
-        this.flatConfig = flatConfig
+    static String getDefaultValue(String codecName) {
+        defaultSettings.get(codecName)
     }
 
-    String getCodecSettings(GrailsPluginInfo pluginInfo, String codecWriterName) {
-        if (!codecWriterName) return null
-
-        Map codecSettings = flatConfig?.getProperty(CONFIG_PROPERTY_GSP_CODECS, Map.class)
-        if(pluginInfo != null) {
-            def pluginKey = "${pluginInfo.getName()}.${CONFIG_PROPERTY_GSP_CODECS}"
-
-            def firstTry = flatConfig?.getProperty(pluginKey, Map.class, null)
-            if(firstTry == null) {
-                pluginKey = "${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginInfo.getName())}.${CONFIG_PROPERTY_GSP_CODECS}"
-                firstTry = flatConfig?.getProperty(pluginKey, Map.class, codecSettings)
-            }
-            codecSettings = firstTry
-        }
-        String codecInfo = null
-        if (!codecSettings) {
-            if (codecWriterName==EXPRESSION_CODEC_NAME) {
-                codecInfo = flatConfig?.getProperty(CONFIG_PROPERTY_DEFAULT_CODEC)?.toString()
-            }
-        } else {
-            codecInfo = codecSettings.get(codecWriterName)?.toString()
-            if (!codecInfo) {
-                // case-insensitive fallback
-                codecInfo = codecSettings.find { k, v ->
-                    k.toString().equalsIgnoreCase(codecWriterName)
-                }?.value
-            }
-        }
-
-        if (!codecInfo) {
-            codecInfo = defaultSettings.get(codecWriterName)
-        }
-
-        codecInfo
-    }
 
 }
