@@ -48,6 +48,7 @@ public class GroovyPagesUriSupportTests extends TestCase {
     public void testGetTemplateURI() {
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/_bar.gsp", uriSupport.getTemplateURI("foo", "bar"));
+        assertEquals("/_bar.gsp", uriSupport.getTemplateURI("foo", "../bar"));
         assertEquals("/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "/bar/foo"));
         assertEquals("/foo/bar/_foo.gsp", uriSupport.getTemplateURI("foo", "bar/foo"));
     }
@@ -64,6 +65,7 @@ public class GroovyPagesUriSupportTests extends TestCase {
         GroovyObject controller = (GroovyObject) new GroovyClassLoader().parseClass("class FooController { }").newInstance();
         GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport();
         assertEquals("/foo/bar.gsp", uriSupport.getViewURI(controller, "bar"));
+        assertEquals("/bar.gsp", uriSupport.getViewURI(controller, "../bar"));
         assertEquals("/bar/foo.gsp", uriSupport.getViewURI(controller, "/bar/foo"));
         assertEquals("/foo/bar/foo.gsp", uriSupport.getViewURI(controller, "bar/foo"));
     }
