@@ -48,6 +48,15 @@ interface ConfigMap extends Iterable<Map.Entry<String, Object>>, Map<String, Obj
     def <T> T getProperty(String key, Class<T> targetType)
 
     /**
+     * Return the property value associated with the given key, or {@code null}
+     * if the key cannot be resolved.
+     * @param key the property name to resolve
+     * @param targetType the expected type of the property value
+     * @see #getRequiredProperty(String, Class)
+     */
+    def <T> T getProperty(String key, Class<T> targetType, T defaultValue)
+
+    /**
      * Return the property value associated with the given key, converted to the given
      * targetType (never {@code null}).
      * @throws IllegalStateException if the given key cannot be resolved

@@ -16,6 +16,7 @@
 package org.grails.plugins;
 
 import grails.artefact.Enhanced;
+import grails.plugins.Plugin;
 import grails.plugins.PluginFilter;
 import org.grails.config.NavigableMap;
 import grails.plugins.GrailsPlugin;
@@ -44,6 +45,7 @@ import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 
 import org.grails.core.legacy.LegacyGrailsApplication;
+import org.grails.plugins.support.WatchPattern;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.io.support.GrailsResourceUtils;
 
@@ -87,7 +89,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     protected ApplicationContext applicationContext;
     protected Map<String, GrailsPlugin> failedPlugins = new HashMap<String, GrailsPlugin>();
     protected boolean loadCorePlugins = true;
-    
+
     private static final String CONFIG_BINDING_USER_HOME = "userHome";
     private static final String CONFIG_BINDING_GRAILS_HOME = "grailsHome";
     private static final String CONFIG_BINDING_APP_NAME = "appName";
@@ -337,6 +339,14 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         return applicationContext != null && !plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles());
     }
 
+    public void onStartup(Map<String, Object> event) {
+        for (GrailsPlugin plugin : pluginList) {
+            if (plugin.getInstance() instanceof Plugin) {
+                ((Plugin)plugin.getInstance()).onStartup(event);
+            }
+        }
+    }
+
     public void shutdown() {
         checkInitialised();
         try {
@@ -361,6 +371,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         // no-op
     }
 
+    @Deprecated
     public boolean supportsCurrentBuildScope(String pluginName) {
         GrailsPlugin plugin = getGrailsPlugin(pluginName);
         return plugin == null || plugin.supportsScope(BuildScope.getCurrent());
@@ -389,6 +400,33 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         if (plugin != null) {
             if(!plugin.isEnabled(applicationContext.getEnvironment().getActiveProfiles())) return;
             plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, aClass);
+        }
+        else {
+            String classNameAsPath = aClass.getName().replace('.', File.separatorChar);
+            String groovyClass = classNameAsPath + ".groovy";
+            String javaClass = classNameAsPath + ".java";
+            for (GrailsPlugin grailsPlugin : pluginList) {
+                List<WatchPattern> watchPatterns = grailsPlugin.getWatchedResourcePatterns();
+                if(watchPatterns != null) {
+                    for (WatchPattern watchPattern : watchPatterns) {
+                        File parent = watchPattern.getDirectory();
+                        String extension = watchPattern.getExtension();
+
+                        if(parent != null && extension != null)  {
+                            File f = new File(parent, groovyClass);
+                            if(f.exists() && f.getName().endsWith(extension)) {
+                                grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, aClass);
+                            }
+                            else {
+                                f = new File(parent, javaClass);
+                                if(f.exists() && f.getName().endsWith(extension)) {
+                                    grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, aClass);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 package org.grails.gsp.compiler
+
+import grails.config.ConfigMap
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
+import org.grails.config.CodeGenConfig
 import org.grails.gsp.GroovyPageMetaInfo
 import org.grails.gsp.compiler.transform.GroovyPageInjectionOperation
+import org.grails.taglib.encoder.OutputEncodingSettings
+
 /**
  * Used to compile GSP files into a specified target directory.
  *
@@ -43,6 +48,9 @@ class GroovyPageCompiler {
     String viewPrefix = '/'
     String packagePrefix = 'default'
     String encoding = "UTF-8"
+    String expressionCodec = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME)
+    String[] configs = []
+    ConfigMap configMap
 
     void setCompilerConfig(CompilerConfiguration c) {
         compilerConfig = c
@@ -60,6 +68,22 @@ class GroovyPageCompiler {
     Map compile() {
         if (srcFiles && targetDir && viewsDir) {
             LOG.debug "Compiling ${srcFiles.size()} GSP files using GroovyPageCompiler"
+
+            if(configs) {
+                def codeGenConfig = new CodeGenConfig()
+                configMap = codeGenConfig
+                for(path in configs) {
+                    def f = new File(path)
+                    if(f.exists()) {
+                        if(f.name.endsWith('.yml')) {
+                            codeGenConfig.loadYml(f)
+                        }
+                        else if(f.name.endsWith('.groovy')) {
+                            codeGenConfig.loadGroovy(f)
+                        }
+                    }
+                }
+            }
             for (gsp in srcFiles) {
                 compileGSP(viewsDir, gsp, viewPrefix, packagePrefix)
             }
@@ -122,10 +146,13 @@ class GroovyPageCompiler {
             gspgroovyfile.getParentFile().mkdirs()
 
             gspfile.withInputStream { InputStream gspinput ->
-                GroovyPageParser gpp = new GroovyPageParser(viewuri - '.gsp', viewuri, gspfile.absolutePath, gspinput)
+                GroovyPageParser gpp = new GroovyPageParser(viewuri - '.gsp', viewuri, gspfile.absolutePath, gspinput, encoding, expressionCodec)
                 gpp.packageName = packageName
                 gpp.className = className
                 gpp.lastModified = gspfile.lastModified()
+                if(configMap) {
+                    gpp.configure(configMap)
+                }
                 gspgroovyfile.withWriter(encoding) { Writer gsptarget ->
                     // generate gsp groovy source
                     gpp.generateGsp(gsptarget)

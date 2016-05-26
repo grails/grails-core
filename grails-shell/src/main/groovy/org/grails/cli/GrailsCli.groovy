@@ -29,6 +29,7 @@ import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
 import jline.internal.NonBlockingInputStream
+import org.gradle.impldep.org.apache.commons.io.output.NullOutputStream
 import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
@@ -374,7 +375,6 @@ class GrailsCli {
                         console.updateStatus("Initializing application. Please wait...")
                         try {
                             initializeApplication(context.commandLine)
-                            GradleUtil.prepareConnection(projectContext.baseDir)
                             setupCompleters()
                         } finally {
                             tiggerAppLoad = false
@@ -434,9 +434,6 @@ class GrailsCli {
         boolean firstRun = true
         while(keepRunning) {
             try {
-                if(integrateGradle) {
-                    GradleUtil.prepareConnection(projectContext.baseDir)
-                }
                 if(firstRun) {
                     console.addStatus("Enter a command name to run. Use TAB for completion:")
                     firstRun = false
@@ -537,9 +534,13 @@ class GrailsCli {
                     @Override
                     Map<String, List<URL>> readFromGradle(ProjectConnection connection) {
                         def config = applicationConfig
-                        GrailsClasspath grailsClasspath = GradleUtil.runBuildActionWithConsoleOutput(connection, projectContext, new ClasspathBuildAction()) { BuildActionExecuter<GrailsClasspath> executer ->
-                            executer.withArguments("-Dgrails.profile=${config.navigate("grails", "profile")}")
-                        }
+
+                        BuildActionExecuter buildActionExecuter = connection.action(new ClasspathBuildAction())
+                        buildActionExecuter.standardOutput = new NullOutputStream()
+                        buildActionExecuter.standardError  = new NullOutputStream()
+                        buildActionExecuter.withArguments("-Dgrails.profile=${config.navigate("grails", "profile")}")
+
+                        def grailsClasspath = buildActionExecuter.run()
                         if(grailsClasspath.error) {
                             GrailsConsole.instance.error("${grailsClasspath.error} Type 'gradle dependencies' for more information")
                             exit 1

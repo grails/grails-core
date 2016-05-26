@@ -3,14 +3,10 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.rest.RestfulController
 import grails.test.mixin.web.UrlMappingsUnitTestMixin
-import grails.web.Action
-import junit.framework.AssertionFailedError
 import junit.framework.ComparisonFailure
-
 import org.junit.Test
 import org.springframework.web.context.WebApplicationContext
 import spock.lang.Issue
-
 /**
  * Tests for the UrlMappingsTestMixin class
  */
@@ -158,6 +154,19 @@ class UrlMappingsTestMixinTests {
     }
 
     @Test
+    void testMethodMappings() {
+        mockController(UserController)
+        mockUrlMappings(MethodTestUrlMappings)
+
+        request.method = 'GET'
+        assertUrlMapping('/users/timmy', controller: 'user', action: 'show', method: 'get') { name = 'timmy' }
+        assertUrlMapping('/users', controller: 'user', action: 'list', method: 'get')
+
+        request.method = 'PUT'
+        assertUrlMapping('/users/timmy', controller: 'user', action: 'update', method: 'put') { name = 'timmy' }
+    }
+
+    @Test
     @Issue('https://github.com/grails/grails-core/issues/9065')
     void testResourcesUrlMapping() {
         mockController(PersonController)
@@ -212,6 +221,9 @@ class GrailsUrlMappingsTestCaseFakeController {
 @Artefact("Controller")
 class UserController {
     def publicProfile() {}
+    def update() {}
+    def show() {}
+    def list() {}
 }
 
 class MyUrlMappings {
@@ -247,6 +259,14 @@ class GRAILS9110UrlMappings {
             objParam = [test:true]
             dateParam = new Date(1)
         }
+    }
+}
+
+class MethodTestUrlMappings {
+    static mappings = {
+        "/users/$name"(controller: 'user', action: 'update', method: 'put')
+        "/users/$name"(controller: 'user', action: 'show', method: 'get')
+        "/users"(controller: 'user', action: 'list', method: 'get')
     }
 }
 

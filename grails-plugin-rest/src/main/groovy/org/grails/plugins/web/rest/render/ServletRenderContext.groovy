@@ -161,6 +161,11 @@ class ServletRenderContext extends AbstractRenderContext {
     }
 
     @Override
+    String getControllerNamespace() {
+        return webRequest.controllerNamespace
+    }
+
+    @Override
     boolean wasWrittenTo() {
         return writerObtained
     }

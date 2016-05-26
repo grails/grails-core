@@ -11,7 +11,7 @@ buildscript {
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
-        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.1'
+        classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
     }
 }
 
@@ -32,7 +32,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "5.0.4.RELEASE"
+    datastoreVersion = "5.0.6.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.6"
@@ -41,13 +41,14 @@ ext {
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
     slf4jVersion = "1.7.10"
+    reactorCoreVersion = '2.0.8.RELEASE'
     reactorVersion = '2.0.7.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
-    springBootVersion = "1.3.3.RELEASE"
+    springBootVersion = "1.3.5.RELEASE"
     springLoadedVersion = "1.2.6.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.2.5.RELEASE"
+    springVersion = "4.2.6.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
@@ -479,7 +480,7 @@ tciTrigger {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.9'
+    gradleVersion = '2.13'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
 
@@ -497,9 +498,9 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     }
 }
 
-apply plugin: 'net.gvmtool.sdkvendor'
-gvm {
-    api = "https://gvm-vendor.herokuapp.com"
+apply plugin: "io.sdkman.vendors"
+sdkman {
+    api = "https://vendors.sdkman.io"
     consumerKey = System.getenv("GVM_SDKVENDOR_KEY") ?: project.hasProperty("gvmSdkvendorKey") ? project.gvmSdkvendorKey : ''
     consumerToken = System.getenv("GVM_SDKVENDOR_TOKEN") ?: project.hasProperty("gvmSdkvendorToken") ? project.gvmSdkvendorToken : ''
     candidate = "grails"

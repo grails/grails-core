@@ -138,6 +138,15 @@ class CodeGenConfig implements Cloneable, ConfigMap {
         }
     }
 
+    void loadGroovy(File groovyConfig) {
+        if(groovyConfig.exists()) {
+            def envName = Environment.current.name
+            def configSlurper = new ConfigSlurper(envName)
+            def configObject = configSlurper.parse(groovyConfig.toURI().toURL())
+            mergeMap(configObject, false)
+        }
+    }
+
     @CompileDynamic // fails with CompileStatic!
     void loadYml(InputStream input) {
         Yaml yaml = new Yaml()
@@ -251,7 +260,16 @@ class CodeGenConfig implements Cloneable, ConfigMap {
     public <T> T getProperty(String name, Class<T> requiredType) {
         return convertToType( configMap.getProperty(name), requiredType )
     }
-    
+
+    @Override
+    def <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
+        def v = getProperty(key, targetType)
+        if(v == null) {
+            return defaultValue
+        }
+        return v
+    }
+
     public void setProperty(String name, Object value) {
         configMap.setProperty(name, value)
     }

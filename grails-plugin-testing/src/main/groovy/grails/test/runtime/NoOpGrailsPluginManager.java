@@ -57,6 +57,11 @@ final class NoOpGrailsPluginManager implements GrailsPluginManager {
     }
 
     @Override
+    public void onStartup(Map<String, Object> event) {
+        
+    }
+
+    @Override
     public GrailsPlugin getGrailsPlugin(String name) {
         return null;
     }

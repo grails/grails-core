@@ -37,9 +37,6 @@ import org.springframework.core.convert.converter.Converter
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
-import org.springframework.core.env.MapPropertySource
-import org.springframework.core.env.PropertySource
-import org.springframework.util.ClassUtils
 
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
@@ -236,6 +233,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             Map<String,Object> eventMap = [:]
             eventMap.put('source', pluginManager)
 
+            pluginManager.onStartup(eventMap)
             for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
                 lifeCycle.onStartup(eventMap)
             }

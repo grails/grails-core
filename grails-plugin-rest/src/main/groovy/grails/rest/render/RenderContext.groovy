@@ -108,6 +108,11 @@ public interface RenderContext {
     String getControllerName()
 
     /**
+     * @return The current controller name
+     */
+    String getControllerNamespace()
+
+    /**
      * Returns true if the getWriter() method was called
      */
     boolean wasWrittenTo()

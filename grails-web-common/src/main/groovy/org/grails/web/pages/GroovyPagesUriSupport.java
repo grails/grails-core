@@ -38,7 +38,8 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
     private static final String BLANK = "";
     private static final String UNDERSCORE = "_";
     protected static final String EXTENSION = ".gsp";    
-    protected static final String SUFFIX = ".gsp";    
+    protected static final String SUFFIX = ".gsp";
+    public static final String RELATIVE_STRING = "../";
 
     /**
      * Obtains a template URI for the given controller instance and template name
@@ -109,12 +110,16 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
      * Obtains the URI to a template using the controller name and template name
      * @param controllerName The controller name
      * @param templateName The template name
+     * @param includeExtension The flag to include the template extension
      * @return The template URI
      */
     @Override
     public String getTemplateURI(String controllerName, String templateName, boolean includeExtension) {
         if (templateName.startsWith(SLASH_STR)) {
-            return getAbsoluteTemplateURI(templateName);
+            return getAbsoluteTemplateURI(templateName, includeExtension);
+        }
+        else if(templateName.startsWith(RELATIVE_STRING)) {
+            return getRelativeTemplateURIInternal(templateName, includeExtension);
         }
 
         FastStringWriter buf = new FastStringWriter();
@@ -142,14 +147,14 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
         }
     }
 
-
     /**
      * Used to resolve template names that are not relative to a controller.
      *
      * @param templateName The template name normally beginning with /
+     * @param includeExtension The flag to include the template extension
      * @return The template URI
      */
-    public String getAbsoluteTemplateURI(String templateName) {
+    public String getAbsoluteTemplateURI(String templateName, boolean includeExtension) {
         FastStringWriter buf = new FastStringWriter();
         String tmp = templateName.substring(1,templateName.length());
         if (tmp.indexOf(SLASH) > -1) {
@@ -163,10 +168,14 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
             buf.append(SLASH_UNDR);
             buf.append(templateName.substring(1,templateName.length()));
         }
-        String uri = buf.append(EXTENSION).toString();
+        if (includeExtension) {
+            buf.append(EXTENSION);
+        }
+        String uri = buf.toString();
         buf.close();
         return uri;
     }
+
 
     /**
      * Obtains a view URI of the given controller name and view name
@@ -225,8 +234,11 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
     }
 
     private String getViewURIInternal(String viewPathPrefix, String viewName, FastStringWriter buf, boolean includeSuffix) {
-        if (viewName != null && viewName.startsWith(SLASH_STR)) {
+        if (viewName != null && (viewName.startsWith(SLASH_STR) )) {
             return getAbsoluteViewURIInternal(viewName, buf, includeSuffix);
+        }
+        else if(viewName.startsWith(RELATIVE_STRING)) {
+            return getRelativeViewURIInternal(viewName, buf, includeSuffix);
         }
 
         if (viewPathPrefix != null) {
@@ -237,6 +249,15 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
         }
 
         return includeSuffix ? buf.append(SUFFIX).toString() : buf.toString();
+    }
+
+    private String getRelativeViewURIInternal(String viewName, FastStringWriter buf, boolean includeSuffix) {
+        String tmp = viewName.substring(RELATIVE_STRING.length() - 1, viewName.length());
+        buf.append(tmp);
+        if(includeSuffix) {
+            buf.append(SUFFIX);
+        }
+        return buf.toString();
     }
 
     private String getAbsoluteViewURIInternal(String viewName, FastStringWriter buf, boolean includeSuffix) {
@@ -252,7 +273,18 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehau
             buf.append(viewName.substring(1,viewName.length()));
         }
         if (includeSuffix) {
-            buf.append(SUFFIX).toString();
+            buf.append(SUFFIX);
+        }
+        return buf.toString();
+    }
+
+    private String getRelativeTemplateURIInternal(String templateName, boolean includeSuffix) {
+        String tmp = templateName.substring(RELATIVE_STRING.length() , templateName.length());
+        FastStringWriter buf = new FastStringWriter();
+        buf.append("/_");
+        buf.append(tmp);
+        if(includeSuffix) {
+            buf.append(SUFFIX);
         }
         return buf.toString();
     }

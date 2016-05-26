@@ -354,6 +354,15 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     @Override
+    def <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
+        def v = getProperty(key, targetType)
+        if(v == null) {
+            return defaultValue
+        }
+        return v
+    }
+
+    @Override
     def <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
         def value = get(key)
         if(value == null) {
