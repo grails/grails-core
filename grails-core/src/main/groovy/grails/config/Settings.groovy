@@ -180,6 +180,16 @@ interface Settings {
     String DEFAULT_RESOURCE_PATTERN = '/static/**'
 
     /**
+     * The default servlet path
+     */
+    String DEFAULT_WEB_SERVLET_PATH = '/*'
+
+    /**
+     * The default encoding
+     */
+    String DEFAULT_ENCODING = System.getProperty('file.encoding',"UTF-8")
+
+    /**
      * Whether to log request parameters in the console
      */
     String SETTING_LOG_REQUEST_PARAMETERS = "grails.exceptionresolver.logRequestParameters";

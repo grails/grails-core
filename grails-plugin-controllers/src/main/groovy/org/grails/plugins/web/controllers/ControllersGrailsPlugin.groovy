@@ -77,7 +77,7 @@ class ControllersGrailsPlugin extends Plugin {
         String filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
         boolean filtersForceEncoding = config.getProperty(Settings.FILTER_FORCE_ENCODING, Boolean, false)
         boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
-        String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, '/')
+        String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, Settings.DEFAULT_WEB_SERVLET_PATH)
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
         boolean resourcesEnabled = config.getProperty(Settings.RESOURCES_ENABLED, Boolean, true)
         String resourcesPattern = config.getProperty(Settings.RESOURCES_PATTERN, String, Settings.DEFAULT_RESOURCE_PATTERN)
@@ -85,7 +85,7 @@ class ControllersGrailsPlugin extends Plugin {
         bootStrapClassRunner(BootStrapClassRunner)
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
 
-        def catchAllMapping = ['/*']
+        def catchAllMapping = [Settings.DEFAULT_WEB_SERVLET_PATH]
 
         characterEncodingFilter(FilterRegistrationBean) {
             filter = bean(CharacterEncodingFilter) {
