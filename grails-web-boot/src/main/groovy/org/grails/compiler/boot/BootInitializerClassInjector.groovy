@@ -1,8 +1,10 @@
 package org.grails.compiler.boot
 
+import grails.boot.GrailsPluginApplication
 import grails.boot.config.GrailsAutoConfiguration
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GlobalClassInjectorAdapter
+import grails.plugins.metadata.PluginSource
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ClassHelper
@@ -50,13 +52,19 @@ import java.lang.reflect.Modifier
 class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
 
     public static final ClassNode GRAILS_CONFIGURATION_CLASS_NODE = ClassHelper.make(GrailsAutoConfiguration)
+    public static final ClassNode PLUGIN_SOURCE_ANNOTATION = ClassHelper.make(PluginSource)
 
     @Override
     void performInjectionInternal(SourceUnit source, ClassNode classNode) {
+        // if this is a plugin source, then exit
+        if( classNode.getAnnotations(PLUGIN_SOURCE_ANNOTATION) ) {
+            return
+        }
         // don't generate for plugins
         if( classNode.getNodeMetaData('isPlugin') ) return
 
-        if(GrailsASTUtils.isAssignableFrom(GRAILS_CONFIGURATION_CLASS_NODE, classNode)) {
+
+        if(GrailsASTUtils.isAssignableFrom(GRAILS_CONFIGURATION_CLASS_NODE, classNode) && !GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, GrailsPluginApplication.name)) {
             def methods = classNode.getMethods("main")
             for(MethodNode mn in methods) {
                 if(Modifier.isStatic(mn.modifiers) && Modifier.isPublic(mn.modifiers)) {

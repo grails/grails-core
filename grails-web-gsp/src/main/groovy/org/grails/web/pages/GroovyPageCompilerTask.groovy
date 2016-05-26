@@ -43,6 +43,7 @@ class GroovyPageCompilerTask extends MatchingTask {
 
     File destdir
     Path classpath
+    Path configs
     File srcdir
     File tmpdir
     String packagename = 'default'
@@ -50,6 +51,8 @@ class GroovyPageCompilerTask extends MatchingTask {
     String encoding
 
     boolean verbose
+
+    @Delegate GroovyPageCompiler compiler = new GroovyPageCompiler()
 
     /**
      * Adds a path to the classpath.
@@ -62,6 +65,19 @@ class GroovyPageCompilerTask extends MatchingTask {
         }
         return classpath.createPath()
     }
+
+    /**
+     * Adds a path to the classpath.
+     *
+     * @return a class path to be configured
+     */
+    Path createConfigs() {
+        if (configs == null) {
+            configs = new Path(getProject())
+        }
+        return configs.createPath()
+    }
+
 
     /**
      * Adds a reference to a classpath defined elsewhere.
@@ -80,6 +96,9 @@ class GroovyPageCompilerTask extends MatchingTask {
             compiler.compilerConfig = config
         }
 
+        if(configs) {
+            compiler.configs = configs.list()
+        }
         if (!destdir || !destdir.exists()) {
             throw new BuildException("destination [${destdir}] directory doesn't exist or is not set!", getLocation())
         }

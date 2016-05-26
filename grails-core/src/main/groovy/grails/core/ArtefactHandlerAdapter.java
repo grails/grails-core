@@ -103,7 +103,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.gro
     }
 
     protected boolean isValidArtefactClassNode(ClassNode classNode, int modifiers) {
-        return !classNode.isEnum() && !classNode.isInterface() && !Modifier.isAbstract(modifiers) && !(classNode instanceof InnerClassNode);
+        return !classNode.isEnum() && !classNode.isInterface() && !(classNode instanceof InnerClassNode);
     }
 
     /**

@@ -23,7 +23,6 @@ import grails.io.IOUtils;
 import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
-import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 import org.apache.commons.logging.Log;
@@ -38,6 +37,7 @@ import org.grails.gsp.compiler.GroovyPageParser;
 import org.grails.gsp.io.*;
 import org.grails.gsp.jsp.TagLibraryResolver;
 import org.grails.taglib.TagLibraryLookup;
+import org.grails.taglib.encoder.OutputEncodingSettings;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -96,6 +96,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     private TagLibraryLookup tagLibraryLookup;
     private TagLibraryResolver jspTagLibraryResolver;
     private boolean cacheResources = true;
+    private String gspEncoding = System.getProperty("file.encoding", GroovyPageParser.DEFAULT_ENCODING);
 
     private GrailsApplication grailsApplication;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
@@ -527,19 +528,12 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-        	String gspSource = IOUtils.toString(inputStream, GroovyPageParser.getGspEncoding());
+        	String gspSource = IOUtils.toString(inputStream, getGspEncoding());
             parser = new GroovyPageParser(name, path, path, decorateGroovyPageSource(new StringBuilder(gspSource)).toString());
 
             if (grailsApplication != null) {
                 Config config = grailsApplication.getConfig();
-
-                Object keepDirObj = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, Object.class);
-                if (keepDirObj instanceof File) {
-                    parser.setKeepGeneratedDirectory((File) keepDirObj);
-                }
-                else if (keepDirObj != null) {
-                    parser.setKeepGeneratedDirectory(new File(String.valueOf(keepDirObj)));
-                }
+                parser.configure(config);
             }
         }
         catch (IOException e) {
@@ -720,6 +714,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
             this.grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            Config config = grailsApplication.getConfig();
+            this.gspEncoding = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING, System.getProperty("file.encoding", GroovyPageParser.DEFAULT_ENCODING));
         }
     }
 
@@ -811,10 +807,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     public String getGspEncoding() {
-        Config config = Holders.getConfig();
-        if (config != null) {
-            return config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING, System.getProperty("file.encoding", "us-ascii"));
-        }
-        return System.getProperty("file.encoding", "us-ascii");
+        return this.gspEncoding;
     }
 }

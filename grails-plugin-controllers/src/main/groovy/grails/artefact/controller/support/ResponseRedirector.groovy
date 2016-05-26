@@ -25,6 +25,7 @@ import grails.web.mapping.UrlMappings
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
+import grails.web.mvc.FlashScope
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
@@ -124,7 +125,7 @@ trait ResponseRedirector implements WebAttributes {
      * @return The chainModel
      */
     Map getChainModel() {
-        (Map)getFlash().get("chainModel")
+        (Map)getFlash().get(FlashScope.CHAIN_MODEL)
     }
 
 

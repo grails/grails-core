@@ -15,13 +15,11 @@
  */
 package org.grails.gsp.compiler;
 
-import grails.config.Config;
-import grails.config.Settings;
+import grails.config.ConfigMap;
 import grails.io.IOUtils;
 import grails.plugins.GrailsPluginInfo;
 import grails.util.Environment;
 import grails.util.GrailsStringUtils;
-import grails.util.Holders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.buffer.FastStringWriter;
@@ -150,10 +148,10 @@ public class GroovyPageParser implements Tokens {
     private long lastModified;
     private boolean precompileMode;
     private boolean sitemeshPreprocessMode=false;
-    private String expressionCodecDirectiveValue;
-    private String outCodecDirectiveValue;
-    private String staticCodecDirectiveValue;
-    private String taglibCodecDirectiveValue;
+    private String expressionCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME);
+    private String outCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.OUT_CODEC_NAME);
+    private String staticCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.STATIC_CODEC_NAME);
+    private String taglibCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.TAGLIB_CODEC_NAME) ;
 
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
@@ -205,30 +203,12 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, String gspSource, String expressionCodecName) throws IOException {
-        Config config = Holders.getConfig();
-        if (config != null) {
-            setEnableSitemeshPreprocessing(config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean.class, enableSitemeshPreprocessing));
-        }
 
-        GrailsPluginInfo pluginInfo = null;
-//        TODO: figure out a way to restore plugin metadata for GSP
-//        if (filename != null && BuildSettingsHolder.getSettings() != null) {
-//            pluginInfo = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
-//            if (pluginInfo != null) {
-//                pluginAnnotation = "@GrailsPlugin(name='" + pluginInfo.getName() + "', version='" +
-//                    pluginInfo.getVersion() + "')";
-//            }
-//        }
-
-        OutputEncodingSettings gspConfig = new OutputEncodingSettings(config);
 
         this.expressionCodecDirectiveValue = expressionCodecName;
-        if (expressionCodecDirectiveValue==null) {
-            expressionCodecDirectiveValue = gspConfig.getCodecSettings(pluginInfo, OutputEncodingSettings.EXPRESSION_CODEC_NAME);
+        if (expressionCodecDirectiveValue == null) {
+            expressionCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME);
         }
-        staticCodecDirectiveValue = gspConfig.getCodecSettings(pluginInfo, OutputEncodingSettings.STATIC_CODEC_NAME);
-        outCodecDirectiveValue = gspConfig.getCodecSettings(pluginInfo, OutputEncodingSettings.OUT_CODEC_NAME);
-        taglibCodecDirectiveValue = gspConfig.getCodecSettings(pluginInfo, OutputEncodingSettings.TAGLIB_CODEC_NAME);
 
         Map<String, String> directives = parseDirectives(gspSource);
 
@@ -247,8 +227,47 @@ public class GroovyPageParser implements Tokens {
         makeSourceName(filename);
     }
 
+
+
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
         this(name, uri, filename, in, null, null);
+    }
+
+    /**
+     * Configures the parser for the given Config map
+     *
+     * @param config The config map
+     */
+    public void configure(ConfigMap config) {
+        setEnableSitemeshPreprocessing(
+                config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean.class, true)
+        );
+
+        setExpressionCodecDirectiveValue(
+                config.getProperty(OutputEncodingSettings.CONFIG_PROPERTY_GSP_CODECS + '.' + OutputEncodingSettings.EXPRESSION_CODEC_NAME, String.class,
+                        config.getProperty( OutputEncodingSettings.CONFIG_PROPERTY_DEFAULT_CODEC, String.class, OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME) ))
+        );
+
+        setStaticCodecDirectiveValue(
+                config.getProperty(OutputEncodingSettings.CONFIG_PROPERTY_GSP_CODECS + '.' + OutputEncodingSettings.STATIC_CODEC_NAME, String.class, OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.STATIC_CODEC_NAME ))
+        );
+
+        setTaglibCodecDirectiveValue(
+                config.getProperty(OutputEncodingSettings.CONFIG_PROPERTY_GSP_CODECS + '.' + OutputEncodingSettings.TAGLIB_CODEC_NAME, String.class, OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.TAGLIB_CODEC_NAME ))
+        );
+
+        setOutCodecDirectiveValue(
+                config.getProperty(OutputEncodingSettings.CONFIG_PROPERTY_GSP_CODECS + '.' + OutputEncodingSettings.OUT_CODEC_NAME, String.class, OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.OUT_CODEC_NAME ))
+        );
+
+        Object keepDirObj = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, Object.class);
+        if (keepDirObj instanceof File) {
+            setKeepGeneratedDirectory((File) keepDirObj);
+        }
+        else if (keepDirObj != null) {
+            setKeepGeneratedDirectory(new File(String.valueOf(keepDirObj)));
+        }
+
     }
 
     private Map<String, String> parseDirectives(String gspSource) {
@@ -1237,16 +1256,12 @@ public class GroovyPageParser implements Tokens {
 
     private static String readStream(InputStream in, String gspEncoding) throws IOException {
         if (gspEncoding == null) {
-        	gspEncoding  = getGspEncoding();
+        	gspEncoding  = DEFAULT_ENCODING;
         }
         return IOUtils.toString(in, gspEncoding);
     }
 
     public static String getGspEncoding(){
-        Config config = Holders.getConfig();
-        if(config != null) {
-            return config.getProperty(Settings.GSP_VIEW_ENCODING, DEFAULT_ENCODING);
-        }
         return DEFAULT_ENCODING;
     }
 
@@ -1368,4 +1383,18 @@ public class GroovyPageParser implements Tokens {
     public void setTaglibCodecDirectiveValue(String taglibCodecDirectiveValue) {
         this.taglibCodecDirectiveValue = taglibCodecDirectiveValue;
     }
+
+    public void setExpressionCodecDirectiveValue(String expressionCodecDirectiveValue) {
+        this.expressionCodecDirectiveValue = expressionCodecDirectiveValue;
+    }
+
+    public void setOutCodecDirectiveValue(String outCodecDirectiveValue) {
+        this.outCodecDirectiveValue = outCodecDirectiveValue;
+    }
+
+    public void setStaticCodecDirectiveValue(String staticCodecDirectiveValue) {
+        this.staticCodecDirectiveValue = staticCodecDirectiveValue;
+    }
+
+
 }

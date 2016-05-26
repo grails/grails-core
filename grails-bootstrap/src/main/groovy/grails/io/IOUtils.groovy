@@ -254,7 +254,6 @@ class IOUtils extends SpringIOUtils {
                 def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
                 if(rootPath.contains(buildClassespath)) {
                     return new File(rootPath - buildClassespath)
-
                 }
             } catch (FileNotFoundException fnfe) {
                 return null

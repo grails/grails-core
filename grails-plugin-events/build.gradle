@@ -5,5 +5,5 @@ dependencies {
         exclude module:'reactor-bus', group:'io.projectreactor'
     }
 
-    compile "io.projectreactor:reactor-bus:$reactorVersion"
+    compile "io.projectreactor:reactor-bus:$reactorCoreVersion"
 }

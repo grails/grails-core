@@ -65,6 +65,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
     public static final String GRAILS_SERVLET_PATH = "/grails";
     public static final String EXCEPTION_ATTRIBUTE = "exception";
+    public static final String ASYNC_REQUEST_URI_ATTRIBUTE = "javax.servlet.async.request_uri";
 
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
@@ -485,6 +486,25 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return request.getAttribute(FORWARD_REQUEST_URI_ATTRIBUTE) != null;
     }
 
+    /**
+     * Check whether the given request is a forward request
+     *
+     * @param request The request
+     * @return True if it is a forward request
+     */
+    public static boolean isAsync(HttpServletRequest request) {
+        return request.getAttribute(ASYNC_REQUEST_URI_ATTRIBUTE) != null;
+    }
+
+    /**
+     * Check whether the given request is a forward request
+     *
+     * @param request The request
+     * @return True if it is a forward request
+     */
+    public static boolean isError(HttpServletRequest request) {
+        return request.getAttribute(ERROR_STATUS_CODE_ATTRIBUTE) != null;
+    }
     /**
      * Check whether the given request is an include request
      *

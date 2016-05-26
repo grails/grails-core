@@ -19,6 +19,63 @@ import spock.lang.Specification
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
+    @Issue('https://github.com/grails/grails-core/issues/9849')
+    void "Test conflicting UrlMappings related to a resource mappings"() {
+        given:"A URL mappings definition with a single resource"
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/api/worksheet"(resources:"worksheet")
+            "/api/work"(resources:"work")
+        }
+
+        when:"The URLs are obtained"
+        def urlMappings = urlMappingsHolder.urlMappings
+
+        then:"There are correct of them in total"
+        urlMappings.size() == 16
+
+        expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
+        urlMappingsHolder.matchAll('/api/work', 'GET')
+        urlMappingsHolder.matchAll('/api/work', 'GET')[0].controllerName == 'work'
+
+        urlMappingsHolder.matchAll('/api/work.xml', 'GET')
+        urlMappingsHolder.matchAll('/api/work.xml', 'GET')[0].controllerName == 'work'
+        urlMappingsHolder.matchAll('/api/work.xml', 'GET')[0].parameters.format == 'xml'
+
+        urlMappingsHolder.matchAll('/api/worksheet', 'GET')
+        urlMappingsHolder.matchAll('/api/worksheet', 'GET')[0].controllerName == 'worksheet'
+
+        urlMappingsHolder.matchAll('/api/worksheet.xml', 'GET')
+        urlMappingsHolder.matchAll('/api/worksheet.xml', 'GET')[0].controllerName == 'worksheet'
+        urlMappingsHolder.matchAll('/api/worksheet.xml', 'GET')[0].parameters.format == 'xml'
+
+    }
+
+    @Issue('https://github.com/grails/grails-core/issues/9877')
+    void "Test conflicting UrlMappings with default url mapping"() {
+        given:"A URL mappings definition with a single resource"
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/$controller/$action?/$id?(.$format)?"{
+                constraints {
+                    // apply constraints here
+                }
+            }
+
+            "/foo"(resources: 'foo')
+        }
+
+        when:"The URLs are obtained"
+        def urlMappings = urlMappingsHolder.urlMappings
+
+        then:"There are correct of them in total"
+        urlMappings.size() == 9
+
+        expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
+        urlMappingsHolder.matchAll('/foo', 'GET')
+        urlMappingsHolder.matchAll('/foo', 'GET')[0].controllerName == 'foo'
+
+        urlMappingsHolder.matchAll('/fooBar', 'GET')[0].parameters.controller == 'fooBar'
+        urlMappingsHolder.matchAll('/fooWithAnythingAfterIt', 'GET')[0].parameters.controller == 'fooWithAnythingAfterIt'
+    }
 
     void "Test resource members"() {
         given:

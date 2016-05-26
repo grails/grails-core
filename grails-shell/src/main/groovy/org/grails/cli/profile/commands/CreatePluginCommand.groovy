@@ -18,6 +18,8 @@ package org.grails.cli.profile.commands
 
 import groovy.transform.CompileStatic
 import org.grails.build.parsing.CommandLine
+import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.Profile
 
 
 /**
@@ -48,5 +50,16 @@ class CreatePluginCommand extends CreateAppCommand {
     @Override
     protected String getDefaultProfile() { "web-plugin" }
 
+    @Override
+    protected boolean validateProfile(Profile profileInstance, String profileName, ExecutionContext executionContext) {
 
+        def pluginProfile = profileInstance.extends.find() { Profile parent -> parent.name == 'plugin' }
+        if(pluginProfile == null) {
+            executionContext.console.error("No valid plugin profile found for name [$profileName]")
+            return false
+        }
+        else {
+            return super.validateProfile(profileInstance, profileName, executionContext)
+        }
+    }
 }
