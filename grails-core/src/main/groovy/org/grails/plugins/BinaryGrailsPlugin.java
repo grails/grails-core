@@ -31,7 +31,9 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -49,6 +51,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     public static final String RELATIVE_VIEWS_PROPERTIES = "../gsp/views.properties";
     public static final char UNDERSCORE = '_';
     public static final String PROPERTIES_EXTENSION = ".properties";
+    public static final String DEFAULT_PROPERTIES_ENCODING = "UTF-8";
 
     private final BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts = {};
@@ -284,7 +287,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         for (Resource messageResource : resources) {
             InputStream inputStream = messageResource.getInputStream();
             try {
-                properties.load(inputStream);
+                properties.load(new InputStreamReader(inputStream, Charset.forName(System.getProperty("file.encoding", DEFAULT_PROPERTIES_ENCODING))));
             } finally {
                 try {
                     inputStream.close();
