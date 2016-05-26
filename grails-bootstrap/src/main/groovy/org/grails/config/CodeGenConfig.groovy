@@ -142,6 +142,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
         if(groovyConfig.exists()) {
             def envName = Environment.current.name
             def configSlurper = new ConfigSlurper(envName)
+            configSlurper.classLoader = new GroovyClassLoader(getClass().classLoader)
             def configObject = configSlurper.parse(groovyConfig.toURI().toURL())
             mergeMap(configObject, false)
         }
