@@ -177,8 +177,8 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                     }
                 }
             } else {
-                responseFormatsExpression.addExpression(new ConstantExpression("xml"))
                 responseFormatsExpression.addExpression(new ConstantExpression("json"))
+                responseFormatsExpression.addExpression(new ConstantExpression("xml"))
             }
 
             if (uriAttr != null) {
