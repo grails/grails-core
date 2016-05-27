@@ -38,6 +38,8 @@ import org.yaml.snakeyaml.Yaml
 class CodeGenConfig implements Cloneable, ConfigMap {
     final NavigableMap configMap
 
+    GroovyClassLoader groovyClassLoader = new GroovyClassLoader(CodeGenConfig.getClassLoader())
+
     CodeGenConfig() {
         configMap = new NavigableMap()
     }
@@ -142,6 +144,7 @@ class CodeGenConfig implements Cloneable, ConfigMap {
         if(groovyConfig.exists()) {
             def envName = Environment.current.name
             def configSlurper = new ConfigSlurper(envName)
+            configSlurper.classLoader = groovyClassLoader
             def configObject = configSlurper.parse(groovyConfig.toURI().toURL())
             mergeMap(configObject, false)
         }
