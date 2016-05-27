@@ -71,6 +71,7 @@ class GroovyPageCompiler {
 
             if(configs) {
                 def codeGenConfig = new CodeGenConfig()
+                codeGenConfig.classLoader = classLoader
                 configMap = codeGenConfig
                 for(path in configs) {
                     def f = new File(path)
