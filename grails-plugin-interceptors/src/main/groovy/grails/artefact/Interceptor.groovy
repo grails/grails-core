@@ -18,7 +18,6 @@ package grails.artefact
 import grails.artefact.controller.support.RequestForwarder
 import grails.artefact.controller.support.ResponseRedirector
 import grails.artefact.controller.support.ResponseRenderer
-import grails.core.GrailsApplication
 import grails.interceptors.Matcher
 import grails.util.GrailsNameUtils
 import grails.web.api.ServletAttributes
@@ -30,18 +29,13 @@ import org.grails.plugins.web.controllers.metaclass.RenderDynamicMethod
 import org.grails.plugins.web.interceptors.GrailsInterceptorHandlerInterceptorAdapter
 import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
 import org.grails.plugins.web.interceptors.UrlMappingMatcher
-import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
-import org.springframework.web.servlet.ViewResolver
-
-import javax.annotation.PostConstruct
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.ConcurrentLinkedQueue
