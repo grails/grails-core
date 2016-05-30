@@ -185,6 +185,10 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                 final uri = uriAttr.getText()
                 if(uri) {
                     final urlMappingsClassNode = new ClassNode(UrlMappings).getPlainNodeReference()
+
+                    final lazyInitField = new FieldNode('lazyInit', PUBLIC | STATIC | FINAL, ClassHelper.Boolean_TYPE,newControllerClassNode, new ConstantExpression(Boolean.FALSE))
+                    newControllerClassNode.addField(lazyInitField)
+
                     final urlMappingsField = new FieldNode('$urlMappings', PRIVATE, urlMappingsClassNode,newControllerClassNode, null)
                     newControllerClassNode.addField(urlMappingsField)
                     final urlMappingsSetterParam = new Parameter(urlMappingsClassNode, "um")
