@@ -40,6 +40,15 @@ interface Matcher {
     boolean doesMatch(String uri, UrlMappingInfo info)
 
     /**
+     * Perform the matches using the http method of the request instead of the UrlMappingInfo
+     * @param uri
+     * @param info
+     * @param method
+     * @return
+     */
+    boolean doesMatch(String uri, UrlMappingInfo info, String method)
+
+    /**
      * Defines the match for the given arguments
      *
      * @param arguments A named argument map including one or more of the controller name, action name, namespace and method

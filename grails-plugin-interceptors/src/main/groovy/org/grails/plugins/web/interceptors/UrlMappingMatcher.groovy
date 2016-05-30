@@ -57,6 +57,10 @@ class UrlMappingMatcher implements Matcher {
     }
 
     boolean doesMatch(String uri, UrlMappingInfo info) {
+        return doesMatch(uri, info, null)
+    }
+
+    boolean doesMatch(String uri, UrlMappingInfo info, String method) {
         boolean hasUriPatterns = !uriPatterns.isEmpty()
 
         boolean isExcluded = this.isExcluded(uri, info)
@@ -75,7 +79,7 @@ class UrlMappingMatcher implements Matcher {
                 Boolean matched = CACHED_MATCHES.get(infoCode)
                 if (matched != null) return matched
 
-                if (doesMatchInternal(info)) {
+                if (doesMatchInternal(info, method)) {
                     if (Environment.current == Environment.PRODUCTION) {
                         CACHED_MATCHES.put(infoCode, Boolean.TRUE)
                     }
@@ -100,12 +104,12 @@ class UrlMappingMatcher implements Matcher {
         false
     }
 
-    protected boolean doesMatchInternal(UrlMappingInfo info) {
+    protected boolean doesMatchInternal(UrlMappingInfo info, String method) {
         (info != null &&
             ((info.controllerName ?: '') ==~ controllerRegex) &&
             ((info.actionName ?: '') ==~ actionRegex) &&
             ((info.namespace ?: '') ==~ namespaceRegex) &&
-            ((info.httpMethod ?: '') ==~ methodRegex))
+            ((method  ?: info.httpMethod ?: '') ==~ methodRegex))
     }
 
     @Override
