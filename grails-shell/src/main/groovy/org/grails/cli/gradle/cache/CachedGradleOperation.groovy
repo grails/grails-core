@@ -72,6 +72,7 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
             dgc.embedded(true)
             def projectConnection = dgc.connect()
             try {
+                updateStatusMessage()
                 def data = SystemOutErrCapturer.withNullOutput {
                     readFromGradle(projectConnection)
                 }
@@ -84,6 +85,10 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
             DefaultGradleConnector.close()
             ConnectorServices.reset()
         }
+    }
+
+    void updateStatusMessage() {
+        // no-op
     }
 
     protected void storeData(T data) {

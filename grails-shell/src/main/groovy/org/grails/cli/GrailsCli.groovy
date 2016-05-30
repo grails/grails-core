@@ -521,6 +521,11 @@ class GrailsCli {
                 def dependencyMap = new MapReadingCachedGradleOperation<List<URL>>(projectContext, ".dependencies") {
 
                     @Override
+                    void updateStatusMessage() {
+                        GrailsConsole.instance.updateStatus("Resolving Dependencies. Please wait...")
+                    }
+
+                    @Override
                     List<URL> createMapValue(Object value) {
                         if(value instanceof List) {
                             return ((List)value).collect() { new URL(it.toString()) } as List<URL>
