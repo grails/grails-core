@@ -21,6 +21,9 @@ import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
@@ -156,6 +159,25 @@ class InterceptorSpec extends Specification {
         then:"We don't match"
         i.doesMatch()
     }
+
+    void "Test match with http method"() {
+        given:"A test interceptor"
+        def i = new TestMethodInterceptor()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), new MockHttpServletRequest(httpMethod, ""), new MockHttpServletResponse())
+        def request = webRequest.request
+
+        when:"The http method of the current request is ${httpMethod}"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", action: "save"))
+
+        then: "We match: ${shouldMatch}"
+        i.doesMatch() == shouldMatch
+
+        where:
+        httpMethod | shouldMatch
+        'POST'     | true
+        'GET'      | false
+    }
+
     void clearMatch(i, HttpServletRequest request) {
         request.removeAttribute(i.getClass().name + InterceptorArtefactHandler.MATCH_SUFFIX)
     }
@@ -196,5 +218,11 @@ class Test4Interceptor implements Interceptor {
     Test4Interceptor() {
         matchAll()
             .excludes(controller:"foo", action:"bar")
+    }
+}
+
+class TestMethodInterceptor implements Interceptor {
+    TestMethodInterceptor() {
+        match(method: 'POST')
     }
 }
