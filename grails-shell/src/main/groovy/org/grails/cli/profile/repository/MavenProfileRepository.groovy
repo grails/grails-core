@@ -20,6 +20,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.graph.Dependency
 import org.grails.cli.boot.GrailsDependencyVersions
 import org.grails.cli.profile.Profile
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
@@ -43,14 +44,15 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     List<RepositoryConfiguration> repositoryConfigurations
     AetherGrapeEngine grapeEngine
     GroovyClassLoader classLoader
+    DependencyResolutionContext resolutionContext
     private boolean resolved = false
 
     MavenProfileRepository(List<RepositoryConfiguration> repositoryConfigurations) {
         this.repositoryConfigurations = repositoryConfigurations
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader)
-        DependencyResolutionContext ctx = new DependencyResolutionContext()
-        this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, ctx)
-        ctx.addDependencyManagement(new GrailsDependencyVersions(grapeEngine))
+        resolutionContext = new DependencyResolutionContext()
+        this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, resolutionContext)
+        resolutionContext.addDependencyManagement(new GrailsDependencyVersions(grapeEngine))
     }
 
     MavenProfileRepository() {
@@ -111,11 +113,17 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
 
     @Override
     List<Profile> getAllProfiles() {
-
         if(!resolved) {
-            List<String> profileNames = ['angular', 'rest-api', 'base','plugin','web-plugin', 'web'].sort()
-            for(name in profileNames) {
-                grapeEngine.grab(group: 'org.grails.profiles', module: name, version: '')
+            List<Map> profiles = []
+            resolutionContext.managedDependencies.each { Dependency dep ->
+                if (dep.artifact.groupId == "org.grails.profiles") {
+                    profiles.add([group: dep.artifact.groupId, module: dep.artifact.artifactId])
+                }
+            }
+            profiles.sort { it.module }
+
+            for (Map profile in profiles) {
+                grapeEngine.grab(profile)
             }
 
             def localData = new File(System.getProperty("user.home"),"/.m2/repository/org/grails/profiles")
