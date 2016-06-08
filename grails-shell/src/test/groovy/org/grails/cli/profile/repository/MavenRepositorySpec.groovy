@@ -10,7 +10,7 @@ import spock.lang.Specification
  */
 class MavenRepositorySpec extends Specification {
 
-
+    @Ignore
     void "Test resolve profile"() {
         given:"A maven profile repository"
         def repo = new MavenProfileRepository()
