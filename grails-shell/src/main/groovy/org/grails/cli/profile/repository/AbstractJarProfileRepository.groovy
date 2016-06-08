@@ -69,7 +69,7 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
         }
 
         String groupId = "org.grails.profiles"
-        String version = ''
+        String version = null
 
         Map<String, Map> defaultValues = GrailsCli.getSetting("grails.profiles", Map, [:])
         defaultValues.remove("repositories")

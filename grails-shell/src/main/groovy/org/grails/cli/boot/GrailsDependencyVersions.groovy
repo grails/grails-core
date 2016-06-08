@@ -38,11 +38,11 @@ class GrailsDependencyVersions implements DependencyManagement {
     protected List<Dependency> dependencies = []
 
     GrailsDependencyVersions() {
-        this(defaultEngine)
+        this(getDefaultEngine())
     }
 
     GrailsDependencyVersions(Map<String, String> bomCoords) {
-        this(defaultEngine, bomCoords)
+        this(getDefaultEngine(), bomCoords)
     }
 
     GrailsDependencyVersions(GrapeEngine grape) {
@@ -53,7 +53,6 @@ class GrailsDependencyVersions implements DependencyManagement {
         def results = grape.resolve(null, bomCoords)
 
         for(URI u in results) {
-
             def pom = new XmlSlurper().parseText(u.toURL().text)
             addDependencyManagement(pom)
         }

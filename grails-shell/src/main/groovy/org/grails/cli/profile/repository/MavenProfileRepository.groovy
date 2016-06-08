@@ -74,7 +74,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         Artifact art = getProfileArtifact(profileName)
 
         try {
-            grapeEngine.grab(group: art.groupId, module: art.artifactId, version: art.version)
+            grapeEngine.grab(group: art.groupId, module: art.artifactId, version: art.version ?: null)
         } catch (DependencyResolutionFailedException e ) {
 
             def localData = new File(System.getProperty("user.home"),"/.m2/repository/${art.groupId.replace('.','/')}/$art.artifactId/maven-metadata-local.xml")
