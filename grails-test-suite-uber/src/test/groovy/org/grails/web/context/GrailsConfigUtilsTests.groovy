@@ -68,13 +68,4 @@ class EnvironmentSpecificBootStrap {
     def destroy = {}
 }
 
-class MyGrailsRuntimeConfigurator extends GrailsRuntimeConfigurator {
 
-    MyGrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent) {
-        super(application, parent)
-    }
-
-    MyGrailsRuntimeConfigurator(GrailsApplication application) {
-        super(application)
-    }
-}
