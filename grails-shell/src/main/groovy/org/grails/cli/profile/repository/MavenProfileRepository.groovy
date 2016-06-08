@@ -16,13 +16,10 @@
 
 package org.grails.cli.profile.repository
 
-import grails.build.logging.GrailsConsole
-import grails.util.BuildSettings
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.artifact.DefaultArtifact
-import org.eclipse.aether.resolution.VersionResolutionException
-import org.grails.cli.GrailsCli
 import org.grails.cli.boot.GrailsDependencyVersions
 import org.grails.cli.profile.Profile
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
@@ -73,27 +70,8 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         return super.getProfile(profileShortName)
     }
 
-    protected DefaultArtifact resolveProfileArtifact(String profileName) {
-        if (profileName.contains(':')) {
-            return new DefaultArtifact(profileName)
-        }
-
-        String groupId = "org.grails.profiles"
-        String version = ''
-
-        Map<String, Map> defaultValues = GrailsCli.getSetting("grails.profiles", Map, [:])
-        defaultValues.remove("repositories")
-        def data = defaultValues.get(profileName)
-        if(data instanceof Map) {
-            groupId = data.get("groupId")
-            version = data.get("version")
-        }
-
-        return new DefaultArtifact(groupId, profileName, null, version)
-    }
-
     protected Profile resolveProfile(String profileName) {
-        DefaultArtifact art = resolveProfileArtifact(profileName)
+        Artifact art = getProfileArtifact(profileName)
 
         try {
             grapeEngine.grab(group: art.groupId, module: art.artifactId, version: art.version)

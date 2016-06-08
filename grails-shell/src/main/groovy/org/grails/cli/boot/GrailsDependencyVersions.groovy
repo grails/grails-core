@@ -38,11 +38,11 @@ class GrailsDependencyVersions implements DependencyManagement {
     protected List<Dependency> dependencies = []
 
     GrailsDependencyVersions() {
-        this(Grape.getInstance())
+        this(defaultEngine)
     }
 
     GrailsDependencyVersions(Map<String, String> bomCoords) {
-        this(Grape.getInstance(), bomCoords)
+        this(defaultEngine, bomCoords)
     }
 
     GrailsDependencyVersions(GrapeEngine grape) {
@@ -50,7 +50,6 @@ class GrailsDependencyVersions implements DependencyManagement {
     }
 
     GrailsDependencyVersions(GrapeEngine grape, Map<String, String> bomCoords) {
-        grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"https://repo.grails.org/grails/core"])
         def results = grape.resolve(null, bomCoords)
 
         for(URI u in results) {
@@ -58,6 +57,12 @@ class GrailsDependencyVersions implements DependencyManagement {
             def pom = new XmlSlurper().parseText(u.toURL().text)
             addDependencyManagement(pom)
         }
+    }
+
+    GrapeEngine getDefaultEngine() {
+        def grape = Grape.getInstance()
+        grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"https://repo.grails.org/grails/core"])
+        grape
     }
 
     @CompileDynamic
