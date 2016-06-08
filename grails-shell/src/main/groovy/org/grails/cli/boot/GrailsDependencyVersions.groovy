@@ -16,6 +16,7 @@
 package org.grails.cli.boot
 
 import groovy.grape.Grape
+import groovy.grape.GrapeEngine
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
@@ -37,11 +38,18 @@ class GrailsDependencyVersions implements DependencyManagement {
     protected List<Dependency> dependencies = []
 
     GrailsDependencyVersions() {
-        this([group: "org.grails", module: "grails-bom", version: GrailsDependencyVersions.package.implementationVersion, type: "pom"])
+        this(Grape.getInstance())
     }
 
     GrailsDependencyVersions(Map<String, String> bomCoords) {
-        def grape = Grape.getInstance()
+        this(Grape.getInstance(), bomCoords)
+    }
+
+    GrailsDependencyVersions(GrapeEngine grape) {
+        this(grape, [group: "org.grails", module: "grails-bom", version: GrailsDependencyVersions.package.implementationVersion, type: "pom"])
+    }
+
+    GrailsDependencyVersions(GrapeEngine grape, Map<String, String> bomCoords) {
         grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"https://repo.grails.org/grails/core"])
         def results = grape.resolve(null, bomCoords)
 

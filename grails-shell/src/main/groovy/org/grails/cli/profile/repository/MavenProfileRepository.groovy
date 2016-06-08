@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.resolution.VersionResolutionException
 import org.grails.cli.GrailsCli
+import org.grails.cli.boot.GrailsDependencyVersions
 import org.grails.cli.profile.Profile
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngineFactory
@@ -50,13 +51,13 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     MavenProfileRepository(List<RepositoryConfiguration> repositoryConfigurations) {
         this.repositoryConfigurations = repositoryConfigurations
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader)
-        this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, new DependencyResolutionContext())
+        DependencyResolutionContext ctx = new DependencyResolutionContext()
+        this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, ctx)
+        ctx.addDependencyManagement(new GrailsDependencyVersions(grapeEngine))
     }
 
     MavenProfileRepository() {
-        this.repositoryConfigurations = [DEFAULT_REPO]
-        classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader)
-        this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, new DependencyResolutionContext())
+        this([DEFAULT_REPO])
     }
 
     @Override
@@ -77,9 +78,8 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
             return new DefaultArtifact(profileName)
         }
 
-        def artifactId = profileName
-        def groupId = "org.grails.profiles"
-        def version = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
+        String groupId = "org.grails.profiles"
+        String version = ''
 
         Map<String, Map> defaultValues = GrailsCli.getSetting("grails.profiles", Map, [:])
         defaultValues.remove("repositories")
@@ -89,7 +89,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
             version = data.get("version")
         }
 
-        return new DefaultArtifact("$groupId:$artifactId:$version")
+        return new DefaultArtifact(groupId, profileName, null, version)
     }
 
     protected Profile resolveProfile(String profileName) {
@@ -135,18 +135,9 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     List<Profile> getAllProfiles() {
 
         if(!resolved) {
-            def defaultProfileVersion = BuildSettings.isDevelopmentGrailsVersion() ? 'LATEST' : BuildSettings.grailsVersion
             List<String> profileNames = ['angular', 'rest-api', 'base','plugin','web-plugin', 'web'].sort()
-            def grailsConsole = GrailsConsole.instance
             for(name in profileNames) {
-                try {
-                    grapeEngine.grab(group: 'org.grails.profiles', module: name, version: defaultProfileVersion)
-                } catch (Throwable e) {
-
-                    grailsConsole.error("Failed to load latest version of profile [$name]. Trying Grails release version", e)
-                    grailsConsole.verbose(e.message)
-                    grapeEngine.grab(group: 'org.grails.profiles', module: name, version: BuildSettings.package.implementationVersion)
-                }
+                grapeEngine.grab(group: 'org.grails.profiles', module: name, version: '')
             }
 
             def localData = new File(System.getProperty("user.home"),"/.m2/repository/org/grails/profiles")
