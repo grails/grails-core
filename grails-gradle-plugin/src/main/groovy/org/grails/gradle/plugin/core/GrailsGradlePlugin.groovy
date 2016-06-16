@@ -449,7 +449,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
             if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
                 project.tasks.withType(JavaExec) { JavaExec task ->
-                    if (task.name in ['console', 'shell']) {
+                    if (task.name in ['console', 'shell'] || task instanceof ApplicationContextCommandTask) {
                         task.dependsOn(pathingJarCommand)
                         task.doFirst {
                             classpath = pathingClasspathCommand
@@ -459,13 +459,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                         task.doFirst {
                             classpath = pathingClasspath
                         }
-                    }
-                }
-
-                project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
-                    task.dependsOn(pathingJarCommand)
-                    task.doFirst {
-                        classpath = pathingClasspathCommand
                     }
                 }
             }
