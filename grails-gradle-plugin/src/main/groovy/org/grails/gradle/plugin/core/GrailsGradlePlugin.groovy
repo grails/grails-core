@@ -16,6 +16,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.CopySpec
+import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.AbstractCopyTask
@@ -434,18 +435,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
-            ConfigurationContainer configurations =  project.configurations
+            ConfigurationContainer configurations = project.configurations
             Configuration runtime = configurations.getByName('runtime')
             Configuration console = configurations.getByName('console')
 
-            final pathingJar = createPathingJarTask(project, "pathingJar", runtime)
-            final pathingClasspath = project.files("${project.buildDir}/classes/main",
+            Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
+            FileCollection pathingClasspath = project.files("${project.buildDir}/classes/main",
               "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath)
-            final pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
-            final pathingClasspathCommand = project.files("${project.buildDir}/classes/main",
+            Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
+            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/classes/main",
               "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath)
 
-            final grailsExt = project.extensions.getByType(GrailsExtension)
+            GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
 
             if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
                 project.tasks.withType(JavaExec) { JavaExec task ->
