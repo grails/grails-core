@@ -233,7 +233,7 @@ class SimpleDataBinder implements DataBinder {
                             if(converter) {
                                 bindProperty obj, source, metaProperty, converter.convert(source), listener, errors
                             } else {
-                                processProperty obj, metaProperty, preprocessValue(val), source, listener, errors
+                                processProperty obj, metaProperty, preprocessValue(metaProperty.type, val), source, listener, errors
                             }
                         } catch (Exception e) {
                             addBindingError(obj, propName, val, e, listener, errors)
@@ -472,7 +472,7 @@ class SimpleDataBinder implements DataBinder {
         def formattedConverter = formattedValueConversionHelpers[field.type]
         if (formattedConverter) {
             converter = { SimpleMapDataBindingSource source ->
-                def value = preprocessValue(source.getPropertyValue(field.name))
+                def value = preprocessValue(field.type, source.getPropertyValue(field.name))
                 def convertedValue = null
                 if(value != null) {
                     convertedValue = formattedConverter.convert (value, formattingValue)
@@ -578,8 +578,8 @@ class SimpleDataBinder implements DataBinder {
             enumClass.valueOf(value)
         } catch (IllegalArgumentException iae) {}
     }
-    
-    protected preprocessValue(propertyValue) {
+
+    protected preprocessValue(Class type, Object propertyValue) {
         propertyValue
     }
 
