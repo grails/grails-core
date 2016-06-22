@@ -1,4 +1,4 @@
-def tomcatVersion = '7.0.69'
+def tomcatVersion = '7.0.70'
 dependencies {
     compile("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
