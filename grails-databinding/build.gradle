@@ -1,4 +1,5 @@
 dependencies {
     compile "org.codehaus.groovy:groovy-xml:$groovyVersion"
+    compile project(":grails-core")
 }
 
