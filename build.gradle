@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'idea'
 
 ext {
-    grailsVersion = '2.5.5.BUILD-SNAPSHOT'
+    grailsVersion = '2.5.5'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -28,7 +28,7 @@ ext {
     datastoreVersion = "3.1.5.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.4"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.5"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
     jlineVersion = "2.12"
@@ -36,9 +36,9 @@ ext {
     slf4jVersion = "1.7.5"
 
     spockVersion = '1.0-groovy-2.4'
-    springLoadedVersion = "1.2.4.RELEASE"
+    springLoadedVersion = "1.2.5.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.1.8.RELEASE" // ensure to sync "aspectjVersion" (see commend above)
+    springVersion = "4.1.9.RELEASE" // ensure to sync "aspectjVersion" (see commend above)
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4"
