@@ -77,9 +77,9 @@ class DateConversionHelperSpec extends Specification {
         def helper = new DateConversionHelper()
 
         when:
-        helper.convert ''
+        def date = helper.convert ''
 
         then:
-        thrown ParseException
+        date == null
     }
 }

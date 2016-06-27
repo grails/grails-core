@@ -15,7 +15,8 @@
  */
 package org.grails.databinding.converters
 
-import grails.databinding.converters.ValueConverter;
+import grails.databinding.converters.ValueConverter
+import grails.util.GrailsStringUtils
 import groovy.transform.CompileStatic
 
 import java.text.SimpleDateFormat
@@ -37,6 +38,9 @@ class DateConversionHelper implements ValueConverter {
     Object convert(value) {
         Date dateValue
         if (value instanceof String) {
+            if (GrailsStringUtils.isBlank(value)) {
+                return null
+            }
             def firstException
             formatStrings.each { String format ->
                 if (dateValue == null) {
