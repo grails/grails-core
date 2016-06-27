@@ -130,7 +130,11 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
         // @WebAppConfiguration
         // @IntegrationTest
         if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-            classNode.addAnnotation(new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE))
+            if( classNode.getAnnotations(WEB_INTEGRATION_TEST_CLASS_NODE).isEmpty() ) {
+                def webIntegrationTestAnnotation = new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE)
+                webIntegrationTestAnnotation.addMember("randomPort", new ConstantExpression(Boolean.TRUE))
+                classNode.addAnnotation(webIntegrationTestAnnotation)
+            }
         } else {
             classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
         }
