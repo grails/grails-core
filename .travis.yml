@@ -3,6 +3,10 @@ sudo: false
 jdk:
 - oraclejdk7
 env:
+  matrix:
+  - GRADLE_FLAGS="--stacktrace " GRADLE_CMD="test -x grails-test-suite-web:test"
+  - GRADLE_FLAGS="--stacktrace" GRADLE_CMD="grails-test-suite-web:test"
+  - GRADLE_FLAGS="--stacktrace --info" GRADLE_CMD="integrationTest"
   global:
   - TERM=dumb
   - MALLOC_ARENA_MAX=1
@@ -26,9 +30,18 @@ env:
   - secure: Frvf9gLJ/pfy3SWMm9LXdprO/snMFfDO9pTd1bl2GN3QBmkF40G20NzoFI6jbYeyg+gwJQmnC6NVi/KDAkJ/EBO05Xk/qMKwWWsASgdDzdnUNTynFPH0zcnv64d6qZAaLWeH/gWQPZ+99zmbVzFqSNDggEo+cPBm9QjqJ608Yx4=
   - secure: JM8mzEz6+UtRnG68vbitVoPzcrSHbEIa0z7Nfhu3RKMDOmQgfGNIF+ZDZPAa/tYpNBTJWKjeIJc8opCfd1p1+s6ISc7B29ymulQ3ztwFWcetunrSmxl8H96aqzjc+82DO6huj4Tzi0u2MADnh9wVm+A1+tcqLjpaLGmskMlvdbw=
   - secure: ICWgIGwHFH37nlY9k094qnnKy0tW2XDSOtGsvHb65AxsPsXB1zqj7Qd76Fboo1xFGQGpg+S6AHekY6Ch1prNOpkpPHw35UaQzaRqUxFUhfZYiD0rlmvzKrvKTesrFLy4LJwrTzGCQrViYgqfHvCeQ3r53wWff6nu8uFmMOPmGNY=
-script: ./travis-build.sh
 install: /bin/true
-after_failure: ./travis-after-failure.sh
+script:
+- ./travis-build.sh
+after_success:
+- python ./travis/travis_after_all.py
+- export $(cat .to_export_back)
+- ./travis-publish-archives.sh
+- ./trigger-dependent-build.sh
+after_failure:
+- python ./travis/travis_after_all.py
+- export $(cat .to_export_back)
+- ./travis-after-failure.sh
 deploy:
   provider: releases
   api_key:
@@ -41,8 +54,6 @@ deploy:
     all_branches: true
 after_deploy:
 - ./gradlew sdkMajorRelease
-after_success:
-- ./trigger-dependent-build.sh
 cache:
   directories:
   - $HOME/.gradle
