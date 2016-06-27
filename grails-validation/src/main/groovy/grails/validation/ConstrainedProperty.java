@@ -1056,10 +1056,7 @@ public class ConstrainedProperty implements Constrained {
         for (Object constraintFactory : candidateConstraints) {
 
             Constraint c;
-            if(constraintFactory instanceof org.codehaus.groovy.grails.validation.ConstraintFactory) {
-                c = ((org.codehaus.groovy.grails.validation.ConstraintFactory)constraintFactory).newInstance();
-            }
-            else if (constraintFactory instanceof ConstraintFactory) {
+            if (constraintFactory instanceof ConstraintFactory) {
                 c = ((ConstraintFactory)constraintFactory).newInstance();
             }
             else {

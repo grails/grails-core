@@ -62,7 +62,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
     }
 
     /**
-     * @see org.codehaus.groovy.grails.validation.CascadingValidator#validate(Object, org.springframework.validation.Errors, boolean)
+     * @see CascadingValidator#validate(Object, org.springframework.validation.Errors, boolean)
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void validate(Object obj, Errors errors, boolean cascade) {
