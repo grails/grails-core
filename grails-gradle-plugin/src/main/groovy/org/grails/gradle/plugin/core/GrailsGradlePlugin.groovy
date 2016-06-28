@@ -156,7 +156,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected Task createBuildPropertiesTask(Project project) {
-        def buildInfoFile = project.file("${project.buildDir}/grails.build.info")
+
+        def resourcesDir = SourceSets.findMainSourceSet(project).output.resourcesDir
+        def buildInfoFile = new File(resourcesDir, "META-INF/grails.build.info")
+
 
         def buildPropertiesTask = project.tasks.create("buildProperties")
         def buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
@@ -168,6 +171,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         buildPropertiesTask.outputs.file(buildInfoFile)
         buildPropertiesTask << {
             project.buildDir.mkdirs()
+            ant.mkdir(dir:buildInfoFile.parentFile)
             ant.propertyfile(file: buildInfoFile) {
                 for(me in buildPropertiesTask.inputs.properties) {
                     entry key: me.key, value: me.value
@@ -176,12 +180,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
 
         project.afterEvaluate {
-            project.tasks.withType(Jar) { Jar jar ->
-                jar.dependsOn(buildPropertiesTask)
-                jar.metaInf {
-                    from(buildInfoFile)
-                }
-            }
+            TaskContainer tasks = project.tasks
+            tasks.findByName("processResources")?.dependsOn(buildPropertiesTask)
         }
     }
 
