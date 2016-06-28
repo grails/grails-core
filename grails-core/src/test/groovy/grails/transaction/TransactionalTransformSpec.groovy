@@ -590,9 +590,9 @@ new BookService()
         and: "A transactional method throw RuntimeException"
         bookService.throwException()
 
-        then: "The transaction wasn't rolled back"
+        then: "The transaction was rolled back"
         thrown(TestTransactionException)
-        transactionManager.transactionRolledBack == false
+        transactionManager.transactionRolledBack == true
     }
 
     @Issue("GRAILS-10564")
