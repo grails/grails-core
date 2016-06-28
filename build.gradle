@@ -479,11 +479,6 @@ tciTrigger {
     gitHubRepo 'grails/grails3-functional-tests'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.13'
-    jarFile = 'gradle/wrapper/gradle-wrapper.jar'
-}
-
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
     configurations = project.buildscript.configurations
 }
