@@ -30,7 +30,9 @@ import spock.lang.Specification
 class SpringEventTranslatorSpec extends Specification {
 
     void "Test event translator translates Spring events"() {
-        given:"A translator"
+        setup:
+        def env = Environment.initialize()
+
 
         def eventBus = Mock(EventBus)
         def translator = new SpringEventTranslator(eventBus: eventBus)
@@ -42,6 +44,9 @@ class SpringEventTranslatorSpec extends Specification {
 
         then:"The event bus is notified"
         1 * eventBus.notify("spring:contextStarted", _)
+
+        cleanup:
+        env.close()
     }
 
 }
