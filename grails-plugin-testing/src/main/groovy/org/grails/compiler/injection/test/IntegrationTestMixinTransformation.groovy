@@ -134,6 +134,16 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
                 def webIntegrationTestAnnotation = new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE)
                 webIntegrationTestAnnotation.addMember("randomPort", new ConstantExpression(Boolean.TRUE))
                 classNode.addAnnotation(webIntegrationTestAnnotation)
+
+                if(classNode.getProperty("serverPort") == null) {
+
+                    def serverPortField = new FieldNode("serverPort", Modifier.PROTECTED, ClassHelper.Integer_TYPE, classNode, new ConstantExpression(8080))
+                    def valueAnnotation = new AnnotationNode(ClassHelper.make(Value))
+                    valueAnnotation.setMember("value", new ConstantExpression('${local.server.port}'))
+                    serverPortField.addAnnotation(valueAnnotation)
+
+                    classNode.addProperty(new PropertyNode(serverPortField, Modifier.PUBLIC, null, null ))
+                }
             }
         } else {
             classNode.addAnnotation(new AnnotationNode(INTEGRATION_TEST_CLASS_NODE))
@@ -166,7 +176,7 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             args.addExpression(new ConstantExpression("geb.build.baseUrl"))
             args.addExpression(new GStringExpression('http://localhost:${port}', [new ConstantExpression("http://localhost:"), new ConstantExpression("")], [new VariableExpression(param)] as List<Expression>))
             setterBody.addStatement(new ExpressionStatement(new MethodCallExpression(systemClassExpression, "setProperty", args)))
-            def method = new MethodNode("setPort", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [param] as Parameter[], null, setterBody)
+            def method = new MethodNode("setGebPort", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [param] as Parameter[], null, setterBody)
             def valueAnnotation = new AnnotationNode(ClassHelper.make(Value))
             valueAnnotation.setMember("value", new ConstantExpression('${local.server.port}'))
             method.addAnnotation(valueAnnotation)
