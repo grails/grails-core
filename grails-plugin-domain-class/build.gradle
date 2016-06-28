@@ -5,6 +5,9 @@ dependencies {
     provided project(":grails-async")
 
     // Datastore APIs
+    compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
+        exclude group: 'org.grails', module:'grails-datastore-core'
+    }
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
         exclude group: 'org.grails', module:'grails-datastore-core'
