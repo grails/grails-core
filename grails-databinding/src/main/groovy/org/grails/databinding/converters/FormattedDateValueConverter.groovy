@@ -31,9 +31,17 @@ class FormattedDateValueConverter implements FormattedValueConverter {
         if(value instanceof Date) {
             return value
         }
-        def fmt = new SimpleDateFormat(format)
-        fmt.lenient = false
-        fmt.parse((String) value)
+        else if(value instanceof CharSequence) {
+            String dateStr = value.toString()
+            if(!dateStr) {
+                return null
+            }
+            else {
+                def fmt = new SimpleDateFormat(format)
+                fmt.lenient = false
+                fmt.parse((String) value)
+            }
+        }
     }
 
     Class<?> getTargetType() {

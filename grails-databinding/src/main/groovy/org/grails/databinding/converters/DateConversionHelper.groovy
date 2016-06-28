@@ -37,6 +37,9 @@ class DateConversionHelper implements ValueConverter {
     Object convert(value) {
         Date dateValue
         if (value instanceof String) {
+            if(!value) {
+                return null
+            }
             def firstException
             formatStrings.each { String format ->
                 if (dateValue == null) {
