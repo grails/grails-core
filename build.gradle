@@ -35,7 +35,7 @@ ext {
     datastoreVersion = "6.0.0.BUILD-SNAPSHOT"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.6"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.7"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
     jlineVersion = "2.12"
@@ -477,11 +477,6 @@ apply plugin: "com.github.adrianbk.tcitrigger"
 
 tciTrigger {
     gitHubRepo 'grails/grails3-functional-tests'
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.13'
-    jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
 
 task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {

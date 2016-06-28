@@ -18,7 +18,7 @@ package org.grails.cli.profile.git
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
-
+import org.eclipse.aether.artifact.Artifact
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.ResetCommand.ResetType
 import org.grails.cli.profile.*
@@ -38,6 +38,7 @@ import org.grails.io.support.Resource
 @CompileStatic
 @Deprecated
 class GitProfileRepository implements ProfileRepository {
+
     File profilesDirectory = new File(new File(System.getProperty("user.home")), ".grails/repository")
     String originUri = "https://github.com/grails/grails-profile-repository"
     String gitBranch = 'master'
@@ -149,4 +150,7 @@ class GitProfileRepository implements ProfileRepository {
         }
     }
 
+    Artifact getProfileArtifact(String profileName) {
+        throw new UnsupportedOperationException()
+    }
 }

@@ -235,7 +235,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             "    maven { url \"${url}\" }".toString()
         }.unique().join(ln)
 
-        def profileDependencies = profile.dependencies
+        List<Dependency> profileDependencies = profile.dependencies
         def dependencies = profileDependencies.findAll() { Dependency dep ->
             dep.scope != 'build'
         }
@@ -249,17 +249,8 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             buildDependencies.addAll f.dependencies.findAll(){ Dependency dep -> dep.scope == 'build'}
         }
 
-        if(profileCoords.contains(':')) {
-            def art = new DefaultArtifact(profileCoords)
-            def version = art.version ?: BuildSettings.grailsVersion
-            if(version == 'LATEST') version = profile.getVersion()
-            def finalArt = new DefaultArtifact(art.groupId ?: 'org.grails.profiles', art.artifactId, '', version)
-            dependencies.add(new Dependency(finalArt, "profile"))
-        }
-        else {
-            def art = new DefaultArtifact('org.grails.profiles', profile.name, '', profile.version)
-            dependencies.add(new Dependency(art, "profile"))
-        }
+        dependencies.add(new Dependency(profileRepository.getProfileArtifact(profileCoords), "profile"))
+
         dependencies = dependencies.unique()
 
         dependencies = dependencies.sort({ Dependency dep -> dep.scope }).collect() { Dependency dep ->

@@ -58,6 +58,9 @@ publishing {
                 def plugins = new Properties()
                 plugins.load(new StringReader(new File("$projectDir/plugins.properties").text))
 
+                def profiles = new Properties()
+                profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
+
                 xml.children().last() + {
                     def mkp = delegate
                     mkp.name "Grails BOM"
@@ -163,6 +166,14 @@ publishing {
                                     mkp.groupId 'org.grails.plugins'
                                     mkp.artifactId plugin.key
                                     mkp.version( plugin.value )
+                                }
+                            }
+
+                            for(profile in profiles) {
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails.profiles'
+                                    mkp.artifactId profile.key
+                                    mkp.version( profile.value )
                                 }
                             }
                         }

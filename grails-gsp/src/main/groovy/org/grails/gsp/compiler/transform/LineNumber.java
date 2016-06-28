@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ ElementType.TYPE })
-@GroovyASTTransformationClass({"LineNumberTransform"})
+@GroovyASTTransformationClass({"org.grails.gsp.compiler.transform.LineNumberTransform"})
 public @interface LineNumber {
     int[] lines();
     String sourceName();
