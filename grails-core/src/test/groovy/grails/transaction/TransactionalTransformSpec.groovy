@@ -21,10 +21,46 @@ import spock.lang.Specification
 
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
+import java.lang.reflect.Field
 
 /**
  */
 class TransactionalTransformSpec extends Specification {
+
+    @Issue('https://github.com/grails/grails-core/issues/9989')
+    void "Test transactional transform when applied to inheritance"() {
+        when: "A subclass subclasses a transactional service"
+        Class dogService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+
+    @Transactional
+    class MammalService {
+
+        def sound() {
+            "unknown"
+        }
+    }
+
+    @Transactional
+    class DogService extends MammalService {
+
+        @Override
+        def sound() {
+            "bark"
+        }
+
+    }
+
+    DogService
+    ''')
+
+        def field = ReflectionUtils.findField(dogService, '$transactionManager')
+
+        then: "It implements TransactionManagerAware"
+        TransactionManagerAware.isAssignableFrom(dogService)
+        field.declaringClass.name == 'MammalService'
+
+    }
 
     @Issue('https://github.com/grails/grails-core/issues/9837')
     void "Test @Rollback when applied to Spock specifications with closures combined with where queries"() {

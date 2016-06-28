@@ -77,7 +77,9 @@ class ControllersGrailsPlugin extends Plugin {
         String filtersEncoding = config.getProperty(Settings.FILTER_ENCODING, 'utf-8')
         boolean filtersForceEncoding = config.getProperty(Settings.FILTER_FORCE_ENCODING, Boolean, false)
         boolean dbConsoleEnabled = config.getProperty(Settings.DBCONSOLE_ENABLED, Boolean, Environment.current == Environment.DEVELOPMENT)
-        String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, Settings.DEFAULT_WEB_SERVLET_PATH)
+
+        boolean isTomcat = ClassUtils.isPresent("org.apache.catalina.startup.Tomcat", application.classLoader)
+        String grailsServletPath = config.getProperty(Settings.WEB_SERVLET_PATH, isTomcat ? Settings.DEFAULT_TOMCAT_SERVLET_PATH : Settings.DEFAULT_WEB_SERVLET_PATH)
         int resourcesCachePeriod = config.getProperty(Settings.RESOURCES_CACHE_PERIOD, Integer, 0)
         boolean resourcesEnabled = config.getProperty(Settings.RESOURCES_ENABLED, Boolean, true)
         String resourcesPattern = config.getProperty(Settings.RESOURCES_PATTERN, String, Settings.DEFAULT_RESOURCE_PATTERN)

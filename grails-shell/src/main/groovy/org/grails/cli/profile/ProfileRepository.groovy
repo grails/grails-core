@@ -1,5 +1,6 @@
 package org.grails.cli.profile
 
+import org.eclipse.aether.artifact.Artifact
 import org.grails.io.support.Resource
 
 /*
@@ -57,4 +58,9 @@ interface ProfileRepository {
      * @return All the available profiles in the repository
      */
     List<Profile> getAllProfiles()
+
+    /**
+     * @return The {@link Artifact} that resolves to the profile
+     */
+    Artifact getProfileArtifact(String profileName)
 }
