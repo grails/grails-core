@@ -39,6 +39,7 @@ target ('default': "Generates a CRUD interface (controller + views) for a domain
         }
         else {
             generateForName = name
+            generateForControllerName = argsMap["params"][1]
             generateForOne()
         }
     }

@@ -30,5 +30,6 @@ target ('default': "Generates the CRUD views for a specified domain class") {
     promptForName(type: "Domain Class")
     generateController = false
     generateForName = argsMap["params"][0]
+    generateForControllerName = argsMap["params"][1]
     generateForOne()
 }
