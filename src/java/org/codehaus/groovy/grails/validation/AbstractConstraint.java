@@ -79,6 +79,10 @@ public abstract class AbstractConstraint implements Constraint {
         this.constraintParameter = constraintParameter;
     }
 
+    public Object getParameter() {
+        return this.constraintParameter;
+    }
+
     protected void checkState() {
         Assert.hasLength(constraintPropertyName, "Property 'propertyName' must be set on the constraint");
         Assert.notNull(constraintOwningClass, "Property 'owningClass' must be set on the constraint");
