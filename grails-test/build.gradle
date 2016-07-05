@@ -2,6 +2,7 @@ dependencies {
 
     compile "org.springframework:spring-tx:${springVersion}"
 
+    compile "org.springframework.boot:spring-boot-test:$springBootVersion"
     // Testing
     compile "org.codehaus.groovy:groovy-test:$groovyVersion", {
         transitive = false
@@ -12,6 +13,8 @@ dependencies {
     compile "junit:junit:${junitVersion}", {
         exclude group:'org.hamcrest', module: 'hamcrest-core'
     }
+
+
     compile("org.spockframework:spock-core:${spockVersion}") {
         transitive = false
         exclude group:'junit', module: 'junit-dep'

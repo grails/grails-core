@@ -29,7 +29,7 @@ package org.grails.test.context.junit4;/*
  * limitations under the License.
  */
 
-import grails.boot.config.GrailsApplicationContextLoader;
+import grails.boot.test.GrailsApplicationContextLoader;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;

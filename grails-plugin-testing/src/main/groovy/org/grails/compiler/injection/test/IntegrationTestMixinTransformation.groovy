@@ -1,5 +1,5 @@
 package org.grails.compiler.injection.test
-import grails.boot.config.GrailsApplicationContextLoader
+import grails.boot.test.GrailsApplicationContextLoader
 import grails.boot.config.GrailsAutoConfiguration
 import grails.test.mixin.integration.Integration
 import groovy.transform.CompileStatic

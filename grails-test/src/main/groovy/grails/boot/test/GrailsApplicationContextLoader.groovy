@@ -1,8 +1,9 @@
-package grails.boot.config
+package grails.boot.test
 
 import grails.boot.GrailsApp
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.test.SpringApplicationContextLoader
+import org.springframework.boot.test.context.SpringBootContextLoader
 
 /*
  * Copyright 2014 original authors
@@ -21,12 +22,12 @@ import org.springframework.boot.test.SpringApplicationContextLoader
  */
 
 /**
- * Extends Spring Boot's {@link SpringApplicationContextLoader} with a version for Grails
+ * Extends Spring Boot's {@link SpringBootContextLoader} with a version for Grails
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-class GrailsApplicationContextLoader extends SpringApplicationContextLoader {
+class GrailsApplicationContextLoader extends SpringBootContextLoader {
 
     @Override
     protected SpringApplication getSpringApplication() {
