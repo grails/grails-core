@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
+import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.text.Template;
@@ -27,8 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,6 +50,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.ExceptionUtils;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
@@ -119,6 +123,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
     private ServletContext servletContext;
 
+    private List<GroovyPageSourceDecorator> groovyPageSourceDecorators = new ArrayList();
+
     static {
         String dirPath = System.getProperty("grails.dump.gsp.line.numbers.to.dir");
         if (dirPath != null) {
@@ -180,6 +186,14 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     @Deprecated
     public GroovyPagesTemplateEngine(ServletContext servletContext) {
         this.servletContext = servletContext;
+    }
+
+    public void setGroovyPageSourceDecorators(List<GroovyPageSourceDecorator> groovyPageSourceDecorators){
+    	this.groovyPageSourceDecorators = groovyPageSourceDecorators;
+    }
+
+    public List<GroovyPageSourceDecorator> getGroovyPageSourceDecorators(){
+    	return groovyPageSourceDecorators;
     }
 
     public void setGroovyPageLocator(GroovyPageLocator groovyPageLocator) {
@@ -482,6 +496,13 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             inputStream.close();
         }
     }
+    
+    private StringBuilder decorateGroovyPageSource(StringBuilder source) throws IOException {
+    	for(GroovyPageSourceDecorator groovyPageSourceDecorator : groovyPageSourceDecorators){
+    		source = groovyPageSourceDecorator.decorate(source);
+    	}
+    	return source;
+    }
 
     /**
      * Establishes whether a Groovy page is reloadable. A GSP is only reloadable in the development environment.
@@ -553,7 +574,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-            parser = new GroovyPageParser(name, path, path, inputStream, null, null);
+        	String gspSource = GrailsIOUtils.toString(inputStream, GroovyPageParser.getGspEncoding());
+            parser = new GroovyPageParser(name, path, path, decorateGroovyPageSource(new StringBuilder(gspSource)).toString());
 
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
@@ -861,5 +883,16 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         if(beanClassLoader != null && this.classLoader == null) {
             this.classLoader = beanClassLoader;
         }
+    }
+
+    public String getGspEncoding() {
+    	Map<?, ?> config = Holders.getFlatConfig();
+        if (config != null) {
+            Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
+            if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                return gspEnc.toString();
+            }
+        }
+        return System.getProperty("file.encoding", "us-ascii");
     }
 }
