@@ -22,7 +22,7 @@ class Uniqueable {
     String word = "something"
 
     static constraints = {
-        word validator: onlyOneSomething
+        word validator: Uniqueable.onlyOneSomething
     }
 
     static onlyOneSomething = { value, obj ->
