@@ -1368,11 +1368,11 @@ public final class GrailsDomainBinder {
     public static Mapping getMapping(GrailsDomainClass domainClass) {
         return domainClass == null ? null : MAPPING_CACHE.get(domainClass.getClazz());
     }
-    
+
     public static void clearMappingCache() {
         MAPPING_CACHE.clear();
     }
-    
+
     public static void clearMappingCache(Class<?> theClass) {
         String className = theClass.getName();
         for(Iterator<Map.Entry<Class<?>, Mapping>> it = MAPPING_CACHE.entrySet().iterator(); it.hasNext();) {
@@ -1807,7 +1807,14 @@ public final class GrailsDomainBinder {
 
             Class<?> userType = getUserType(currentGrailsProp);
 
-            if (collectionType != null) {
+            if (userType != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[GrailsDomainBinder] Binding property [" + currentGrailsProp.getName() + "] as SimpleValue");
+                }
+                value = new SimpleValue(mappings, table);
+                bindSimpleValue(currentGrailsProp, null, (SimpleValue) value, EMPTY_PATH, mappings, sessionFactoryBeanName);
+            }
+            else if (collectionType != null) {
                 String typeName = getTypeName(currentGrailsProp, getPropertyConfig(currentGrailsProp),gormMapping);
                 if ("serializable".equals(typeName)) {
                     value = new SimpleValue(mappings, table);
