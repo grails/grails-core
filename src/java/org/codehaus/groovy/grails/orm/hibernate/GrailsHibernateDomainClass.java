@@ -285,4 +285,8 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     public Map getAssociationMap() {
         return Collections.emptyMap();
     }
+    
+    public void setIdentifier(GrailsDomainClassProperty identifier) {
+        this.identifier = (GrailsHibernateDomainClassProperty) identifier;
+    }
 }

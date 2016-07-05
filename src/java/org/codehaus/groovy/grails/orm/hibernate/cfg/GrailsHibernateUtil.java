@@ -216,12 +216,7 @@ public class GrailsHibernateUtil {
         else {
             Mapping m = GrailsDomainBinder.getMapping(targetClass);
             if (m != null && !StringUtils.isBlank(m.getSort())) {
-                if (ORDER_DESC.equalsIgnoreCase(m.getOrder())) {
-                    c.addOrder(Order.desc(m.getSort()));
-                }
-                else {
-                    c.addOrder(Order.asc(m.getSort()));
-                }
+                addOrderPossiblyNested(c, targetClass, m.getSort(), m.getOrder(), true);
             }
         }
     }

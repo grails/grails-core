@@ -30,4 +30,10 @@ class IdentityNameMapping {
 
         assertNotNull "Persistent instance with named and assigned identifier should have been saved", testClass.get("John")
     }
+    
+    void testMetaData() {
+        def domainClass = ga.getDomainClass("IdentityNameMapping")
+        assertEquals "Persistent instance with named identifier should have correct id metadata", "test", domainClass.identifier.name
+    }
+        
 }

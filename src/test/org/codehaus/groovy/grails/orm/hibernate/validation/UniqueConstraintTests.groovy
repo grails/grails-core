@@ -260,6 +260,18 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
         link.validate()
         assertTrue link.hasErrors()
     }
+    
+    void testFailingUniqueConstraintWithNamedIdentityMapping() {
+        def userClass = ga.getDomainClass("IdentityMappedUser").clazz
+
+        def user1 = userClass.newInstance()
+        user1.name = "Erling"
+        user1.save(true)
+        
+        user1 = userClass.get(user1.namedId)
+        user1.validate() 
+        assertFalse "unique constraint should not fail when using identity name mapping (GRAILS-6931)", user1.hasErrors()
+    } 
 
 
     void onSetUp() {
@@ -291,6 +303,19 @@ class LinkedUser {
 
     static constraints = {
         user2(unique:'user1')
+    }
+}
+
+@Entity
+class IdentityMappedUser {
+    long namedId
+    String name
+
+    static mapping = {
+        id name:'namedId'
+    }
+    static constraints = {
+        name(unique:true)
     }
 }
 '''
