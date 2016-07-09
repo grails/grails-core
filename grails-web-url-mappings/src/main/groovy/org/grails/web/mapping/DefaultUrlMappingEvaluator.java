@@ -21,6 +21,7 @@ import grails.core.support.ClassLoaderAware;
 import grails.io.IOUtils;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
+import grails.util.GrailsUtil;
 import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
@@ -85,6 +86,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
     private static final String EXCEPTION = "exception";
     private static final String PARSE_REQUEST = "parseRequest";
+    private static final String SINGLE = "single";
     private static final String RESOURCE = "resource";
     private static final String RESOURCES = "resources";
 
@@ -650,8 +652,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                             UrlMappingData urlData = createUrlMappingData(uri, isResponseCode);
 
-                            if (namedArguments.containsKey(RESOURCE)) {
-                                Object controller = namedArguments.get(RESOURCE);
+                            if (namedArguments.containsKey(RESOURCE) || namedArguments.containsKey(SINGLE)) {
+                                Object controller;
+                                if (namedArguments.containsKey(RESOURCE)) {
+                                    GrailsUtil.deprecated("The ${RESOURCE} syntax is deprecated and will be removed in a future release. Use ${SINGLE} instead.");
+                                    controller = namedArguments.get(RESOURCE);
+                                } else {
+                                    controller = namedArguments.get(SINGLE);
+                                }
                                 String controllerName = controller.toString();
                                 mappingInfo.setController(controllerName);
                                 parentResources.push(new ParentResource(controllerName, uri, true));
