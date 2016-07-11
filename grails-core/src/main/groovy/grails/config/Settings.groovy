@@ -185,6 +185,11 @@ interface Settings {
     String DEFAULT_WEB_SERVLET_PATH = '/*'
 
     /**
+     * The default servlet path
+     */
+    String DEFAULT_TOMCAT_SERVLET_PATH = '/'
+
+    /**
      * The default encoding
      */
     String DEFAULT_ENCODING = System.getProperty('file.encoding',"UTF-8")

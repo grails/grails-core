@@ -160,7 +160,7 @@ class RestfulController<T> {
         updateResource instance
         request.withFormat {
             form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
+                flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
                 redirect instance
             }
             '*'{
@@ -193,7 +193,7 @@ class RestfulController<T> {
 
         request.withFormat {
             form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
+                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
                 redirect action:"index", method:"GET"
             }
             '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE

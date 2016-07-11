@@ -77,9 +77,20 @@ class DateConversionHelperSpec extends Specification {
         def helper = new DateConversionHelper()
 
         when:
-        helper.convert ''
+        def date = helper.convert ''
 
         then:
-        thrown ParseException
+        date == null
+    }
+
+    void 'Test formatted an empty String'() {
+        given:
+        def helper = new FormattedDateValueConverter()
+
+        when:
+        def date = helper.convert '', "yyMMdd"
+
+        then:
+        date == null
     }
 }
