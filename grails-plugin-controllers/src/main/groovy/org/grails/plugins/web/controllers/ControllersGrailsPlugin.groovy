@@ -84,7 +84,10 @@ class ControllersGrailsPlugin extends Plugin {
         boolean resourcesEnabled = config.getProperty(Settings.RESOURCES_ENABLED, Boolean, true)
         String resourcesPattern = config.getProperty(Settings.RESOURCES_PATTERN, String, Settings.DEFAULT_RESOURCE_PATTERN)
 
-        bootStrapClassRunner(BootStrapClassRunner)
+        if (!Boolean.parseBoolean(System.getProperty(Settings.SETTING_SKIP_BOOTSTRAP))) {
+            bootStrapClassRunner(BootStrapClassRunner)
+        }
+
         tokenResponseActionResultTransformer(TokenResponseActionResultTransformer)
 
         def catchAllMapping = [Settings.DEFAULT_WEB_SERVLET_PATH]
