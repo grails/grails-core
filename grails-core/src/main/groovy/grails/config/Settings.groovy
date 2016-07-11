@@ -210,5 +210,9 @@ interface Settings {
      * Whether to use the legacy JSON builder
      */
     String SETTING_LEGACY_JSON_BUILDER = "grails.json.legacy.builder";
+    /**
+     * Whether to execute Bootstrap classes
+     */
+    String SETTING_SKIP_BOOTSTRAP = "grails.bootstrap.skip";
 
 }
