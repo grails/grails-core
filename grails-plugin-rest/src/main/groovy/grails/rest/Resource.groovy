@@ -52,6 +52,11 @@ public @interface Resource {
     String uri() default ""
 
     /**
+     * @return The namespace of the resource. If specified a {@link grails.web.mapping.UrlMapping} with this namespace will automatically be registered for the resource
+     */
+    String namespace() default ""
+
+    /**
      * @return The super class to use for the generated controller class
      */
     Class<?> superClass() default RestfulController 

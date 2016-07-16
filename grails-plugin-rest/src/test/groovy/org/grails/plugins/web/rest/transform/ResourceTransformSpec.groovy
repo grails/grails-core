@@ -1,9 +1,13 @@
 package org.grails.plugins.web.rest.transform
 
 import grails.artefact.Artefact
+import grails.core.GrailsControllerClass
 import grails.rest.RestfulController
 import grails.transaction.Transactional
+import grails.util.GrailsClassUtils
 import grails.web.Action
+import grails.web.mapping.UrlMappings
+import grails.web.mapping.UrlMappingsFactory
 
 import java.lang.reflect.Method
 
@@ -78,6 +82,47 @@ class Book {
 
         where:
             superClass << ['', RestfulController.name, SubclassRestfulController.name]
+    }
+
+    @Unroll
+    void "Test that the resource transform creates a controller class when namespace is #namespace"() {
+        given:"A parsed class with a @Resource annotation"
+        def gcl = createGroovyClassLoader()
+
+
+        gcl.parseClass("""
+import grails.rest.*
+import grails.persistence.*
+
+@Entity
+@Resource(formats=['html','xml'], namespace='${namespace}')
+class Book {
+}
+""")
+
+        when:"The controller class is loaded"
+        def ctrl = gcl.loadClass('BookController')
+
+        then:"It exists"
+        ctrl != null
+        getMethod(ctrl, "index", Integer.class)
+        getMethod(ctrl, "index")
+        getMethod(ctrl, "index").getAnnotation(Action)
+        getMethod(ctrl, "show")
+        getMethod(ctrl, "edit")
+        getMethod(ctrl, "create")
+        getMethod(ctrl, "save")
+        getMethod(ctrl, "update")
+        getMethod(ctrl, "delete")
+
+        ctrl.scope == "singleton"
+
+        then:"The namespace is correct"
+        ctrl.namespace == namespace
+
+
+        where:
+        namespace = 'v2'
     }
 
     @Issue("GRAILS-10741")

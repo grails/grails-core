@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.web.rest.transform
 
+import org.codehaus.groovy.ast.expr.GStringExpression
+
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.artefact.Artefact
@@ -91,6 +93,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
     public static final String RESPOND_METHOD = "respond"
     public static final String ATTR_RESPONSE_FORMATS = "formats"
     public static final String ATTR_URI = "uri"
+    public static final String ATTR_NAMESPACE ="namespace"
     public static final String PARAMS_VARIABLE = "params"
     public static final ConstantExpression CONSTANT_STATUS = new ConstantExpression(ARGUMENT_STATUS)
     public static final String RENDER_METHOD = "render"
@@ -159,6 +162,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
             final uriAttr = annotationNode.getMember(ATTR_URI)
+            final namespaceAttr = annotationNode.getMember(ATTR_NAMESPACE)
             final domainPropertyName = GrailsNameUtils.getPropertyName(parent.getName())
 
             ListExpression responseFormatsExpression = new ListExpression()
@@ -181,9 +185,11 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                 responseFormatsExpression.addExpression(new ConstantExpression("xml"))
             }
 
-            if (uriAttr != null) {
-                final uri = uriAttr.getText()
-                if(uri) {
+            if (uriAttr != null || namespaceAttr != null) {
+
+                final String uri = uriAttr?.getText()
+                final namespace=namespaceAttr?.getText()
+                if(uri || namespace) {
                     final urlMappingsClassNode = new ClassNode(UrlMappings).getPlainNodeReference()
 
                     final lazyInitField = new FieldNode('lazyInit', PUBLIC | STATIC | FINAL, ClassHelper.Boolean_TYPE,newControllerClassNode, new ConstantExpression(Boolean.FALSE))
@@ -198,18 +204,31 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                     autowiredAnnotation.addMember("required", ConstantExpression.FALSE)
 
                     final qualifierAnnotation = new AnnotationNode(new ClassNode(Qualifier).getPlainNodeReference())
-                    qualifierAnnotation.addMember("value", new ConstantExpression("grailsUrlMappingsHolder"))
+                    qualifierAnnotation.addMember("value", new ConstantExpression(""))
                     urlMappingsSetter.addAnnotation(autowiredAnnotation)
                     urlMappingsSetter.addAnnotation(qualifierAnnotation)
                     urlMappingsSetter.addAnnotation(controllerMethodAnnotation)
                     newControllerClassNode.addMethod(urlMappingsSetter)
                     processVariableScopes(source, newControllerClassNode, urlMappingsSetter)
 
-
                     final methodBody = new BlockStatement()
 
                     final urlMappingsVar = new VariableExpression(urlMappingsField.name)
-                    final resourcesUrlMapping = new MethodCallExpression(buildThisExpression(), uri, new MapExpression([ new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName))]))
+                    Expression map=new MapExpression()
+                    if(uri){
+                        map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName)))
+                    }
+                    if(namespace){
+                        final namespaceField = new FieldNode('namespace', STATIC, ClassHelper.STRING_TYPE,newControllerClassNode, new ConstantExpression(namespace))
+                        newControllerClassNode.addField(namespaceField)
+                        if(map.getMapEntryExpressions().size()==0){
+                            uri="/${namespace}/${domainPropertyName}"
+                            map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName)))
+                        }
+                        map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("namespace"), new ConstantExpression(namespace)))
+                    }
+
+                    final resourcesUrlMapping = new MethodCallExpression(buildThisExpression(), uri, map)
                     final urlMappingsClosure = new ClosureExpression(null, new ExpressionStatement(resourcesUrlMapping))
 
                     def addMappingsMethodCall = applyDefaultMethodTarget(new MethodCallExpression(urlMappingsVar, "addMappings", urlMappingsClosure), urlMappingsClassNode)
