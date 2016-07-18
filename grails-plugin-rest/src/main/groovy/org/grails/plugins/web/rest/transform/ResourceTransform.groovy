@@ -161,6 +161,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
             final uriAttr = annotationNode.getMember(ATTR_URI)
+            final namespaceAttr = annotationNode.getMember(ATTR_NAMESPACE)
             final domainPropertyName = GrailsNameUtils.getPropertyName(parent.getName())
 
             ListExpression responseFormatsExpression = new ListExpression()
