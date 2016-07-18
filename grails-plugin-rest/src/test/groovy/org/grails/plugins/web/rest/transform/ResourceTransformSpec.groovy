@@ -80,6 +80,47 @@ class Book {
             superClass << ['', RestfulController.name, SubclassRestfulController.name]
     }
 
+
+    @Unroll
+    void "Test that the resource transform creates a controller class when namespace is #namespace"() {
+        given:"A parsed class with a @Resource annotation"
+        def gcl = createGroovyClassLoader()
+
+
+        gcl.parseClass("""
+import grails.rest.*
+import grails.persistence.*
+@Entity
+@Resource(formats=['html','xml'], namespace='${namespace}')
+class Book {
+}
+""")
+
+        when:"The controller class is loaded"
+        def ctrl = gcl.loadClass('BookController')
+
+        then:"It exists"
+        ctrl != null
+        getMethod(ctrl, "index", Integer.class)
+        getMethod(ctrl, "index")
+        getMethod(ctrl, "index").getAnnotation(Action)
+        getMethod(ctrl, "show")
+        getMethod(ctrl, "edit")
+        getMethod(ctrl, "create")
+        getMethod(ctrl, "save")
+        getMethod(ctrl, "update")
+        getMethod(ctrl, "delete")
+
+        ctrl.scope == "singleton"
+
+        then:"The namespace is correct"
+        ctrl.namespace == namespace
+
+
+        where:
+        namespace = 'v2'
+    }
+
     @Issue("GRAILS-10741")
     @Unroll
     void "Test that the resource transform creates a read only controller class when super class is #superClass"() {
