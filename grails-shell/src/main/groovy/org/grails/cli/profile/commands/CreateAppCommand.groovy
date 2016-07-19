@@ -314,7 +314,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     }
 
     protected Iterable<Feature> evaluateFeatures(Profile profile, CommandLine commandLine) {
-        String[] requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',').toList()
+        String[] requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',')
         if(requestedFeatures) {
             List<String> requestedFeaturesList = requestedFeatures.toList()
             List<String> allFeatureNames = profile.features*.name
