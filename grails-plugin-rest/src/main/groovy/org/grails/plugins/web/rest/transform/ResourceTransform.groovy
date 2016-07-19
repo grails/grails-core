@@ -93,6 +93,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
     public static final String ATTR_URI = "uri"
     public static final String PARAMS_VARIABLE = "params"
     public static final ConstantExpression CONSTANT_STATUS = new ConstantExpression(ARGUMENT_STATUS)
+    public static final String ATTR_NAMESPACE ="namespace"
     public static final String RENDER_METHOD = "render"
     public static final String ARGUMENT_STATUS = "status"
     public static final String REDIRECT_METHOD = "redirect"
@@ -159,6 +160,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
             final uriAttr = annotationNode.getMember(ATTR_URI)
+            final namespaceAttr = annotationNode.getMember(ATTR_NAMESPACE)
             final domainPropertyName = GrailsNameUtils.getPropertyName(parent.getName())
 
             ListExpression responseFormatsExpression = new ListExpression()
@@ -181,9 +183,11 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                 responseFormatsExpression.addExpression(new ConstantExpression("xml"))
             }
 
-            if (uriAttr != null) {
-                final uri = uriAttr.getText()
-                if(uri) {
+            if (uriAttr != null || namespaceAttr != null) {
+
+                final String uri = uriAttr?.getText()
+                final namespace=namespaceAttr?.getText()
+                if(uri || namespace) {
                     final urlMappingsClassNode = new ClassNode(UrlMappings).getPlainNodeReference()
 
                     final lazyInitField = new FieldNode('lazyInit', PUBLIC | STATIC | FINAL, ClassHelper.Boolean_TYPE,newControllerClassNode, new ConstantExpression(Boolean.FALSE))
@@ -209,6 +213,21 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
                     final methodBody = new BlockStatement()
 
                     final urlMappingsVar = new VariableExpression(urlMappingsField.name)
+
+                    Expression map=new MapExpression()
+                    if(uri){
+                        map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName)))
+                    }
+                    if(namespace){
+                        final namespaceField = new FieldNode('namespace', STATIC, ClassHelper.STRING_TYPE,newControllerClassNode, new ConstantExpression(namespace))
+                        newControllerClassNode.addField(namespaceField)
+                        if(map.getMapEntryExpressions().size()==0){
+                            uri="/${namespace}/${domainPropertyName}"
+                            map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName)))
+                        }
+                        map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("namespace"), new ConstantExpression(namespace)))
+                    }
+
                     final resourcesUrlMapping = new MethodCallExpression(buildThisExpression(), uri, new MapExpression([ new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName))]))
                     final urlMappingsClosure = new ClosureExpression(null, new ExpressionStatement(resourcesUrlMapping))
 
