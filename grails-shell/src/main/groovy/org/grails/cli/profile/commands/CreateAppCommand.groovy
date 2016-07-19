@@ -314,10 +314,22 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     }
 
     protected Iterable<Feature> evaluateFeatures(Profile profile, CommandLine commandLine) {
-        def requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',')
+        String[] requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',')
         if(requestedFeatures) {
-            def featureNames = Arrays.asList(requestedFeatures)
-            return (profile.features.findAll() { Feature f -> featureNames.contains(f.name)} + profile.requiredFeatures).unique()
+            List<String> requestedFeaturesList = requestedFeatures.toList()
+            List<String> allFeatureNames = profile.features*.name
+            List<String> validFeatureNames = requestedFeaturesList.intersect(allFeatureNames)
+            requestedFeaturesList.removeAll(allFeatureNames)
+            requestedFeaturesList.each { String invalidFeature ->
+                List possibleSolutions = allFeatureNames.findAll { it.substring(0, 2) == invalidFeature.substring(0, 2) }
+                StringBuilder warning = new StringBuilder("Feature ${invalidFeature} does not exist in the profile ${profile.name}!")
+                if (possibleSolutions) {
+                    warning.append(" Possible solutions: ")
+                    warning.append(possibleSolutions.join(", "))
+                }
+                GrailsConsole.getInstance().warn(warning.toString())
+            }
+            return (profile.features.findAll() { Feature f -> validFeatureNames.contains(f.name) } + profile.requiredFeatures).unique()
         }
         else {
             return (profile.defaultFeatures + profile.requiredFeatures).unique()
