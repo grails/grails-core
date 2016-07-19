@@ -50,6 +50,7 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
+import org.grails.gradle.plugin.commands.ApplicationContextScriptTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
@@ -117,6 +118,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configureApplicationCommands(project)
 
         createBuildPropertiesTask(project)
+
+        configureRunScript(project)
 
         configurePathingJar(project)
     }
@@ -231,6 +234,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.tasks.create(taskName, ApplicationContextCommandTask) {
                 classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
                 command = commandName
+                systemProperty 'grails.env', System.getProperty("grails.env", "development")
                 if (project.hasProperty('args')) {
                     args(CommandLineParser.translateCommandline(project.args))
                 }
@@ -352,6 +356,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
             consoleTask.args mainClassName
             shellTask.args mainClassName
             project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
+                task.args mainClassName
+            }
+            project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
                 task.args mainClassName
             }
         }
@@ -492,6 +499,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    protected void configureRunScript(Project project) {
+        project.tasks.create("runScript", ApplicationContextScriptTask) {
+            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            systemProperty 'grails.env', System.getProperty("grails.env", "development")
+            if (project.hasProperty('args')) {
+                args(CommandLineParser.translateCommandline(project.args))
+            }
+        }
+    }
+
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
             ConfigurationContainer configurations =  project.configurations
@@ -529,10 +546,14 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
                 tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
                     task.dependsOn(pathingJarCommand)
-                    task.systemProperties = ['grails.env': 'development']
+                }
+                tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
+                    task.dependsOn(pathingJarCommand)
                 }
             }
         }
     }
+
+
 
 }
