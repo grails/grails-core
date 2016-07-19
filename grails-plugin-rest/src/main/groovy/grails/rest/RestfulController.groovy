@@ -189,7 +189,7 @@ class RestfulController<T> {
             return
         }
 
-        instance.delete flush:true
+        deleteResource instance
 
         request.withFormat {
             form multipartForm {
@@ -317,5 +317,14 @@ class RestfulController<T> {
      */
     protected T updateResource(T resource) {
         saveResource resource
+    }
+
+    /**
+     * Deletes a resource
+     * 
+     * @param resource The resource to be deleted
+     */
+    protected void deleteResource(T resource) {
+        resource.delete flush:true
     }
 }
