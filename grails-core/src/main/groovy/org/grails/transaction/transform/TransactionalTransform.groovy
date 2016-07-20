@@ -75,6 +75,7 @@ class TransactionalTransform implements ASTTransformation{
     private static final String METHOD_EXECUTE = "execute"
     private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
     private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), Rollback.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
+    private static final Set<String> JUNIT_ANNOTATION_NAMES = new HashSet<String>(Arrays.asList("org.junit.Before", "org.junit.After"));
     private static final String SPEC_CLASS = "spock.lang.Specification";
     public static final String PROPERTY_DATA_SOURCE = "datasource"
 
@@ -116,7 +117,8 @@ class TransactionalTransform implements ASTTransformation{
         for (MethodNode md in methods) {
             String methodName = md.getName()
             int modifiers = md.modifiers
-            if (!md.isSynthetic() && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
+            if (!md.isSynthetic() && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) &&
+                !Modifier.isStatic(modifiers) && !hasJunitAnnotation(md)) {
                 if(hasExcludedAnnotation(md)) continue
 
                 def startsWithSpock = methodName.startsWith('$spock')
@@ -138,7 +140,8 @@ class TransactionalTransform implements ASTTransformation{
                 if(hasAnnotation(md, DelegatingMethod.class)) continue
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
-            else if(("setup".equals(methodName) ||  "cleanup".equals(methodName)) && isSpockTest(classNode)) {
+            else if ((("setup".equals(methodName) || "cleanup".equals(methodName)) && isSpockTest(classNode)) ||
+                hasJunitAnnotation(md)) {
                 def requiresNewTransaction = new AnnotationNode(annotationNode.classNode)
                 requiresNewTransaction.addMember("propagation", new PropertyExpression(new ClassExpression(ClassHelper.make(Propagation.class)), "REQUIRES_NEW"))
                 weaveTransactionalMethod(source, classNode, requiresNewTransaction, md, "execute")
@@ -154,6 +157,17 @@ class TransactionalTransform implements ASTTransformation{
         boolean excludedAnnotation = false;
         for (AnnotationNode annotation : md.getAnnotations()) {
             if(ANNOTATION_NAME_EXCLUDES.contains(annotation.getClassNode().getName())) {
+                excludedAnnotation = true;
+                break;
+            }
+        }
+        excludedAnnotation
+    }
+
+    private boolean hasJunitAnnotation(MethodNode md) {
+        boolean excludedAnnotation = false;
+        for (AnnotationNode annotation : md.getAnnotations()) {
+            if(JUNIT_ANNOTATION_NAMES.contains(annotation.getClassNode().getName())) {
                 excludedAnnotation = true;
                 break;
             }
