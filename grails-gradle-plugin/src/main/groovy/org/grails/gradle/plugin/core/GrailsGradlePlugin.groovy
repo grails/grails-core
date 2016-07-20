@@ -34,6 +34,7 @@ import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.file.CopySpec
+import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.WarPlugin
@@ -489,7 +490,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
-            ConfigurationContainer configurations =  project.configurations
+            ConfigurationContainer configurations = project.configurations
             Configuration runtime = configurations.getByName('runtime')
             Configuration console = configurations.getByName('console')
 
@@ -507,24 +508,27 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
 
             Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
+            FileCollection pathingClasspath = project.files("${project.buildDir}/classes/main",
+              "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath)
             Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
+            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/classes/main",
+              "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath)
 
             GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
 
             if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
-
-                TaskContainer tasks = project.tasks
-
-                tasks.withType(JavaExec) { JavaExec task ->
-                    task.dependsOn(pathingJar)
-                    task.doFirst {
-                        classpath = project.files("${project.buildDir}/classes/main", "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath)
+                project.tasks.withType(JavaExec) { JavaExec task ->
+                    if (task.name in ['console', 'shell'] || task instanceof ApplicationContextCommandTask) {
+                        task.dependsOn(pathingJarCommand)
+                        task.doFirst {
+                            classpath = pathingClasspathCommand
+                        }
+                    } else {
+                        task.dependsOn(pathingJar)
+                        task.doFirst {
+                            classpath = pathingClasspath
+                        }
                     }
-                }
-
-                tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
-                    task.dependsOn(pathingJarCommand)
-                    task.systemProperties = ['grails.env': 'development']
                 }
             }
         }
