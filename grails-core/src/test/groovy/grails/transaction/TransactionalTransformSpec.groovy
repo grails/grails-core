@@ -130,6 +130,46 @@ class TransactionalTransformSpec extends Specification {
 
     }
 
+  void "Test @Rollback when applied to JUnit specifications"() {
+    when:
+    Class mySpec = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.junit.Test
+    import org.junit.Before
+    import org.junit.After
+
+    @Rollback
+    class MyJunitTest {
+        @Before
+        def junitSetup() {
+
+        }
+
+        @After
+        def junitCleanup() {
+
+        }
+
+        @Test
+        void junitTest() {
+            expect:
+                1 == 1
+        }
+    }
+    MyJunitTest
+    ''')
+
+    then: "It implements TransactionManagerAware"
+    TransactionManagerAware.isAssignableFrom(mySpec)
+    mySpec.getDeclaredMethod('junitSetup')
+    mySpec.getDeclaredMethod('$tt__junitSetup', TransactionStatus)
+    mySpec.getDeclaredMethod('junitCleanup')
+    mySpec.getDeclaredMethod('$tt__junitCleanup', TransactionStatus)
+
+    mySpec.getDeclaredMethod('junitTest')
+    mySpec.getDeclaredMethod('$tt__junitTest', TransactionStatus)
+  }
+
     void "Test @Rollback when applied to Spock specifications"() {
         when: "A new instance of a class with a @Transactional method is created that subclasses another transactional class"
         Class mySpec = new GroovyShell().evaluate('''
