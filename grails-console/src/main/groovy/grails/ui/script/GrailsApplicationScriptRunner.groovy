@@ -54,15 +54,13 @@ class GrailsApplicationScriptRunner extends DevelopmentGrailsApplication {
         Config config = ctx.getBean('grailsApplication', GrailsApplication).config
         String defaultPackageKey = 'grails.codegen.defaultPackage'
         GroovyShell sh
+        CompilerConfiguration configuration = CompilerConfiguration.DEFAULT
         if (config.containsProperty(defaultPackageKey)) {
             ImportCustomizer importCustomizer = new ImportCustomizer()
             importCustomizer.addStarImports config.getProperty(defaultPackageKey, String)
-            CompilerConfiguration configuration = CompilerConfiguration.DEFAULT
             configuration.addCompilationCustomizers(importCustomizer)
-            sh = new GroovyShell(binding, configuration)
-        } else {
-            sh = new GroovyShell(binding)
         }
+        sh = new GroovyShell(binding, configuration)
 
         Collection<PersistenceContextInterceptor> interceptors = ctx.getBeansOfType(PersistenceContextInterceptor).values()
 

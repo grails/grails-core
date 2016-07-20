@@ -234,7 +234,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.tasks.create(taskName, ApplicationContextCommandTask) {
                 classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
                 command = commandName
-                systemProperty 'grails.env', System.getProperty("grails.env", "development")
+                systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
                 if (project.hasProperty('args')) {
                     args(CommandLineParser.translateCommandline(project.args))
                 }
@@ -502,7 +502,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void configureRunScript(Project project) {
         project.tasks.create("runScript", ApplicationContextScriptTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
-            systemProperty 'grails.env', System.getProperty("grails.env", "development")
+            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             if (project.hasProperty('args')) {
                 args(CommandLineParser.translateCommandline(project.args))
             }
