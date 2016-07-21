@@ -22,7 +22,7 @@ dependencies {
                 project(":grails-plugin-databinding"),
                 project(':grails-spring')
 
-    testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion", {
+    testCompile "org.grails:grails-datastore-gorm-hibernate4:$datastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.springframework', module:'spring-core'
