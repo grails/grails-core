@@ -15,6 +15,7 @@
  */
 package org.grails.gradle.plugin.web
 
+import grails.util.Environment
 import org.gradle.api.Project
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
@@ -40,6 +41,7 @@ class GrailsWebGradlePlugin extends GrailsGradlePlugin {
 
         project.tasks.create("urlMappingsReport", ApplicationContextCommandTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             command = 'url-mappings-report'
         }
     }
