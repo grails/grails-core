@@ -46,20 +46,20 @@ if [[ $TRAVIS_PULL_REQUEST == 'false'
     echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 
     if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
-        ./gradlew closeAndPromoteRepository
+        # ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
+        # ./gradlew closeAndPromoteRepository
 
-        if [[ $EXIT_STATUS == 0 ]]; then
-            ./gradlew --stop
-            # wait 30 seconds to ensure the previous promotion completes
-            sleep 30
-            ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
-            ./gradlew closeAndPromoteRepository
-        fi
+        # if [[ $EXIT_STATUS == 0 ]]; then
+        #     ./gradlew --stop
+        #     # wait 30 seconds to ensure the previous promotion completes
+        #     sleep 30
+        #     ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
+        #     ./gradlew closeAndPromoteRepository
+        # fi
 
-        if [[ $EXIT_STATUS == 0 ]]; then
+        # if [[ $EXIT_STATUS == 0 ]]; then
             ./gradlew assemble || EXIT_STATUS=$?
-        fi
+        # fi
 
         # Configure GIT
         # git config --global credential.helper "store --file=~/.git-credentials"
