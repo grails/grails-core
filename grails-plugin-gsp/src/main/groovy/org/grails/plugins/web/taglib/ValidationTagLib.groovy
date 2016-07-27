@@ -92,24 +92,23 @@ class ValidationTagLib implements TagLibrary {
 
         def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
 
-	def rejectedValue = null
+        def rejectedValue = null
         if (bean.metaClass.hasProperty(bean, 'errors')) {
             Errors errors = bean.errors
             rejectedValue = errors?.getFieldError(field)?.rejectedValue
             if (rejectedValue == null) {
                 rejectedValue = parseForRejectedValue(bean, field)
             }
-            
-        }
-        else {
+
+        } else {
             rejectedValue = parseForRejectedValue(bean, field)
         }
-	if (rejectedValue != null) {
+        if (rejectedValue != null) {
             out << formatValue(rejectedValue, field, tagSyntaxCall)
         }
     }
 
-    private String parseForRejectedValue(bean, field) {
+    private Object parseForRejectedValue(bean, field) {
         def rejectedValue = bean
         for (String fieldPart in field.split("\\.")) {
             rejectedValue = rejectedValue?."$fieldPart"
@@ -124,21 +123,18 @@ class ValidationTagLib implements TagLibrary {
             if (attrs.bean) {
                 checkList << attrs.bean
             }
-        }
-        else if (attrs.containsKey('model')) {
+        } else if (attrs.containsKey('model')) {
             if (model) {
-                checkList = model.findAll {it.value?.errors instanceof Errors}.collect {it.value}
+                checkList = model.findAll { it.value?.errors instanceof Errors }.collect { it.value }
             }
-        }
-        else {
+        } else {
             for (attributeName in request.attributeNames) {
                 def ra = request[attributeName]
                 if (ra) {
                     def mc = GroovySystem.metaClassRegistry.getMetaClass(ra.getClass())
                     if (ra instanceof Errors && !checkList.contains(ra)) {
                         checkList << ra
-                    }
-                    else if (mc.hasProperty(ra, 'errors') && ra.errors instanceof Errors && !checkList.contains(ra.errors)) {
+                    } else if (mc.hasProperty(ra, 'errors') && ra.errors instanceof Errors && !checkList.contains(ra.errors)) {
                         checkList << ra.errors
                     }
                 }
@@ -151,8 +147,7 @@ class ValidationTagLib implements TagLibrary {
             def errors = null
             if (i instanceof Errors) {
                 errors = i
-            }
-            else {
+            } else {
                 def mc = GroovySystem.metaClassRegistry.getMetaClass(i.getClass())
                 if (mc.hasProperty(i, 'errors')) {
                     errors = i.errors
@@ -211,8 +206,7 @@ class ValidationTagLib implements TagLibrary {
                 if (errors.hasFieldErrors(field)) {
                     errorList += errors.getFieldErrors(field)
                 }
-            }
-            else {
+            } else {
                 errorList += errors.allErrors
             }
         }
@@ -220,9 +214,8 @@ class ValidationTagLib implements TagLibrary {
         for (error in errorList) {
             def result
             if (var) {
-                result = body([(var):error])
-            }
-            else {
+                result = body([(var): error])
+            } else {
                 result = body(error)
             }
             if (outputResult) {
@@ -253,18 +246,17 @@ class ValidationTagLib implements TagLibrary {
             if (errorsList) {
                 out << "<ul>"
                 out << eachErrorInternalForList(attrs, errorsList, {
-                    out << "<li>${message(error:it, encodeAs:codec)}</li>"
+                    out << "<li>${message(error: it, encodeAs: codec)}</li>"
                 })
                 out << "</ul>"
             }
-        }
-        else if (renderAs.equalsIgnoreCase("xml")) {
+        } else if (renderAs.equalsIgnoreCase("xml")) {
             def mkp = new MarkupBuilder(out)
             mkp.errors() {
                 eachErrorInternal(attrs, {
                     error(object: it.objectName,
-                          field: it.field,
-                          message: message(error:it)?.toString(),
+                            field: it.field,
+                            message: message(error: it)?.toString(),
                             'rejected-value': StringEscapeUtils.escapeXml(it.rejectedValue))
                 })
             }
@@ -297,7 +289,7 @@ class ValidationTagLib implements TagLibrary {
         Object error = attrs.error ?: attrs.message
         if (error) {
             if (!attrs.encodeAs && error instanceof MessageSourceResolvable) {
-                MessageSourceResolvable errorResolvable = (MessageSourceResolvable)error
+                MessageSourceResolvable errorResolvable = (MessageSourceResolvable) error
                 if (errorResolvable.arguments) {
                     error = new DefaultMessageSourceResolvable(errorResolvable.codes, encodeArgsIfRequired(errorResolvable.arguments) as Object[], errorResolvable.defaultMessage)
                 }
@@ -311,14 +303,12 @@ class ValidationTagLib implements TagLibrary {
             }
             catch (NoSuchMessageException e) {
                 if (error instanceof MessageSourceResolvable) {
-                    text = ((MessageSourceResolvable)error).codes[0]
-                }
-                else {
+                    text = ((MessageSourceResolvable) error).codes[0]
+                } else {
                     text = error?.toString()
                 }
             }
-        }
-        else if (attrs.code) {
+        } else if (attrs.code) {
             String code = attrs.code?.toString()
             List args = []
             if (attrs.args) {
@@ -332,17 +322,16 @@ class ValidationTagLib implements TagLibrary {
             }
 
             def message = messageSource.getMessage(code, args == null ? null : args.toArray(),
-                defaultMessage, locale)
+                    defaultMessage, locale)
             if (message != null) {
                 text = message
-            }
-            else {
+            } else {
                 text = defaultMessage
             }
         }
         if (text) {
             Encoder encoder = codecLookup.lookupEncoder(attrs.encodeAs?.toString() ?: 'raw')
-            return encoder  ? encoder.encode(text) : text
+            return encoder ? encoder.encode(text) : text
         }
         ''
     }
@@ -360,16 +349,16 @@ class ValidationTagLib implements TagLibrary {
     }
 
     // Maps out how Grails contraints map to Apache commons validators
-    static CONSTRAINT_TYPE_MAP = [email : 'email',
-                                  creditCard : 'creditCard',
-                                  matches : 'mask',
-                                  blank: 'required',
-                                  nullable: 'required',
-                                  maxSize: 'maxLength',
-                                  minSize: 'minLength',
-                                  range: 'intRange',
-                                  size: 'intRange',
-                                  length: 'maxLength,minLength']
+    static CONSTRAINT_TYPE_MAP = [email     : 'email',
+                                  creditCard: 'creditCard',
+                                  matches   : 'mask',
+                                  blank     : 'required',
+                                  nullable  : 'required',
+                                  maxSize   : 'maxLength',
+                                  minSize   : 'minLength',
+                                  range     : 'intRange',
+                                  size      : 'intRange',
+                                  length    : 'maxLength,minLength']
 
     /**
      * Validates a form using Apache commons validator javascript against constraints defined in a Grails
@@ -386,7 +375,7 @@ class ValidationTagLib implements TagLibrary {
             throwTagError("Tag [validate] is missing required attribute [form]")
         }
 
-        def againstClass = attrs.against ?: form.substring(0,1).toUpperCase() + form.substring(1)
+        def againstClass = attrs.against ?: form.substring(0, 1).toUpperCase() + form.substring(1)
         def dc = grailsAttributes.grailsApplication.getDomainClass(againstClass)
         if (!dc) {
             throwTagError("Tag [validate] could not find a domain class to validate against for name [${againstClass}]")
@@ -394,7 +383,7 @@ class ValidationTagLib implements TagLibrary {
 
         def appliedConstraints = []
         dc.constrainedProperties.values().each {
-            appliedConstraints += it.collect{ it.appliedConstraints }
+            appliedConstraints += it.collect { it.appliedConstraints }
         }
 
         appliedConstraints = appliedConstraints.flatten()
@@ -404,15 +393,14 @@ class ValidationTagLib implements TagLibrary {
             if (validateType) {
                 if (fieldValidations[validateType]) {
                     fieldValidations[validateType] << it
-                }
-                else {
-                    fieldValidations[validateType] =  [it]
+                } else {
+                    fieldValidations[validateType] = [it]
                 }
             }
         }
 
         out << '<script type="text/javascript">\n'
-        fieldValidations.each { k,v ->
+        fieldValidations.each { k, v ->
             def validateType = k
             if (validateType) {
                 def validateTypes = [validateType]
@@ -422,7 +410,7 @@ class ValidationTagLib implements TagLibrary {
 
                 for (vt in validateTypes) {
                     // import required script
-                    def scriptName = "org/apache/commons/validator/javascript/validate" + vt.substring(0,1).toUpperCase() + vt.substring(1) + ".js"
+                    def scriptName = "org/apache/commons/validator/javascript/validate" + vt.substring(0, 1).toUpperCase() + vt.substring(1) + ".js"
                     def inStream = getClass().classLoader.getResourceAsStream(scriptName)
                     if (inStream) {
                         out << inStream.getText('UTF-8')
@@ -434,11 +422,11 @@ class ValidationTagLib implements TagLibrary {
                         out << "document.forms['${form}'].elements['${constraint.propertyName}']," // the field
                         out << '"Test message"' // TODO: Resolve the actual message
                         switch (vt) {
-                            case 'mask': out << ",function() { return '${constraint.regex}'; }";break
-                            case 'intRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }";break
-                            case 'floatRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }";break
-                            case 'maxLength': out << ",function() { return ${constraint.maxSize};  }";break
-                            case 'minLength': out << ",function() { return ${constraint.minSize};  }";break
+                            case 'mask': out << ",function() { return '${constraint.regex}'; }"; break
+                            case 'intRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }"; break
+                            case 'floatRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }"; break
+                            case 'maxLength': out << ",function() { return ${constraint.maxSize};  }"; break
+                            case 'minLength': out << ",function() { return ${constraint.minSize};  }"; break
                         }
                         out << ');\n'
                     }
@@ -447,8 +435,8 @@ class ValidationTagLib implements TagLibrary {
             }
         }
         out << 'function validateForm(form) {\n'
-        fieldValidations.each { k,v ->
-            def validateType = k.substring(0,1).toUpperCase() + k.substring(1)
+        fieldValidations.each { k, v ->
+            def validateType = k.substring(0, 1).toUpperCase() + k.substring(1)
             out << "if (!validate${validateType}(form)) return false;\n"
         }
         out << 'return true;\n'

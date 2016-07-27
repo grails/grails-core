@@ -20,12 +20,7 @@ import groovy.lang.Closure;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import grails.util.GrailsStringUtils;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
@@ -49,7 +44,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
 
     public void setParams(final Map newParams) {
         Collection keys = newParams.keySet();
-        keys = DefaultGroovyMethods.toList(keys);
+        keys = new ArrayList(keys);
         Collections.sort((List) keys, new Comparator() {
             public int compare(Object leftKey, Object rightKey) {
                 Object leftValue = newParams.get(leftKey);
@@ -90,13 +85,8 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
             if (param instanceof Closure) {
                 param = evaluateNameForValue(param);
             }
-            if (param instanceof String) {
-                try {
-                    param = URLDecoder.decode((String) param, encoding);
-                }
-                catch (UnsupportedEncodingException e) {
-                    param = evaluateNameForValue(param);
-                }
+            if (param instanceof CharSequence) {
+                param = param.toString();
             }
             dispatchParams.put(name, param);
         }

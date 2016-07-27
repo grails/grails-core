@@ -83,6 +83,14 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
         return null;
     }
 
+    public String getControllerNamespace() {
+        final GrailsWebRequest req = getWebRequest();
+        if (req != null) {
+            return req.getControllerNamespace();
+        }
+        return null;
+    }
+
     public String getActionName() {
         final GrailsWebRequest req = getWebRequest();
         if (req != null) {

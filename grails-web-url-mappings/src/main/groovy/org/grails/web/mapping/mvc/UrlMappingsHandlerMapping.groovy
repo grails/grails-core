@@ -166,7 +166,9 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
                         request.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, ((GrailsControllerUrlMappingInfo)info).controllerClass)
                         return info
                     }
-                    else if(info.viewName || info.URI) return info
+                    else if(info.viewName || info.URI) {
+                        return info
+                    }
                 }
             }
 
