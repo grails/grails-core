@@ -33,6 +33,7 @@ class RenderMethodTests {
 
     @Test
     void testRenderFile() {
+
         controller.render file:"hello".bytes, contentType:"text/plain"
 
         assert "hello" == response.contentAsString
@@ -172,6 +173,11 @@ class RenderMethodTests {
 
         assertEquals "text/html;charset=UTF-8", response.contentType
         assertEquals "hello world!", response.contentAsString
+
+        assert controller.modelAndView
+
+        assertEquals controller.modelAndView.viewName, "/render/_testTemplate"
+        assertEquals controller.modelAndView.model.hello, "world"
     }
 
     @Test

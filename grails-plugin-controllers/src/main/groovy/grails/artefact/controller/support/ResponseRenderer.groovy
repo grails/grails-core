@@ -339,6 +339,8 @@ trait ResponseRenderer extends WebAttributes {
 
                 Map binding = [:]
 
+                if (templateUri && hasModel && modelObject instanceof Map) ((GroovyObject)this).setProperty ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(templateUri, modelObject)
+
                 if (argMap.containsKey(ARGUMENT_BEAN)) {
                     Object bean = argMap[ARGUMENT_BEAN]
                     if (hasModel) {
