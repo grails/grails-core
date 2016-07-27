@@ -1,5 +1,8 @@
 package grails.boot.config
+
+import grails.config.Config
 import grails.config.Settings
+import grails.core.GrailsApplication
 import grails.core.GrailsApplicationClass
 import grails.io.IOUtils
 import groovy.transform.CompileStatic
@@ -172,6 +175,14 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
     @Override
     void onShutdown(Map<String, Object> event) {
         // no-op
+    }
+
+    GrailsApplication getGrailsApplication() {
+        applicationContext.getBean(GrailsApplication)
+    }
+
+    Config getConfig() {
+        grailsApplication.config
     }
 
     @CompileStatic
