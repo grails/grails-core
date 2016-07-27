@@ -243,19 +243,19 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
                     params.put(ATTRIBUTE_ID, id)
                 }
                 def pluginName = attrs.get(UrlMapping.PLUGIN)?.toString()
-                def namespace = attrs.get(UrlMapping.NAMESPACE)?.toString()
+                def namespace = attrs.get(UrlMapping.NAMESPACE)?.toString() ?: requestStateLookupStrategy.controllerNamespace
                 UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,namespace,pluginName,httpMethod,params)
                 if (mapping == null && isDefaultAction) {
                     mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,namespace,pluginName,httpMethod,params)
                 }
                 if (mapping == null) {
-                    mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,httpMethod,params)
+                    mapping = urlMappingsHolder.getReverseMapping(controller,action,namespace,pluginName,httpMethod,params)
                 }
 
                 boolean absolute = isAbsolute(attrs)
 
                 if (!absolute) {
-                    url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
+                    url = mapping.createRelativeURL(convertedControllerName, convertedActionName, namespace, pluginName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
@@ -268,7 +268,7 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
                     writer.append url
                 }
                 else {
-                    url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
+                    url = mapping.createRelativeURL(convertedControllerName, convertedActionName, namespace, pluginName, params, encoding, frag)
                     writer.append handleAbsolute(attrs)
                     writer.append url
                 }

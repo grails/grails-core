@@ -285,7 +285,39 @@ class LinkGeneratorSpec extends Specification {
         then:
             cacheKey == "somePrefix[resource:org.codehaus.groovy.grails.web.mapping.Widget->2]"
     }
-    
+
+    def 'link should take into affect namespace'() {
+        given:
+        final webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        MockHttpServletRequest request = webRequest.currentRequest
+        linkParams.contextPath = ''
+
+        when: "A namespace is specified"
+        linkParams.namespace = 'fooBar'
+        linkParams.controller = 'one'
+        linkParams.action = 'two'
+
+        then: "it exists in the url"
+        link == '/fooBar/one/two'
+
+        when: "The namespace is in the request params"
+        webRequest.setControllerNamespace("fooBarReq")
+        linkParams.remove('namespace')
+        linkParams.controller = 'one'
+        linkParams.action = 'two'
+
+        then: "it exists in the url"
+        link == '/fooBarReq/one/two'
+
+        when: "Params and the request attribute exist"
+        webRequest.setControllerNamespace("fooBarReq")
+        linkParams.namespace = 'fooBarParam'
+        linkParams.controller = 'one'
+        linkParams.action = 'two'
+
+        then: "params wins"
+        link == '/fooBarParam/one/two'
+    }
     
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
@@ -294,8 +326,8 @@ class LinkGeneratorSpec extends Specification {
     protected getGenerator(boolean cache=false) {
         def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
         final callable = { String controller, String action, String namespace, String pluginName, String httpMethod, Map params ->
-            [createRelativeURL: { String c, String a, Map parameterValues, String encoding, String fragment ->
-                "/$controller/$action".toString()
+            [createRelativeURL: { String c, String a, String n, String p, Map parameterValues, String encoding, String fragment ->
+                "${namespace ? '/' + namespace : ''}/$controller/$action".toString()
             }] as UrlCreator
         }
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
