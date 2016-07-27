@@ -170,7 +170,9 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
                         request.setAttribute(MATCHED_REQUEST, info)
                         return info
                     }
-                    else if(info.viewName || info.URI) return info
+                    else if(info.viewName || info.URI) {
+                        return info
+                    }
                 }
             }
 

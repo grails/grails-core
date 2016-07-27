@@ -71,6 +71,16 @@ class DoubleWildCardController {
         UrlMappingInfo info = infos[0]
         info.configure webRequest
         assertEquals 'wrong controller name', 'someOther', info.getControllerName()
+
+
+        infos = holder.matchAll('/someOther/1+2')
+        assert infos
+
+        info = infos[0]
+        info.configure webRequest
+        assertEquals 'wrong controller name', 'someOther', info.getControllerName()
+        assertEquals 'wrong controller name', '1+2', info.getActionName()
+
     }
 
     void testDoubleWildcardInParam() {
