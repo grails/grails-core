@@ -35,7 +35,7 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
 fi
 
 # Only run for master branch
-if [ "${$TRAVIS_BRANCH}" != "master" ]; then
+if [ "${TRAVIS_BRANCH}" != "master" ]; then
   exit 0
 fi
 
