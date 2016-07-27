@@ -23,6 +23,7 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
             grailsApplication.initialise()
             def holder = getUrlMappingsHolder {
                 "/foo/bar"(controller:"foo", action:"bar")
+                "/foo/error"(controller:"foo", action:"error")
             }
 
             holder = new GrailsControllerUrlMappings(grailsApplication, holder)
@@ -31,6 +32,7 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
         when:"A URI is matched"
 
             def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+            webRequest.renderView = true
             def request = webRequest.request
             request.setRequestURI("/foo/bar")
             def handlerChain = handler.getHandler(request)
@@ -46,6 +48,15 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
             result.viewName == 'bar'
             result.model == [foo:'bar']
 
+        when:"A status is set on the response"
+        request.setRequestURI("/foo/error")
+        request.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
+        handlerChain = handler.getHandler(request)
+        result = handlerAdapter.handle(request, webRequest.response, handlerChain.handler)
+
+        then:"The result is null"
+        result == null
+
     }
 
     void cleanup() {
@@ -54,9 +65,14 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
 }
 
 @Artefact('Controller')
-class FooController {
+class FooController  {
     @Action
     def bar() {
         [foo:"bar"]
+    }
+
+    @Action
+    def error() {
+        RequestContextHolder.currentRequestAttributes().response.sendError(405)
     }
 }

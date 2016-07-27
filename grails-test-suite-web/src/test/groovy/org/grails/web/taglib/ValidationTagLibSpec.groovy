@@ -403,6 +403,7 @@ class ValidationTagLibSpec extends Specification {
         result.endsWith("</ul>")
     }
 
+    @Ignore
     void testRenderErrorsAsXMLTag() {
         given:
         def b = new ValidationTagLibBook()
