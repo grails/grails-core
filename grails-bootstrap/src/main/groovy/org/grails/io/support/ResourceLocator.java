@@ -171,7 +171,7 @@ public class ResourceLocator {
             }
             if (resource == null || !resource.exists()) {
                 for(String ext : new String[]{".groovy", ".java"}) {
-                    resource = resolveExceptionSafe("./grails-app/domain/**/" + className + ext);
+                    resource = resolveExceptionSafe(GrailsResourceUtils.DOMAIN_DIR_PATH + "**/" + className + ext);
                     if (resource != null && resource.exists()) {
                         classNameToResourceCache.put(className, resource);
                         break;

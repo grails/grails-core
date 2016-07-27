@@ -99,6 +99,8 @@ public class GrailsResourceUtils {
      */
     public static final String VIEWS_DIR_PATH = GRAILS_APP_DIR + "/views/";
 
+    public static final String DOMAIN_DIR_PATH = GRAILS_APP_DIR + "/domain/";
+
     public static final String REGEX_FILE_SEPARATOR = "[\\\\/]"; // backslashes need escaping in regexes
 
     /*
