@@ -34,6 +34,11 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
   exit 0
 fi
 
+# Only run for master branch
+if [ "${$TRAVIS_BRANCH}" != "master" ]; then
+  exit 0
+fi
+
 # Don't run for tagged releases
 if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
   exit 0
