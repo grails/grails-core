@@ -62,7 +62,7 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter implements Appl
         try {
             WebUtils.storeGrailsWebRequest(webRequest);
 
-            if(!WebUtils.isForward(request)) {
+            if(!WebUtils.isForwardOrInclude(request)) {
                 // Set the flash scope instance to its next state. We do
                 // this here so that the flash is available from Grails
                 // filters in a valid state.
