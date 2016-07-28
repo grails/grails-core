@@ -44,6 +44,13 @@ public interface GrailsRequestStateLookupStrategy {
     public String getControllerName();
 
     /**
+     * The controller namespace
+     *
+     * @return The controller namespace or null if not known
+     */
+    public String getControllerNamespace();
+
+    /**
      * The action name for the given controller name
      *
      * @param controllerName The controller name

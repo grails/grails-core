@@ -58,6 +58,28 @@ mappings {
 }
 '''
 
+    def mappingWithNamespace = '''
+mappings {
+    "/$namespace/$controller/$action?/$id?" ()
+}
+'''
+
+    @Test
+    void testGetReverseMappingWithNamespace() {
+        def res = new ByteArrayResource(mappingWithNamespace.bytes)
+
+        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def mappings = evaluator.evaluateMappings(res)
+
+        def holder = new DefaultUrlMappingsHolder(mappings)
+
+        def m = holder.getReverseMapping("product", "show", "foo", null, [:])
+        assertNotNull "getReverseMapping returned null", m
+
+        assertEquals "/foo/product/show", m.createURL("product", "show", "foo", null, [:], "utf-8")
+    }
+
+
     @Test
     void testGetReverseMappingWithNamedArgsAndClosure() {
         def res = new ByteArrayResource(mappingWithNamedArgsAndClosure.bytes)
