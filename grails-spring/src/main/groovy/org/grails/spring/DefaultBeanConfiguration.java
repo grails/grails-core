@@ -17,6 +17,8 @@ package org.grails.spring;
 
 import groovy.lang.GroovyObjectSupport;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.Assert;
 
 /**
@@ -219,7 +222,11 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
             bd.setConstructorArgumentValues(cav);
         }
         if(clazz != null) {
-            bd.setLazyInit( clazz.getAnnotation(Lazy.class) != null);
+            if (hasScheduledMethod(clazz)) {
+                bd.setLazyInit(false);
+            } else {
+                bd.setLazyInit( clazz.getAnnotation(Lazy.class) != null);
+            }
             bd.setBeanClass(clazz);
         }
         bd.setScope(singleton ? AbstractBeanDefinition.SCOPE_SINGLETON : AbstractBeanDefinition.SCOPE_PROTOTYPE);
@@ -228,6 +235,19 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
         }
         wrapper = new BeanWrapperImpl(bd);
         return bd;
+    }
+
+    private boolean hasScheduledMethod(Class clazz) {
+        for (Method method : clazz.getMethods()) {
+            if (hasScheduledAnnotation(method)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasScheduledAnnotation(Method method) {
+        return (method.getAnnotation(Scheduled.class) != null);
     }
 
     public BeanConfiguration addProperty(String propertyName, Object propertyValue) {
