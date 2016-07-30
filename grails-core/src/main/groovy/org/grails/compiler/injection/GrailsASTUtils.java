@@ -726,16 +726,11 @@ public class GrailsASTUtils {
 
         if (!isDomainClass && sourceNode != null) {
             final String sourcePath = sourceNode.getName();
-            final File sourceFile = new File(sourcePath);
-            File parent = sourceFile.getParentFile();
-            while (parent != null && !isDomainClass) {
-                final File parentParent = parent.getParentFile();
-                if (parent.getName().equals(DOMAIN_DIR) &&
-                        parentParent != null &&
-                        parentParent.getName().equals(GRAILS_APP_DIR)) {
-                    isDomainClass = true;
-                }
-                parent = parentParent;
+            final int indexOfGrailsAppDir = sourcePath.lastIndexOf("grails-app");
+            if(indexOfGrailsAppDir >= 0) {
+                final String relativePathToDomainSourceFile = classNode.getName().replaceAll("\\.", File.separator) + ".groovy";
+                final String pathToDomainSourceFile = sourcePath.substring(0, indexOfGrailsAppDir + 11) + DOMAIN_DIR + File.separator + relativePathToDomainSourceFile;
+                isDomainClass = new File(pathToDomainSourceFile).exists();
             }
         }
 
