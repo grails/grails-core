@@ -37,9 +37,4 @@ public class ServiceArtefactHandler extends ArtefactHandlerAdapter {
         return PLUGIN_NAME;
     }
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    public boolean isArtefactClass(Class clazz) {
-        return super.isArtefactClass(clazz) && !DomainClassArtefactHandler.isDomainClass(clazz);
-    }
 }
