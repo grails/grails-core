@@ -85,6 +85,8 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
     private Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<UrlMappingKey, UrlMapping>();
     private Map<String, UrlMapping> namedMappings = new HashMap<String, UrlMapping>();
     private UrlMappingsList mappingsListLookup = new UrlMappingsList();
+    private Set<String> DEFAULT_NAMESPACE_PARAMS = CollectionUtils.newSet(
+            UrlMapping.NAMESPACE, UrlMapping.CONTROLLER, UrlMapping.ACTION);
     private Set<String> DEFAULT_CONTROLLER_PARAMS = CollectionUtils.newSet(
           UrlMapping.CONTROLLER, UrlMapping.ACTION);
     private Set<String> DEFAULT_ACTION_PARAMS = CollectionUtils.newSet(UrlMapping.ACTION);
@@ -349,6 +351,27 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
             if (mapping == null) {
                 lookupParams.removeAll(paramKeys);
                 UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(null, null, namespace, pluginName, httpMethod, version,lookupParams);
+                mapping = mappingsLookup.get(lookupKeyModifiedParams);
+                if (mapping == null) {
+                    lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;
+                    mapping = mappingsLookup.get(lookupKeyModifiedParams);
+                }
+            }
+        }
+        if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
+            Set<String> lookupParams = new HashSet<String>(DEFAULT_NAMESPACE_PARAMS);
+            Set<String> paramKeys = new HashSet<String>(params.keySet());
+            paramKeys.removeAll(lookupParams);
+            lookupParams.addAll(paramKeys);
+            UrlMappingKey lookupKey = new UrlMappingKey(null, null, null, pluginName, httpMethod, version,lookupParams);
+            mapping = mappingsLookup.get(lookupKey);
+            if (mapping == null) {
+                lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
+                mapping = mappingsLookup.get(lookupKey);
+            }
+            if (mapping == null) {
+                lookupParams.removeAll(paramKeys);
+                UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(null, null, null, pluginName, httpMethod, version,lookupParams);
                 mapping = mappingsLookup.get(lookupKeyModifiedParams);
                 if (mapping == null) {
                     lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;

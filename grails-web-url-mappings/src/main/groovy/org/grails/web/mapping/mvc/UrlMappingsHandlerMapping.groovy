@@ -25,6 +25,7 @@ import grails.web.mime.MimeTypeResolver
 import grails.web.http.HttpHeaders
 import org.grails.exceptions.ExceptionUtils
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.Assert
@@ -162,9 +163,12 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
                     info.configure(webRequest)
                     if(info instanceof GrailsControllerUrlMappingInfo) {
                         request.setAttribute(MATCHED_REQUEST, info)
+                        request.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, ((GrailsControllerUrlMappingInfo)info).controllerClass)
                         return info
                     }
-                    else if(info.viewName || info.URI) return info
+                    else if(info.viewName || info.URI) {
+                        return info
+                    }
                 }
             }
 
