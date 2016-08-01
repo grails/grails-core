@@ -17,6 +17,7 @@ package org.grails.web.mapping;
 
 import java.util.Map;
 
+import grails.util.GrailsStringUtils;
 import grails.web.mapping.LinkGenerator;
 import grails.web.mapping.UrlMapping;
 import grails.util.GrailsMetaClassUtils;
@@ -120,6 +121,13 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
                     value = getCacheKeyValueForResource(value);
                 }
                 appendKeyValue(buffer, map, key, value);
+            }
+            if (map.get(UrlMapping.NAMESPACE) == null) {
+                String namespace = getRequestStateLookupStrategy().getControllerNamespace();
+                if (GrailsStringUtils.isNotEmpty(namespace)) {
+                    appendCommaIfNotFirst(buffer, first);
+                    appendKeyValue(buffer, map, UrlMapping.NAMESPACE, namespace);
+                }
             }
         }
         buffer.append(CLOSING_BRACKET);

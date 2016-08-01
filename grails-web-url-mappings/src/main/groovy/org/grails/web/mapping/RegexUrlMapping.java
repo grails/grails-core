@@ -558,6 +558,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         usedParams.add("controller");
         usedParams.add("action");
         usedParams.add("namespace");
+        usedParams.add("plugin");
 
         // A 'null' encoding will cause an exception, so default to 'UTF-8'.
         if (encoding == null) {
