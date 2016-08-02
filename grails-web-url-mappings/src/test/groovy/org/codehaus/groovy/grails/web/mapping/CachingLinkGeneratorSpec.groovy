@@ -29,6 +29,24 @@ class CachingLinkGeneratorSpec extends Specification {
         RequestContextHolder.resetRequestAttributes()
     }
 
+    void "test controller"() {
+        given:
+        String key
+
+        when: "its in the request"
+        request.setControllerName("foo")
+        key = linkGenerator.makeKey([action: "bar"])
+
+        then: "its in the key"
+        key == "link[controller:foo, action:bar]"
+
+        when: "its in the params"
+        key = linkGenerator.makeKey([controller: "foo", action: "bar"])
+
+        then: "its in the key"
+        key == "link[controller:foo, action:bar]"
+    }
+
     void "test namespace"() {
         given:
         String key
@@ -45,8 +63,17 @@ class CachingLinkGeneratorSpec extends Specification {
         then: "its in the key"
         key == "link[controller:foo, action:bar, namespace:foo]"
 
-        when: "its in the request"
+        when: "its in the request but the controller doesn't match"
         request.setControllerNamespace("fooReq")
+        request.setControllerName("x")
+        key = linkGenerator.makeKey([controller: "foo", action: "bar"])
+
+        then: "its not in the key"
+        key == "link[controller:foo, action:bar]"
+
+        when: "its in the request and the controller matches"
+        request.setControllerNamespace("fooReq")
+        request.setControllerName("foo")
         key = linkGenerator.makeKey([controller: "foo", action: "bar"])
 
         then: "its in the key"

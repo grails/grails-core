@@ -302,12 +302,22 @@ class LinkGeneratorSpec extends Specification {
 
         when: "The namespace is in the request params"
         webRequest.setControllerNamespace("fooBarReq")
+        webRequest.setControllerName('one')
         linkParams.remove('namespace')
         linkParams.controller = 'one'
         linkParams.action = 'two'
 
         then: "it exists in the url"
         link == '/fooBarReq/one/two'
+
+        when: "The namespace is in the request params and the current controller is different"
+        webRequest.setControllerNamespace("fooBarReq")
+        webRequest.setControllerName("abc")
+        linkParams.controller = 'one'
+        linkParams.action = 'two'
+
+        then: "it is not included in the URL"
+        link == '/one/two'
 
         when: "Params and the request attribute exist"
         webRequest.setControllerNamespace("fooBarReq")
@@ -318,6 +328,7 @@ class LinkGeneratorSpec extends Specification {
         then: "params wins"
         link == '/fooBarParam/one/two'
     }
+
     
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()

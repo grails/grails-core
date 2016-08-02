@@ -104,6 +104,18 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         if (map==null || map.isEmpty()) {
             buffer.append(EMPTY_MAP_STRING);
         }
+        final String requestControllerName = getRequestStateLookupStrategy().getControllerName();
+        if (map.get(UrlMapping.ACTION) != null && map.get(UrlMapping.CONTROLLER) == null) {
+            Object action = map.remove(UrlMapping.ACTION);
+            map.put(UrlMapping.CONTROLLER, requestControllerName);
+            map.put(UrlMapping.ACTION, action);
+        }
+        if (map.get(UrlMapping.NAMESPACE) == null && map.get(UrlMapping.CONTROLLER) == requestControllerName) {
+            String namespace = getRequestStateLookupStrategy().getControllerNamespace();
+            if (GrailsStringUtils.isNotEmpty(namespace)) {
+                map.put(UrlMapping.NAMESPACE, namespace);
+            }
+        }
         buffer.append(OPENING_BRACKET);
         boolean first = true;
         for (Object o : map.entrySet()) {
@@ -112,21 +124,10 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
             if (value == null) continue;
             first = appendCommaIfNotFirst(buffer, first);
             Object key = entry.getKey();
-            if (UrlMapping.ACTION.equals(key) && map.get(UrlMapping.CONTROLLER) == null) {
-                appendKeyValue(buffer, map, UrlMapping.CONTROLLER, getRequestStateLookupStrategy().getControllerName());
-                appendCommaIfNotFirst(buffer, false);
-            }
             if(RESOURCE_PREFIX.equals(key)) {
                 value = getCacheKeyValueForResource(value);
             }
             appendKeyValue(buffer, map, key, value);
-        }
-        if (map.get(UrlMapping.NAMESPACE) == null) {
-            String namespace = getRequestStateLookupStrategy().getControllerNamespace();
-            if (GrailsStringUtils.isNotEmpty(namespace)) {
-                appendCommaIfNotFirst(buffer, first);
-                appendKeyValue(buffer, map, UrlMapping.NAMESPACE, namespace);
-            }
         }
         buffer.append(CLOSING_BRACKET);
     }
