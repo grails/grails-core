@@ -52,6 +52,7 @@ import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.commands.ApplicationContextScriptTask
+import org.grails.gradle.plugin.commands.RuntimeApplicationContextCommandTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
@@ -121,6 +122,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         createBuildPropertiesTask(project)
 
         configureRunScript(project)
+
+        configureRunCommand(project)
 
         configurePathingJar(project)
     }
@@ -362,6 +365,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
                 task.args mainClassName
             }
+            project.tasks.withType(RuntimeApplicationContextCommandTask) { RuntimeApplicationContextCommandTask task ->
+                task.args mainClassName
+            }
         }
 
         consoleTask.dependsOn(tasks.findByName('classes'), findMainClass)
@@ -502,6 +508,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected void configureRunScript(Project project) {
         project.tasks.create("runScript", ApplicationContextScriptTask) {
+            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+            if (project.hasProperty('args')) {
+                args(CommandLineParser.translateCommandline(project.args))
+            }
+        }
+    }
+
+    protected void configureRunCommand(Project project) {
+        project.tasks.create("runCommand", RuntimeApplicationContextCommandTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
             systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             if (project.hasProperty('args')) {
