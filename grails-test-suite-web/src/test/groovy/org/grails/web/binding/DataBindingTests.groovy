@@ -49,6 +49,19 @@ class DataBindingTests  {
     }
 
     @Test
+    void testBindingWithIndexedBlankId() {
+        def city = new City()
+
+        request.addParameter 'people[0].id', ''
+
+        city.properties = request
+
+        assert !city.hasErrors()
+        assert city.people instanceof Set
+        assert city.people.size() == 1
+    }
+
+    @Test
     void testUpdatingSetElementByIdThatDoesNotExist() {
         def city = new City()
 
