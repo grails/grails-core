@@ -231,9 +231,11 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         AntBuilder ant = new GrailsConsoleAntBuilder()
         def ln = System.getProperty("line.separator")
 
-        def repositories = profile.repositories.collect() { String url ->
-            "    maven { url \"${url}\" }".toString()
-        }.unique().join(ln)
+        Closure repositoryUrl = { int spaces, String repo ->
+            repo.startsWith('http') ? "${' ' * spaces}maven { url \"${repo}\" }" : "${' ' * spaces}${repo}"
+        }
+
+        def repositories = profile.repositories.collect(repositoryUrl.curry(4)).unique().join(ln)
 
         List<Dependency> profileDependencies = profile.dependencies
         def dependencies = profileDependencies.findAll() { Dependency dep ->
@@ -258,9 +260,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             "    ${dep.scope} \"${artifactStr}\"".toString()
         }.unique().join(ln)
 
-        def buildRepositories = profile.buildRepositories.collect() { String url ->
-            "        maven { url \"${url}\" }".toString()
-        }.unique().join(ln)
+        def buildRepositories = profile.buildRepositories.collect(repositoryUrl.curry(8)).unique().join(ln)
 
         buildDependencies = buildDependencies.collect() { Dependency dep ->
             String artifactStr = resolveArtifactString(dep)
