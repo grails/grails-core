@@ -4,7 +4,6 @@ import grails.artefact.Artefact
 import grails.core.DefaultGrailsApplication
 import grails.util.GrailsWebMockUtil
 import grails.web.Action
-import grails.web.mapping.UrlMappingData
 import org.codehaus.groovy.grails.web.mapping.AbstractUrlMappingsSpec
 import org.grails.web.mapping.DefaultUrlMappingData
 import org.grails.web.mapping.DefaultUrlMappingInfo
