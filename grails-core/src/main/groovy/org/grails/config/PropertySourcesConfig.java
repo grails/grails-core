@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 3.0
  */
-public class PropertySourcesConfig extends NavigableMapConfig {
+public class PropertySourcesConfig extends NavigableMapConfig implements Cloneable {
 
     protected PropertySources propertySources;
     protected PropertySourcesPropertyResolver propertySourcesPropertyResolver;
