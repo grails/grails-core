@@ -30,7 +30,7 @@ import java.util.regex.Pattern
 @CompileStatic
 abstract class GrailsStringUtils extends StringUtils{
 
-    private static final Pattern BOOLEAN_PATTERN = Pattern.compile(/^on$|^true$|^yes$|^1$/, Pattern.CASE_INSENSITIVE)
+    private static final Pattern BOOLEAN_PATTERN = Pattern.compile(/^on$|^true$|^yes$|^right$|^1$/, Pattern.CASE_INSENSITIVE)
 
     /**
      * Converts a string to a boolean.

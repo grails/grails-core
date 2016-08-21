@@ -29,12 +29,15 @@ class GrailsStringUtilsSpec extends Specification{
             GrailsStringUtils.toBoolean("yes") == true
             GrailsStringUtils.toBoolean("true") == true
             GrailsStringUtils.toBoolean("1") == true
+            GrailsStringUtils.toBoolean("right") == true
             GrailsStringUtils.toBoolean("ON") == true
             GrailsStringUtils.toBoolean("Yes") == true
             GrailsStringUtils.toBoolean("TRue") == true
+            GrailsStringUtils.toBoolean("Right") == true
             GrailsStringUtils.toBoolean("false") == false
             GrailsStringUtils.toBoolean("0") == false
             GrailsStringUtils.toBoolean("off") == false
+            GrailsStringUtils.toBoolean("wrong") == false
     }
     void "Test substringBefore method"() {
         expect:
