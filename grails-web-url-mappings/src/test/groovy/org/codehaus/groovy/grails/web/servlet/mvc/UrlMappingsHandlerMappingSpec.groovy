@@ -4,17 +4,19 @@ import grails.artefact.Artefact
 import grails.core.DefaultGrailsApplication
 import grails.util.GrailsWebMockUtil
 import grails.web.Action
-
 import org.codehaus.groovy.grails.web.mapping.AbstractUrlMappingsSpec
+import org.grails.web.mapping.DefaultUrlMappingData
+import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappings
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.view.InternalResourceView
 
 /**
  * Created by graemerocher on 26/05/14.
  */
-class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
+class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec {
 
     void "Test that a matched URL returns a URLMappingInfo"() {
 
@@ -57,6 +59,22 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec{
         then:"The result is null"
         result == null
 
+    }
+
+    void "test modelAndView is returned for URI"() {
+        given:
+        def grailsApplication = new DefaultGrailsApplication(FooController)
+        grailsApplication.initialise()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        webRequest.renderView = true
+        def request = webRequest.request
+        def handlerAdapter = new UrlMappingsInfoHandlerAdapter()
+        def result = handlerAdapter.handle(request, webRequest.response, new DefaultUrlMappingInfo("/index.html", new DefaultUrlMappingData("/"), grailsApplication))
+
+        expect:
+        result
+        result.view instanceof InternalResourceView
+        result.view.getUrl() == "/index.html"
     }
 
     void cleanup() {

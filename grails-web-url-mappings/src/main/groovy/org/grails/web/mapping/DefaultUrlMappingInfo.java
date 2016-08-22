@@ -216,7 +216,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
     public String getControllerName() {
         String name = evaluateNameForValue(controllerName);
-        if (name == null && getViewName() == null) {
+        if (name == null && getViewName() == null && uri == null) {
             throw new UrlMappingException("Unable to establish controller name to dispatch for [" +
                     controllerName + "]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
         }
