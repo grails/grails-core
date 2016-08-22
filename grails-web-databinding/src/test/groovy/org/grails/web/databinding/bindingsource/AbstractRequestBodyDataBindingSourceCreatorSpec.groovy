@@ -11,9 +11,11 @@ import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import javax.servlet.ServletContext
 
@@ -24,6 +26,9 @@ class AbstractRequestBodyDataBindingSourceCreatorSpec extends Specification {
 
     @Shared
     AbstractRequestBodyDataBindingSourceCreator bindingSourceCreator
+
+    @Shared
+    ServletContext servletContext = new MockServletContext()
 
     void setupSpec() {
         bindingSourceCreator = new AbstractRequestBodyDataBindingSourceCreator() {
@@ -40,34 +45,42 @@ class AbstractRequestBodyDataBindingSourceCreatorSpec extends Specification {
         }
     }
 
-    void "test binding request"() {
+    MockHttpServletRequest build(String method, String content) {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.request(method, new URI("")).param("id", "url")
+        if (content != null) {
+            builder.content(content)
+        }
+        MockHttpServletRequest request = builder.buildRequest(servletContext)
+        request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, new GrailsWebRequest(request, new MockHttpServletResponse(), servletContext))
+        request
+    }
+
+    @Unroll
+    void "test binding request #request.method with content length #request.contentLength"() {
         given:
-        URI uri = new URI("")
-        ServletContext servletContext = new MockServletContext()
         MimeType mimeType = MimeType.ALL
-        MockHttpServletRequest reqNoContentLength = MockMvcRequestBuilders.get(uri).param("id", "url").buildRequest(servletContext)
-        MockHttpServletRequest reqContentLength0 = MockMvcRequestBuilders.get(uri).param("id", "url").content("").buildRequest(servletContext)
-        reqContentLength0.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, new GrailsWebRequest(reqContentLength0, new MockHttpServletResponse(), servletContext))
-        MockHttpServletRequest reqContentLengthGt0 = MockMvcRequestBuilders.get(uri).param("id", "url").content("x").buildRequest(servletContext)
         DataBindingSource source
 
-        when: "no content length exists"
-        source = bindingSourceCreator.createDataBindingSource(mimeType, Object, reqNoContentLength)
+        when:
+        source = bindingSourceCreator.createDataBindingSource(mimeType, Object, request)
 
-        then: "the request is parsed"
-        source.identifierValue == "request"
+        then:
+        source.identifierValue == expectedSource
 
-        when: "the content length is > 0"
-        source = bindingSourceCreator.createDataBindingSource(mimeType, Object, reqContentLengthGt0)
-
-        then: "the request is parsed"
-        source.identifierValue == "request"
-
-        when: "the content length == 0"
-        source = bindingSourceCreator.createDataBindingSource(mimeType, Object, reqContentLength0)
-
-        then: "the params are used"
-        source.identifierValue == "url"
+        where:
+        expectedSource | request
+        "url"          | build("GET", null)
+        "url"          | build("GET", "")
+        "url"          | build("GET", "x")
+        "url"          | build("DELETE", null)
+        "url"          | build("DELETE", "")
+        "url"          | build("DELETE", "x")
+        "request"      | build("POST", null)
+        "url"          | build("POST", "")
+        "request"      | build("POST", "x")
+        "request"      | build("PUT", null)
+        "url"          | build("PUT", "")
+        "request"      | build("PUT", "x")
     }
 }
 

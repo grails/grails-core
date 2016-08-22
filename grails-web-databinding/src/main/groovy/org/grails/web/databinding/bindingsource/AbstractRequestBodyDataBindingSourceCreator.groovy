@@ -18,6 +18,7 @@ package org.grails.web.databinding.bindingsource
 import grails.databinding.CollectionDataBindingSource
 import grails.databinding.DataBindingSource
 import groovy.transform.CompileStatic
+import org.springframework.http.HttpMethod
 
 import javax.servlet.http.HttpServletRequest
 
@@ -29,6 +30,8 @@ import grails.web.servlet.mvc.GrailsParameterMap
 @CompileStatic
 abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBindingSourceCreator {
 
+    List<HttpMethod> ignoredRequestBodyMethods = [HttpMethod.GET, HttpMethod.DELETE]
+
     @Override
     Class getTargetType() {
         Object
@@ -39,7 +42,8 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
         try {
             if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
-                if (req.contentLength != 0) {
+                HttpMethod method = HttpMethod.resolve(req.method)
+                if (req.contentLength != 0 && !ignoredRequestBodyMethods.contains(method)) {
                     def is = req.getInputStream()
                     return createBindingSource(is, req.getCharacterEncoding())
                 }
