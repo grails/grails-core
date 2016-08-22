@@ -15,8 +15,8 @@
  */
 package org.grails.web.databinding.bindingsource
 
-import grails.databinding.CollectionDataBindingSource;
-import grails.databinding.DataBindingSource;
+import grails.databinding.CollectionDataBindingSource
+import grails.databinding.DataBindingSource
 import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
@@ -39,8 +39,10 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
         try {
             if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
-                def is = req.getInputStream()
-                return createBindingSource(is, req.getCharacterEncoding())
+                if (req.contentLength != 0) {
+                    def is = req.getInputStream()
+                    return createBindingSource(is, req.getCharacterEncoding())
+                }
             }
             if(bindingSource instanceof InputStream) {
                 def is = (InputStream)bindingSource
