@@ -12,6 +12,7 @@ class NestedXmlBindingTests {
 
     @Test
     void testNestedXmlBinding() {
+        request.method = 'POST'
         request.xml = '''
 <person>
 <name>John Doe</name>
@@ -36,6 +37,7 @@ class NestedXmlBindingTests {
 
     @Test
     void testNestedXmlBindingWithId() {
+        request.method = 'POST'
         request.xml = '''
 <person>
 <name>John Doe</name>
@@ -61,6 +63,7 @@ class NestedXmlBindingTests {
 
     @Test
     void testBindToArrayOfDomains() {
+        request.method = 'POST'
         request.xml = '''
 <person>
    <name>John Doe</name>
@@ -94,6 +97,7 @@ class NestedXmlBindingTests {
 
     @Test
     void testBindToOne() {
+        request.method = 'POST'
         request.xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <foo>
 <bar id="1" />
@@ -110,6 +114,7 @@ class NestedXmlBindingTests {
 
     @Test
     void testBindToArrayOfDomainsWithJson() {
+        request.method = 'POST'
         request.json = '''
 {
 "name": "John Doe",
