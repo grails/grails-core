@@ -355,7 +355,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             def propName = indexedPropertyReferenceDescriptor.propertyName
 
             def idValue = getIdentifierValueFrom(val)
-            if (idValue != null) {
+            if (idValue != null && idValue != "") {
                 def propertyType = getDomainClassType(obj, propName)
                 def referencedType = getReferencedTypeForCollection propName, obj
                 if (referencedType != null && isDomainClass(referencedType)) {
