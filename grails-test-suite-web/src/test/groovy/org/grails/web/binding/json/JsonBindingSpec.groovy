@@ -11,6 +11,7 @@ class JsonBindingSpec extends Specification {
 
     void 'Test binding JSON body'() {
         given:
+        request.method = 'POST'
         request.json = '''
             {
     "name": "Douglas", "age": "42"}
@@ -25,6 +26,7 @@ class JsonBindingSpec extends Specification {
 
     void 'Test binding nested collection elements'() {
         given:
+        request.method = 'POST'
         request.json = '''
             {
     "lastName": "Brown",
@@ -50,6 +52,7 @@ class JsonBindingSpec extends Specification {
 
     void 'Test parsing invalid JSON'() {
         when:
+        request.method = 'POST'
         request.json = '''
             {
     "name": [foo.[} this is unparseable JSON{[
@@ -69,6 +72,7 @@ class JsonBindingSpec extends Specification {
     void 'Test parsing JSON with other than UTF-8 content type'() {
         given:
             String jsonString = '{"name":"Hello öäåÖÄÅ"}'
+            request.method = 'POST'
             request.contentType = 'application/json; charset=UTF-16'
             request.content = jsonString.getBytes("UTF-16")
         when:

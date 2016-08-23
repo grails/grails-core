@@ -13,6 +13,7 @@ class XmlBindingSpec extends Specification {
 
     void 'Test binding XML body'() {
         when:
+        request.method = 'POST'
         request.xml = '''
 <person>
     <name>Douglas</name>
@@ -41,6 +42,7 @@ class XmlBindingSpec extends Specification {
 
     void 'Test parsing invalid XML'() {
         given:
+        request.method = 'POST'
         request.xml = '''<person><someInvalid<this is invalid XML'''
 
         when:
