@@ -10,6 +10,7 @@ class HalXmlBindingSpec extends Specification {
 
     void 'Test binding XML body'() {
         when:
+        request.method = 'POST'
         request.xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <resource href="http://localhost/people/1" hreflang="en">
     <name>Douglas</name>

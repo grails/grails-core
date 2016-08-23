@@ -10,6 +10,7 @@ import grails.test.mixin.TestFor
 class BindXmlWithAssociationTests {
 
     void testBindXmlWithAssociatedId() {
+        request.method = 'POST'
         request.xml = '''
 <person><name>xyz</name><book id='1'></book></person>
 '''
@@ -20,6 +21,7 @@ class BindXmlWithAssociationTests {
     }
 
     void testBindXmlWithAssociatedIdAndProperties() {
+        request.method = 'POST'
         request.xml = '''
 <person><name>xyz</name><book id='1'><title>Blah</title><pages>300</pages></book></person>
 '''
