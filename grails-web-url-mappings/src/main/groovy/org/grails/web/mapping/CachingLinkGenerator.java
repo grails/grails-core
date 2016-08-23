@@ -125,10 +125,6 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
                 if (value == null) continue;
                 first = appendCommaIfNotFirst(buffer, first);
                 Object key = entry.getKey();
-                if (UrlMapping.ACTION.equals(key) && map.get(UrlMapping.CONTROLLER) == null) {
-                    appendKeyValue(buffer, map, UrlMapping.CONTROLLER, getRequestStateLookupStrategy().getControllerName());
-                    appendCommaIfNotFirst(buffer, false);
-                }
                 if (RESOURCE_PREFIX.equals(key)) {
                     value = getCacheKeyValueForResource(value);
                 }
