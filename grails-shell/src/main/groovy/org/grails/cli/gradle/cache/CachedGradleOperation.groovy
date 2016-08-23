@@ -15,14 +15,12 @@
  */
 package org.grails.cli.gradle.cache
 
-import grails.io.support.SystemOutErrCapturer
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.internal.consumer.ConnectorServices
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector
-import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.ProjectContext
 
 import java.util.concurrent.Callable
@@ -66,16 +64,13 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
         }
 
         try {
-            DefaultGradleConnector dgc = (DefaultGradleConnector)GradleConnector.newConnector()
-                                                                                .forProjectDirectory(projectContext.baseDir)
+            GradleConnector dgc = (GradleConnector)GradleConnector.newConnector()
+                                                                  .forProjectDirectory(projectContext.baseDir)
 
-            dgc.embedded(true)
             def projectConnection = dgc.connect()
             try {
                 updateStatusMessage()
-                def data = SystemOutErrCapturer.withNullOutput {
-                    readFromGradle(projectConnection)
-                }
+                def data = readFromGradle(projectConnection)
                 storeData(data)
                 return data
             } finally {
