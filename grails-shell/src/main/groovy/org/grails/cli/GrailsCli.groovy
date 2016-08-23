@@ -18,6 +18,7 @@ package org.grails.cli
 import grails.build.logging.GrailsConsole
 import grails.build.proxy.SystemPropertiesAuthenticator
 import grails.config.ConfigMap
+import grails.io.support.SystemOutErrCapturer
 import grails.io.support.SystemStreamsRedirector
 import grails.util.BuildSettings
 import grails.util.Environment
@@ -27,7 +28,6 @@ import jline.UnixTerminal
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
 import jline.internal.NonBlockingInputStream
-import org.gradle.impldep.org.apache.commons.io.output.NullOutputStream
 import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
@@ -545,8 +545,8 @@ class GrailsCli {
                         def config = applicationConfig
 
                         BuildActionExecuter buildActionExecuter = connection.action(new ClasspathBuildAction())
-                        buildActionExecuter.standardOutput = new NullOutputStream()
-                        buildActionExecuter.standardError  = new NullOutputStream()
+                        buildActionExecuter.standardOutput = System.out
+                        buildActionExecuter.standardError  = System.err
                         buildActionExecuter.withArguments("-Dgrails.profile=${config.navigate("grails", "profile")}")
 
                         def grailsClasspath = buildActionExecuter.run()

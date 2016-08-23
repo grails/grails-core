@@ -68,7 +68,7 @@ class SystemOutErrCapturer {
     }
     
     @CompileStatic
-    private static class NullOutputStream extends OutputStream {
+    public static class NullOutputStream extends OutputStream {
         @Override
         public void write(byte[] b) throws IOException {
             
