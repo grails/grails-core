@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.web.servlet.HandlerAdapter
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.view.InternalResourceView
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -134,6 +135,8 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 else {
                     redirector?.redirect(uri: i.toString())
                 }
+            } else if (info.getURI()) {
+                return new ModelAndView(new InternalResourceView(info.getURI()))
             }
         }
         return null

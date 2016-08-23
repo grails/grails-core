@@ -104,6 +104,18 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         if (map==null || map.isEmpty()) {
             buffer.append(EMPTY_MAP_STRING);
         }
+        final String requestControllerName = getRequestStateLookupStrategy().getControllerName();
+        if (map.get(UrlMapping.ACTION) != null && map.get(UrlMapping.CONTROLLER) == null) {
+            Object action = map.remove(UrlMapping.ACTION);
+            map.put(UrlMapping.CONTROLLER, requestControllerName);
+            map.put(UrlMapping.ACTION, action);
+        }
+        if (map.get(UrlMapping.NAMESPACE) == null && map.get(UrlMapping.CONTROLLER) == requestControllerName) {
+            String namespace = getRequestStateLookupStrategy().getControllerNamespace();
+            if (GrailsStringUtils.isNotEmpty(namespace)) {
+                map.put(UrlMapping.NAMESPACE, namespace);
+            }
+        }
         buffer.append(OPENING_BRACKET);
         if (map != null) {
             boolean first = true;

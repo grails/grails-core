@@ -104,7 +104,7 @@ class RestfulController<T> {
 
         request.withFormat {
             form multipartForm {
-                flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
+                flash.message = message(code: 'default.created.message', args: [classMessageArg, instance.id])
                 redirect instance
             }
             '*' {
@@ -160,7 +160,7 @@ class RestfulController<T> {
         updateResource instance
         request.withFormat {
             form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
+                flash.message = message(code: 'default.updated.message', args: [classMessageArg, instance.id])
                 redirect instance
             }
             '*'{
@@ -193,7 +193,7 @@ class RestfulController<T> {
 
         request.withFormat {
             form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
+                flash.message = message(code: 'default.deleted.message', args: [classMessageArg, instance.id])
                 redirect action:"index", method:"GET"
             }
             '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
@@ -292,7 +292,7 @@ class RestfulController<T> {
     protected void notFound() {
         request.withFormat {
             form multipartForm {
-                flash.message = message(code: 'default.not.found.message', args: [message(code: '${propertyName}.label', default: '${className}'), params.id])
+                flash.message = message(code: 'default.not.found.message', args: [classMessageArg, params.id])
                 redirect action: "index", method: "GET"
             }
             '*'{ render status: NOT_FOUND }
@@ -325,6 +325,10 @@ class RestfulController<T> {
      * @param resource The resource to be deleted
      */
     protected void deleteResource(T resource) {
-        resource.delete flush:true
+        resource.delete flush: true
+    }
+
+    protected String getClassMessageArg() {
+        message(code: "${resourceName}.label".toString(), default: resourceClassName)
     }
 }
