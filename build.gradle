@@ -45,7 +45,7 @@ ext {
     reactorVersion = '2.0.7.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
-    springBootVersion = "1.4.0.RC1"
+    springBootVersion = "1.4.0.RELEASE"
     springLoadedVersion = "1.2.6.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.3.1.RELEASE"
