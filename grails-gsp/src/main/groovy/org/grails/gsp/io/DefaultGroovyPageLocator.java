@@ -20,7 +20,6 @@ import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
-import grails.util.Metadata;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.gsp.GroovyPage;
@@ -310,9 +309,9 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
             }
         } else {
             searchPaths = CollectionUtils.newList(
-                GrailsResourceUtils.appendPiecesForUri(SLASHED_VIEWS_DIR_PATH, uri),
-                GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
-                uri);
+                    GrailsResourceUtils.appendPiecesForUri(SLASHED_VIEWS_DIR_PATH, uri),
+                    GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
+                    uri);
         }
         return searchPaths;
     }
