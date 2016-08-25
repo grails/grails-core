@@ -15,6 +15,9 @@
  */
 package grails.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @since 2.3.4
  */
 public class CacheEntry<V> {
+    private static final Logger LOG = LoggerFactory.getLogger(CacheEntry.class);
     private final AtomicReference<V> valueRef=new AtomicReference<V>(null);
     private long createdMillis;
     private final ReadWriteLock lock=new ReentrantReadWriteLock();
@@ -131,10 +135,14 @@ public class CacheEntry<V> {
                         if(isInitialized()) {
                             return getValueWhileUpdating(cacheRequestObject);
                         } else {
+                            if(LOG.isDebugEnabled()) {
+                                LOG.debug("Locking cache for update");
+                            }
                             writeLock.lock();
                         }
                     }
                 } else {
+                    LOG.debug("Locking cache for update");
                     writeLock.lock();
                 }
                 lockAcquired = true;
@@ -142,6 +150,9 @@ public class CacheEntry<V> {
                 if (!isInitialized() || shouldUpdate(beforeLockingCreatedMillis, cacheRequestObject)) {
                     try {
                         value = updateValue(getValue(), updater, cacheRequestObject);
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("Updating cache for value [{}]", value);
+                        }
                         setValue(value);
                     }
                     catch (Exception e) {
@@ -154,6 +165,9 @@ public class CacheEntry<V> {
                 return value;
             } finally {
                 if(lockAcquired) {
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Unlocking cache for update");
+                    }
                     writeLock.unlock();
                 }
             }
