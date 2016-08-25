@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.view.AbstractGrailsView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.View;
 
@@ -33,6 +35,7 @@ import com.opensymphony.module.sitemesh.RequestConstants;
 import com.opensymphony.sitemesh.Content;
 
 public class GrailsLayoutView extends AbstractGrailsView {
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsLayoutView.class);
     GroovyPageLayoutFinder groovyPageLayoutFinder;
     
     protected View innerView;
@@ -54,6 +57,7 @@ public class GrailsLayoutView extends AbstractGrailsView {
             HttpServletResponse response) throws Exception {
             Content content = obtainContent(model, webRequest, request, response);
         if (content != null) {
+
             beforeDecorating(content, model, webRequest, request, response);
             switch (request.getDispatcherType()) {
                 case INCLUDE:
@@ -62,14 +66,24 @@ public class GrailsLayoutView extends AbstractGrailsView {
                 case ERROR:
                 case FORWARD:
                 case REQUEST:
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("Finding layout for request and content" );
+                    }
                     SpringMVCViewDecorator decorator = (SpringMVCViewDecorator) groovyPageLayoutFinder.findLayout(request, content);
                     if (decorator != null) {
+                        if(LOG.isDebugEnabled()) {
+                            LOG.debug("Found layout. Rendering content for layout and model {}", decorator.getPage(), model);
+                        }
+
                         decorator.render(content, model, request, response, webRequest.getServletContext());
                         return;
                     }
                     break;
             }
             PrintWriter writer = response.getWriter();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Layout not applicable to response, writing original content");
+            }
             content.writeOriginal(writer);
             if (!response.isCommitted()) {
                 writer.flush();
@@ -122,6 +136,9 @@ public class GrailsLayoutView extends AbstractGrailsView {
     protected void renderInnerView(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
             HttpServletResponse response,
             GrailsContentBufferingResponse contentBufferingResponse) throws Exception {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Rendering inner view for layout and model {}", model);
+        }
         innerView.render(model, request, contentBufferingResponse);
     }
 

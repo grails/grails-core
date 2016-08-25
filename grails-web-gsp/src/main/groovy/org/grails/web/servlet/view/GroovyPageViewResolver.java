@@ -33,6 +33,8 @@ import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
 import org.grails.gsp.io.GroovyPageScriptSource;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.Ordered;
@@ -49,7 +51,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @since 0.1
  */
 public class GroovyPageViewResolver extends InternalResourceViewResolver implements GrailsViewResolver {
-    private static final Log LOG = LogFactory.getLog(GroovyPageViewResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GroovyPageViewResolver.class);
 
     public static final String GSP_SUFFIX = ".gsp";
     public static final String JSP_SUFFIX = ".jsp";
@@ -143,8 +145,8 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
      * @return prefix for cache key that contains current controller's context (currently plugin and namespace)
      */
     protected String resolveCurrentControllerKeyPrefixes() {
-        String pluginContextPath = null;
-        String namespace = null;
+        String pluginContextPath;
+        String namespace;
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if(webRequest != null) {
             namespace = webRequest.getControllerNamespace();
@@ -183,9 +185,15 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         
         GroovyPageScriptSource scriptSource;
         if (controller == null) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Locating GSP view for path {}", viewName);
+            }
             scriptSource = groovyPageLocator.findViewByPath(viewName);
         }
         else {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Locating GSP view for controller {} and path {}",controller, viewName);
+            }
             scriptSource = groovyPageLocator.findView(controller, viewName);
         }
         if (scriptSource != null) {
@@ -208,6 +216,9 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
         gspSpringView.setScriptSource(scriptSource);
         try {
             gspSpringView.afterPropertiesSet();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Initialized GSP view for URI [{}]", gspView);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error initializing GroovyPageView", e);
         }
@@ -216,6 +227,9 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
 
     protected View createFallbackView(String viewName) throws Exception {
         if(resolveJspView) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("No GSP view found, falling back to locating JSTL view for name [{}]", viewName);
+            }
             return createJstlView(viewName);
         }
         return null;
