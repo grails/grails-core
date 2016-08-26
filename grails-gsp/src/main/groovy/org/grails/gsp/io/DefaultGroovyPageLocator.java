@@ -23,6 +23,7 @@ import grails.util.Environment;
 import grails.util.Metadata;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.grails.core.io.GrailsResource;
 import org.grails.gsp.GroovyPage;
 import org.grails.gsp.GroovyPageBinding;
 import org.grails.io.support.GrailsResourceUtils;
@@ -105,12 +106,36 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
     }
 
     public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, TemplateVariableBinding binding) {
-        String contextPath = resolveContextPath(pluginName, uri, binding);
 
-        GroovyPageScriptSource scriptSource = findPageInBinding(GrailsResourceUtils.appendPiecesForUri(contextPath, uri), binding);
+        GroovyPageScriptSource scriptSource = null;
+        String contextPath = resolveContextPath(pluginName, uri, binding);
+        String fullURI = GrailsResourceUtils.appendPiecesForUri(contextPath, uri);
+
+        if(pluginManager != null) {
+            GrailsPlugin grailsPlugin = pluginManager.getGrailsPlugin(pluginName);
+            if(grailsPlugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryGrailsPlugin = (BinaryGrailsPlugin) grailsPlugin;
+                File projectDirectory = binaryGrailsPlugin.getProjectDirectory();
+                if(projectDirectory != null) {
+                    File f = new File(projectDirectory, GrailsResourceUtils.VIEWS_DIR_PATH + uri);
+                    if(f.exists()) {
+                        scriptSource = new GroovyPageResourceScriptSource(uri, new FileSystemResource(f));
+                    }
+                }
+                else {
+                    scriptSource = resolveViewInBinaryPlugin(binaryGrailsPlugin, uri);
+                }
+            }
+        }
+
+        if(scriptSource == null) {
+            scriptSource = findPageInBinding(fullURI, binding);
+        }
+
         if (scriptSource == null) {
             scriptSource = findResourceScriptSource(uri);
         }
+
 
         //last effort to resolve and force name of plugin to use camel case
         if (scriptSource == null) {

@@ -98,6 +98,10 @@ public class GrailsResourceUtils {
      * The path to the views directory
      */
     public static final String VIEWS_DIR_PATH = GRAILS_APP_DIR + "/views/";
+    /**
+     * The path to the views directory without a trailing slash
+     */
+    public static final String VIEWS_DIR_PATH_NO_SLASH = GRAILS_APP_DIR + "/views";
 
     public static final String REGEX_FILE_SEPARATOR = "[\\\\/]"; // backslashes need escaping in regexes
 
