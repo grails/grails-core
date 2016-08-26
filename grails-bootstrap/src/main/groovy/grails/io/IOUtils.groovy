@@ -124,7 +124,7 @@ class IOUtils extends SpringIOUtils {
      * @return The JAR file or null if it can't be found
      */
     static File findJarFile(URL resource) {
-        if(resource.protocol == 'jar') {
+        if(resource?.protocol == 'jar') {
             def absolutePath = resource?.path
             if (absolutePath) {
                 try {
