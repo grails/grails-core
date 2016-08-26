@@ -304,21 +304,22 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
 
         uri = removeViewLocationPrefixes(uri);
         if (warDeployed) {
-                if (uri.startsWith(PLUGINS_PATH)) {
-                    PluginViewPathInfo pathInfo = getPluginViewPathInfo(uri);
+            if (uri.startsWith(PLUGINS_PATH)) {
+                PluginViewPathInfo pathInfo = getPluginViewPathInfo(uri);
 
-                    searchPaths = CollectionUtils.newList(
-                            GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, PLUGINS_PATH, pathInfo.pluginName, GrailsResourceUtils.VIEWS_DIR_PATH, pathInfo.path),
-                            GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, uri),
-                            uri);
-                } else {
-                    searchPaths = CollectionUtils.newList(
-                            GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
-                            uri);
-                }
+                searchPaths = CollectionUtils.newList(
+                        GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, PLUGINS_PATH, pathInfo.pluginName, GrailsResourceUtils.VIEWS_DIR_PATH, pathInfo.path),
+                        GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, uri),
+                        uri);
+            } else {
+                searchPaths = CollectionUtils.newList(
+                        GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
+                        uri);
+            }
         } else {
             searchPaths = CollectionUtils.newList(
                 GrailsResourceUtils.appendPiecesForUri(SLASHED_VIEWS_DIR_PATH, uri),
+                GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri),
                 uri);
         }
         return searchPaths;
@@ -352,12 +353,9 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ResourceLoad
                 }
             }
         }
-        else {
-            Resource foundResource = findResource(searchPaths);
-            return foundResource == null ? null : new GroovyPageResourceScriptSource(uri, foundResource);
-        }
 
-        return null;
+        Resource foundResource = findResource(searchPaths);
+        return foundResource == null ? null : new GroovyPageResourceScriptSource(uri, foundResource);
     }
 
     protected Resource findResource(String uri) {
