@@ -5,12 +5,13 @@ import grails.boot.config.GrailsAutoConfiguration
 import grails.compiler.ast.AstTransformer
 import grails.compiler.ast.GlobalClassInjectorAdapter
 import grails.plugins.metadata.PluginSource
-import grails.util.BuildSettings
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
@@ -19,11 +20,11 @@ import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.control.SourceUnit
 import org.grails.boot.context.web.GrailsAppServletInitializer
 import org.grails.compiler.injection.GrailsASTUtils
 import org.springframework.boot.builder.SpringApplicationBuilder
-import org.springframework.boot.context.web.SpringBootServletInitializer
 import org.springframework.web.WebApplicationInitializer
 
 import java.lang.reflect.Modifier
@@ -68,6 +69,25 @@ class BootInitializerClassInjector extends GlobalClassInjectorAdapter {
             def methods = classNode.getMethods("main")
             for(MethodNode mn in methods) {
                 if(Modifier.isStatic(mn.modifiers) && Modifier.isPublic(mn.modifiers)) {
+
+                    def mainMethodBody = mn.code
+                    if(mainMethodBody instanceof BlockStatement) {
+                        BlockStatement bs = (BlockStatement)mainMethodBody
+                        if( !bs.statements.isEmpty() ) {
+
+                            def methodCallExpression = new MethodCallExpression(
+                                    new ClassExpression(ClassHelper.make(System)),
+                                    "setProperty",
+                                    new ArgumentListExpression(
+                                            new ConstantExpression(Environment.STANDALONE),
+                                            new ConstantExpression(Boolean.TRUE.toString())
+                                    )
+                            )
+                            ExpressionStatement statement = new ExpressionStatement(methodCallExpression)
+                            bs.statements.add(0, statement)
+                        }
+                    }
+
                     def loaderClassNode = new ClassNode("${classNode.name}Loader", Modifier.PUBLIC, ClassHelper.make(GrailsAppServletInitializer))
 
                     loaderClassNode.addInterface(ClassHelper.make(WebApplicationInitializer))

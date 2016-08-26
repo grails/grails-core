@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 /**
  * Represents the current environment.
@@ -102,6 +103,11 @@ public enum Environment {
      * Whether Grails is in the middle of bootstrapping or not
      */
     public static final String INITIALIZING = "grails.env.initializing";
+
+    /**
+     * Whether Grails has been executed standalone via the static void main method and not loaded in via the container
+     */
+    public static final String STANDALONE = "grails.env.standalone";
 
     private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
 
@@ -295,6 +301,52 @@ public enum Environment {
         // Workaround for weblogic who repacks files from 'classes' into a new jar under lib/
         if (loadedLocation != null && loadedLocation.getPath().contains("_wl_cls_gen.jar!/")) {
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * Whether the application has been executed standalone via static void main.
+     *
+     * This method will return true when the application is executed via `java -jar` or
+     * if the application is run directly via the main method within an IDE
+     *
+     * @return True if it is running standalone outside of a servlet container
+     */
+    public static boolean isStandalone() {
+        return Boolean.getBoolean(STANDALONE);
+    }
+
+    /**
+     * Whether the application is running standalone within a JAR
+     *
+     * This method will return true only if the the application is executed via `java -jar`
+     * and not if it is run via the main method within an IDE
+     *
+     * @return True if it is running standalone outside a servlet container from within a JAR or WAR file
+     */
+    public static boolean isStandaloneDeployed() {
+        if(isStandalone()) {
+            URL url = Environment.class.getResource("");
+            if(url != null) {
+
+                String protocol = url.getProtocol();
+                if(protocol.equals("jar")) {
+                    String fullPath = url.toString();
+                    if(fullPath.contains(IOUtils.RESOURCE_WAR_PREFIX)) {
+                        return true;
+                    }
+                    else {
+                        int i = fullPath.indexOf(IOUtils.RESOURCE_JAR_PREFIX);
+                        if(i > -1) {
+                            fullPath = fullPath.substring(i + IOUtils.RESOURCE_JAR_PREFIX.length());
+                            if(fullPath.contains(IOUtils.RESOURCE_JAR_PREFIX)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
         }
         return false;
     }
