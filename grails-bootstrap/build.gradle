@@ -10,6 +10,10 @@ dependencies {
 
     // Ant
     compileOnly "org.codehaus.groovy:groovy-ant:$groovyVersion"
+
+    testCompile("org.fusesource.jansi:jansi:$jansiVersion")
+    testCompile("jline:jline:$jlineVersion")
+
 }
 
 processResources {
