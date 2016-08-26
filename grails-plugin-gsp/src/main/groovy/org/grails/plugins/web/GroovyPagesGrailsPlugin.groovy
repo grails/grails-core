@@ -174,7 +174,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
                 resourceLoader = groovyPageResourceLoader
             }
             if (deployed) {
-                def defaultViews = getClass().classLoader.getResource('gsp/views.properties')
+                Resource defaultViews = applicationContext?.getResource('gsp/views.properties')
                 List<Resource> allViewsProperties = []
 
                 for(plugin in pluginManager?.allPlugins) {
@@ -188,7 +188,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
                     }
                 }
                 if(defaultViews != null) {
-                    allViewsProperties.add(new UrlResource(defaultViews))
+                    allViewsProperties.add(defaultViews)
                 }
 
                 allViewsProperties = allViewsProperties?.findAll { Resource r ->

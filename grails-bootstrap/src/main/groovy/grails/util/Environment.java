@@ -125,6 +125,7 @@ public enum Environment {
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
     private static final boolean STANDALONE_DEPLOYED;
+    private static final boolean WAR_DEPLOYED;
 
     static {
         Package p = Environment.class.getPackage();
@@ -197,6 +198,23 @@ public enum Environment {
         }
         else {
             STANDALONE_DEPLOYED = false;
+        }
+
+        URL loadedLocation = Environment.class.getClassLoader().getResource(Metadata.FILE);
+        if(loadedLocation != null ) {
+            String path = loadedLocation.getPath();
+            WAR_DEPLOYED = isWebPath(path);
+        }
+        else {
+
+            loadedLocation = Thread.currentThread().getContextClassLoader().getResource(Metadata.FILE);
+            if(loadedLocation != null ) {
+                String path = loadedLocation.getPath();
+                WAR_DEPLOYED = isWebPath(path);
+            }
+            else {
+                WAR_DEPLOYED = false;
+            }
         }
     }
 
@@ -324,15 +342,15 @@ public enum Environment {
      * @return true if is
      */
     public static boolean isWarDeployed() {
-        URL loadedLocation = Environment.class.getClassLoader().getResource(Metadata.FILE);
-        if(loadedLocation != null && loadedLocation.getPath().contains("/WEB-INF/classes")) {
-            return true;
-        }
-        // Workaround for weblogic who repacks files from 'classes' into a new jar under lib/
-        if (loadedLocation != null && loadedLocation.getPath().contains("_wl_cls_gen.jar!/")) {
-            return true;
+        if(!isStandalone()) {
+            return WAR_DEPLOYED;
         }
         return false;
+    }
+
+    private static boolean isWebPath(String path) {
+        // Workaround for weblogic who repacks files from 'classes' into a new jar under lib/
+        return path.contains("/WEB-INF/classes") || path.contains("_wl_cls_gen.jar!/");
     }
 
     /**
