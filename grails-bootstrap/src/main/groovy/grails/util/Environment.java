@@ -32,7 +32,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 
 /**
  * Represents the current environment.
@@ -125,6 +124,7 @@ public enum Environment {
 
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
+    private static final boolean STANDALONE_DEPLOYED;
 
     static {
         Package p = Environment.class.getPackage();
@@ -168,6 +168,36 @@ public enum Environment {
             }
         }
         GRAILS_VERSION = version;
+
+        URL url = Environment.class.getResource("");
+        if(url != null) {
+
+            String protocol = url.getProtocol();
+            if(protocol.equals("jar")) {
+                String fullPath = url.toString();
+                if(fullPath.contains(IOUtils.RESOURCE_WAR_PREFIX)) {
+                    STANDALONE_DEPLOYED = true;
+                }
+                else {
+                    int i = fullPath.indexOf(IOUtils.RESOURCE_JAR_PREFIX);
+                    if(i > -1) {
+                        fullPath = fullPath.substring(i + IOUtils.RESOURCE_JAR_PREFIX.length());
+                        STANDALONE_DEPLOYED = fullPath.contains(IOUtils.RESOURCE_JAR_PREFIX);
+
+                    }
+                    else {
+                        STANDALONE_DEPLOYED = false;
+                    }
+
+                }
+            }
+            else {
+                STANDALONE_DEPLOYED = false;
+            }
+        }
+        else {
+            STANDALONE_DEPLOYED = false;
+        }
     }
 
     public static Throwable currentReloadError = null;
@@ -277,7 +307,7 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentEnvironmentAvailable() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT ;
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed();
     }
 
     /**
@@ -287,7 +317,7 @@ public enum Environment {
      */
     public static boolean isDevelopmentRun() {
         Environment env = Environment.getCurrent();
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
+        return isDevelopmentEnvironmentAvailable() && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
     }
     /**
      * Check whether the application is deployed
@@ -326,29 +356,7 @@ public enum Environment {
      * @return True if it is running standalone outside a servlet container from within a JAR or WAR file
      */
     public static boolean isStandaloneDeployed() {
-        if(isStandalone()) {
-            URL url = Environment.class.getResource("");
-            if(url != null) {
-
-                String protocol = url.getProtocol();
-                if(protocol.equals("jar")) {
-                    String fullPath = url.toString();
-                    if(fullPath.contains(IOUtils.RESOURCE_WAR_PREFIX)) {
-                        return true;
-                    }
-                    else {
-                        int i = fullPath.indexOf(IOUtils.RESOURCE_JAR_PREFIX);
-                        if(i > -1) {
-                            fullPath = fullPath.substring(i + IOUtils.RESOURCE_JAR_PREFIX.length());
-                            if(fullPath.contains(IOUtils.RESOURCE_JAR_PREFIX)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return isStandalone() && STANDALONE_DEPLOYED;
     }
 
     /**
