@@ -19,10 +19,24 @@ package org.grails.taglib.encoder;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 
 /**
- * Created by lari on 02/01/15.
+ * Used to load the {@link OutputContextLookup} class for GSP
+ *
+ * @author Lari Hotari
+ * @author Graeme Rocher
  */
 public class OutputContextLookupHelper {
-    private static OutputContextLookup outputContextLookup = GrailsFactoriesLoader.loadFactory(OutputContextLookup.class, OutputContextLookupHelper.class.getClassLoader());
+    private static final OutputContextLookup outputContextLookup;
+
+    static {
+        OutputContextLookup foundViaFactory = GrailsFactoriesLoader.loadFactory(OutputContextLookup.class, OutputContextLookupHelper.class.getClassLoader());
+        if(foundViaFactory != null) {
+            outputContextLookup = foundViaFactory;
+        }
+        else {
+            outputContextLookup = new DefaultOutputContextLookup();
+        }
+    }
+
 
     private OutputContextLookupHelper() {
     }
