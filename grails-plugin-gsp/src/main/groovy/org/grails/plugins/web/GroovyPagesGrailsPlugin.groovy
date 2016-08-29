@@ -175,36 +175,18 @@ class GroovyPagesGrailsPlugin extends Plugin {
             }
             if (deployed) {
                 Resource defaultViews = applicationContext?.getResource('gsp/views.properties')
-                List<Resource> allViewsProperties = []
 
-                for(plugin in pluginManager?.allPlugins) {
-
-                    def pluginViews = IOUtils.findResourceRelativeToClass(plugin.getPluginClass(), '/gsp/views.properties')
-                    if(pluginViews != null) {
-                        def res = new UrlResource(pluginViews)
-                        if(res.exists()) {
-                            allViewsProperties.add(res)
-                        }
-                    }
-                }
                 if(defaultViews != null) {
-                    allViewsProperties.add(defaultViews)
+                    if(!defaultViews.exists()) {
+                        defaultViews = applicationContext?.getResource('classpath:gsp/views.properties')
+                    }
                 }
 
-                allViewsProperties = allViewsProperties?.findAll { Resource r ->
-                    def p = r.URL.path
-                    if(warDeployed && p.contains('/WEB-INF/classes')) {
-                        return true
+                if(defaultViews.exists()) {
+                    precompiledGspMap = { PropertiesFactoryBean pfb ->
+                        ignoreResourceNotFound = true
+                        locations = [defaultViews] as Resource[]
                     }
-                    else if(!warDeployed && !p.contains("!/lib")) {
-                        return true
-                    }
-
-                    return false
-                }
-                precompiledGspMap = { PropertiesFactoryBean pfb ->
-                    ignoreResourceNotFound = true
-                    locations = allViewsProperties ? allViewsProperties as Resource[] : 'classpath:gsp/views.properties'
                 }
             }
             if (enableReload) {
