@@ -266,7 +266,7 @@ class TemplateRendererImpl implements TemplateRenderer, ProfileRepositoryAware {
 
     private static void writeTemplateToDestination(Template template, Map model, File destination) {
         destination.parentFile.mkdirs()
-        destination.withWriter { Writer w ->
+        destination.withWriter("UTF-8") { Writer w ->
             template.make(model).writeTo(w)
             w.flush()
         }
