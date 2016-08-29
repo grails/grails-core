@@ -42,12 +42,6 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-/**
- *
- *
- * @deprecated Will be removed in a future version of Grails. Do not use
- */
-@Deprecated
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
     Date startupDate = new Date();

@@ -84,14 +84,6 @@ public interface GrailsApplication extends ApplicationContextAware {
     Config getConfig();
 
     /**
-     * Returns the flatten ConfigObject for use from Java classes.
-     * @return The flattened config
-     * @deprecated Do not use flat config. Use the {@link grails.config.Config} interface instead
-     */
-    @Deprecated
-    Map<String, Object> getFlatConfig();
-
-    /**
      * Returns the class loader instance for the Grails application.
      *
      * @return The ClassLoader instance

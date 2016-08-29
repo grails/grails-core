@@ -9,7 +9,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
-
+import org.grails.spring.GrailsApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -19,7 +19,7 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
-
+import org.springframework.web.context.support.GenericWebApplicationContext
 import spock.lang.Specification
 
 /**
@@ -112,7 +112,7 @@ class VndErrorRenderingSpec extends Specification{
         return generator;
     }
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
+        def evaluator = new DefaultUrlMappingEvaluator(new GrailsApplicationContext())
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }

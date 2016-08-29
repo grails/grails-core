@@ -443,17 +443,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
     }
 
     /**
-     * Looks up the GrailsApplication from the current request.
-
-     * @return The GrailsWebRequest
-     * @deprecated Use {@link grails.util.Holders#findApplication()} instead
-     */
-    @Deprecated
-    public static GrailsApplication lookupApplication() {
-        return Holders.findApplication();
-    }
-
-    /**
      * Sets the id of the request.
      * @param id The id
      */

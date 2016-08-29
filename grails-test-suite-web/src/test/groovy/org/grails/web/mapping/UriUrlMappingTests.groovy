@@ -3,6 +3,7 @@ package org.grails.web.mapping
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mapping.exceptions.UrlMappingException
+import org.grails.support.MockApplicationContext
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockServletContext
 import spock.lang.Shared
@@ -21,7 +22,7 @@ class UriUrlMappingTests extends Specification {
         '''.bytes
         ByteArrayResource res = new ByteArrayResource(mapping)
 
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext("/test"))
+        def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
         def mappings = evaluator.evaluateMappings(res)
 
         holder = new DefaultUrlMappingsHolder(mappings)

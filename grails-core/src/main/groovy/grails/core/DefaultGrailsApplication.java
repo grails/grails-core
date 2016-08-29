@@ -176,12 +176,6 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     @SuppressWarnings( "deprecation" )
     protected void initArtefactHandlers() {
 
-        List<org.codehaus.groovy.grails.commons.ArtefactHandler> legacyArtefactHandlers = GrailsFactoriesLoader.loadFactories(org.codehaus.groovy.grails.commons.ArtefactHandler.class, getClassLoader());
-
-        for (org.codehaus.groovy.grails.commons.ArtefactHandler artefactHandler : legacyArtefactHandlers) {
-            registerArtefactHandler(artefactHandler);
-        }
-
         List<ArtefactHandler> additionalArtefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler.class, getClassLoader());
 
         for (ArtefactHandler artefactHandler : additionalArtefactHandlers) {
@@ -194,7 +188,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     private void updateArtefactHandlers() {
         // Cache the list as an array
         artefactHandlers = artefactHandlersByName.values().toArray(
-            new org.codehaus.groovy.grails.commons.ArtefactHandler[artefactHandlersByName.size()]);
+            new ArtefactHandler[artefactHandlersByName.size()]);
     }
 
     /**
@@ -303,7 +297,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @return The number of registered artefacts
      */
     protected int getArtefactCount(String artefactType) {
-        org.codehaus.groovy.grails.commons.ArtefactInfo info = getArtefactInfo(artefactType);
+        ArtefactInfo info = getArtefactInfo(artefactType);
         return info == null ? 0 : info.getClasses().length;
     }
 
@@ -561,7 +555,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
             return;
         }
 
-        org.codehaus.groovy.grails.commons.ArtefactInfo info = getArtefactInfo(handler.getType());
+        ArtefactInfo info = getArtefactInfo(handler.getType());
         // Only init those that have data
         if (info != null) {
             //System.out.println("Initialising artefacts of kind " + handler.getType() + " with registered artefacts" + info.getGrailsClassesByName());
@@ -592,7 +586,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
      * @param artefactType The name of an artefact type
      * @return The cache of classes for the type, or null if no cache exists
      */
-    public org.codehaus.groovy.grails.commons.ArtefactInfo getArtefactInfo(String artefactType) {
+    public ArtefactInfo getArtefactInfo(String artefactType) {
         return getArtefactInfo(artefactType, false);
     }
 

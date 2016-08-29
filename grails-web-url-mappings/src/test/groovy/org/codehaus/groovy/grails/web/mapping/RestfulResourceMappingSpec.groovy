@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
+import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -1328,7 +1329,7 @@ class RestfulResourceMappingSpec extends Specification{
         return generator;
     }
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
+        def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }

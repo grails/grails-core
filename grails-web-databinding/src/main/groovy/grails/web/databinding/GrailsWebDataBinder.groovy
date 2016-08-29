@@ -36,7 +36,6 @@ import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.xml.GPathResultMap
 import org.grails.web.databinding.DataBindingEventMulticastListener
@@ -645,12 +644,10 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
     @Override
     protected String getFormatString(Annotation annotation) {
-        assert annotation instanceof BindingFormat || annotation instanceof LegacyBindingFormat
+        assert annotation instanceof BindingFormat
         def code
         if(annotation instanceof BindingFormat) {
             code = ((BindingFormat)annotation).code()
-        } else {
-            code = ((LegacyBindingFormat)annotation).code()
         }
         def formatString
         if(code) {

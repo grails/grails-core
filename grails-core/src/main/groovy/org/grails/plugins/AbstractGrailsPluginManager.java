@@ -44,7 +44,6 @@ import org.apache.commons.logging.LogFactory;
 import grails.core.ArtefactHandler;
 import grails.core.GrailsApplication;
 
-import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.grails.spring.RuntimeSpringConfiguration;
 import org.grails.io.support.GrailsResourceUtils;
@@ -73,7 +72,7 @@ import org.springframework.util.StringUtils;
  * @author Graeme Rocher
  * @since 0.4
  */
-public abstract class AbstractGrailsPluginManager implements GrailsPluginManager, org.codehaus.groovy.grails.plugins.GrailsPluginManager {
+public abstract class AbstractGrailsPluginManager implements GrailsPluginManager {
 
     private static final Log LOG = LogFactory.getLog(AbstractGrailsPluginManager.class);
     private static final String BLANK = "";
@@ -155,12 +154,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                 converterRegistry = (ConverterRegistry)existingConversionService;
             }
 
-            converterRegistry.addConverter(new Converter<GrailsApplication, org.codehaus.groovy.grails.commons.GrailsApplication>() {
-                @Override
-                public org.codehaus.groovy.grails.commons.GrailsApplication convert(GrailsApplication source) {
-                    return new LegacyGrailsApplication(source);
-                }
-            });
             converterRegistry.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
                 @Override
                 public Object convert(NavigableMap.NullSafeNavigator source) {

@@ -31,7 +31,7 @@ mappings {
     void setUp() {
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(servletContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         holder = new DefaultUrlMappingsHolder(mappings)

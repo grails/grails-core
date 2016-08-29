@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping.reporting
 
+import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import grails.web.mapping.UrlMappingsHolder
@@ -103,7 +104,7 @@ Controller: image
 '''.denormalize()
     }
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
+        def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }

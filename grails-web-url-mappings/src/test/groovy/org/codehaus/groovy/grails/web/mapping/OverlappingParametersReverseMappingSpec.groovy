@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.CamelCaseUrlConverter
+import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -50,7 +51,7 @@ class OverlappingParametersReverseMappingSpec extends Specification{
 
     protected getGenerator() {
         def generator = new DefaultLinkGenerator(baseUrl, context)
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
+        def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
         generator.urlMappingsHolder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappings ?: {}))
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator
