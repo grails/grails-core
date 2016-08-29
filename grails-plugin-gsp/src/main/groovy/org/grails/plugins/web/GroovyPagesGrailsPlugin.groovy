@@ -182,7 +182,7 @@ class GroovyPagesGrailsPlugin extends Plugin {
                     }
                 }
 
-                if(defaultViews.exists()) {
+                if(defaultViews?.exists()) {
                     precompiledGspMap = { PropertiesFactoryBean pfb ->
                         ignoreResourceNotFound = true
                         locations = [defaultViews] as Resource[]
