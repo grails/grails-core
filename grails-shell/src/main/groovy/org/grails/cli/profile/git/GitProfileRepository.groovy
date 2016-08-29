@@ -72,6 +72,10 @@ class GitProfileRepository implements ProfileRepository {
         }
     }
 
+    Profile getProfile(String profileName, Boolean parentProfile) {
+        getProfile(profileName)
+    }
+
     @Override
     List<Profile> getAllProfiles() {
         def allDirectories = new File(profilesDirectory, "profiles").listFiles()?.findAll() { File f -> f.isDirectory() && !f.isHidden() && !f.name.startsWith('.') }

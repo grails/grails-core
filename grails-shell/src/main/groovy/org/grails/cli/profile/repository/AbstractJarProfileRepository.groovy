@@ -39,11 +39,18 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
 
     protected final List<Profile> allProfiles = []
     protected final Map<String, Profile> profilesByName = [:]
+    protected static final String DEFAULT_PROFILE_GROUPID = "org.grails.profiles"
 
     private Set<URL> registeredUrls = []
+
     @Override
     Profile getProfile(String profileName) {
         return profilesByName[profileName]
+    }
+
+    @Override
+    Profile getProfile(String profileName, Boolean parentProfile) {
+        return getProfile(profileName)
     }
 
     List<Profile> getAllProfiles() {
@@ -68,7 +75,7 @@ abstract class AbstractJarProfileRepository implements ProfileRepository {
             return new DefaultArtifact(profileName)
         }
 
-        String groupId = "org.grails.profiles"
+        String groupId = DEFAULT_PROFILE_GROUPID
         String version = null
 
         Map<String, Map> defaultValues = GrailsCli.getSetting("grails.profiles", Map, [:])
