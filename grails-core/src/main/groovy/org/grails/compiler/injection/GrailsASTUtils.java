@@ -968,6 +968,16 @@ public class GrailsASTUtils {
         return false;
     }
 
+    public static boolean removeAnnotation(final MethodNode methodNode, final Class<? extends Annotation> annotationClass) {
+        List<AnnotationNode> annotations = methodNode.getAnnotations(new ClassNode(annotationClass));
+        if (annotations.size() > 0) {
+            methodNode.getAnnotations().removeAll(annotations);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
         MethodNode existing = controllerClassNode.getMethod(methodNode.getName(), methodNode.getParameters());
         if (existing == null) {
@@ -1487,5 +1497,9 @@ public class GrailsASTUtils {
 
     public static URL getSourceUrl(ClassNode classNode) {
         return getSourceUrl(classNode.getModule().getContext());
+    }
+
+    public static boolean hasParameters(MethodNode methodNode) {
+        return methodNode.getParameters().length > 0;
     }
 }
