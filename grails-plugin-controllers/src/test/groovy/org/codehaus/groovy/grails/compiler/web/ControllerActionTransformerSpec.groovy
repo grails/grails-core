@@ -169,23 +169,36 @@ class ControllerActionTransformerSpec extends Specification {
             42 == model.paramValue
     }
 
-   /* void "Test annotated controllers"() {
-        when:
+
+    void "test controller with trait action with params"() {
+        given:
         def cls = gcl.parseClass('''
-            class AnnotatedControllerTransformer1Controller {
-                def action = {
+            @grails.artefact.Artefact('Controller')
+            class TestTraitActionToController implements ShowMethod {
+
+
+            }
+            class MyCommandWithArg implements grails.validation.Validateable {
+
+            }
+            trait ShowMethod {
+
+                @grails.web.Action
+                def show(MyCommandWithArg myCommandWithArg) {
+                    !myCommandWithArg.hasErrors()
                 }
+
             }
             ''')
-
         def controller = cls.newInstance()
 
-        then:
-        controller
-        controller.getClass().getMethod("action", [] as Class[]) != null
+        when:
+        Boolean valid = controller.show()
 
+        then:
+        valid
     }
-*/
+
 
     def cleanup() {
         RequestContextHolder.resetRequestAttributes()
