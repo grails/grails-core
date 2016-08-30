@@ -23,6 +23,7 @@ import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpre
 import static org.grails.compiler.injection.GrailsASTUtils.hasAnnotation;
 import static org.grails.compiler.injection.GrailsASTUtils.hasParameters;
 import static org.grails.compiler.injection.GrailsASTUtils.removeAnnotation;
+import static org.grails.compiler.injection.GrailsASTUtils.isInheritedFromTrait;
 import grails.artefact.Artefact;
 import grails.artefact.controller.support.AllowedMethodsHelper;
 import grails.compiler.DelegatingMethod;
@@ -237,9 +238,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         return isExceptionHandler;
     }
 
-    private boolean isTraitMethod(MethodNode methodNode) {
-        return GrailsASTUtils.hasAnnotation(methodNode, Traits.TraitBridge.class);
-    }
+
 
     private void processMethods(ClassNode classNode, SourceUnit source,
             GeneratorContext context) {
@@ -303,7 +302,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
      */
     protected boolean methodShouldBeConfiguredAsControllerAction(final MethodNode method) {
         int minLineNumber = 0;
-        if (isTraitMethod(method) && hasAnnotation(method, Action.class) && hasParameters(method)) {
+        if (isInheritedFromTrait(method) && hasAnnotation(method, Action.class) && hasParameters(method)) {
             removeAnnotation(method, Action.class);
             //Trait methods have a line number of -1
             --minLineNumber;
