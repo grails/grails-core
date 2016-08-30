@@ -23,7 +23,6 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
@@ -83,7 +82,6 @@ class CoreGrailsPlugin extends Plugin {
             placeholderPrefix = placeHolderPrefix
         }
         grailsConfigProperties(ConfigProperties, config)
-        legacyGrailsApplication(LegacyGrailsApplication, application)
 
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {

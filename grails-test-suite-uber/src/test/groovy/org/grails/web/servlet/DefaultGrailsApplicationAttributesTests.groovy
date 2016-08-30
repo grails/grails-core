@@ -2,7 +2,6 @@ package org.grails.web.servlet
 
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.mock.web.MockHttpServletRequest
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.buffer.StreamCharBuffer
 
 class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
@@ -13,8 +12,8 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
     void setUp() {
         grailsApplicationAttributes = new DefaultGrailsApplicationAttributes(null)
         def controller = new Expando()
-        controller."${ControllerDynamicMethods.CONTROLLER_URI_PROPERTY}" = '/mycontroller'
-        controller."${ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY}" = 'mycontroller'
+        controller.controllerUri = '/mycontroller'
+        controller.controllerName = 'mycontroller'
         request = new MockHttpServletRequest()
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
     }

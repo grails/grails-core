@@ -24,18 +24,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsStringUtils;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.view.AbstractGrailsView;
 import org.grails.web.servlet.view.GrailsViewResolver;
 import org.grails.web.servlet.view.LayoutViewResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.servlet.View;
@@ -56,7 +55,7 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
     public static final String NONE_LAYOUT = "_none_";
     public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
-    private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsLayoutDecoratorMapper.class);
     private static final long LAYOUT_CACHE_EXPIRATION_MILLIS = Long.getLong("grails.gsp.reload.interval", 5000);
     private static final String LAYOUTS_PATH = "/layouts";
 
@@ -124,7 +123,7 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
                     if(controllerName != null && actionUri != null) {
 
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Found controller in request, location layout for controller [" + controllerName
+                            LOG.debug("Found controller in request, locating layout for controller [" + controllerName
                                     + "] and action [" + actionUri + "]");
                         }
 
@@ -145,6 +144,9 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
                         if (d == null && !cachedIsNull) {
                             d = resolveDecorator(request, controller, controllerName, actionUri);
                             if (cacheEnabled) {
+                                if(LOG.isDebugEnabled() && d != null) {
+                                    LOG.debug("Caching resolved layout {} for controller {} and action {}",d.getPage(), controllerName, actionUri);
+                                }
                                 layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
                             }
                         }

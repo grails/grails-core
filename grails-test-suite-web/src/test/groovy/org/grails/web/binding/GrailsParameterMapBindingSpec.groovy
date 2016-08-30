@@ -93,6 +93,7 @@ class GrailsParameterMapBindingSpec extends Specification {
     
     void 'Test binding with the request when the request has a body'() {
         when: 'request parameters are present'
+        request.method = 'POST'
         request.json = '{"name":"JSON Name"}'
         controller.bindWithRequest()
         
@@ -102,6 +103,7 @@ class GrailsParameterMapBindingSpec extends Specification {
     
     void 'Test binding with the request when the request has both a body and request parameters'() {
         when: 'request parameters are present and the request has a body'
+        request.method = 'POST'
         request.json = '{"name":"JSON Name"}'
         params.name = 'Request Parameter Name'
         controller.bindWithRequest()

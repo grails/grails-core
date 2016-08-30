@@ -27,7 +27,7 @@ import groovy.transform.TypeCheckingMode
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
-import org.grails.web.pages.GroovyPageUtils
+import org.grails.web.pages.GroovyPagesUriSupport
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -131,7 +131,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         }
 
         if (webRequest.controllerName && webRequest.actionName) {
-            GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
+            new GroovyPagesUriSupport().getViewURI(webRequest.controllerName, webRequest.actionName)
         }
         else {
             return null

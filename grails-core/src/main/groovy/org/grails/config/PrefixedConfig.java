@@ -58,6 +58,7 @@ public class PrefixedConfig implements Config {
     }
 
     @Override
+    @Deprecated
     public Map<String, Object> flatten() {
         Map<String, Object> flattened = delegate.flatten();
         Map<String, Object> map = new LinkedHashMap<String, Object>(flattened.size());

@@ -12,6 +12,7 @@ buildscript {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
+        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
     }
 }
 
@@ -45,10 +46,10 @@ ext {
     reactorVersion = '2.0.7.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
-    springBootVersion = "1.4.0.RC1"
+    springBootVersion = "1.4.0.RELEASE"
     springLoadedVersion = "1.2.6.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.3.1.RELEASE"
+    springVersion = "4.3.2.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
@@ -160,6 +161,11 @@ apply from: "gradle/idea.gradle"
 subprojects { project ->
     version = grailsVersion
     group = "org.grails"
+
+    configurations {
+        documentation
+    }
+
     ext.isTestSuite = project.name.startsWith("grails-test-suite")
     ext.isCiBuild = project.hasProperty("isCiBuild")
     ext.pomInfo = {
@@ -206,6 +212,7 @@ subprojects { project ->
     if(project.name == 'grails-bom') return
 
     apply plugin: 'groovy'
+    apply plugin: "io.github.groovylang.groovydoc"
     if(!isTestSuite) {
         apply plugin: 'com.bmuschko.nexus'
         apply plugin: 'maven-publish'
@@ -259,7 +266,18 @@ subprojects { project ->
         options.debug = true
     }
 
+    configure([groovydoc]) {
+        onlyIf {
+            !isTestSuite
+        }
+        classpath += configurations.documentation
+        jvmArgs "-Xmx512M"
+    }
+
     configure([javadoc]) {
+        onlyIf {
+            !isTestSuite
+        }
         options.encoding "UTF-8"
         options.docEncoding "UTF-8"
         options.charSet "UTF-8"
@@ -279,6 +297,10 @@ subprojects { project ->
     }
 
     dependencies {
+        documentation("org.fusesource.jansi:jansi:$jansiVersion")
+        documentation("jline:jline:$jlineVersion")
+        documentation "org.codehaus.groovy:groovy-ant:$groovyVersion"
+
         compile groovyDependency
 
         testCompile "org.codehaus.groovy:groovy-test:${groovyVersion}", {

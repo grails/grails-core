@@ -30,6 +30,7 @@ import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
 import org.grails.validation.ConstraintEvalUtils;
+import org.springframework.core.Ordered;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -44,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware, Ordered {
 
     public static final String TYPE = "Domain";
     public static final String PLUGIN_NAME = "domainClass";
@@ -179,5 +180,10 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         }
 
         return false;
+    }
+
+    @Override
+    public int getOrder() {
+        return 1;
     }
 }

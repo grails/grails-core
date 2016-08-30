@@ -51,8 +51,6 @@ public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapte
 
             if (bean instanceof PluginManagerAware) {
                 ((PluginManagerAware)bean).setPluginManager(pluginManager);
-            } else if(bean instanceof org.codehaus.groovy.grails.plugins.PluginManagerAware) {
-                ((org.codehaus.groovy.grails.plugins.PluginManagerAware)bean).setPluginManager((org.codehaus.groovy.grails.plugins.GrailsPluginManager)pluginManager);
             }
         }
 

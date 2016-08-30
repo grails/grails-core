@@ -21,6 +21,8 @@ import javax.servlet.ServletContext;
 
 import org.grails.web.sitemesh.GrailsLayoutView;
 import org.grails.web.sitemesh.GroovyPageLayoutFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,6 +33,8 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
 public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, ServletContextAware, ApplicationContextAware {
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsLayoutViewResolver.class);
+
     protected ViewResolver innerViewResolver;
     protected GroovyPageLayoutFinder groovyPageLayoutFinder;
     private int order = Ordered.LOWEST_PRECEDENCE - 30;
@@ -47,12 +51,18 @@ public class GrailsLayoutViewResolver implements LayoutViewResolver, Ordered, Se
 
     @Override
     public View resolveViewName(String viewName, Locale locale) throws Exception {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("Resolving view for name {} and locale {}", viewName, locale);
+        }
         View innerView = innerViewResolver.resolveViewName(viewName, locale);
         if(innerView == null) {
             return null;
         } else if(innerView instanceof SmartView && ((SmartView)innerView).isRedirectView()) { 
             return innerView;
         } else {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Creating layout view name {} and locale {}", viewName, locale);
+            }
             return createLayoutView(innerView);
         }
     }

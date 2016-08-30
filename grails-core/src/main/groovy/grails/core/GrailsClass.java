@@ -18,8 +18,6 @@ package grails.core;
 import groovy.lang.MetaClass;
 
 import grails.core.support.GrailsApplicationAware;
-import org.codehaus.groovy.grails.commons.*;
-import org.springframework.beans.BeanWrapper;
 
 /**
  * Represents any class in a Grails application.
@@ -36,16 +34,6 @@ public interface GrailsClass extends GrailsApplicationAware{
      * @return true if it is abstract
      */
     boolean isAbstract();
-
-    /**
-     * The GrailsApplication that this class belongs to
-     *
-     * @return The GrailsApplication instance
-     * @deprecated Use {@link #getApplication()} instead
-     */
-    @Deprecated
-    org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication();
-
 
     /**
      * The GrailsApplication that this class belongs to
@@ -138,13 +126,6 @@ public interface GrailsClass extends GrailsApplicationAware{
      * @return The MetaClass for this Grails class
      */
     MetaClass getMetaClass();
-
-    /**
-     * @deprecated
-     * @return BeanWrapper for reference instance, deprecated
-     */
-    @Deprecated
-    BeanWrapper getReference();
 
     /**
      * @return Sample (reference) instance for this Grails class

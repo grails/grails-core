@@ -1,6 +1,7 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
+import grails.databinding.BindingFormat
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
@@ -46,6 +47,19 @@ class DataBindingTests  {
         assert dateError != null
 
         assert dateError.defaultMessage == 'Unparseable date: "BAD"'
+    }
+
+    @Test
+    void testBindingWithIndexedBlankId() {
+        def city = new City()
+
+        request.addParameter 'people[0].id', ''
+
+        city.properties = request
+
+        assert !city.hasErrors()
+        assert city.people instanceof Set
+        assert city.people.size() == 1
     }
 
     @Test
@@ -413,7 +427,7 @@ class BookReview {
 
 @Entity
 class MyBean {
-  @org.grails.databinding.BindingFormat('MMddyyyy')
+  @BindingFormat('MMddyyyy')
   Date formattedDate
   Integer someIntProperty
   Integer someOtherIntProperty

@@ -145,9 +145,15 @@ class NavigableMap implements Map<String, Object>, Cloneable {
             List<String> newPathList = []
             newPathList.addAll( targetMap.getPath() )
             newPathList.add(sourceKey)
-            NavigableMap subMap = new NavigableMap( (NavigableMap)targetMap.rootConfig, newPathList.asImmutable())
-            if(currentValue instanceof Map) {
-                subMap.putAll((Map)currentValue)
+            NavigableMap subMap
+            if(currentValue instanceof NavigableMap) {
+                subMap = (NavigableMap)currentValue
+            }
+            else {
+                subMap = new NavigableMap( (NavigableMap)targetMap.rootConfig, newPathList.asImmutable())
+                if(currentValue instanceof Map) {
+                    subMap.putAll((Map)currentValue)
+                }
             }
             String newPath = path ? "${path}.${sourceKey}" : sourceKey
             mergeMaps(rootMap, newPath , subMap, (Map)sourceValue, parseFlatKeys)

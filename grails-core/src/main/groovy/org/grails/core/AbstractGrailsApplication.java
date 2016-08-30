@@ -79,6 +79,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     }
 
     @SuppressWarnings("rawtypes")
+    @Deprecated
     public void updateFlatConfig() {
         if (config == null) {
             flatConfig = new LinkedHashMap();
@@ -88,6 +89,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     }
 
     @SuppressWarnings("unchecked")
+    @Deprecated
     public Map<String, Object> getFlatConfig() {
         return new FlatConfig(getConfig());
     }

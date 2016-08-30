@@ -326,7 +326,7 @@ abstract class AbstractProfile implements Profile {
     @Override
     public Iterable<Profile> getExtends() {
         return parentNames.collect() { String name ->
-            def parent = profileRepository.getProfile(name)
+            def parent = profileRepository.getProfile(name, true)
             if(parent == null) {
                 throw new IllegalStateException("Profile [$name] declares an invalid dependency on parent profile [$name]")
             }
