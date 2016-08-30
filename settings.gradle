@@ -58,9 +58,6 @@ include (
         'grails-test-suite-uber',
         'grails-test-suite-web',
 
-        // Deprecated Compatibility Classes
-        'grails-compat',
-
         // Gradle Plugin
         'grails-gradle-plugin',
         'grails-gradle-model'
