@@ -37,6 +37,7 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation;
+import org.codehaus.groovy.transform.trait.Traits;
 import org.grails.io.support.FileSystemResource;
 import org.grails.io.support.Resource;
 import org.springframework.util.StringUtils;
@@ -1501,5 +1502,9 @@ public class GrailsASTUtils {
 
     public static boolean hasParameters(MethodNode methodNode) {
         return methodNode.getParameters().length > 0;
+    }
+
+    public static boolean isInheritedFromTrait(MethodNode methodNode) {
+        return hasAnnotation(methodNode, Traits.TraitBridge.class);
     }
 }
