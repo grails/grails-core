@@ -91,6 +91,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.codehaus.groovy.transform.trait.Traits;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsControllerClass;
 import org.grails.core.artefact.ControllerArtefactHandler;
@@ -293,12 +294,22 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
      * @return true if the method should be configured as a controller action, false otherwise
      */
     protected boolean methodShouldBeConfiguredAsControllerAction(final MethodNode method) {
+        int minLineNumber = 0;
+        // Methods inherited from traits marked with @Action that take a parameter:
+        //   Remove the @Action annotation so they will be processed to create the no-arg method
+        if (method.getAnnotations(ClassHelper.make(Traits.TraitBridge.class)).size() > 0) {
+            List<AnnotationNode> annotations = method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode());
+            if (annotations.size() > 0 && method.getParameters().length > 0) {
+                method.getAnnotations().removeAll(annotations);
+                --minLineNumber;
+            }
+        }
         return !method.isStatic() && 
                 method.isPublic() && 
                 !method.isAbstract() &&
                 method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                 method.getAnnotations(new ClassNode(ControllerMethod.class)).isEmpty() &&
-                method.getLineNumber() >= 0 &&
+                method.getLineNumber() >= minLineNumber &&
                 !method.getName().startsWith("$") &&
                 !method.getReturnType().getName().equals(VOID_TYPE) &&
                 !isExceptionHandlingMethod(method);
