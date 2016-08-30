@@ -62,7 +62,7 @@ import com.googlecode.concurrentlinkedhashmap.Weigher;
  * @since 0.4
  */
 @SuppressWarnings("rawtypes")
-public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groovy.grails.web.mapping.UrlMappings {
+public class DefaultUrlMappingsHolder implements UrlMappings {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;

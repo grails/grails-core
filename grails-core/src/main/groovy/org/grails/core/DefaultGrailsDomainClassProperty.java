@@ -48,7 +48,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty, org.codehaus.groovy.grails.commons.GrailsDomainClassProperty {
+public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
     private GrailsDomainClass domainClass;
     private boolean persistent = true; // persistant by default
@@ -635,14 +635,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public GrailsDomainClassProperty[] getProperties() {
-            return properties;
-        }
-
-        /**
-         * @deprecated Use #getPersistentProperties instead
-         */
-        @SuppressWarnings("dep-ann")
-        public GrailsDomainClassProperty[] getPersistantProperties() {
             return properties;
         }
 

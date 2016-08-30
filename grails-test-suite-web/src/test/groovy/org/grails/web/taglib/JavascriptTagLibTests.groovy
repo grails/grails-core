@@ -136,8 +136,8 @@ class TestUrlMappings {
         setRequestContext("/myapp")
     }
 
-    def setRequestContext(path) {
-        request.setAttribute(WebUtils.INCLUDE_CONTEXT_PATH_ATTRIBUTE, path)
+    def setRequestContext(String path) {
+        request.setContextPath(path)
     }
 
     def setupPluginController(tag) {
@@ -169,7 +169,7 @@ class TestUrlMappings {
         assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>';\r\n</script>\r\n''', template)
     }
 
-        void testJavascriptExpressionEncodeAsRaw() {
+    void testJavascriptExpressionEncodeAsRaw() {
         def template = '''<g:javascript>var value='${'<>'.encodeAsRaw()}';</g:javascript>'''
         assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>';\r\n</script>\r\n''', template)
     }

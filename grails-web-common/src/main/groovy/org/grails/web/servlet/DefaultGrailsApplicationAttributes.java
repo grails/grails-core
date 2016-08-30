@@ -24,7 +24,6 @@ import grails.web.pages.GroovyPagesUriService;
 import groovy.lang.GroovyObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.grails.gsp.ResourceAwareTemplateEngine;
 import org.grails.web.pages.DefaultGroovyPagesUriService;
 import org.grails.web.util.GrailsApplicationAttributes;
@@ -50,7 +49,7 @@ import java.io.Writer;
  * @author Graeme Rocher
  * @since 0.3
  */
-public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes, org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes {
+public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
     protected static final String DEFAULT_NAMESPACE = "g";
     
     private static Log LOG = LogFactory.getLog(DefaultGrailsApplicationAttributes.class);
@@ -129,7 +128,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         if (controllerName == null || controllerName.length() == 0) {
             GroovyObject controller = getController(request);
             if (controller != null) {
-                controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
+                controllerName = (String)controller.getProperty("controllerName");
                 request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
                 if(controller instanceof GrailsControllerClass) {
                     String namespace = ((GrailsControllerClass)controller).getNamespace();
@@ -199,7 +198,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public String getControllerActionUri(ServletRequest request) {
         GroovyObject controller = getController(request);
-        return (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
+        return (String)controller.getProperty("actionUri");
     }
 
     public Errors getErrors(ServletRequest request) {

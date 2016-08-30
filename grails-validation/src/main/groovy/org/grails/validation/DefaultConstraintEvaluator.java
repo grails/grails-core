@@ -56,7 +56,7 @@ import java.util.*;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.codehaus.groovy.grails.validation.ConstraintsEvaluator {
+public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
 
     private static final Log LOG = LogFactory.getLog(DefaultConstraintEvaluator.class);
     private final Map<String, Object> defaultConstraints;

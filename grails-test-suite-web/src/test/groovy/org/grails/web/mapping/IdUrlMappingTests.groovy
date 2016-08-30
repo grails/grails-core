@@ -59,7 +59,6 @@ class ContentController {
 
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(servletContext)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)

@@ -39,7 +39,7 @@ import java.net.URL;
  * @since 1.0
  */
 @SuppressWarnings( "deprecation" )
-public class ArtefactHandlerAdapter implements ArtefactHandler, org.codehaus.groovy.grails.commons.ArtefactHandler {
+public class ArtefactHandlerAdapter implements ArtefactHandler {
 
     protected String type;
     protected Class<?> grailsClassType;

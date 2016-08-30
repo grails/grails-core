@@ -135,7 +135,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
                         // Embedded are now always fully rendered
-                        if (referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
+                        if (referencedDomainClass == null || property.isEmbedded() || property.getType().isEnum()) {
                             xml.convertAnother(referenceObject);
                         }
                         else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {

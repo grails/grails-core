@@ -54,7 +54,7 @@ import org.springframework.http.HttpMethod
  * @since 2.0
  */
 @CompileStatic
-class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.web.mapping.LinkGenerator, PluginManagerAware {
+class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     private static final Pattern absoluteUrlPattern = Pattern.compile('^[A-Za-z][A-Za-z0-9+\\-.]*:.*$')
 

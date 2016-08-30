@@ -645,18 +645,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getVersion()
+     * @see grails.core.GrailsDomainClass#getVersion()
      */
     public GrailsDomainClassProperty getVersion() {
         return version;
-    }
-
-    /**
-     * @see grails.core.GrailsDomainClass#getPersistantProperties()
-     */
-    @Deprecated
-    public GrailsDomainClassProperty[] getPersistantProperties() {
-        return persistentProperties;
     }
 
     public GrailsDomainClassProperty[] getPersistentProperties() {
@@ -664,7 +656,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPropertyByName(java.lang.String)
+     * @see grails.core.GrailsDomainClass#getPropertyByName(java.lang.String)
      */
     public GrailsDomainClassProperty getPropertyByName(String name) {
         GrailsDomainClassProperty persistentProperty = getPersistentProperty(name);

@@ -140,49 +140,6 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
 
-    /**
-     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, java.util.Map, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)} instead
-     */
-    @SuppressWarnings("rawtypes")
-    @Deprecated
-    public DefaultUrlMappingInfo(Object viewName, Map params, UrlMappingData urlData, ServletContext servletContext) {
-        this(viewName, params, urlData, WebUtils.findApplication(servletContext));
-    }
-
-    /**
-     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, String, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)}  instead
-     */
-    @Deprecated
-    public DefaultUrlMappingInfo(Object uri,String httpMethod, UrlMappingData data, ServletContext servletContext) {
-        this(uri, httpMethod, data, WebUtils.findApplication(servletContext));
-    }
-
-    /**
-     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)} instead
-     */
-    @Deprecated
-    public DefaultUrlMappingInfo(Object uri, UrlMappingData data, ServletContext servletContext) {
-        this(uri, data, WebUtils.findApplication(servletContext));
-    }
-
-    /**
-     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, Object, Object, Object, Object, Object, java.util.Map, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)}  instead
-     */
-    @Deprecated
-    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
-                                 UrlMappingData urlData, ServletContext servletContext) {
-        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, null, UrlMapping.ANY_VERSION, params, urlData, WebUtils.findApplication(servletContext));
-    }
-
-    /**
-     * @deprecated Use {@link #DefaultUrlMappingInfo(Object, Object, Object, Object, Object, Object, String, String, java.util.Map, grails.web.mapping.UrlMappingData, grails.core.GrailsApplication)}  instead
-     */
-    @Deprecated
-    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName,
-                                 String httpMethod, String version, Map<?, ?> params, UrlMappingData urlData, ServletContext servletContext) {
-        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName,httpMethod,version, params, urlData, WebUtils.findApplication(servletContext));
-    }
-
     @Override
     public String getHttpMethod() {
         return httpMethod;

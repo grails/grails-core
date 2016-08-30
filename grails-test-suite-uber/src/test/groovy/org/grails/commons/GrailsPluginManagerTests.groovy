@@ -1,5 +1,6 @@
 package org.grails.commons
 
+import grails.core.GrailsApplication
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import org.grails.commons.test.AbstractGrailsMockTests
@@ -143,7 +144,7 @@ hibernate {
         manager.loadPlugins()
 
         def parent = createMockApplicationContext()
-        parent.registerMockBean("grailsApplication", ga)
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
 
         def springConfig = new WebRuntimeSpringConfiguration(parent)
         springConfig.servletContext = createMockServletContext()
@@ -160,7 +161,7 @@ hibernate {
         manager.loadPlugins()
 
         def parent = createMockApplicationContext()
-        parent.registerMockBean("grailsApplication", ga)
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         def springConfig = new WebRuntimeSpringConfiguration(parent)
         springConfig.servletContext = createMockServletContext()
 

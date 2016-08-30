@@ -10,7 +10,6 @@ import grails.core.GrailsApplication;
 import grails.core.GrailsClass;
 import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -33,8 +32,8 @@ public class GrailsApplicationAttributesTests extends TestCase {
         GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(new MockServletContext());
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class<?> controllerClass = gcl.parseClass("class TestController {\n" +
-                "def "+ControllerDynamicMethods.CONTROLLER_URI_PROPERTY+" = '/test'\n" +
-                "def "+ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY+" = 'test'\n" +
+                "def controllerUri = '/test'\n" +
+                "def controllerName = 'test'\n" +
                 "}");
 
         MockHttpServletRequest request = new MockHttpServletRequest();

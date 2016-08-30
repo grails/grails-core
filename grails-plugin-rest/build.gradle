@@ -4,5 +4,6 @@ dependencies {
             project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
 
-    testCompile project(":grails-plugin-url-mappings")
+    testCompile project(":grails-plugin-url-mappings"),
+                project(":grails-test-suite-base")
 }

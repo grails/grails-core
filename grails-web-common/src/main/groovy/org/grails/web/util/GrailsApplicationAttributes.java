@@ -33,7 +33,7 @@ import java.io.Writer;
  *
  * @author Graeme Rocher
  */
-public interface GrailsApplicationAttributes extends ApplicationAttributes, org.codehaus.groovy.grails.commons.ApplicationAttributes {
+public interface GrailsApplicationAttributes extends ApplicationAttributes {
 
     String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.grails.GSP_TEMPLATE_ENGINE";
@@ -94,9 +94,11 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes, org.
     String getControllerUri(ServletRequest request);
 
     /**
+     * @deprecated Use {@link org.grails.web.servlet.mvc.GrailsWebRequest#getContextPath() instead}
      * @param request
      * @return The uri of the application relative to the server root
      */
+    @Deprecated
     String getApplicationUri(ServletRequest request);
 
     /**

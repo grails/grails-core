@@ -110,27 +110,6 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals("234", mapping.match("/blog/test/234").getId());
     }
 
-    public void testOldMethod() throws Exception {
-        GroovyShell shell = new GroovyShell();
-        Script script = shell.parse (
-                "mappings {\n" +
-                "    \"/$controller/$action?/$id?\" { \n" +
-                "        constraints {\n" +
-                "            id(matches:/\\d+/)\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n");
-
-        DefaultUrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator(new MockServletContext("/test"));
-        List mappings = evaluator.evaluateMappings(script.getClass());
-        assertEquals(1, mappings.size());
-        assertNull(((UrlMapping) mappings.get(0)).getActionName());
-        assertNull(((UrlMapping) mappings.get(0)).getControllerName());
-        assertEquals("(*)",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[0]);
-        assertEquals("(*)?",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[1]);
-        assertEquals("(*)?",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[2]);
-    }
-
     public void testResourceMappingsWithVersionAndNamespace() throws Exception {
         GroovyShell shell = new GroovyShell();
         Binding binding = new Binding();

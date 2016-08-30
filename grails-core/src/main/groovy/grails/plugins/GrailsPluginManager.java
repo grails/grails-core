@@ -165,6 +165,7 @@ public interface GrailsPluginManager extends ApplicationContextAware {
     /**
      * Checks all the plugins to see whether they have any changes
      */
+    @Deprecated
     void checkForChanges();
 
     /**
