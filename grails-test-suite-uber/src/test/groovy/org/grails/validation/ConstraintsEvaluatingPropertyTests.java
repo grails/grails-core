@@ -37,7 +37,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     @SuppressWarnings("rawtypes")
     public void testGet() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class<?> groovyClass = gcl.parseClass("package org.groovy.grails.validation\n" +
+        Class<?> groovyClass = gcl.parseClass("package org.grails.validation\n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -125,7 +125,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      * Test that static constraints work
      */
     public void testInheritedConstraints() throws Exception {
-        String classSource = "package org.groovy.grails.validation\n" +
+        String classSource = "package org.grails.validation\n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app

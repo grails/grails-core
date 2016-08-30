@@ -3,9 +3,9 @@ package org.grails.core.io
 import grails.core.DefaultGrailsApplication
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.BinaryGrailsPluginDescriptor
-import org.codehaus.groovy.grails.plugins.MockBinaryPluginResource
+import org.grails.plugins.MockBinaryPluginResource
 import org.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin
+import org.grails.plugins.TestBinaryGrailsPlugin
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ResourceLoader
 

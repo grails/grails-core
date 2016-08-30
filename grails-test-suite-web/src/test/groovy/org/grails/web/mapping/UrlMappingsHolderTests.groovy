@@ -1,12 +1,9 @@
 package org.grails.web.mapping
 
-import org.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.grails.web.mapping.DefaultUrlMappingsHolder;
 import org.springframework.core.io.*
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
 
-import org.codehaus.groovy.grails.web.servlet.mvc.*
 import org.junit.Test
 import static org.junit.Assert.*
 
