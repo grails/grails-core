@@ -58,12 +58,12 @@ class ResourceProfileSpec extends Specification {
         def profileRepository = Mock(ProfileRepository)
 
         def profile = new ResourceProfile(profileRepository, "web", mockResource)
-        profileRepository.getProfile("web" ) >> profile
+        profileRepository.getProfile("web", true) >> profile
 
         def baseProfile = Mock(Profile)
         baseProfile.getDependencies() >> [ new Dependency(new DefaultArtifact("foo:bar:2.0"), "test")]
         baseProfile.getBuildPlugins() >> [ "foo-plug"]
-        profileRepository.getProfile("base" ) >> baseProfile
+        profileRepository.getProfile("base", true) >> baseProfile
 
 
         when:"The dependencies are accessed"
@@ -96,12 +96,12 @@ class ResourceProfileSpec extends Specification {
         def profileRepository = Mock(ProfileRepository)
 
         def profile = new ResourceProfile(profileRepository, "web", mockResource)
-        profileRepository.getProfile("web" ) >> profile
+        profileRepository.getProfile("web", true) >> profile
 
         def baseProfile = Mock(Profile)
         baseProfile.getDependencies() >> [ new Dependency(new DefaultArtifact("foo:bar:2.0"), "test")]
         baseProfile.getBuildPlugins() >> [ "foo-plug"]
-        profileRepository.getProfile("base" ) >> baseProfile
+        profileRepository.getProfile("base", true) >> baseProfile
 
 
         when:"The dependencies are accessed"
