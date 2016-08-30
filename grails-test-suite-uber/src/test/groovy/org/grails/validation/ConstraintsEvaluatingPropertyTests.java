@@ -32,12 +32,12 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     }
 
     /*
-     * Test method for 'org.codehaus.groovy.grails.validation.metaclass.ConstraintsDynamicProperty.get(Object)'
+     * Test method for 'ConstraintsDynamicProperty.get(Object)'
      */
     @SuppressWarnings("rawtypes")
     public void testGet() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
-        Class<?> groovyClass = gcl.parseClass("package org.codehaus.groovy.grails.validation\n" +
+        Class<?> groovyClass = gcl.parseClass("package org.groovy.grails.validation\n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -56,7 +56,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      * Test that static constraints work
      */
     public void testStaticConstraints() throws Exception {
-        String classSource = "package org.codehaus.groovy.grails.validation\n" +
+        String classSource = "package org.grails.validation\n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -74,7 +74,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     @SuppressWarnings("rawtypes")
     public void testNullableConstraint() throws Exception {
         String bookClassSource =
-                "package org.codehaus.groovy.grails.validation\n" +
+                "package org.grails.validation\n" +
                 "class Book {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
@@ -125,7 +125,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      * Test that static constraints work
      */
     public void testInheritedConstraints() throws Exception {
-        String classSource = "package org.codehaus.groovy.grails.validation\n" +
+        String classSource = "package org.groovy.grails.validation\n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -134,7 +134,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "      name(nullable: false, validator : { 'called' })\n" +
                 "   }" +
                 "}";
-        String descendentSource = "package org.codehaus.groovy.grails.validation\n" +
+        String descendentSource = "package org.grails.validation\n" +
                 "class TestB extends Test {\n" +
                 "   static constraints = {\n" +
                 "      name(size:5..20)\n" +
