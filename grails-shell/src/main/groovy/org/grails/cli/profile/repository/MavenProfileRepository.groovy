@@ -45,6 +45,7 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     AetherGrapeEngine grapeEngine
     GroovyClassLoader classLoader
     DependencyResolutionContext resolutionContext
+    GrailsDependencyVersions profileDependencyVersions
     private boolean resolved = false
 
     MavenProfileRepository(List<RepositoryConfiguration> repositoryConfigurations) {
@@ -52,7 +53,8 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader)
         resolutionContext = new DependencyResolutionContext()
         this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, resolutionContext)
-        resolutionContext.addDependencyManagement(new GrailsDependencyVersions(grapeEngine))
+        profileDependencyVersions = new GrailsDependencyVersions(grapeEngine)
+        resolutionContext.addDependencyManagement(profileDependencyVersions)
     }
 
     MavenProfileRepository() {
@@ -60,16 +62,25 @@ class MavenProfileRepository extends AbstractJarProfileRepository {
     }
 
     @Override
-    Profile getProfile(String profileName) {
+    Profile getProfile(String profileName, Boolean parentProfile) {
         String profileShortName = profileName
         if(profileName.contains(':')) {
             def art = new DefaultArtifact(profileName)
             profileShortName = art.artifactId
         }
-        if(!resolved || !profilesByName.containsKey(profileShortName)) {
-            return resolveProfile(profileName)
+        if (!profilesByName.containsKey(profileShortName)) {
+            if(parentProfile && profileDependencyVersions.find(DEFAULT_PROFILE_GROUPID, profileShortName)) {
+                return resolveProfile(profileShortName)
+            } else {
+                return resolveProfile(profileName)
+            }
         }
         return super.getProfile(profileShortName)
+    }
+
+    @Override
+    Profile getProfile(String profileName) {
+        getProfile(profileName, false)
     }
 
     protected Profile resolveProfile(String profileName) {
