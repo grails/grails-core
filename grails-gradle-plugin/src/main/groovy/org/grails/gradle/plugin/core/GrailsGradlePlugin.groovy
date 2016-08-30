@@ -57,9 +57,9 @@ import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
-import org.springframework.boot.gradle.SpringBootPlugin
 import org.springframework.boot.gradle.SpringBootPluginExtension
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 import org.springframework.boot.gradle.repackage.RepackageTask
 
 import javax.inject.Inject

@@ -27,7 +27,6 @@ mappings {
     void testReverseTopLevelMapping() {
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext("/test"))
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)

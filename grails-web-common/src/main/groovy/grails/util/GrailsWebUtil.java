@@ -97,17 +97,6 @@ public class GrailsWebUtil {
     }
 
     /**
-     * @return The currently bound GrailsApplication instance
-     * @since 2.0
-     * @deprecated Do not use the flat config
-     */
-    @Deprecated
-    public static Map currentFlatConfiguration() {
-        GrailsApplication application = currentApplication();
-        return application == null ? Collections.emptyMap() : application.getConfig();
-    }
-
-    /**
      * Retrieves the URI from the request from either the include attribute or the request.getRequestURI() method.
      *
      * @param request The HttpServletRequest instance

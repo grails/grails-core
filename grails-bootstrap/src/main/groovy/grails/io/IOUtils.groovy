@@ -32,6 +32,8 @@ import java.nio.file.Paths
  */
 @CompileStatic
 class IOUtils extends SpringIOUtils {
+    public static final String RESOURCE_JAR_PREFIX = ".jar!"
+    public static final String RESOURCE_WAR_PREFIX = ".war!"
 
     private static String applicationDirectory
 
@@ -113,7 +115,7 @@ class IOUtils extends SpringIOUtils {
             final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
             new File(jarPath)
         }
-
+        return null
     }
     /**
      * Finds a JAR for the given resource
@@ -122,14 +124,17 @@ class IOUtils extends SpringIOUtils {
      * @return The JAR file or null if it can't be found
      */
     static File findJarFile(URL resource) {
-        def absolutePath = resource?.path
+        if(resource?.protocol == 'jar') {
+            def absolutePath = resource?.path
             if (absolutePath) {
-            try {
-                return Paths.get(new URL(absolutePath.substring(0, absolutePath.lastIndexOf("!"))).toURI()).toFile()
-            } catch (MalformedURLException e) {
-                return null
+                try {
+                    return Paths.get(new URL(absolutePath.substring(0, absolutePath.lastIndexOf("!"))).toURI()).toFile()
+                } catch (MalformedURLException e) {
+                    return null
+                }
             }
         }
+        return null
     }
 
     /**

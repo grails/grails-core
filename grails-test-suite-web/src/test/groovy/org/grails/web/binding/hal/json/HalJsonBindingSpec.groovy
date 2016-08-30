@@ -10,6 +10,7 @@ class HalJsonBindingSpec extends Specification {
 
     void 'Test binding JSON body'() {
         when:
+        request.method = 'POST'
         request.json = '''
             {
     "name": "Douglas",

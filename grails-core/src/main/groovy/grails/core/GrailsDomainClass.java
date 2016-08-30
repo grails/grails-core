@@ -51,14 +51,6 @@ public interface GrailsDomainClass extends GrailsClass {
     /**
      * Returns all of the persistant properties of the domain class
      * @return The domain class' persistant properties
-     * @deprecated Use #getPersistentProperties instead
-     */
-    @Deprecated
-    GrailsDomainClassProperty[] getPersistantProperties();
-
-    /**
-     * Returns all of the persistant properties of the domain class
-     * @return The domain class' persistant properties
      */
     GrailsDomainClassProperty[] getPersistentProperties();
 

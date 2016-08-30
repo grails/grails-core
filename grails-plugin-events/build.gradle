@@ -3,6 +3,7 @@ dependencies {
     compile project(":grails-async")
     compile "io.projectreactor.spring:reactor-spring-context:$reactorVersion", {
         exclude module:'reactor-bus', group:'io.projectreactor'
+        exclude module:'json-path', group:'com.jayway.jsonpath'
     }
 
     compile "io.projectreactor:reactor-bus:$reactorCoreVersion"

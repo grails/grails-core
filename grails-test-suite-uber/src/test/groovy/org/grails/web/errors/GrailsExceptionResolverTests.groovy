@@ -40,6 +40,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        mockCtx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
         super.setUp();
         def mainContext = new MockApplicationContext();
         mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
@@ -63,7 +64,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testResolveExceptionToView() {
-        def mappings = new DefaultUrlMappingEvaluator(mockContext).evaluateMappings {
+        def mappings = new DefaultUrlMappingEvaluator(mockCtx).evaluateMappings {
             "500"(view:"myView")
         }
 
@@ -91,7 +92,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testResolveExceptionToController() {
-        def mappings = new DefaultUrlMappingEvaluator(mockContext).evaluateMappings {
+        def mappings = new DefaultUrlMappingEvaluator(mockCtx).evaluateMappings {
             "500"(controller:"foo", action:"bar")
         }
 
@@ -121,7 +122,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testResolveExceptionToControllerWhenResponseCommitted() {
-        def mappings = new DefaultUrlMappingEvaluator(mockContext).evaluateMappings {
+        def mappings = new DefaultUrlMappingEvaluator(mockCtx).evaluateMappings {
             "500"(controller:"foo", action:"bar")
         }
 

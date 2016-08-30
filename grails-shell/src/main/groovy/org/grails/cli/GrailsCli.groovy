@@ -18,18 +18,16 @@ package org.grails.cli
 import grails.build.logging.GrailsConsole
 import grails.build.proxy.SystemPropertiesAuthenticator
 import grails.config.ConfigMap
+import grails.io.support.SystemOutErrCapturer
 import grails.io.support.SystemStreamsRedirector
 import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import jline.UnixTerminal
-import jline.console.ConsoleReader
 import jline.console.UserInterruptException
 import jline.console.completer.ArgumentCompleter
-import jline.console.completer.Completer
 import jline.internal.NonBlockingInputStream
-import org.gradle.impldep.org.apache.commons.io.output.NullOutputStream
 import org.gradle.tooling.BuildActionExecuter
 import org.gradle.tooling.BuildCancelledException
 import org.gradle.tooling.ProjectConnection
@@ -38,7 +36,6 @@ import org.grails.build.parsing.CommandLineParser
 import org.grails.build.parsing.DefaultCommandLine
 import org.grails.cli.gradle.ClasspathBuildAction
 import org.grails.cli.gradle.GradleAsyncInvoker
-import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.gradle.cache.MapReadingCachedGradleOperation
 import org.grails.cli.interactive.completers.EscapingFileNameCompletor
 import org.grails.cli.interactive.completers.RegexCompletor
@@ -47,13 +44,12 @@ import org.grails.cli.interactive.completers.StringsCompleter
 import org.grails.cli.profile.*
 import org.grails.cli.profile.commands.CommandCompleter
 import org.grails.cli.profile.commands.CommandRegistry
+import org.grails.cli.profile.repository.GrailsRepositoryConfiguration
 import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.cli.profile.repository.StaticJarProfileRepository
 import org.grails.config.CodeGenConfig
 import org.grails.config.NavigableMap
 import org.grails.exceptions.ExceptionUtils
-import org.grails.gradle.plugin.model.GrailsClasspath
-import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
 
 import java.util.concurrent.*
 
@@ -119,7 +115,7 @@ class GrailsCli {
     CodeGenConfig applicationConfig
     ProjectContext projectContext
     Profile profile = null
-    List<RepositoryConfiguration> profileRepositories = [MavenProfileRepository.DEFAULT_REPO]
+    List<GrailsRepositoryConfiguration> profileRepositories = [MavenProfileRepository.DEFAULT_REPO]
 
     /**
      * Obtains a value from USER_HOME/.grails/settings.yml
@@ -321,7 +317,15 @@ class GrailsCli {
                     def snapshots = data.get('snapshotsEnabled')
                     if(uri != null) {
                         boolean enableSnapshots = snapshots != null ? Boolean.valueOf(snapshots.toString()) : false
-                        profileRepositories.add( new RepositoryConfiguration(repoName.toString(), new URI(uri.toString()), enableSnapshots))
+                        GrailsRepositoryConfiguration repositoryConfiguration
+                        final String username = data.get('username')
+                        final String password = data.get('password')
+                        if (username != null && password != null) {
+                            repositoryConfiguration = new GrailsRepositoryConfiguration(repoName.toString(), new URI(uri.toString()), enableSnapshots, username, password)
+                        } else {
+                            repositoryConfiguration = new GrailsRepositoryConfiguration(repoName.toString(), new URI(uri.toString()), enableSnapshots)
+                        }
+                        profileRepositories.add(repositoryConfiguration)
                     }
                 }
             }
@@ -541,8 +545,8 @@ class GrailsCli {
                         def config = applicationConfig
 
                         BuildActionExecuter buildActionExecuter = connection.action(new ClasspathBuildAction())
-                        buildActionExecuter.standardOutput = new NullOutputStream()
-                        buildActionExecuter.standardError  = new NullOutputStream()
+                        buildActionExecuter.standardOutput = System.out
+                        buildActionExecuter.standardError  = System.err
                         buildActionExecuter.withArguments("-Dgrails.profile=${config.navigate("grails", "profile")}")
 
                         def grailsClasspath = buildActionExecuter.run()
@@ -580,14 +584,12 @@ class GrailsCli {
     private CodeGenConfig loadApplicationConfig() {
         CodeGenConfig config = new CodeGenConfig()
         File applicationYml = new File("grails-app/conf/application.yml")
+        File applicationGroovy = new File("grails-app/conf/application.groovy")
         if(applicationYml.exists()) {
             config.loadYml(applicationYml)
         }
-        else {
-            applicationYml = new File("application.yml")
-            if(applicationYml.exists()) {
-                config.loadYml(applicationYml)
-            }
+        if(applicationGroovy.exists()) {
+            config.loadGroovy(applicationGroovy)
         }
         config
     }

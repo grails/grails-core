@@ -64,13 +64,6 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
         localClassInjectors = classInjectors;
     }
 
-    /**
-     * @deprecated Custom resource loader no longer supported
-     */
-    @Deprecated
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
-        localClassInjectors = classInjectors;
-    }
 
     public static ClassInjector[] getClassInjectors() {
         if (classInjectors == null) {

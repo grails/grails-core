@@ -26,24 +26,6 @@ class SomeClass {
         e.message.contains 'The @BindingFormat annotation on the field [someProperty] in class [com.demo.SomeClass] must provide a value for either the value() or code() attribute.'
     }
 
-    void 'Test compiling with legacy @BindingFormat with no code and no value'() {
-        given:
-        def gcl = new GroovyClassLoader()
-        
-        when:
-        gcl.parseClass '''
-package com.demo
-
-class SomeClass {
-        @org.grails.databinding.BindingFormat
-        String someProperty
-}
-'''
-        then:
-        MultipleCompilationErrorsException e = thrown()
-        e.message.contains 'The @BindingFormat annotation on the field [someProperty] in class [com.demo.SomeClass] must provide a value for either the value() or code() attribute.'
-    }
-
 	void 'Test compiling @BindingFormat with code'() {
 		given:
 		def gcl = new GroovyClassLoader()

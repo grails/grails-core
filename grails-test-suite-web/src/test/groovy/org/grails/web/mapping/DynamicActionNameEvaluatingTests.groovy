@@ -1,7 +1,6 @@
 package org.grails.web.mapping
 
 import org.springframework.core.io.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
 
 class DynamicActionNameEvaluatingTests extends AbstractGrailsMappingTests {
 

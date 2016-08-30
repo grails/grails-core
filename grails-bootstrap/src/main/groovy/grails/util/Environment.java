@@ -103,6 +103,11 @@ public enum Environment {
      */
     public static final String INITIALIZING = "grails.env.initializing";
 
+    /**
+     * Whether Grails has been executed standalone via the static void main method and not loaded in via the container
+     */
+    public static final String STANDALONE = "grails.env.standalone";
+
     private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
 
     private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
@@ -119,6 +124,8 @@ public enum Environment {
 
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
+    private static final boolean STANDALONE_DEPLOYED;
+    private static final boolean WAR_DEPLOYED;
 
     static {
         Package p = Environment.class.getPackage();
@@ -162,6 +169,53 @@ public enum Environment {
             }
         }
         GRAILS_VERSION = version;
+
+        URL url = Environment.class.getResource("");
+        if(url != null) {
+
+            String protocol = url.getProtocol();
+            if(protocol.equals("jar")) {
+                String fullPath = url.toString();
+                if(fullPath.contains(IOUtils.RESOURCE_WAR_PREFIX)) {
+                    STANDALONE_DEPLOYED = true;
+                }
+                else {
+                    int i = fullPath.indexOf(IOUtils.RESOURCE_JAR_PREFIX);
+                    if(i > -1) {
+                        fullPath = fullPath.substring(i + IOUtils.RESOURCE_JAR_PREFIX.length());
+                        STANDALONE_DEPLOYED = fullPath.contains(IOUtils.RESOURCE_JAR_PREFIX);
+
+                    }
+                    else {
+                        STANDALONE_DEPLOYED = false;
+                    }
+
+                }
+            }
+            else {
+                STANDALONE_DEPLOYED = false;
+            }
+        }
+        else {
+            STANDALONE_DEPLOYED = false;
+        }
+
+        URL loadedLocation = Environment.class.getClassLoader().getResource(Metadata.FILE);
+        if(loadedLocation != null ) {
+            String path = loadedLocation.getPath();
+            WAR_DEPLOYED = isWebPath(path);
+        }
+        else {
+
+            loadedLocation = Thread.currentThread().getContextClassLoader().getResource(Metadata.FILE);
+            if(loadedLocation != null ) {
+                String path = loadedLocation.getPath();
+                WAR_DEPLOYED = isWebPath(path);
+            }
+            else {
+                WAR_DEPLOYED = false;
+            }
+        }
     }
 
     public static Throwable currentReloadError = null;
@@ -271,7 +325,7 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentEnvironmentAvailable() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT ;
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed();
     }
 
     /**
@@ -280,22 +334,48 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentRun() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && Boolean.getBoolean(RUN_ACTIVE);
+        Environment env = Environment.getCurrent();
+        return isDevelopmentEnvironmentAvailable() && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
     }
+    
     /**
      * Check whether the application is deployed
      * @return true if is
      */
     public static boolean isWarDeployed() {
-        URL loadedLocation = Environment.class.getClassLoader().getResource(Metadata.FILE);
-        if(loadedLocation != null && loadedLocation.getPath().contains("/WEB-INF/classes")) {
-            return true;
-        }
-        // Workaround for weblogic who repacks files from 'classes' into a new jar under lib/
-        if (loadedLocation != null && loadedLocation.getPath().contains("_wl_cls_gen.jar!/")) {
-            return true;
+        if(!isStandalone()) {
+            return WAR_DEPLOYED;
         }
         return false;
+    }
+
+    private static boolean isWebPath(String path) {
+        // Workaround for weblogic who repacks files from 'classes' into a new jar under lib/
+        return path.contains("/WEB-INF/classes") || path.contains("_wl_cls_gen.jar!/");
+    }
+
+    /**
+     * Whether the application has been executed standalone via static void main.
+     *
+     * This method will return true when the application is executed via `java -jar` or
+     * if the application is run directly via the main method within an IDE
+     *
+     * @return True if it is running standalone outside of a servlet container
+     */
+    public static boolean isStandalone() {
+        return Boolean.getBoolean(STANDALONE);
+    }
+
+    /**
+     * Whether the application is running standalone within a JAR
+     *
+     * This method will return true only if the the application is executed via `java -jar`
+     * and not if it is run via the main method within an IDE
+     *
+     * @return True if it is running standalone outside a servlet container from within a JAR or WAR file
+     */
+    public static boolean isStandaloneDeployed() {
+        return isStandalone() && STANDALONE_DEPLOYED;
     }
 
     /**

@@ -27,7 +27,6 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
 import org.apache.commons.lang.builder.CompareToBuilder
-import org.grails.databinding.BindingFormat as LegacyBindingFormat
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -1259,27 +1258,6 @@ class GrailsWebDataBinderSpec extends Specification {
         !obj.hasErrors()
     }
     
-    @Issue('GRAILS-11174')
-    void 'Test binding null to a Date marked with the legacy @BindingFormat'() {
-        given:
-        def obj = new DataBindingBook()
-        
-        when:
-        binder.bind obj, [legacyDatePublished: null] as SimpleMapDataBindingSource
-        
-        then:
-        obj.legacyDatePublished == null
-        !obj.hasErrors()
-        
-        when:
-        obj.legacyDatePublished = new Date()
-        binder.bind obj, [legacyDatePublished: null] as SimpleMapDataBindingSource
-        
-        then:
-        obj.legacyDatePublished == null
-        !obj.hasErrors()
-    }
-    
     @Issue('GRAILS-11238')
     void 'Test binding to a property that hides a field of a different type'() {
         when:
@@ -1324,29 +1302,6 @@ class GrailsWebDataBinderSpec extends Specification {
         
         then: 'the date is null'
         book.datePublished == null
-        !book.hasErrors()
-    }
-    
-    @Issue('GRAILS-11472')
-    void 'test binding an empty string to a Date marked with the legacy @BindingFormat'() {
-        given:
-        def book = new DataBindingBook()
-        
-        when: 'a valid date string is bound'
-        binder.bind book, [legacyDatePublished: '11151969'] as SimpleMapDataBindingSource
-        
-        then: 'the date is initialized'
-        !book.hasErrors()
-        book.legacyDatePublished
-        Calendar.NOVEMBER == book.legacyDatePublished.month
-        15 == book.legacyDatePublished.date
-        69 == book.legacyDatePublished.year
-        
-        when: 'an empty string is bound'
-        binder.bind book, [legacyDatePublished: ''] as SimpleMapDataBindingSource
-        
-        then: 'the date is null'
-        book.legacyDatePublished == null
         !book.hasErrors()
     }
     
@@ -1497,8 +1452,6 @@ class DataBindingBook {
     List topics
     @BindingFormat("MMddyyyy")
     Date datePublished
-    @LegacyBindingFormat("MMddyyyy")
-    Date legacyDatePublished
     static hasMany = [topics: String, importantPageNumbers: Integer]
 }
 

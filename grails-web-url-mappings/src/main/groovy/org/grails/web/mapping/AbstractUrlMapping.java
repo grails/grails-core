@@ -97,21 +97,6 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         setGrailsApplication(grailsApplication);
     }
 
-    @Deprecated
-    public AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints, WebUtils.findApplication(servletContext));
-    }
-
-    @Deprecated
-    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(viewName, constraints, WebUtils.findApplication(servletContext));
-    }
-
-    @Deprecated
-    protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(uri, constraints, WebUtils.findApplication(servletContext));
-    }
-
     @Override
     public String getHttpMethod() {
         return httpMethod;

@@ -163,7 +163,7 @@ public class DataBindingUtils {
      * @since 2.3
      */
     public static <T> void bindToCollection(final Class<T> targetType, final Collection<T> collectionToPopulate, final CollectionDataBindingSource collectionBindingSource) throws InstantiationException, IllegalAccessException {
-        final GrailsApplication application = GrailsWebRequest.lookupApplication();
+        final GrailsApplication application = Holders.findApplication();
         GrailsDomainClass domain = null;
         if (application != null) {
             domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,targetType.getName());
@@ -177,7 +177,7 @@ public class DataBindingUtils {
     }
 
     public static <T> void bindToCollection(final Class<T> targetType, final Collection<T> collectionToPopulate, final ServletRequest request) throws InstantiationException, IllegalAccessException {
-        final GrailsApplication grailsApplication = GrailsWebRequest.lookupApplication();
+        final GrailsApplication grailsApplication = Holders.findApplication();
         final CollectionDataBindingSource collectionDataBindingSource = createCollectionDataBindingSource(grailsApplication, targetType, request);
         bindToCollection(targetType, collectionToPopulate, collectionDataBindingSource);
     }

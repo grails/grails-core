@@ -669,28 +669,6 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
     }
 
     /**
-     * Reads the buffer to a char[].
-     *
-     * @return the chars
-     * @deprecated use toCharArray() directly
-     */
-    @Deprecated
-    public char[] readAsCharArray() {
-        return toCharArray();
-    }
-
-    /**
-     * Reads the buffer to a String.
-     *
-     * @return the String
-     * @deprecated Use toString() directly
-     */
-    @Deprecated
-    public String readAsString() {
-        return toString();
-    }
-
-    /**
      * {@inheritDoc}
      *
      * Reads (and empties) the buffer to a String, but caches the return value for subsequent calls.

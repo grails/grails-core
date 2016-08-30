@@ -20,17 +20,13 @@ import grails.core.GrailsClass;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsMetaClassUtils;
 import grails.util.GrailsNameUtils;
-import grails.util.GrailsUtil;
 import grails.web.Action;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
-import groovy.lang.MetaProperty;
 import org.grails.core.exceptions.NewInstanceCreationException;
-import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.core.util.ClassPropertyFetcher;
 import grails.plugins.GrailsVersionUtils;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -51,7 +47,7 @@ import java.lang.reflect.Modifier;
  *
  * @since 0.1
  */
-public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.groovy.grails.commons.GrailsClass {
+public abstract class AbstractGrailsClass implements GrailsClass {
 
     private final Class<?> clazz;
     private BeanWrapper reference;
@@ -99,12 +95,6 @@ public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.g
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
-    }
-
-    @Override
-    @Deprecated
-    public org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication() {
-        return new LegacyGrailsApplication(grailsApplication);
     }
 
     @Override
@@ -205,20 +195,6 @@ public abstract class AbstractGrailsClass implements GrailsClass, org.codehaus.g
         return (getMetaClass().getMetaProperty(propName) != null);
     }
 
-    /**
-     * Used to get configured property values.
-     *
-     * @return BeanWrapper instance that holds reference
-     * @deprecated
-     */
-    @Deprecated
-    public BeanWrapper getReference() {
-        GrailsUtil.deprecated(AbstractGrailsClass.class, "getReference");
-        if (reference == null) {
-            reference = new BeanWrapperImpl(newInstance());
-        }
-        return reference;
-    }
 
     /**
      * <p>Looks for a property of the reference instance with a given name and type.</p>

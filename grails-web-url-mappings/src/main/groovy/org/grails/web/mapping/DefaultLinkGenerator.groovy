@@ -54,7 +54,7 @@ import org.springframework.http.HttpMethod
  * @since 2.0
  */
 @CompileStatic
-class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.web.mapping.LinkGenerator, PluginManagerAware {
+class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     private static final Pattern absoluteUrlPattern = Pattern.compile('^[A-Za-z][A-Za-z0-9+\\-.]*:.*$')
 
@@ -243,7 +243,12 @@ class DefaultLinkGenerator implements LinkGenerator, org.codehaus.groovy.grails.
                     params.put(ATTRIBUTE_ID, id)
                 }
                 def pluginName = attrs.get(UrlMapping.PLUGIN)?.toString()
-                def namespace = attrs.get(UrlMapping.NAMESPACE)?.toString() ?: requestStateLookupStrategy.controllerNamespace
+                def namespace = attrs.get(UrlMapping.NAMESPACE)?.toString()
+                if (namespace == null) {
+                    if (controller == requestStateLookupStrategy.controllerName) {
+                        namespace = requestStateLookupStrategy.controllerNamespace
+                    }
+                }
                 UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,namespace,pluginName,httpMethod,params)
                 if (mapping == null && isDefaultAction) {
                     mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,namespace,pluginName,httpMethod,params)
