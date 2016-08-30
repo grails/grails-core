@@ -9,7 +9,6 @@ import spock.lang.Specification
 class GrailsUnitTestMixinGrailsApplicationAwareSpec extends Specification {
 
     static doWithSpring = {
-        someLegacyBean SomeLegacyBean
         someBean SomeBean
     }
     
@@ -19,19 +18,9 @@ class GrailsUnitTestMixinGrailsApplicationAwareSpec extends Specification {
         
         then: 'the grailsApplication property is properly initialized'
         someBean.grailsApplication
-        
-        when: 'when a test registers a bean which implements the legacy GrailsApplicationAware'
-        someBean = applicationContext.someLegacyBean
-        
-        then: 'the grailsApplication property is properly initialized'
-        someBean.grailsApplication
     }
 }
 
 class SomeBean implements GrailsApplicationAware {
     GrailsApplication grailsApplication
-}
-
-class SomeLegacyBean implements org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware {
-    org.codehaus.groovy.grails.commons.GrailsApplication grailsApplication
 }

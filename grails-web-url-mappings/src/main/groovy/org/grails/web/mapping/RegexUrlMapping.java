@@ -127,30 +127,6 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         parse(data, constraints);
     }
 
-    /**
-     * @deprecated Use {@link #RegexUrlMapping(grails.web.mapping.UrlMappingData, java.net.URI, grails.validation.ConstrainedProperty[], grails.core.GrailsApplication)} instead
-     */
-    @Deprecated
-    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(data, uri, constraints, WebUtils.findApplication(servletContext));
-    }
-
-    /**
-     * @deprecated Use {@link #RegexUrlMapping(grails.web.mapping.UrlMappingData, Object, Object, Object, Object, Object, String, String, grails.validation.ConstrainedProperty[], grails.core.GrailsApplication)}  instead
-     */
-    @Deprecated
-    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, WebUtils.findApplication(servletContext));
-    }
-
-    /**
-     * @deprecated Use {@link #RegexUrlMapping(Object, grails.web.mapping.UrlMappingData, Object, Object, Object, Object, Object, String, String, grails.validation.ConstrainedProperty[], grails.core.GrailsApplication)} instead
-     */
-    @Deprecated
-    public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(redirectInfo, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, WebUtils.findApplication(servletContext));
-    }
-
     private void parse(UrlMappingData data, ConstrainedProperty[] constraints) {
         Assert.notNull(data, "Argument [data] cannot be null");
 
@@ -319,7 +295,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         if (includeContextPath) {
             GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
             if (webRequest != null) {
-                contextPath = webRequest.getAttributes().getApplicationUri(webRequest.getCurrentRequest());
+                contextPath = webRequest.getContextPath();
             }
         }
         if (paramValues == null) paramValues = Collections.emptyMap();

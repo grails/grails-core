@@ -52,18 +52,6 @@ public class GrailsUtil {
     private GrailsUtil() {
     }
 
-
-    /**
-     * Retrieves the current execution environment.
-     *
-     * @return The environment Grails is executing under
-     * @deprecated Use Environment.getCurrent() method instead
-     */
-    @Deprecated
-    public static String getEnvironment() {
-        return Environment.getCurrent().getName();
-    }
-
     /**
      * Retrieves whether the current execution environment is the development one.
      *
@@ -128,19 +116,6 @@ public class GrailsUtil {
         }
     }
 
-    /**
-     * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
-     * <p>This modifies the original instance and returns it, it does not clone</p>
-     * @param t The exception
-     * @return The exception passed in, after cleaning the stack trace
-     *
-     * @deprecated Use {@link StackTraceFilterer} instead
-     */
-    @Deprecated
-    public static Throwable sanitize(Throwable t) {
-        return stackFilterer.filter(t);
-    }
-
     public static void printSanitizedStackTrace(Throwable t, PrintWriter p) {
         printSanitizedStackTrace(t, p, stackFilterer);
     }
@@ -191,27 +166,6 @@ public class GrailsUtil {
      */
     public static Throwable deepSanitize(Throwable t) {
         return stackFilterer.filter(t, true);
-    }
-
-    /**
-     * Writes out a GPathResult (i.e. the result of parsing XML using
-     * XmlSlurper) to the given writer.
-     * @param result The root node of the XML to write out.
-     * @param output Where to write the XML to.
-     * @throws IOException If the writing fails due to a closed stream or unwritable file.
-     * @deprecated Will be removed in a future release
-     */
-    @Deprecated
-    public static void writeSlurperResult(GPathResult result, Writer output) throws IOException {
-        Binding b = new Binding();
-        b.setVariable("node", result);
-        // this code takes the XML parsed by XmlSlurper and writes it out using StreamingMarkupBuilder
-        // don't ask me how it works, refer to John Wilson ;-)
-        Writable w = (Writable)new GroovyShell(b).evaluate(
-                "new groovy.xml.StreamingMarkupBuilder().bind {" +
-                " mkp.declareNamespace(\"\":  \"http://java.sun.com/xml/ns/j2ee\");" +
-                " mkp.yield node}");
-        w.writeTo(output);
     }
 
 

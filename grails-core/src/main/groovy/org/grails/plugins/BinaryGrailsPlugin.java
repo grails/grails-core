@@ -140,7 +140,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
                 String viewName = view.toString();
                 final String viewClassName = viewsProperties.getProperty(viewName);
                 try {
-                    final Class<?> viewClass = application.getClassLoader().loadClass(viewClassName);
+                    final Class<?> viewClass = grailsApplication.getClassLoader().loadClass(viewClassName);
                     precompiledViewMap.put(viewName, viewClass);
                 } catch (Throwable e) {
                     throw new PluginException("Failed to initialize view ["+viewName+"] from plugin ["+ getName()+ "] : " + e.getMessage(), e);
@@ -161,7 +161,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
         List<Class> artefacts = new ArrayList<Class>();
         if (!classNames.isEmpty()) {
-            final ClassLoader classLoader = application.getClassLoader();
+            final ClassLoader classLoader = grailsApplication.getClassLoader();
             for (String className : classNames) {
                 try {
                     artefacts.add(classLoader.loadClass(className));

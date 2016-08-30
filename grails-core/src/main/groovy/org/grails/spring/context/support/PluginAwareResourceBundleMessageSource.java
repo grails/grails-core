@@ -60,16 +60,6 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedBinaryPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private long pluginCacheMillis = Long.MIN_VALUE;
 
-    @Deprecated
-    public List<String> getPluginBaseNames() {
-        return pluginBaseNames;
-    }
-
-    @Deprecated
-    public void setPluginBaseNames(List<String> pluginBaseNames) {
-        this.pluginBaseNames = pluginBaseNames;
-    }
-
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         application = grailsApplication;
     }

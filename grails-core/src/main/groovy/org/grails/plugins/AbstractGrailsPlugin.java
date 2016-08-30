@@ -25,7 +25,6 @@ import groovy.lang.GroovyObjectSupport;
 import org.grails.config.yaml.YamlPropertySourceLoader;
 import org.grails.core.AbstractGrailsClass;
 import org.grails.core.cfg.GroovyConfigPropertySourceLoader;
-import org.grails.core.legacy.LegacyGrailsApplication;
 import org.grails.plugins.support.WatchPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,6 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     private static final List<String> DEFAULT_CONFIG_IGNORE_LIST = Arrays.asList("dataSource", "hibernate");
     private static Resource basePluginResource = null;
     protected PropertySource<?> propertySource;
-    protected org.codehaus.groovy.grails.commons.GrailsApplication application;
     protected GrailsApplication grailsApplication;
     protected boolean isBase = false;
     protected String version = "1.0";
@@ -83,7 +81,6 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         Assert.isTrue(pluginClass.getName().endsWith(TRAILING_NAME),
                 "Argument [pluginClass] with value [" + pluginClass +
                         "] is not a Grails plugin (class name must end with 'GrailsPlugin')");
-        this.application = new LegacyGrailsApplication(application);
         this.grailsApplication = application;
         this.pluginClass = pluginClass;
         Resource resource = readPluginConfiguration(pluginClass);
@@ -231,7 +228,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
      * @see grails.plugins.GrailsPlugin#setApplication(grails.core.GrailsApplication)
      */
     public void setApplication(GrailsApplication application) {
-        this.application = new LegacyGrailsApplication(application);
+        this.grailsApplication = application;
     }
 
     public String[] getEvictionNames() {

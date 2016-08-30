@@ -5,7 +5,6 @@ import grails.gsp.TagLib
 import grails.util.TypeConvertingMap
 import grails.web.mapping.UrlMapping
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import org.grails.taglib.TagOutput
@@ -44,7 +43,7 @@ class UrlMappingTagLib implements TagLibrary{
     Closure include = { Map attrs, body ->
         if (attrs.action && !attrs.controller) {
             def controller = request?.getAttribute(GrailsApplicationAttributes.CONTROLLER)
-            def controllerName = ((GroovyObject)controller)?.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY)
+            def controllerName = ((GroovyObject)controller)?.getProperty("controllerName")
             attrs.controller = controllerName
         }
 

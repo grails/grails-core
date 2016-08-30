@@ -94,16 +94,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private ApplicationContext applicationContext;
     private GrailsApplication grailsApplication;
 
-
-    /**
-     * @param servletContext The servlet context
-     * @deprecated Used DefaultUrLMappingsEvaluator(ApplicationContext) instead
-     */
-    @Deprecated
-    public DefaultUrlMappingEvaluator(ServletContext servletContext) {
-        this(WebApplicationContextUtils.getWebApplicationContext(servletContext));
-    }
-
     public DefaultUrlMappingEvaluator(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         if (applicationContext != null) {

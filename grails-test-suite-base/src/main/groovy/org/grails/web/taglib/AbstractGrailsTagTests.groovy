@@ -244,7 +244,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         messageSource = new StaticMessageSource()
         ctx.registerMockBean("manager", mockManager)
         ctx.registerMockBean("messageSource", messageSource)
-        ctx.registerMockBean("grailsApplication", grailsApplication)
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication)
         ctx.registerMockBean("conversionService", new DefaultConversionService())
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 

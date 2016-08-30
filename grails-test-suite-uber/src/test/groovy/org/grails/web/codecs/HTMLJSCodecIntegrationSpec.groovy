@@ -1,8 +1,8 @@
-package org.grails.web.codecs;
+package org.grails.web.codecs
 
+import grails.core.GrailsApplication;
 import grails.util.GrailsWebMockUtil
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.grails.buffer.FastStringWriter
 import org.grails.commons.DefaultGrailsCodecClass
 import org.grails.commons.GrailsCodecClass

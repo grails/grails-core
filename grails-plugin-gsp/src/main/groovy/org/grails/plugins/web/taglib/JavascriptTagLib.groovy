@@ -98,7 +98,7 @@ class JavascriptTagLib implements ApplicationContextAware, TagLibrary {
         if (attrs.base) {
             attrs.uri = attrs.remove('base') + attrs.remove('src')
         } else {
-            def appBase = grailsAttributes.getApplicationUri(request)
+            def appBase = request.contextPath
             if (!appBase.endsWith('/')) {
                 appBase += '/'
             }

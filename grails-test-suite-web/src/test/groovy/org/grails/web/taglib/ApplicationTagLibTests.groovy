@@ -344,7 +344,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testSetTagWithBeanType() {
-        def template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:set bean="${GrailsApplication}" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+        def template = '<%@ page import="grails.core.*" %><g:set bean="${GrailsApplication}" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
         assertOutputEquals('true', template)
     }
 

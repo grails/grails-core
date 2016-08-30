@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Marc Palmer (marc@anyware.co.uk)
  * @author Graeme Rocher
  */
-public class DefaultArtefactInfo implements ArtefactInfo, org.codehaus.groovy.grails.commons.ArtefactInfo {
+public class DefaultArtefactInfo implements ArtefactInfo {
 
     private LinkedList<GrailsClass> grailsClasses = new LinkedList<GrailsClass>();
     private Class<?>[] classes;

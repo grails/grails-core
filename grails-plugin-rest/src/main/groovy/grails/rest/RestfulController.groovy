@@ -213,18 +213,6 @@ class RestfulController<T> {
             return false
         }
     }
-
-    /**
-     * This method is no longer used.
-     *
-     * @see #getObjectToBind
-     * @return The parameters
-     * @deprecated
-     */
-    @Deprecated
-    protected Map getParametersToBind() {
-        params
-    }
     
     /**
      * The object that can be bound to a domain instance.  Defaults to the request.  Subclasses may override this

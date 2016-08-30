@@ -50,11 +50,6 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
                 "Constraints can't be used for response code url mapping");
     }
 
-    @Deprecated
-    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(null, controllerName, actionName, namespace, pluginName, viewName, constraints, WebUtils.findApplication(servletContext));
-    }
-
     public UrlMappingInfo match(String uri) {
         return null;
     }

@@ -29,7 +29,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class GroovyPagesUriSupport implements GroovyPagesUriService, org.codehaus.groovy.grails.web.pages.GroovyPagesUriService {
+public class GroovyPagesUriSupport implements GroovyPagesUriService {
 
     public static final String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     private static final char SLASH = '/';

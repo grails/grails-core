@@ -15,6 +15,7 @@ import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingConte
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.grails.support.MockApplicationContext
 import org.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.mapping.DefaultLinkGenerator
@@ -149,7 +150,9 @@ class HalDomainClassXmlRendererSpec extends Specification {
         return generator;
     }
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
-        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+        def evaluator = new DefaultUrlMappingEvaluator(ctx)
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }
