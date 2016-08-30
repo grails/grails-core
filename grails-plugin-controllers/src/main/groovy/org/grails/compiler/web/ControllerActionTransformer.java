@@ -20,6 +20,9 @@ import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.hasAnnotation;
+import static org.grails.compiler.injection.GrailsASTUtils.hasParameters;
+import static org.grails.compiler.injection.GrailsASTUtils.removeAnnotation;
 import grails.artefact.Artefact;
 import grails.artefact.controller.support.AllowedMethodsHelper;
 import grails.compiler.DelegatingMethod;
@@ -37,6 +40,7 @@ import grails.util.TypeConvertingMap;
 import groovy.lang.Closure;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -233,6 +237,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         return isExceptionHandler;
     }
 
+    private boolean isTraitMethod(MethodNode methodNode) {
+        return GrailsASTUtils.hasAnnotation(methodNode, Traits.TraitBridge.class);
+    }
+
     private void processMethods(ClassNode classNode, SourceUnit source,
             GeneratorContext context) {
 
@@ -295,14 +303,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
      */
     protected boolean methodShouldBeConfiguredAsControllerAction(final MethodNode method) {
         int minLineNumber = 0;
-        // Methods inherited from traits marked with @Action that take a parameter:
-        //   Remove the @Action annotation so they will be processed to create the no-arg method
-        if (method.getAnnotations(ClassHelper.make(Traits.TraitBridge.class)).size() > 0) {
-            List<AnnotationNode> annotations = method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode());
-            if (annotations.size() > 0 && method.getParameters().length > 0) {
-                method.getAnnotations().removeAll(annotations);
-                --minLineNumber;
-            }
+        if (isTraitMethod(method) && hasAnnotation(method, Action.class) && hasParameters(method)) {
+            removeAnnotation(method, Action.class);
+            //Trait methods have a line number of -1
+            --minLineNumber;
         }
         return !method.isStatic() && 
                 method.isPublic() && 
