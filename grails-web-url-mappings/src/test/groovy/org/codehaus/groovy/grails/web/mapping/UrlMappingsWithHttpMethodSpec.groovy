@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.web.CamelCaseUrlConverter
 import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
@@ -27,8 +29,9 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
 
     void "Test that the http method can be used as a prefix to URL mappings"() {
         given:"A URL mapping evaluator"
-            def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
-
+            def ctx = new MockApplicationContext()
+            ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+            def evaluator = new DefaultUrlMappingEvaluator(ctx)
 
         when:"The mappings are evaluated"
             def mappings = evaluator.evaluateMappings mappings
@@ -79,7 +82,9 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
         return generator;
     }
     UrlMappingsHolder getUrlMappingsHolder() {
-        def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+        def evaluator = new DefaultUrlMappingEvaluator(ctx)
         def mappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(mappings)
     }

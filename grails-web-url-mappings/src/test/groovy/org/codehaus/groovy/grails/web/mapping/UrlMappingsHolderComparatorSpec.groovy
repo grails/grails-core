@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingParser
@@ -33,8 +35,10 @@ class UrlMappingsHolderComparatorSpec extends Specification {
     @Issue('https://github.com/grails/grails-core/issues/665')
     void "Test that RegexUrlMapping doesn't violate its contract"() {
         when:"Url mappings are parsed"
-            def mappings = new DefaultUrlMappingEvaluator(new MockApplicationContext())
-                                .evaluateMappings(ComplexUrlMappings.mappings)
+            def ctx = new MockApplicationContext()
+            ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+            def evaluator = new DefaultUrlMappingEvaluator(ctx)
+            def mappings = evaluator.evaluateMappings(ComplexUrlMappings.mappings)
 
         then:
             new DefaultUrlMappingsHolder(mappings)

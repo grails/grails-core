@@ -1,5 +1,7 @@
 package org.grails.web.mapping
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mapping.exceptions.UrlMappingException
@@ -22,7 +24,9 @@ class UriUrlMappingTests extends Specification {
         '''.bytes
         ByteArrayResource res = new ByteArrayResource(mapping)
 
-        def evaluator = new DefaultUrlMappingEvaluator(new MockApplicationContext())
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+        def evaluator = new DefaultUrlMappingEvaluator(ctx)
         def mappings = evaluator.evaluateMappings(res)
 
         holder = new DefaultUrlMappingsHolder(mappings)

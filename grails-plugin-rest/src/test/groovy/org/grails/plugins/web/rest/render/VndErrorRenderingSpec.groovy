@@ -1,5 +1,7 @@
 package org.grails.plugins.web.rest.render
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.persistence.Entity
 import grails.rest.render.errors.VndErrorJsonRenderer
 import grails.rest.render.errors.VndErrorXmlRenderer
@@ -10,6 +12,7 @@ import grails.web.mapping.LinkGenerator
 import grails.web.mapping.UrlMappingsHolder
 import grails.web.mime.MimeType
 import org.grails.spring.GrailsApplicationContext
+import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
@@ -112,7 +115,9 @@ class VndErrorRenderingSpec extends Specification{
         return generator;
     }
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
-        def evaluator = new DefaultUrlMappingEvaluator(new GrailsApplicationContext())
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+        def evaluator = new DefaultUrlMappingEvaluator(ctx)
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }

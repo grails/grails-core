@@ -40,6 +40,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        mockCtx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
         super.setUp();
         def mainContext = new MockApplicationContext();
         mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
