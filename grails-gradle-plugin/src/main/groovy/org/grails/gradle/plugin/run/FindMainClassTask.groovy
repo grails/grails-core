@@ -26,13 +26,15 @@ class FindMainClassTask extends DefaultTask {
         def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
         if ( bootExtension != null ) {
             def mainClass = findMainClass()
-            bootExtension.setMainClass(mainClass)
-            JavaExec javaExec = (JavaExec)project.tasks.findByName("bootRun")
-            javaExec.setMain(mainClass)
+            if(mainClass != null) {
+                bootExtension.setMainClass(mainClass)
+                JavaExec javaExec = (JavaExec)project.tasks.findByName("bootRun")
+                javaExec.setMain(mainClass)
 
-            ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) getProject()
-                    .getExtensions().getByName("ext");
-            extraProperties.set("mainClassName", mainClass)
+                ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) getProject()
+                        .getExtensions().getByName("ext");
+                extraProperties.set("mainClassName", mainClass)
+            }
         }
     }
 
@@ -60,7 +62,9 @@ class FindMainClassTask extends DefaultTask {
             MainClassFinder mainClassFinder = createMainClassFinder()
 
             def mainClass = mainClassFinder.findMainClass(mainSourceSet.output.classesDir)
-            mainClassFile.text = mainClass
+            if(mainClass != null) {
+                mainClassFile.text = mainClass
+            }
             return mainClass
         }
 
