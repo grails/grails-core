@@ -20,6 +20,10 @@ import static org.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
 import static org.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
 import static org.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
+import static org.grails.compiler.injection.GrailsASTUtils.hasAnnotation;
+import static org.grails.compiler.injection.GrailsASTUtils.hasParameters;
+import static org.grails.compiler.injection.GrailsASTUtils.removeAnnotation;
+import static org.grails.compiler.injection.GrailsASTUtils.isInheritedFromTrait;
 import grails.artefact.Artefact;
 import grails.artefact.controller.support.AllowedMethodsHelper;
 import grails.compiler.DelegatingMethod;
@@ -37,6 +41,7 @@ import grails.util.TypeConvertingMap;
 import groovy.lang.Closure;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -91,6 +96,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.codehaus.groovy.transform.trait.Traits;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsControllerClass;
 import org.grails.core.artefact.ControllerArtefactHandler;
@@ -232,6 +238,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         return isExceptionHandler;
     }
 
+
+
     private void processMethods(ClassNode classNode, SourceUnit source,
             GeneratorContext context) {
 
@@ -293,12 +301,18 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
      * @return true if the method should be configured as a controller action, false otherwise
      */
     protected boolean methodShouldBeConfiguredAsControllerAction(final MethodNode method) {
+        int minLineNumber = 0;
+        if (isInheritedFromTrait(method) && hasAnnotation(method, Action.class) && hasParameters(method)) {
+            removeAnnotation(method, Action.class);
+            //Trait methods have a line number of -1
+            --minLineNumber;
+        }
         return !method.isStatic() && 
                 method.isPublic() && 
                 !method.isAbstract() &&
                 method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                 method.getAnnotations(new ClassNode(ControllerMethod.class)).isEmpty() &&
-                method.getLineNumber() >= 0 &&
+                method.getLineNumber() >= minLineNumber &&
                 !method.getName().startsWith("$") &&
                 !method.getReturnType().getName().equals(VOID_TYPE) &&
                 !isExceptionHandlingMethod(method);
