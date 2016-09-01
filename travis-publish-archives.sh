@@ -68,18 +68,6 @@ if [[ $TRAVIS_PULL_REQUEST == 'false'
         git config --global user.name "$GIT_NAME"
         git config --global user.email "$GIT_EMAIL"
 
-        # Tag the Profile Repo
-        git clone https://${GH_TOKEN}@github.com/grails/grails-profile-repository.git
-        cd grails-profile-repository
-
-        echo "grailsVersion=${TRAVIS_TAG:1}" > profiles/gradle.properties
-        git add profiles/gradle.properties
-        git commit -m "Release $TRAVIS_TAG profiles"
-        git tag $TRAVIS_TAG
-        git push --tags
-        git push
-        cd ..
-
         # Tag and release the docs
         git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
         cd grails-doc
@@ -109,9 +97,5 @@ if [[ $TRAVIS_PULL_REQUEST == 'false'
     fi
 
 fi
-
-#if [[ $EXIT_STATUS == 0 ]]; then
-#    ./gradlew travisciTrigger -i
-#fi
 
 exit $EXIT_STATUS
