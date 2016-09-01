@@ -18,10 +18,20 @@ EXIT_STATUS=0
 
 if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
+    ./travis-publish-archives.sh
 else
     echo "Executing tests"
-    ./gradlew $GRADLE_FLAGS $GRADLE_CMD || EXIT_STATUS=$?
+    ./gradlew --stacktrace test -x grails-test-suite-web:test || EXIT_STATUS=$?
+    if [[ $EXIT_STATUS == 0 ]]; then
+        ./gradlew --stop
+        ./gradlew --stacktrace grails-test-suite-web:test || EXIT_STATUS=$?
+    fi
     echo "Done."
+    if [[ $EXIT_STATUS == 0 ]]; then
+      echo "Executing integration tests"
+      ./gradlew --stacktrace --info integrationTest || EXIT_STATUS=$?
+      echo "Done."
+    fi
 fi
 
 export EXIT_STATUS
