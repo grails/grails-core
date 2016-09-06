@@ -41,7 +41,19 @@ class RegexUrlMappingTests {
         def m8 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,null, servletContext)
         def m9 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,null, servletContext)
         def m10 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,null, servletContext)
+        def m11 = new RegexUrlMapping(parser.parse("/"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,null, servletContext)
 
+        assertTrue m1.compareTo(m1) == 0
+        assertTrue m2.compareTo(m2) == 0
+        assertTrue m3.compareTo(m3) == 0
+        assertTrue m4.compareTo(m4) == 0
+        assertTrue m5.compareTo(m5) == 0
+        assertTrue m6.compareTo(m6) == 0
+        assertTrue m7.compareTo(m7) == 0
+        assertTrue m8.compareTo(m8) == 0
+        assertTrue m9.compareTo(m9) == 0
+        assertTrue m2.compareTo(m11) == 0
+        assertTrue m11.compareTo(m2) == 0
         assertTrue m1.compareTo(m2) < 0
         assertTrue m1.compareTo(m3) < 0
         assertTrue m1.compareTo(m4) < 0
