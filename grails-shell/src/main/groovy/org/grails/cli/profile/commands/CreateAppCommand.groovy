@@ -18,13 +18,11 @@ package org.grails.cli.profile.commands
 
 import grails.build.logging.GrailsConsole
 import grails.io.IOUtils
-import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
@@ -32,6 +30,12 @@ import org.grails.cli.GrailsCli
 import org.grails.cli.profile.*
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
+
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 
 /**
  * Command for creating Grails applications
@@ -48,6 +52,10 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     public static final String FEATURES_FLAG = "features"
     public static final String ENCODING = System.getProperty("file.encoding") ?: "UTF-8"
     public static final String INPLACE_FLAG = "inplace"
+
+    protected static final String APPLICATION_YML = "application.yml"
+    protected static final String BUILD_GRADLE = "build.gradle"
+
     ProfileRepository profileRepository
     Map<String, String> variables = [:]
     String appname
@@ -128,6 +136,72 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         return super.complete(commandLine, desc, candidates, cursor)
     }
 
+    protected File getDestinationDirectory(File srcFile) {
+        String searchDir = "skeleton"
+        File srcDir = srcFile.parentFile
+        File destDir
+        if (srcDir.absolutePath.endsWith(searchDir)) {
+            destDir = targetDirectory
+        } else {
+            int index = srcDir.absolutePath.lastIndexOf(searchDir) + searchDir.size() + 1
+            String relativePath = (srcDir.absolutePath - srcDir.absolutePath.substring(0,index))
+            destDir = new File(targetDirectory, relativePath)
+        }
+        destDir
+    }
+
+    protected void appendFeatureFiles(File skeletonDir) {
+        def ymlFiles = findAllFilesByName(skeletonDir, APPLICATION_YML)
+        def buildGradleFiles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
+
+        ymlFiles.each { File newYml ->
+            File oldYml = new File(getDestinationDirectory(newYml), APPLICATION_YML)
+            String oldText = (oldYml.isFile()) ? oldYml.getText(ENCODING) : null
+            if (oldText) {
+                appendToYmlSubDocument(newYml, oldText, oldYml)
+            } else {
+                oldYml.text = newYml.getText(ENCODING)
+            }
+
+        }
+        buildGradleFiles.each { File srcFile ->
+            File destFile = new File(getDestinationDirectory(srcFile), BUILD_GRADLE)
+            destFile.text = destFile.getText(ENCODING) + System.lineSeparator() + srcFile.getText(ENCODING)
+        }
+    }
+
+    protected void buildTargetFolders(Profile profile, Map<Profile, File> targetDir, File projectDir) {
+        if (!targetDir.containsKey(profile)) {
+            targetDir[profile] = projectDir
+        }
+        profile.extends.each { Profile p ->
+            if (profile.parentSkeletonDir) {
+                targetDir[p] = profile.getParentSkeletonDir(projectDir)
+            } else {
+                targetDir[p] = targetDir[profile]
+            }
+            buildTargetFolders(p, targetDir, projectDir)
+        }
+    }
+
+
+    Set<File> findAllFilesByName(File projectDir, String fileName) {
+        Set<File> files = (Set)[]
+        if (projectDir.exists()) {
+            Files.walkFileTree(projectDir.absoluteFile.toPath(), new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes mainAtts)
+                        throws IOException {
+                    if (path.fileName.toString() == fileName) {
+                        files.add(path.toFile())
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            })
+        }
+        files
+    }
+
     @Override
     boolean handle(ExecutionContext executionContext) {
         if(profileRepository == null) throw new IllegalStateException("Property 'profileRepository' must be set")
@@ -146,33 +220,38 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             if( !initializeVariables(profileInstance, mainCommandLine) ) {
                 return false
             }
-            targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : new File(appname)
-            File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
+            File projectTargetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : new File(appname)
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
+
+            Map<Profile, File> targetDirs = [:]
+            buildTargetFolders(profileInstance, targetDirs, projectTargetDirectory)
+
             for(Profile p : profiles) {
-                String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText(ENCODING) : null
+                Set<File> ymlFiles = findAllFilesByName(projectTargetDirectory, APPLICATION_YML)
+                Map<File, String> ymlCache = [:]
+
+                targetDirectory = targetDirs[p]
+
+                ymlFiles.each { File applicationYmlFile ->
+                    String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText(ENCODING) : null
+                    if (previousApplicationYml) {
+                        ymlCache[applicationYmlFile] = previousApplicationYml
+                    }
+                }
+
                 copySkeleton(profileInstance, p)
 
-                if(applicationYmlFile.exists()) {
-                    appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
+                ymlCache.each { File applicationYmlFile, String previousApplicationYml ->
+                    if(applicationYmlFile.exists()) {
+                        appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
+                    }
                 }
             }
             def ant = new GrailsConsoleAntBuilder()
+
             for(Feature f in features) {
                 def location = f.location
-                def featureConfig = location.createRelative("skeleton/grails-app/conf/application.yml")
-                def featureBuild = location.createRelative("skeleton/build.gradle")
-
-                if(applicationYmlFile.exists() && featureConfig.exists()) {
-                    appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText(ENCODING))
-                }
-
-
-                if(featureBuild.exists()) {
-                    def buildFile = new File(targetDirectory, "build.gradle")
-                    buildFile.text = buildFile.getText(ENCODING) + featureBuild.inputStream.getText(ENCODING)
-                }
 
                 File skeletonDir
                 if(location instanceof FileSystemResource) {
@@ -183,14 +262,18 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                     skeletonDir = new File(tmpDir, "META-INF/grails-profile/features/$f.name/skeleton")
                 }
 
+                targetDirectory = targetDirs[f.profile]
+
+                appendFeatureFiles(skeletonDir)
+
                 if(skeletonDir.exists()) {
-                    copySrcToTarget(ant, skeletonDir, ['grails-app/conf/application.yml'])
+                    copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML])
                 }
             }
 
-            replaceBuildTokens(profileName, profileInstance, features, targetDirectory)
+            replaceBuildTokens(profileName, profileInstance, features, projectTargetDirectory)
             executionContext.console.addStatus(
-                "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
+                "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $projectTargetDirectory.absolutePath"
             )
             GrailsCli.tiggerAppLoad()
             return true
@@ -244,7 +327,6 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def buildDependencies = profileDependencies.findAll() { Dependency dep ->
             dep.scope == 'build'
         }
-
 
         for(Feature f in features) {
             dependencies.addAll f.dependencies.findAll(){ Dependency dep -> dep.scope != 'build'}
@@ -340,17 +422,29 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         ProfileRepository.DEFAULT_PROFILE_NAME
     }
 
+    protected String createNewApplicationYml(String previousYml, String newYml) {
+        def ln = System.getProperty("line.separator")
+        if (newYml != previousYml) {
+            StringBuilder appended = new StringBuilder(previousYml.length() + newYml.length() + 30)
+            if(!previousYml.startsWith("---")) {
+                appended.append('---' + ln)
+            }
+            appended.append(previousYml).append(ln + "---" + ln)
+            appended.append(newYml)
+            appended.toString()
+        } else {
+            newYml
+        }
+    }
 
     private void appendToYmlSubDocument(File applicationYmlFile, String previousApplicationYml) {
+        appendToYmlSubDocument(applicationYmlFile, previousApplicationYml, applicationYmlFile)
+    }
+
+    private void appendToYmlSubDocument(File applicationYmlFile, String previousApplicationYml, File setTo) {
         String newApplicationYml = applicationYmlFile.text
         if(previousApplicationYml && newApplicationYml != previousApplicationYml) {
-            StringBuilder appended = new StringBuilder(previousApplicationYml.length() + newApplicationYml.length() + 30)
-            if(!previousApplicationYml.startsWith("---")) {
-                appended.append('---\n')
-            }
-            appended.append(previousApplicationYml).append("\n---\n")
-            appended.append(newApplicationYml)
-            applicationYmlFile.text = appended.toString()
+            setTo.text = createNewApplicationYml(previousApplicationYml, newApplicationYml)
         }
     }
     
@@ -425,49 +519,50 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
     @CompileStatic(TypeCheckingMode.SKIP)
     private void copySkeleton(Profile profile, Profile participatingProfile) {
-
         def buildMergeProfileNames = profile.buildMergeProfileNames
-        def excludes = profile.configuration.navigate("skeleton", "excludes") ?: []
+        def excludes = profile.skeletonExcludes
 
         AntBuilder ant = new GrailsConsoleAntBuilder()
 
         def skeletonResource = participatingProfile.profileDir.createRelative("skeleton")
-        File srcDir
+        File skeletonDir
         if(skeletonResource instanceof FileSystemResource) {
-            srcDir = skeletonResource.file
+            skeletonDir = skeletonResource.file
         }
         else {
             // establish the JAR file name and extract
             def tmpDir = unzipProfile(ant, skeletonResource)
-            srcDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
+            skeletonDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
         }
-        ant.copy(file:"${srcDir}/.gitignore", todir: targetDirectory, failonerror:false)
-        copySrcToTarget(ant, srcDir, excludes)
+        copySrcToTarget(ant, skeletonDir, excludes)
 
 
-        def buildFile = new File(targetDirectory, "build.gradle")
-        def srcBuildFile = new File(srcDir, "build.gradle")
-        if(!buildFile.exists()) {
-            if(srcBuildFile.exists()) {
-                ant.copy file:srcBuildFile, tofile:buildFile
-            }
-        }
-        else {
-            if(srcBuildFile.exists() && buildMergeProfileNames.contains(participatingProfile.name)) {
-                def concatFile = "${targetDirectory}/concat.gradle"
-                ant.move(file:buildFile, tofile: concatFile)
-                ant.concat destfile:buildFile, {
-                   path {
-                       pathelement location: concatFile
-                       pathelement location:srcBuildFile
-                   }
+        Set<File> sourceBuildGradles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
+
+        sourceBuildGradles.each { File srcFile ->
+            File srcDir = srcFile.parentFile
+            File destDir = getDestinationDirectory(srcFile)
+            File destFile = new File(destDir, BUILD_GRADLE)
+
+            ant.copy(file:"${srcDir}/.gitignore", todir: destDir, failonerror:false)
+
+            if (!destFile.exists()) {
+                ant.copy file:srcFile, tofile:destFile
+            } else if (buildMergeProfileNames.contains(participatingProfile.name)) {
+                def concatFile = "${destDir}/concat.gradle"
+                ant.move(file:destFile, tofile: concatFile)
+                ant.concat destfile: destFile, {
+                    path {
+                        pathelement location: concatFile
+                        pathelement location: srcFile
+                    }
                 }
-                ant.delete(file:concatFile, failonerror: false)
+                ant.delete(file: concatFile, failonerror: false)
             }
+
+            ant.chmod(file: "${destDir}/gradlew", perm: 'u+x')
         }
 
-
-        ant.chmod(file: "${targetDirectory}/gradlew", perm: 'u+x')
     }
 
     @CompileDynamic
@@ -478,7 +573,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 for (exc in excludes) {
                     exclude name: exc
                 }
-                exclude name: "build.gradle"
+                exclude name: "**/"+BUILD_GRADLE
                 binaryFileExtensions.each { ext ->
                     exclude(name: "**/*.${ext}")
                 }
@@ -504,7 +599,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 for (exc in excludes) {
                     exclude name: exc
                 }
-                exclude name: "build.gradle"
+                exclude name: "**/"+BUILD_GRADLE
             }
             mapper {
                 filtermapper {
