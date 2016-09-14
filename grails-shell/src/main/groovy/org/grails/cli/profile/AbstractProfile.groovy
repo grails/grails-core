@@ -18,7 +18,6 @@ package org.grails.cli.profile
 import grails.io.IOUtils
 import grails.util.BuildSettings
 import grails.util.CosineSimilarity
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.ToString
 import jline.console.completer.ArgumentCompleter
@@ -35,9 +34,6 @@ import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import org.grails.config.NavigableMap
 import org.grails.io.support.Resource
 import org.yaml.snakeyaml.Yaml
-
-import java.util.regex.Matcher
-
 
 /**
  * Abstract implementation of the profile class
@@ -60,11 +56,13 @@ abstract class AbstractProfile implements Profile {
     protected List<String> buildRepositories = []
     protected List<String> buildPlugins = []
     protected List<String> buildExcludes = []
+    protected List<String> skeletonExcludes = []
     protected final List<Command> internalCommands = []
     protected List<String> buildMerge = null
     protected List<Feature> features = []
     protected Set<String> defaultFeaturesNames = []
     protected Set<String> requiredFeatureNames = []
+    protected String parentTargetFolder
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
     protected String description = "";
@@ -201,7 +199,8 @@ abstract class AbstractProfile implements Profile {
         this.buildPlugins = (List<String>)navigableConfig.get("build.plugins", [])
         this.buildExcludes = (List<String>)navigableConfig.get("build.excludes", [])
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
-
+        this.parentTargetFolder = (String)navigableConfig.get("skeleton.parent.target", null)
+        this.skeletonExcludes = (List<String>)navigableConfig.get("skeleton.excludes", [])
     }
 
     String getDescription() {
@@ -471,5 +470,23 @@ abstract class AbstractProfile implements Profile {
             }
 
         }
+    }
+
+    @Override
+    String getParentSkeletonDir() {
+        this.parentTargetFolder
+    }
+
+    @Override
+    File getParentSkeletonDir(File parent) {
+        if (parentSkeletonDir) {
+            new File(parent, parentSkeletonDir)
+        } else {
+            parent
+        }
+    }
+
+    List<String> getSkeletonExcludes() {
+        this.skeletonExcludes
     }
 }
