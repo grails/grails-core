@@ -31,6 +31,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.util.SourceSets
+import org.springframework.boot.gradle.SpringBootPluginExtension
 
 import javax.inject.Inject
 
@@ -170,12 +171,18 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         }
     }
 
+    @CompileStatic
     protected void configurePluginJarTask(Project project) {
-        project.jar {
-            exclude "application.yml"
-            exclude "application.groovy"
-            exclude "logback.groovy"
+        def repackageTask = project.tasks.findByName('bootRepackage')
+        repackageTask.onlyIf {
+            def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
+            String mainClassName = bootExtension.mainClass
+            mainClassName != null
         }
+        Jar jarTask = (Jar)project.tasks.findByName('jar')
+        jarTask.exclude "application.yml"
+        jarTask.exclude "application.groovy"
+        jarTask.exclude "logback.groovy"
     }
 
     protected void configurePluginResources(Project project) {
@@ -232,6 +239,7 @@ withConfig(configuration) {
         }
     }
 
+    @CompileStatic
     protected void checkForConfigurationClash(Project project) {
         File yamlConfig = new File(project.projectDir,"grails-app/conf/plugin.yml")
         File groovyConfig = new File(project.projectDir,"grails-app/conf/plugin.groovy")
