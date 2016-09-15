@@ -41,7 +41,7 @@ ext {
     jansiVersion = "1.11"
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
-    slf4jVersion = "1.7.10"
+    slf4jVersion = "1.7.21"
     reactorCoreVersion = '2.0.8.RELEASE'
     reactorVersion = '2.0.7.RELEASE'
 
