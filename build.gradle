@@ -22,7 +22,7 @@ apply plugin: 'idea'
 ext {
     bintrayPublish = false
     // Sets release version
-    grailsVersion = '3.2.0.BUILD-SNAPSHOT'
+    grailsVersion = '3.2.0.RC2'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -33,7 +33,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "6.0.0.RC1"
+    datastoreVersion = "6.0.0.RC2"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.7"
