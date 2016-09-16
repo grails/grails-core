@@ -34,6 +34,7 @@ import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.core.convert.converter.Converter
+import org.springframework.core.convert.support.ConfigurableConversionService
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
@@ -109,16 +110,17 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     protected void loadApplicationConfig() {
         org.springframework.core.env.Environment environment = applicationContext.getEnvironment()
+        ConfigurableConversionService conversionService = null
         if(environment instanceof ConfigurableEnvironment) {
             if(environment instanceof AbstractEnvironment) {
-                def cs = environment.getConversionService()
-                cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
+                conversionService = environment.getConversionService()
+                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
                     @Override
                     public String convert(NavigableMap.NullSafeNavigator source) {
                         return null;
                     }
                 });
-                cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
+                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
                     @Override
                     public Object convert(NavigableMap.NullSafeNavigator source) {
                         return null;
@@ -138,7 +140,11 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                     }
                 }
             }
-            ((DefaultGrailsApplication)grailsApplication).config = new PropertySourcesConfig(propertySources)
+            def config = new PropertySourcesConfig(propertySources)
+            if(conversionService != null) {
+                config.setConversionService( conversionService )
+            }
+            ((DefaultGrailsApplication)grailsApplication).config = config
         }
     }
 

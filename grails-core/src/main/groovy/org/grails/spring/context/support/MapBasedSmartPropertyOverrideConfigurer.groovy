@@ -60,11 +60,8 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
                     final beanPropertyValue = beanPropertiesMap.get(beanPropertyName)
                     applyPropertyValue(factory, beanName.toString(), beanPropertyName.toString(), beanPropertyValue)
                 }
-
             }
-
         }
-
     }
 
     protected void applyPropertyValue(ConfigurableListableBeanFactory factory, String beanName, String property, Object value) {
@@ -116,15 +113,14 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
     }
 
     protected BeanDefinition getTargetBeanDefinitionForFactoryBean(ConfigurableListableBeanFactory factory,
-            String beanName, BeanDefinition beanDefinition, Class beanClass) {
+            String beanName, BeanDefinition beanDefinition, Class<? extends FactoryBean> beanClass) {
 
         if (TransactionProxyFactoryBean.isAssignableFrom(beanClass)) {
             getTargetBeanDefinition(factory, beanName,
                     (BeanDefinition)beanDefinition.propertyValues.getPropertyValue("target").value)
         }
         else {
-            throw new BeanCreationException(beanName,
-                 "Unable to determine target bean definition for FactoryBeans of type " + beanClass.name)
+            beanDefinition
         }
     }
 }
