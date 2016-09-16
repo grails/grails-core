@@ -13,7 +13,7 @@ import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import org.grails.config.NavigableMap
 import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
@@ -38,6 +38,8 @@ import org.springframework.core.convert.support.ConfigurableConversionService
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
@@ -46,7 +48,7 @@ import org.springframework.core.env.EnumerablePropertySource
  * @since 3.0
  */
 @CompileStatic
-@Commons
+@Slf4j
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
     static final boolean RELOADING_ENABLED = Environment.isReloadingAgentEnabled()
 
@@ -114,6 +116,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if(environment instanceof ConfigurableEnvironment) {
             if(environment instanceof AbstractEnvironment) {
                 conversionService = environment.getConversionService()
+                conversionService.addConverter(new Converter<String, Resource>() {
+                    @Override
+                    public Resource convert(String source) {
+                        return applicationContext.getResource(source);
+                    }
+                });
                 conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
                     @Override
                     public String convert(NavigableMap.NullSafeNavigator source) {
