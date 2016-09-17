@@ -1,11 +1,13 @@
 package grails.web.mapping.cors
 
-import org.springframework.http.HttpMethod
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.cors.CorsConfiguration
 
 /**
- * Created by Jim on 9/16/2016.
+ * A class that stores default CORS settings
+ *
+ * @author James Kleeh
+ * @since 3.2.1
  */
 class GrailsDefaultCorsMapping {
 
@@ -25,14 +27,5 @@ class GrailsDefaultCorsMapping {
         defaultCorsConfiguration.maxAge = maxAge
         defaultCorsConfiguration.allowCredentials = allowCredentials
         defaultCorsConfiguration
-    }
-
-    CorsConfiguration combine(GrailsDefaultCorsMapping mapping) {
-        CorsConfiguration configuration = this.toSpringConfig().combine(mapping.toSpringConfig())
-        configuration.allowedOrigins = configuration.allowedOrigins?.unique()
-        configuration.allowedMethods = configuration.allowedMethods?.unique()
-        configuration.allowedHeaders = configuration.allowedHeaders?.unique()
-        configuration.exposedHeaders = configuration.exposedHeaders?.unique()
-        configuration
     }
 }
