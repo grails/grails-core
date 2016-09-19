@@ -521,6 +521,9 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     private void copySkeleton(Profile profile, Profile participatingProfile) {
         def buildMergeProfileNames = profile.buildMergeProfileNames
         def excludes = profile.skeletonExcludes
+        if (profile == participatingProfile) {
+            excludes = []
+        }
 
         AntBuilder ant = new GrailsConsoleAntBuilder()
 
