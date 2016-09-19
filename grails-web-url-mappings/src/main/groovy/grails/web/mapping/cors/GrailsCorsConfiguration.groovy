@@ -50,8 +50,7 @@ class GrailsCorsConfiguration {
                     corsConfigurationMap[key] = corsConfiguration
                 }
             } else {
-                CorsConfiguration defaultConfiguration = grailsCorsMapping.toSpringConfig()
-                corsConfigurationMap["/**"] = defaultConfiguration
+                corsConfigurationMap["/**"] = grailsCorsMapping.toSpringConfig()
             }
         }
 
