@@ -1,5 +1,6 @@
 package grails.web.mapping.cors
 
+import grails.util.TypeConvertingMap
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.cors.CorsConfiguration
 import spock.lang.Specification
@@ -47,6 +48,9 @@ class GrailsCorsConfigurationSpec extends Specification {
 
     Map<String, CorsConfiguration> buildConfig(Map mappings) {
         def grailsCorsConf = new GrailsCorsConfiguration(enabled: true)
+        mappings.each {
+            it.value = new TypeConvertingMap(it.value)
+        }
         grailsCorsConf.mappings = mappings
         grailsCorsConf.corsConfigurations
     }
@@ -64,7 +68,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         grailsCorsConf.exposedHeaders = ["Content-Length"]
         grailsCorsConf.allowCredentials = false
         grailsCorsConf.maxAge = 1L
-        grailsCorsConf.mappings = ["/foo": [allowedOrigins: ["bar"]]]
+        grailsCorsConf.mappings = ["/foo": new TypeConvertingMap([allowedOrigins: ["bar"]])]
         config = grailsCorsConf.corsConfigurations
 
         then: //Config is inherited from global
