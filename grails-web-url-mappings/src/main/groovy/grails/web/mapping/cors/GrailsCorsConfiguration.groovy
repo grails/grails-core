@@ -1,6 +1,7 @@
 package grails.web.mapping.cors
 
 import grails.util.TypeConvertingMap
+import groovy.transform.CompileStatic
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.web.cors.CorsConfiguration
 
@@ -10,7 +11,8 @@ import org.springframework.web.cors.CorsConfiguration
  * @author James Kleeh
  * @since 3.2.1
  */
-@ConfigurationProperties(prefix = 'cors')
+@CompileStatic
+@ConfigurationProperties(prefix = 'grails.cors')
 class GrailsCorsConfiguration {
 
     Boolean enabled = false
@@ -18,15 +20,14 @@ class GrailsCorsConfiguration {
     @Delegate
     GrailsDefaultCorsMapping grailsCorsMapping = new GrailsDefaultCorsMapping()
 
-    Map<String, Map> mappings = [:]
+    Map<String, TypeConvertingMap> mappings = [:]
 
     Map<String, CorsConfiguration> getCorsConfigurations() {
         Map<String, CorsConfiguration> corsConfigurationMap = [:]
 
         if (enabled) {
             if (mappings.size() > 0) {
-                mappings.each { String key, Map value ->
-                    Map config = new TypeConvertingMap(value)
+                mappings.each { String key, TypeConvertingMap config ->
                     CorsConfiguration corsConfiguration = grailsCorsMapping.toSpringConfig()
                     if (config.containsKey('allowedOrigins')) {
                         corsConfiguration.allowedOrigins = config.list('allowedOrigins')
