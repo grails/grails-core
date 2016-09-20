@@ -52,7 +52,6 @@ import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
 import org.grails.gradle.plugin.commands.ApplicationContextScriptTask
-import org.grails.gradle.plugin.commands.RuntimeApplicationContextCommandTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
@@ -365,9 +364,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 }
             }
             project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
-                task.args mainClassName
-            }
-            project.tasks.withType(RuntimeApplicationContextCommandTask) { RuntimeApplicationContextCommandTask task ->
                 task.args mainClassName
             }
         }
