@@ -1,12 +1,12 @@
 package grails.dev.commands.template
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.Template
 import grails.codegen.model.Model
 import grails.dev.commands.io.FileSystemInteraction
 import grails.dev.commands.io.FileSystemInteractionImpl
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
 import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import org.grails.io.support.DefaultResourceLoader
 import org.grails.io.support.Resource
 import org.grails.io.support.ResourceLoader
@@ -17,6 +17,7 @@ import org.grails.io.support.ResourceLoader
  * @author Graeme Rocher
  * @since 3.2
  */
+@CompileStatic
 class TemplateRendererImpl implements TemplateRenderer {
 
     @Delegate FileSystemInteraction fileSystemInteraction
@@ -36,7 +37,7 @@ class TemplateRendererImpl implements TemplateRenderer {
     void render(Map<String, Object> namedArguments) {
         if (namedArguments?.template && namedArguments?.destination) {
             def templateArg = namedArguments.template
-            def template = templateArg instanceof Resource ? templateArg : template(templateArg)
+            Resource template = templateArg instanceof Resource ? templateArg : template(templateArg)
             boolean overwrite = namedArguments.overwrite as Boolean ?: false
             render template, file(namedArguments.destination), namedArguments.model ?: [:], overwrite
         }

@@ -6,7 +6,6 @@ import grails.dev.commands.io.FileSystemInteractionImpl
 import grails.dev.commands.template.TemplateRenderer
 import grails.dev.commands.template.TemplateRendererImpl
 
-
 trait GrailsApplicationCommand implements ApplicationCommand, ModelBuilder {
 
     @Delegate TemplateRenderer templateRenderer

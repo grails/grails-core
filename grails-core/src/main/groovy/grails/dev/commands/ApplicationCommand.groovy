@@ -18,10 +18,7 @@ package grails.dev.commands
 import grails.util.Described
 import grails.util.GrailsNameUtils
 import grails.util.Named
-import org.grails.build.parsing.CommandLine
 import org.springframework.context.ConfigurableApplicationContext
-
-
 
 /**
  * Represents a command that is run against the {@link org.springframework.context.ApplicationContext}
