@@ -36,7 +36,7 @@ class FooController {
 
         then: "Only valid stack elements are retained"
             exception != null
-            exception.stackTrace.size() == 2
+            exception.stackTrace.size() == 3
             exception.stackTrace[0].className == 'test.FooController'
             exception.stackTrace[0].lineNumber == 10
             exception.stackTrace[1].lineNumber == 6
@@ -84,7 +84,7 @@ class FooService {
 
         then: "Only valid stack elements are retained"
             exception != null
-            exception.stackTrace.size() == 2
+            exception.stackTrace.size() == 3
             exception.stackTrace[0].className == 'test.FooController'
             exception.stackTrace[0].lineNumber == 15
             exception.stackTrace[1].lineNumber == 7

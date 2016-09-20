@@ -39,6 +39,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         "org.springframework.web.filter",
         "org.springframework.boot.actuate",
         "org.mortbay.",
+        "groovy.lang.",
         "org.apache.catalina.",
         "org.apache.coyote.",
         "org.apache.tomcat.",
