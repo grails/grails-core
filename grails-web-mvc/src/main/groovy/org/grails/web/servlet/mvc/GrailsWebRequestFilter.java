@@ -50,6 +50,8 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter implements Appl
             throws ServletException, IOException {
 
         LocaleContextHolder.setLocale(request.getLocale());
+        response = new OutputAwareHttpServletResponse(response);
+
         boolean isIncludeOrForward = WebUtils.isForward(request) || WebUtils.isInclude(request);
         GrailsWebRequest previous = isIncludeOrForward ? GrailsWebRequest.lookup(request) : null;
         GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
