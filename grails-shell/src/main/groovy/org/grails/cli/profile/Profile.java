@@ -108,8 +108,6 @@ public interface Profile {
      */
     Command getCommand(ProjectContext context, String name);
 
-
-
     /**
      * The profile completers
      * @param context The {@link org.grails.cli.profile.ProjectContext} instance
@@ -154,4 +152,18 @@ public interface Profile {
      */
     List<String> getBuildPlugins();
 
+    /**
+     * @return The subfolder the parent profile(s) skeleton should be copied into
+     */
+    String getParentSkeletonDir();
+
+    /**
+     * @return The directory the parent profile(s) skeleton should be copied into
+     */
+    File getParentSkeletonDir(File parent);
+
+    /**
+     * @return A list of paths to exclude from the skeleton. Used in ant fileset exclude:
+     */
+    List<String> getSkeletonExcludes();
 }

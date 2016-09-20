@@ -3,10 +3,6 @@ sudo: false
 jdk:
 - oraclejdk7
 env:
-  matrix:
-  - GRADLE_FLAGS="--stacktrace " GRADLE_CMD="test -x grails-test-suite-web:test"
-  - GRADLE_FLAGS="--stacktrace" GRADLE_CMD="grails-test-suite-web:test"
-  - GRADLE_FLAGS="--stacktrace --info" GRADLE_CMD="integrationTest"
   global:
   - TERM=dumb
   - MALLOC_ARENA_MAX=1
@@ -34,13 +30,8 @@ install: /bin/true
 script:
 - ./travis-build.sh
 after_success:
-- python ./travis/travis_after_all.py
-- export $(cat .to_export_back)
-- ./travis-publish-archives.sh
 - ./trigger-dependent-build.sh
 after_failure:
-- python ./travis/travis_after_all.py
-- export $(cat .to_export_back)
 - ./travis-after-failure.sh
 deploy:
   provider: releases

@@ -19,7 +19,7 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import org.grails.config.NavigableMap
 import org.grails.config.NavigableMapPropertySource
 import org.grails.core.exceptions.GrailsConfigurationException
@@ -35,7 +35,7 @@ import org.springframework.core.io.Resource
  * @since 3.0
  */
 @CompileStatic
-@Commons
+@Slf4j
 class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
     final String[] fileExtensions = ['groovy'] as String[]
@@ -46,8 +46,9 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
     }
 
     PropertySource<?> load(String name, Resource resource, String profile, List<String> filteredKeys) throws IOException {
-        def env = Environment.current.name
-        if(profile == null || env == profile) {
+        // since ConfigSlurper is already environment aware, don't load it twice
+        if(profile == null) {
+            def env = Environment.current.name
 
             if(resource.exists()) {
                 ConfigSlurper configSlurper = env ? new ConfigSlurper(env) : new ConfigSlurper()
@@ -66,6 +67,13 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
                     def propertySource = new NavigableMap()
                     propertySource.merge(configObject, false)
+
+                    Resource runtimeResource = resource.createRelative( resource.filename.replace('application', 'runtime') )
+                    if(runtimeResource.exists()) {
+                        def runtimeConfig = configSlurper.parse( runtimeResource.getURL() )
+                        propertySource.merge(runtimeConfig, false)
+                    }
+
                     return new NavigableMapPropertySource(name, propertySource)
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)

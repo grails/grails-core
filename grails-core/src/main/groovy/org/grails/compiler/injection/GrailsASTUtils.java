@@ -37,6 +37,7 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation;
+import org.codehaus.groovy.transform.trait.Traits;
 import org.grails.io.support.FileSystemResource;
 import org.grails.io.support.Resource;
 import org.springframework.util.StringUtils;
@@ -970,6 +971,16 @@ public class GrailsASTUtils {
         return false;
     }
 
+    public static boolean removeAnnotation(final MethodNode methodNode, final Class<? extends Annotation> annotationClass) {
+        List<AnnotationNode> annotations = methodNode.getAnnotations(new ClassNode(annotationClass));
+        if (annotations.size() > 0) {
+            methodNode.getAnnotations().removeAll(annotations);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
         MethodNode existing = controllerClassNode.getMethod(methodNode.getName(), methodNode.getParameters());
         if (existing == null) {
@@ -1489,5 +1500,13 @@ public class GrailsASTUtils {
 
     public static URL getSourceUrl(ClassNode classNode) {
         return getSourceUrl(classNode.getModule().getContext());
+    }
+
+    public static boolean hasParameters(MethodNode methodNode) {
+        return methodNode.getParameters().length > 0;
+    }
+
+    public static boolean isInheritedFromTrait(MethodNode methodNode) {
+        return hasAnnotation(methodNode, Traits.TraitBridge.class);
     }
 }

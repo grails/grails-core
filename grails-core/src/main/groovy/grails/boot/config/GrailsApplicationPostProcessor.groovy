@@ -13,7 +13,7 @@ import grails.spring.BeanBuilder
 import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import org.grails.config.NavigableMap
 import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
@@ -34,9 +34,12 @@ import org.springframework.context.event.ApplicationContextEvent
 import org.springframework.context.event.ContextClosedEvent
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.core.convert.converter.Converter
+import org.springframework.core.convert.support.ConfigurableConversionService
 import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
@@ -45,7 +48,7 @@ import org.springframework.core.env.EnumerablePropertySource
  * @since 3.0
  */
 @CompileStatic
-@Commons
+@Slf4j
 class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
     static final boolean RELOADING_ENABLED = Environment.isReloadingAgentEnabled()
 
@@ -109,16 +112,23 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     protected void loadApplicationConfig() {
         org.springframework.core.env.Environment environment = applicationContext.getEnvironment()
+        ConfigurableConversionService conversionService = null
         if(environment instanceof ConfigurableEnvironment) {
             if(environment instanceof AbstractEnvironment) {
-                def cs = environment.getConversionService()
-                cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
+                conversionService = environment.getConversionService()
+                conversionService.addConverter(new Converter<String, Resource>() {
+                    @Override
+                    public Resource convert(String source) {
+                        return applicationContext.getResource(source);
+                    }
+                });
+                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, String>() {
                     @Override
                     public String convert(NavigableMap.NullSafeNavigator source) {
                         return null;
                     }
                 });
-                cs.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
+                conversionService.addConverter(new Converter<NavigableMap.NullSafeNavigator, Object>() {
                     @Override
                     public Object convert(NavigableMap.NullSafeNavigator source) {
                         return null;
@@ -138,7 +148,11 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                     }
                 }
             }
-            ((DefaultGrailsApplication)grailsApplication).config = new PropertySourcesConfig(propertySources)
+            def config = new PropertySourcesConfig(propertySources)
+            if(conversionService != null) {
+                config.setConversionService( conversionService )
+            }
+            ((DefaultGrailsApplication)grailsApplication).config = config
         }
     }
 
