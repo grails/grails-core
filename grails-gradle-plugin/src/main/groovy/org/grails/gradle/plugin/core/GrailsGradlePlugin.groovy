@@ -519,7 +519,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected void configureRunCommand(Project project) {
-        project.tasks.create("runCommand", RuntimeApplicationContextCommandTask) {
+        project.tasks.create("runCommand", ApplicationContextCommandTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
             systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             if (project.hasProperty('args')) {
