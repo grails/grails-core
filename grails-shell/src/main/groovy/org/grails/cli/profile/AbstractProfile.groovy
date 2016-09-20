@@ -66,6 +66,7 @@ abstract class AbstractProfile implements Profile {
     final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
     protected String description = "";
+    protected String instructions = "";
     protected String version = BuildSettings.package.implementationVersion
 
     AbstractProfile(Resource profileDir) {
@@ -108,6 +109,7 @@ abstract class AbstractProfile implements Profile {
 
         name = profileConfig.get("name")?.toString()
         description = profileConfig.get("description")?.toString() ?: ''
+        instructions = profileConfig.get("instructions")?.toString() ?: ''
 
         def parents = profileConfig.get("extends")
         if(parents) {
