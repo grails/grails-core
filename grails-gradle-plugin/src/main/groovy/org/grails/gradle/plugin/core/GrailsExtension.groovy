@@ -1,5 +1,6 @@
 package org.grails.gradle.plugin.core
 
+import groovy.transform.CompileStatic
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
@@ -10,6 +11,7 @@ import org.gradle.util.ConfigureUtil
  * @author Graeme Rocher
  * @since 3.0
  */
+@CompileStatic
 class GrailsExtension {
     Project project
 
@@ -58,7 +60,7 @@ class GrailsExtension {
      */
     void plugins(Closure pluginDefinitions) {
         def definer = new PluginDefiner(project,exploded)
-        ConfigureUtil.configure(pluginDefinitions, definer, Closure.DELEGATE_FIRST)
+        ConfigureUtil.configureSelf(pluginDefinitions, definer)
     }
     /**
      * Configuration for the reloading agent

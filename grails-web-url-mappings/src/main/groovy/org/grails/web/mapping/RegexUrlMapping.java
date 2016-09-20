@@ -49,6 +49,8 @@ import grails.plugins.VersionComparator;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.grails.web.util.WebUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
@@ -79,7 +81,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     private Map<Integer, List<Pattern>> patternByTokenCount = new HashMap<Integer, List<Pattern>>();
     private UrlMappingData urlData;
     private static final String DEFAULT_ENCODING = "UTF-8";
-    private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RegexUrlMapping.class);
     public static final Pattern DOUBLE_WILDCARD_PATTERN = Pattern.compile("\\(\\*\\*?\\)\\??");
     public static final Pattern OPTIONAL_EXTENSION_WILDCARD_PATTERN = Pattern.compile("[^/]+\\(\\.\\(\\*\\)\\)");
 
@@ -749,46 +751,86 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
         UrlMapping other = (UrlMapping) o;
 
+        // this wild card count
         final int thisStaticTokenCount = getStaticTokenCount(this);
+        final int thisSingleWildcardCount = getSingleWildcardCount(this);
+        final int thisDoubleWildcardCount = getDoubleWildcardCount(this);
+
+        // the other wild card count
         final int otherStaticTokenCount = getStaticTokenCount(other);
         final int otherSingleWildcardCount = getSingleWildcardCount(other);
-        final int thisSingleWildcardCount = getSingleWildcardCount(this);
         final int otherDoubleWildcardCount = getDoubleWildcardCount(other);
-        final int thisDoubleWildcardCount = getDoubleWildcardCount(this);
+
         final boolean hasWildCards = thisDoubleWildcardCount > 0 || thisSingleWildcardCount > 0;
         final boolean otherHasWildCards = otherDoubleWildcardCount > 0 || otherSingleWildcardCount > 0;
 
         // Always prioritise the / root mapping
-        if(thisStaticTokenCount == 0 && thisSingleWildcardCount == 0 && thisDoubleWildcardCount == 0) {
+        boolean isThisRoot = thisStaticTokenCount == 0 && thisSingleWildcardCount == 0 && thisDoubleWildcardCount == 0;
+        boolean isThatRoot = otherStaticTokenCount == 0 && otherDoubleWildcardCount == 0 && otherSingleWildcardCount == 0;
+
+        if(isThisRoot && isThatRoot) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
+            }
+            return 0;
+        }
+        else if(isThisRoot) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a higher precedence than [{}] because it is the root", this.toString(), other.toString());
+            }
             return 1;
         }
-        if(otherStaticTokenCount == 0 && otherSingleWildcardCount == 0 && otherDoubleWildcardCount == 0) {
+        else if(isThatRoot) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a lower precedence than [{}] because the latter is the root", this.toString(), other.toString());
+            }
             return -1;
         }
 
-        if (otherStaticTokenCount ==0 && thisStaticTokenCount > 0) {
+        if (otherStaticTokenCount == 0 && thisStaticTokenCount > 0) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a higher precedence than [{}] because it has more path tokens", this.toString(), other.toString());
+            }
             return 1;
         }
-        if (thisStaticTokenCount ==0 && otherStaticTokenCount>0) {
+
+        if (thisStaticTokenCount == 0 && otherStaticTokenCount > 0) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a lower precedence than [{}] because it has fewer path tokens", this.toString(), other.toString());
+            }
             return -1;
         }
 
         final int thisStaticAndWildcardTokenCount = getStaticAndWildcardTokenCount(this);
         final int otherStaticAndWildcardTokenCount = getStaticAndWildcardTokenCount(other);
+
         if (otherStaticAndWildcardTokenCount==0 && thisStaticAndWildcardTokenCount>0) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a higher precedence than [{}] because it has more path tokens [{} vs {}]", this.toString(), other.toString(), thisStaticAndWildcardTokenCount, otherStaticAndWildcardTokenCount);
+            }
             return 1;
         }
         if (thisStaticAndWildcardTokenCount==0 && otherStaticAndWildcardTokenCount>0) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a higher precedence than [{}] because the latter has more path tokens [{} vs {}]", this.toString(), other.toString(), thisStaticAndWildcardTokenCount, otherStaticAndWildcardTokenCount);
+            }
             return -1;
         }
 
         final int staticDiff = thisStaticTokenCount - otherStaticTokenCount;
         if (staticDiff < 0 && !otherHasWildCards) {
-            return staticDiff;
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a lower precedence than [{}] because the latter has more concrete path tokens [{} vs {}]", this.toString(), other.toString(), thisStaticTokenCount, otherStaticTokenCount);
+            }
+            return -1;
         }
         else if(staticDiff > 0 && !hasWildCards) {
-            return staticDiff;
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a higher precedence than [{}] because it has more concrete path tokens [{} vs {}]", this.toString(), other.toString(), thisStaticTokenCount, otherStaticTokenCount);
+            }
+            return 1;
         }
+
         String[] thisTokens = getUrlData().getTokens();
         String[] otherTokens = other.getUrlData().getTokens();
         final int thisTokensLength = thisTokens.length;
@@ -802,40 +844,107 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             boolean thisTokenIsWildcard = !thisHasMoreTokens || isSingleWildcard(thisTokens[i]);
             boolean otherTokenIsWildcard = !otherHasMoreTokens || isSingleWildcard(otherTokens[i]);
             if (thisTokenIsWildcard && !otherTokenIsWildcard) {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Mapping [{}] has a lower precedence than [{}] because the latter contains more concrete tokens", this.toString(), other.toString());
+                }
                 return -1;
             }
             if (!thisTokenIsWildcard && otherTokenIsWildcard) {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Mapping [{}] has a higher precedence than [{}] because it contains more concrete tokens", this.toString(), other.toString());
+                }
                 return 1;
             }
         }
 
         final int doubleWildcardDiff = otherDoubleWildcardCount - thisDoubleWildcardCount;
-        if (doubleWildcardDiff != 0) return doubleWildcardDiff;
+        if (doubleWildcardDiff != 0) {
+            if(LOG.isDebugEnabled()) {
+                if(doubleWildcardDiff > 0) {
+                    LOG.debug("Mapping [{}] has a higher precedence than [{}] due containing more double wild cards [{} vs. {}]", this.toString(), other.toString(), thisDoubleWildcardCount, otherDoubleWildcardCount);
+                }
+                else if(doubleWildcardDiff < 0) {
+                    LOG.debug("Mapping [{}] has a lower precedence than [{}] due to the latter containing more double wild cards [{} vs. {}]", this.toString(), other.toString(), thisDoubleWildcardCount, otherDoubleWildcardCount);
+                }
+            }
+            return doubleWildcardDiff;
+        }
 
         final int singleWildcardDiff = otherSingleWildcardCount - thisSingleWildcardCount;
-        if (singleWildcardDiff != 0) return singleWildcardDiff;
+        if (singleWildcardDiff != 0) {
+            if(LOG.isDebugEnabled()) {
+                if(singleWildcardDiff > 0) {
+                    LOG.debug("Mapping [{}] has a higher precedence than [{}] because it contains more single wild card matches [{} vs. {}]", this.toString(), other.toString(), thisSingleWildcardCount, otherSingleWildcardCount);
+                }
+                else if(singleWildcardDiff < 0) {
+                    LOG.debug("Mapping [{}] has a lower precedence than [{}] due to the latter containing more single wild card matches[{} vs. {}]", this.toString(), other.toString(), thisSingleWildcardCount, otherSingleWildcardCount);
+                }
+            }
+            return singleWildcardDiff;
+        }
 
-        int constraintDiff = getAppliedConstraintsCount(this) - getAppliedConstraintsCount(other);
-        if (constraintDiff != 0) return constraintDiff;
+        int thisConstraintCount = getAppliedConstraintsCount(this);
+        int thatConstraintCount = getAppliedConstraintsCount(other);
+        int constraintDiff = thisConstraintCount - thatConstraintCount;
+        if (constraintDiff != 0) {
+            if(LOG.isDebugEnabled()) {
+                if(constraintDiff > 0) {
+                    LOG.debug("Mapping [{}] has a higher precedence than [{}] since it defines more constraints [{} vs. {}]", this.toString(), other.toString(), thisConstraintCount, thatConstraintCount);
+                }
+                else if(constraintDiff < 0) {
+                    LOG.debug("Mapping [{}] has a lower precedence than [{}] since the latter defines more constraints [{} vs. {}]", this.toString(), other.toString(), thisConstraintCount, thatConstraintCount);
+                }
+            }
+            return constraintDiff;
+        }
 
         int allDiff = (thisStaticTokenCount - otherStaticTokenCount) + (thisSingleWildcardCount - otherSingleWildcardCount) + (thisDoubleWildcardCount - otherDoubleWildcardCount);
         if(allDiff != 0) {
+            if(LOG.isDebugEnabled()) {
+                if(allDiff > 0) {
+                    LOG.debug("Mapping [{}] has a higher precedence than [{}] due to the overall diff", this.toString(), other.toString());
+                }
+                else if(allDiff < 0) {
+                    LOG.debug("Mapping [{}] has a lower precedence than [{}] due to the overall diff", this.toString(), other.toString());
+                }
+            }
             return allDiff;
         }
 
         String thisVersion = getVersion();
         String thatVersion = other.getVersion();
         if((thisVersion.equals(thatVersion))) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
+            }
             return 0;
         }
         else if(thisVersion.equals(ANY_VERSION) && !thatVersion.equals(ANY_VERSION)) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a lower precedence than [{}] due to version precedence [{} vs {}]", this.toString(), other.toString(), thisVersion, thatVersion);
+            }
             return -1;
         }
         else if(!thisVersion.equals(ANY_VERSION) && thatVersion.equals(ANY_VERSION)) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Mapping [{}] has a higher precedence than [{}] due to version precedence [{} vs {}]", this.toString(), other.toString(), thisVersion, thatVersion);
+            }
             return 1;
         }
         else {
-            return new VersionComparator().compare(thisVersion, thatVersion);
+            int i = new VersionComparator().compare(thisVersion, thatVersion);
+            if(LOG.isDebugEnabled()) {
+                if(i > 0) {
+                    LOG.debug("Mapping [{}] has a higher precedence than [{}] due to version precedence [{} vs. {}]", this.toString(), other.toString(), thisVersion, thatVersion);
+                }
+                else if(i < 0) {
+                    LOG.debug("Mapping [{}] has a lower precedence than [{}] due to version precedence [{} vs. {}]", this.toString(), other.toString(), thisVersion, thatVersion);
+                }
+                else {
+                    LOG.debug("Mapping [{}] has equal precedence with mapping [{}]", this.toString(), other.toString());
+                }
+            }
+            return i;
         }
     }
 
