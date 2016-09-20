@@ -209,6 +209,10 @@ abstract class AbstractProfile implements Profile {
         return description
     }
 
+    String getInstructions() {
+        return instructions
+    }
+
     @Override
     Iterable<Feature> getDefaultFeatures() {
         getFeatures().findAll() { Feature f -> defaultFeaturesNames.contains(f.name) }
