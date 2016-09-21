@@ -82,8 +82,8 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
         cd ..
         git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
         cd grails-doc
-        git branch --track 3.1.x remotes/origin/3.1.x
-        git checkout 3.1.x
+        git branch --track 3.2.x remotes/origin/3.2.x
+        git checkout 3.2.x
         
         echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
         git add gradle.properties
