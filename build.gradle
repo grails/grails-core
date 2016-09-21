@@ -33,7 +33,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "6.0.0.RC1"
+    datastoreVersion = "6.0.0.RC2"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.7"
@@ -41,7 +41,7 @@ ext {
     jansiVersion = "1.11"
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
-    slf4jVersion = "1.7.10"
+    slf4jVersion = "1.7.21"
     reactorCoreVersion = '2.0.8.RELEASE'
     reactorVersion = '2.0.7.RELEASE'
 

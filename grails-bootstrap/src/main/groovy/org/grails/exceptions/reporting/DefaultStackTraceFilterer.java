@@ -33,26 +33,21 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     public static final Log STACK_LOG = LogFactory.getLog(STACK_LOG_NAME);
 
     private static final String[] DEFAULT_INTERNAL_PACKAGES = new String[] {
-        "org.grails.plugin.resource.DevMode",
-        "org.grails.",
-        "org.codehaus.groovy.grails.",
-        "gant.",
         "org.codehaus.groovy.runtime.",
         "org.codehaus.groovy.reflection.",
         "org.codehaus.groovy.ast.",
-        "org.codehaus.gant.",
-        "groovy.",
+        "org.springframework.web.filter",
+        "org.springframework.boot.actuate",
         "org.mortbay.",
+        "groovy.lang.",
         "org.apache.catalina.",
         "org.apache.coyote.",
         "org.apache.tomcat.",
         "net.sf.cglib.proxy.",
         "sun.",
         "java.lang.reflect.",
-        "org.springframework.",
         "org.springsource.loaded.",
         "com.opensymphony.",
-        "org.hibernate.",
         "javax.servlet."
     };
 

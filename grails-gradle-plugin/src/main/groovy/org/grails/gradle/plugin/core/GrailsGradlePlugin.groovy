@@ -354,10 +354,12 @@ class GrailsGradlePlugin extends GroovyPlugin {
         findMainClass.doLast {
             def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
             def mainClassName = bootExtension.mainClass
-            consoleTask.args mainClassName
-            shellTask.args mainClassName
-            project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
-                task.args mainClassName
+            if(mainClassName) {
+                consoleTask.args mainClassName
+                shellTask.args mainClassName
+                project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
+                    task.args mainClassName
+                }
             }
             project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
                 task.args mainClassName
