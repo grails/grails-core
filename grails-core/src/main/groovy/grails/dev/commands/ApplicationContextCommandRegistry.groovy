@@ -18,7 +18,6 @@ package grails.dev.commands
 import groovy.transform.CompileStatic
 import org.grails.core.io.support.GrailsFactoriesLoader
 
-
 /**
  * A registry of {@grails.dev.commands.ApplicationContextCommand} instances
  *

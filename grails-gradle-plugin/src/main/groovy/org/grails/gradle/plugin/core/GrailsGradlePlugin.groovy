@@ -122,6 +122,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         configureRunScript(project)
 
+        configureRunCommand(project)
+
         configurePathingJar(project)
     }
 
@@ -504,6 +506,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected void configureRunScript(Project project) {
         project.tasks.create("runScript", ApplicationContextScriptTask) {
+            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+            if (project.hasProperty('args')) {
+                args(CommandLineParser.translateCommandline(project.args))
+            }
+        }
+    }
+
+    protected void configureRunCommand(Project project) {
+        project.tasks.create("runCommand", ApplicationContextCommandTask) {
             classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
             systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             if (project.hasProperty('args')) {

@@ -20,8 +20,6 @@ import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import org.grails.build.parsing.CommandLine
 
-
-
 /**
  * A context command to pass to {@link ApplicationCommand} instances
  *
