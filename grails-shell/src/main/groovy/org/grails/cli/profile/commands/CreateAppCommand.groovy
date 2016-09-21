@@ -275,6 +275,9 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             executionContext.console.addStatus(
                 "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $projectTargetDirectory.absolutePath"
             )
+            if (profileInstance.instructions) {
+                executionContext.console.addStatus(profileInstance.instructions)
+            }
             GrailsCli.tiggerAppLoad()
             return true
         }
