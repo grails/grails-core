@@ -19,6 +19,7 @@ import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
+import org.grails.databinding.converters.web.Jsr310ConvertersConfiguration
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
@@ -55,7 +56,7 @@ class DataBindingGrailsPlugin extends Plugin {
         boolean trimStringsSetting = config.getProperty(TRIM_STRINGS, Boolean, true)
         boolean convertEmptyStringsToNullSetting = config.getProperty(CONVERT_EMPTY_STRINGS_TO_NULL, Boolean, true)
         Integer autoGrowCollectionLimitSetting = config.getProperty(AUTO_GROW_COLLECTION_LIMIT, Integer, 256)
-        List dateFormats = config.getProperty(DATE_FORMATS, List, [])
+        List dateFormats = config.getProperty(DATE_FORMATS, List, ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"])
 
 
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, grailsApplication) {
@@ -70,9 +71,7 @@ class DataBindingGrailsPlugin extends Plugin {
         timeZoneConverter(TimeZoneConverter)
 
         defaultDateConverter(DateConversionHelper) {
-            if(dateFormats) {
-                formatStrings = dateFormats
-            }
+            formatStrings = dateFormats
         }
         [Short,   Short.TYPE,
          Integer, Integer.TYPE,
@@ -90,6 +89,12 @@ class DataBindingGrailsPlugin extends Plugin {
             targetType = BigInteger
         }
 
+        if (javaVersion >= 1.8) {
+            jsr310ConvertersConfiguration(Jsr310ConvertersConfiguration) {
+                formatStrings = dateFormats
+            }
+        }
+
         "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
 
         xmlDataBindingSourceCreator(XmlDataBindingSourceCreator)
@@ -99,4 +104,12 @@ class DataBindingGrailsPlugin extends Plugin {
 
         defaultCurrencyConverter CurrencyValueConverter
     }}
+
+
+    Double getJavaVersion() {
+        String version = System.getProperty("java.version");
+        int pos = version.indexOf('.');
+        pos = version.indexOf('.', pos+1);
+        Double.parseDouble(version.substring (0, pos));
+    }
 }
