@@ -32,7 +32,7 @@ class DateConversionHelper implements ValueConverter {
      * This converter attempts to convert a String to a Date, these formats will be tried in
      * the order in which they appear in the List.
      */
-    List<String> formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"]
+    List<String> formatStrings = []
 
     Object convert(value) {
         Date dateValue
