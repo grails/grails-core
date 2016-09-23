@@ -205,7 +205,7 @@ class SimpleDataBinderSpec extends Specification {
     void 'Test binding string to date'() {
         given:
         def binder = new SimpleDataBinder()
-        binder.registerConverter new DateConversionHelper()
+        binder.registerConverter new DateConversionHelper(formatStrings: ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"])
 
         def obj = new DateContainer()
 
