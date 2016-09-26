@@ -359,14 +359,10 @@ strong {
 */
 
 .warning {
-    background-image: url(../img/warning.gif);
-    background-repeat: no-repeat;
-    background-position: 20px 20px;
     border: 1px solid #CC0000;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     padding: 10px;
-    padding-left: 40px;
     line-height: 100%;
     width: 80%;
     background-color: #FFCCCC;
