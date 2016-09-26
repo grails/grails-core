@@ -186,6 +186,10 @@ class DocPublisher {
         ant.copy(todir: cssDir, overwrite: true) {
             fileset(dir: "${docResources}/css")
         }
+        ant.copy(todir: fontsDir, overwrite: true) {
+            fileset(dir: "${docResources}/fonts")
+        }
+
         if (css && css.exists()) {
             ant.copy(todir: cssDir, overwrite: true, failonerror:false) {
                 fileset(dir: css)
