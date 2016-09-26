@@ -1,7 +1,9 @@
 package org.grails.databinding.converters.web
 
+import grails.databinding.TypedStructuredBindingEditor
 import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
+import org.grails.databinding.converters.AbstractStructuredDateBindingEditor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.LocalDate
@@ -50,6 +52,21 @@ class Jsr310ConvertersConfiguration {
     }
 
     @Bean
+    TypedStructuredBindingEditor offsetDateTimeStructuredBindingEditor() {
+        new CustomDateBindingEditor<OffsetDateTime>() {
+            @Override
+            OffsetDateTime getDate(Calendar c) {
+                OffsetDateTime.ofInstant(c.toInstant(), c.timeZone.toZoneId())
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                OffsetDateTime
+            }
+        }
+    }
+
+    @Bean
     FormattedValueConverter offsetTimeConverter() {
         new FormattedValueConverter() {
             @Override
@@ -72,6 +89,21 @@ class Jsr310ConvertersConfiguration {
                 convert(value) { String format ->
                     OffsetTime.parse((CharSequence)value, DateTimeFormatter.ofPattern(format))
                 }
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                OffsetTime
+            }
+        }
+    }
+
+    @Bean
+    TypedStructuredBindingEditor offsetTimeStructuredBindingEditor() {
+        new CustomDateBindingEditor<OffsetTime>() {
+            @Override
+            OffsetTime getDate(Calendar c) {
+                OffsetTime.ofInstant(c.toInstant(), c.timeZone.toZoneId())
             }
 
             @Override
@@ -114,6 +146,21 @@ class Jsr310ConvertersConfiguration {
     }
 
     @Bean
+    TypedStructuredBindingEditor localDateTimeStructuredBindingEditor() {
+        new CustomDateBindingEditor<LocalDateTime>() {
+            @Override
+            LocalDateTime getDate(Calendar c) {
+                LocalDateTime.ofInstant(c.toInstant(), c.timeZone.toZoneId())
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                LocalDateTime
+            }
+        }
+    }
+
+    @Bean
     FormattedValueConverter localDateConverter() {
         new FormattedValueConverter() {
             @Override
@@ -136,6 +183,21 @@ class Jsr310ConvertersConfiguration {
                 convert(value) { String format ->
                     LocalDate.parse((CharSequence)value, DateTimeFormatter.ofPattern(format))
                 }
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                LocalDate
+            }
+        }
+    }
+
+    @Bean
+    TypedStructuredBindingEditor localDateStructuredBindingEditor() {
+        new CustomDateBindingEditor<LocalDate>() {
+            @Override
+            LocalDate getDate(Calendar c) {
+                LocalDate.of(c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH))
             }
 
             @Override
@@ -178,6 +240,21 @@ class Jsr310ConvertersConfiguration {
     }
 
     @Bean
+    TypedStructuredBindingEditor localTimeStructuredBindingEditor() {
+        new CustomDateBindingEditor<LocalTime>() {
+            @Override
+            LocalTime getDate(Calendar c) {
+                LocalTime.of(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                LocalTime
+            }
+        }
+    }
+
+    @Bean
     FormattedValueConverter zonedDateTimeConverter() {
         new FormattedValueConverter() {
             @Override
@@ -200,6 +277,21 @@ class Jsr310ConvertersConfiguration {
                 convert(value) { String format ->
                     ZonedDateTime.parse((CharSequence)value, DateTimeFormatter.ofPattern(format))
                 }
+            }
+
+            @Override
+            Class<?> getTargetType() {
+                ZonedDateTime
+            }
+        }
+    }
+
+    @Bean
+    TypedStructuredBindingEditor zonedDateTimeStructuredBindingEditor() {
+        new CustomDateBindingEditor<ZonedDateTime>() {
+            @Override
+            ZonedDateTime getDate(Calendar c) {
+                ZonedDateTime.ofInstant(c.toInstant(), c.timeZone.toZoneId())
             }
 
             @Override
@@ -241,5 +333,9 @@ class Jsr310ConvertersConfiguration {
 
         @Override
         abstract Class<?> getTargetType()
+    }
+
+    abstract class CustomDateBindingEditor<T> extends AbstractStructuredDateBindingEditor<T> implements TypedStructuredBindingEditor<T> {
+
     }
 }
