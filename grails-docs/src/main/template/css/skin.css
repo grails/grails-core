@@ -140,12 +140,12 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
     vertical-align: middle;
     white-space: nowrap;
 }
-#contribute-btn {
-    position: absolute;
-    right: 300px;
-    top: 100px;
+.contribute-btn {
+    bottom: 40px;
+    float: right;
+    position: relative;
+    right: 0;
 }
-
 
 /*
 ////////////////////////////////////////////////////////////////////////////////

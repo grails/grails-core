@@ -13,6 +13,11 @@ function addJsClass(el) {
     document.body.className = classes.join(" ");
 }
     </script>
+    <style>
+        .contribute-btn {
+            bottom: 0px;
+        }
+    </style>
 </head>
 
 <body class="body" onload="addJsClass();">
@@ -53,6 +58,13 @@ function addJsClass(el) {
             <div id="main" class="reference corner-all">
 
                 <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick Reference</a>)</span>
+                <% if(sourceRepo) { %>
+                <div class='contribute-btn'>
+                    <button type='button' class='btn btn-default' onclick='window.location.href="${sourceRepo}/${sourcePath}"'>
+                        <i class='fa fa-pencil-square-o'></i> Improve this doc
+                    </button>
+                </div>
+                <% } %>
 
                 ${content}
             </div>

@@ -66,13 +66,6 @@ function addJsClass() {
                     <h1>${sectionNumber} ${title.encodeAsHtml()}</h1>
 
                     <p><strong>Version:</strong> ${version}</p>
-                    <% if(sourceRepo) { %>
-                        <div id='contribute-btn'>
-                            <button type='button' class='btn btn-default' onclick='window.location.href="${sourceRepo}/guide/${sourcePath}"'>
-                                <i class='fa fa-pencil-square-o'></i> Improve this doc
-                            </button>
-                        </div>
-                    <% } %>
                 </div>
 
                 <% if (sectionToc) { %>
