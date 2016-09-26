@@ -347,7 +347,7 @@ class DocPublisher {
                     context.set(DocEngine.API_CONTEXT_PATH, vars.resourcesPath)
                     output.warn "Rendering document file $usageFile.name"
                     vars.content = engine.render(data, context)
-                    vars.sourcePath = "ref/${section}/$usageFile.name"
+                    vars.sourcePath = "ref/$usageFile.name"
                     new File("${refDocsDir}/ref/${section}/Usage.html").withWriter(encoding) {out ->
                         template.make(vars).writeTo(out)
                     }

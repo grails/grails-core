@@ -1,4 +1,12 @@
 <% def hLevel = level == 0 ? 1 : 2 %>
 <% if (legacyLinks[name]) { %><a name="${legacyLinks[name].encodeAsHtml()}"><!-- Legacy link --></a><% } %>
 <h$hLevel id="${name.encodeAsHtml()}">${sectionNumber} ${title}</h$hLevel>
+<% if(sourceRepo) { %>
+<div class='contribute-btn'>
+    <button type='button' class='btn btn-default' onclick='window.location.href="${sourceRepo}/guide/${sourcePath}"'>
+        <i class='fa fa-pencil-square-o'></i> Improve this doc
+    </button>
+</div>
+<% } %>
+
 ${content}
