@@ -112,8 +112,8 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
     margin-bottom: 20px;
     margin-left: 50px;
     position: absolute;
-    right: 20px;
-    top: 10px;
+    right: 60px;
+    top: 15px;
     background: url(../img/grails-cupsonly-logo-white.svg) no-repeat 0 center;
     background-size: 40px;
     padding-left:40px;
