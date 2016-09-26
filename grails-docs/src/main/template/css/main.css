@@ -171,8 +171,13 @@ strong {
     width:50%;
 }
 
-.toc-item span{
+.toc-item span {
     padding-left:10px;
+}
+
+.toc-item {
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
 
 #table-of-content a {
@@ -374,14 +379,10 @@ strong {
     margin-bottom: 0px;
 }
 .note {
-    background-image: url(../img/note.gif);
-    background-repeat: no-repeat;
-    background-position: 20px 20px;
     border: 1px solid #F0C000;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     padding: 10px;
-    padding-left: 40px;
     line-height: 100%;
     width: 80%;
     background-color: #FFFFCE;
@@ -711,7 +712,7 @@ li {
     -webkit-border-radius: 18px;
 }
 
-#footer, #table-of-content a:hover, #navigation #nav-summary-childs a {
+#table-of-content a:hover, #navigation #nav-summary-childs a {
     text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.9);
 }
 
@@ -739,7 +740,7 @@ b,strong{font-weight:bold}
 dfn{font-style:italic}
 hr{-moz-box-sizing:content-box;box-sizing:content-box;height:0}
 mark{background:#ff0;color:#000}
-code,kbd,pre,samp{font-family:monospace;font-size:1em}
+code,kbd,pre,samp{font-family:monospace;font-size:0.90rem}
 pre{white-space:pre-wrap}
 q{quotes:"\201C" "\201D" "\2018" "\2019"}
 small{font-size:80%}
@@ -1090,7 +1091,7 @@ b.conum *{color:inherit!important}
 dt,th.tableblock,td.content,div.footnote{text-rendering:optimizeLegibility}
 h1,h2,p,td.content,span.alt{letter-spacing:-.01em}
 p strong,td.content strong,div.footnote strong{letter-spacing:-.005em}
-p,blockquote,dt,td.content,span.alt{font-size:1.0625rem}
+p,blockquote,dt,td.content,span.alt{font-size:1.0rem}
 p{margin-bottom:1.25rem}
 .sidebarblock p,.sidebarblock dt,.sidebarblock td.content,p.tableblock{font-size:1em}
 .exampleblock>.content{background-color:#fffef7;border-color:#e0e0dc;-webkit-box-shadow:0 1px 4px #e0e0dc;box-shadow:0 1px 4px #e0e0dc}
