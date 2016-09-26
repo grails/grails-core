@@ -18,34 +18,32 @@ function addJsClass(el) {
 <body class="body" onload="addJsClass();">
 
 <div id="navigation">
-    <ul>
-        <li>
-            <div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)">
-                <a href="${path}/guide/index.html" class="button">Table of contents</a>
-
-                <div id="nav-summary-childs">
-                    <% toc.children.eachWithIndex { ch, i -> %>
-                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.name.encodeAsUrlPath().encodeAsHtml()}.html"><strong>${i + 1}</strong><span>${ch.title.encodeAsHtml()}</span></a>
-                    </div>
-                    <% } %>
-                </div>
-            </div>
-        </li>
-        <li class="separator selected">
-            <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick Reference</a>
-        </li>
-    </ul>
-</div>
-<div id="header">
-    <div class="images clearfix">
+    <div class="navTitle">
         <% if (logo) { %>
         <span id="logo">${logo}</span>
         <% } %>
-        <% if (sponsorLogo) { %>
-        <span id="sponsor">${sponsorLogo}</span>
-        <% } %>
+        ${docTitle.encodeAsHtml()}
     </div>
-    <p>${subtitle.encodeAsHtml()}</p>
+
+    <div class="navLinks">
+        <ul>
+            <li>
+                <div id="nav-summary" onmouseover="toggleNavSummary(false)" onmouseout="toggleNavSummary(true)">
+                    <a href="${path}/guide/index.html" class="button">Table of contents</a>
+
+                    <div id="nav-summary-childs">
+                        <% toc.children.eachWithIndex { ch, i -> %>
+                        <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.name.encodeAsUrlPath().encodeAsHtml()}.html"><strong>${i + 1}</strong><span>${ch.title.encodeAsHtml()}</span></a>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </li>
+            <li class="separator selected">
+                <a id="ref-button" onclick="localToggle(); return false;" href="#">Quick Reference</a>
+            </li>
+        </ul>
+    </div>
 </div>
 
 

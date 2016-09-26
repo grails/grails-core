@@ -8,9 +8,11 @@ import org.yaml.snakeyaml.Yaml
 class YamlTocStrategy {
     private final parser = new Yaml()
     private resourceChecker
+    private String ext = ".gdoc"
 
-    YamlTocStrategy(resourceChecker) {
+    YamlTocStrategy(resourceChecker, String ext = ".gdoc") {
         this.resourceChecker = resourceChecker
+        this.ext = ext
     }
 
     UserGuideNode generateToc(yaml) {
@@ -72,7 +74,7 @@ class YamlTocStrategy {
         }
 
         // First check whether the gdoc file exists in the root directory.
-        def filePath = "${basename}.gdoc"
+        def filePath = "${basename}$ext"
         if (resourceChecker.exists(filePath)) {
             return filePath
         }
@@ -89,7 +91,7 @@ class YamlTocStrategy {
             //    intro/whatsNew/changelog/$basename.gdoc
             //
             for (i in 1..pathElements.size()) {
-                filePath = "${pathElements[-1..-i].join('/')}/${basename}.gdoc"
+                filePath = "${pathElements[-1..-i].join('/')}/${basename}$ext"
                 if (resourceChecker.exists(filePath)) {
                     return filePath
                 }
