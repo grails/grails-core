@@ -107,17 +107,12 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
 
 .navTitle {
     color:#fff;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
-    font-weight: normal;
-    margin-bottom: 20px;
-    margin-left: 50px;
-    position: absolute;
-    right: 60px;
-    top: 15px;
     background: url(../img/grails-cupsonly-logo-white.svg) no-repeat 0 center;
-    background-size: 40px;
-    padding-left:40px;
-    width:170px;
+    background-size: 45px;
+    padding-left:44px;
+    width:180px;
+    float:right;
+    line-height: 3.1em;
 }
 .btn-default {
     background-color: #fff;

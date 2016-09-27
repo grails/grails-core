@@ -176,7 +176,7 @@ strong {
 }
 
 .toc-item {
-    font-size: 0.85rem;
+    font-size: 0.90rem;
     line-height: 1.4;
 }
 
@@ -246,13 +246,13 @@ strong {
 
 #navigation {
     border-width: 0;
-    border-bottom-width: 1px;
+    font-size: 1.1em;
 }
 
 #navigation ul {
     margin: 0;
     padding: 0;
-    height: 2.8em;
+    height: 3.1em;
 }
 
 #navigation ul li {
@@ -716,7 +716,7 @@ li {
     text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
 }
 
-#navigation a, #nav-summary #nav-summary-childs a:hover {
+#nav-summary #nav-summary-childs a:hover {
     text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.8);
 }
 
