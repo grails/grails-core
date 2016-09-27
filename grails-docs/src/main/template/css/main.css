@@ -291,6 +291,7 @@ strong {
     border-width: 1px;
     padding: 10px;
     width: 25em;
+    z-index: 1;
 }
 
 #nav-summary #nav-summary-childs {
