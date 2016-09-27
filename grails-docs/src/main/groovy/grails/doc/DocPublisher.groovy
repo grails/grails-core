@@ -306,6 +306,14 @@ class DocPublisher {
             sourceRepo: sourceRepo,
         ]
 
+        if(engine instanceof AsciiDocEngine) {
+            // pass attributes to asciidoc
+            ((AsciiDocEngine)engine).attributes.putAll(
+                    version: version
+            )
+        }
+
+
         // Build the user guide sections first.
         def template = templateEngine.createTemplate(new File("${docResources}/style/guideItem.html").newReader(encoding))
         def sectionTemplate = templateEngine.createTemplate(new File("${docResources}/style/section.html").newReader(encoding))

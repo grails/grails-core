@@ -14,16 +14,18 @@ import org.asciidoctor.Asciidoctor;
 @InheritConstructors
 class AsciiDocEngine extends DocEngine {
     Asciidoctor asciidoctor = create();
-
+    Map attributes = [
+        'imagesdir': '../img',
+        'source-highlighter':'coderay',
+        'icons':'font'
+    ]
     @Override
     String render(String content, RenderContext context) {
         asciidoctor.convert(content,
             new OptionsBuilder()
                 .headerFooter(false)
                 .attributes(
-                    'imagesdir': '../img',
-                    'source-highlighter':'coderay',
-                    'icons':'font'
+                    attributes
                 )
                 .get()
         )
