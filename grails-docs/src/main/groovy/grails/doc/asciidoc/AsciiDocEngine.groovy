@@ -22,7 +22,8 @@ class AsciiDocEngine extends DocEngine {
                 .headerFooter(false)
                 .attributes(
                     'imagesdir': '../img',
-                    'source-highlighter':'coderay'
+                    'source-highlighter':'coderay',
+                    'icons':'font'
                 )
                 .get()
         )
