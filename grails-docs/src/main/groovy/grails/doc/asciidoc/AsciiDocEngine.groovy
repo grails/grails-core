@@ -17,7 +17,8 @@ class AsciiDocEngine extends DocEngine {
     Map attributes = [
         'imagesdir': '../img',
         'source-highlighter':'coderay',
-        'icons':'font'
+        'icons':'font',
+        'javaee': 'https://docs.oracle.com/javaee/7/api/'
     ]
     @Override
     String render(String content, RenderContext context) {
