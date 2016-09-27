@@ -359,13 +359,13 @@ strong {
 */
 
 .warning {
-    border: 1px solid #CC0000;
+    border: 1px solid #F0C000;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     padding: 10px;
     line-height: 100%;
     width: 80%;
-    background-color: #FFCCCC;
+    background-color: #FFFFCE;
 }
 
 .note table {
@@ -375,13 +375,13 @@ strong {
     margin-bottom: 0px;
 }
 .note {
-    border: 1px solid #F0C000;
+    border: 1px solid #006fd2;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
     padding: 10px;
     line-height: 100%;
     width: 80%;
-    background-color: #FFFFCE;
+    background-color: #cee8ff;
 }
 
 .bq {
@@ -904,7 +904,7 @@ table.tableblock>caption.title{white-space:nowrap;overflow:visible;max-width:0}
 .paragraph.lead>p,#preamble>.sectionbody>.paragraph:first-of-type p{color:rgba(0,0,0,.85)}
 table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p{font-size:inherit}
 .admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
-.admonitionblock>table td.icon{text-align:center;width:80px}
+.admonitionblock>table td.icon{text-align:center;width:70px}
 .admonitionblock>table td.icon img{max-width:none}
 .admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
 .admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #ddddd8;color:rgba(0,0,0,.6)}
@@ -1074,7 +1074,7 @@ span.icon>.fa{cursor:default}
 .admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
 .admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
 .admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
-.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#bf6900}
+.admonitionblock td.icon .icon-warning:before{content:"\f071";color:#f1c102}
 .admonitionblock td.icon .icon-caution:before{content:"\f06d";color:#bf3400}
 .admonitionblock td.icon .icon-important:before{content:"\f06a";color:#bf0000}
 .conum[data-value]{display:inline-block;color:#fff!important;background-color:rgba(0,0,0,.8);-webkit-border-radius:100px;border-radius:100px;text-align:center;font-size:.75em;width:1.67em;height:1.67em;line-height:1.67em;font-family:"Open Sans","DejaVu Sans",sans-serif;font-style:normal;font-weight:bold}
