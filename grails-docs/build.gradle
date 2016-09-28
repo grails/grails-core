@@ -12,6 +12,7 @@ dependencies {
             'org.yaml:snakeyaml:1.14',
             "org.codehaus.groovy:groovy-ant:$groovyVersion"
 
+    compile 'org.asciidoctor:asciidoctorj:1.5.4'
     compile('org.xhtmlrenderer:core-renderer:R8') {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }

@@ -5,7 +5,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 */
-
+body {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;;
+}
 body, .wiki-table th strong {
     color: #444;
 }
@@ -67,15 +69,15 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
 
 
 #navigation .selected a {
-    background: #5a7103;
+    background: #4d8618;
 }
 
 #navigation a:hover {
-    background: #678104;
+    background: #db4800;
 }
 
 #navigation .selected a:hover, #navigation .active .button {
-    background: #526703;
+    background: #db4800;
 }
 
 /*
@@ -95,19 +97,50 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
     background: #F2F2F2 url(../img/default/separator-horizontal.gif) repeat-x 0 bottom;
 }
 
-#table-of-content a:hover {
-    background: #F2F2F2 url(../img/default/linear-gradient.png) repeat-x 0 0;
-}
-
 .wiki-table th, #navigation {
-    background: #a4c001 url(../img/default/linear-gradient-green.png) repeat-x 0 0;
+    background: #4d8618;
 }
 
 #navigation .separator {
     background: url(../img/default/separator-menu.png) no-repeat 0 center;
 }
 
-
+.navTitle {
+    color:#fff;
+    background: url(../img/grails-cupsonly-logo-white.svg) no-repeat 0 center;
+    background-size: 45px;
+    padding-left:44px;
+    width:180px;
+    float:right;
+    line-height: 3.1em;
+}
+.btn-default {
+    background-color: #fff;
+    border-color: #ccc;
+    color: #333;
+}
+.btn {
+    -moz-user-select: none;
+    background-image: none;
+    border: 1px solid;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857;
+    margin-bottom: 0;
+    padding: 6px 12px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.contribute-btn {
+    bottom: 40px;
+    float: right;
+    position: relative;
+    right: 0;
+}
 
 /*
 ////////////////////////////////////////////////////////////////////////////////
