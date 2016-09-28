@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.taglib
 
+import grails.JavaVersion
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
@@ -31,6 +32,12 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.util.StringUtils
+
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAccessor
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
@@ -189,9 +196,22 @@ class FormatTagLib implements TagLibrary {
             else if (!format) {
                 format = messageHelper('date.format', { messageHelper('default.date.format', 'yyyy-MM-dd HH:mm:ss z', null, locale) }, null, locale)
             }
-            dateFormat = FastDateFormat.getInstance(format, timeZone, locale)
+            if (JavaVersion.isAtLeast(1,8) && date instanceof TemporalAccessor) {
+                dateFormat = DateTimeFormatter.ofPattern(format, locale).withZone(timeZone.toZoneId())
+            } else {
+                dateFormat = FastDateFormat.getInstance(format, timeZone, locale)
+            }
         }
         else {
+            if (JavaVersion.isAtLeast(1,8) && date instanceof TemporalAccessor) {
+                if (date instanceof LocalDateTime) {
+                    date = date.atZone(timeZone.toZoneId())
+                } else if (date instanceof LocalDate) {
+                    date = date.atStartOfDay(timeZone.toZoneId())
+                }
+                date = Date.from(date.toInstant())
+            }
+
             if (type=='DATE') {
                 dateFormat = FastDateFormat.getDateInstance(parseStyle(dateStyle), timeZone, locale)
             }

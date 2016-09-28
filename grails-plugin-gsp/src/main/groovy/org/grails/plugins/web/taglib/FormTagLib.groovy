@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.taglib
 
+import grails.JavaVersion
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
@@ -40,6 +41,14 @@ import org.springframework.core.convert.ConversionService
 import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.springframework.web.servlet.support.RequestDataValueProcessor
+
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.temporal.Temporal
+import java.time.temporal.TemporalAccessor
 
 /**
  * Tags for working with form controls.
@@ -578,9 +587,16 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         else if (xdefault.toString() != 'none') {
             if (xdefault instanceof String) {
                 xdefault = DateFormat.getInstance().parse(xdefault)
+
             }
             else if (!(xdefault instanceof Date)) {
-                throwTagError("Tag [datePicker] requires the default date to be a parseable String or a Date")
+                if (JavaVersion.isAtLeast(1,8)) {
+                    if (!(xdefault instanceof TemporalAccessor)) {
+                        throwTagError("Tag [datePicker] requires the default date to be a parseable String, Date, or a Temporal")
+                    }
+                } else {
+                    throwTagError("Tag [datePicker] requires the default date to be a parseable String or a Date")
+                }
             }
         }
         else {
@@ -634,8 +650,20 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
             c = value
         }
         else if (value != null) {
-            c = new GregorianCalendar()
-            c.setTime(value)
+            if (JavaVersion.isAtLeast(1,8) && value instanceof TemporalAccessor) {
+                ZonedDateTime zonedDateTime
+                if (value instanceof LocalDateTime) {
+                    zonedDateTime = ZonedDateTime.of(value, ZoneId.systemDefault())
+                } else if (value instanceof LocalDate) {
+                    zonedDateTime = ZonedDateTime.of(value, LocalTime.MIN, ZoneId.systemDefault())
+                } else {
+                    zonedDateTime = ZonedDateTime.from(value)
+                }
+                c = GregorianCalendar.from(zonedDateTime)
+            } else if (value instanceof Date) {
+                c = new GregorianCalendar()
+                c.setTime(value)
+            }
         }
 
         if (c != null) {

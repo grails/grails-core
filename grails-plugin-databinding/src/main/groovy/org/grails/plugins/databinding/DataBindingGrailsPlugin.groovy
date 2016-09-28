@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.databinding
 
+import grails.JavaVersion
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
@@ -89,7 +90,7 @@ class DataBindingGrailsPlugin extends Plugin {
             targetType = BigInteger
         }
 
-        if (javaVersion >= 1.8) {
+        if (JavaVersion.isAtLeast(1,8)) {
             jsr310ConvertersConfiguration(Jsr310ConvertersConfiguration) {
                 formatStrings = dateFormats
             }
@@ -105,11 +106,4 @@ class DataBindingGrailsPlugin extends Plugin {
         defaultCurrencyConverter CurrencyValueConverter
     }}
 
-
-    Double getJavaVersion() {
-        String version = System.getProperty("java.version");
-        int pos = version.indexOf('.');
-        pos = version.indexOf('.', pos+1);
-        Double.parseDouble(version.substring (0, pos));
-    }
 }
