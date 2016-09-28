@@ -18,7 +18,10 @@ class AsciiDocEngine extends DocEngine {
         'imagesdir': '../img',
         'source-highlighter':'coderay',
         'icons':'font',
-        'javaee': 'https://docs.oracle.com/javaee/7/api/'
+        'javaee': 'https://docs.oracle.com/javaee/7/api/',
+        'javase': 'https://docs.oracle.com/javase/7/docs/api/',
+        'groovyapi': 'http://docs.groovy-lang.org/latest/html/gapi/',
+        'springapi': 'https://docs.spring.io/spring/docs/current/javadoc-api/'
     ]
     @Override
     String render(String content, RenderContext context) {
