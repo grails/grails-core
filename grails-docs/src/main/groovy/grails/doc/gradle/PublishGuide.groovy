@@ -31,7 +31,7 @@ class PublishGuide extends DefaultTask {
     @Input String language = ""
     @Input boolean asciidoc = false
     @Input @Optional String sourceRepo
-
+    @Input @Optional Properties properties = new Properties()
     Collection macros = []
     File workDir = project.buildDir as File
 
@@ -48,6 +48,8 @@ class PublishGuide extends DefaultTask {
                 props.load(input)
             }
         }
+
+        props.putAll(properties)
 
         def publisher = new DocPublisher(sourceDir, targetDir)
         publisher.ant = project.ant

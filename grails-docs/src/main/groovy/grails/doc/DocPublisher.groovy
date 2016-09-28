@@ -310,7 +310,11 @@ class DocPublisher {
             // pass attributes to asciidoc
             ((AsciiDocEngine)engine).attributes.putAll(
                     version: version,
-                    apiDocs: "http://docs.grails.org/${version}/api/"
+                    apiDocs: "http://docs.grails.org/${version}/api/",
+                    sourceRepo: sourceRepo
+            )
+            ((AsciiDocEngine)engine).attributes.putAll(
+                    engineProperties
             )
         }
 
