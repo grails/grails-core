@@ -7,6 +7,14 @@ import java.text.DecimalFormatSymbols
 
 import org.grails.taglib.GrailsTagException
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+
 /**
  * Tests for the FormatTagLib.
  *
@@ -56,16 +64,100 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals("1980-02-03", template, [date:calender.getTime()])
     }
 
+    void testFormatLocalDate() {
+        def date = LocalDate.of(1980, 2, 3)
+        def template = '<g:formatDate format="yyyy-MM-dd" date="${date}"/>'
+        assertOutputEquals("1980-02-03", template, [date: date])
+    }
+
+    void testFormatLocalTime() {
+        def date = LocalTime.of(22, 2, 3)
+        def template = '<g:formatDate format="HH:mm:ss" date="${date}"/>'
+        assertOutputEquals("22:02:03", template, [date: date])
+    }
+
+    void testFormatLocalDateTime() {
+        def date = LocalDateTime.of(1980, 2, 3, 22, 2, 3)
+        def template = '<g:formatDate format="yyyy-MM-dd HH:mm:ss" date="${date}"/>'
+        assertOutputEquals("1980-02-03 22:02:03", template, [date: date])
+    }
+
+    void testFormatOffsetTime() {
+        def date = OffsetTime.of(22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate format="HH:mm:ss:SS" date="${date}"/>'
+        assertOutputEquals("22:02:03:00", template, [date: date])
+    }
+
+    void testFormatOffsetDateTime() {
+        def date = OffsetDateTime.of(1980, 2, 3, 22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate format="yyyy-MM-dd HH:mm:ss:SS" date="${date}"/>'
+        assertOutputEquals("1980-02-04 11:02:03:00", template, [date: date])
+    }
+
+    void testFormatZonedDateTime() {
+        def date = ZonedDateTime.of(1980, 2, 3, 22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate format="yyyy-MM-dd HH:mm:ss:SS" date="${date}"/>'
+        assertOutputEquals("1980-02-04 11:02:03:00", template, [date: date])
+    }
+
     void testFormatDateWithStyle() {
         def calender = new GregorianCalendar(1980,1,3)
         def template = '<g:formatDate date="${date}" type="date" style="LONG" locale="en_US"/>'
         assertOutputEquals("February 3, 1980", template, [date:calender.getTime()])
     }
 
+    void testFormatLocalDateWithStyle() {
+        def date = LocalDate.of(1980, 2, 3)
+        def template = '<g:formatDate date="${date}" type="date" style="LONG" locale="en_US"/>'
+        assertOutputEquals("February 3, 1980", template, [date: date])
+    }
+
+    void testFormatLocalDateTimeWithStyle() {
+        def date = LocalDateTime.of(1980, 2, 3, 22, 2, 3)
+        def template = '<g:formatDate date="${date}" type="date" style="LONG" locale="en_US"/>'
+        assertOutputEquals("February 3, 1980", template, [date: date])
+    }
+
+    void testFormatOffsetDateTimeWithStyle() {
+        def date = OffsetDateTime.of(1980, 2, 3, 22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate date="${date}" type="date" style="LONG" locale="en_US"/>'
+        assertOutputEquals("February 4, 1980", template, [date: date])
+    }
+
+    void testFormatZonedDateTimeWithStyle() {
+        def date = ZonedDateTime.of(1980, 2, 3, 22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate date="${date}" type="date" style="LONG" locale="en_US"/>'
+        assertOutputEquals("February 4, 1980", template, [date: date])
+    }
+
     void testFormatDateTimeWithStyle() {
         def calender = new GregorianCalendar(1980,1,3)
         def template = '<g:formatDate date="${date}" type="datetime" style="LONG" timeStyle="SHORT" locale="en_US"/>'
         assertOutputEquals("February 3, 1980 12:00 AM", template, [date:calender.getTime()])
+    }
+
+    void testFormatLocalDateWithTimeStyle() {
+        def date = LocalDate.of(1980, 2, 3)
+        def template = '<g:formatDate date="${date}" type="datetime" style="LONG" timeStyle="SHORT" locale="en_US"/>'
+        assertOutputEquals("February 3, 1980 12:00 AM", template, [date: date])
+    }
+
+    void testFormatLocalDateTimeWithTimeStyle() {
+        def date = LocalDateTime.of(1980, 2, 3, 22, 2, 3)
+        def template = '<g:formatDate date="${date}" type="datetime" style="LONG" timeStyle="SHORT" locale="en_US"/>'
+        assertOutputEquals("February 3, 1980 10:02 PM", template, [date: date])
+    }
+
+    void testFormatOffsetDateTimeWithTimeStyle() {
+        def date = OffsetDateTime.of(1980, 2, 3, 22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate date="${date}" type="datetime" style="LONG" timeStyle="SHORT" locale="en_US"/>'
+        assertOutputEquals("February 4, 1980 11:02 AM", template, [date: date])
+    }
+
+    void testFormatZonedDateTimeWithTimeStyle() {
+        def date = ZonedDateTime.of(1980, 2, 3, 22, 2, 3, 0, ZoneOffset.MIN)
+        def template = '<g:formatDate date="${date}" type="datetime" style="LONG" timeStyle="SHORT" locale="en_US"/>'
+        assertOutputEquals("February 4, 1980 11:02 AM", template, [date: date])
     }
 
     void testFormatDateNullDate() {
