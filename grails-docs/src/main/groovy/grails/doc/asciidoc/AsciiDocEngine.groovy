@@ -9,7 +9,10 @@ import org.radeox.api.engine.context.RenderContext
 import static org.asciidoctor.Asciidoctor.Factory.create;
 import org.asciidoctor.Asciidoctor;
 /**
- * Created by graemerocher on 26/09/2016.
+ * A DocEngine implementation that uses Asciidoctor to render pages
+ *
+ * @author Graeme Rocher
+ * @since 3.2.0
  */
 @InheritConstructors
 class AsciiDocEngine extends DocEngine {
