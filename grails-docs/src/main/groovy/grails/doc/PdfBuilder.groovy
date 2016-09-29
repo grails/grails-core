@@ -48,7 +48,9 @@ class PdfBuilder {
         File htmlFile = new File(guideDir, "single.html")
         File outputFile = new File(guideDir, "single.pdf")
 
-        String xml = createXml(htmlFile, baseDir.absolutePath)
+        String base = baseDir.toPath().toUri().toString()
+        base += base.endsWith('/')?'':'/'
+        String xml = createXml(htmlFile, base)
         createPdf xml, outputFile, guideDir
     }
 
@@ -58,7 +60,7 @@ class PdfBuilder {
         // fix inner anchors
         xml = xml.replaceAll('<a href="\\.\\./guide/single\\.html', '<a href="')
         // fix image refs to absolute paths
-        xml = xml.replaceAll('src="\\.\\./img/', "src=\"file://${base}/img/")
+        xml = xml.replaceAll('src="\\.\\./img/', "src=\"${base}img/")
 
         // convert tabs to spaces otherwise they only take up one space
         xml = xml.replaceAll('\t', '    ')
