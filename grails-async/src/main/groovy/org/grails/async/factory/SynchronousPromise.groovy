@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit
 class SynchronousPromise<T> implements Promise<T> {
     Closure<T> callable
     def value
+    boolean executed = false
 
     SynchronousPromise(Closure<T> callable) {
         this.callable = callable
@@ -51,7 +52,8 @@ class SynchronousPromise<T> implements Promise<T> {
     }
 
     T get() throws Throwable {
-        if (value == null) {
+        if (!executed) {
+            executed = true
             try {
                 value = callable.call()
             } catch (e) {
