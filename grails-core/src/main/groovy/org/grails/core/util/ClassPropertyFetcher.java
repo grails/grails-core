@@ -170,27 +170,32 @@ public class ClassPropertyFetcher {
             }
         };
 
-        List<Class<?>> allClasses = resolveAllClasses(clazz);
-        for (Class<?> c : allClasses) {
-            Field[] fields = c.getDeclaredFields();
-            for (Field field : fields) {
-                try {
-                    fieldCallback.doWith(field);
-                } catch (IllegalAccessException ex) {
-                    throw new IllegalStateException(
-                            "Shouldn't be illegal to access field '"
-                                    + field.getName() + "': " + ex);
-                }
+        Class<?> superclass = clazz.getSuperclass();
+        while (superclass != Object.class && superclass != null) {
+            ClassPropertyFetcher superFetcher = ClassPropertyFetcher.forClass(superclass);
+            staticFetchers.putAll(superFetcher.staticFetchers);
+            instanceFetchers.putAll(superFetcher.instanceFetchers);
+            superclass = superclass.getSuperclass();
+        }
+
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                fieldCallback.doWith(field);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(
+                        "Shouldn't be illegal to access field '"
+                                + field.getName() + "': " + ex);
             }
-            Method[] methods = c.getDeclaredMethods();
-            for (Method method : methods) {
-                try {
-                    methodCallback.doWith(method);
-                } catch (IllegalAccessException ex) {
-                    throw new IllegalStateException(
-                            "Shouldn't be illegal to access method '"
-                                    + method.getName() + "': " + ex);
-                }
+        }
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            try {
+                methodCallback.doWith(method);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(
+                        "Shouldn't be illegal to access method '"
+                                + method.getName() + "': " + ex);
             }
         }
 
@@ -217,7 +222,7 @@ public class ClassPropertyFetcher {
     private List<Class<?>> resolveAllClasses(Class<?> c) {
         List<Class<?>> list = new ArrayList<Class<?>>();
         Class<?> currentClass = c;
-        while (currentClass != null) {
+        while (currentClass != Object.class) {
             list.add(currentClass);
             currentClass = currentClass.getSuperclass();
         }
