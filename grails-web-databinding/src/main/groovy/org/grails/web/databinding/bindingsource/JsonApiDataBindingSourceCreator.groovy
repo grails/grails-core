@@ -4,7 +4,14 @@ import grails.web.mime.MimeType
 import groovy.transform.CompileStatic
 
 /**
- * Created by jameskleeh on 9/29/16.
+ * Creates DataBindingSource objects from JSON API in the request body
+ *
+ * @since 3.2.1
+ *
+ * @author James Kleeh
+ *
+ * @see grails.databinding.DataBindingSource
+ * @see DataBindingSourceCreator
  */
 @CompileStatic
 class JsonApiDataBindingSourceCreator extends JsonDataBindingSourceCreator {
