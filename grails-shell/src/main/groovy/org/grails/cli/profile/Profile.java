@@ -51,6 +51,12 @@ public interface Profile {
      */
     String getDescription();
 
+
+    /**
+     * @return Text to display after an application has been created with the profile
+     */
+    String getInstructions();
+
     /**
      * @return The features for this profile
      */

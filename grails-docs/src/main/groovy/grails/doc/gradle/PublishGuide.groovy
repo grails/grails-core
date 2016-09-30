@@ -29,7 +29,9 @@ class PublishGuide extends DefaultTask {
     @InputDirectory File resourcesDir = new File(project.projectDir, "resources")
     @Input List propertiesFiles = []
     @Input String language = ""
-
+    @Input boolean asciidoc = false
+    @Input @Optional String sourceRepo
+    @Input @Optional Properties properties = new Properties()
     Collection macros = []
     File workDir = project.buildDir as File
 
@@ -47,17 +49,21 @@ class PublishGuide extends DefaultTask {
             }
         }
 
+        props.putAll(properties)
+
         def publisher = new DocPublisher(sourceDir, targetDir)
         publisher.ant = project.ant
+        publisher.asciidoc = asciidoc
         publisher.workDir = workDir
         publisher.apiDir = "${project.outputDir}" as File
         publisher.language = language ?: ''
+        publisher.sourceRepo = sourceRepo
         publisher.images = project.file("${resourcesDir}/img")
         publisher.css = project.file("${resourcesDir}/css")
+        publisher.fonts = project.file("${resourcesDir}/fonts")
         publisher.js = project.file("${resourcesDir}/js")
         publisher.style = project.file("${resourcesDir}/style")
         publisher.version = props."grails.version"
-        publisher.logo = '<a href="http://grails.org" target="_blank"><img alt="Grails Logo" title="The Grails Framework" src="${path}/img/grails.png" border="0"/></a>'
 
         // Override doc.properties properties with their language-specific counterparts (if
         // those are defined). You just need to add entries like es.title or pt_PT.subtitle.

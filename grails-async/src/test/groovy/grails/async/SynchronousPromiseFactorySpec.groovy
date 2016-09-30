@@ -156,4 +156,18 @@ class SynchronousPromiseFactorySpec extends Specification {
         then:'the closure is executed'
         1 * callable.call()
     }
+
+    @Issue("GRAILS-10152")
+    void "Test promise closure is not executed multiple times if it returns null"() {
+        given:
+        Closure callable =  Mock(Closure) {
+            call() >> null
+        }
+
+        when:"A promise is created"
+        Promises.waitAll([Promises.createPromise(callable), Promises.createPromise(callable)])
+
+        then:'the closure is executed twice'
+        2 * callable.call()
+    }
 }

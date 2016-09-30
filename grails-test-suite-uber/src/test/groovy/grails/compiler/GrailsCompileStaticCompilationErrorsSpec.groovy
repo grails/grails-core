@@ -1,12 +1,10 @@
 package grails.compiler
+
 import grails.persistence.Entity
-
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
-
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
-
 
 class GrailsCompileStaticCompilationErrorsSpec extends Specification {
 
@@ -468,6 +466,62 @@ class SomeService {
         MultipleCompilationErrorsException e = thrown()
         e.message.contains 'Cannot find matching method java.lang.String#lastName()'
 
+    }
+
+    @Issue('grails/grails-core#10157')
+    void 'Test constraints block which imports from a non-existent class'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic imports constraints from a non-existent class'
+        gcl.parseClass('''
+package grails.compiler
+
+import grails.validation.Validateable
+
+@GrailsCompileStatic
+class SomeValidateableClassWithInvalidImport implements Validateable {
+    String name
+
+    static constraints = {
+        importFrom SomeNonExistentClass
+    }
+}
+''')
+        then: 'an error is thrown'
+        thrown(MultipleCompilationErrorsException)
+    }
+
+    @Issue('grails/grails-core#10157')
+    void 'Test constraints block which imports constraints'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic imports constraints from a non-existent class'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+import grails.validation.Validateable
+
+@GrailsCompileStatic
+class SomeValidateableClassWithValidImport implements Validateable {
+    String name
+
+    static constraints = {
+        importFrom SomeOtherValidateableClass
+    }
+}
+
+class SomeOtherValidateableClass implements Validateable {
+    String name
+    static constraints = {
+        name size: 3..15
+    }
+}
+''')
+
+        then: 'the constraints were properly imported'
+        gcl.loadClass('grails.compiler.SomeValidateableClassWithValidImport').constraintsMap['name'].getAppliedConstraint('size').range == 3..15
     }
 }
 

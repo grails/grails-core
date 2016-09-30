@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.web.servlet.mvc.OutputAwareHttpServletResponse;
 import org.grails.web.servlet.view.AbstractGrailsView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,40 +56,47 @@ public class GrailsLayoutView extends AbstractGrailsView {
     @Override
     protected void renderTemplate(Map<String, Object> model, GrailsWebRequest webRequest, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
+
+        boolean isCommitted = response.isCommitted() && (response instanceof OutputAwareHttpServletResponse) && !((OutputAwareHttpServletResponse) response).isWriterAvailable();
+        if( !isCommitted ) {
+
             Content content = obtainContent(model, webRequest, request, response);
-        if (content != null) {
+            if (content != null) {
 
-            beforeDecorating(content, model, webRequest, request, response);
-            switch (request.getDispatcherType()) {
-                case INCLUDE:
-                    break;
-                case ASYNC:
-                case ERROR:
-                case FORWARD:
-                case REQUEST:
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("Finding layout for request and content" );
-                    }
-                    SpringMVCViewDecorator decorator = (SpringMVCViewDecorator) groovyPageLayoutFinder.findLayout(request, content);
-                    if (decorator != null) {
+                beforeDecorating(content, model, webRequest, request, response);
+                switch (request.getDispatcherType()) {
+                    case INCLUDE:
+                        break;
+                    case ASYNC:
+                    case ERROR:
+                    case FORWARD:
+                    case REQUEST:
                         if(LOG.isDebugEnabled()) {
-                            LOG.debug("Found layout. Rendering content for layout and model {}", decorator.getPage(), model);
+                            LOG.debug("Finding layout for request and content" );
                         }
+                        SpringMVCViewDecorator decorator = (SpringMVCViewDecorator) groovyPageLayoutFinder.findLayout(request, content);
+                        if (decorator != null) {
+                            if(LOG.isDebugEnabled()) {
+                                LOG.debug("Found layout. Rendering content for layout and model {}", decorator.getPage(), model);
+                            }
 
-                        decorator.render(content, model, request, response, webRequest.getServletContext());
-                        return;
-                    }
-                    break;
-            }
-            PrintWriter writer = response.getWriter();
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("Layout not applicable to response, writing original content");
-            }
-            content.writeOriginal(writer);
-            if (!response.isCommitted()) {
-                writer.flush();
+                            decorator.render(content, model, request, response, webRequest.getServletContext());
+                            return;
+                        }
+                        break;
+                }
+                PrintWriter writer = response.getWriter();
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Layout not applicable to response, writing original content");
+                }
+                content.writeOriginal(writer);
+                if (!response.isCommitted()) {
+                    writer.flush();
+                }
             }
         }
+
+
     }
 
     protected void beforeDecorating(Content content, Map<String, Object> model, GrailsWebRequest webRequest,

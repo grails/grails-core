@@ -1,4 +1,5 @@
-/* Copyright 2004-2005 Graeme Rocher
+/*
+ * Copyright 2014 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.util;
+package grails.dev.commands.template
 
-import junit.framework.TestCase;
+import groovy.transform.InheritConstructors
+
 
 /**
- * Tests for the GrailsUtils class.
+ * Exception thrown when an error in template rendering occurs
  *
  * @author Graeme Rocher
- * @since 0.4
+ * @since 3.0
  */
-public class GrailsUtilTests extends TestCase {
-
-    public void testGrailsVersion() {
-        assertEquals("3.2.1.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        System.setProperty(Environment.KEY, "");
-    }
+@InheritConstructors
+class TemplateException extends RuntimeException {
 }
