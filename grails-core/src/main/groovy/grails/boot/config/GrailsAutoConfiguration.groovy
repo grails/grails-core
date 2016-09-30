@@ -6,6 +6,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import groovy.transform.Memoized
 import groovy.util.logging.Slf4j
+import org.grails.asm.AnnotationMetadataReader
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.springframework.aop.config.AopConfigUtils
@@ -136,7 +137,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
         for (Resource res in resources) {
             // ignore closures / inner classes
             if(!res.filename.contains('$') && !res.filename.startsWith("gsp_")) {
-                def reader = readerFactory.getMetadataReader(res)
+                def reader = new AnnotationMetadataReader(res, classLoader)
                 def metadata = reader.annotationMetadata
                 if (metadata.annotationTypes.any() { String annotation -> annotation.startsWith('grails.') }) {
                     classes << classLoader.loadClass(reader.classMetadata.className)
