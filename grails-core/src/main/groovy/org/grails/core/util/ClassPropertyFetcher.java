@@ -15,23 +15,24 @@
  */
 package org.grails.core.util;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import grails.util.GrailsClassUtils;
-import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.Script;
+import org.codehaus.groovy.reflection.CachedClass;
+import org.codehaus.groovy.reflection.CachedField;
+import org.codehaus.groovy.reflection.CachedMethod;
+import org.codehaus.groovy.reflection.ClassInfo;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Accesses class "properties": static fields, static getters, instance fields
@@ -96,11 +97,8 @@ public class ClassPropertyFetcher {
     protected ClassPropertyFetcher(Class<?> clazz, ReferenceInstanceCallback callback) {
         this.clazz = clazz;
         this.callback = callback;
-        fieldCallback = new ReflectionUtils.FieldCallback() {
-            public void doWith(Field field) {
-                if (field.isSynthetic()) {
-                    return;
-                }
+        fieldCallback = new FieldCallback() {
+            public void doWith(CachedField field) {
                 final int modifiers = field.getModifiers();
                 if (!Modifier.isPublic(modifiers)) {
                     return;
@@ -120,16 +118,12 @@ public class ClassPropertyFetcher {
             }
         };
 
-        methodCallback = new ReflectionUtils.MethodCallback() {
-            public void doWith(Method method) throws IllegalArgumentException,
+        methodCallback = new MethodCallback() {
+            public void doWith(CachedMethod method) throws IllegalArgumentException,
                     IllegalAccessException {
-                if (method.isSynthetic()) {
-                    return;
-                }
-                int modifiers = method.getModifiers();
                 Class<?> returnType = method.getReturnType();
 
-                if (!Modifier.isPublic(modifiers)) {
+                if (!method.isPublic()) {
                     return;
                 }
                 if (returnType != Void.class && returnType != void.class) {
@@ -146,7 +140,7 @@ public class ClassPropertyFetcher {
                                     returnType == boolean.class)) {
                                 name = name.substring(2);
                             }
-                            if (Modifier.isStatic(modifiers)) {
+                            if (method.isStatic()) {
                                 GetterPropertyFetcher fetcher = new GetterPropertyFetcher(method, true);
                                 staticFetchers.put(name, fetcher);
                                 staticFetchers.put(StringUtils.uncapitalize(name),
@@ -180,6 +174,7 @@ public class ClassPropertyFetcher {
     }
 
     private void init() {
+        ClassInfo classInfo = ClassInfo.getClassInfo(clazz);
         Class<?> superclass = clazz.getSuperclass();
         while (superclass != Object.class && superclass != Script.class && superclass != GroovyObjectSupport.class && superclass != null) {
             ClassPropertyFetcher superFetcher = ClassPropertyFetcher.forClass(superclass);
@@ -188,8 +183,9 @@ public class ClassPropertyFetcher {
             superclass = superclass.getSuperclass();
         }
 
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
+        CachedClass cachedClass = classInfo.getCachedClass();
+        CachedField[] fields = cachedClass.getFields();
+        for (CachedField field : fields) {
             try {
                 fieldCallback.doWith(field);
             } catch (IllegalAccessException ex) {
@@ -198,8 +194,8 @@ public class ClassPropertyFetcher {
                                 + field.getName() + "': " + ex);
             }
         }
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
+        CachedMethod[] methods = cachedClass.getMethods();
+        for (CachedMethod method : methods) {
             try {
                 methodCallback.doWith(method);
             } catch (IllegalAccessException ex) {
@@ -307,23 +303,23 @@ public class ClassPropertyFetcher {
     }
 
     static class GetterPropertyFetcher implements PropertyFetcher {
-        private final Method readMethod;
+        private static final Object[] ZERO_ARGS = new Object[0];
+        private final CachedMethod readMethod;
         private final boolean staticMethod;
 
-        GetterPropertyFetcher(Method readMethod, boolean staticMethod) {
+        GetterPropertyFetcher(CachedMethod readMethod, boolean staticMethod) {
             this.readMethod = readMethod;
             this.staticMethod = staticMethod;
-            ReflectionUtils.makeAccessible(readMethod);
         }
 
         public Object get(ReferenceInstanceCallback callback)
                 throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
             if (staticMethod) {
-                return readMethod.invoke(null);
+                return readMethod.invoke(null, ZERO_ARGS);
             }
 
             if (callback != null) {
-                return readMethod.invoke(callback.getReferenceInstance());
+                return readMethod.invoke(callback.getReferenceInstance(), ZERO_ARGS);
             }
 
             return null;
@@ -335,23 +331,22 @@ public class ClassPropertyFetcher {
     }
 
     static class FieldReaderFetcher implements PropertyFetcher {
-        private final Field field;
+        private final CachedField field;
         private final boolean staticField;
 
-        public FieldReaderFetcher(Field field, boolean staticField) {
+        public FieldReaderFetcher(CachedField field, boolean staticField) {
             this.field = field;
             this.staticField = staticField;
-            ReflectionUtils.makeAccessible(field);
         }
 
         public Object get(ReferenceInstanceCallback callback)
                 throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
             if (staticField) {
-                return field.get(null);
+                return field.getProperty(null);
             }
 
             if (callback != null) {
-                return field.get(callback.getReferenceInstance());
+                return field.getProperty(callback.getReferenceInstance());
             }
 
             return null;
@@ -360,5 +355,12 @@ public class ClassPropertyFetcher {
         public Class<?> getPropertyType(String name) {
             return field.getType();
         }
+    }
+
+    private interface FieldCallback {
+        void doWith(CachedField field) throws IllegalAccessException;
+    }
+    private interface MethodCallback {
+        void doWith(CachedMethod field) throws IllegalAccessException;
     }
 }
