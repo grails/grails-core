@@ -336,7 +336,7 @@ subprojects { project ->
         if (isTravisBuild) {
             maxParallelForks = 2
             maxHeapSize = '768m'
-            minHeapSize = '128m'
+            minHeapSize = '256m'
             if(!isJava8Compatible) {
                 jvmArgs '-XX:MaxPermSize=256m'
             }

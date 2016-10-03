@@ -52,6 +52,7 @@ dependencies {
 test {
      maxParallelForks = isTravisBuild ? 2 : 4
      forkEvery = isTravisBuild ? 25 : 100
+     minHeapSize = '256m'
      if(!isTravisBuild) {
          maxHeapSize = '1024m'
      }
