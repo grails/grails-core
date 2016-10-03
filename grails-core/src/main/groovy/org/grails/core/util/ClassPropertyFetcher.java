@@ -20,15 +20,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import grails.util.GrailsClassUtils;
-import org.grails.beans.support.CachedIntrospectionResults;
+import grails.util.GrailsNameUtils;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.Script;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -45,11 +44,16 @@ import org.springframework.util.StringUtils;
  */
 public class ClassPropertyFetcher {
 
+    private static final Set<String> IGNORED_FIELD_NAMES = new HashSet<String>() {{
+        add("class");
+        add("metaClass");
+    }};
     private final Class<?> clazz;
-    final Map<String, PropertyFetcher> staticFetchers = new HashMap<String, PropertyFetcher>();
-    final Map<String, PropertyFetcher> instanceFetchers = new HashMap<String, PropertyFetcher>();
+    private final Map<String, PropertyFetcher> staticFetchers = new HashMap<>();
+    private final Map<String, PropertyFetcher> instanceFetchers = new HashMap<>();
     private final ReferenceInstanceCallback callback;
-    private PropertyDescriptor[] propertyDescriptors;
+    private final FieldCallback fieldCallback;
+    private final MethodCallback methodCallback;
 
     private static Map<Class<?>, ClassPropertyFetcher> cachedClassPropertyFetchers = new ConcurrentHashMap<Class<?>, ClassPropertyFetcher>();
 
@@ -92,27 +96,7 @@ public class ClassPropertyFetcher {
     protected ClassPropertyFetcher(Class<?> clazz, ReferenceInstanceCallback callback) {
         this.clazz = clazz;
         this.callback = callback;
-        init();
-    }
-
-    public Object getReference() {
-        if (callback != null) {
-            return callback.getReferenceInstance();
-        }
-        return null;
-    }
-
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return propertyDescriptors;
-    }
-
-    public boolean isReadableProperty(String name) {
-        return staticFetchers.containsKey(name)
-                || instanceFetchers.containsKey(name);
-    }
-
-    private void init() {
-        FieldCallback fieldCallback = new ReflectionUtils.FieldCallback() {
+        fieldCallback = new ReflectionUtils.FieldCallback() {
             public void doWith(Field field) {
                 if (field.isSynthetic()) {
                     return;
@@ -124,29 +108,31 @@ public class ClassPropertyFetcher {
 
                 final String name = field.getName();
                 if (name.indexOf('$') == -1) {
+                    if(IGNORED_FIELD_NAMES.contains(name)) return;
+
                     boolean staticField = Modifier.isStatic(modifiers);
                     if (staticField) {
-                        staticFetchers.put(name, new FieldReaderFetcher(field,
-                                staticField));
+                        staticFetchers.put(name, new FieldReaderFetcher(field,true));
                     } else {
-                        instanceFetchers.put(name, new FieldReaderFetcher(
-                                field, staticField));
+                        instanceFetchers.put(name, new FieldReaderFetcher(field, false));
                     }
                 }
             }
         };
 
-        MethodCallback methodCallback = new ReflectionUtils.MethodCallback() {
+        methodCallback = new ReflectionUtils.MethodCallback() {
             public void doWith(Method method) throws IllegalArgumentException,
                     IllegalAccessException {
                 if (method.isSynthetic()) {
                     return;
                 }
-                if (!Modifier.isPublic(method.getModifiers())) {
+                int modifiers = method.getModifiers();
+                Class<?> returnType = method.getReturnType();
+
+                if (!Modifier.isPublic(modifiers)) {
                     return;
                 }
-                if (Modifier.isStatic(method.getModifiers())
-                        && method.getReturnType() != Void.class) {
+                if (returnType != Void.class && returnType != void.class) {
                     if (method.getParameterTypes().length == 0) {
                         String name = method.getName();
                         if (name.indexOf('$') == -1) {
@@ -156,22 +142,46 @@ public class ClassPropertyFetcher {
                             } else if (name.length() > 2
                                     && name.startsWith("is")
                                     && Character.isUpperCase(name.charAt(2))
-                                    && (method.getReturnType() == Boolean.class ||
-                                        method.getReturnType() == boolean.class)) {
+                                    && (returnType == Boolean.class ||
+                                    returnType == boolean.class)) {
                                 name = name.substring(2);
                             }
-                            PropertyFetcher fetcher = new GetterPropertyFetcher(
-                                    method, true);
-                            staticFetchers.put(name, fetcher);
-                            staticFetchers.put(StringUtils.uncapitalize(name), fetcher);
+                            if (Modifier.isStatic(modifiers)) {
+                                GetterPropertyFetcher fetcher = new GetterPropertyFetcher(method, true);
+                                staticFetchers.put(name, fetcher);
+                                staticFetchers.put(StringUtils.uncapitalize(name),
+                                        fetcher);
+                            } else {
+                                instanceFetchers.put(StringUtils.uncapitalize(name),
+                                        new GetterPropertyFetcher(method, false));
+                            }
                         }
                     }
                 }
             }
         };
+        init();
+    }
 
+    public Object getReference() {
+        if (callback != null) {
+            return callback.getReferenceInstance();
+        }
+        return null;
+    }
+
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        return getPropertyDescriptors(clazz);
+    }
+
+    public boolean isReadableProperty(String name) {
+        return staticFetchers.containsKey(name)
+                || instanceFetchers.containsKey(name);
+    }
+
+    private void init() {
         Class<?> superclass = clazz.getSuperclass();
-        while (superclass != Object.class && superclass != null) {
+        while (superclass != Object.class && superclass != Script.class && superclass != GroovyObjectSupport.class && superclass != null) {
             ClassPropertyFetcher superFetcher = ClassPropertyFetcher.forClass(superclass);
             staticFetchers.putAll(superFetcher.staticFetchers);
             instanceFetchers.putAll(superFetcher.instanceFetchers);
@@ -199,35 +209,10 @@ public class ClassPropertyFetcher {
             }
         }
 
-        propertyDescriptors = getPropertyDescriptors(clazz);
-        for (PropertyDescriptor desc : propertyDescriptors) {
-            Method readMethod = desc.getReadMethod();
-            if (readMethod != null) {
-                boolean staticReadMethod = Modifier.isStatic(readMethod.getModifiers());
-                if (staticReadMethod) {
-                    staticFetchers.put(desc.getName(),
-                            new GetterPropertyFetcher(readMethod, staticReadMethod));
-                } else {
-                    instanceFetchers.put(desc.getName(),
-                            new GetterPropertyFetcher(readMethod, staticReadMethod));
-                }
-            }
-        }
     }
 
     private PropertyDescriptor[] getPropertyDescriptors(Class<?> clazz) {
-        return CachedIntrospectionResults.forClass(clazz).getPropertyDescriptors();
-    }
-
-    private List<Class<?>> resolveAllClasses(Class<?> c) {
-        List<Class<?>> list = new ArrayList<Class<?>>();
-        Class<?> currentClass = c;
-        while (currentClass != Object.class) {
-            list.add(currentClass);
-            currentClass = currentClass.getSuperclass();
-        }
-        Collections.reverse(list);
-        return list;
+        return BeanUtils.getPropertyDescriptors(clazz);
     }
 
     public Object getPropertyValue(String name) {
@@ -311,14 +296,14 @@ public class ClassPropertyFetcher {
         return null;
     }
 
-    public static interface ReferenceInstanceCallback {
-        public Object getReferenceInstance();
+    public interface ReferenceInstanceCallback {
+        Object getReferenceInstance();
     }
 
-    static interface PropertyFetcher {
-        public Object get(ReferenceInstanceCallback callback)
+    interface PropertyFetcher {
+        Object get(ReferenceInstanceCallback callback)
             throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
-        public Class<?> getPropertyType(String name);
+        Class<?> getPropertyType(String name);
     }
 
     static class GetterPropertyFetcher implements PropertyFetcher {
