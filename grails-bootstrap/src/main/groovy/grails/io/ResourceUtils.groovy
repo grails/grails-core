@@ -44,6 +44,7 @@ class ResourceUtils extends GrailsResourceUtils {
         File rootDir = baseDir ? new File(baseDir, "grails-app") : null
         Set<String> packageNames = []
         if (rootDir?.exists()) {
+            File[] allFiles = rootDir.listFiles()
             rootDir.eachDir { File dir ->
                 def dirName = dir.name
                 if (!dir.hidden && !dirName.startsWith('.') && !['conf', 'i18n', 'assets', 'views'].contains(dirName)) {
@@ -76,6 +77,11 @@ class ResourceUtils extends GrailsResourceUtils {
                             }
                         }
 
+                    }
+                }
+                else {
+                    if(dir.name.endsWith('.groovy') && prefix == "") {
+                        packageNames.add("")
                     }
                 }
             }
