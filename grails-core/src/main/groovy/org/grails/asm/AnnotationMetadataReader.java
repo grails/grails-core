@@ -1,5 +1,8 @@
 package org.grails.asm;
 
+import org.springframework.asm.AnnotationVisitor;
+import org.springframework.asm.SpringAsmInfo;
+import org.springframework.asm.Type;
 import org.springframework.core.NestedIOException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
@@ -24,8 +27,24 @@ public class AnnotationMetadataReader implements MetadataReader {
 
     private final AnnotationMetadata annotationMetadata;
 
-
+    /**
+     * Reads only the annotation names from a class resource
+     * @param resource The resource
+     * @param classLoader The classloader
+     * @throws IOException
+     */
     public AnnotationMetadataReader(Resource resource, ClassLoader classLoader) throws IOException {
+        this(resource, classLoader, false);
+    }
+    /**
+     * Constructs a new annotation metadata reader
+     *
+     * @param resource The resource
+     * @param classLoader The classloader
+     * @param readAttributeValues Whether to read the attributes in addition or just the annotation class names
+     * @throws IOException
+     */
+    public AnnotationMetadataReader(Resource resource, ClassLoader classLoader, boolean readAttributeValues) throws IOException {
         InputStream is = new BufferedInputStream(resource.getInputStream());
         ClassReader classReader;
         try {
@@ -39,7 +58,22 @@ public class AnnotationMetadataReader implements MetadataReader {
             is.close();
         }
 
-        AnnotationMetadataReadingVisitor visitor = new AnnotationMetadataReadingVisitor(classLoader);
+
+        AnnotationMetadataReadingVisitor visitor;
+
+        if(readAttributeValues) {
+            visitor = new AnnotationMetadataReadingVisitor(classLoader);
+        }
+        else {
+            visitor = new AnnotationMetadataReadingVisitor(classLoader) {
+                @Override
+                public AnnotationVisitor visitAnnotation(final String desc, boolean visible) {
+                    String className = Type.getType(desc).getClassName();
+                    this.annotationSet.add(className);
+                    return new EmptyAnnotationVisitor();
+                }
+            };
+        }
         classReader.accept(visitor, ClassReader.SKIP_DEBUG);
 
         this.annotationMetadata = visitor;
@@ -62,5 +96,22 @@ public class AnnotationMetadataReader implements MetadataReader {
     @Override
     public AnnotationMetadata getAnnotationMetadata() {
         return this.annotationMetadata;
+    }
+
+    private static class EmptyAnnotationVisitor extends AnnotationVisitor {
+
+        public EmptyAnnotationVisitor() {
+            super(SpringAsmInfo.ASM_VERSION);
+        }
+
+        @Override
+        public AnnotationVisitor visitAnnotation(String name, String desc) {
+            return this;
+        }
+
+        @Override
+        public AnnotationVisitor visitArray(String name) {
+            return this;
+        }
     }
 }
