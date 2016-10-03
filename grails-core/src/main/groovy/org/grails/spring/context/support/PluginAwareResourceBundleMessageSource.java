@@ -15,25 +15,29 @@
  */
 package org.grails.spring.context.support;
 
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
+import grails.core.GrailsApplicationClass;
 import grails.core.support.GrailsApplicationAware;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
-import grails.util.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import grails.util.BuildSettings;
+import grails.util.CacheEntry;
+import grails.util.Environment;
+import grails.util.GrailsStringUtils;
 import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
+import org.grails.core.support.internal.tools.ClassRelativeResourcePatternResolver;
 import org.grails.plugins.BinaryGrailsPlugin;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +63,8 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedBinaryPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private long pluginCacheMillis = Long.MIN_VALUE;
+    private boolean searchClasspath = false;
+    private String messageBundleLocationPattern = "classpath*:*.properties";
 
     @Deprecated
     public List<String> getPluginBaseNames() {
@@ -111,7 +117,20 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         else {
-            resources = resourceResolver.getResources("classpath*:**/*.properties");
+            if(searchClasspath) {
+                resources = resourceResolver.getResources(messageBundleLocationPattern);
+            }
+            else {
+                DefaultGrailsApplication defaultGrailsApplication = (DefaultGrailsApplication) application;
+                GrailsApplicationClass applicationClass = defaultGrailsApplication.getApplicationClass();
+                if(applicationClass != null) {
+                    ResourcePatternResolver resourcePatternResolver = new ClassRelativeResourcePatternResolver(applicationClass.getClass());
+                    resources = resourcePatternResolver.getResources(messageBundleLocationPattern);
+                }
+                else {
+                    resources = resourceResolver.getResources(messageBundleLocationPattern);
+                }
+            }
         }
 
         List<String> basenames = new ArrayList<String>();
@@ -261,5 +280,24 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      */
     public void setPluginCacheSeconds(int pluginCacheSeconds) {
         this.pluginCacheMillis = (pluginCacheSeconds * 1000);
-    }    
+    }
+
+    /**
+     * Whether to search the full classpath for message bundles. Enabling this will degrade startup performance.
+     * The default is to only search for message bundles relative to the application classes directory.
+     *
+     * @param searchClasspath True if the entire classpath should be searched
+     */
+    public void setSearchClasspath(boolean searchClasspath) {
+        this.searchClasspath = searchClasspath;
+    }
+
+    /**
+     * The location pattern for message bundles
+     *
+     * @param messageBundleLocationPattern The message bundle location pattern
+     */
+    public void setMessageBundleLocationPattern(String messageBundleLocationPattern) {
+        this.messageBundleLocationPattern = messageBundleLocationPattern;
+    }
 }
