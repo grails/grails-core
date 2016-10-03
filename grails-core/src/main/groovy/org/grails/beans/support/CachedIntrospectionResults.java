@@ -66,7 +66,9 @@ import java.util.concurrent.ConcurrentMap;
  * @see #acceptClassLoader(ClassLoader)
  * @see #clearClassLoader(ClassLoader)
  * @see #forClass(Class)
+ * @deprecated Will be removed in a future version of Grails
  */
+@Deprecated
 public class CachedIntrospectionResults {
 
     /**
