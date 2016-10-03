@@ -7,13 +7,7 @@ import java.text.DecimalFormatSymbols
 
 import org.grails.taglib.GrailsTagException
 
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.time.OffsetTime
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import java.time.*
 
 /**
  * Tests for the FormatTagLib.

@@ -15,7 +15,7 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.JavaVersion
+import grails.internal.JavaVersion
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
@@ -35,7 +35,6 @@ import org.springframework.util.StringUtils
 
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
 
