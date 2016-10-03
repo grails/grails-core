@@ -91,12 +91,21 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected Class<?>[] allArtefactClassesArray;
     protected Resource[] resources;
     protected boolean initialised = false;
+    protected GrailsApplicationClass applicationClass;
 
     /**
      * Creates a new empty Grails application.
      */
     public DefaultGrailsApplication() {
         this(new GroovyClassLoader());
+    }
+
+    /**
+     * Creates a new empty Grails application.
+     */
+    public DefaultGrailsApplication(GrailsApplicationClass applicationClass) {
+        this(new GroovyClassLoader());
+        this.applicationClass = applicationClass;
     }
     
     public DefaultGrailsApplication(ClassLoader classLoader) {
@@ -166,6 +175,13 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
             }
             loadedClasses.add(aClass);
         }
+    }
+
+    /**
+     * @return The application class
+     */
+    public GrailsApplicationClass getApplicationClass() {
+        return applicationClass;
     }
 
     /**
