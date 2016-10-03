@@ -15,13 +15,10 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.JavaVersion
+import grails.internal.JavaVersion
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.convert.support.DefaultConversionService
-import org.springframework.core.convert.support.GenericConversionService
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
@@ -42,12 +39,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.temporal.Temporal
+import java.time.*
 import java.time.temporal.TemporalAccessor
 
 /**

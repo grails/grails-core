@@ -15,7 +15,7 @@
  */
 package org.grails.plugins.databinding
 
-import grails.JavaVersion
+import grails.internal.JavaVersion
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
