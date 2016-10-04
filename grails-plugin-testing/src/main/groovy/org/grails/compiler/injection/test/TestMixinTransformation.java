@@ -217,7 +217,7 @@ public class TestMixinTransformation implements ASTTransformation{
         
         boolean implementsTestRuntimeAwareMixin = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(TestRuntimeAwareMixin.class)) != null;
         
-        FieldNode mixinFieldNode = null;
+        FieldNode mixinFieldNode;
         if(!implementsTestRuntimeAwareMixin) { 
             mixinFieldNode = addLegacyMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName);
         } else {
@@ -395,7 +395,7 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     static protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
-        return classNode.hasDeclaredMethod(mixinMethod.getName(), mixinMethod.getParameters());
+        return classNode.hasMethod(mixinMethod.getName(), mixinMethod.getParameters());
     }
 
     static protected boolean hasAnnotation(MethodNode mixinMethod, Class<?> beforeClass) {
