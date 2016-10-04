@@ -20,13 +20,14 @@ import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
-import org.apache.commons.logging.LogFactory
+import groovy.util.logging.Slf4j
 import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource
 import org.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource
-import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
+
+import java.nio.file.Files
 
 /**
  * Configures Grails' internationalisation support.
@@ -34,9 +35,9 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver
  * @author Graeme Rocher
  * @since 0.4
  */
+@Slf4j
 class I18nGrailsPlugin extends Plugin {
 
-    private static LOG = LogFactory.getLog(this)
     public static final String I18N_CACHE_SECONDS = 'grails.i18n.cache.seconds'
     public static final String I18N_FILE_CACHE_SECONDS = 'grails.i18n.filecache.seconds'
 
@@ -98,19 +99,16 @@ class I18nGrailsPlugin extends Plugin {
         def ctx = applicationContext
         def application = grailsApplication
         if (!ctx) {
-            LOG.debug("Application context not found. Can't reload")
+            log.debug("Application context not found. Can't reload")
             return
         }
 
-        if(!ClassUtils.isPresent("groovy.util.AntBuilder", grailsApplication.classLoader)) return
-
-        def nativeascii = application.config.getProperty('grails.enable.native2ascii', Boolean, true)
+        boolean nativeascii = application.config.getProperty('grails.enable.native2ascii', Boolean, true)
         def resourcesDir = BuildSettings.RESOURCES_DIR
         def classesDir = BuildSettings.CLASSES_DIR
 
         if (resourcesDir.exists() && event.source instanceof Resource) {
             File eventFile = event.source.file.canonicalFile
-            def ant = getClass().classLoader.loadClass("groovy.util.AntBuilder").newInstance()
             File i18nDir = eventFile.parentFile
             if (isChildOfFile(eventFile, i18nDir)) {
                 if( i18nDir.name == 'i18n' && i18nDir.parentFile.name == 'grails-app') {
@@ -118,8 +116,28 @@ class I18nGrailsPlugin extends Plugin {
                     resourcesDir = new File(appDir, BuildSettings.BUILD_RESOURCES_PATH)
                     classesDir = new File(appDir, BuildSettings.BUILD_CLASSES_PATH)
                 }
-                executeMessageBundleCopy(ant, eventFile, i18nDir, resourcesDir, nativeascii)
-                executeMessageBundleCopy(ant, eventFile, i18nDir, classesDir, nativeascii)
+
+                if(nativeascii) {
+                    // if native2ascii is enabled then read the properties and write them out again
+                    // so that unicode escaping is applied
+                    def properties = new Properties()
+                    eventFile.withReader {
+                        properties.load(it)
+                    }
+                    // by using an OutputStream the unicode characters will be escaped
+                    new File(resourcesDir, eventFile.name).withOutputStream {
+                        properties.store(it, "")
+                    }
+                    new File(classesDir, eventFile.name).withOutputStream {
+                        properties.store(it, "")
+                    }
+                }
+                else {
+                    // otherwise just copy the file as is
+                    Files.copy( eventFile.toPath(),new File(resourcesDir, eventFile.name).toPath() )
+                    Files.copy( eventFile.toPath(),new File(classesDir, eventFile.name).toPath() )
+                }
+
             }
         }
 
@@ -129,23 +147,4 @@ class I18nGrailsPlugin extends Plugin {
         }
     }
 
-    private void executeMessageBundleCopy(ant, File eventFile, File i18nDir, File targetDir, boolean nativeascii) {
-        def eventFileRelative = relativePath(i18nDir, eventFile)
-
-        if (nativeascii) {
-            ant.copy(todir: targetDir, encoding: "UTF-8") {
-
-                fileset(dir: i18nDir) {
-                    include name: eventFileRelative
-                }
-                filterchain {
-                    filterreader(classname: 'org.apache.tools.ant.filters.EscapeUnicode')
-                }
-            }
-        } else {
-            ant.copy(todir: targetDir) {
-                fileset(dir: i18nDir, includes: eventFileRelative)
-            }
-        }
-    }
 }
