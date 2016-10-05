@@ -15,28 +15,20 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.internal.JavaVersion
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
-
+import org.grails.plugins.web.GrailsTagDateHelper
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
-
-import org.apache.commons.lang.time.FastDateFormat
 import org.grails.encoder.CodecLookup
 import org.grails.encoder.Encoder
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.util.StringUtils
-
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalAccessor
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
@@ -55,6 +47,7 @@ class FormatTagLib implements TagLibrary {
 
     MessageSource messageSource
     CodecLookup codecLookup
+    GrailsTagDateHelper grailsTagDateHelper
 
     @CompileStatic
     String messageHelper(String code, Object defaultMessage = null, List args = null, Locale locale = null) {
@@ -157,8 +150,8 @@ class FormatTagLib implements TagLibrary {
         }
 
         def locale = resolveLocale(attrs.locale)
-        String timeStyle
-        String dateStyle
+        String timeStyle = null
+        String dateStyle = null
         if (attrs.style != null) {
             String style = attrs.style.toString().toUpperCase()
             timeStyle = style
@@ -174,15 +167,7 @@ class FormatTagLib implements TagLibrary {
         String type = attrs.type?.toString()?.toUpperCase()
         def formatName = attrs.formatName
         String format = attrs.format
-        def timeZone = attrs.timeZone
-        if (timeZone != null) {
-            if (!(timeZone instanceof TimeZone)) {
-                timeZone = TimeZone.getTimeZone(timeZone as String)
-            }
-        }
-        else {
-            timeZone = TimeZone.getDefault()
-        }
+        def timeZone = grailsTagDateHelper.getTimeZone(attrs.timeZone)
 
         def dateFormat
         if (!type) {
@@ -195,43 +180,22 @@ class FormatTagLib implements TagLibrary {
             else if (!format) {
                 format = messageHelper('date.format', { messageHelper('default.date.format', 'yyyy-MM-dd HH:mm:ss z', null, locale) }, null, locale)
             }
-            if (JavaVersion.isAtLeast(1,8) && date instanceof TemporalAccessor) {
-                dateFormat = DateTimeFormatter.ofPattern(format, locale).withZone(timeZone.toZoneId())
-            } else {
-                dateFormat = FastDateFormat.getInstance(format, timeZone, locale)
-            }
+
+            dateFormat = grailsTagDateHelper.getFormatFromPattern(format, timeZone, locale)
         }
         else {
-            if (JavaVersion.isAtLeast(1,8) && date instanceof TemporalAccessor) {
-                if (date instanceof LocalDateTime) {
-                    date = date.atZone(timeZone.toZoneId())
-                } else if (date instanceof LocalDate) {
-                    date = date.atStartOfDay(timeZone.toZoneId())
-                }
-                date = Date.from(date.toInstant())
-            }
-
             if (type=='DATE') {
-                dateFormat = FastDateFormat.getDateInstance(parseStyle(dateStyle), timeZone, locale)
+                dateFormat = grailsTagDateHelper.getDateFormat(dateStyle, timeZone, locale)
             }
             else if (type=='TIME') {
-                dateFormat = FastDateFormat.getTimeInstance(parseStyle(timeStyle), timeZone, locale)
+                dateFormat = grailsTagDateHelper.getTimeFormat(timeStyle, timeZone, locale)
             }
             else { // 'both' or 'datetime'
-                dateFormat = FastDateFormat.getDateTimeInstance(parseStyle(dateStyle), parseStyle(timeStyle), timeZone, locale)
+                dateFormat = grailsTagDateHelper.getDateTimeFormat(dateStyle, timeStyle, timeZone, locale)
             }
         }
 
-        return dateFormat.format(date)
-    }
-
-    def parseStyle(styleStr) {
-        switch (styleStr) {
-            case 'FULL':   return FastDateFormat.FULL
-            case 'LONG':   return FastDateFormat.LONG
-            case 'MEDIUM': return FastDateFormat.MEDIUM
-            default:       return FastDateFormat.SHORT
-        }
+        return grailsTagDateHelper.format(dateFormat, date)
     }
 
     /**

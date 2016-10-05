@@ -15,10 +15,10 @@
  */
 package org.grails.plugins.web.taglib
 
-import grails.internal.JavaVersion
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
+import org.grails.plugins.web.GrailsTagDateHelper
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
@@ -39,9 +39,6 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
-import java.time.*
-import java.time.temporal.TemporalAccessor
-
 /**
  * Tags for working with form controls.
  *
@@ -57,6 +54,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
     ConversionService conversionService
+    GrailsTagDateHelper grailsTagDateHelper
     
     CodecLookup codecLookup
     
@@ -581,14 +579,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
                 xdefault = DateFormat.getInstance().parse(xdefault)
 
             }
-            else if (!(xdefault instanceof Date)) {
-                if (JavaVersion.isAtLeast(1,8)) {
-                    if (!(xdefault instanceof TemporalAccessor)) {
-                        throwTagError("Tag [datePicker] requires the default date to be a parseable String, Date, or a Temporal")
-                    }
-                } else {
-                    throwTagError("Tag [datePicker] requires the default date to be a parseable String or a Date")
-                }
+            else if (!grailsTagDateHelper.supportsDatePicker(xdefault.class)) {
+                throwTagError("Tag [datePicker] the default date is not a supported class")
             }
         }
         else {
@@ -642,20 +634,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
             c = value
         }
         else if (value != null) {
-            if (JavaVersion.isAtLeast(1,8) && value instanceof TemporalAccessor) {
-                ZonedDateTime zonedDateTime
-                if (value instanceof LocalDateTime) {
-                    zonedDateTime = ZonedDateTime.of(value, ZoneId.systemDefault())
-                } else if (value instanceof LocalDate) {
-                    zonedDateTime = ZonedDateTime.of(value, LocalTime.MIN, ZoneId.systemDefault())
-                } else {
-                    zonedDateTime = ZonedDateTime.from(value)
-                }
-                c = GregorianCalendar.from(zonedDateTime)
-            } else if (value instanceof Date) {
-                c = new GregorianCalendar()
-                c.setTime(value)
-            }
+            c = grailsTagDateHelper.buildCalendar(value)
         }
 
         if (c != null) {
