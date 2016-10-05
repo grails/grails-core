@@ -15,12 +15,10 @@
  */
 package org.grails.plugins.databinding
 
-import grails.internal.JavaVersion
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
-import org.grails.databinding.converters.web.Jsr310ConvertersConfiguration
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
