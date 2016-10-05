@@ -31,7 +31,7 @@ public class DefaultGrailsServiceClass extends AbstractInjectableGrailsClass imp
     public DefaultGrailsServiceClass(Class<?> clazz) {
         super(clazz, SERVICE);
 
-        Boolean tmpTransactional = getPropertyOrStaticPropertyOrFieldValue(TRANSACTIONAL, Boolean.class);
+        Object tmpTransactional = getStaticPropertyValue(TRANSACTIONAL, Boolean.class);
         transactional = Boolean.TRUE.equals(tmpTransactional);
     }
 

@@ -9,6 +9,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import groovy.transform.Memoized
 import groovy.util.logging.Slf4j
+import org.grails.asm.AnnotationMetadataReader
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.springframework.aop.config.AopConfigUtils
@@ -33,6 +34,7 @@ import java.lang.reflect.Field
  *
  */
 @CompileStatic
+@Slf4j
 class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationContextAware {
 
     private static final String APC_PRIORITY_LIST_FIELD = "APC_PRIORITY_LIST";
@@ -77,15 +79,24 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
             if(ignoredRootPackages().contains(pkg)) {
                continue
             }
-            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
-                    ClassUtils.convertClassNameToResourcePath(pkg) + Settings.CLASS_RESOURCE_PATTERN;
+            // if it is the default package
+            if(pkg == "") {
+                // try the default package in case of a script without recursing into subpackages
+                log.error("The application defines a Groovy source using the default package. Please move all Groovy sources into a package.")
+                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
+                classes.addAll scanUsingPattern(pattern, readerFactory)
+            }
+            else {
 
-            classes.addAll scanUsingPattern(pattern, readerFactory)
+                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+                        ClassUtils.convertClassNameToResourcePath(pkg) + Settings.CLASS_RESOURCE_PATTERN;
+
+
+                classes.addAll scanUsingPattern(pattern, readerFactory)
+            }
+
         }
 
-        // try the default package in case of a script without recursing into subpackages
-        String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
-        classes.addAll scanUsingPattern(pattern, readerFactory)
 
         def classLoader = Thread.currentThread().contextClassLoader
         for(cls in AbstractGrailsArtefactTransformer.transformedClassNames) {
@@ -139,7 +150,7 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
         for (Resource res in resources) {
             // ignore closures / inner classes
             if(!res.filename.contains('$') && !res.filename.startsWith("gsp_")) {
-                def reader = readerFactory.getMetadataReader(res)
+                def reader = new AnnotationMetadataReader(res, classLoader)
                 def metadata = reader.annotationMetadata
                 if (metadata.annotationTypes.any() { String annotation -> annotation.startsWith('grails.') }) {
                     classes << classLoader.loadClass(reader.classMetadata.className)
@@ -234,10 +245,10 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
 
             this.rootResource = getURLs()[0]
             this.applicationClass = applicationClass
-            def urlStr = rootResource.toString()
+            String urlStr = rootResource.toString()
             jarDeployed = urlStr.startsWith("jar:")
             try {
-                def withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
+                URL withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
                 addURL(withoutBang)
 
             } catch (MalformedURLException e) {

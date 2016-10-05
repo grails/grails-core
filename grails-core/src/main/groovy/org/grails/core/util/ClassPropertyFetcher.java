@@ -15,24 +15,24 @@
  */
 package org.grails.core.util;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import grails.util.GrailsClassUtils;
-import org.grails.beans.support.CachedIntrospectionResults;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.ReflectionUtils.MethodCallback;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.Script;
+import org.codehaus.groovy.reflection.CachedClass;
+import org.codehaus.groovy.reflection.CachedField;
+import org.codehaus.groovy.reflection.CachedMethod;
+import org.codehaus.groovy.reflection.ClassInfo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.StringUtils;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Accesses class "properties": static fields, static getters, instance fields
@@ -45,11 +45,16 @@ import org.springframework.util.StringUtils;
  */
 public class ClassPropertyFetcher {
 
+    private static final Set<String> IGNORED_FIELD_NAMES = new HashSet<String>() {{
+        add("class");
+        add("metaClass");
+    }};
     private final Class<?> clazz;
-    final Map<String, PropertyFetcher> staticFetchers = new HashMap<String, PropertyFetcher>();
-    final Map<String, PropertyFetcher> instanceFetchers = new HashMap<String, PropertyFetcher>();
+    private final Map<String, PropertyFetcher> staticFetchers = new HashMap<>();
+    private final Map<String, PropertyFetcher> instanceFetchers = new HashMap<>();
     private final ReferenceInstanceCallback callback;
-    private PropertyDescriptor[] propertyDescriptors;
+    private final FieldCallback fieldCallback;
+    private final MethodCallback methodCallback;
 
     private static Map<Class<?>, ClassPropertyFetcher> cachedClassPropertyFetchers = new ConcurrentHashMap<Class<?>, ClassPropertyFetcher>();
 
@@ -92,6 +97,63 @@ public class ClassPropertyFetcher {
     protected ClassPropertyFetcher(Class<?> clazz, ReferenceInstanceCallback callback) {
         this.clazz = clazz;
         this.callback = callback;
+        fieldCallback = new FieldCallback() {
+            public void doWith(CachedField field) {
+                final int modifiers = field.getModifiers();
+                if (!Modifier.isPublic(modifiers)) {
+                    return;
+                }
+
+                final String name = field.getName();
+                if (name.indexOf('$') == -1) {
+                    if(IGNORED_FIELD_NAMES.contains(name)) return;
+
+                    boolean staticField = Modifier.isStatic(modifiers);
+                    if (staticField) {
+                        staticFetchers.put(name, new FieldReaderFetcher(field,true));
+                    } else {
+                        instanceFetchers.put(name, new FieldReaderFetcher(field, false));
+                    }
+                }
+            }
+        };
+
+        methodCallback = new MethodCallback() {
+            public void doWith(CachedMethod method) throws IllegalArgumentException,
+                    IllegalAccessException {
+                Class<?> returnType = method.getReturnType();
+
+                if (!method.isPublic()) {
+                    return;
+                }
+                if (returnType != Void.class && returnType != void.class) {
+                    if (method.getParameterTypes().length == 0) {
+                        String name = method.getName();
+                        if (name.indexOf('$') == -1) {
+                            if (name.length() > 3 && name.startsWith("get")
+                                    && Character.isUpperCase(name.charAt(3))) {
+                                name = name.substring(3);
+                            } else if (name.length() > 2
+                                    && name.startsWith("is")
+                                    && Character.isUpperCase(name.charAt(2))
+                                    && (returnType == Boolean.class ||
+                                    returnType == boolean.class)) {
+                                name = name.substring(2);
+                            }
+                            if (method.isStatic()) {
+                                GetterPropertyFetcher fetcher = new GetterPropertyFetcher(method, true);
+                                staticFetchers.put(name, fetcher);
+                                staticFetchers.put(StringUtils.uncapitalize(name),
+                                        fetcher);
+                            } else {
+                                instanceFetchers.put(StringUtils.uncapitalize(name),
+                                        new GetterPropertyFetcher(method, false));
+                            }
+                        }
+                    }
+                }
+            }
+        };
         init();
     }
 
@@ -103,7 +165,7 @@ public class ClassPropertyFetcher {
     }
 
     public PropertyDescriptor[] getPropertyDescriptors() {
-        return propertyDescriptors;
+        return getPropertyDescriptors(clazz);
     }
 
     public boolean isReadableProperty(String name) {
@@ -112,117 +174,41 @@ public class ClassPropertyFetcher {
     }
 
     private void init() {
-        FieldCallback fieldCallback = new ReflectionUtils.FieldCallback() {
-            public void doWith(Field field) {
-                if (field.isSynthetic()) {
-                    return;
-                }
-                final int modifiers = field.getModifiers();
-                if (!Modifier.isPublic(modifiers)) {
-                    return;
-                }
+        ClassInfo classInfo = ClassInfo.getClassInfo(clazz);
+        Class<?> superclass = clazz.getSuperclass();
+        while (superclass != Object.class && superclass != Script.class && superclass != GroovyObjectSupport.class && superclass != null) {
+            ClassPropertyFetcher superFetcher = ClassPropertyFetcher.forClass(superclass);
+            staticFetchers.putAll(superFetcher.staticFetchers);
+            instanceFetchers.putAll(superFetcher.instanceFetchers);
+            superclass = superclass.getSuperclass();
+        }
 
-                final String name = field.getName();
-                if (name.indexOf('$') == -1) {
-                    boolean staticField = Modifier.isStatic(modifiers);
-                    if (staticField) {
-                        staticFetchers.put(name, new FieldReaderFetcher(field,
-                                staticField));
-                    } else {
-                        instanceFetchers.put(name, new FieldReaderFetcher(
-                                field, staticField));
-                    }
-                }
+        CachedClass cachedClass = classInfo.getCachedClass();
+        CachedField[] fields = cachedClass.getFields();
+        for (CachedField field : fields) {
+            try {
+                fieldCallback.doWith(field);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(
+                        "Shouldn't be illegal to access field '"
+                                + field.getName() + "': " + ex);
             }
-        };
-
-        MethodCallback methodCallback = new ReflectionUtils.MethodCallback() {
-            public void doWith(Method method) throws IllegalArgumentException,
-                    IllegalAccessException {
-                if (method.isSynthetic()) {
-                    return;
-                }
-                if (!Modifier.isPublic(method.getModifiers())) {
-                    return;
-                }
-                if (Modifier.isStatic(method.getModifiers())
-                        && method.getReturnType() != Void.class) {
-                    if (method.getParameterTypes().length == 0) {
-                        String name = method.getName();
-                        if (name.indexOf('$') == -1) {
-                            if (name.length() > 3 && name.startsWith("get")
-                                    && Character.isUpperCase(name.charAt(3))) {
-                                name = name.substring(3);
-                            } else if (name.length() > 2
-                                    && name.startsWith("is")
-                                    && Character.isUpperCase(name.charAt(2))
-                                    && (method.getReturnType() == Boolean.class ||
-                                        method.getReturnType() == boolean.class)) {
-                                name = name.substring(2);
-                            }
-                            PropertyFetcher fetcher = new GetterPropertyFetcher(
-                                    method, true);
-                            staticFetchers.put(name, fetcher);
-                            staticFetchers.put(StringUtils.uncapitalize(name), fetcher);
-                        }
-                    }
-                }
-            }
-        };
-
-        List<Class<?>> allClasses = resolveAllClasses(clazz);
-        for (Class<?> c : allClasses) {
-            Field[] fields = c.getDeclaredFields();
-            for (Field field : fields) {
-                try {
-                    fieldCallback.doWith(field);
-                } catch (IllegalAccessException ex) {
-                    throw new IllegalStateException(
-                            "Shouldn't be illegal to access field '"
-                                    + field.getName() + "': " + ex);
-                }
-            }
-            Method[] methods = c.getDeclaredMethods();
-            for (Method method : methods) {
-                try {
-                    methodCallback.doWith(method);
-                } catch (IllegalAccessException ex) {
-                    throw new IllegalStateException(
-                            "Shouldn't be illegal to access method '"
-                                    + method.getName() + "': " + ex);
-                }
+        }
+        CachedMethod[] methods = cachedClass.getMethods();
+        for (CachedMethod method : methods) {
+            try {
+                methodCallback.doWith(method);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(
+                        "Shouldn't be illegal to access method '"
+                                + method.getName() + "': " + ex);
             }
         }
 
-        propertyDescriptors = getPropertyDescriptors(clazz);
-        for (PropertyDescriptor desc : propertyDescriptors) {
-            Method readMethod = desc.getReadMethod();
-            if (readMethod != null) {
-                boolean staticReadMethod = Modifier.isStatic(readMethod.getModifiers());
-                if (staticReadMethod) {
-                    staticFetchers.put(desc.getName(),
-                            new GetterPropertyFetcher(readMethod, staticReadMethod));
-                } else {
-                    instanceFetchers.put(desc.getName(),
-                            new GetterPropertyFetcher(readMethod, staticReadMethod));
-                }
-            }
-        }
     }
 
     private PropertyDescriptor[] getPropertyDescriptors(Class<?> clazz) {
-        return CachedIntrospectionResults.forClass(clazz).getPropertyDescriptors();
-    }
-
-    private List<Class<?>> resolveAllClasses(Class<?> c) {
-        List<Class<?>> list = new ArrayList<Class<?>>();
-        Class<?> currentClass = c;
-        while (currentClass != null) {
-            list.add(currentClass);
-            currentClass = currentClass.getSuperclass();
-        }
-        Collections.reverse(list);
-        return list;
+        return BeanUtils.getPropertyDescriptors(clazz);
     }
 
     public Object getPropertyValue(String name) {
@@ -306,34 +292,34 @@ public class ClassPropertyFetcher {
         return null;
     }
 
-    public static interface ReferenceInstanceCallback {
-        public Object getReferenceInstance();
+    public interface ReferenceInstanceCallback {
+        Object getReferenceInstance();
     }
 
-    static interface PropertyFetcher {
-        public Object get(ReferenceInstanceCallback callback)
+    interface PropertyFetcher {
+        Object get(ReferenceInstanceCallback callback)
             throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
-        public Class<?> getPropertyType(String name);
+        Class<?> getPropertyType(String name);
     }
 
     static class GetterPropertyFetcher implements PropertyFetcher {
-        private final Method readMethod;
+        private static final Object[] ZERO_ARGS = new Object[0];
+        private final CachedMethod readMethod;
         private final boolean staticMethod;
 
-        GetterPropertyFetcher(Method readMethod, boolean staticMethod) {
+        GetterPropertyFetcher(CachedMethod readMethod, boolean staticMethod) {
             this.readMethod = readMethod;
             this.staticMethod = staticMethod;
-            ReflectionUtils.makeAccessible(readMethod);
         }
 
         public Object get(ReferenceInstanceCallback callback)
                 throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
             if (staticMethod) {
-                return readMethod.invoke(null);
+                return readMethod.invoke(null, ZERO_ARGS);
             }
 
             if (callback != null) {
-                return readMethod.invoke(callback.getReferenceInstance());
+                return readMethod.invoke(callback.getReferenceInstance(), ZERO_ARGS);
             }
 
             return null;
@@ -345,23 +331,22 @@ public class ClassPropertyFetcher {
     }
 
     static class FieldReaderFetcher implements PropertyFetcher {
-        private final Field field;
+        private final CachedField field;
         private final boolean staticField;
 
-        public FieldReaderFetcher(Field field, boolean staticField) {
+        public FieldReaderFetcher(CachedField field, boolean staticField) {
             this.field = field;
             this.staticField = staticField;
-            ReflectionUtils.makeAccessible(field);
         }
 
         public Object get(ReferenceInstanceCallback callback)
                 throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
             if (staticField) {
-                return field.get(null);
+                return field.getProperty(null);
             }
 
             if (callback != null) {
-                return field.get(callback.getReferenceInstance());
+                return field.getProperty(callback.getReferenceInstance());
             }
 
             return null;
@@ -370,5 +355,12 @@ public class ClassPropertyFetcher {
         public Class<?> getPropertyType(String name) {
             return field.getType();
         }
+    }
+
+    private interface FieldCallback {
+        void doWith(CachedField field) throws IllegalAccessException;
+    }
+    private interface MethodCallback {
+        void doWith(CachedMethod field) throws IllegalAccessException;
     }
 }
