@@ -1,12 +1,8 @@
 package org.grails.web.taglib
 
-import org.junit.Ignore
 
 import java.text.DateFormat
 import org.w3c.dom.Document
-
-import java.time.*
-import java.time.temporal.TemporalAccessor
 
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the
@@ -52,18 +48,15 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     void testDatePickerTagWithCustomDate() {
         testDatePickerTag(new Date(0), null)
     }
-
-    @Ignore
+    /*
     void testDatePickerTagWithLocalDateTime() {
         testDatePickerTag(LocalDateTime.now(), null)
     }
 
-    @Ignore
     void testDatePickerTagWithLocalDate() {
         testDatePickerTag(LocalDate.now(), null)
     }
 
-    @Ignore
     void testDatePickerTagWithLocalTime() {
         try {
             testDatePickerTag(LocalTime.now(), null)
@@ -72,12 +65,10 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         }
     }
 
-    @Ignore
     void testDatePickerTagWithOffsetDateTime() {
         testDatePickerTag(OffsetDateTime.now(), null)
     }
 
-    @Ignore
     void testDatePickerTagWithOffsetTime() {
         try {
             testDatePickerTag(OffsetTime.now(), null)
@@ -87,12 +78,10 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
 
     }
 
-    @Ignore
     void testDatePickerTagWithZonedDateTime() {
         testDatePickerTag(ZonedDateTime.now(), null)
-    }
+    }*/
 
-    @Ignore
     void testDatePickerTagWithDefault() {
         def defaultDate = Calendar.getInstance()
         defaultDate.add(Calendar.DAY_OF_MONTH, 7)
@@ -161,7 +150,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         if (date != null) {
             if (date instanceof Date) {
                 calendar.setTime(date)
-            } else if (date instanceof TemporalAccessor) {
+            } /*else if (date instanceof TemporalAccessor) {
                 ZonedDateTime zonedDateTime
                 if (date instanceof LocalDateTime) {
                     zonedDateTime = ZonedDateTime.of(date, ZoneId.systemDefault())
@@ -171,7 +160,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
                     zonedDateTime = ZonedDateTime.from(date)
                 }
                 calendar = GregorianCalendar.from(zonedDateTime)
-            }
+            }*/
         }
 
         // validate id attributes
