@@ -19,6 +19,7 @@ import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.core.util.ClassPropertyFetcher
 import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfigUtilities
@@ -70,7 +71,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             this.applicationClass = null
         }
         this.classes = classes != null ? classes : [] as Class[]
-        grailsApplication = new DefaultGrailsApplication()
+        grailsApplication = applicationClass != null ? new DefaultGrailsApplication(applicationClass) : new DefaultGrailsApplication()
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
             setApplicationContext(applicationContext)
@@ -89,6 +90,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         loadApplicationConfig()
         customizeGrailsApplication(grailsApplication)
         performGrailsInitializationSequence()
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
 
     protected void customizePluginManager(GrailsPluginManager grailsApplication) {

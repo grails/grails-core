@@ -98,7 +98,11 @@ class ApplicationClassInjector implements GrailsArtefactClassInjector {
                     def grailsAppDir = GrailsResourceUtils.getAppDir(new UrlResource(GrailsASTUtils.getSourceUrl(source)))
                     if(grailsAppDir.exists()) {
 
-                        def packageNames = ResourceUtils.getProjectPackageNames(grailsAppDir.file.parentFile).collect() { String str -> new ConstantExpression(str) }
+                        def packageNames = ResourceUtils.getProjectPackageNames(grailsAppDir.file.parentFile)
+                                                        .collect() { String str -> new ConstantExpression(str) }
+                        if(packageNames.any() { ConstantExpression packageName -> ['org','com','io','net'].contains(packageName.text) }) {
+                            GrailsASTUtils.error(source, classNode, "Do not place Groovy sources in common package names such as 'org', 'com', 'io' or 'net' as this can result in performance degradation of classpath scanning")
+                        }
                         packageNamesBody.addStatement(new ReturnStatement(new ExpressionStatement(new ListExpression(packageNames.toList()))))
                         classNode.addMethod("packageNames", Modifier.PUBLIC, collectionClassNode, ZERO_PARAMETERS, null, packageNamesBody)
                     }
