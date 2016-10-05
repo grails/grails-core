@@ -1,5 +1,7 @@
 package org.grails.web.taglib
 
+import org.junit.Ignore
+
 import java.text.DateFormat
 import org.w3c.dom.Document
 
@@ -51,14 +53,17 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         testDatePickerTag(new Date(0), null)
     }
 
+    @Ignore
     void testDatePickerTagWithLocalDateTime() {
         testDatePickerTag(LocalDateTime.now(), null)
     }
 
+    @Ignore
     void testDatePickerTagWithLocalDate() {
         testDatePickerTag(LocalDate.now(), null)
     }
 
+    @Ignore
     void testDatePickerTagWithLocalTime() {
         try {
             testDatePickerTag(LocalTime.now(), null)
@@ -67,10 +72,12 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         }
     }
 
+    @Ignore
     void testDatePickerTagWithOffsetDateTime() {
         testDatePickerTag(OffsetDateTime.now(), null)
     }
 
+    @Ignore
     void testDatePickerTagWithOffsetTime() {
         try {
             testDatePickerTag(OffsetTime.now(), null)
@@ -80,10 +87,12 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
 
     }
 
+    @Ignore
     void testDatePickerTagWithZonedDateTime() {
         testDatePickerTag(ZonedDateTime.now(), null)
     }
 
+    @Ignore
     void testDatePickerTagWithDefault() {
         def defaultDate = Calendar.getInstance()
         defaultDate.add(Calendar.DAY_OF_MONTH, 7)
