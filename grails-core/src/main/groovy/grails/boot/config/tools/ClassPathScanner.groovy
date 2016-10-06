@@ -28,6 +28,41 @@ import java.lang.annotation.Annotation
 class ClassPathScanner {
     private static final List DEFAULT_IGNORED_ROOT_PACKAGES = ['com', 'org', 'net', 'co', 'java', 'javax', 'groovy']
 
+
+    /**
+     * Scans for classes relative to the given class
+     *
+     * @param applicationClass The class, usually the Application class
+     *
+     * @return A set of classes
+     */
+    Set<Class> scan(Class applicationClass) {
+        return scan(applicationClass,[applicationClass.package.name])
+    }
+
+    /**
+     * Scans for classes relative to the given class
+     *
+     * @param applicationClass The class, usually the Application class
+     * @param annotationFilter The annotation to filter by
+     *
+     * @return A set of classes
+     */
+    Set<Class> scan(Class applicationClass, Class<? extends Annotation> annotationFilter) {
+        return scan(applicationClass,[applicationClass.package.name], annotationFilter)
+    }
+
+    /**
+     * Scans for classes relative to the given class
+     *
+     * @param applicationClass The class, usually the Application class
+     * @param annotationFilter The annotation to filter by
+     *
+     * @return A set of classes
+     */
+    Set<Class> scan(Class applicationClass, Closure<Boolean> annotationFilter ) {
+        return scan(applicationClass,[applicationClass.package.name], annotationFilter)
+    }
     /**
      * Scans for classes relative to the given class
      *
