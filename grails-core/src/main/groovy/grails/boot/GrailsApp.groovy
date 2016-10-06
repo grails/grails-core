@@ -1,6 +1,5 @@
 package grails.boot
 
-import grails.boot.config.tools.SettingsFile
 import grails.compiler.ast.ClassInjector
 import grails.core.GrailsApplication
 import grails.io.IOUtils
@@ -23,16 +22,12 @@ import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.support.WatchPattern
-import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
-import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.context.support.GenericApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
-import org.springframework.util.ReflectionUtils
 
-import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentLinkedQueue
+
 /**
  * Extends the {@link SpringApplication} with reloading behavior and other Grails features
  *
@@ -73,24 +68,12 @@ class GrailsApp extends SpringApplication {
     protected ConfigurableApplicationContext createApplicationContext() {
         ConfigurableApplicationContext applicationContext = super.createApplicationContext()
 
-        applyAutowireByNamePerformanceOptimization(applicationContext)
         if(enableBeanCreationProfiler) {
             def processor = new BeanCreationProfilingPostProcessor()
             applicationContext.getBeanFactory().addBeanPostProcessor(processor)
             applicationContext.addApplicationListener(processor)
         }
         return applicationContext
-    }
-
-    // SPR-11864 workaround
-    protected void applyAutowireByNamePerformanceOptimization(ConfigurableApplicationContext configurableApplicationContext) {
-        if(configurableApplicationContext instanceof GenericApplicationContext) {
-            Field beanFactoryField = ReflectionUtils.findField(GenericApplicationContext, "beanFactory", DefaultListableBeanFactory)
-            ReflectionUtils.makeAccessible(beanFactoryField)
-
-            def beanFactory = new OptimizedAutowireCapableBeanFactory()
-            ReflectionUtils.setField(beanFactoryField, configurableApplicationContext, beanFactory)
-        }
     }
 
     @Override
