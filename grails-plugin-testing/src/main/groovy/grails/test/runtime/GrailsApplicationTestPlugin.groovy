@@ -113,10 +113,10 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         ConfigurableApplicationContext context
 
         if(isServletApiPresent && servletContext != null) {
-            context = (ConfigurableApplicationContext)ClassUtils.forName("org.springframework.web.context.support.GenericWebApplicationContext").newInstance( new OptimizedAutowireCapableBeanFactory(), servletContext);
+            context = (ConfigurableApplicationContext)ClassUtils.forName("org.springframework.web.context.support.GenericWebApplicationContext").newInstance( servletContext);
         }
         else {
-            context = (ConfigurableApplicationContext)ClassUtils.forName("org.springframework.context.support.GenericApplicationContext").newInstance( new OptimizedAutowireCapableBeanFactory());
+            context = (ConfigurableApplicationContext)ClassUtils.forName("org.springframework.context.support.GenericApplicationContext").newInstance();
         }
 
 
