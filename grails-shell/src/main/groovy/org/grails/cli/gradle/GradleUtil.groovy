@@ -43,13 +43,21 @@ class GradleUtil {
     private static final boolean DEFAULT_SUPPRESS_OUTPUT = true
 
     public static ProjectConnection openGradleConnection(File baseDir) {
-        DefaultGradleConnector gradleConnector = (DefaultGradleConnector)GradleConnector.newConnector().forProjectDirectory(baseDir)
+        GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
         if (System.getenv("GRAILS_GRADLE_HOME")) {
             gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
         }
+        else {
+            def userHome = System.getProperty("user.home")
+            if(userHome) {
+                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/current")
+                if(sdkManGradle.exists()) {
+                    gradleConnector.useInstallation(sdkManGradle)
+                }
+            }
+        }
 
-        gradleConnector.embedded(!Environment.isInteractiveMode())
-                       .connect()
+        gradleConnector.connect()
     }
 
     public static <T> T withProjectConnection(File baseDir, boolean suppressOutput = DEFAULT_SUPPRESS_OUTPUT,

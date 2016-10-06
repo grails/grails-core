@@ -21,6 +21,7 @@ import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.internal.consumer.ConnectorServices
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector
+import org.grails.cli.gradle.GradleUtil
 import org.grails.cli.profile.ProjectContext
 
 import java.util.concurrent.Callable
@@ -64,10 +65,7 @@ abstract class CachedGradleOperation<T> implements Callable<T> {
         }
 
         try {
-            GradleConnector dgc = (GradleConnector)GradleConnector.newConnector()
-                                                                  .forProjectDirectory(projectContext.baseDir)
-
-            def projectConnection = dgc.connect()
+            ProjectConnection projectConnection = GradleUtil.openGradleConnection(projectContext.baseDir)
             try {
                 updateStatusMessage()
                 def data = readFromGradle(projectConnection)
