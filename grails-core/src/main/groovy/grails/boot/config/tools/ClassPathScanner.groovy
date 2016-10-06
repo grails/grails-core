@@ -1,0 +1,205 @@
+package grails.boot.config.tools
+
+import grails.config.Settings
+import grails.io.IOUtils
+import groovy.transform.CompileStatic
+import groovy.transform.InheritConstructors
+import groovy.transform.Memoized
+import groovy.util.logging.Slf4j
+import org.grails.asm.AnnotationMetadataReader
+import org.springframework.core.io.DefaultResourceLoader
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.io.support.ResourcePatternResolver
+import org.springframework.util.ClassUtils
+
+import java.lang.annotation.Annotation
+
+/**
+ * Used to scan for classes on the classpath in the most efficient manner possible.
+ *
+ * WARNING: Classpath scanning can be expensive! Use with care.
+ *
+ * @author Graeme Rocher
+ * @since 3.1.12
+ */
+@Slf4j
+@CompileStatic
+class ClassPathScanner {
+    private static final List DEFAULT_IGNORED_ROOT_PACKAGES = ['com', 'org', 'net', 'co', 'java', 'javax', 'groovy']
+
+    /**
+     * Scans for classes relative to the given class
+     *
+     * @param applicationClass The class, usually the Application class
+     * @param packageNames The package names to scan
+     * @param annotationFilter The annotation to filter by
+     *
+     * @return A set of classes
+     */
+    Set<Class> scan(Class applicationClass, Collection<String> packageNames, Class<? extends Annotation> annotationFilter) {
+        ResourcePatternResolver resourcePatternResolver = new GrailsClasspathIgnoringResourceResolver(applicationClass)
+
+        return scan(resourcePatternResolver,packageNames, { String annotation ->
+            annotationFilter.name == annotation
+        })
+    }
+
+    /**
+     * Scans for classes relative to the given class
+     *
+     * @param applicationClass The class, usually the Application class
+     * @param packageNames The package names to scan
+     * @return A set of classes
+     */
+    Set<Class> scan(Class applicationClass, Collection<String> packageNames, Closure<Boolean> annotationFilter = { String annotation -> annotation.startsWith('grails.') }) {
+        ResourcePatternResolver resourcePatternResolver = new GrailsClasspathIgnoringResourceResolver(applicationClass)
+
+        return scan(resourcePatternResolver,packageNames, annotationFilter)
+    }
+
+    /**
+     * Scans for classes oin the given package names
+     *
+     * @param resourcePatternResolver The resolver to use
+     * @param packageNames The package names
+     * @return The found classes
+     */
+    Set<Class> scan(ResourcePatternResolver resourcePatternResolver, Collection<String> packageNames, Closure<Boolean> annotationFilter = { String annotation -> annotation.startsWith('grails.') }) {
+        ClassLoader classLoader = resourcePatternResolver.getClassLoader()
+        Set<Class> classes = []
+        for (String pkg in packageNames.unique()) {
+            if (pkg == null) continue
+            if (ignoredRootPackages().contains(pkg)) {
+                continue
+            }
+
+            if(pkg == "") {
+                // try the default package in case of a script without recursing into subpackages
+                log.error("The application defines a Groovy source using the default package. Please move all Groovy sources into a package.")
+                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +  "*.class"
+                scanUsingPattern(resourcePatternResolver, pattern, classLoader, annotationFilter, classes)
+            }
+            else {
+                String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+                        ClassUtils.convertClassNameToResourcePath(pkg) + Settings.CLASS_RESOURCE_PATTERN;
+
+                scanUsingPattern(resourcePatternResolver, pattern, classLoader, annotationFilter, classes)
+            }
+        }
+        return classes
+    }
+
+    /**
+     * Whether the given resource is excluded
+     *
+     * @param res The resource
+     * @return True if it should be excluded
+     */
+    protected boolean isExcluded(Resource res) {
+        String filename = res.filename
+        return filename.contains('$') || filename.startsWith("gsp_") || filename.endsWith("_gson.class")
+    }
+
+    /**
+     * @return The root packages to ignore by default
+     */
+    protected List ignoredRootPackages() {
+        DEFAULT_IGNORED_ROOT_PACKAGES
+    }
+
+    private void scanUsingPattern(ResourcePatternResolver resourcePatternResolver, String pattern, ClassLoader classLoader, Closure<Boolean> annotationFilter, Set<Class> classes) {
+        def resources = resourcePatternResolver.getResources(pattern)
+        for (Resource res in resources) {
+            // ignore closures / inner classes
+            if (!isExcluded(res)) {
+                def reader = new AnnotationMetadataReader(res, classLoader)
+                def metadata = reader.annotationMetadata
+                if (metadata.annotationTypes.any(annotationFilter)) {
+                    classes << classLoader.loadClass(reader.classMetadata.className)
+                }
+            }
+        }
+    }
+
+
+    @CompileStatic
+    @InheritConstructors
+    @Slf4j
+    private static class GrailsClasspathIgnoringResourceResolver extends PathMatchingResourcePatternResolver {
+
+        GrailsClasspathIgnoringResourceResolver(Class applicationClass) {
+            super(new DefaultResourceLoader(new ApplicationRelativeClassLoader(applicationClass)))
+        }
+
+        @Memoized(maxCacheSize = 20)
+        protected Set<Resource> doFindAllClassPathResources(String path) throws IOException {
+            Set<Resource> result = new LinkedHashSet<Resource>(16)
+            ClassLoader cl = getClassLoader()
+            Enumeration<URL> resourceUrls = (cl != null ? cl.getResources(path) : ClassLoader.getSystemResources(path))
+            while (resourceUrls.hasMoreElements()) {
+
+                URL url = resourceUrls.nextElement()
+                // if the path is from a JAR file ignore, plugins inside JAR files will have their own mechanism for loading
+                if(!url.path.contains('jar!/grails/')) {
+                    result.add(convertClassLoaderURL(url))
+                }
+
+            }
+            return result
+        }
+
+        @Memoized
+        protected Resource[] findAllClassPathResources(String location) throws IOException {
+            return super.findAllClassPathResources(location)
+        }
+
+        @Memoized
+        protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+            return super.findPathMatchingResources(locationPattern)
+        }
+
+    }
+
+    private static class ApplicationRelativeClassLoader extends URLClassLoader {
+
+        final URL rootResource
+        final Class applicationClass
+        final boolean jarDeployed
+
+        ApplicationRelativeClassLoader(Class applicationClass) {
+            super([IOUtils.findRootResource(applicationClass)] as URL[])
+
+            this.rootResource = getURLs()[0]
+            this.applicationClass = applicationClass
+            String urlStr = rootResource.toString()
+            jarDeployed = urlStr.startsWith("jar:")
+            try {
+                URL withoutBang = new URL("${urlStr.substring(0, urlStr.length() - 2)}/")
+                addURL(withoutBang)
+
+            } catch (MalformedURLException e) {
+                // ignore, running as a WAR
+            }
+        }
+
+        @Override
+        Enumeration<URL> getResources(String name) throws IOException {
+            if(jarDeployed && name == '') {
+                return applicationClass.getClassLoader().getResources(name)
+            }
+            else {
+                return super.findResources(name)
+            }
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            try {
+                return super.loadClass(name, resolve)
+            } catch (ClassNotFoundException cnfe) {
+                return applicationClass.getClassLoader().loadClass(name)
+            }
+        }
+    }
+}
