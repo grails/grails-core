@@ -83,7 +83,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     void apply(Project project) {
-        super.apply(project)
+        if( project.tasks.findByName('compileGroovy') == null ) {
+            super.apply(project)
+        }
 
         configureProfile(project)
 
