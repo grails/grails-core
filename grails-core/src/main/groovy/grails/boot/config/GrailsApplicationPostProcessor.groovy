@@ -82,6 +82,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if(applicationContext == null) {
             throw new IllegalStateException("ApplicationContext should not be null")
         }
+        Environment.setInitializing(true)
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
         customizePluginManager(pluginManager)
@@ -236,6 +237,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
         def lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
         if(event instanceof ContextRefreshedEvent) {
+            Environment.setInitializing(false)
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
             for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
