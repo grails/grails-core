@@ -39,6 +39,7 @@ import org.grails.gsp.GroovyPagesTemplateEngine
  */
 class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
 
+    public static final String KEY_EXCEPTION = 'exception'
     private assertionKeys = ["controller", "action", "view"]
 
     /**
@@ -193,7 +194,12 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         def mappingInfos
         if (url instanceof Integer) {
             mappingInfos = []
-            def mapping = mappingsHolder.matchStatusCode(url)
+            def mapping
+            if (assertions."$KEY_EXCEPTION") {
+                mapping = mappingsHolder.matchStatusCode(url, assertions."$KEY_EXCEPTION" as Throwable)
+            } else {
+                mapping = mappingsHolder.matchStatusCode(url)
+            }
             if (mapping) mappingInfos << mapping
         }
         else {
