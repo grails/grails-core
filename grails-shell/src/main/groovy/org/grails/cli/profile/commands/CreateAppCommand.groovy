@@ -18,20 +18,26 @@ package org.grails.cli.profile.commands
 
 import grails.build.logging.GrailsConsole
 import grails.io.IOUtils
-import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.eclipse.aether.artifact.DefaultArtifact
 import org.eclipse.aether.graph.Dependency
 import org.grails.build.logging.GrailsConsoleAntBuilder
 import org.grails.build.parsing.CommandLine
 import org.grails.cli.GrailsCli
-import org.grails.cli.profile.*
+import org.grails.cli.profile.CommandDescription
+import org.grails.cli.profile.ExecutionContext
+import org.grails.cli.profile.Feature
+import org.grails.cli.profile.Profile
+import org.grails.cli.profile.ProfileRepository
+import org.grails.cli.profile.ProfileRepositoryAware
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
+
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Command for creating Grails applications
@@ -146,7 +152,9 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             if( !initializeVariables(profileInstance, mainCommandLine) ) {
                 return false
             }
-            targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : new File(appname)
+
+            Path appFullDirectory = Paths.get(executionContext.baseDir.path, appname)
+            targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : appFullDirectory.toFile()
             File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
