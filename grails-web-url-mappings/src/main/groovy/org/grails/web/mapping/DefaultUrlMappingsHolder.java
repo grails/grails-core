@@ -46,6 +46,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
@@ -66,6 +68,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
+    public static final UrlMappingInfo[] EMPTY_RESULTS = new UrlMappingInfo[0];
 
     private int maxWeightedCacheCapacity = DEFAULT_MAX_WEIGHTED_CAPACITY;
     private Map<String, UrlMappingInfo> cachedMatches;
@@ -79,20 +82,21 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
         }
     }
 
-    private List<UrlMapping> urlMappings = new ArrayList<UrlMapping>();
+    private List<UrlMapping> urlMappings = new ArrayList<>();
     private UrlMapping[] mappings;
-    private List excludePatterns;
-    private Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<UrlMappingKey, UrlMapping>();
-    private Map<String, UrlMapping> namedMappings = new HashMap<String, UrlMapping>();
-    private UrlMappingsList mappingsListLookup = new UrlMappingsList();
-    private Set<String> DEFAULT_NAMESPACE_PARAMS = CollectionUtils.newSet(
-            UrlMapping.NAMESPACE, UrlMapping.CONTROLLER, UrlMapping.ACTION);
-    private Set<String> DEFAULT_CONTROLLER_PARAMS = CollectionUtils.newSet(
-          UrlMapping.CONTROLLER, UrlMapping.ACTION);
-    private Set<String> DEFAULT_ACTION_PARAMS = CollectionUtils.newSet(UrlMapping.ACTION);
     private UrlCreatorCache urlCreatorCache;
     // capacity of the UrlCreatoreCache is the estimated number of char's stored in cached objects
     private int urlCreatorMaxWeightedCacheCapacity = 160000;
+    private final List excludePatterns;
+    private final Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<>();
+    private final Map<String, UrlMapping> namedMappings = new HashMap<>();
+    private final UrlMappingsList mappingsListLookup = new UrlMappingsList();
+    private final Set<String> DEFAULT_NAMESPACE_PARAMS = CollectionUtils.newSet(
+            UrlMapping.NAMESPACE, UrlMapping.CONTROLLER, UrlMapping.ACTION);
+    private final Set<String> DEFAULT_CONTROLLER_PARAMS = CollectionUtils.newSet(
+          UrlMapping.CONTROLLER, UrlMapping.ACTION);
+    private final Set<String> DEFAULT_ACTION_PARAMS = CollectionUtils.newSet(UrlMapping.ACTION);
+    private final PathMatcher pathMatcher = new AntPathMatcher();
 
     public DefaultUrlMappingsHolder(List<UrlMapping> mappings) {
         this(mappings, null, false);
@@ -359,7 +363,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
             }
         }
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            Set<String> lookupParams = new HashSet<String>(DEFAULT_NAMESPACE_PARAMS);
+            Set<String> lookupParams = new HashSet<>(DEFAULT_NAMESPACE_PARAMS);
             Set<String> paramKeys = new HashSet<String>(params.keySet());
             paramKeys.removeAll(lookupParams);
             lookupParams.addAll(paramKeys);
@@ -478,6 +482,8 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     }
 
     public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
+        if (isExcluded(uri)) return EMPTY_RESULTS;
+
         boolean anyHttpMethod = httpMethod != null && httpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD);
         List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
         UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, UrlMapping.ANY_VERSION);
@@ -506,7 +512,20 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
         return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
     }
 
+    private boolean isExcluded(String uri) {
+        if(excludePatterns != null) {
+            for (Object excludePattern : excludePatterns) {
+                if(pathMatcher.match(excludePattern.toString(), uri)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public UrlMappingInfo[] matchAll(String uri, String httpMethod, String version) {
+        if (isExcluded(uri)) return EMPTY_RESULTS;
+
         List<UrlMappingInfo> matchingUrls;
         UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, version);
         if (cachedListMatches.containsKey(cacheKey)) {
