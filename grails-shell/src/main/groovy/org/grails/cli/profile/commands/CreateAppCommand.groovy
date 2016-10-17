@@ -565,10 +565,9 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 }
                 ant.delete(file: concatFile, failonerror: false)
             }
-
-            ant.chmod(file: "${destDir}/gradlew", perm: 'u+x')
         }
 
+        ant.chmod(dir: targetDirectory, includes: "**/gradlew*", perm: 'u+x')
     }
 
     @CompileDynamic
