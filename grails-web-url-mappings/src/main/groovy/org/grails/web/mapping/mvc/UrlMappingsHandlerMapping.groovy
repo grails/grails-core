@@ -132,7 +132,7 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         String version = findRequestedVersion(webRequest)
 
 
-        if(errorStatus) {
+        if(errorStatus && !WebUtils.isInclude(request)) {
             def exception = request.getAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE)
             UrlMappingInfo info
             if(exception instanceof Throwable) {
