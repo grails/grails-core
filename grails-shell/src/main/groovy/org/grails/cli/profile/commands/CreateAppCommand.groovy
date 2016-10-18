@@ -58,6 +58,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     Map<String, String> variables = [:]
     String appname
     String groupname
+    String defaultpackagename
     File targetDirectory
     List<String> binaryFileExtensions = ['png','gif','jpg','jpeg','ico','icns','pdf','zip','jar','class']
 
@@ -134,27 +135,27 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         return super.complete(commandLine, desc, candidates, cursor)
     }
 
-    @Override
-    boolean handle(ExecutionContext executionContext) {
-        if(profileRepository == null) throw new IllegalStateException("Property 'profileRepository' must be set")
+    boolean handle(CreateAppCommandObject cmd) {
+        if (profileRepository == null) throw new IllegalStateException("Property 'profileRepository' must be set")
 
-
-        def mainCommandLine = executionContext.commandLine
-        def profileName = evaluateProfileName(mainCommandLine)
-
+        String profileName = cmd.profileName
         Profile profileInstance = profileRepository.getProfile(profileName)
-        if( !validateProfile(profileInstance, profileName, executionContext)) {
+        if (!validateProfile(profileInstance, profileName)) {
             return false
         }
-        List<Feature> features = evaluateFeatures(profileInstance, mainCommandLine).toList()
-        if(profileInstance) {
 
-            if( !initializeVariables(profileInstance, mainCommandLine) ) {
+        List<Feature> features = evaluateFeatures(profileInstance, cmd.features).toList()
+
+        if (profileInstance) {
+            if (!initializeGroupAndName(cmd.appName, cmd.inplace)) {
                 return false
             }
 
-            Path appFullDirectory = Paths.get(executionContext.baseDir.path, appname)
-            targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : appFullDirectory.toFile()
+            initializeVariables(cmd.appName, defaultpackagename, profileName, cmd.grailsVersion)
+
+            Path appFullDirectory = Paths.get(cmd.baseDir.path, appname)
+            targetDirectory = cmd.inplace ? new File(".").canonicalFile : appFullDirectory.toFile()
+
             File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
 
             def profiles = profileRepository.getProfileAndDependencies(profileInstance)
@@ -197,7 +198,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             }
 
             replaceBuildTokens(profileName, profileInstance, features, targetDirectory)
-            executionContext.console.addStatus(
+            GrailsConsole.instance.addStatus(
                 "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
             )
             GrailsCli.tiggerAppLoad()
@@ -209,15 +210,39 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
     }
 
-    protected boolean validateProfile(Profile profileInstance, String profileName, ExecutionContext executionContext) {
+    @Override
+    boolean handle(ExecutionContext executionContext) {
+        CommandLine commandLine = executionContext.commandLine
+
+        String profileName = evaluateProfileName(commandLine)
+
+        boolean inPlace = commandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive()
+        String appName = commandLine.remainingArgs ? commandLine.remainingArgs[0] : ""
+
+        List<String> features = commandLine.optionValue("features")?.toString()?.split(',')?.toList()
+
+        CreateAppCommandObject cmd = new CreateAppCommandObject(
+            appName: appName,
+            baseDir: executionContext.baseDir,
+            profileName: profileName,
+            grailsVersion: Environment.getPackage().getImplementationVersion() ?: GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS,
+            features: features,
+            inplace: inPlace
+        )
+
+        return this.handle(cmd)
+    }
+
+    protected boolean validateProfile(Profile profileInstance, String profileName) {
         if (profileInstance == null) {
-            executionContext.console.error("Profile not found for name [$profileName]")
+            GrailsConsole.instance.error("Profile not found for name [$profileName]")
             return false
         }
         return true
     }
 
     private Map<URL, File> unzippedDirectories = new LinkedHashMap<URL, File>()
+
     @CompileDynamic
     protected File unzipProfile(AntBuilder ant, Resource location) {
 
@@ -321,15 +346,15 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         mainCommandLine.optionValue('profile')?.toString() ?: getDefaultProfile()
     }
 
-    protected Iterable<Feature> evaluateFeatures(Profile profile, CommandLine commandLine) {
-        String[] requestedFeatures = commandLine.optionValue("features")?.toString()?.split(',')
-        if(requestedFeatures) {
-            List<String> requestedFeaturesList = requestedFeatures.toList()
+    protected Iterable<Feature> evaluateFeatures(Profile profile, List<String> requestedFeatures) {
+        if (requestedFeatures) {
             List<String> allFeatureNames = profile.features*.name
-            List<String> validFeatureNames = requestedFeaturesList.intersect(allFeatureNames)
-            requestedFeaturesList.removeAll(allFeatureNames)
-            requestedFeaturesList.each { String invalidFeature ->
-                List possibleSolutions = allFeatureNames.findAll { it.substring(0, 2) == invalidFeature.substring(0, 2) }
+            List<String> validFeatureNames = requestedFeatures.intersect(allFeatureNames)
+            requestedFeatures.removeAll(allFeatureNames)
+            requestedFeatures.each { String invalidFeature ->
+                List possibleSolutions = allFeatureNames.findAll {
+                    it.substring(0, 2) == invalidFeature.substring(0, 2)
+                }
                 StringBuilder warning = new StringBuilder("Feature ${invalidFeature} does not exist in the profile ${profile.name}!")
                 if (possibleSolutions) {
                     warning.append(" Possible solutions: ")
@@ -348,7 +373,6 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         ProfileRepository.DEFAULT_PROFILE_NAME
     }
 
-
     private void appendToYmlSubDocument(File applicationYmlFile, String previousApplicationYml) {
         String newApplicationYml = applicationYmlFile.text
         if(previousApplicationYml && newApplicationYml != previousApplicationYml) {
@@ -361,49 +385,45 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             applicationYmlFile.text = appended.toString()
         }
     }
-    
-    protected boolean initializeVariables(Profile profile, CommandLine commandLine) {
-        String defaultPackage
 
-        def args = commandLine.getRemainingArgs()
-        boolean inPlace = commandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive()
-
-        if(!args && !inPlace) {
+    protected boolean initializeGroupAndName(String appName, boolean inplace) {
+        if (!appName && !inplace) {
             GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")
             return false
         }
-        String groupAndAppName = args ? args[0] : null
-        if(inPlace) {
+        String groupAndAppName = appName
+        if(inplace) {
             appname = new File(".").canonicalFile.name
             if(!groupAndAppName) {
                 groupAndAppName = appname
             }
         }
-        
+
         if(!groupAndAppName) {
             GrailsConsole.getInstance().error("Specify an application name or use --inplace to create an application in the current directory")
             return false
         }
 
         try {
-            defaultPackage = establishGroupAndAppName(groupAndAppName)
+            defaultpackagename = establishGroupAndAppName(groupAndAppName)
         } catch (IllegalArgumentException e ) {
             GrailsConsole.instance.error(e.message)
             return false
         }
+    }
 
-
+    private void initializeVariables(String appname, String defaultPackage, String profileName, String grailsVersion) {
         variables.APPNAME = appname
 
         variables['grails.codegen.defaultPackage'] = defaultPackage
-        variables['grails.codegen.defaultPackage.path']  = defaultPackage.replace('.', '/')
+        variables['grails.codegen.defaultPackage.path'] = defaultPackage.replace('.', '/')
 
         def projectClassName = GrailsNameUtils.getNameFromScript(appname)
         variables['grails.codegen.projectClassName'] = projectClassName
         variables['grails.codegen.projectNaturalName'] = GrailsNameUtils.getNaturalName(projectClassName)
         variables['grails.codegen.projectName'] = GrailsNameUtils.getScriptName(projectClassName)
-        variables['grails.profile'] = profile.name
-        variables['grails.version'] = Environment.getPackage().getImplementationVersion() ?: GRAILS_VERSION_FALLBACK_IN_IDE_ENVIRONMENTS_FOR_RUNNING_TESTS
+        variables['grails.profile'] = profileName
+        variables['grails.version'] = grailsVersion
         variables['grails.app.name'] = appname
         variables['grails.app.group'] = groupname
     }
@@ -424,7 +444,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     }
 
     private String createValidPackageName() {
-        String defaultPackage = appname.split(/[-]+/).collect { String token -> (token.toLowerCase().toCharArray().findAll  { char ch -> Character.isJavaIdentifierPart(ch) } as char[]) as String }.join('.')
+        String defaultPackage = appname.split(/[-]+/).collect { String token -> (token.toLowerCase().toCharArray().findAll { char ch -> Character.isJavaIdentifierPart(ch) } as char[]) as String }.join('.')
         if(!GrailsNameUtils.isValidJavaPackage(defaultPackage)) {
             throw new IllegalArgumentException("Cannot create a valid package name for [$appname]. Please specify a name that is also a valid Java package.")
         }
@@ -529,5 +549,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def v = artifact.version.replace('BOM', '')
 
         return v ? "${artifact.groupId}:${artifact.artifactId}:${v}" : "${artifact.groupId}:${artifact.artifactId}"
+    }
+
+    static class CreateAppCommandObject {
+        String appName
+        File baseDir
+        String profileName
+        String grailsVersion
+        List<String> features
+        boolean inplace = false
     }
 }
