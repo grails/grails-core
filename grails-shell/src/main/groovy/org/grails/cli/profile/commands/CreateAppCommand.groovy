@@ -134,107 +134,79 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         return super.complete(commandLine, desc, candidates, cursor)
     }
 
-    boolean handle(ProgramaticallyCommandObject cmd) {
-        if (profileRepository == null) throw new IllegalStateException("Property 'profileRepository' must be set")
-
-        def executionContext = cmd.executionContext
-        def mainCommandLine = executionContext.commandLine
-        def profileName = evaluateProfileName(mainCommandLine)
-
-        Profile profileInstance = profileRepository.getProfile(profileName)
-        if (!validateProfile(profileInstance, profileName, executionContext)) {
-            return false
-        }
-        List<Feature> features = evaluateFeatures(profileInstance, mainCommandLine).toList()
-
-        if (profileInstance) {
-            if (!initializeVariables(profileInstance, mainCommandLine)) {
-                return false
-            }
-
-            // Override default variables with the ones used programatically
-            variables['grails.version'] = cmd.grailsVersion
-
-            return generateAppFromOptions(executionContext, mainCommandLine, profileInstance, features, profileName)
-        } else {
-            System.err.println "Cannot find profile $profileName"
-            return false
-        }
-    }
-
     @Override
     boolean handle(ExecutionContext executionContext) {
-        if (profileRepository == null) throw new IllegalStateException("Property 'profileRepository' must be set")
+        if(profileRepository == null) throw new IllegalStateException("Property 'profileRepository' must be set")
+
 
         def mainCommandLine = executionContext.commandLine
         def profileName = evaluateProfileName(mainCommandLine)
 
         Profile profileInstance = profileRepository.getProfile(profileName)
-        if (!validateProfile(profileInstance, profileName, executionContext)) {
+        if( !validateProfile(profileInstance, profileName, executionContext)) {
             return false
         }
         List<Feature> features = evaluateFeatures(profileInstance, mainCommandLine).toList()
-        if (profileInstance) {
-            if (!initializeVariables(profileInstance, mainCommandLine)) {
+        if(profileInstance) {
+
+            if( !initializeVariables(profileInstance, mainCommandLine) ) {
                 return false
             }
 
-            generateAppFromOptions(executionContext, mainCommandLine, profileInstance, features, profileName)
-        } else {
+            Path appFullDirectory = Paths.get(executionContext.baseDir.path, appname)
+            targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : appFullDirectory.toFile()
+            File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
+
+            def profiles = profileRepository.getProfileAndDependencies(profileInstance)
+            for(Profile p : profiles) {
+                String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText(ENCODING) : null
+                copySkeleton(profileInstance, p)
+
+                if(applicationYmlFile.exists()) {
+                    appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
+                }
+            }
+            def ant = new GrailsConsoleAntBuilder()
+            for(Feature f in features) {
+                def location = f.location
+                def featureConfig = location.createRelative("skeleton/grails-app/conf/application.yml")
+                def featureBuild = location.createRelative("skeleton/build.gradle")
+
+                if(applicationYmlFile.exists() && featureConfig.exists()) {
+                    appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText(ENCODING))
+                }
+
+
+                if(featureBuild.exists()) {
+                    def buildFile = new File(targetDirectory, "build.gradle")
+                    buildFile.text = buildFile.getText(ENCODING) + featureBuild.inputStream.getText(ENCODING)
+                }
+
+                File skeletonDir
+                if(location instanceof FileSystemResource) {
+                    skeletonDir = location.createRelative("skeleton").file
+                }
+                else {
+                    File tmpDir = unzipProfile(ant, location)
+                    skeletonDir = new File(tmpDir, "META-INF/grails-profile/features/$f.name/skeleton")
+                }
+
+                if(skeletonDir.exists()) {
+                    copySrcToTarget(ant, skeletonDir, ['grails-app/conf/application.yml'])
+                }
+            }
+
+            replaceBuildTokens(profileName, profileInstance, features, targetDirectory)
+            executionContext.console.addStatus(
+                "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
+            )
+            GrailsCli.tiggerAppLoad()
+            return true
+        }
+        else {
             System.err.println "Cannot find profile $profileName"
             return false
         }
-    }
-
-    protected boolean generateAppFromOptions(ExecutionContext executionContext, CommandLine mainCommandLine, Profile profileInstance, List<Feature> features, String profileName) {
-        Path appFullDirectory = Paths.get(executionContext.baseDir.path, appname)
-        targetDirectory = mainCommandLine.hasOption('inplace') || GrailsCli.isInteractiveModeActive() ? new File(".").canonicalFile : appFullDirectory.toFile()
-        File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
-
-        def profiles = profileRepository.getProfileAndDependencies(profileInstance)
-        for (Profile p : profiles) {
-            String previousApplicationYml = (applicationYmlFile.isFile()) ? applicationYmlFile.getText(ENCODING) : null
-            copySkeleton(profileInstance, p)
-
-            if (applicationYmlFile.exists()) {
-                appendToYmlSubDocument(applicationYmlFile, previousApplicationYml)
-            }
-        }
-        def ant = new GrailsConsoleAntBuilder()
-        for (Feature f in features) {
-            def location = f.location
-            def featureConfig = location.createRelative("skeleton/grails-app/conf/application.yml")
-            def featureBuild = location.createRelative("skeleton/build.gradle")
-
-            if (applicationYmlFile.exists() && featureConfig.exists()) {
-                appendToYmlSubDocument(applicationYmlFile, featureConfig.inputStream.getText(ENCODING))
-            }
-
-
-            if (featureBuild.exists()) {
-                def buildFile = new File(targetDirectory, "build.gradle")
-                buildFile.text = buildFile.getText(ENCODING) + featureBuild.inputStream.getText(ENCODING)
-            }
-
-            File skeletonDir
-            if (location instanceof FileSystemResource) {
-                skeletonDir = location.createRelative("skeleton").file
-            } else {
-                File tmpDir = unzipProfile(ant, location)
-                skeletonDir = new File(tmpDir, "META-INF/grails-profile/features/$f.name/skeleton")
-            }
-
-            if (skeletonDir.exists()) {
-                copySrcToTarget(ant, skeletonDir, ['grails-app/conf/application.yml'])
-            }
-        }
-
-        replaceBuildTokens(profileName, profileInstance, features, targetDirectory)
-        executionContext.console.addStatus(
-            "${name == 'create-plugin' ? 'Plugin' : 'Application'} created at $targetDirectory.absolutePath"
-        )
-        GrailsCli.tiggerAppLoad()
-        return true
     }
 
     protected boolean validateProfile(Profile profileInstance, String profileName, ExecutionContext executionContext) {
@@ -420,6 +392,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             return false
         }
 
+
         variables.APPNAME = appname
 
         variables['grails.codegen.defaultPackage'] = defaultPackage
@@ -556,10 +529,5 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def v = artifact.version.replace('BOM', '')
 
         return v ? "${artifact.groupId}:${artifact.artifactId}:${v}" : "${artifact.groupId}:${artifact.artifactId}"
-    }
-
-    static class ProgramaticallyCommandObject {
-        String grailsVersion
-        ExecutionContext executionContext
     }
 }
