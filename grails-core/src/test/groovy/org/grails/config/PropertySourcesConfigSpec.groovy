@@ -2,6 +2,8 @@ package org.grails.config
 
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.MutablePropertySources
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /*
@@ -47,5 +49,21 @@ class PropertySourcesConfigSpec extends Specification {
 
 
 
+    }
+
+    @Ignore
+    @Issue('grails/grails-core#10188')
+    void 'test replacing nested property values'() {
+        given: 'a PropertySourcesConfig'
+        def cfg = new PropertySourcesConfig()
+
+        when: 'a nested property is assigned a value'
+        cfg.foo.bar = ['one': '1']
+
+        and: 'later is assigned a different value'
+        cfg.foo.bar = ['two': '2']
+
+        then: 'the second value is not merged with the first value'
+        cfg.foo.bar == ['two': '2']
     }
 }
