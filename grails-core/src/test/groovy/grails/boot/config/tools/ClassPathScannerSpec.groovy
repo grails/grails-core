@@ -15,6 +15,7 @@ class ClassPathScannerSpec extends Specification {
         then:"the results are correct"
         results.size() == 1
         results.contains(Foo)
+        Foo.classLoader == Application.classLoader
     }
 
     void "Test classpath scanner with application"() {

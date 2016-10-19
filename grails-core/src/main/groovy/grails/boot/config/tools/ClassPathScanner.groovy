@@ -90,7 +90,7 @@ class ClassPathScanner {
     Set<Class> scan(Class applicationClass, Collection<String> packageNames, Class<? extends Annotation> annotationFilter) {
         ResourcePatternResolver resourcePatternResolver = new GrailsClasspathIgnoringResourceResolver(applicationClass)
 
-        return scan(resourcePatternResolver,packageNames, { String annotation ->
+        return scan(applicationClass.getClassLoader(), resourcePatternResolver, packageNames, { String annotation ->
             annotationFilter.name == annotation
         })
     }
@@ -104,12 +104,11 @@ class ClassPathScanner {
      */
     Set<Class> scan(Class applicationClass, Collection<String> packageNames, Closure<Boolean> annotationFilter = { String annotation -> annotation.startsWith('grails.') }) {
         ResourcePatternResolver resourcePatternResolver = new GrailsClasspathIgnoringResourceResolver(applicationClass)
-
-        return scan(resourcePatternResolver,packageNames, annotationFilter)
+        return scan(applicationClass.getClassLoader(), resourcePatternResolver,packageNames, annotationFilter)
     }
 
     /**
-     * Scans for classes oin the given package names
+     * Scans for classes in the given package names
      *
      * @param resourcePatternResolver The resolver to use
      * @param packageNames The package names
@@ -117,6 +116,19 @@ class ClassPathScanner {
      */
     Set<Class> scan(ResourcePatternResolver resourcePatternResolver, Collection<String> packageNames, Closure<Boolean> annotationFilter = { String annotation -> annotation.startsWith('grails.') }) {
         ClassLoader classLoader = resourcePatternResolver.getClassLoader()
+        return scan(classLoader, resourcePatternResolver, packageNames, annotationFilter)
+    }
+
+    /**
+     * Scans for classes in the given package names
+     *
+     * @param classLoader The classloader to use to load classes
+     * @param resourcePatternResolver The resolver
+     * @param packageNames The package names
+     * @param annotationFilter The filter
+     * @return The classes
+     */
+    Set<Class> scan(ClassLoader classLoader, ResourcePatternResolver resourcePatternResolver, Collection<String> packageNames, Closure<Boolean> annotationFilter = { String annotation -> annotation.startsWith('grails.') }) {
         Set<Class> classes = []
         for (String pkg in packageNames.unique()) {
             if (pkg == null) continue
