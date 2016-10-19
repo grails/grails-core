@@ -51,6 +51,14 @@ class PropertySourcesConfigSpec extends Specification {
 
     }
 
+    /*
+
+      We need to settle on whether the following is a bug or not.
+      There are some tests in ConfigMapSpec that indirectly assert some
+      behavior that I think would be inconsistent with making the following
+      test pass.
+
+     */
     @Ignore
     @Issue('grails/grails-core#10188')
     void 'test replacing nested property values'() {
