@@ -1,1 +1,2 @@
+grails.compiler.traits.TraitInjector=grails.artefact.gsp.TagLibraryInvokerTraitInjector,grails.artefact.TagLibraryTraitInjector
 org.grails.taglib.encoder.OutputContextLookup=org.grails.web.taglib.encoder.WebOutputContextLookup
