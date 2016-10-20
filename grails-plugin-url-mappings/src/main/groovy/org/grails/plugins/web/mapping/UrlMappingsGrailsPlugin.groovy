@@ -38,9 +38,7 @@ import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.grails.web.mapping.servlet.UrlMappingsErrorPageCustomizer
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
-import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.ApplicationContext
-import org.springframework.core.Ordered
 
 /**
  * Handles the configuration of URL mappings.
