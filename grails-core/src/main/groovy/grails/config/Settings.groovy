@@ -214,5 +214,9 @@ interface Settings {
      * Whether to execute Bootstrap classes
      */
     String SETTING_SKIP_BOOTSTRAP = "grails.bootstrap.skip";
+    /**
+     * Whether to load cors configuration via a filter (true) or interceptor(false)
+     */
+    String SETTING_CORS_FILTER = "grails.cors.filter";
 
 }
