@@ -21,6 +21,7 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
+import grails.web.mapping.cors.GrailsCorsFilter
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.UrlMappingsArtefactHandler
@@ -37,7 +38,9 @@ import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.grails.web.mapping.servlet.UrlMappingsErrorPageCustomizer
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.ApplicationContext
+import org.springframework.core.Ordered
 
 /**
  * Handles the configuration of URL mappings.
@@ -67,11 +70,20 @@ class UrlMappingsGrailsPlugin extends Plugin {
 
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
+        boolean corsFilterEnabled = config.getProperty(Settings.SETTING_CORS_FILTER, Boolean, true)
+
         grailsCorsConfiguration(GrailsCorsConfiguration)
 
         urlMappingsHandlerMapping(UrlMappingsHandlerMapping, ref("grailsUrlMappingsHolder")) {
-            grailsCorsConfiguration = ref("grailsCorsConfiguration")
+            if (!corsFilterEnabled) {
+                grailsCorsConfiguration = ref("grailsCorsConfiguration")
+            }
         }
+
+        if (corsFilterEnabled) {
+            grailsCorsFilter(GrailsCorsFilter, ref("grailsCorsConfiguration"))
+        }
+
         urlMappingsInfoHandlerAdapter(UrlMappingsInfoHandlerAdapter)
         urlMappingsErrorPageCustomizer(UrlMappingsErrorPageCustomizer)
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
