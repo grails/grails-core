@@ -6,7 +6,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.web.filter.CorsFilter
 
 /**
- * Created by jameskleeh on 10/20/16.
+ * A class to be registered as a filter for Cors based on Grails configuration
+ *
+ * @author James Kleeh
+ * @since 3.2.2
  */
 class GrailsCorsFilter extends CorsFilter implements Ordered {
 
