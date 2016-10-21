@@ -210,6 +210,19 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         def mainCommandLine = executionContext.commandLine
         def profileName = evaluateProfileName(mainCommandLine)
 
+        List<String> validFlags = [INPLACE_FLAG, PROFILE_FLAG, FEATURES_FLAG]
+        mainCommandLine.undeclaredOptions.each { String key, Object value ->
+            if (!validFlags.contains(key)) {
+                List possibleSolutions = validFlags.findAll { it.substring(0, 2) == key.substring(0, 2) }
+                StringBuilder warning = new StringBuilder("Unrecognized flag: ${key}.")
+                if (possibleSolutions) {
+                    warning.append(" Possible solutions: ")
+                    warning.append(possibleSolutions.join(", "))
+                }
+                GrailsConsole.instance.warn(warning.toString())
+            }
+        }
+
         Profile profileInstance = profileRepository.getProfile(profileName)
         if( !validateProfile(profileInstance, profileName, executionContext)) {
             return false
