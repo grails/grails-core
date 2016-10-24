@@ -66,6 +66,7 @@ import java.lang.reflect.Method
  *
  */
 @CompileStatic
+@Enhances('Controller')
 trait Controller implements ResponseRenderer, ResponseRedirector, RequestForwarder, DataBinder, WebAttributes, ServletAttributes {
 
     private MimeTypesApiSupport mimeTypesSupport = new MimeTypesApiSupport()

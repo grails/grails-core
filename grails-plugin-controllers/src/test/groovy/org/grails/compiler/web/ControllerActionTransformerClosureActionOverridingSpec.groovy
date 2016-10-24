@@ -1,8 +1,6 @@
 package org.grails.compiler.web
 
 import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.ControllerTraitInjector
-import grails.compiler.traits.TraitInjector
 import grails.util.GrailsWebMockUtil
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
