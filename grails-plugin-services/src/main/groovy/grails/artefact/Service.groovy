@@ -24,5 +24,6 @@ import grails.events.Events
  * @author Graeme Rocher
  * @since 3.0
  */
+@Enhances('Service')
 trait Service extends Events {
 }
