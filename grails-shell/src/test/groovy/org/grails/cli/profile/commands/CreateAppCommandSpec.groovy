@@ -1,14 +1,11 @@
 package org.grails.cli.profile.commands
 
 import grails.build.logging.GrailsConsole
-import org.grails.build.parsing.CommandLine
-import org.grails.build.parsing.DefaultCommandLine
 import org.grails.cli.profile.Feature
 import org.grails.cli.profile.Profile
 import org.spockframework.util.StringMessagePrintStream
 import spock.lang.Shared
 import spock.lang.Specification
-
 /**
  * Created by Jim on 7/18/2016.
  */
@@ -39,10 +36,9 @@ class CreateAppCommandSpec extends Specification {
             2 * getFeatures() >> [bar]
             1 * getRequiredFeatures() >> []
         }
-        CommandLine commandLine = new DefaultCommandLine().parseNew(["create-app", "foo", "-features=foo,bar"] as String[])
 
         when:
-        Iterable<Feature> features = new CreateAppCommand().evaluateFeatures(profile, commandLine)
+        Iterable<Feature> features = new CreateAppCommand().evaluateFeatures(profile, ['foo', 'bar'])
 
         then:
         features.size() == 1
@@ -63,10 +59,9 @@ class CreateAppCommandSpec extends Specification {
             2 * getFeatures() >> [foo, bar]
             1 * getRequiredFeatures() >> []
         }
-        CommandLine commandLine = new DefaultCommandLine().parseNew(["create-app", "foo", "-features=foo,bar"] as String[])
 
         when:
-        Iterable<Feature> features = new CreateAppCommand().evaluateFeatures(profile, commandLine)
+        Iterable<Feature> features = new CreateAppCommand().evaluateFeatures(profile, ['foo', 'bar'])
 
         then:
         features.size() == 2
@@ -85,11 +80,9 @@ class CreateAppCommandSpec extends Specification {
             2 * getFeatures() >> [bar]
             1 * getRequiredFeatures() >> []
         }
-        CommandLine commandLine = new DefaultCommandLine().parseNew(["create-app", "foo", "-features=mongo"] as String[])
 
         when:
-        Iterable<Feature> features = new CreateAppCommand().evaluateFeatures(profile, commandLine)
-
+        Iterable<Feature> features = new CreateAppCommand().evaluateFeatures(profile, ['mongo'])
 
         then:
         features.size() == 0

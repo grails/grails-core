@@ -1071,7 +1071,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
             }
         }
         keyValue = processFormFieldValueIfNecessary(selectName, "${keyValue}","option")
-        writer << "value=\"${keyValue}\" "
+        writer << "value=\"${keyValue.toString().encodeAsHTML()}\" "
 
         if(dataAttrsMap) {
             dataAttrsMap.each {key, val->

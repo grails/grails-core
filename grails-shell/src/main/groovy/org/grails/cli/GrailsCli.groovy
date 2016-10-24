@@ -674,7 +674,7 @@ class GrailsCli {
     @Canonical
     public static class ExecutionContextImpl implements ExecutionContext {
         CommandLine commandLine
-        @Delegate(excludes = 'getConsole') ProjectContext projectContext
+        @Delegate(excludes = ['getConsole', 'getBaseDir']) ProjectContext projectContext
         GrailsConsole console = GrailsConsole.getInstance()
 
         ExecutionContextImpl(CodeGenConfig config) {
@@ -705,6 +705,11 @@ class GrailsCli {
                     console.error("Error notifying listener about cancelling command", e)
                 }
             }
+        }
+
+        @Override
+        File getBaseDir() {
+            this.projectContext?.baseDir ?: new File(".")
         }
     }
     
