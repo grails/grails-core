@@ -450,7 +450,7 @@ subprojects { project ->
         }
 
     }
-
+    compileGroovy.dependsOn processResources
 }
 
 
