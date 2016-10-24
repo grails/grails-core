@@ -5,6 +5,7 @@ import grails.compiler.ast.ClassInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
 import grails.plugins.metadata.GrailsPlugin
+import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileDynamic
@@ -156,7 +157,9 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
 
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
-            def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
+
+            def resourceDir = BuildSettings.RESOURCES_DIR ?: new File(compilationTargetDirectory, '../../resources/main/')
+            def factoriesFile = new File(resourceDir, "META-INF/grails.factories")
             factoriesFile.parentFile.mkdirs()
             def props = new Properties()
             def superTypeName = superType.getName()
