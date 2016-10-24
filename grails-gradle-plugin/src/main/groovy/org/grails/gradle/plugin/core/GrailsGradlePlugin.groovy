@@ -122,6 +122,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         createBuildPropertiesTask(project)
 
         configurePathingJar(project)
+
+        configureResourceProcessing(project)
     }
 
     protected void configureProfile(Project project) {
@@ -219,6 +221,14 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected String configureGrailsBuildSettings(Project project) {
         System.setProperty(BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
+    }
+
+    protected void configureResourceProcessing(Project project) {
+        def tasks = project.tasks
+        def resourcesTask = tasks.findByName('processResources')
+        if (resourcesTask) {
+            tasks.findByName('compileGroovy')?.dependsOn resourcesTask
+        }
     }
 
     protected void configureApplicationCommands(Project project) {
