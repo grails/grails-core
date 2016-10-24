@@ -154,7 +154,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             initializeVariables(cmd.appName, defaultpackagename, profileName, cmd.grailsVersion)
 
             Path appFullDirectory = Paths.get(cmd.baseDir.path, appname)
-            targetDirectory = cmd.inplace ? new File(".").canonicalFile : appFullDirectory.toFile()
+            targetDirectory = cmd.inplace ? new File(".").canonicalFile : appFullDirectory.toAbsolutePath().normalize().toFile()
 
             File applicationYmlFile = new File(targetDirectory, "grails-app/conf/application.yml")
 
