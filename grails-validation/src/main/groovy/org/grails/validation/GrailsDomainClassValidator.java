@@ -249,7 +249,6 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
             errors.setNestedPath(buildNestedPath(nestedPath, propertyName, indexOrKey));
 
             for (GrailsDomainClassProperty associatedPersistentProperty : associatedPersistentProperties) {
-                if (associatedPersistentProperty.equals(otherSide)) continue;
                 if (persistentProperty.isEmbedded() && EMBEDDED_EXCLUDES.contains(associatedPersistentProperty.getName())) {
                     continue;
                 }
@@ -261,6 +260,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
                             associatedConstraintedProperties);
                 }
 
+                if (associatedPersistentProperty.equals(otherSide)) continue;
                 if (associatedPersistentProperty.isAssociation()) {
                     cascadeToAssociativeProperty(errors, new BeanWrapperImpl(associatedObject),
                             associatedPersistentProperty);
