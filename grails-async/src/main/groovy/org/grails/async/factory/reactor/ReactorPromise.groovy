@@ -31,8 +31,11 @@ import java.util.concurrent.TimeoutException
  *
  * @author Graeme Rocher
  * @since 3.0
+ *
+ * @deprecated Reactor promise integration is deprecated and will be removed in a future version of Grails
  */
 @CompileStatic
+@Deprecated
 class ReactorPromise<T> implements Promise<T> {
 
     reactor.rx.Promise<T> internalPromise

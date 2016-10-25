@@ -46,7 +46,6 @@ import javax.annotation.PostConstruct
  * @author Graeme Rocher
  */
 @CompileStatic
-@Enhances(['TagLib', 'TagLibrary'])
 trait TagLibrary implements WebAttributes, ServletAttributes, TagLibraryInvoker {
 
     private Encoder rawEncoder

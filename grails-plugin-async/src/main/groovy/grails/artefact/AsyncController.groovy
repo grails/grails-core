@@ -37,7 +37,6 @@ import org.springframework.web.context.request.RequestContextHolder
  *
  */
 @CompileStatic
-@Enhances('Controller')
 trait AsyncController extends Events {
 
     /**
