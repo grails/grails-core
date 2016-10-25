@@ -35,17 +35,11 @@ class ControllersAsyncGrailsPlugin extends Plugin {
 
     Closure doWithSpring() {{->
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
-
     }}
 
     @Override
     @CompileStatic
     void doWithDynamicMethods() {
-        try {
-            Promises.promiseFactory = new ReactorPromiseFactory(applicationContext.getBean(Environment))
-        } catch (NoSuchBeanDefinitionException e) {
-            // Reactor not configured
-        }
         Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
     }
 
