@@ -15,7 +15,6 @@
  */
 package grails.web.databinding
 
-import grails.artefact.Enhances
 import groovy.transform.CompileStatic
 
 import org.grails.web.databinding.DataBindingLazyMetaPropertyMap
@@ -28,7 +27,6 @@ import org.springframework.validation.BindingResult
  *
  */
 @CompileStatic
-@Enhances('Domain')
 trait WebDataBinding {
     /**
      * Binds the source object to the properties of the target instance converting any types as necessary

@@ -15,7 +15,6 @@
  */
 package grails.artefact.controller
 
-import grails.artefact.Enhances
 import groovy.transform.CompileDynamic
 import grails.artefact.Controller
 import grails.artefact.controller.support.ResponseRenderer
@@ -45,7 +44,6 @@ import org.springframework.validation.Errors
  *
  */
 @CompileStatic
-@Enhances('Controller')
 trait RestResponder {
 
     private String PROPERTY_RESPONSE_FORMATS = "responseFormats"
