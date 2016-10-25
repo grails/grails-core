@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.compiler.ast.ClassInjector
+import grails.compiler.traits.ControllerTraitInjector
+import grails.compiler.traits.TraitInjector
 import grails.util.BuildSettings
 import grails.util.GrailsWebMockUtil
 import grails.web.Action

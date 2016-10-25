@@ -50,7 +50,6 @@ import java.util.regex.Pattern
  * @since 3.0
  */
 @CompileStatic
-@Enhances('Interceptor')
 trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwarder, DataBinder, WebAttributes, ServletAttributes, Ordered {
 
     /**

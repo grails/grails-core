@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact
 
-import grails.events.Events
+package grails.compiler.traits
 
+import grails.artefact.Service
 
 /**
- * A trait implemented by all services
+ * A {@link TraitInjector} for services
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-trait Service extends Events {
+class ServiceTraitInjector implements TraitInjector {
+
+    @Override
+    Class getTrait() {
+        Service
+    }
+
+    @Override
+    String[] getArtefactTypes() {
+        ['Service'] as String[]
+    }
 }
