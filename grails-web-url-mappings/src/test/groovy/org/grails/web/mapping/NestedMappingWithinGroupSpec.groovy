@@ -1,6 +1,6 @@
 package org.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.mapping.AbstractUrlMappingsSpec
+import grails.web.mapping.AbstractUrlMappingsSpec
 import spock.lang.Issue
 
 /**
