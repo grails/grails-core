@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact
+package grails.compiler.traits
 
-import grails.events.Events
-
+import grails.artefact.DomainClass
+import org.grails.core.artefact.DomainClassArtefactHandler
 
 /**
- * A trait implemented by all services
- *
- * @author Graeme Rocher
+ * 
+ * @author Jeff Brown
  * @since 3.0
+ *
  */
-trait Service extends Events {
+class DomainClassTraitInjector implements TraitInjector {
+
+    Class getTrait() {
+        DomainClass
+    }
+
+
+    @Override
+    String[] getArtefactTypes() {
+        [DomainClassArtefactHandler.TYPE]
+    }
 }

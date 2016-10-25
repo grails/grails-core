@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact
+package grails.compiler.traits
 
-import grails.events.Events
+import grails.artefact.gsp.TagLibraryInvoker
+import groovy.transform.CompileStatic
+
 
 
 /**
- * A trait implemented by all services
+ * A {@link TraitInjector} that adds the ability to invoke tag libraries from a controller
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-trait Service extends Events {
+@CompileStatic
+class ControllerTagLibraryTraitInjector extends ControllerTraitInjector {
+
+    @Override
+    Class getTrait() {
+        TagLibraryInvoker
+    }
 }
