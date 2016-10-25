@@ -781,7 +781,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 }
             }
 
-            uriBuilder.append(uri);
+            if(!SLASH.equals(uri)) {
+                uriBuilder.append(uri);
+            }
             return uriBuilder.toString();
         }
 
