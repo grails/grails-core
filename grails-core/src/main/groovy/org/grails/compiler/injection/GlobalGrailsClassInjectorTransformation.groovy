@@ -5,7 +5,6 @@ import grails.compiler.ast.ClassInjector
 import grails.core.ArtefactHandler
 import grails.io.IOUtils
 import grails.plugins.metadata.GrailsPlugin
-import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import groovy.transform.CompilationUnitAware
 import groovy.transform.CompileDynamic
@@ -65,7 +64,7 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         Set<String> transformedClasses = []
         String pluginVersion = null
         ClassNode pluginClassNode = null
-        def compilationTargetDirectory = resolveResourcesTargetDirectory(source)
+        def compilationTargetDirectory = resolveCompilationTargetDirectory(source)
         def pluginXmlFile = new File(compilationTargetDirectory, "META-INF/grails-plugin.xml")
 
         for (ClassNode classNode : classes) {
@@ -143,10 +142,6 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         generatePluginXml(pluginClassNode, pluginVersion, transformedClasses, pluginXmlFile)
     }
 
-    static File resolveResourcesTargetDirectory(SourceUnit source) {
-        BuildSettings.RESOURCES_DIR ?: new File(resolveCompilationTargetDirectory(source), '../../resources/main/')
-    }
-
     static File resolveCompilationTargetDirectory(SourceUnit source) {
         File targetDirectory = source.configuration.targetDirectory
         if(targetDirectory==null && source.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
@@ -155,14 +150,13 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
         return targetDirectory
     }
 
-    static boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File targetDirectory) {
+    static boolean updateGrailsFactoriesWithType(ClassNode classNode, ClassNode superType, File compilationTargetDirectory) {
         if (GrailsASTUtils.isSubclassOfOrImplementsInterface(classNode, superType)) {
             if(Modifier.isAbstract(classNode.getModifiers())) return false
 
             def classNodeName = classNode.name
             // generate META-INF/grails.factories
-
-            def factoriesFile = new File(targetDirectory, "META-INF/grails.factories")
+            def factoriesFile = new File(compilationTargetDirectory, "META-INF/grails.factories")
             factoriesFile.parentFile.mkdirs()
             def props = new Properties()
             def superTypeName = superType.getName()

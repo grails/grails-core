@@ -32,7 +32,6 @@ import org.grails.core.artefact.DomainClassArtefactHandler
  *
  */
 @CompileStatic
-@Enhances('Domain')
 trait DomainClass {
 
 

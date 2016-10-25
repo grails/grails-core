@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2015 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact
+package grails.compiler.traits
 
-import grails.events.Events
-
+import grails.artefact.Interceptor
+import groovy.transform.CompileStatic
 
 /**
- * A trait implemented by all services
+ * Injects the {@link Interceptor} trait by convention
  *
  * @author Graeme Rocher
  * @since 3.0
  */
-trait Service extends Events {
+@CompileStatic
+class InterceptorTraitInjector implements TraitInjector {
+
+    @Override
+    Class getTrait() {
+        Interceptor
+    }
+
+    @Override
+    String[] getArtefactTypes() {
+        ['Interceptor'] as String[]
+    }
 }
