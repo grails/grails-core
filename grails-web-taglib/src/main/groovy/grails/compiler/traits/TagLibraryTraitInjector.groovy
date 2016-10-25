@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 original authors
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact
+package grails.compiler.traits
 
-import grails.events.Events
-
+import grails.artefact.TagLibrary
 
 /**
- * A trait implemented by all services
- *
- * @author Graeme Rocher
+ * 
  * @since 3.0
+ * @author Jeff Brown
+ *
  */
-trait Service extends Events {
+class TagLibraryTraitInjector implements TraitInjector {
+    
+    @Override
+    Class getTrait() {
+        TagLibrary
+    }
+
+    @Override
+    String[] getArtefactTypes() {
+        ['TagLibrary', 'TagLib'] as String[]
+    }
 }

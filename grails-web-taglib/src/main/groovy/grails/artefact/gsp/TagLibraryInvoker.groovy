@@ -15,7 +15,6 @@
  */
 package grails.artefact.gsp
 
-import grails.artefact.Enhances
 import grails.util.Environment
 import grails.util.GrailsMetaClassUtils
 import grails.web.api.WebAttributes
@@ -35,7 +34,6 @@ import org.springframework.context.ApplicationContext
  * @since 3.0
  */
 @CompileStatic
-@Enhances('Controller')
 trait TagLibraryInvoker extends WebAttributes{
 
 
