@@ -232,6 +232,8 @@ class UrlMappingTagLib implements TagLibrary{
      * &lt;g:sortableColumn property="title" titleKey="book.title" /&gt;<br/>
      * &lt;g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" /&gt;<br/>
      * &lt;g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" titleKey="book.releaseDate" /&gt;<br/>
+     * &lt;g:sortableColumn property="title" title="Title" titleHtml="Sort by Title" /&gt;<br/>
+     * &lt;g:sortableColumn property="title" title="Title" titleAsc="Sort Title A to Z" titleDesc="Sort Title Z to A" /&gt;<br/>
      *
      * @emptyTag
      *
@@ -239,6 +241,9 @@ class UrlMappingTagLib implements TagLibrary{
      * @attr defaultOrder default order for the property; choose between asc (default if not provided) and desc
      * @attr title title caption for the column
      * @attr titleKey title key to use for the column, resolved against the message source
+     * @attr titleHtml HTML title (used in place of the following two options)
+     * @attr titleAsc HTML title when order is ascending
+     * @attr titleDesc HTML title when order is descending
      * @attr params a map containing request parameters
      * @attr action the name of the action to use in the link, if not specified the list action will be linked
      * @attr namespace controller namespace (optional)
@@ -302,6 +307,22 @@ class UrlMappingTagLib implements TagLibrary{
             def locale = RequestContextUtils.getLocale(request)
             title = messageSource.getMessage(titleKey, null, title, locale)
         }
+
+        // add an HTML title attribute also called tooltip
+        if (attrs.containsKey("titleHtml")) {
+            attrs.put("title", attrs.get("titleHtml"))
+        } else {
+            // title can optionally be different for Ascending and Descending ordering
+            if (attrs.containsKey("titleAsc") && linkParams?.order?.equals("asc")) {
+                attrs.put("title", attrs.get("titleAsc"))
+            }
+            if (attrs.containsKey("titleDesc") && linkParams?.order?.equals("desc")) {
+                attrs.put("title", attrs.get("titleDesc"))
+            }
+        }
+        attrs.remove("titleHtml")
+        attrs.remove("titleDesc")
+        attrs.remove("titleAsc")
 
         writer << "<th "
         // process remaining attributes
