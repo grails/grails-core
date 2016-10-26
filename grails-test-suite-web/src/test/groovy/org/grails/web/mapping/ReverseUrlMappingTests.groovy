@@ -131,4 +131,19 @@ class ProductController {
         def template = '<g:sortableColumn property="id" title="ID" action="index" namespace="grails" />'
         assertOutputEquals '<th class="sortable" ><a href="/grails/book/index?sort=id&amp;order=asc">ID</a></th>', template
     }
+
+    void testPaginateWithHtmlTitle () {
+        webRequest.controllerName = 'book'
+
+        def template = '<g:sortableColumn property="title" title="Title" titleHtml="Sort by Title" namespace="grails" />'
+        assertOutputEquals '<th class="sortable" title="Sort by Title" ><a href="/grails/book/list?sort=title&amp;order=asc">Title</a></th>', template
+    }
+
+    void testPaginateWithHtmlTitleAsc () {
+        webRequest.controllerName = 'book'
+
+        def template = '<g:sortableColumn property="title" title="Title" titleAsc="Sort Title A to Z" titleDesc="Sort Title Z to A" namespace="grails" />'
+        assertOutputEquals '<th class="sortable" title="Sort Title A to Z" ><a href="/grails/book/list?sort=title&amp;order=asc">Title</a></th>', template
+    }
+
 }
