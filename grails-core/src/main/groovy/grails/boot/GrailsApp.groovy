@@ -9,7 +9,6 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.InheritConstructors
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
@@ -22,9 +21,11 @@ import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.support.WatchPattern
+import org.springframework.boot.Banner
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.io.ResourceLoader
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -36,7 +37,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * @since 3.0
  */
 @CompileStatic
-@InheritConstructors
 @Slf4j
 class GrailsApp extends SpringApplication {
 
@@ -44,6 +44,35 @@ class GrailsApp extends SpringApplication {
     private static DirectoryWatcher directoryWatcher
 
     boolean enableBeanCreationProfiler = false
+
+    /**
+     * Create a new {@link GrailsApp} instance. The application context will load
+     * beans from the specified sources (see {@link SpringApplication class-level}
+     * documentation for details. The instance can be customized before calling
+     * {@link #run(String...)}.
+     * @param sources the bean sources
+     * @see #run(Object, String[])
+     * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Object...)
+     */
+    public GrailsApp(Object... sources) {
+        super(sources)
+        bannerMode = Banner.Mode.OFF
+    }
+
+    /**
+     * Create a new {@link GrailsApp} instance. The application context will load
+     * beans from the specified sources (see {@link SpringApplication class-level}
+     * documentation for details. The instance can be customized before calling
+     * {@link #run(String...)}.
+     * @param resourceLoader the resource loader to use
+     * @param sources the bean sources
+     * @see #run(Object, String[])
+     * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Object...)
+     */
+    public GrailsApp(ResourceLoader resourceLoader, Object... sources) {
+        super(resourceLoader, sources)
+        bannerMode = Banner.Mode.OFF
+    }
 
     @Override
     ConfigurableApplicationContext run(String... args) {
@@ -328,11 +357,6 @@ class GrailsApp extends SpringApplication {
         } catch (e) {
             // ignore
         }
-    }
-
-    @Override
-    protected void printBanner(org.springframework.core.env.Environment environment) {
-        // noop
     }
 
     /**
