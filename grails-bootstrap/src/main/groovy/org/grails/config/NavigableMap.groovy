@@ -482,4 +482,14 @@ class NavigableMap implements Map<String, Object>, Cloneable {
 //            throw new NullPointerException("Cannot invoke method hashCode() on NullSafeNavigator");
 //        }
     }
+
+    /**
+     * Replaces the existing values in this Map with the values
+     * passed as an argument.
+     * @param values Values to add to this Map
+     */
+    public void replace(Map values) {
+        clear()
+        putAll values
+    }
 }
