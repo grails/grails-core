@@ -13,20 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.async;
+package grails.async
 
+import grails.async.decorator.PromiseDecorator
+import groovy.transform.CompileStatic
+import org.grails.async.factory.SynchronousPromiseFactory
+import org.grails.async.factory.gpars.GparsPromiseFactory
 
-import groovy.lang.Closure
-import groovy.transform.CompileStatic;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import grails.async.decorator.PromiseDecorator;
-import org.grails.async.factory.SynchronousPromiseFactory;
-import org.grails.async.factory.gpars.GparsPromiseFactory;
-import org.grails.async.factory.reactor.ReactorPromiseFactory;
+import java.util.concurrent.TimeUnit
 
 /**
  * Factory class for working with {@link Promise} instances

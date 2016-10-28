@@ -31,8 +31,11 @@ import java.util.concurrent.TimeUnit
  *
  * @author Graeme Rocher
  * @since 3.0
+ *
+ * @deprecated Reactor promise integration is deprecated and will be removed in a future version of Grails
  */
 @CompileStatic
+@Deprecated
 class ReactorPromiseFactory extends AbstractPromiseFactory {
     static final boolean REACTOR_PRESENT
     static {

@@ -21,11 +21,11 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
+import grails.web.mapping.cors.GrailsCorsFilter
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import grails.core.GrailsApplication
 import org.grails.core.artefact.UrlMappingsArtefactHandler
-import grails.core.support.GrailsApplicationAware
+import grails.web.mapping.cors.GrailsCorsConfiguration
 import org.grails.spring.beans.factory.HotSwappableTargetSourceFactoryBean
 import org.grails.web.mapping.CachingLinkGenerator
 import org.grails.web.mapping.DefaultLinkGenerator
@@ -39,7 +39,6 @@ import org.grails.web.mapping.servlet.UrlMappingsErrorPageCustomizer
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.context.ApplicationContext
-import org.springframework.web.context.WebApplicationContext
 
 /**
  * Handles the configuration of URL mappings.
@@ -69,7 +68,20 @@ class UrlMappingsGrailsPlugin extends Plugin {
 
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
-        urlMappingsHandlerMapping(UrlMappingsHandlerMapping, ref("grailsUrlMappingsHolder"))
+        boolean corsFilterEnabled = config.getProperty(Settings.SETTING_CORS_FILTER, Boolean, true)
+
+        grailsCorsConfiguration(GrailsCorsConfiguration)
+
+        urlMappingsHandlerMapping(UrlMappingsHandlerMapping, ref("grailsUrlMappingsHolder")) {
+            if (!corsFilterEnabled) {
+                grailsCorsConfiguration = ref("grailsCorsConfiguration")
+            }
+        }
+
+        if (corsFilterEnabled) {
+            grailsCorsFilter(GrailsCorsFilter, ref("grailsCorsConfiguration"))
+        }
+
         urlMappingsInfoHandlerAdapter(UrlMappingsInfoHandlerAdapter)
         urlMappingsErrorPageCustomizer(UrlMappingsErrorPageCustomizer)
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)

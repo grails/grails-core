@@ -20,6 +20,7 @@ import grails.config.Settings;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
+import grails.util.Environment;
 import grails.util.GrailsMetaClassUtils;
 import grails.util.Holders;
 import grails.web.databinding.DataBindingUtils;
@@ -90,13 +91,16 @@ public class ControllersDomainBindingApi {
     }
 
     private static void autowire(Object instance) {
-        final ApplicationContext applicationContext = Holders.findApplicationContext();
-        final Config config = Holders.getConfig();
-        boolean autowire = config != null ? config.getProperty(Settings.GORM_AUTOWIRE_INSTANCES, Boolean.class, true) : true;
-        if(autowire && applicationContext != null) {
-            applicationContext
-                    .getAutowireCapableBeanFactory()
-                    .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+        if(!Environment.isInitializing()) {
+
+            final ApplicationContext applicationContext = Holders.findApplicationContext();
+            final Config config = Holders.getConfig();
+            boolean autowire = config != null ? config.getProperty(Settings.GORM_AUTOWIRE_INSTANCES, Boolean.class, true) : true;
+            if(autowire && applicationContext != null ) {
+                applicationContext
+                        .getAutowireCapableBeanFactory()
+                        .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+            }
         }
     }
 }

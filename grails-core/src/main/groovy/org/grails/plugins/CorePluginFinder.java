@@ -15,31 +15,25 @@
  */
 package org.grails.plugins;
 
-import groovy.util.XmlSlurper;
-import groovy.util.slurpersupport.GPathResult;
-import groovy.util.slurpersupport.Node;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsApplication;
-import org.grails.core.exceptions.GrailsConfigurationException;
-import org.grails.core.io.CachingPathMatchingResourcePatternResolver;
-import org.grails.io.support.SpringIOUtils;
 import grails.core.support.ParentApplicationContextAware;
+import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.io.support.SpringIOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.StringUtils;
+import org.springframework.core.io.UrlResource;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Loads core plugin classes. Contains functionality moved in from <code>DefaultGrailsPluginManager</code>.
@@ -49,10 +43,9 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class CorePluginFinder implements ParentApplicationContextAware {
 
-    private static final Log LOG = LogFactory.getLog(CorePluginFinder.class);
-    public static final String CORE_PLUGIN_PATTERN = "classpath*:META-INF/grails-plugin.xml";
+    private static final Logger LOG = LoggerFactory.getLogger(CorePluginFinder.class);
+    public static final String CORE_PLUGIN_PATTERN = "META-INF/grails-plugin.xml";
 
-    private PathMatchingResourcePatternResolver resolver = CachingPathMatchingResourcePatternResolver.INSTANCE;
     private final Set<Class<?>> foundPluginClasses = new HashSet<Class<?>>();
     @SuppressWarnings("unused")
     private final GrailsApplication application;
@@ -86,7 +79,13 @@ public class CorePluginFinder implements ParentApplicationContextAware {
     }
 
     private Resource[] resolvePluginResources() throws IOException {
-        return resolver.getResources(CORE_PLUGIN_PATTERN);
+        Enumeration<URL> resources = application.getClassLoader().getResources(CORE_PLUGIN_PATTERN);
+        List<Resource> resourceList = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            URL url = resources.nextElement();
+            resourceList.add(new UrlResource(url));
+        }
+        return resourceList.toArray(new Resource[resourceList.size()]);
     }
 
 
@@ -147,9 +146,6 @@ public class CorePluginFinder implements ParentApplicationContextAware {
     }
 
     public void setParentApplicationContext(ApplicationContext parent) {
-        if (parent != null) {
-            resolver = new PathMatchingResourcePatternResolver(parent);
-        }
     }
 
     private enum PluginParseState {

@@ -199,7 +199,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     private String checkDispatchAction(HttpServletRequest request) {
-        if (request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE) != null) return null;
+        if (request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE) != null || WebUtils.isForwardOrInclude(request)) {
+            return null;
+        }
 
         String dispatchActionName = null;
         Enumeration<String> paramNames = tryMultipartParams(request, request.getParameterNames());

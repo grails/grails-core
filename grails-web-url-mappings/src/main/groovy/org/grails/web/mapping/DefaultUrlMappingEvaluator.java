@@ -775,12 +775,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                     if(!isInCollection) {
                         uriBuilder.append(SLASH).append(CAPTURING_WILD_CARD);
-                        constrainedList.add(new ConstrainedProperty(UrlMapping.class, parentResource.controllerName + "Id", String.class));
                     }
                 }
             }
 
-            uriBuilder.append(uri);
+            if(!SLASH.equals(uri)) {
+                uriBuilder.append(uri);
+            }
             return uriBuilder.toString();
         }
 
@@ -1196,6 +1197,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 List<ConstrainedProperty> parentMappingConstraints = parentMappingInfo.getConstraints();
                 if (parentMappingConstraints != null) {
                     mappingInfo.getConstraints().addAll(parentMappingConstraints);
+                }
+                ParentResource parentResource = parentResources.peek();
+                if(parentResource != null && !parentResource.isSingle) {
+                    if(!isInCollection) {
+                        mappingInfo.getConstraints().add(new ConstrainedProperty(UrlMapping.class, parentResource.controllerName + "Id", String.class));
+                    }
                 }
             }
             if (previousConstraints.size() > 0) {
