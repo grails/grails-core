@@ -420,7 +420,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
                 def replaceTokens = [
                         'info.app.name'         : project.name,
-                        'info.app.version'      : project.version,
+                        'info.app.version'      : project.version?.toString(),
                         'info.app.grailsVersion': grailsVersion
                 ]
 
