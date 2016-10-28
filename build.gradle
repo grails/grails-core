@@ -27,7 +27,7 @@ ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
     antTraxVersion = "1.7.1"
-    antVersion = "1.9.4"
+    antVersion = "1.9.6"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
