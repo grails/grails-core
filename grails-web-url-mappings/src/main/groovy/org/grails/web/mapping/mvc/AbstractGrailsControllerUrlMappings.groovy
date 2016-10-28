@@ -179,8 +179,10 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
             if(info.redirectInfo) {
                 return info
             }
-            webRequest.resetParams()
-            info.configure(webRequest)
+            if(webRequest != null) {
+                webRequest.resetParams()
+                info.configure(webRequest)
+            }
             def controllerKey = new ControllerKey(info.namespace, info.controllerName, info.actionName, info.pluginName)
             GrailsControllerClass controllerClass = info ? mappingsToGrailsControllerMap.get(controllerKey) : null
             if(controllerClass) {

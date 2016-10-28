@@ -167,6 +167,17 @@ class UrlMappingsTestMixinTests {
     }
 
     @Test
+    @Issue('https://github.com/grails/grails-core/issues/10226')
+    void testExceptionUrlMapping() {
+        mockController(ExceptionTestErrorsController)
+        mockUrlMappings(ExceptionTestUrlMappings)
+
+        assertForwardUrlMapping(500, controller: 'exceptionTestErrors', action: 'handleNullPointer', exception: new NullPointerException())
+        assertForwardUrlMapping(500, controller: 'exceptionTestErrors', action: 'handleIllegalArgument', exception: new IllegalArgumentException())
+        assertForwardUrlMapping(500, controller: 'exceptionTestErrors', action: 'handleDefault')
+    }
+
+    @Test
     @Issue('https://github.com/grails/grails-core/issues/9065')
     void testResourcesUrlMapping() {
         mockController(PersonController)
@@ -280,5 +291,20 @@ class PersonController extends RestfulController<String> {
 class ResourceTestUrlMappings {
     static mappings = {
         '/person'(resources: 'person')
+    }
+}
+
+@Artefact("Controller")
+class ExceptionTestErrorsController {
+    def handleNullPointer() {}
+    def handleIllegalArgument() {}
+    def handleDefault() {}
+}
+
+class ExceptionTestUrlMappings {
+    static mappings = {
+        '500'(controller: 'exceptionTestErrors', action: 'handleNullPointer', exception: NullPointerException)
+        '500'(controller: 'exceptionTestErrors', action: 'handleIllegalArgument', exception: IllegalArgumentException)
+        '500'(controller: 'exceptionTestErrors', action: 'handleDefault')
     }
 }

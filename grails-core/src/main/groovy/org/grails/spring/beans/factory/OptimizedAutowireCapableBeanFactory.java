@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Graeme Rocher
  * @author Lari Hotari
  */
+@Deprecated
 public class OptimizedAutowireCapableBeanFactory extends DefaultListableBeanFactory {
 
     public static boolean DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS = Boolean.getBoolean("grails.disable.optimization.autowirebyname");

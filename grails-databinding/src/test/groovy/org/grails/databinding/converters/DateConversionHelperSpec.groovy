@@ -12,7 +12,7 @@ class DateConversionHelperSpec extends Specification {
     void 'Test parsing dates'() {
         given:
         Calendar calendar = getInstance()
-        DateConversionHelper helper = new DateConversionHelper()
+        DateConversionHelper helper = new DateConversionHelper(formatStrings: ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"])
 
         when:
         Date date = helper.convert '2013-04-15 21:26:31.973'
@@ -85,7 +85,7 @@ class DateConversionHelperSpec extends Specification {
 
     void 'Test invalid format String'() {
         given:
-        def helper = new DateConversionHelper()
+        def helper = new DateConversionHelper(formatStrings: ['yyyy-MM-dd HH:mm:ss.S'])
 
         when:
         helper.convert 'some bogus value'
@@ -96,7 +96,7 @@ class DateConversionHelperSpec extends Specification {
 
     void 'Test formatting an empty String'() {
         given:
-        def helper = new DateConversionHelper()
+        def helper = new DateConversionHelper(formatStrings: ['yyyy-MM-dd HH:mm:ss.S'])
 
         when:
         def date = helper.convert ''

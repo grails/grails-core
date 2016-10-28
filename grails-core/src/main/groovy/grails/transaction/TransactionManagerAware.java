@@ -16,6 +16,7 @@
 package grails.transaction;
 
 import org.springframework.beans.factory.Aware;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -29,5 +30,6 @@ public interface TransactionManagerAware extends Aware {
      *
      * @param transactionManager The TransactionManager implementation
      */
+    @Autowired
     void setTransactionManager(PlatformTransactionManager transactionManager);
 }

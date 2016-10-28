@@ -32,8 +32,6 @@ import org.grails.core.DefaultGrailsControllerClass;
 */
 public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
-    private static final GrailsClass NO_CONTROLLER = new AbstractGrailsClass(Object.class, "Controller") {};
-
     public static final String TYPE = "Controller";
     public static final String PLUGIN_NAME = "controllers";
 
@@ -41,7 +39,6 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
         super(TYPE, GrailsControllerClass.class, DefaultGrailsControllerClass.class,
                 DefaultGrailsControllerClass.CONTROLLER, false);
     }
-
 
     @Override
     public String getPluginName() {

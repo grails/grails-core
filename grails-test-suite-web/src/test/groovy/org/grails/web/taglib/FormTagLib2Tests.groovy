@@ -1,5 +1,6 @@
 package org.grails.web.taglib
 
+
 import java.text.DateFormat
 import org.w3c.dom.Document
 
@@ -47,6 +48,39 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     void testDatePickerTagWithCustomDate() {
         testDatePickerTag(new Date(0), null)
     }
+    /*
+    void testDatePickerTagWithLocalDateTime() {
+        testDatePickerTag(LocalDateTime.now(), null)
+    }
+
+    void testDatePickerTagWithLocalDate() {
+        testDatePickerTag(LocalDate.now(), null)
+    }
+
+    void testDatePickerTagWithLocalTime() {
+        try {
+            testDatePickerTag(LocalTime.now(), null)
+        } catch (e) {
+            assert e instanceof DateTimeException
+        }
+    }
+
+    void testDatePickerTagWithOffsetDateTime() {
+        testDatePickerTag(OffsetDateTime.now(), null)
+    }
+
+    void testDatePickerTagWithOffsetTime() {
+        try {
+            testDatePickerTag(OffsetTime.now(), null)
+        } catch (e) {
+            assert e instanceof DateTimeException
+        }
+
+    }
+
+    void testDatePickerTagWithZonedDateTime() {
+        testDatePickerTag(ZonedDateTime.now(), null)
+    }*/
 
     void testDatePickerTagWithDefault() {
         def defaultDate = Calendar.getInstance()
@@ -102,7 +136,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         assertSelectFieldPresentWithSelectedValue(document, DATE_PICKER_TAG_NAME + "_day", '')
     }
 
-    private void testDatePickerTag(Date date, String precision) {
+    private void testDatePickerTag(Object date, String precision) {
         Document document = getDatePickerOutput(date, precision, null)
         assertNotNull(document)
 
@@ -114,7 +148,19 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         // if no date was given, default to the current date
         Calendar calendar = new GregorianCalendar()
         if (date != null) {
-            calendar.setTime(date)
+            if (date instanceof Date) {
+                calendar.setTime(date)
+            } /*else if (date instanceof TemporalAccessor) {
+                ZonedDateTime zonedDateTime
+                if (date instanceof LocalDateTime) {
+                    zonedDateTime = ZonedDateTime.of(date, ZoneId.systemDefault())
+                } else if (date instanceof LocalDate) {
+                    zonedDateTime = ZonedDateTime.of(date, LocalTime.MIN, ZoneId.systemDefault())
+                } else {
+                    zonedDateTime = ZonedDateTime.from(date)
+                }
+                calendar = GregorianCalendar.from(zonedDateTime)
+            }*/
         }
 
         // validate id attributes

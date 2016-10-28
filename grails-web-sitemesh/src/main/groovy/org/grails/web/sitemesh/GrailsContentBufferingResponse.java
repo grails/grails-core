@@ -56,6 +56,9 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
         this.contentProcessor = contentProcessor;
         this.webAppContext = webAppContext;
         pageResponseWrapper = (GrailsPageResponseWrapper) getResponse();
+        if (response.getContentType() != null) {
+            webAppContext.setContentType(response.getContentType());
+        }
     }
 
     public HttpServletResponse getTargetResponse() {

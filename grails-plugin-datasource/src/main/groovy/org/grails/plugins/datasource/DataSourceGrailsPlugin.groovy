@@ -16,23 +16,16 @@
 package org.grails.plugins.datasource
 
 import grails.config.Config
-import grails.core.support.GrailsApplicationAware
+import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
-import grails.util.Metadata
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-
-import javax.sql.DataSource
-
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
-import grails.core.GrailsApplication
 import org.grails.core.exceptions.GrailsConfigurationException
-import org.grails.transaction.TransactionManagerPostProcessor
 import org.grails.transaction.ChainedTransactionManagerPostProcessor
+import org.grails.transaction.TransactionManagerPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
@@ -40,6 +33,8 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jmx.support.JmxUtils
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.util.ClassUtils
+
+import javax.sql.DataSource
 
 /**
  * Handles the configuration of a DataSource within Grails.

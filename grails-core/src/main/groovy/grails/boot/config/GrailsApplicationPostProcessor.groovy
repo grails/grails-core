@@ -19,6 +19,7 @@ import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
+import org.grails.core.util.ClassPropertyFetcher
 import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfigUtilities
@@ -70,7 +71,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
             this.applicationClass = null
         }
         this.classes = classes != null ? classes : [] as Class[]
-        grailsApplication = new DefaultGrailsApplication()
+        grailsApplication = applicationClass != null ? new DefaultGrailsApplication(applicationClass) : new DefaultGrailsApplication()
         pluginManager = new DefaultGrailsPluginManager(grailsApplication)
         if(applicationContext != null) {
             setApplicationContext(applicationContext)
@@ -81,6 +82,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         if(applicationContext == null) {
             throw new IllegalStateException("ApplicationContext should not be null")
         }
+        Environment.setInitializing(true)
         grailsApplication.applicationContext = applicationContext
         grailsApplication.mainContext = applicationContext
         customizePluginManager(pluginManager)
@@ -89,6 +91,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         loadApplicationConfig()
         customizeGrailsApplication(grailsApplication)
         performGrailsInitializationSequence()
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
 
     protected void customizePluginManager(GrailsPluginManager grailsApplication) {
@@ -234,6 +237,7 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
         def lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
         if(event instanceof ContextRefreshedEvent) {
+            Environment.setInitializing(false)
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
             for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
