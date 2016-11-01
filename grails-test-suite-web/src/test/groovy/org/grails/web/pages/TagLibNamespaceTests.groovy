@@ -1,11 +1,10 @@
 package org.grails.web.pages
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
-@TestFor(TestTagLib)
-class TagLibNamespaceTests extends Specification {
+class TagLibNamespaceTests extends Specification implements TagLibUnitTest<TestTagLib> {
 
     void testInvokeNamespacedTag() {
         expect:
