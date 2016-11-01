@@ -17,14 +17,14 @@ package org.grails.web.servlet
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 /**
  * Tests for the bindData method
  *
  */
-@TestFor(BindingController)
-class BindDataMethodTests extends Specification {
+class BindDataMethodTests extends Specification implements ControllerUnitTest<BindingController> {
 
     void 'Test bindData with Map'() {
         when:

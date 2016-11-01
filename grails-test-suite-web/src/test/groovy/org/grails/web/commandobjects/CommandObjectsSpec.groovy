@@ -1,7 +1,7 @@
 package org.grails.web.commandobjects
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.ClosureToMapPopulator
 import grails.validation.ConstraintsEvaluator
 
@@ -10,8 +10,7 @@ import org.grails.validation.ConstraintsEvaluatorFactoryBean;
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(TestController)
-class CommandObjectsSpec extends Specification {
+class CommandObjectsSpec extends Specification implements ControllerUnitTest<TestController> {
 
     def setupSpec() {
         defineBeans {

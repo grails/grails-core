@@ -51,6 +51,8 @@ dependencies {
     // Required for tag library support
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
+
+    testCompile 'org.grails:testing-support:1.0.0.BUILD-SNAPSHOT'
 }
 
 // javaee-web-api has a bad versions of classes we need to compile against
