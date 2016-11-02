@@ -569,7 +569,7 @@ class GrailsCli {
                     // ignore
                 }
                 def profiles = (List<URL>)dependencyMap.get("profiles")
-                URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+                URLClassLoader classLoader = new URLClassLoader(urls as URL[], Thread.currentThread().contextClassLoader)
                 this.profileRepository = new StaticJarProfileRepository(classLoader, profiles as URL[])
                 Thread.currentThread().contextClassLoader = classLoader
             }
