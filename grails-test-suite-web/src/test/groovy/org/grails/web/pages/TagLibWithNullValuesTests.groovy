@@ -1,15 +1,14 @@
 package org.grails.web.pages
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(NullValueTagLib)
-class TagLibWithNullValuesTests extends Specification {
+class TagLibWithNullValuesTests extends Specification implements TagLibUnitTest<NullValueTagLib> {
 
     void testNullValueHandling() {
         expect:

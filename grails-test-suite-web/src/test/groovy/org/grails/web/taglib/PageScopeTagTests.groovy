@@ -1,15 +1,14 @@
 package org.grails.web.taglib
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
-@TestFor(PageScopeTagLib)
-class PageScopeTagTests extends Specification {
+class PageScopeTagTests extends Specification implements TagLibUnitTest<PageScopeTagLib> {
 
     void testScopes() {
         expect:

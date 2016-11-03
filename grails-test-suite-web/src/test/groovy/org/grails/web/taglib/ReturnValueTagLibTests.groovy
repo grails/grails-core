@@ -1,11 +1,10 @@
 package org.grails.web.taglib
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
-@TestFor(ReturnValueTagLib)
-class ReturnValueTagLibTests extends Specification {
+class ReturnValueTagLibTests extends Specification implements TagLibUnitTest<ReturnValueTagLib> {
 
     void testReturnValue() {
         expect:

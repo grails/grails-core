@@ -3,10 +3,10 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
-@TestFor(SimpleTagLib)
-class TagLibraryInvokeBodySpec extends Specification {
+class TagLibraryInvokeBodySpec extends Specification implements TagLibUnitTest<SimpleTagLib> {
 
     void "Test that a tag can be invoked with a custom body"() {
         given:"A custom body"

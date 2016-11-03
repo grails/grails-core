@@ -1,11 +1,10 @@
 package org.grails.web.pages
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
-@TestFor(OutScopeTagLib)
-class ModifyOurScopeWithBodyTagTests extends Specification {
+class ModifyOurScopeWithBodyTagTests extends Specification implements TagLibUnitTest<OutScopeTagLib> {
 
     // test for GRAILS-5847
     void testModifyOuterScopeInTag() {

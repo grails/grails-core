@@ -2,9 +2,9 @@ package org.grails.web.taglib
 
 import grails.persistence.Entity
 import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
+import grails.testing.web.taglib.TagLibUnitTest
 import org.grails.core.io.MockStringResourceLoader
 import org.grails.plugins.web.taglib.ValidationTagLib
 import org.grails.web.util.GrailsApplicationAttributes
@@ -40,9 +40,8 @@ import java.beans.PropertyEditorSupport
  * @author graemerocher
  */
 @TestMixin(GroovyPageUnitTestMixin)
-@TestFor(ValidationTagLib)
 @Mock(ValidationTagLibBook)
-class ValidationTagLibSpec extends Specification {
+class ValidationTagLibSpec extends Specification implements TagLibUnitTest<ValidationTagLib> {
     void testDefaultErrorMessage() {
 
         when:

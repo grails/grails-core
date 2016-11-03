@@ -1,11 +1,10 @@
 package org.grails.web.pages
 
 import grails.test.AbstractGrailsEnvChangingSpec
-import grails.test.mixin.TestFor
 import grails.artefact.Artefact
+import grails.testing.web.taglib.TagLibUnitTest
 
-@TestFor(CustomTagLib)
-class OptionalTagBodySpec extends AbstractGrailsEnvChangingSpec {
+class OptionalTagBodySpec extends AbstractGrailsEnvChangingSpec implements TagLibUnitTest<CustomTagLib> {
     def "Test that the existence of a body can be tested with groovy truth"(grailsEnv) {
         when:
             changeGrailsEnv(grailsEnv)

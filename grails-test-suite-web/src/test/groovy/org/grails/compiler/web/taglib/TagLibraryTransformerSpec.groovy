@@ -2,15 +2,13 @@ package org.grails.compiler.web.taglib
 
 import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
-import grails.test.mixin.TestFor
-
+import grails.testing.web.taglib.TagLibUnitTest
 import org.grails.compiler.injection.GrailsAwareClassLoader
 
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(ClosureMethodTestTagLib)
-class TagLibraryTransformerSpec extends Specification {
+class TagLibraryTransformerSpec extends Specification implements TagLibUnitTest<ClosureMethodTestTagLib> {
 
     void 'Test tag methods are created for properties which are tags'() {
         expect:
