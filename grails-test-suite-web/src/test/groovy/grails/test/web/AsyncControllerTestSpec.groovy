@@ -1,13 +1,12 @@
 package grails.test.web
 
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
 
 /**
  */
-@TestFor(FooController)
-class AsyncControllerTestSpec extends Specification{
+class AsyncControllerTestSpec extends Specification implements ControllerUnitTest<FooController> {
     void "Test that it is possible to test interaction with the Servlet 3.0 async API"() {
         when:"A controller that uses the async API is called"
             controller.index()

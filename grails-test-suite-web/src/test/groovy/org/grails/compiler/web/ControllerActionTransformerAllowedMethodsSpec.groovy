@@ -2,7 +2,7 @@ package org.grails.compiler.web
 
 import grails.artefact.Artefact
 import grails.artefact.Enhanced
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 
 import javax.servlet.http.HttpServletResponse
 
@@ -10,8 +10,7 @@ import spock.lang.Issue
 import spock.lang.Specification
 
 
-@TestFor(SomeAllowedMethodsController)
-class ControllerActionTransformerAllowedMethodsSpec extends Specification {
+class ControllerActionTransformerAllowedMethodsSpec extends Specification implements ControllerUnitTest<SomeAllowedMethodsController> {
 
     @Issue('GRAILS-8426')
     void 'Test @AllowedMethodsHandledAtCompileTime is added'() {

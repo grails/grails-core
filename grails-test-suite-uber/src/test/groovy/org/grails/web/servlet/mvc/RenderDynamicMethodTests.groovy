@@ -1,15 +1,15 @@
 package org.grails.web.servlet.mvc
 
+import grails.testing.web.controllers.ControllerUnitTest
+
 import static org.junit.Assert.assertEquals
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
 
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.buffer.FastStringWriter
 import org.junit.Test
 
-@TestFor(RenderDynamicMethodTestController)
-class RenderDynamicMethodTests  {
+class RenderDynamicMethodTests implements ControllerUnitTest<RenderDynamicMethodTestController> {
 
     @Test
     void testRenderTextWithLayout() {

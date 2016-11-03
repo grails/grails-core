@@ -1,11 +1,10 @@
 package org.grails.web.metaclass
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
-@TestFor(DemoController)
-class CollectionBindDataMethodSpec extends Specification {
+class CollectionBindDataMethodSpec extends Specification implements ControllerUnitTest<DemoController> {
 
     void 'Test bindData with a CollectionDataBindingSource argument using XML'() {
         when:

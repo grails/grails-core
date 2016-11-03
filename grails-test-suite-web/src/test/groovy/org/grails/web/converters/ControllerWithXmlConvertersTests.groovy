@@ -2,12 +2,10 @@ package org.grails.web.converters
 
 import grails.artefact.Artefact;
 import grails.converters.XML
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 
-@TestFor(XmlController)
-class ControllerWithXmlConvertersTests {
+class ControllerWithXmlConvertersTests implements ControllerUnitTest<XmlController> {
 
     @Test
     void testConvertArrayWithNullEments() {

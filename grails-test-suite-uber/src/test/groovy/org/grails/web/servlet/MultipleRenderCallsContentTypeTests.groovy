@@ -1,8 +1,9 @@
 package org.grails.web.servlet
 
+import grails.testing.web.controllers.ControllerUnitTest
+
 import static org.junit.Assert.assertEquals
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
 
 import org.junit.Test
 
@@ -10,8 +11,7 @@ import org.junit.Test
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(MultipleRenderController)
-class MultipleRenderCallsContentTypeTests {
+class MultipleRenderCallsContentTypeTests implements ControllerUnitTest<MultipleRenderController> {
 
     @Test
     void testLastContentTypeWins() {

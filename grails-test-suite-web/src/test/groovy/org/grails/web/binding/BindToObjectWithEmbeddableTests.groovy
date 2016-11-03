@@ -2,8 +2,7 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 import static org.junit.Assert.assertEquals
 
@@ -11,8 +10,7 @@ import static org.junit.Assert.assertEquals
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(EmbeddedAddressController)
-class BindToObjectWithEmbeddableTests {
+class BindToObjectWithEmbeddableTests implements ControllerUnitTest<EmbeddedAddressController> {
 
     @Test
     void testBindToObjectWithEmbedded() {

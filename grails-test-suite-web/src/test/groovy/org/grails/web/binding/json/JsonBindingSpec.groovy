@@ -1,13 +1,11 @@
 package org.grails.web.binding.json
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(BindingController)
-class JsonBindingSpec extends Specification {
+class JsonBindingSpec extends Specification implements ControllerUnitTest<BindingController> {
 
     void 'Test binding JSON body'() {
         given:

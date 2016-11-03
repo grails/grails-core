@@ -1,12 +1,11 @@
 package grails.test.web
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(DemoController)
-class FordedUrlSpec extends Specification {
+class FordedUrlSpec extends Specification implements ControllerUnitTest<DemoController> {
 
     @Issue('GRAILS-11673')
     void 'test forwardedUrl when forward is called'() {

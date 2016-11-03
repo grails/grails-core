@@ -3,11 +3,10 @@ package org.grails.web.binding
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 
-@TestFor(PersonController)
 @Mock([TargetPerson, Book])
-class BindXmlWithAssociationTests {
+class BindXmlWithAssociationTests implements ControllerUnitTest<PersonController> {
 
     void testBindXmlWithAssociatedId() {
         request.method = 'POST'

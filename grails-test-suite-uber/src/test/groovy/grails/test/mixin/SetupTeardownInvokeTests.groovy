@@ -16,14 +16,14 @@
 
 package grails.test.mixin
 
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
 /**
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@TestFor(SetupTeardownController)
-class SetupTeardownInvokeTests {
+class SetupTeardownInvokeTests implements ControllerUnitTest<SetupTeardownController> {
     static int counter=1
 
     void setUp() {

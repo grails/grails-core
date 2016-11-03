@@ -2,11 +2,10 @@ package org.grails.compiler.web.converters
 
 import grails.artefact.Artefact
 import grails.converters.XML
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
-@TestFor(RenderTestController)
-class ConvertersControllersApiSpec extends Specification {
+class ConvertersControllersApiSpec extends Specification implements ControllerUnitTest<RenderTestController> {
 
     void "Test that the render method for converters is added at compile time"() {
         when:

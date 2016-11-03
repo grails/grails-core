@@ -1,13 +1,12 @@
 package org.grails.web.mime
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.mime.MimeType
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(FormatController)
-class WithFormatContentTypeSpec extends Specification {
+class WithFormatContentTypeSpec extends Specification implements ControllerUnitTest<FormatController> {
 
     static doWithConfig(config) {
         // unit tests in real applications will not need to do 

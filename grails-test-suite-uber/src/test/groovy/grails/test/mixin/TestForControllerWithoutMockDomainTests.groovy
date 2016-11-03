@@ -2,12 +2,11 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Assert;
 import org.junit.Test
 
-@TestFor(ImpedimentsController)
-class TestForControllerWithoutMockDomainTests {
+class TestForControllerWithoutMockDomainTests implements ControllerUnitTest<ImpedimentsController> {
 
     @Test
     void testEditImpediment() {

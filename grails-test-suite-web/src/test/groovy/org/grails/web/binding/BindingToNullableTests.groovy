@@ -1,9 +1,10 @@
 package org.grails.web.binding
 
+import grails.testing.web.controllers.ControllerUnitTest
+
 import static org.junit.Assert.*
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
 
 import org.junit.Test
 
@@ -11,8 +12,7 @@ import org.junit.Test
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(NullBindingPersonController)
-class BindingToNullableTests {
+class BindingToNullableTests implements ControllerUnitTest<NullBindingPersonController> {
 
     @Test
     void testDataBindingBlankStringToNull() {
