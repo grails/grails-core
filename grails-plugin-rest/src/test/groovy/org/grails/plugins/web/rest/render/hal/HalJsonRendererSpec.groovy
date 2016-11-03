@@ -43,6 +43,7 @@ import org.grails.web.mapping.DefaultLinkGenerator
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.web.servlet.mvc.MockHibernateProxyHandler
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.env.MapPropertySource
@@ -728,6 +729,81 @@ class HalJsonRendererSpec extends Specification{
         response.contentAsString =='''{"_links":{"self":{"href":"http://localhost/products","hreflang":"en","type":"application/hal+json"}},"name":"MacBook","numberInStock":10,"_embedded":{}}'''
     }
 
+    @Issue('https://github.com/grails/grails-core/issues/10293')
+    void "Test that the HAL renderer renders JSON values correctly for collections with a many-to-one association" () {
+        given:
+        HalJsonCollectionRenderer renderer = getMemberCollectionRenderer()
+        renderer.proxyHandler = new MockHibernateProxyHandler()
+
+        and:
+        def team = new Team(name: 'Test Team')
+        def members = [
+            new Member(name: "One", team: team),
+            new Member(name: "Two", team: team)
+        ]
+
+        and:
+        def webRequest = configureMembersWebRequest()
+        def renderContext = new ServletRenderContext(webRequest)
+        def response = webRequest.response
+
+        when:
+        renderer.render(members, renderContext)
+
+        then:
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+
+        and:
+        response.contentAsString == '''{
+    "_links": {
+        "self": {
+            "href": "http://localhost/members/",
+            "hreflang": "en",
+            "type": "application/hal+json"
+        }
+    },
+    "_embedded": {
+        "member": [
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://localhost/members",
+                        "hreflang": "en",
+                        "type": "application/hal+json"
+                    },
+                    "team": {
+                        "href": "http://localhost/teams",
+                        "hreflang": "en"
+                    }
+                },
+                "name": "One"
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://localhost/members",
+                        "hreflang": "en",
+                        "type": "application/hal+json"
+                    },
+                    "team": {
+                        "href": "http://localhost/teams",
+                        "hreflang": "en"
+                    }
+                },
+                "name": "Two"
+            }
+        ]
+    }
+}'''
+    }
+
+    protected configureMembersWebRequest() {
+        def webRequest = boundMimeTypeRequest()
+        webRequest.request.addHeader("ACCEPT", "application/hal+json")
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/members/")
+        webRequest
+    }
+
 
     protected HalJsonCollectionRenderer getCollectionRenderer() {
         def renderer = new HalJsonCollectionRenderer(Product)
@@ -736,6 +812,18 @@ class HalJsonRendererSpec extends Specification{
         renderer.linkGenerator = getLinkGenerator {
             "/products"(resources: "product")
         }
+        renderer
+    }
+
+    protected HalJsonCollectionRenderer getMemberCollectionRenderer() {
+        def renderer = new HalJsonCollectionRenderer(Member)
+        renderer.mappingContext = mappingContext
+        renderer.messageSource = new StaticMessageSource()
+        renderer.linkGenerator = getLinkGenerator {
+            "/members"(resources: "member")
+            "/teams"(resources: "team")
+        }
+        renderer.prettyPrint = true
         renderer
     }
 
@@ -802,6 +890,8 @@ class HalJsonRendererSpec extends Specification{
         context.addPersistentEntity(Event)
         context.addPersistentEntity(Employee)
         context.addPersistentEntity(Project)
+        context.addPersistentEntities(Team)
+        context.addPersistentEntities(Member)
         return context
     }
     LinkGenerator getLinkGenerator(Closure mappings) {
@@ -946,6 +1036,20 @@ class Employee {
     static mapping = {
         projects lazy: false
     }
+    String name
+}
+
+@Entity
+class Team {
+    static hasMany = [members: Member]
+
+    String name
+}
+
+@Entity
+class Member {
+    static belongsTo = [team: Team]
+
     String name
 }
 
