@@ -21,6 +21,7 @@ import org.grails.io.watch.DirectoryWatcher
 import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.support.WatchPattern
+import org.springframework.boot.Banner
 import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
@@ -59,6 +60,7 @@ class GrailsApp extends SpringApplication {
      */
     GrailsApp(Object... sources) {
         super(sources)
+        bannerMode = Banner.Mode.OFF
     }
 
     /**
@@ -73,6 +75,7 @@ class GrailsApp extends SpringApplication {
      */
     GrailsApp(ResourceLoader resourceLoader, Object... sources) {
         super(resourceLoader, sources)
+        bannerMode = Banner.Mode.OFF
     }
 
     @Override
