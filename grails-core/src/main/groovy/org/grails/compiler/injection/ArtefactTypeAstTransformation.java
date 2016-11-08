@@ -157,9 +157,16 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     }
 
     public void performInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {
-        doPerformInjectionOnArtefactType(sourceUnit, cNode, artefactType);
+        List<ClassInjector> injectors = findInjectors(artefactType, GrailsAwareInjectionOperation.getClassInjectors());
+        for (ClassInjector injector : injectors) {
+            if(injector instanceof CompilationUnitAware) {
+                ((CompilationUnitAware) injector).setCompilationUnit(this.compilationUnit);
+            }
+        }
+        performInjection(sourceUnit, cNode, injectors);
     }
 
+    @Deprecated
     public static void doPerformInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {
         List<ClassInjector> injectors = findInjectors(artefactType, GrailsAwareInjectionOperation.getClassInjectors());
         performInjection(sourceUnit, cNode, injectors);

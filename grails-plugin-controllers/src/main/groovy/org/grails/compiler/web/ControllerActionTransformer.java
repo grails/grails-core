@@ -736,18 +736,23 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     javax.persistence.Entity.class) ||
                     commandObjectNode.implementsInterface(ClassHelper.make(Validateable.class));
 
-            if (!argumentIsValidateable) {
+            if (!argumentIsValidateable && commandObjectNode.isPrimaryClassNode()) {
                 final ModuleNode commandObjectModule = commandObjectNode.getModule();
-                if (commandObjectModule != null) {
+                if (commandObjectModule != null && this.compilationUnit != null) {
                     if (commandObjectModule == controllerNode.getModule() ||
                             doesModulePathIncludeSubstring(commandObjectModule,
                                     "grails-app" + File.separator + "controllers" + File.separator)) {
 
                         TraitInjectionUtils.injectTrait(compilationUnit, source, commandObjectNode, Validateable.class);
 
-/*                        ConstructorNode constructorNode = commandObjectNode.getDeclaredConstructors().get(0);
-                        ClassNode helper = Traits.findHelper(ClassHelper.make(Validateable.class));
-                        ((BlockStatement)constructorNode.getCode()).addStatement(new ExpressionStatement(new StaticMethodCallExpression(helper, "$init$", VariableExpression.THIS_EXPRESSION)));*/
+                        List<ConstructorNode> declaredConstructors = commandObjectNode.getDeclaredConstructors();
+                        if(declaredConstructors.isEmpty()) {
+                            BlockStatement constructorLogic = new BlockStatement();
+                            ConstructorNode constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorLogic);
+                            ClassNode helper = Traits.findHelper(ClassHelper.make(Validateable.class));
+                            commandObjectNode.addConstructor(constructorNode);
+                            constructorLogic.addStatement(new ExpressionStatement(new StaticMethodCallExpression(helper, "$init$", VariableExpression.THIS_EXPRESSION)));
+                        }
                         argumentIsValidateable = true;
                     } else if (doesModulePathIncludeSubstring(commandObjectModule,
                             "grails-app" + File.separator + "domain" + File.separator)) {

@@ -38,26 +38,32 @@ trait Validateable {
     private static Map<String, ConstrainedProperty> constraintsMapInternal
     Errors errors
 
+    /**
+     * @return The errors
+     */
     Errors getErrors() {
         initErrors()
         errors
     }
 
+    /**
+     * @return Whether the object has errors
+     */
     Boolean hasErrors() {
         initErrors()
         errors.hasErrors()
     }
 
+    /**
+     * Clear the errors
+     */
     void clearErrors() {
         errors = null
     }
 
-    private void initErrors() {
-        if (errors == null) {
-            errors = new ValidationErrors(this, this.getClass().getName())
-        }
-    }
-
+    /**
+     * @return The map of applied constraints
+     */
     static Map<String, ConstrainedProperty> getConstraintsMap() {
         if (constraintsMapInternal == null) {
             ConstraintsEvaluator evaluator = findConstraintsEvaluator()
@@ -67,45 +73,74 @@ trait Validateable {
         constraintsMapInternal
     }
 
-    @CompileStatic
-    private static ConstraintsEvaluator findConstraintsEvaluator() {
-        try {
-            BeanFactory ctx = Holders.applicationContext
-            ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
-            return evaluator
-        } catch (Throwable e) {
-            return new DefaultConstraintEvaluator()
-        }
-    }
-
+    /**
+     * Validate the object
+     *
+     * @return True if it is valid
+     */
     boolean validate() {
         validate null, null, null
     }
 
+    /**
+     * Validate the object with the given adhoc constraints
+     *
+     * @return True if it is valid
+     */
     boolean validate(Closure<?>... adHocConstraintsClosures) {
         validate(null, null, adHocConstraintsClosures)
     }
 
+    /**
+     * Validate the object with the given parameters
+     *
+     * @return True if it is valid
+     */
     boolean validate(Map<String, Object> params) {
         validate params, null
     }
 
+    /**
+     * Validate the object with the given parameters and adhoc constraints
+     *
+     * @return True if it is valid
+     */
     boolean validate(Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         validate(null, params, adHocConstraintsClosures)
     }
 
+    /**
+     * Validate the object for the given list of fields
+     *
+     * @return True if it is valid
+     */
     boolean validate(List fieldsToValidate) {
         validate fieldsToValidate, null, null
     }
 
+    /**
+     * Validate the object for the given list of fields and adhoc constraints
+     *
+     * @return True if it is valid
+     */
     boolean validate(List fieldsToValidate, Closure<?>... adHocConstraintsClosures) {
         validate(fieldsToValidate, null, adHocConstraintsClosures)
     }
 
+    /**
+     * Validate the object for the given list of fields and parameters
+     *
+     * @return True if it is valid
+     */
     boolean validate(List fieldsToValidate, Map<String, Object> params) {
         validate fieldsToValidate, params, null
     }
 
+    /**
+     * Validate the object for the given list of fields, parameters and adhoc constraints
+     *
+     * @return True if it is valid
+     */
     boolean validate(List fieldsToValidate, Map<String, Object> params, Closure<?>... adHocConstraintsClosures) {
         beforeValidateHelper.invokeBeforeValidate(this, fieldsToValidate)
 
@@ -157,6 +192,17 @@ trait Validateable {
         this.getProperty(prop.propertyName)
     }
 
+    @CompileStatic
+    private static ConstraintsEvaluator findConstraintsEvaluator() {
+        try {
+            BeanFactory ctx = Holders.applicationContext
+            ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
+            return evaluator
+        } catch (Throwable e) {
+            return new DefaultConstraintEvaluator()
+        }
+    }
+
     private MessageSource findMessageSource() {
         try {
             ApplicationContext ctx = Holders.applicationContext
@@ -164,6 +210,12 @@ trait Validateable {
             return messageSource
         } catch (Throwable e) {
             return null
+        }
+    }
+
+    private void initErrors() {
+        if (errors == null) {
+            errors = new ValidationErrors(this, this.getClass().getName())
         }
     }
 
