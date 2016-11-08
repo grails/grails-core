@@ -22,9 +22,11 @@ import org.grails.io.watch.FileExtensionFileChangeListener
 import org.grails.plugins.BinaryGrailsPlugin
 import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.Banner
+import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.ConfigurableEnvironment
+import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
 
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -40,6 +42,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @Slf4j
 class GrailsApp extends SpringApplication {
 
+    private static final String GRAILS_BANNER = 'grails-banner.txt'
+
     private static boolean developmentModeActive = false
     private static DirectoryWatcher directoryWatcher
 
@@ -54,7 +58,7 @@ class GrailsApp extends SpringApplication {
      * @see #run(Object, String[])
      * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Object...)
      */
-    public GrailsApp(Object... sources) {
+    GrailsApp(Object... sources) {
         super(sources)
         bannerMode = Banner.Mode.OFF
     }
@@ -69,7 +73,7 @@ class GrailsApp extends SpringApplication {
      * @see #run(Object, String[])
      * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Object...)
      */
-    public GrailsApp(ResourceLoader resourceLoader, Object... sources) {
+    GrailsApp(ResourceLoader resourceLoader, Object... sources) {
         super(resourceLoader, sources)
         bannerMode = Banner.Mode.OFF
     }
@@ -366,8 +370,8 @@ class GrailsApp extends SpringApplication {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    public static ConfigurableApplicationContext run(Object source, String... args) {
-        return run([ source ] as Object[], args);
+    static ConfigurableApplicationContext run(Object source, String... args) {
+        return run([ source ] as Object[], args)
     }
 
     /**
@@ -377,7 +381,9 @@ class GrailsApp extends SpringApplication {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    public static ConfigurableApplicationContext run(Object[] sources, String[] args) {
-        return new GrailsApp(sources).run(args);
+    static ConfigurableApplicationContext run(Object[] sources, String[] args) {
+        GrailsApp grailsApp = new GrailsApp(sources)
+        grailsApp.banner = new ResourceBanner(new ClassPathResource(GRAILS_BANNER))
+        return grailsApp.run(args)
     }
 }
