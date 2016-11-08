@@ -191,7 +191,7 @@ class CommandObjectsSpec extends Specification {
         when:
         def model = controller.methodAction()
         def person = model.person
-        def constrainedProperties = person.constraints
+        def constrainedProperties = person.constraintsMap
         def nameConstrainedProperty = constrainedProperties.name
         def matchesProperty = nameConstrainedProperty.matches
 
