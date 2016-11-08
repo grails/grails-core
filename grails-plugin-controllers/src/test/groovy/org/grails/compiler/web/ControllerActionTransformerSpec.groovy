@@ -7,6 +7,7 @@ import grails.util.BuildSettings
 import grails.util.GrailsWebMockUtil
 import grails.web.Action
 import grails.web.servlet.context.GrailsWebApplicationContext
+import org.codehaus.groovy.control.CompilationUnit
 
 import java.lang.reflect.Modifier
 
@@ -26,9 +27,11 @@ class ControllerActionTransformerSpec extends Specification {
         gcl = new GrailsAwareClassLoader()
         def transformer = new ControllerActionTransformer() {
             @Override
-            boolean shouldInject(URL url) { true }
+            boolean shouldInject(URL url) {
+                true
+            }
         }
-
+        transformer.setCompilationUnit(new CompilationUnit())
         gcl.classInjectors = [transformer] as ClassInjector[]
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def appCtx = new GrailsWebApplicationContext()
@@ -200,8 +203,38 @@ class ControllerActionTransformerSpec extends Specification {
     }
 
 
+    void "Test command object gets Validateable injected"() {
+
+        when:
+        def cls = gcl.parseClass('''
+            class TestMyCommandObjController {
+
+                def action(MyCommand myCommand) {
+                }
+
+                def $test() {
+                    new MyCommand(name: "Sally")
+                }
+
+            }
+
+            class MyCommand {
+                String name
+            }
+            ''')
+        def controller = cls.newInstance()
+        def myCommand = controller.$test()
+
+        then:
+        controller
+        myCommand
+        myCommand.validate()
+    }
+
     def cleanup() {
         RequestContextHolder.resetRequestAttributes()
         System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'false'
     }
 }
+
+
