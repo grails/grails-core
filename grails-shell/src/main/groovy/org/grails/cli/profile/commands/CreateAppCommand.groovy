@@ -611,6 +611,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
 
         ant.chmod(dir: targetDirectory, includes: "**/gradlew*", perm: 'u+x')
+        ant.chmod(dir: targetDirectory, includes: "**/grailsw*", perm: 'u+x')
     }
 
     @CompileDynamic

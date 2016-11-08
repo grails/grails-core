@@ -31,8 +31,6 @@ import grails.compiler.ast.AnnotatedClassInjector;
 import grails.compiler.ast.AstTransformer;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.util.CollectionUtils;
-import grails.validation.ASTValidateableHelper;
-import grails.validation.DefaultASTValidateableHelper;
 import grails.validation.Validateable;
 import grails.web.Action;
 import grails.web.RequestParameter;
@@ -54,15 +52,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import groovy.transform.CompilationUnitAware;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -92,12 +83,14 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.trait.Traits;
 import org.grails.compiler.injection.GrailsASTUtils;
+import org.grails.compiler.injection.TraitInjectionUtils;
 import org.grails.core.DefaultGrailsControllerClass;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
@@ -158,7 +151,7 @@ class TestController{
 */
 
 @AstTransformer
-public class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector {
+public class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector, CompilationUnitAware {
 
     public static final AnnotationNode DELEGATING_METHOD_ANNOATION = new AnnotationNode(ClassHelper.make(DelegatingMethod.class));
     public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
@@ -195,6 +188,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert";
 
     private Boolean converterEnabled;
+    private CompilationUnit compilationUnit;
 
     public ControllerActionTransformer() {
         converterEnabled = Boolean.parseBoolean(System.getProperty(CONVERT_CLOSURES_KEY));
@@ -742,14 +736,23 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     javax.persistence.Entity.class) ||
                     commandObjectNode.implementsInterface(ClassHelper.make(Validateable.class));
 
-            if (!argumentIsValidateable) {
+            if (!argumentIsValidateable && commandObjectNode.isPrimaryClassNode()) {
                 final ModuleNode commandObjectModule = commandObjectNode.getModule();
-                if (commandObjectModule != null) {
+                if (commandObjectModule != null && this.compilationUnit != null) {
                     if (commandObjectModule == controllerNode.getModule() ||
                             doesModulePathIncludeSubstring(commandObjectModule,
                                     "grails-app" + File.separator + "controllers" + File.separator)) {
-                        final ASTValidateableHelper h = new DefaultASTValidateableHelper();
-                        h.injectValidateableCode(commandObjectNode, false);
+
+                        TraitInjectionUtils.injectTrait(compilationUnit, source, commandObjectNode, Validateable.class);
+
+                        List<ConstructorNode> declaredConstructors = commandObjectNode.getDeclaredConstructors();
+                        if(declaredConstructors.isEmpty()) {
+                            BlockStatement constructorLogic = new BlockStatement();
+                            ConstructorNode constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorLogic);
+                            ClassNode helper = Traits.findHelper(ClassHelper.make(Validateable.class));
+                            commandObjectNode.addConstructor(constructorNode);
+                            constructorLogic.addStatement(new ExpressionStatement(new StaticMethodCallExpression(helper, "$init$", VariableExpression.THIS_EXPRESSION)));
+                        }
                         argumentIsValidateable = true;
                     } else if (doesModulePathIncludeSubstring(commandObjectModule,
                             "grails-app" + File.separator + "domain" + File.separator)) {
@@ -951,5 +954,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+    @Override
+    public void setCompilationUnit(CompilationUnit compilationUnit) {
+        this.compilationUnit = compilationUnit;
     }
 }
