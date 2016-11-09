@@ -16,6 +16,7 @@ import org.grails.io.support.MainClassFinder
 import org.grails.test.context.junit4.GrailsJunit4ClassRunner
 import org.grails.test.context.junit4.GrailsTestConfiguration
 import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.test.IntegrationTest
@@ -168,20 +169,26 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
 
     protected void enhanceGebSpecWithPort(ClassNode classNode) {
         if (GrailsASTUtils.isSubclassOf(classNode, "geb.spock.GebSpec")) {
-            def integerClassNode = ClassHelper.make(Integer)
-            def param = new Parameter(integerClassNode, "port")
+            def contextPathParameter = new Parameter(ClassHelper.make(String), 'serverContextPath')
+            def cpValueAnnotation = new AnnotationNode(ClassHelper.make(Value))
+            cpValueAnnotation.setMember('value', new ConstantExpression('${server.contextPath:/}'))
+            contextPathParameter.addAnnotation(cpValueAnnotation)
+
+            def serverPortParameter = new Parameter(ClassHelper.make(Integer.TYPE), 'serverPort')
+            def spValueAnnotation = new AnnotationNode(ClassHelper.make(Value))
+            spValueAnnotation.setMember('value', new ConstantExpression('${local.server.port}'))
+            serverPortParameter.addAnnotation(spValueAnnotation)
+
             def setterBody = new BlockStatement()
             def systemClassExpression = new ClassExpression(ClassHelper.make(System))
             def args = new ArgumentListExpression()
             args.addExpression(new ConstantExpression("geb.build.baseUrl"))
-            args.addExpression(new GStringExpression('http://localhost:${port}', [new ConstantExpression("http://localhost:"), new ConstantExpression("")], [new VariableExpression(param)] as List<Expression>))
+            args.addExpression(new GStringExpression('http://localhost:${serverPort}${serverContextPath}', [new ConstantExpression('http://localhost:'), new ConstantExpression(""), new ConstantExpression("")], [new VariableExpression('serverPort'), new VariableExpression('serverContextPath')] as List<Expression>))
             setterBody.addStatement(new ExpressionStatement(new MethodCallExpression(systemClassExpression, "setProperty", args)))
-            def method = new MethodNode("setGebPort", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [param] as Parameter[], null, setterBody)
-            def valueAnnotation = new AnnotationNode(ClassHelper.make(Value))
-            valueAnnotation.setMember("value", new ConstantExpression('${local.server.port}'))
-            method.addAnnotation(valueAnnotation)
+            def method = new MethodNode("configureGebBaseUrl", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [contextPathParameter, serverPortParameter] as Parameter[], null, setterBody)
+            method.addAnnotation(new AnnotationNode(ClassHelper.make(CompileStatic)))
+            method.addAnnotation(new AnnotationNode(ClassHelper.make(Autowired)))
             classNode.addMethod(method)
         }
     }
-
 }
