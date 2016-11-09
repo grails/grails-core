@@ -5,10 +5,11 @@ import grails.test.mixin.integration.Integration
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
-import org.codehaus.groovy.ast.stmt.BlockStatement
-import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.syntax.Token
+import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.grails.compiler.injection.GrailsASTUtils
@@ -16,6 +17,7 @@ import org.grails.io.support.MainClassFinder
 import org.grails.test.context.junit4.GrailsJunit4ClassRunner
 import org.grails.test.context.junit4.GrailsTestConfiguration
 import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.boot.test.IntegrationTest
@@ -168,20 +170,36 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
 
     protected void enhanceGebSpecWithPort(ClassNode classNode) {
         if (GrailsASTUtils.isSubclassOf(classNode, "geb.spock.GebSpec")) {
-            def integerClassNode = ClassHelper.make(Integer)
-            def param = new Parameter(integerClassNode, "port")
-            def setterBody = new BlockStatement()
+            def contextPathParameter = new Parameter(ClassHelper.make(String), 'serverContextPath')
+            def cpValueAnnotation = new AnnotationNode(ClassHelper.make(Value))
+            cpValueAnnotation.setMember('value', new ConstantExpression('${server.contextPath:/}'))
+            contextPathParameter.addAnnotation(cpValueAnnotation)
+
+            def serverPortParameter = new Parameter(ClassHelper.make(Integer.TYPE), 'serverPort')
+            def spValueAnnotation = new AnnotationNode(ClassHelper.make(Value))
+            spValueAnnotation.setMember('value', new ConstantExpression('${local.server.port}'))
+            serverPortParameter.addAnnotation(spValueAnnotation)
+
+            Expression urlExpression = new GStringExpression('http://localhost:${serverPort}${serverContextPath}', [new ConstantExpression('http://localhost:'), new ConstantExpression(""), new ConstantExpression("")], [new VariableExpression('serverPort'), new VariableExpression('serverContextPath')] as List<Expression>)
+
+            Expression baseUrlVariableExpression = new VariableExpression('$baseUrl', ClassHelper.make(String))
+            Expression declareBaseUrlExpression = new DeclarationExpression(baseUrlVariableExpression, Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(urlExpression, 'toString', new ArgumentListExpression()))
+
+            Expression constantSlashExpression = new ConstantExpression('/')
+            Expression endsWithMethodCall = new MethodCallExpression(baseUrlVariableExpression, 'endsWith', new ArgumentListExpression(constantSlashExpression))
+            Expression appendSlashExpression = new BinaryExpression(baseUrlVariableExpression, Token.newSymbol(Types.PLUS_EQUAL, 0, 0), constantSlashExpression)
+            Statement ifUrlEndsWithSlashStatement = new IfStatement(new BooleanExpression(endsWithMethodCall), new EmptyStatement(), new ExpressionStatement(appendSlashExpression))
+            def methodBody = new BlockStatement()
+            methodBody.addStatement(new ExpressionStatement(declareBaseUrlExpression))
+            methodBody.addStatement(ifUrlEndsWithSlashStatement)
             def systemClassExpression = new ClassExpression(ClassHelper.make(System))
             def args = new ArgumentListExpression()
             args.addExpression(new ConstantExpression("geb.build.baseUrl"))
-            args.addExpression(new GStringExpression('http://localhost:${port}', [new ConstantExpression("http://localhost:"), new ConstantExpression("")], [new VariableExpression(param)] as List<Expression>))
-            setterBody.addStatement(new ExpressionStatement(new MethodCallExpression(systemClassExpression, "setProperty", args)))
-            def method = new MethodNode("setGebPort", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [param] as Parameter[], null, setterBody)
-            def valueAnnotation = new AnnotationNode(ClassHelper.make(Value))
-            valueAnnotation.setMember("value", new ConstantExpression('${local.server.port}'))
-            method.addAnnotation(valueAnnotation)
+            args.addExpression(baseUrlVariableExpression)
+            methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(systemClassExpression, "setProperty", args)))
+            def method = new MethodNode("configureGebBaseUrl", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [contextPathParameter, serverPortParameter] as Parameter[], null, methodBody)
+            method.addAnnotation(new AnnotationNode(ClassHelper.make(Autowired)))
             classNode.addMethod(method)
         }
     }
-
 }
