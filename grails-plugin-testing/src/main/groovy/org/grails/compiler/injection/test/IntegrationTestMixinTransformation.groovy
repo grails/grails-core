@@ -186,7 +186,6 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             args.addExpression(new GStringExpression('http://localhost:${serverPort}${serverContextPath}', [new ConstantExpression('http://localhost:'), new ConstantExpression(""), new ConstantExpression("")], [new VariableExpression('serverPort'), new VariableExpression('serverContextPath')] as List<Expression>))
             setterBody.addStatement(new ExpressionStatement(new MethodCallExpression(systemClassExpression, "setProperty", args)))
             def method = new MethodNode("configureGebBaseUrl", Modifier.PUBLIC, ClassHelper.VOID_TYPE, [contextPathParameter, serverPortParameter] as Parameter[], null, setterBody)
-            method.addAnnotation(new AnnotationNode(ClassHelper.make(CompileStatic)))
             method.addAnnotation(new AnnotationNode(ClassHelper.make(Autowired)))
             classNode.addMethod(method)
         }
