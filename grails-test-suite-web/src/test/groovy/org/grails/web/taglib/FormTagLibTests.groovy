@@ -151,6 +151,23 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; &#39;_PROCESSED_" id="testField" />', template, [value:/foo > " & < '/])
     }
 
+    void testTextFieldTagWithNonBooleanAttributes() {
+        unRegisterRequestDataValueProcessor()
+        def template = '<g:textField name="testField" value="1" disabled="false" checked="false" readonly="false" required="false" />'
+        assertOutputEquals('<input type="text" name="testField" value="1" required="false" id="testField" />', template)
+
+        template = '<g:textField name="testField" value="1" disabled="true" checked="true" readonly="true" required="true"/>'
+        assertOutputEquals('<input type="text" name="testField" value="1" required="true" disabled="disabled" checked="checked" readonly="readonly" id="testField" />', template)
+
+        grailsApplication.config.grails.tags.booleanToAttributes = ['disabled', 'checked', 'readonly', 'required']
+
+        template = '<g:textField name="testField" value="1" disabled="false" checked="false" readonly="false" required="false" />'
+        assertOutputEquals('<input type="text" name="testField" value="1" id="testField" />', template)
+
+        template = '<g:textField name="testField" value="1" disabled="true" checked="true" readonly="true" required="true"/>'
+        assertOutputEquals('<input type="text" name="testField" value="1" disabled="disabled" checked="checked" readonly="readonly" required="required" id="testField" />', template)
+    }
+
     void testTextAreaWithBody() {
         unRegisterRequestDataValueProcessor()
         def template = '<g:textArea name="test">This is content</g:textArea>'
