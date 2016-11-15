@@ -1,2 +1,0 @@
-grails.compiler.traits.TraitInjector=grails.compiler.traits.InterceptorTraitInjector
-grails.core.ArtefactHandler=org.grails.plugins.web.interceptors.InterceptorArtefactHandler

@@ -645,7 +645,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             if (namedArguments.containsKey(RESOURCE) || namedArguments.containsKey(SINGLE)) {
                                 Object controller;
                                 if (namedArguments.containsKey(RESOURCE)) {
-                                    GrailsUtil.deprecated("The ${RESOURCE} syntax is deprecated and will be removed in a future release. Use ${SINGLE} instead.");
+                                    GrailsUtil.deprecated("The " + RESOURCE + " syntax is deprecated and will be removed in a future release. Use " + SINGLE + " instead.");
                                     controller = namedArguments.get(RESOURCE);
                                 } else {
                                     controller = namedArguments.get(SINGLE);
