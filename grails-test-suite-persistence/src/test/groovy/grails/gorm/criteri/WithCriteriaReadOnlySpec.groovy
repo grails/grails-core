@@ -1,11 +1,10 @@
 package grails.gorm.criteri
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 
-@TestFor(Person)
-class WithCriteriaReadOnlySpec extends Specification {
+class WithCriteriaReadOnlySpec extends Specification implements DomainUnitTest<Person> {
 
     void 'test that the readOnly criteria method is available in a unit test'() {
         given:

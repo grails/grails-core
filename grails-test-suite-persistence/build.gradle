@@ -39,6 +39,7 @@ dependencies {
     }
 
     testRuntime 'com.h2database:h2:1.3.176'
+    testCompile 'org.grails:grails-testing-support:1.0.0.BUILD-SNAPSHOT'
 }
 
 test {
