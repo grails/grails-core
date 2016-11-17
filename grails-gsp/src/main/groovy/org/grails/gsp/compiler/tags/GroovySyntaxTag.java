@@ -62,7 +62,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     protected boolean isCompileStaticMode() {
-        return parser.isCompileStaticMode();
+        return parser != null && parser.isCompileStaticMode();
     }
 
     public void setWriter(Writer w) {

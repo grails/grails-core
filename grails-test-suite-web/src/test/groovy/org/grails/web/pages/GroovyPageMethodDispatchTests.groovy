@@ -41,7 +41,7 @@ class Test2TagLib {
     Closure tag3 = { attrs, body ->
                 out << body() }
 }
-class MyPage extends GroovyPage {
+class MyPage extends org.grails.gsp.GroovyPage {
     String getGroovyPageFileName() { "test" }
     def run() {
         setBodyClosure(1) {
