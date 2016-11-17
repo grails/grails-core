@@ -50,6 +50,18 @@ class GspCompileStaticSpec extends Specification {
         compileStatic << [true, false]
     }
 
+    def "should support g:each in both compilation modes"() {
+        given:
+        def template = """<%@page model="List<Date> dates" compileStatic="$compileStatic"%><g:each var="date" in="\${dates}">\${date.time},</g:each>"""
+        def model = [dates: [new Date(123L), new Date(456L), new Date(789L)]]
+        when:
+        def rendered = renderTemplate(template, model)
+        then:
+        rendered == '123,456,789,'
+        where:
+        compileStatic << [true, false]
+    }
+
     def renderTemplate(templateSource, model) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         def w = t.make(model)
