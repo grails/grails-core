@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.grails.buffer.FastStringWriter;
 import org.grails.buffer.StreamByteBuffer;
 import org.grails.buffer.StreamCharBuffer;
+import org.grails.gsp.CompileStaticGroovyPage;
 import org.grails.gsp.GroovyPage;
 import org.grails.gsp.compiler.tags.GrailsTagRegistry;
 import org.grails.gsp.compiler.tags.GroovySyntaxTag;
@@ -785,7 +786,10 @@ public class GroovyPageParser implements Tokens {
             }
             out.print("class ");
             out.print(className);
-            out.println(" extends GroovyPage {");
+            out.print(" extends ");
+            Class<?> gspSuperClass = compileStaticMode ? CompileStaticGroovyPage.class : GroovyPage.class;
+            out.print(gspSuperClass.getName());
+            out.println(" {");
             if(modelDirectiveValue != null) {
                 out.println("// start model fields");
                 out.println(modelDirectiveValue);
