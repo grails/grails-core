@@ -1,19 +1,23 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import spock.lang.Specification
 
-import org.junit.Test
+class AddToAndServiceInjectionSpec extends Specification implements DataTest {
 
-@TestFor(Ship)
-@Mock([Ship, Pirate])
-class AddToAndServiceInjectionTests {
+    void setupSpec() {
+        mockDomains Pirate, Ship
+    }
 
-    @Test
-    void testAddTo() {
+    void 'test addTo'() {
+        when:
         def pirate = new Pirate(name: 'Billy')
         def ship = new Ship()
         ship.addToPirates(pirate)
-        assert 1 == ship.pirates.size()
+
+        then:
+        1 == ship.pirates.size()
     }
 }
 

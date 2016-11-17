@@ -1,171 +1,213 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact;
+import grails.artefact.Artefact
 import grails.converters.XML
 import grails.persistence.Entity
-
-import org.junit.Test
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
 /**
- * A Junit 4 test that tests a scaffolded controllers logic using the new mixins
+ * A test that tests a scaffolded controllers logic using the new mixins
  */
-@TestFor(BookController)
-@Mock([Book, Author])
-class DomainClassControllerUnitTestMixinTests {
+class DomainClassControllerUnitTestMixinSpec extends Specification implements ControllerUnitTest<BookController>, DataTest {
 
-    @Test
-    void testRelationshipManagementMethods() {
-       def a = new Author(name: "Stephen King")
-
-       a.addToBooks(title: "The Stand", pages: 1100)
-
-       assert a.save(flush: true) != null
+    void setupSpec() {
+        mockDomains Book, Author
     }
-    @Test
-    void testIndex() {
+
+    void 'test relationship methods'() {
+        when:
+        def a = new Author(name: "Stephen King")
+
+        a.addToBooks(title: "The Stand", pages: 1100)
+
+        then:
+        a.save(flush: true) != null
+    }
+
+    void 'test index'() {
+        when:
         controller.index()
 
-        assert "/book/list" == response.redirectedUrl
+        then:
+        "/book/list" == response.redirectedUrl
     }
 
-    @Test
-    void testConvertToXml() {
+    void 'test convert to xml'() {
+        when:
         controller.renderXml()
 
-        assert response.xml.title.text() == "The Stand"
+        then:
+        response.xml.title.text() == "The Stand"
     }
 
-    @Test
-    void testBinding() {
-        def book = new Book(title:"The Stand", pages:"200")
+    void 'test binding'() {
+        when:
+        def book = new Book(title: "The Stand", pages: "200")
 
-        assert book.pages == 200
+        then:
+        book.pages == 200
 
-        book.properties = [pages:"300"]
+        when:
+        book.properties = [pages: "300"]
 
-        assert book.pages == 300
+        then:
+        book.pages == 300
     }
 
-    @Test
-    void testList() {
+    void 'test list'() {
+        when:
         def model = controller.list()
 
-        assert model.bookInstanceList.size() == 0
-        assert model.bookInstanceTotal == 0
+        then:
+        model.bookInstanceList.size() == 0
+        model.bookInstanceTotal == 0
 
-        def book = new Book(title:"")
+        when:
+        def book = new Book(title: "")
 
-        assert book.validate() == false
+        then:
+        book.validate() == false
 
-        assert book.errors.allErrors.size() == 1
-        assert book.errors['title'].code == 'nullable'
+        book.errors.allErrors.size() == 1
+        book.errors['title'].code == 'nullable'
 
+        when:
         response.reset()
         book.clearErrors()
 
+        and:
         book.title = "The Stand"
         book.pages = 1000
-        assert book.save() != null
 
+        then:
+        book.save() != null
+
+        when:
         model = controller.list()
 
-        assert model.bookInstanceList.size() == 1
-        assert model.bookInstanceTotal == 1
+        then:
+        model.bookInstanceList.size() == 1
+        model.bookInstanceTotal == 1
     }
 
-    @Test
-    void testCreate() {
-       params.title = "The Stand"
-       params.pages = "500"
+    void 'test create'() {
+        when:
+        params.title = "The Stand"
+        params.pages = "500"
 
-       def model = controller.create()
+        def model = controller.create()
 
-       assert model.bookInstance?.title == "The Stand"
-       assert model.bookInstance?.pages == 500
+        then:
+        model.bookInstance?.title == "The Stand"
+        model.bookInstance?.pages == 500
     }
 
-    @Test
     void testSave() {
+        when:
         request.method = 'POST'
         controller.save()
 
-        assert model.bookInstance != null
-        assert view == '/book/create'
+        then:
+        model.bookInstance != null
+        view == '/book/create'
 
+        when:
         params.title = "The Stand"
         params.pages = "500"
 
         controller.save()
 
-        assert response.redirectedUrl == '/book/show/1'
-        assert flash.message != null
-        assert Book.count() == 1
+        then:
+        response.redirectedUrl == '/book/show/1'
+        flash.message != null
+        Book.count() == 1
     }
 
-    @Test
-    void testShow() {
+    void 'test show'() {
+        when:
         controller.show()
 
-        assert flash.message != null
-        assert response.redirectedUrl == '/book/list'
+        then:
+        flash.message != null
+        response.redirectedUrl == '/book/list'
 
-        def book = new Book(title:"")
+        when:
+        def book = new Book(title: "")
 
         book.title = "The Stand"
         book.pages = 1000
-        assert book.save() != null
 
+        then:
+        book.save() != null
+
+        when:
         params.id = book.id
 
         def model = controller.show()
 
-        assert model.bookInstance == book
+        then:
+        model.bookInstance == book
     }
 
-    @Test
-    void testEdit() {
+    void 'test edit'() {
+        when:
         controller.edit()
 
-        assert flash.message != null
-        assert response.redirectedUrl == '/book/list'
+        then:
+        flash.message != null
+        response.redirectedUrl == '/book/list'
 
-        def book = new Book(title:"")
+        when:
+        def book = new Book(title: "")
 
         book.title = "The Stand"
         book.pages = 1000
-        assert book.save() != null
 
+        then:
+        book.save() != null
+
+        when:
         params.id = book.id
 
         def model = controller.edit()
 
-        assert model.bookInstance == book
+        then:
+        model.bookInstance == book
     }
 
-    @Test
-    void testUpdate() {
+    void 'test update'() {
+        when:
         request.method = 'POST'
         controller.update()
 
-        assert flash.message != null
-        assert response.redirectedUrl == '/book/list'
+        then:
+        flash.message != null
+        response.redirectedUrl == '/book/list'
 
+        when:
         response.reset()
 
         def book = new Book()
         book.title = "The Stand"
         book.pages = 1000
-        assert book.save() != null
 
+        then:
+        book.save() != null
+
+        when:
         // test invalid parameters in update
         params.id = book.id
         params.title = ""
 
         controller.update()
 
-        assert view == "/book/edit"
-        assert model.bookInstance != null
+        then:
+        view == "/book/edit"
+        model.bookInstance != null
 
+        when:
         response.reset()
         book.clearErrors()
         params.title = "The Shining"
@@ -173,48 +215,60 @@ class DomainClassControllerUnitTestMixinTests {
 
         controller.update()
 
-        assert response.redirectedUrl == "/book/show/$book.id"
-        assert flash.message != null
-        assert Book.get(book.id).title == "The Shining"
-        assert Book.get(book.id).pages == 500
+        then:
+        response.redirectedUrl == "/book/show/$book.id"
+        flash.message != null
+        Book.get(book.id).title == "The Shining"
+        Book.get(book.id).pages == 500
     }
 
-    @Test
-    void testDelete() {
+    void 'test delete'() {
+        when:
         request.method = 'POST'
         controller.delete()
 
-        assert flash.message != null
-        assert response.redirectedUrl == '/book/list'
+        then:
+        flash.message != null
+        response.redirectedUrl == '/book/list'
 
+        when:
         response.reset()
 
         def book = new Book()
         book.title = "The Stand"
         book.pages = 1000
-        assert book.save() != null
-        assert Book.count() == 1
 
+        then:
+        book.save() != null
+        Book.count() == 1
+
+        when:
         params.id = book.id
 
         controller.delete()
 
-        assert Book.count() == 0
-        assert Book.get(book.id) == null
-        assert response.redirectedUrl == '/book/list'
+        then:
+        Book.count() == 0
+        Book.get(book.id) == null
+        response.redirectedUrl == '/book/list'
     }
 
-    @Test
-    void testCriteriaQuery() {
-        mockDomain(Book, [[title:"The Stand", pages:"1000"], [title:"The Shining", pages:400], [title:"Along Came a Spider", pages:300]])
+    void 'test criteria query'() {
+        when:
+        [[title: "The Stand", pages: "1000"], [title: "The Shining", pages: 400], [title: "Along Came a Spider", pages: 300]].each {
+            new Book(it).save()
+        }
 
-        assert Book.count() == 3
+        then:
+        Book.count() == 3
 
+        when:
         def results = Book.withCriteria {
             like('title', 'The S%')
         }
 
-        assert results.size() == 2
+        then:
+        results.size() == 2
     }
 }
 
@@ -224,13 +278,13 @@ class Book {
     Date releaseDate = new Date()
     int pages
 
-    static belongsTo = [author:Author]
+    static belongsTo = [author: Author]
     static constraints = {
-        title blank:false, nullable:false
+        title blank: false, nullable: false
         author nullable: true
     }
     static mapping = {
-        title index:true
+        title index: true
     }
 }
 
@@ -251,7 +305,7 @@ class BookController {
     }
 
     def renderXml = {
-        render new Book(title:"The Stand") as XML
+        render new Book(title: "The Stand") as XML
     }
     def list = {
         params.max = Math.min(params.max ? params.int('max') : 10, 100)
@@ -269,8 +323,7 @@ class BookController {
         if (bookInstance.save(flush: true)) {
             flash.message = "${message(code: 'default.created.message', args: [message(code: 'book.label', default: 'Book'), bookInstance.id])}"
             redirect(action: "show", id: bookInstance.id)
-        }
-        else {
+        } else {
             render(view: "create", model: [bookInstance: bookInstance])
         }
     }
@@ -280,8 +333,7 @@ class BookController {
         if (!bookInstance) {
             flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'book.label', default: 'Book'), params.id])}"
             redirect(action: "list")
-        }
-        else {
+        } else {
             [bookInstance: bookInstance]
         }
     }
@@ -291,8 +343,7 @@ class BookController {
         if (!bookInstance) {
             flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'book.label', default: 'Book'), params.id])}"
             redirect(action: "list")
-        }
-        else {
+        } else {
             return [bookInstance: bookInstance]
         }
     }
@@ -313,12 +364,10 @@ class BookController {
             if (!bookInstance.hasErrors() && bookInstance.save(flush: true)) {
                 flash.message = "${message(code: 'default.updated.message', args: [message(code: 'book.label', default: 'Book'), bookInstance.id])}"
                 redirect(action: "show", id: bookInstance.id)
-            }
-            else {
+            } else {
                 render(view: "edit", model: [bookInstance: bookInstance])
             }
-        }
-        else {
+        } else {
             flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'book.label', default: 'Book'), params.id])}"
             redirect(action: "list")
         }
@@ -336,8 +385,7 @@ class BookController {
                 flash.message = "${message(code: 'default.not.deleted.message', args: [message(code: 'book.label', default: 'Book'), params.id])}"
                 redirect(action: "show", id: params.id)
             }
-        }
-        else {
+        } else {
             flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'book.label', default: 'Book'), params.id])}"
             redirect(action: "list")
         }

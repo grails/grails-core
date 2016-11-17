@@ -1,16 +1,17 @@
 package org.grails.validation
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
 import org.springframework.validation.Errors
 import spock.lang.Specification
 
 /**
  */
-@TestFor(CascadingPerson)
-@Mock([CascadingPerson, Name])
-class CascadingErrorCountSpec extends Specification {
+class CascadingErrorCountSpec extends Specification implements DataTest {
+
+    Class<?>[] getDomainClassesToMock() {
+        [CascadingPerson, Name]
+    }
 
     void "Test that the error count is correct when validating sorted set"() {
         when:"A domain is created with an invalid collection and then validated"
