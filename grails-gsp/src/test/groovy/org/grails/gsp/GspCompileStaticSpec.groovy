@@ -16,6 +16,9 @@
 
 package org.grails.gsp
 
+import grails.core.GrailsTagLibClass
+import org.grails.core.DefaultGrailsTagLibClass
+import org.grails.taglib.TagLibraryLookup
 import spock.lang.Specification
 
 
@@ -72,6 +75,25 @@ class GspCompileStaticSpec extends Specification {
         compileStatic << [true, false]
     }
 
+    def "should support message tag invocation"() {
+        given:
+        def tagLibraryLookup = new TagLibraryLookup() {
+            @Override
+            protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib) {
+                tags.put(name, taglib.newInstance())
+            }
+        }
+        tagLibraryLookup.registerTagLib(new DefaultGrailsTagLibClass(SampleTagLib))
+        gpte.tagLibraryLookup = tagLibraryLookup
+        def template = '<%@ compileStatic="true"%>${' + (gDotPrefix ? 'g.' : '') + '''message(code:'World')}'''
+        when:
+        def rendered = renderTemplate(template, [:], true)
+        then:
+        rendered == 'Hello World'
+        where:
+        gDotPrefix << [false, true]
+    }
+
     def renderTemplate(templateSource, model, expectedCompileStaticMode) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         def w = t.make(model)
@@ -82,3 +104,12 @@ class GspCompileStaticSpec extends Specification {
         sw.toString()
     }
 }
+
+class SampleTagLib {
+    static returnObjectForTags = ['message']
+
+    Closure message = { attrs ->
+        "Hello ${attrs.code}"
+    }
+}
+
