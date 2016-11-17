@@ -39,6 +39,16 @@ class GspCompileStaticSpec extends Specification {
         compileStatic << [true, false]
     }
 
+    def "specifying model implies compileStatic mode"() {
+        given:
+        def template = '<%@ model="Date date"%>${date.time}'
+        def date = new Date(123L)
+        when:
+        def rendered = renderTemplate(template, [date: date], true)
+        then:
+        rendered == '123'
+    }
+
     def "should support typed variables in both compilation modes"() {
         given:
         def template = """<%@ compileStatic="$compileStatic"%><g:def type="Date" var="date" value="\${new Date(123L)}"/>\${date.time}"""
