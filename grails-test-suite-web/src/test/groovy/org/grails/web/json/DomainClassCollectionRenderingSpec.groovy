@@ -4,6 +4,7 @@ import grails.rest.render.json.JsonRenderer
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.test.runtime.FreshRuntime
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -12,6 +13,7 @@ import spock.lang.Specification
 
 @TestMixin(ControllerUnitTestMixin)
 @Mock([Album, Company])
+@FreshRuntime
 class DomainClassCollectionRenderingSpec extends Specification {
     void setup() {
         final initializer = new ConvertersConfigurationInitializer(grailsApplication: grailsApplication)
