@@ -37,6 +37,7 @@ import org.grails.taglib.encoder.OutputEncodingStackAttributes;
 import org.grails.taglib.encoder.WithCodecHelper;
 
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -125,6 +126,7 @@ public abstract class GroovyPage extends Script {
             attributesBuilder.staticEncoder(metaInfo.getStaticEncoder());
             attributesBuilder.expressionEncoder(metaInfo.getExpressionEncoder());
             attributesBuilder.defaultTaglibEncoder(metaInfo.getTaglibEncoder());
+            applyModelFieldsFromBinding(metaInfo.getModelFields());
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.outputContext(outputContext);
@@ -146,6 +148,16 @@ public abstract class GroovyPage extends Script {
 
         setVariableDirectly(OUT, out);
         setVariableDirectly(EXPRESSION_OUT, expressionOut);
+    }
+
+    private void applyModelFieldsFromBinding(Iterable<Field> modelFields) {
+        for(Field field : modelFields) {
+            try {
+                field.set(this, getProperty(field.getName()));
+            } catch (IllegalAccessException e) {
+                throw new GroovyPagesException("Error setting model field '" + field.getName() + "'", e, -1, getGroovyPageFileName());
+            }
+        }
     }
 
     public Object raw(Object value) {
