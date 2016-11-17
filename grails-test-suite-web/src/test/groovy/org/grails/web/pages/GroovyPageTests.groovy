@@ -47,7 +47,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
         "import org.grails.taglib.*\n"+
         "\n"+
-        "class test_index_gsp extends GroovyPage {\n"+
+        "class test_index_gsp extends org.grails.gsp.GroovyPage {\n"+
         "String getGroovyPageFileName() { \"test\" }\n"+
         "public Object run() {\n"+
         "def out=getOut()\n"+
@@ -91,7 +91,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
                 "import org.grails.taglib.*\n"+
                 "\n"+
-                "class test_index_gsp extends GroovyPage {\n"+
+                "class test_index_gsp extends org.grails.gsp.GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
                 "setBodyClosure(1) { out.print('Boo!') }\n"+
@@ -109,7 +109,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
                 "import org.grails.taglib.*\n"+
                 "\n"+
-                "class test_index_gsp extends GroovyPage {\n"+
+                "class test_index_gsp extends org.grails.gsp.GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
                 "def out = getOut()\n"+
@@ -127,7 +127,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         String pageCode = "import org.grails.gsp.GroovyPage\n" +
                 "import org.grails.taglib.*\n"+
                 "\n"+
-                "class test_index_gsp extends GroovyPage {\n"+
+                "class test_index_gsp extends org.grails.gsp.GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
                 "out.print(isaid([:],'Boo!'))\n"+
