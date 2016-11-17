@@ -35,11 +35,15 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.ReflectionUtils;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.PrivilegedAction;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -73,6 +77,8 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private String staticCodecName;
     private String outCodecName;
     private String taglibCodecName;
+    private boolean compileStaticMode;
+    private Set<Field> modelFields;
 
     public static final String HTML_DATA_POSTFIX = "_html.data";
     public static final String LINENUMBERS_DATA_POSTFIX = "_linenumbers.data";
@@ -106,6 +112,10 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         staticCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_STATIC_CODEC), null);
         outCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_OUT_CODEC), null);
         taglibCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_TAGLIB_CODEC), null);
+        Field compileStaticModeField = ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_COMPILE_STATIC_MODE);
+        if (compileStaticModeField != null) {
+            compileStaticMode = (Boolean) ReflectionUtils.getField(compileStaticModeField, null);
+        }
 
         try {
             readHtmlData();
@@ -132,8 +142,24 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         taglibEncoder = getCodec(taglibCodecName);
 
         initializePluginPath();
+        initializeModelFields();
 
         initialized = true;
+    }
+
+    private synchronized void initializeModelFields() {
+        if (getPageClass() != null) {
+            Set<Field> modelFields = new HashSet<>();
+            if (compileStaticMode) {
+                for (Field field : getPageClass().getDeclaredFields()) {
+                    if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
+                        ReflectionUtils.makeAccessible(field);
+                        modelFields.add(field);
+                    }
+                }
+            }
+            this.modelFields = Collections.unmodifiableSet(modelFields);
+        }
     }
 
     private Encoder getCodec(String codecName) {
@@ -463,7 +489,22 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     public void setTaglibCodecName(String taglibCodecName) {
         this.taglibCodecName = taglibCodecName;
     }
-    
+
+    public boolean isCompileStaticMode() {
+        return compileStaticMode;
+    }
+
+    public void setCompileStaticMode(boolean compileStaticMode) {
+        this.compileStaticMode = compileStaticMode;
+    }
+
+    public Set<Field> getModelFields() {
+        if (modelFields == null) {
+            initializeModelFields();
+        }
+        return modelFields;
+    }
+
     public void removePageMetaClass() {
         metaClassShouldBeRemoved = true;
         if(pageClass!=null) { 
