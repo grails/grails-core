@@ -29,10 +29,10 @@ class GspCompileStaticSpec extends Specification {
 
     def "should support model fields in both compilation modes"() {
         given:
-        def template = """<%@page model="Date date" compileStatic="$compileStatic"%>\${date.time}"""
+        def template = """<%@ model="Date date" compileStatic="$compileStatic"%>\${date.time}"""
         def date = new Date(123L)
         when:
-        def rendered = renderTemplate(template, [date: date])
+        def rendered = renderTemplate(template, [date: date], compileStatic)
         then:
         rendered == '123'
         where:
@@ -41,9 +41,9 @@ class GspCompileStaticSpec extends Specification {
 
     def "should support typed variables in both compilation modes"() {
         given:
-        def template = """<%@page compileStatic="$compileStatic"%><g:def type="Date" var="date" value="\${new Date(123L)}"/>\${date.time}"""
+        def template = """<%@ compileStatic="$compileStatic"%><g:def type="Date" var="date" value="\${new Date(123L)}"/>\${date.time}"""
         when:
-        def rendered = renderTemplate(template, [:])
+        def rendered = renderTemplate(template, [:], compileStatic)
         then:
         rendered == '123'
         where:
@@ -52,19 +52,20 @@ class GspCompileStaticSpec extends Specification {
 
     def "should support g:each in both compilation modes"() {
         given:
-        def template = """<%@page model="List<Date> dates" compileStatic="$compileStatic"%><g:each var="date" in="\${dates}">\${date.time},</g:each>"""
+        def template = """<%@ model="List<Date> dates" compileStatic="$compileStatic"%><g:each var="date" in="\${dates}">\${date.time},</g:each>"""
         def model = [dates: [new Date(123L), new Date(456L), new Date(789L)]]
         when:
-        def rendered = renderTemplate(template, model)
+        def rendered = renderTemplate(template, model, compileStatic)
         then:
         rendered == '123,456,789,'
         where:
         compileStatic << [true, false]
     }
 
-    def renderTemplate(templateSource, model) {
+    def renderTemplate(templateSource, model, expectedCompileStaticMode) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         def w = t.make(model)
+        assert w.metaInfo.compileStaticMode == expectedCompileStaticMode
         def sw = new StringWriter()
         def pw = new PrintWriter(sw, true)
         w.writeTo(pw)
