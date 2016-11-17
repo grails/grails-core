@@ -45,7 +45,7 @@ subprojects {
         idea {
             module {
                 // add slf4j-simple to TEST scope
-                scopes.TEST.plus.add(rootProject.configurations.slf4j_simple)
+                scopes.TEST?.plus?.add(rootProject.configurations.slf4j_simple)
             }
         }
     }
