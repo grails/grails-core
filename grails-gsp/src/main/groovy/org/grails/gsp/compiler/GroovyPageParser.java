@@ -72,11 +72,13 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_OUT_CODEC = "OUT_CODEC";
     public static final String CONSTANT_NAME_TAGLIB_CODEC = "TAGLIB_CODEC";
     public static final String CONSTANT_NAME_COMPILE_STATIC_MODE = "COMPILE_STATIC_MODE";
+    public static final String CONSTANT_NAME_MODEL_FIELDS_MODE = "MODEL_FIELDS_MODE";
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
     private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";
     public static final String MODEL_DIRECTIVE = "model";
+    public static final String COMPILE_STATIC_DIRECTIVE = "compileStatic";
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -150,6 +152,7 @@ public class GroovyPageParser implements Tokens {
     private long lastModified;
     private boolean precompileMode;
     private boolean compileStaticMode;
+    private boolean modelFieldsMode;
     private boolean sitemeshPreprocessMode=false;
     private String expressionCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME);
     private String outCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.OUT_CODEC_NAME);
@@ -218,7 +221,12 @@ public class GroovyPageParser implements Tokens {
 
         if(directives.containsKey(MODEL_DIRECTIVE)) {
             modelDirectiveValue = directives.get(MODEL_DIRECTIVE);
+            modelFieldsMode = true;
             compileStaticMode = true;
+        }
+
+        if(directives.containsKey(COMPILE_STATIC_DIRECTIVE)) {
+            compileStaticMode = GrailsStringUtils.toBoolean(directives.get(COMPILE_STATIC_DIRECTIVE));
         }
 
         if (isSitemeshPreprocessingEnabled(directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
@@ -778,7 +786,7 @@ public class GroovyPageParser implements Tokens {
             out.print("class ");
             out.print(className);
             out.println(" extends GroovyPage {");
-            if(compileStaticMode) {
+            if(modelDirectiveValue != null) {
                 out.println("// start model fields");
                 out.println(modelDirectiveValue);
                 out.println("// end model fields");
@@ -897,8 +905,14 @@ public class GroovyPageParser implements Tokens {
             out.println("public static final String " +
                     CONSTANT_NAME_TAGLIB_CODEC + " = '" + escapeGroovy(taglibCodecDirectiveValue) + "'");
 
-            out.println("public static final boolean " +
-                    CONSTANT_NAME_COMPILE_STATIC_MODE + " = " + compileStaticMode);
+            if(compileStaticMode) {
+                out.println("public static final boolean " +
+                        CONSTANT_NAME_COMPILE_STATIC_MODE + " = " + compileStaticMode);
+            }
+            if(modelFieldsMode) {
+                out.println("public static final boolean " +
+                        CONSTANT_NAME_MODEL_FIELDS_MODE + " = " + modelFieldsMode);
+            }
 
             out.println("}");
 
@@ -1417,5 +1431,9 @@ public class GroovyPageParser implements Tokens {
 
     public boolean isCompileStaticMode() {
         return compileStaticMode;
+    }
+
+    public boolean isModelFieldsMode() {
+        return modelFieldsMode;
     }
 }

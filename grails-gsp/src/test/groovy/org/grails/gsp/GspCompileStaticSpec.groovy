@@ -27,14 +27,16 @@ class GspCompileStaticSpec extends Specification {
         gpte.afterPropertiesSet()
     }
 
-    def "should support static compilation"() {
+    def "should support model fields in both compilation modes"() {
         given:
-        def template = '''<%@page model="Date date"%>${date.time}'''
+        def template = """<%@page model="Date date" compileStatic="$compileStatic"%>\${date.time}"""
         def date = new Date(123L)
         when:
         def rendered = renderTemplate(template, [date: date])
         then:
         rendered == '123'
+        where:
+        compileStatic << [true, false]
     }
 
     def renderTemplate(templateSource, model) {
