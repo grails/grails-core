@@ -17,21 +17,22 @@
 package grails.rest.web
 
 import grails.artefact.Artefact
-import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
-import org.grails.plugins.web.mime.MimeTypesFactoryBean
-import grails.web.mime.MimeType
 import grails.core.support.proxy.ProxyHandler
+import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import grails.web.mime.MimeType
+import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(BookController)
-@Mock(Book)
-class RespondMethodSpec extends Specification{
+class RespondMethodSpec extends Specification implements ControllerUnitTest<BookController>, DataTest {
+
+    void setupSpec() {
+        mockDomain Book
+    }
 
     void setup() {
         def ga = grailsApplication
