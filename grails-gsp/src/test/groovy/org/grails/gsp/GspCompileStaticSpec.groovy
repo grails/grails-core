@@ -39,6 +39,17 @@ class GspCompileStaticSpec extends Specification {
         compileStatic << [true, false]
     }
 
+    def "should support typed variables in both compilation modes"() {
+        given:
+        def template = """<%@page compileStatic="$compileStatic"%><g:def type="Date" var="date" value="\${new Date(123L)}"/>\${date.time}"""
+        when:
+        def rendered = renderTemplate(template, [:])
+        then:
+        rendered == '123'
+        where:
+        compileStatic << [true, false]
+    }
+
     def renderTemplate(templateSource, model) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         def w = t.make(model)
