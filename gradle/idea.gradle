@@ -31,22 +31,3 @@ idea {
         }
     }
 }
-
-// referenced in IDEA test classpath
-configurations {
-    slf4j_simple
-}
-dependencies {
-    slf4j_simple "org.slf4j:slf4j-simple:${slf4jVersion}@jar"
-}
-
-subprojects {
-    plugins.withType(org.gradle.plugins.ide.idea.IdeaPlugin) {
-        idea {
-            module {
-                // add slf4j-simple to TEST scope
-                scopes.TEST.plus.add(rootProject.configurations.slf4j_simple)
-            }
-        }
-    }
-}
