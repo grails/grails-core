@@ -153,7 +153,10 @@ public abstract class GroovyPage extends Script {
     private void applyModelFieldsFromBinding(Iterable<Field> modelFields) {
         for(Field field : modelFields) {
             try {
-                field.set(this, getProperty(field.getName()));
+                Object value = getProperty(field.getName());
+                if (value != null) {
+                    field.set(this, value);
+                }
             } catch (IllegalAccessException e) {
                 throw new GroovyPagesException("Error setting model field '" + field.getName() + "'", e, -1, getGroovyPageFileName());
             }

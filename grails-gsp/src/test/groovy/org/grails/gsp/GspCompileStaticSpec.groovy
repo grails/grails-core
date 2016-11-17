@@ -94,9 +94,28 @@ class GspCompileStaticSpec extends Specification {
         gDotPrefix << [false, true]
     }
 
-    def renderTemplate(templateSource, model, expectedCompileStaticMode) {
+    def "should support multi-line model declaration"() {
+        given:
+        def template = '''<%@ model="""
+Date d1=new Date(123L)
+Date d2=new Date(456L)
+Date d3=new Date(789L)
+Date d4=new Date(123L)
+"""%>${d1.time}-${d2.time}-${d3.time}-${d4.time}'''
+        when:
+        def rendered = renderTemplate(template, [:], true, true)
+        then:
+        rendered == '123-456-789-123'
+    }
+
+    def renderTemplate(templateSource, model, expectedCompileStaticMode, printSource = false) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         def w = t.make(model)
+        if(printSource) {
+            def sourceWriter = new StringWriter()
+            w.writeGroovySourceToResponse(w.metaInfo, sourceWriter)
+            println(sourceWriter.toString())
+        }
         assert w.metaInfo.compileStaticMode == expectedCompileStaticMode
         def sw = new StringWriter()
         def pw = new PrintWriter(sw, true)
