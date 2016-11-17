@@ -17,7 +17,6 @@ package org.grails.gsp.compiler;
 
 import grails.config.ConfigMap;
 import grails.io.IOUtils;
-import grails.plugins.GrailsPluginInfo;
 import grails.util.Environment;
 import grails.util.GrailsStringUtils;
 import org.apache.commons.logging.Log;
@@ -30,8 +29,8 @@ import org.grails.gsp.GroovyPage;
 import org.grails.gsp.compiler.tags.GrailsTagRegistry;
 import org.grails.gsp.compiler.tags.GroovySyntaxTag;
 import org.grails.io.support.SpringIOUtils;
-import org.grails.taglib.encoder.OutputEncodingSettings;
 import org.grails.taglib.GrailsTagException;
+import org.grails.taglib.encoder.OutputEncodingSettings;
 
 import java.io.*;
 import java.util.*;
@@ -58,7 +57,7 @@ public class GroovyPageParser implements Tokens {
             Pattern.CASE_INSENSITIVE);
 
     private static final Pattern PAGE_DIRECTIVE_PATTERN = Pattern.compile(
-            "(\\w+)\\s*=\\s*\"([^\"]*)\"");
+            "(\\w+)\\s*=\\s*(\"\"\"|\"(?!\"\")|'''|'(?!''))(.*?)\\2", Pattern.DOTALL);
 
     private static final String TAGLIB_DIRECTIVE = "taglib";
 
@@ -298,7 +297,7 @@ public class GroovyPageParser implements Tokens {
             Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(m.group(1));
             while (mat.find()) {
                 String name = mat.group(1);
-                String value = mat.group(2);
+                String value = mat.group(3);
                 result.put(name, value);
             }
         }
@@ -482,12 +481,9 @@ public class GroovyPageParser implements Tokens {
         text = text.trim();
         // LOG.debug("directPage(" + text + ')');
         Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(text);
-        for (int ix = 0;;) {
-            if (!mat.find(ix)) {
-                return;
-            }
+        while (mat.find()) {
             String name = mat.group(1);
-            String value = mat.group(2);
+            String value = mat.group(3);
             if (name.equals(IMPORT_DIRECTIVE)) {
                 pageImport(value);
             }
@@ -509,7 +505,6 @@ public class GroovyPageParser implements Tokens {
             if (name.equalsIgnoreCase(TAGLIB_CODEC_DIRECTIVE)) {
                 taglibCodecDirectiveValue = value.trim();
             }
-            ix = mat.end();
         }
     }
 
