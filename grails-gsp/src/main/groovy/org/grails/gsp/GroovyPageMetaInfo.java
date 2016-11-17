@@ -78,6 +78,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private String outCodecName;
     private String taglibCodecName;
     private boolean compileStaticMode;
+    private boolean modelFieldsMode;
     private Set<Field> modelFields;
 
     public static final String HTML_DATA_POSTFIX = "_html.data";
@@ -116,6 +117,10 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         if (compileStaticModeField != null) {
             compileStaticMode = (Boolean) ReflectionUtils.getField(compileStaticModeField, null);
         }
+        Field modelFieldsModeField = ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_MODEL_FIELDS_MODE);
+        if (modelFieldsModeField != null) {
+            modelFieldsMode = (Boolean) ReflectionUtils.getField(modelFieldsModeField, null);
+        }
 
         try {
             readHtmlData();
@@ -148,9 +153,9 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     }
 
     private synchronized void initializeModelFields() {
-        if (getPageClass() != null) {
+        if(getPageClass() != null) {
             Set<Field> modelFields = new HashSet<>();
-            if (compileStaticMode) {
+            if (modelFieldsMode) {
                 for (Field field : getPageClass().getDeclaredFields()) {
                     if (!Modifier.isStatic(field.getModifiers()) && !field.isSynthetic()) {
                         ReflectionUtils.makeAccessible(field);
@@ -496,6 +501,14 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     public void setCompileStaticMode(boolean compileStaticMode) {
         this.compileStaticMode = compileStaticMode;
+    }
+
+    public boolean isModelFieldsMode() {
+        return modelFieldsMode;
+    }
+
+    public void setModelFieldsMode(boolean modelFieldsMode) {
+        this.modelFieldsMode = modelFieldsMode;
     }
 
     public Set<Field> getModelFields() {
