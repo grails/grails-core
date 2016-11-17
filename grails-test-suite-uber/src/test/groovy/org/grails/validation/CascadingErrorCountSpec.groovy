@@ -9,7 +9,7 @@ import spock.lang.Specification
  */
 class CascadingErrorCountSpec extends Specification implements DataTest {
 
-    Class<?>[] getDomainClassesToMock() {
+    Class[] getDomainClassesToMock() {
         [CascadingPerson, Name]
     }
 
