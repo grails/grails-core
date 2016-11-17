@@ -471,7 +471,7 @@ public class GroovyPageParser implements Tokens {
         text = text.trim();
         // LOG.debug("directPage(" + text + ')');
         Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(text);
-        boolean compileStaticMode = false;
+        Boolean compileStaticModeSetting = null;
         while (mat.find()) {
             String name = mat.group(1);
             String value = mat.group(3);
@@ -499,13 +499,15 @@ public class GroovyPageParser implements Tokens {
             if(name.equalsIgnoreCase(MODEL_DIRECTIVE)) {
                 modelDirectiveValue = value.trim();
                 modelFieldsMode = true;
-                compileStaticMode = true;
+                if (compileStaticModeSetting == null) {
+                    compileStaticModeSetting = true;
+                }
             }
             if(name.equalsIgnoreCase(COMPILE_STATIC_DIRECTIVE)) {
-                compileStaticMode = GrailsStringUtils.toBoolean(value.trim());
+                compileStaticModeSetting = GrailsStringUtils.toBoolean(value.trim());
             }
         }
-        this.compileStaticMode = compileStaticMode;
+        this.compileStaticMode = compileStaticModeSetting != null ? compileStaticModeSetting : false;
     }
 
     private void directJspTagLib(String text) {
