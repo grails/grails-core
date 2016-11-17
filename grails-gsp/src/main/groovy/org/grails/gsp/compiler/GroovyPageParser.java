@@ -71,10 +71,12 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_STATIC_CODEC = "STATIC_CODEC";
     public static final String CONSTANT_NAME_OUT_CODEC = "OUT_CODEC";
     public static final String CONSTANT_NAME_TAGLIB_CODEC = "TAGLIB_CODEC";
+    public static final String CONSTANT_NAME_COMPILE_STATIC_MODE = "COMPILE_STATIC_MODE";
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
     private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";
+    public static final String MODEL_DIRECTIVE = "model";
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -147,11 +149,13 @@ public class GroovyPageParser implements Tokens {
     private Map<String, String> jspTags = new HashMap<String, String>();
     private long lastModified;
     private boolean precompileMode;
+    private boolean compileStaticMode;
     private boolean sitemeshPreprocessMode=false;
     private String expressionCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME);
     private String outCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.OUT_CODEC_NAME);
     private String staticCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.STATIC_CODEC_NAME);
     private String taglibCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.TAGLIB_CODEC_NAME) ;
+    private String modelDirectiveValue;
 
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
@@ -211,6 +215,11 @@ public class GroovyPageParser implements Tokens {
         }
 
         Map<String, String> directives = parseDirectives(gspSource);
+
+        if(directives.containsKey(MODEL_DIRECTIVE)) {
+            modelDirectiveValue = directives.get(MODEL_DIRECTIVE);
+            compileStaticMode = true;
+        }
 
         if (isSitemeshPreprocessingEnabled(directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
             if (LOG.isDebugEnabled()) {
@@ -562,7 +571,7 @@ public class GroovyPageParser implements Tokens {
             text = text.substring(0, text.length() - 1);
             safeDereference = _safeDereference;
         }
-        if (!precompileMode &&
+        if (!precompileMode && !compileStaticMode &&
                 (environment == Environment.DEVELOPMENT || environment == Environment.TEST)) {
             String escaped = escapeGroovy(text);
             text = "evaluate('" + escaped + "', " +
@@ -763,10 +772,17 @@ public class GroovyPageParser implements Tokens {
             if (pluginAnnotation != null) {
                 out.println(pluginAnnotation);
             }
+            if (compileStaticMode) {
+                out.println("@groovy.transform.CompileStatic");
+            }
             out.print("class ");
             out.print(className);
             out.println(" extends GroovyPage {");
-
+            if(compileStaticMode) {
+                out.println("// start model fields");
+                out.println(modelDirectiveValue);
+                out.println("// end model fields");
+            }
             out.println("public String getGroovyPageFileName() { \"" +
                     pageName.replaceAll("\\\\", "/") + "\" }");
             out.println("public Object run() {");
@@ -880,6 +896,9 @@ public class GroovyPageParser implements Tokens {
                     CONSTANT_NAME_OUT_CODEC + " = '" + escapeGroovy(outCodecDirectiveValue) + "'");
             out.println("public static final String " +
                     CONSTANT_NAME_TAGLIB_CODEC + " = '" + escapeGroovy(taglibCodecDirectiveValue) + "'");
+
+            out.println("public static final boolean " +
+                    CONSTANT_NAME_COMPILE_STATIC_MODE + " = " + compileStaticMode);
 
             out.println("}");
 
@@ -1396,5 +1415,7 @@ public class GroovyPageParser implements Tokens {
         this.staticCodecDirectiveValue = staticCodecDirectiveValue;
     }
 
-
+    public boolean isCompileStaticMode() {
+        return compileStaticMode;
+    }
 }
