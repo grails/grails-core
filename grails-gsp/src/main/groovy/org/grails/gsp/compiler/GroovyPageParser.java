@@ -219,16 +219,6 @@ public class GroovyPageParser implements Tokens {
 
         Map<String, String> directives = parseDirectives(gspSource);
 
-        if(directives.containsKey(MODEL_DIRECTIVE)) {
-            modelDirectiveValue = directives.get(MODEL_DIRECTIVE);
-            modelFieldsMode = true;
-            compileStaticMode = true;
-        }
-
-        if(directives.containsKey(COMPILE_STATIC_DIRECTIVE)) {
-            compileStaticMode = GrailsStringUtils.toBoolean(directives.get(COMPILE_STATIC_DIRECTIVE));
-        }
-
         if (isSitemeshPreprocessingEnabled(directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Preprocessing " + uri + " for sitemesh. Replacing head, title, meta and body elements with sitemesh:capture*.");
@@ -481,6 +471,7 @@ public class GroovyPageParser implements Tokens {
         text = text.trim();
         // LOG.debug("directPage(" + text + ')');
         Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(text);
+        boolean compileStaticMode = false;
         while (mat.find()) {
             String name = mat.group(1);
             String value = mat.group(3);
@@ -505,7 +496,16 @@ public class GroovyPageParser implements Tokens {
             if (name.equalsIgnoreCase(TAGLIB_CODEC_DIRECTIVE)) {
                 taglibCodecDirectiveValue = value.trim();
             }
+            if(name.equalsIgnoreCase(MODEL_DIRECTIVE)) {
+                modelDirectiveValue = value.trim();
+                modelFieldsMode = true;
+                compileStaticMode = true;
+            }
+            if(name.equalsIgnoreCase(COMPILE_STATIC_DIRECTIVE)) {
+                compileStaticMode = GrailsStringUtils.toBoolean(value.trim());
+            }
         }
+        this.compileStaticMode = compileStaticMode;
     }
 
     private void directJspTagLib(String text) {

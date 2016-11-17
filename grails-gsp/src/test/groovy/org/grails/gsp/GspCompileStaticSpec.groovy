@@ -117,6 +117,15 @@ Date d4=new Date(123L)
         rendered == '123-456-789-123'
     }
 
+    def "fields can be added by using alternative syntax"() {
+        given:
+        def template = '''@{ model="""Date d1=new Date(123L); Date d2=new Date(456L); Date d3=new Date(789L); Date d4=new Date(123L) """}${d1.time}-${d2.time}-${d3.time}-${d4.time}'''
+        when:
+        def rendered = renderTemplate(template, [:], true, true)
+        then:
+        rendered == '123-456-789-123'
+    }
+
     def renderTemplate(templateSource, model, expectedCompileStaticMode, printSource = false) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
         def w = t.make(model)
