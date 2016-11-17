@@ -497,7 +497,11 @@ public class GroovyPageParser implements Tokens {
                 taglibCodecDirectiveValue = value.trim();
             }
             if(name.equalsIgnoreCase(MODEL_DIRECTIVE)) {
-                modelDirectiveValue = value.trim();
+                if(modelDirectiveValue != null) {
+                    modelDirectiveValue += "\n" + value.trim();
+                } else {
+                    modelDirectiveValue = value.trim();
+                }
                 modelFieldsMode = true;
                 if (compileStaticModeSetting == null) {
                     compileStaticModeSetting = true;
