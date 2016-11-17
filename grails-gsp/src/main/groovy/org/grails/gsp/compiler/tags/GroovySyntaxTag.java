@@ -173,7 +173,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.println("}");
     }
 
-    private String extractAttributeValue(String attr) {
+    protected String extractAttributeValue(String attr) {
         if (GrailsStringUtils.isBlank(attr)) {
             return "";
         }
