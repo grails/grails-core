@@ -16,7 +16,6 @@
 package org.grails.gsp.compiler.tags;
 
 import grails.util.GrailsStringUtils;
-import grails.util.GrailsUtil;
 import org.grails.taglib.GrailsTagException;
 
 /**
@@ -28,23 +27,37 @@ public class GroovyDefTag extends GroovySyntaxTag {
 
     public static final String TAG_NAME = "def";
     private static final String ATTRIBUTE_VALUE = "value";
+    private static final String ATTRIBUTE_TYPE = "type";
 
     public void doStartTag() {
         String expr = attributes.get(ATTRIBUTE_VALUE);
         if (GrailsStringUtils.isBlank(expr)) {
             throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VALUE + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
+        expr = calculateExpression(expr);
 
         String var = attributes.get(ATTRIBUTE_VAR);
         if (GrailsStringUtils.isBlank(var)) {
             throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VAR + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
+        var = extractAttributeValue(var);
 
-        GrailsUtil.deprecated("The tag <g:def> is deprecated and will be removed in a future release. Use <g:set> instead.");
-        out.print("def ");
-        out.print(var.substring(1,var.length() -1));
+        String typeName = attributes.get(ATTRIBUTE_TYPE);
+        if (GrailsStringUtils.isBlank(typeName)) {
+            typeName = "def";
+        } else {
+            typeName = extractAttributeValue(typeName);
+        }
+
+        out.print(typeName + " ");
+        out.print(var);
         out.print('=');
-        out.println(expr);
+
+        if (typeName.equals("def") || typeName.equals("Object")) {
+            out.println(expr);
+        } else {
+            out.println(typeName + ".cast(" + expr + ")");
+        }
     }
 
     public void doEndTag() {

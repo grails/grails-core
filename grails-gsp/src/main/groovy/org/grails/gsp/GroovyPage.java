@@ -37,6 +37,7 @@ import org.grails.taglib.encoder.OutputEncodingStackAttributes;
 import org.grails.taglib.encoder.WithCodecHelper;
 
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -80,14 +81,14 @@ public abstract class GroovyPage extends Script {
     @SuppressWarnings("rawtypes")
     private Map jspTags = Collections.emptyMap();
     private TagLibraryResolver jspTagLibraryResolver;
-    private TagLibraryLookup gspTagLibraryLookup;
+    protected TagLibraryLookup gspTagLibraryLookup;
     private String[] htmlParts;
     private Set<Integer> htmlPartsSet;
     private GrailsPrintWriter out;
     private GrailsPrintWriter staticOut;
     private GrailsPrintWriter expressionOut;
     private OutputEncodingStack outputStack;
-    private OutputContext outputContext;
+    protected OutputContext outputContext;
     private String pluginContextPath;
     private Encoder rawEncoder;
 
@@ -125,6 +126,7 @@ public abstract class GroovyPage extends Script {
             attributesBuilder.staticEncoder(metaInfo.getStaticEncoder());
             attributesBuilder.expressionEncoder(metaInfo.getExpressionEncoder());
             attributesBuilder.defaultTaglibEncoder(metaInfo.getTaglibEncoder());
+            applyModelFieldsFromBinding(metaInfo.getModelFields());
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.outputContext(outputContext);
@@ -146,6 +148,19 @@ public abstract class GroovyPage extends Script {
 
         setVariableDirectly(OUT, out);
         setVariableDirectly(EXPRESSION_OUT, expressionOut);
+    }
+
+    private void applyModelFieldsFromBinding(Iterable<Field> modelFields) {
+        for(Field field : modelFields) {
+            try {
+                Object value = getProperty(field.getName());
+                if (value != null) {
+                    field.set(this, value);
+                }
+            } catch (IllegalAccessException e) {
+                throw new GroovyPagesException("Error setting model field '" + field.getName() + "'", e, -1, getGroovyPageFileName());
+            }
+        }
     }
 
     public Object raw(Object value) {
@@ -253,26 +268,40 @@ public abstract class GroovyPage extends Script {
         // with the Groovy Truth
         if (BINDING.equals(property)) return getBinding();
 
+        return resolveProperty(property);
+    }
+
+    protected Object resolveProperty(String property) {
         Object value = getBinding().getVariable(property);
         if (value != null) {
             return value;
         }
 
-        value = gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
-        if (value == null && jspTags.containsKey(property)) {
-            TagLibraryResolver tagResolver = getTagLibraryResolver();
-
-            String uri = (String) jspTags.get(property);
-            if (uri != null) {
-                value = tagResolver.resolveTagLibrary(uri);
-            }
+        // check if a taglib can be found
+        value = lookupTagDispatcher(property);
+        if (value == null) {
+            value = lookupJspTagLib(property);
         }
+
         if (value != null) {
             // cache lookup for next execution
             setVariableDirectly(property, value);
         }
 
         return value;
+    }
+
+    protected Object lookupTagDispatcher(String namespace) {
+        return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(namespace) : null;
+    }
+
+    private JspTagLib lookupJspTagLib(String property) {
+        String uri = (String) jspTags.get(property);
+        if (uri != null) {
+            TagLibraryResolver tagResolver = getTagLibraryResolver();
+            return tagResolver.resolveTagLibrary(uri);
+        }
+        return null;
     }
 
     /* Static call for jsp tags resolution

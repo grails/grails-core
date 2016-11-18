@@ -72,7 +72,7 @@ public class ParseTests extends TestCase {
         ParsedResult result = parseCode("myTest1", "<div>hi</div>");
         String expected = makeImports() +
             "\n" +
-            "class myTest1 extends GroovyPage {\n" +
+            "class myTest1 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest1\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -88,7 +88,7 @@ public class ParseTests extends TestCase {
         String output = parseCode("myTest2", "<g:message code=\"testing [\"/>").generatedGsp;
         String expected = makeImports() +
             "\n" +
-            "class myTest2 extends GroovyPage {\n" +
+            "class myTest2 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest2\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -131,7 +131,7 @@ public class ParseTests extends TestCase {
         }
         String expected = makeImports() +
             "\n" +
-            "class myTest4 extends GroovyPage {\n" +
+            "class myTest4 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest4\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -165,7 +165,7 @@ public class ParseTests extends TestCase {
         output = parseCode("myTest5", src);
         String expected = makeImports() +
             "\n" +
-            "class myTest5 extends GroovyPage {\n" +
+            "class myTest5 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest5\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -222,7 +222,7 @@ public class ParseTests extends TestCase {
      public void testParseWithWhitespaceNotEaten() throws Exception {
          String expected = makeImports() +
             "\n" +
-            "class myTest7 extends GroovyPage {\n" +
+            "class myTest7 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest7\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -250,7 +250,7 @@ public class ParseTests extends TestCase {
          ParsedResult result = parseCode("GRAILS5598", "<body class=\"${page.name} ${page.group.name.toLowerCase()}\">text</body>");
          String expected = makeImports() +
             "\n" +
-            "class GRAILS5598 extends GroovyPage {\n" +
+            "class GRAILS5598 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"GRAILS5598\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -267,7 +267,7 @@ public class ParseTests extends TestCase {
          ParsedResult result = parseCode("SITEMESH_PREPROCESS_TEST", "<%@page sitemeshPreprocess=\"false\"%>\n<body>text</body>");
          String expected = makeImports() +
             "\n" +
-            "class SITEMESH_PREPROCESS_TEST extends GroovyPage {\n" +
+            "class SITEMESH_PREPROCESS_TEST extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"SITEMESH_PREPROCESS_TEST\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
@@ -282,7 +282,7 @@ public class ParseTests extends TestCase {
          ParsedResult result = parseCode("GRAILS5605", "<html><head><meta name=\"SomeName\" content='${grailsApplication.config.myFirstConfig}/something/${someVar}' /></head></html>");
          String expected = makeImports() +
             "\n" +
-            "class GRAILS5605 extends GroovyPage {\n" +
+            "class GRAILS5605 extends org.grails.gsp.GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"GRAILS5605\" }\n" +
             "public Object run() {\n" +
             "Writer out = getOut()\n" +
