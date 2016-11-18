@@ -134,6 +134,7 @@ public class GroovyPageParser implements Tokens {
     public static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
+    public static final String CONFIG_PROPERTY_GSP_COMPILESTATIC = "grails.views.gsp.compileStatic";
     public static final String CONFIG_PROPERTY_GSP_CODECS = "grails.views.gsp.codecs";
 
     private static final String IMPORT_DIRECTIVE = "import";
@@ -151,7 +152,7 @@ public class GroovyPageParser implements Tokens {
     private Map<String, String> jspTags = new HashMap<String, String>();
     private long lastModified;
     private boolean precompileMode;
-    private boolean compileStaticMode;
+    private Boolean compileStaticMode;
     private boolean modelFieldsMode;
     private boolean sitemeshPreprocessMode=false;
     private String expressionCodecDirectiveValue = OutputEncodingSettings.getDefaultValue(OutputEncodingSettings.EXPRESSION_CODEC_NAME);
@@ -246,6 +247,8 @@ public class GroovyPageParser implements Tokens {
      * @param config The config map
      */
     public void configure(ConfigMap config) {
+        compileStaticMode = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_COMPILESTATIC, Boolean.class);
+
         setEnableSitemeshPreprocessing(
                 config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean.class, true)
         );
@@ -471,7 +474,7 @@ public class GroovyPageParser implements Tokens {
         text = text.trim();
         // LOG.debug("directPage(" + text + ')');
         Matcher mat = PAGE_DIRECTIVE_PATTERN.matcher(text);
-        Boolean compileStaticModeSetting = null;
+        Boolean compileStaticModeSetting = compileStaticMode;
         while (mat.find()) {
             String name = mat.group(1);
             String value = mat.group(3);
@@ -581,7 +584,7 @@ public class GroovyPageParser implements Tokens {
             text = text.substring(0, text.length() - 1);
             safeDereference = _safeDereference;
         }
-        if (!precompileMode && !compileStaticMode &&
+        if (!precompileMode && !isCompileStaticMode() &&
                 (environment == Environment.DEVELOPMENT || environment == Environment.TEST)) {
             String escaped = escapeGroovy(text);
             text = "evaluate('" + escaped + "', " +
@@ -782,13 +785,13 @@ public class GroovyPageParser implements Tokens {
             if (pluginAnnotation != null) {
                 out.println(pluginAnnotation);
             }
-            if (compileStaticMode) {
+            if (isCompileStaticMode()) {
                 out.println("@groovy.transform.CompileStatic(extensions = ['" + GroovyPageTypeCheckingExtension.class.getName() + "'])");
             }
             out.print("class ");
             out.print(className);
             out.print(" extends ");
-            Class<?> gspSuperClass = compileStaticMode ? CompileStaticGroovyPage.class : GroovyPage.class;
+            Class<?> gspSuperClass = isCompileStaticMode() ? CompileStaticGroovyPage.class : GroovyPage.class;
             out.print(gspSuperClass.getName());
             out.println(" {");
             if(modelDirectiveValue != null) {
@@ -910,9 +913,9 @@ public class GroovyPageParser implements Tokens {
             out.println("public static final String " +
                     CONSTANT_NAME_TAGLIB_CODEC + " = '" + escapeGroovy(taglibCodecDirectiveValue) + "'");
 
-            if(compileStaticMode) {
+            if(isCompileStaticMode()) {
                 out.println("public static final boolean " +
-                        CONSTANT_NAME_COMPILE_STATIC_MODE + " = " + compileStaticMode);
+                        CONSTANT_NAME_COMPILE_STATIC_MODE + " = " + isCompileStaticMode());
             }
             if(modelFieldsMode) {
                 out.println("public static final boolean " +
@@ -1435,7 +1438,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     public boolean isCompileStaticMode() {
-        return compileStaticMode;
+        return compileStaticMode != null ? compileStaticMode : false;
     }
 
     public boolean isModelFieldsMode() {
