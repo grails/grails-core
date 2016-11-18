@@ -29,16 +29,26 @@ import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
 class GroovyPageTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
     @Override
     Object run() {
+        beforeVisitMethod {
+            newScope {
+                dynamicProperties = [] as Set
+            }
+        }
+
         unresolvedProperty { PropertyExpression pe ->
+            currentScope.dynamicProperties << pe
             return makeDynamic(pe)
         }
 
         unresolvedVariable { VariableExpression ve ->
+            currentScope.dynamicProperties << ve
             return makeDynamic(ve)
         }
 
         methodNotFound { receiver, name, argList, argTypes, call ->
-            return makeDynamic(call)
+            if (receiver.superClass?.name == 'org.grails.gsp.CompileStaticGroovyPage' || currentScope.dynamicProperties.contains(call.objectExpression)) {
+                return makeDynamic(call)
+            }
         }
     }
 }
