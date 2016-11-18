@@ -17,23 +17,17 @@
 package org.grails.gsp
 
 import groovy.transform.CompileStatic
-import groovy.transform.TupleConstructor
-import org.grails.taglib.TagLibraryLookup
-import org.grails.taglib.TagOutput
-import org.grails.taglib.encoder.OutputContext
 
 @CompileStatic
 class GroovyPageHelper {
-    private final TagLibraryLookup tagLibraryLookup
-    private final OutputContext outputContext
+    private final CompileStaticGroovyPage parent
 
-    public GroovyPageHelper(TagLibraryLookup tagLibraryLookup, OutputContext outputContext) {
-        this.tagLibraryLookup = tagLibraryLookup
-        this.outputContext = outputContext
+    public GroovyPageHelper(CompileStaticGroovyPage parent) {
+        this.parent = parent
     }
 
     private Object invokeTag(String name, Map attrs, Object body = null) {
-        TagOutput.captureTagOutput(tagLibraryLookup, 'g', name, attrs, body, outputContext)
+        parent.invokeTagMethodCall('g', name, attrs, body)
     }
 
     private CharSequence invokeTagReturningChars(String name, Map attrs, Object body = null) {
