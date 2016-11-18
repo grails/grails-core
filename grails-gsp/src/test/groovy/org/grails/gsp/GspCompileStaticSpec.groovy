@@ -28,6 +28,14 @@ class GspCompileStaticSpec extends Specification {
     def setup() {
         gpte = new GroovyPagesTemplateEngine()
         gpte.afterPropertiesSet()
+        def tagLibraryLookup = new TagLibraryLookup() {
+            @Override
+            protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib) {
+                tags.put(name, taglib.newInstance())
+            }
+        }
+        tagLibraryLookup.registerTagLib(new DefaultGrailsTagLibClass(SampleTagLib))
+        gpte.tagLibraryLookup = tagLibraryLookup
     }
 
     def "should support model fields in both compilation modes"() {
@@ -77,14 +85,6 @@ class GspCompileStaticSpec extends Specification {
 
     def "should support message tag invocation"() {
         given:
-        def tagLibraryLookup = new TagLibraryLookup() {
-            @Override
-            protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib) {
-                tags.put(name, taglib.newInstance())
-            }
-        }
-        tagLibraryLookup.registerTagLib(new DefaultGrailsTagLibClass(SampleTagLib))
-        gpte.tagLibraryLookup = tagLibraryLookup
         def template = '<%@ compileStatic="true"%>${' + (gDotPrefix ? 'g.' : '') + '''message(code:'World')}'''
         when:
         def rendered = renderTemplate(template, [:], true)
@@ -92,6 +92,55 @@ class GspCompileStaticSpec extends Specification {
         rendered == 'Hello World'
         where:
         gDotPrefix << [false, true]
+    }
+
+    def "should support message tag invocation inline"() {
+        given:
+        def template = """<%@ compileStatic="true"%><%
+
+out.print(${gDotPrefix ? 'g.' : ''}message(code:'World'))
+
+%>"""
+        when:
+        def rendered = renderTemplate(template, [:], true)
+        then:
+        rendered == 'Hello World'
+        where:
+        gDotPrefix << [false, true]
+    }
+
+    def "should support message tag invocation inline in a closure"() {
+        given:
+        def template = """<%@ compileStatic="true"%><%
+
+def messageClosure = { code -> ${gDotPrefix ? 'g.' : ''}message(code:code) }
+out.print(messageClosure('World'))
+
+%>"""
+        when:
+        def rendered = renderTemplate(template, [:], true)
+        then:
+        rendered == 'Hello World'
+        where:
+        gDotPrefix << [false, true]
+    }
+
+    def "should fail compilation when calling invalid property"() {
+        given:
+        def template = '''<%@ model="Date d1=new Date(123L)"%>${d1.timetypo}'''
+        when:
+        def t = gpte.createTemplate(template, "template")
+        then:
+        t.metaInfo.compilationException.message.contains('No such property: timetypo for class: java.util.Date')
+    }
+
+    def "should fail compilation when calling invalid method"() {
+        given:
+        def template = '''<%@ model="Date d1=new Date(123L)"%>${d1.getTimeTypo()}'''
+        when:
+        def t = gpte.createTemplate(template, "template")
+        then:
+        t.metaInfo.compilationException.message.contains('Cannot find matching method java.util.Date#getTimeTypo()')
     }
 
     def "should support multi-line model declaration"() {
@@ -151,6 +200,7 @@ Date d4=new Date(123L)
 
     def renderTemplate(templateSource, model, expectedCompileStaticMode, printSource = false) {
         def t = gpte.createTemplate(templateSource, "template${templateSource.hashCode()}")
+        assert t.metaInfo.compilationException == null
         def w = t.make(model)
         if(printSource) {
             def sourceWriter = new StringWriter()
