@@ -21,6 +21,7 @@ import grails.util.Environment;
 import grails.util.GrailsStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.grails.buffer.FastStringWriter;
 import org.grails.buffer.StreamByteBuffer;
 import org.grails.buffer.StreamCharBuffer;
@@ -79,6 +80,8 @@ public class GroovyPageParser implements Tokens {
     private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";
     public static final String MODEL_DIRECTIVE = "model";
     public static final String COMPILE_STATIC_DIRECTIVE = "compileStatic";
+    public static final String TAGLIBS_DIRECTIVE = "taglibs";
+    private static final List<String> DEFAULT_TAGLIB_NAMESPACES = Collections.unmodifiableList(Arrays.asList(new String[]{"g", "tmpl", "f", "asset", "plugin"}));
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -135,6 +138,7 @@ public class GroovyPageParser implements Tokens {
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
     public static final String CONFIG_PROPERTY_GSP_COMPILESTATIC = "grails.views.gsp.compileStatic";
+    public static final String CONFIG_PROPERTY_GSP_ALLOWED_TAGLIB_NAMESPACES = "grails.views.gsp.compileStaticConfig.taglibs";
     public static final String CONFIG_PROPERTY_GSP_CODECS = "grails.views.gsp.codecs";
 
     private static final String IMPORT_DIRECTIVE = "import";
@@ -163,6 +167,7 @@ public class GroovyPageParser implements Tokens {
 
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
+    private Set<String> allowedTaglibNamespaces = new LinkedHashSet<>(DEFAULT_TAGLIB_NAMESPACES);
 
     public String getContentType() {
         return contentType;
@@ -248,6 +253,15 @@ public class GroovyPageParser implements Tokens {
      */
     public void configure(ConfigMap config) {
         compileStaticMode = config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_COMPILESTATIC, Boolean.class);
+
+        Object allowedTagLibsConfigValue = config.getProperty(CONFIG_PROPERTY_GSP_ALLOWED_TAGLIB_NAMESPACES, Object.class);
+        if (allowedTagLibsConfigValue instanceof Iterable) {
+            for (Object val : ((Iterable) allowedTagLibsConfigValue)) {
+                allowedTaglibNamespaces.add(String.valueOf(val).trim());
+            }
+        } else if (allowedTagLibsConfigValue instanceof CharSequence) {
+            allowedTaglibNamespaces.addAll(Arrays.asList(allowedTagLibsConfigValue.toString().split("\\s*,\\s*")));
+        }
 
         setEnableSitemeshPreprocessing(
                 config.getProperty(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS, Boolean.class, true)
@@ -462,7 +476,7 @@ public class GroovyPageParser implements Tokens {
 
         String text = scan.getToken();
         text = text.trim();
-        if (text.startsWith(TAGLIB_DIRECTIVE)) {
+        if (text.startsWith(TAGLIB_DIRECTIVE + " ")) {
             directJspTagLib(text);
         } else {
             directPage(text);
@@ -499,8 +513,8 @@ public class GroovyPageParser implements Tokens {
             if (name.equalsIgnoreCase(TAGLIB_CODEC_DIRECTIVE)) {
                 taglibCodecDirectiveValue = value.trim();
             }
-            if(name.equalsIgnoreCase(MODEL_DIRECTIVE)) {
-                if(modelDirectiveValue != null) {
+            if (name.equalsIgnoreCase(MODEL_DIRECTIVE)) {
+                if (modelDirectiveValue != null) {
                     modelDirectiveValue += "\n" + value.trim();
                 } else {
                     modelDirectiveValue = value.trim();
@@ -510,8 +524,11 @@ public class GroovyPageParser implements Tokens {
                     compileStaticModeSetting = true;
                 }
             }
-            if(name.equalsIgnoreCase(COMPILE_STATIC_DIRECTIVE)) {
+            if (name.equalsIgnoreCase(COMPILE_STATIC_DIRECTIVE)) {
                 compileStaticModeSetting = GrailsStringUtils.toBoolean(value.trim());
+            }
+            if (name.equalsIgnoreCase(TAGLIBS_DIRECTIVE)) {
+                allowedTaglibNamespaces.addAll(Arrays.asList(value.trim().split("\\s*,\\s*")));
             }
         }
         this.compileStaticMode = compileStaticModeSetting != null ? compileStaticModeSetting : false;
@@ -787,6 +804,9 @@ public class GroovyPageParser implements Tokens {
             }
             if (isCompileStaticMode()) {
                 out.println("@groovy.transform.CompileStatic(extensions = ['" + GroovyPageTypeCheckingExtension.class.getName() + "'])");
+                if (allowedTaglibNamespaces != null && !allowedTaglibNamespaces.isEmpty()) {
+                    out.println("@" + GroovyPageTypeCheckingConfig.class.getName() + "(taglibs = ['" + DefaultGroovyMethods.join((Iterable) allowedTaglibNamespaces, "','") + "'])");
+                }
             }
             out.print("class ");
             out.print(className);

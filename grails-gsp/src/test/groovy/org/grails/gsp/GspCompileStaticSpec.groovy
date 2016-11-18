@@ -143,6 +143,33 @@ out.print(messageClosure('World'))
         t.metaInfo.compilationException.message.contains('Cannot find matching method java.util.Date#getTimeTypo()')
     }
 
+    def "should fail compilation when using invalid property"() {
+        given:
+        def template = '''<%@ model="Date date"%>${somename}'''
+        when:
+        def t = gpte.createTemplate(template, "template")
+        then:
+        t.metaInfo.compilationException.message.contains('The variable [somename] is undeclared.')
+    }
+
+    def "should fail compilation when calling method on invalid property"() {
+        given:
+        def template = '''<%@ model="Date date"%>${somename.somemethod([a: 1])}'''
+        when:
+        def t = gpte.createTemplate(template, "template")
+        then:
+        t.metaInfo.compilationException.message.contains('The variable [somename] is undeclared.')
+    }
+
+    def "should pass compilation when taglib is defined"() {
+        given:
+        def template = '''<%@ model="Date date" taglibs="firsttaglib, sometaglib, athirdone"%>${sometaglib.something([a: 1])}'''
+        when:
+        def t = gpte.createTemplate(template, "template")
+        then:
+        noExceptionThrown()
+    }
+
     def "should support multi-line model declaration"() {
         given:
         def template = '''<%@ model="""

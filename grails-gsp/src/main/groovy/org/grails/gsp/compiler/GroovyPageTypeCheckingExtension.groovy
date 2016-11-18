@@ -16,6 +16,11 @@
 
 package org.grails.gsp.compiler
 
+import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.ListExpression
 import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
@@ -29,22 +34,34 @@ import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
 class GroovyPageTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
     @Override
     Object run() {
-        beforeVisitMethod {
+        ClassNode configAnnotationClassNode = ClassHelper.make(GroovyPageTypeCheckingConfig)
+
+        beforeVisitClass { ClassNode classNode ->
             newScope {
+                allowedTagLibs = [] as Set
                 dynamicProperties = [] as Set
+            }
+            AnnotationNode configAnnotation = classNode.getAnnotations(configAnnotationClassNode)?.find{it}
+            if (configAnnotation) {
+                Expression taglibsExpression = configAnnotation.getMember('taglibs')
+                if (taglibsExpression instanceof ListExpression) {
+                    currentScope.allowedTagLibs = ListExpression.cast(taglibsExpression).expressions.collect([] as Set) { it.text.trim() }
+                }
             }
         }
 
         unresolvedProperty { PropertyExpression pe ->
-            if (isThisTheReceiver(pe)) {
+            if (isThisTheReceiver(pe) && currentScope.allowedTagLibs.contains(pe.propertyAsString)) {
                 currentScope.dynamicProperties << pe
                 return makeDynamic(pe)
             }
         }
 
         unresolvedVariable { VariableExpression ve ->
-            currentScope.dynamicProperties << ve
-            return makeDynamic(ve)
+            if (currentScope.allowedTagLibs.contains(ve.name)) {
+                currentScope.dynamicProperties << ve
+                return makeDynamic(ve)
+            }
         }
 
         methodNotFound { receiver, name, argList, argTypes, call ->
