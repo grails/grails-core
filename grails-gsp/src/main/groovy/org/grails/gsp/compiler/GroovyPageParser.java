@@ -27,6 +27,7 @@ import org.grails.buffer.StreamByteBuffer;
 import org.grails.buffer.StreamCharBuffer;
 import org.grails.gsp.CompileStaticGroovyPage;
 import org.grails.gsp.GroovyPage;
+import org.grails.gsp.ModelRecordingGroovyPage;
 import org.grails.gsp.compiler.tags.GrailsTagRegistry;
 import org.grails.gsp.compiler.tags.GroovySyntaxTag;
 import org.grails.io.support.SpringIOUtils;
@@ -81,7 +82,7 @@ public class GroovyPageParser implements Tokens {
     public static final String MODEL_DIRECTIVE = "model";
     public static final String COMPILE_STATIC_DIRECTIVE = "compileStatic";
     public static final String TAGLIBS_DIRECTIVE = "taglibs";
-    private static final List<String> DEFAULT_TAGLIB_NAMESPACES = Collections.unmodifiableList(Arrays.asList(new String[]{"g", "tmpl", "f", "asset", "plugin"}));
+    public static final List<String> DEFAULT_TAGLIB_NAMESPACES = Collections.unmodifiableList(Arrays.asList(new String[]{"g", "tmpl", "f", "asset", "plugin"}));
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -811,8 +812,7 @@ public class GroovyPageParser implements Tokens {
             out.print("class ");
             out.print(className);
             out.print(" extends ");
-            Class<?> gspSuperClass = isCompileStaticMode() ? CompileStaticGroovyPage.class : GroovyPage.class;
-            out.print(gspSuperClass.getName());
+            out.print(resolveGspSuperClassName());
             out.println(" {");
             if(modelDirectiveValue != null) {
                 out.println("// start model fields");
@@ -954,6 +954,15 @@ public class GroovyPageParser implements Tokens {
                 out.println(DEFAULT_IMPORTS[i]);
             }
         }
+    }
+
+    private String resolveGspSuperClassName() {
+        Class<?> gspSuperClass =  isCompileStaticMode() ? CompileStaticGroovyPage.class : (isModelRecordingModeEnabled() ? ModelRecordingGroovyPage.class : GroovyPage.class);
+        return gspSuperClass.getName();
+    }
+
+    private boolean isModelRecordingModeEnabled() {
+        return ModelRecordingGroovyPage.ENABLED;
     }
 
     /**

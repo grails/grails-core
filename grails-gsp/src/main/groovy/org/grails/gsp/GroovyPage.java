@@ -295,8 +295,8 @@ public abstract class GroovyPage extends Script {
         return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(namespace) : null;
     }
 
-    private JspTagLib lookupJspTagLib(String property) {
-        String uri = (String) jspTags.get(property);
+    protected JspTagLib lookupJspTagLib(String jspTagLibName) {
+        String uri = (String) jspTags.get(jspTagLibName);
         if (uri != null) {
             TagLibraryResolver tagResolver = getTagLibraryResolver();
             return tagResolver.resolveTagLibrary(uri);
