@@ -36,8 +36,10 @@ class GroovyPageTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
         }
 
         unresolvedProperty { PropertyExpression pe ->
-            currentScope.dynamicProperties << pe
-            return makeDynamic(pe)
+            if(pe.implicitThis || (pe.objectExpression instanceof VariableExpression && pe.objectExpression.thisExpression)) {
+                currentScope.dynamicProperties << pe
+                return makeDynamic(pe)
+            }
         }
 
         unresolvedVariable { VariableExpression ve ->
