@@ -81,14 +81,14 @@ public abstract class GroovyPage extends Script {
     @SuppressWarnings("rawtypes")
     private Map jspTags = Collections.emptyMap();
     private TagLibraryResolver jspTagLibraryResolver;
-    private TagLibraryLookup gspTagLibraryLookup;
+    protected TagLibraryLookup gspTagLibraryLookup;
     private String[] htmlParts;
     private Set<Integer> htmlPartsSet;
     private GrailsPrintWriter out;
     private GrailsPrintWriter staticOut;
     private GrailsPrintWriter expressionOut;
     private OutputEncodingStack outputStack;
-    private OutputContext outputContext;
+    protected OutputContext outputContext;
     private String pluginContextPath;
     private Encoder rawEncoder;
 

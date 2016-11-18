@@ -17,6 +17,7 @@
 package org.grails.gsp
 
 import groovy.transform.CompileStatic
+import org.grails.taglib.TagOutput
 import org.grails.taglib.encoder.OutputContext
 
 
@@ -27,11 +28,31 @@ abstract class CompileStaticGroovyPage extends GroovyPage {
 
     @Override
     void initRun(Writer target, OutputContext outputContext, GroovyPageMetaInfo metaInfo) {
-        groovyPageHelper = new GroovyPageHelper(metaInfo.getTagLibraryLookup(), outputContext)
+        groovyPageHelper = new GroovyPageHelper(this)
         super.initRun(target, outputContext, metaInfo)
     }
 
     GroovyPageHelper getG() {
         return groovyPageHelper
+    }
+
+    Object invokeTagMethodCall(String namespace, String name, Object[] args) {
+        Map attrs = null
+        Object body = null
+        for (Object arg : args) {
+            if (arg instanceof Map) {
+                attrs = Map.cast(arg)
+            } else {
+                body = arg
+            }
+        }
+        if (attrs == null) {
+            attrs = [:]
+        }
+        invokeTagMethodCall(namespace, name, attrs, body)
+    }
+
+    Object invokeTagMethodCall(String namespace, String name, Map attrs, Object body) {
+        TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, outputContext)
     }
 }
