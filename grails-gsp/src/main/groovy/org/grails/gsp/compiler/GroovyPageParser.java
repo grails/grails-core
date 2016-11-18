@@ -783,7 +783,7 @@ public class GroovyPageParser implements Tokens {
                 out.println(pluginAnnotation);
             }
             if (compileStaticMode) {
-                out.println("@groovy.transform.CompileStatic");
+                out.println("@groovy.transform.CompileStatic(extensions = ['" + GroovyPageTypeCheckingExtension.class.getName() + "'])");
             }
             out.print("class ");
             out.print(className);

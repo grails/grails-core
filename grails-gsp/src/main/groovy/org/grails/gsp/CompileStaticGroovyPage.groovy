@@ -17,42 +17,37 @@
 package org.grails.gsp
 
 import groovy.transform.CompileStatic
-import org.grails.taglib.TagOutput
+import org.grails.taglib.TagLibNamespaceMethodDispatcher
 import org.grails.taglib.encoder.OutputContext
 
-
+/**
+ * Base class for staticly compiled GSPs
+ *
+ * getProperty and invokeMethod calls are a result of GroovyPageTypeCheckingExtension
+ *
+ */
 @CompileStatic
 abstract class CompileStaticGroovyPage extends GroovyPage {
-    @Delegate
-    private GroovyPageHelper groovyPageHelper
+    TagLibNamespaceMethodDispatcher defaultTagDispatcher
 
     @Override
     void initRun(Writer target, OutputContext outputContext, GroovyPageMetaInfo metaInfo) {
-        groovyPageHelper = new GroovyPageHelper(this)
         super.initRun(target, outputContext, metaInfo)
+        defaultTagDispatcher = TagLibNamespaceMethodDispatcher.cast(lookupTagDispatcher(DEFAULT_NAMESPACE))
     }
 
-    GroovyPageHelper getG() {
-        return groovyPageHelper
+    @Override
+    protected Object lookupTagDispatcher(String namespace) {
+        gspTagLibraryLookup != null && gspTagLibraryLookup.hasNamespace(namespace) ? new TagLibNamespaceMethodDispatcher(namespace, gspTagLibraryLookup, outputContext) : null
     }
 
-    Object invokeTagMethodCall(String namespace, String name, Object[] args) {
-        Map attrs = null
-        Object body = null
-        for (Object arg : args) {
-            if (arg instanceof Map) {
-                attrs = Map.cast(arg)
-            } else {
-                body = arg
-            }
-        }
-        if (attrs == null) {
-            attrs = [:]
-        }
-        invokeTagMethodCall(namespace, name, attrs, body)
+    @Override
+    public Object getProperty(String property) {
+        return resolveProperty(property)
     }
 
-    Object invokeTagMethodCall(String namespace, String name, Map attrs, Object body) {
-        TagOutput.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, outputContext)
+    @Override
+    Object invokeMethod(String name, Object args) {
+        return defaultTagDispatcher.invokeMethod(name, args)
     }
 }

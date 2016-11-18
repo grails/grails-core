@@ -268,26 +268,40 @@ public abstract class GroovyPage extends Script {
         // with the Groovy Truth
         if (BINDING.equals(property)) return getBinding();
 
+        return resolveProperty(property);
+    }
+
+    protected Object resolveProperty(String property) {
         Object value = getBinding().getVariable(property);
         if (value != null) {
             return value;
         }
 
-        value = gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
-        if (value == null && jspTags.containsKey(property)) {
-            TagLibraryResolver tagResolver = getTagLibraryResolver();
-
-            String uri = (String) jspTags.get(property);
-            if (uri != null) {
-                value = tagResolver.resolveTagLibrary(uri);
-            }
+        // check if a taglib can be found
+        value = lookupTagDispatcher(property);
+        if (value == null) {
+            value = lookupJspTagLib(property);
         }
+
         if (value != null) {
             // cache lookup for next execution
             setVariableDirectly(property, value);
         }
 
         return value;
+    }
+
+    protected Object lookupTagDispatcher(String namespace) {
+        return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupNamespaceDispatcher(namespace) : null;
+    }
+
+    private JspTagLib lookupJspTagLib(String property) {
+        String uri = (String) jspTags.get(property);
+        if (uri != null) {
+            TagLibraryResolver tagResolver = getTagLibraryResolver();
+            return tagResolver.resolveTagLibrary(uri);
+        }
+        return null;
     }
 
     /* Static call for jsp tags resolution
