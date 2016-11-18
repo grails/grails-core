@@ -39,6 +39,7 @@ import java.util.Map;
 public abstract class GroovySyntaxTag implements GrailsTag {
 
     private static final String ERROR_NO_VAR_WITH_STATUS = "When using <g:each> with a [status] attribute, you must also define a [var]. eg. <g:each var=\"myVar\">";
+    private static final String ERROR_NO_VAR_WITH_COMPILE_STATIC = "When using <g:each> in CompileStatic mode, you must also define a [var]. eg. <g:each var=\"myVar\">";
     protected static final String ATTRIBUTE_IN = "in";
     protected static final String ATTRIBUTE_VAR = "var";
     protected static final String ATTRIBUTES_STATUS = "status";
@@ -58,6 +59,10 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         if (outObj instanceof PrintWriter) {
             out = (PrintWriter)context.get(GroovyPage.OUT);
         }
+    }
+
+    protected boolean isCompileStaticMode() {
+        return parser != null && parser.isCompileStaticMode();
     }
 
     public void setWriter(Writer w) {
@@ -137,6 +142,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
             out.println("int "+ status +" = 0");
         }
         if (!hasVar) {
+            if (isCompileStaticMode()) {
+                throw new GrailsTagException(ERROR_NO_VAR_WITH_COMPILE_STATIC, parser.getPageName(), parser.getCurrentOutputLineNumber());
+            }
             var = "_it"+ Math.abs(System.identityHashCode(this));
             foreachRenamedIt = var;
         }
@@ -173,7 +181,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.println("}");
     }
 
-    private String extractAttributeValue(String attr) {
+    protected String extractAttributeValue(String attr) {
         if (GrailsStringUtils.isBlank(attr)) {
             return "";
         }
