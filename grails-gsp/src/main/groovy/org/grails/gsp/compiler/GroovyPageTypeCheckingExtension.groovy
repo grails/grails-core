@@ -36,7 +36,7 @@ class GroovyPageTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
         }
 
         unresolvedProperty { PropertyExpression pe ->
-            if(pe.implicitThis || (pe.objectExpression instanceof VariableExpression && pe.objectExpression.thisExpression)) {
+            if (isThisTheReceiver(pe)) {
                 currentScope.dynamicProperties << pe
                 return makeDynamic(pe)
             }
@@ -48,9 +48,13 @@ class GroovyPageTypeCheckingExtension extends GroovyTypeCheckingExtensionSupport
         }
 
         methodNotFound { receiver, name, argList, argTypes, call ->
-            if (receiver.superClass?.name == 'org.grails.gsp.CompileStaticGroovyPage' || currentScope.dynamicProperties.contains(call.objectExpression)) {
+            if (isThisTheReceiver(call) || (call.objectExpression != null && currentScope.dynamicProperties.contains(call.objectExpression))) {
                 return makeDynamic(call)
             }
         }
+    }
+
+    def isThisTheReceiver(expr) {
+        expr.implicitThis || (expr.objectExpression instanceof VariableExpression && expr.objectExpression.thisExpression)
     }
 }
