@@ -3,14 +3,12 @@ package org.grails.web.converters
 import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
-
+import grails.testing.gorm.DataTest
+import org.grails.web.converters.marshaller.ClosureObjectMarshaller
 import org.grails.web.converters.marshaller.json.DomainClassMarshaller as JsonClassMarshaller
 import org.grails.web.converters.marshaller.xml.DomainClassMarshaller as XmlClassMarshaller
-import org.grails.web.converters.marshaller.ClosureObjectMarshaller
 import org.junit.Test
+
 import static org.junit.Assert.assertEquals
 
 /**
@@ -18,9 +16,11 @@ import static org.junit.Assert.assertEquals
  *
  * @author Siegfried Puchbauer
  */
-@TestMixin(ControllerUnitTestMixin)
-@Mock(ConverterBook)
-class ConverterConfigurationTests {
+class ConverterConfigurationTests implements DataTest {
+
+    Class[] getDomainClassesToMock() {
+        ConverterBook
+    }
 
     @Test
     void testCustomClosureMarshallerRegistration() {

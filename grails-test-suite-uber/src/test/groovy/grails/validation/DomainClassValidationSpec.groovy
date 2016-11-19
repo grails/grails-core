@@ -2,9 +2,7 @@ package grails.validation
 
 import grails.core.GrailsDomainClass
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.testing.gorm.DataTest
 import grails.util.ClosureToMapPopulator
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
@@ -19,9 +17,11 @@ import spock.lang.Specification
  *
  * @see grails.validation.ValidateableTraitSpec
  */
-@TestMixin(GrailsUnitTestMixin)
-@Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
-class DomainClassValidationSpec extends Specification {
+class DomainClassValidationSpec extends Specification implements DataTest {
+
+    void setupSpec() {
+        mockDomains MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass
+    }
 
     @Issue('grails/grails-core#9749')
     void 'test that transient properties are not constrained by default but can be explicitly constrained'() {
