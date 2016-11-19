@@ -1,17 +1,23 @@
 package grails.test.mixin
 
-import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.transaction.Transactional
 import spock.lang.Specification
+
+import static org.springframework.http.HttpStatus.*
 
 /**
  * @video Graeme Rocher
  */
-@TestFor(VideoController)
-@Mock(Video)
-class RestfulControllerSpec extends Specification {
+class RestfulControllerSpec extends Specification
+    implements ControllerUnitTest<VideoController>, DataTest {
+
+    void setupSpec() {
+        mockDomain Video
+    }
 
     def populateValidParams(params) {
         assert params != null

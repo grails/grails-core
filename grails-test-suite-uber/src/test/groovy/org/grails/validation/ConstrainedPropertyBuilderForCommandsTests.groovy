@@ -1,17 +1,18 @@
 package org.grails.validation
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import grails.validation.Validateable
+import org.junit.Test
 
 import static org.junit.Assert.*
 
 /**
  * Tests constraints building specific for command objects
  */
-@TestFor(ConstraintsPerson)
-class ConstrainedPropertyBuilderForCommandsTests {
+class ConstrainedPropertyBuilderForCommandsTests implements DomainUnitTest<ConstraintsPerson> {
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist() {
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsCommand.constraintsMap
         assertNotNull personCommandConstraints
@@ -20,6 +21,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertNotNull personCommandConstraints.get("email")
     }
 
+    @Test
     void testImportFrom_AllConstraints_Validation() {
         def personCommand = new PersonAllConstraintsNoNormalConstraintsCommand()
 
@@ -39,6 +41,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertNull personCommand.getErrors().getFieldErrors("firstName")[0].getRejectedValue()
     }
 
+    @Test
     void testImportFrom_SomeConstraints_ConstraintsExist() {
         def personCommandConstraints = PersonSomeConstraintsNoNormalConstraintsCommand.constraintsMap
 
@@ -48,6 +51,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertNotNull personCommandConstraints.get("firstName")
     }
 
+    @Test
     void testImportFrom_SomeConstraints_Validation() {
         def personCommand = new PersonSomeConstraintsNoNormalConstraintsCommand()
 
@@ -86,6 +90,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
     }
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsFirst() {
         def personCommandConstraints = PersonAllConstraintsWithNormalConstraintsFirstCommand.constraintsMap
 
@@ -101,6 +106,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
                 personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter())
     }
 
+    @Test
     void testImportFrom_AllConstraints_Validation_NormalConstraintsFirst() {
         def personCommand = new PersonAllConstraintsWithNormalConstraintsFirstCommand()
 
@@ -141,6 +147,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertEquals "wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue()
     }
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsLast() {
         def personCommandConstraints = PersonAllConstraintsWithNormalConstraintsLastCommand.constraintsMap
 
@@ -155,6 +162,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
                      personCommandConstraints.get("telephone").getAppliedConstraint("matches").getParameter()
     }
 
+    @Test
     void testImportFrom_AllConstraints_Validation_NormalConstraintsLast() {
         def personCommand = new PersonAllConstraintsWithNormalConstraintsLastCommand()
 
@@ -197,6 +205,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertEquals "wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue()
     }
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist_Including() {
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingCommand.constraintsMap
 
@@ -212,6 +221,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertTrue emailConstraint.hasAppliedConstraint('nullable')
     }
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist_Excluding() {
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsExcludingCommand.constraintsMap
 
@@ -234,6 +244,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertTrue emailConstraint.hasAppliedConstraint('email')
     }
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist_IncludingByRegexp() {
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand.constraintsMap
 
@@ -251,6 +262,7 @@ class ConstrainedPropertyBuilderForCommandsTests {
         assertTrue emailConstraint.hasAppliedConstraint('nullable')
     }
 
+    @Test
     void testImportFrom_AllConstraints_ConstraintsExist_IncludingExcludingByRegexp() {
         def personCommandConstraints = PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand.constraintsMap
 
