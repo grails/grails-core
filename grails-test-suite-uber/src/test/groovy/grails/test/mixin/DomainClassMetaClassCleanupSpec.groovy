@@ -2,12 +2,13 @@ package grails.test.mixin
 
 import grails.persistence.Entity
 import grails.test.runtime.FreshRuntime
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(SomeDomainClass)
 @FreshRuntime
-class DomainClassMetaClassCleanupSpec extends Specification {
+class DomainClassMetaClassCleanupSpec extends Specification
+    implements DomainUnitTest<SomeDomainClass> {
 
     @Issue('GRAILS-11661')
     void 'test adding one method'() {
