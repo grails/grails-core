@@ -645,6 +645,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         pageMeta.setExpressionCodecName(parse.getExpressionCodecDirectiveValue());
         pageMeta.setOutCodecName(parse.getOutCodecDirectiveValue());
         pageMeta.setTaglibCodecName(parse.getTaglibCodecDirectiveValue());
+        pageMeta.setCompileStaticMode(parse.isCompileStaticMode());
+        pageMeta.setModelFieldsMode(parse.isModelFieldsMode());
 
         pageMeta.initialize();
         // just return groovy and don't compile if asked
