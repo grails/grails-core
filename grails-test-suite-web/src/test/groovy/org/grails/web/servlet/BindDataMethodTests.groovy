@@ -16,7 +16,6 @@
 package org.grails.web.servlet
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 

@@ -1,11 +1,10 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
-
+import grails.testing.gorm.DomainUnitTest
 import org.junit.Test
 
-@TestFor(DomainWithDefaultConstraints)
-class DomainClassWithDefaultConstraintsUnitTestMixinTests {
+class DomainClassWithDefaultConstraintsUnitTestMixinTests implements DomainUnitTest<DomainWithDefaultConstraints> {
 
     static doWithConfig(c) {
         c.grails.gorm.default.constraints = {

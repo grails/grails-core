@@ -3,22 +3,24 @@ package org.grails.web.binding
 import grails.artefact.Artefact
 import grails.databinding.BindingFormat
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockMultipartFile
 import org.junit.Test
+
 import static org.junit.Assert.*
 
- /**
+/**
  * Tests Grails data binding capabilities.
  *
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(TestController)
-@Mock(MyBean)
-class DataBindingTests  {
+class DataBindingTests implements ControllerUnitTest<TestController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        MyBean
+    }
 
     @Test
     void testBindingPogoToDomainClass() {

@@ -1,16 +1,16 @@
 package org.grails.web.converters
 
-import static org.junit.Assert.assertEquals
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import org.grails.buffer.StreamCharBuffer
 import org.grails.web.servlet.mvc.HibernateProxy
 import org.grails.web.servlet.mvc.LazyInitializer
-import org.grails.buffer.StreamCharBuffer
 import org.junit.Test
+
+import static org.junit.Assert.assertEquals
 
 /**
  * Tests for the JSON converter.
@@ -18,9 +18,11 @@ import org.junit.Test
  * @author Graeme Rocher
  * @since 0.4
  */
-@TestFor(JSONConverterController)
-@Mock(Book)
-class JSONConverterTests {
+class JSONConverterTests implements ControllerUnitTest<JSONConverterController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        Book
+    }
 
     @Test
     void testNullJSONValues() {

@@ -3,14 +3,15 @@ package org.grails.web.converters
 import grails.artefact.Artefact
 import grails.converters.XML
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
 import org.grails.web.servlet.mvc.HibernateProxy
 import org.grails.web.servlet.mvc.LazyInitializer
 import org.junit.Test
-import static org.junit.Assert.*
+
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
 
 /**
  * Tests for the XML converter.
@@ -18,9 +19,11 @@ import static org.junit.Assert.*
  * @author Graeme Rocher
  * @since 0.6
  */
-@TestFor(RestController)
-@Mock([XmlConverterTestBook, XmlConverterTestPublisher, XmlConverterTestBookData])
-class XMLConverterTests {
+class XMLConverterTests implements ControllerUnitTest<RestController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [XmlConverterTestBook, XmlConverterTestPublisher, XmlConverterTestBookData]
+    }
 
     @Test
     void testXMLConverter() {

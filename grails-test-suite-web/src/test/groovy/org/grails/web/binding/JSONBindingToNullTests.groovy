@@ -4,16 +4,17 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.JSONBuilder
-
 import org.junit.Before
 import org.junit.Test
 
-@TestFor(UserController)
-@Mock(User)
-class JSONBindingToNullTests {
+class JSONBindingToNullTests implements ControllerUnitTest<UserController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        User
+    }
 
     @Before
     void addConfig() {

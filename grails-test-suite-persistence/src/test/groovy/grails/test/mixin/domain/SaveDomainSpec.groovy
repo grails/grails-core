@@ -1,11 +1,10 @@
 package grails.test.mixin.domain
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 
-@TestFor(Person)
-class SaveDomainSpec extends Specification {
+class SaveDomainSpec extends Specification implements DomainUnitTest<Person> {
 
     void 'test dateCreated and lastUpdated populated'() {
         given:

@@ -2,19 +2,22 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
+
 import static org.junit.Assert.assertEquals
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(MenuController)
-@Mock(Menu)
-class BindStringArrayToGenericListTests  {
+class BindStringArrayToGenericListTests
+        implements ControllerUnitTest<MenuController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        Menu
+    }
 
     @Test
     void testBindStringArrayToGenericList() {
