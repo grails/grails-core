@@ -15,6 +15,7 @@
  */
 package org.grails.cli.profile.commands.factory
 
+import grails.build.logging.GrailsConsole
 import grails.util.Named
 import org.grails.cli.gradle.commands.GradleTaskCommandAdapter
 import org.grails.cli.profile.Command
@@ -40,6 +41,7 @@ class ApplicationContextCommandFactory implements CommandFactory {
 
             return commands.collect() { Named named -> new GradleTaskCommandAdapter(profile, named) }
         } catch (Throwable e) {
+            GrailsConsole.instance.error("Error occurred loading commands: $e.message", e)
             return []
         }
     }
