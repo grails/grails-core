@@ -600,12 +600,12 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             } else if (buildMergeProfileNames.contains(participatingProfile.name)) {
                 def concatFile = "${destDir}/concat.gradle"
                 ant.move(file:destFile, tofile: concatFile)
-                ant.concat destfile: destFile, {
+                ant.concat([destfile: destFile, fixlastline: true], {
                     path {
                         pathelement location: concatFile
                         pathelement location: srcFile
                     }
-                }
+                })
                 ant.delete(file: concatFile, failonerror: false)
             }
         }
