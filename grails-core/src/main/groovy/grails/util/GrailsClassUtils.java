@@ -1028,11 +1028,33 @@ public class GrailsClassUtils {
 
         if (name.startsWith("get")) {
             name = name.substring(3);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+            if (name.length() > 0) {
+                if(name.length() == 1) {
+                    if(Character.isUpperCase(name.charAt(0))) {
+                        return true;
+                    }
+                } else {
+                    if(Character.isUpperCase(name.charAt(0)) ||
+                       (Character.isUpperCase(name.charAt(1)) && Character.isLowerCase(name.charAt(0)))) {
+                        return true;
+                    }
+                }
+            }
         }
         else if (name.startsWith("is")) {
             name = name.substring(2);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+            if (name.length() > 0) {
+                if(name.length() == 1) {
+                    if(Character.isUpperCase(name.charAt(0))) {
+                        return true;
+                    }
+                } else {
+                    if(Character.isUpperCase(name.charAt(0)) ||
+                            (Character.isUpperCase(name.charAt(1)) && Character.isLowerCase(name.charAt(0)))) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }

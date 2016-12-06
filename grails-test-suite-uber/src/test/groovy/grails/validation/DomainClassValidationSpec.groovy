@@ -39,7 +39,7 @@ class DomainClassValidationSpec extends Specification {
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
         when: 'an object is valid'
-        def domainClass = new MyDomainClass(name: 'Kirk', age: 47, town: 'STL')
+        def domainClass = new MyDomainClass(name: 'Kirk', age: 47, town: 'STL', aString: 'Woot!')
 
         then: 'validate() returns true and there are no errors'
         domainClass.validate()
@@ -85,6 +85,7 @@ class DomainClassValidationSpec extends Specification {
         domainClass.errors.getFieldError('age').rejectedValue == 'type mismatched'
 
         when:
+        domainClass.aString = 'Woot!'
         domainClass.name = 'lower case'
         domainClass.age = -1  // invalid value
         domainClass.town = ''
@@ -111,6 +112,7 @@ class DomainClassValidationSpec extends Specification {
         domainClass.errors.getFieldError('age').rejectedValue == 'any validation failure'
 
         when:
+        domainClass.aString = 'Woot!'
         domainClass.name = 'lower case'
         domainClass.age = -1  // invalid value
         domainClass.town = ''
@@ -137,17 +139,19 @@ class DomainClassValidationSpec extends Specification {
         def constraints = getAssociatedDomainClassFromApplication(new MyDomainClass()).getConstrainedProperties()
 
         then:
-        constraints.size() == 4
+        constraints.size() == 5
         constraints.containsKey 'name'
         constraints.containsKey 'town'
         constraints.containsKey 'age'
         constraints.containsKey 'someProperty'
+        constraints.containsKey 'aString'
 
         and:
         constraints.name.appliedConstraints.size() == 2
         constraints.age.appliedConstraints.size() == 2
         constraints.town.appliedConstraints.size() == 1
         constraints.someProperty.appliedConstraints.size() == 1
+        constraints.aString.appliedConstraints.size() == 1
 
         and:
         constraints.name.hasAppliedConstraint 'matches'
@@ -156,12 +160,14 @@ class DomainClassValidationSpec extends Specification {
         constraints.age.hasAppliedConstraint 'nullable'
         constraints.town.hasAppliedConstraint 'nullable'
         constraints.someProperty.hasAppliedConstraint 'nullable'
+        constraints.aString.hasAppliedConstraint 'nullable'
 
         and: 'implicit defaultNullable is nullable:false'
         !constraints.name.nullable
         !constraints.age.nullable
         !constraints.town.nullable
         !constraints.someProperty.nullable
+        !constraints.aString.nullable
     }
 
     @Ignore('defaultNullable is not supported yet')
@@ -307,6 +313,7 @@ class MyDomainClass {
     String name
     Integer age
     String town
+    String aString
     private String _someProperty = 'default value'
 
     void setSomeOtherProperty(String s) {}
