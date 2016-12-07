@@ -16,6 +16,7 @@ package org.grails.commons;
 
 import grails.util.GrailsClassUtils;
 import junit.framework.TestCase;
+import spock.lang.Issue;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -310,6 +311,14 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getNewYear", null)));
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getFilename", String.class)));
         assertFalse(GrailsClassUtils.isPropertyGetter(ClassHavingPropertyGetters.class.getDeclaredMethod("getTitle", null)));
+    }
+
+    @Issue("https://github.com/grails/grails-core/issues/10343")
+    public void testPropertiesBeginningWithSingleLowerCaseLetter() throws Exception {
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getaString", null)));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isaBoolean", null)));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("getS", null)));
+        assertTrue(GrailsClassUtils.isPropertyGetter(SomeGroovyClass.class.getDeclaredMethod("isB", null)));
     }
 }
 
