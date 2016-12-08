@@ -178,6 +178,78 @@ class InterceptorSpec extends Specification {
         'GET'      | false
     }
 
+    void "Test match with uri no context path"() {
+        given:"A test interceptor"
+        def i = new TestUriInterceptor()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), new MockHttpServletRequest("", requestUri), new MockHttpServletResponse())
+        def request = webRequest.request
+
+        when:"The uri of the current request is ${requestUri}"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", action: "save"))
+
+        then: "We match: ${shouldMatch}"
+        i.doesMatch() == shouldMatch
+
+        where:
+        requestUri | shouldMatch
+        '/bar'     | true
+        '/bar/x'   | true
+        '/fooBar'  | false
+        '/foo'     | true
+        '/foo/x'   | false
+        '/foo/bar' | true
+    }
+
+    void "Test match with uri and context path"() {
+        given:"A test interceptor"
+        def i = new TestUriInterceptor()
+        def mockRequest = new MockHttpServletRequest("", requestUri)
+        mockRequest.setContextPath('/grails')
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), mockRequest, new MockHttpServletResponse())
+
+        def request = webRequest.request
+
+        when:"The uri of the current request is ${requestUri}"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", action: "save"))
+
+        then: "We match: ${shouldMatch}"
+        i.doesMatch() == shouldMatch
+
+        where:
+        requestUri        | shouldMatch
+        '/grails/bar'     | true
+        '/grails/bar/x'   | true
+        '/grails/fooBar'  | false
+        '/grails/foo'     | true
+        '/grails/foo/x'   | false
+        '/grails/foo/bar' | true
+    }
+
+    void "Test match with uri and context path with an interceptor that defines the context path"() {
+        given:"A test interceptor"
+        def i = new TestContextUriInterceptor()
+        def mockRequest = new MockHttpServletRequest("", requestUri)
+        mockRequest.setContextPath('/grails')
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), mockRequest, new MockHttpServletResponse())
+
+        def request = webRequest.request
+
+        when:"The uri of the current request is ${requestUri}"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", action: "save"))
+
+        then: "We match: ${shouldMatch}"
+        i.doesMatch() == shouldMatch
+
+        where:
+        requestUri        | shouldMatch
+        '/grails/bar'     | true
+        '/grails/bar/x'   | true
+        '/grails/fooBar'  | false
+        '/grails/foo'     | true
+        '/grails/foo/x'   | false
+        '/grails/foo/bar' | true
+    }
+
     void clearMatch(i, HttpServletRequest request) {
         request.removeAttribute(i.getClass().name + InterceptorArtefactHandler.MATCH_SUFFIX)
     }
@@ -224,5 +296,21 @@ class Test4Interceptor implements Interceptor {
 class TestMethodInterceptor implements Interceptor {
     TestMethodInterceptor() {
         match(method: 'POST')
+    }
+}
+
+class TestUriInterceptor implements Interceptor {
+    TestUriInterceptor() {
+        match(uri: '/bar/**')
+        match(uri: '/foo')
+        match(uri: '/foo/bar')
+    }
+}
+
+class TestContextUriInterceptor implements Interceptor {
+    TestContextUriInterceptor() {
+        match(uri: '/grails/bar/**')
+        match(uri: '/grails/foo')
+        match(uri: '/grails/foo/bar')
     }
 }
