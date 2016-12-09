@@ -205,8 +205,8 @@ abstract class AbstractProfile implements Profile {
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
         this.parentTargetFolder = (String)navigableConfig.get("skeleton.parent.target", null)
         this.skeletonExcludes = (List<String>)navigableConfig.get("skeleton.excludes", [])
-        this.binaryExtensions = (Set<String>)navigableConfig.get("skeleton.binaryExtensions", [])
-        this.executablePatterns = (Set<String>)navigableConfig.get("skeleton.executable", [])
+        this.binaryExtensions = (List<String>)navigableConfig.get("skeleton.binaryExtensions", [])
+        this.executablePatterns = (List<String>)navigableConfig.get("skeleton.executable", [])
     }
 
     String getDescription() {
