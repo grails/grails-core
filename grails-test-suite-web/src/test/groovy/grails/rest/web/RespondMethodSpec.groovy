@@ -253,14 +253,6 @@ class RespondMethodSpec extends Specification{
         response.status == 201
     }
 
-    @Issue(['grails/grails-core#10312'])
-    void 'Test respond with a file argument'() {
-        when:
-        controller.respondWithFile()
-
-        then: "the fileName has quotes around it"
-        response.getHeader(HttpHeaders.CONTENT_DISPOSITION) == 'attachment;filename="good morning.txt"'
-    }
 }
 
 @Artefact("Controller")
@@ -287,10 +279,6 @@ class BookController {
 
     def respondWithMapAndNamedArguments() {
         respond([name: 'Jeff'], status: 201)
-    }
-
-    def respondWithFile() {
-        respond([file: "abc".bytes, fileName: "good morning.txt"])
     }
 }
 @Entity
