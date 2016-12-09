@@ -67,7 +67,6 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
     String groupname
     String defaultpackagename
     File targetDirectory
-    List<String> binaryFileExtensions = ['png','gif','jpg','jpeg','ico','icns','pdf','zip','jar','class']
 
     CommandDescription description = new CommandDescription(name, "Creates an application", "create-app [NAME] --profile=web")
 
@@ -276,7 +275,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 appendFeatureFiles(skeletonDir)
 
                 if(skeletonDir.exists()) {
-                    copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML])
+                    copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML], profileInstance.binaryExtensions)
                 }
             }
 
@@ -583,8 +582,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             def tmpDir = unzipProfile(ant, skeletonResource)
             skeletonDir = new File(tmpDir, "META-INF/grails-profile/skeleton")
         }
-        copySrcToTarget(ant, skeletonDir, excludes)
-
+        copySrcToTarget(ant, skeletonDir, excludes, profile.binaryExtensions)
 
         Set<File> sourceBuildGradles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
 
@@ -610,12 +608,11 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             }
         }
 
-        ant.chmod(dir: targetDirectory, includes: "**/gradlew*", perm: 'u+x')
-        ant.chmod(dir: targetDirectory, includes: "**/grailsw*", perm: 'u+x')
+        ant.chmod(dir: targetDirectory, includes: profile.executablePatterns.join(' '), perm: 'u+x')
     }
 
     @CompileDynamic
-    protected void copySrcToTarget(GrailsConsoleAntBuilder ant, File srcDir, List excludes) {
+    protected void copySrcToTarget(GrailsConsoleAntBuilder ant, File srcDir, List excludes, Set<String> binaryFileExtensions) {
         ant.copy(todir: targetDirectory, overwrite: true, encoding: 'UTF-8') {
             fileSet(dir: srcDir, casesensitive: false) {
                 exclude(name: '**/.gitkeep')
