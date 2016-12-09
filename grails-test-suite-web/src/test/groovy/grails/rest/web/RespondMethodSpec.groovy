@@ -25,6 +25,7 @@ import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import grails.web.mime.MimeType
 import grails.core.support.proxy.ProxyHandler
 import org.grails.web.util.GrailsApplicationAttributes
+import org.springframework.http.HttpHeaders
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Issue
 import spock.lang.Specification
@@ -251,6 +252,15 @@ class RespondMethodSpec extends Specification{
         response.json.name == 'Jeff'
         response.status == 201
     }
+
+    @Issue(['grails/grails-core#10312'])
+    void 'Test respond with a file argument'() {
+        when:
+        controller.respondWithFile()
+
+        then: "the fileName has quotes around it"
+        response.getHeader(HttpHeaders.CONTENT_DISPOSITION) == 'attachment;filename="good morning.txt"'
+    }
 }
 
 @Artefact("Controller")
@@ -277,6 +287,10 @@ class BookController {
 
     def respondWithMapAndNamedArguments() {
         respond([name: 'Jeff'], status: 201)
+    }
+
+    def respondWithFile() {
+        respond([file: "abc".bytes, fileName: "good morning.txt"])
     }
 }
 @Entity
