@@ -57,6 +57,8 @@ abstract class AbstractProfile implements Profile {
     protected List<String> buildPlugins = []
     protected List<String> buildExcludes = []
     protected List<String> skeletonExcludes = []
+    protected List<String> binaryExtensions = []
+    protected List<String> executablePatterns = []
     protected final List<Command> internalCommands = []
     protected List<String> buildMerge = null
     protected List<Feature> features = []
@@ -203,14 +205,36 @@ abstract class AbstractProfile implements Profile {
         this.buildMerge = (List<String>)navigableConfig.get("build.merge", null)
         this.parentTargetFolder = (String)navigableConfig.get("skeleton.parent.target", null)
         this.skeletonExcludes = (List<String>)navigableConfig.get("skeleton.excludes", [])
+        this.binaryExtensions = (Set<String>)navigableConfig.get("skeleton.binaryExtensions", [])
+        this.executablePatterns = (Set<String>)navigableConfig.get("skeleton.executable", [])
     }
 
     String getDescription() {
-        return description
+        description
     }
 
     String getInstructions() {
-        return instructions
+        instructions
+    }
+
+    Set<String> getBinaryExtensions() {
+        Set<String> calculatedBinaryExtensions = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedBinaryExtensions.addAll(profile.binaryExtensions)
+        }
+        calculatedBinaryExtensions.addAll(binaryExtensions)
+        return calculatedBinaryExtensions
+    }
+
+    Set<String> getExecutablePatterns() {
+        Set<String> calculatedExecutablePatterns = []
+        def parents = getExtends()
+        for(profile in parents) {
+            calculatedExecutablePatterns.addAll(profile.executablePatterns)
+        }
+        calculatedExecutablePatterns.addAll(executablePatterns)
+        return calculatedExecutablePatterns
     }
 
     @Override
