@@ -12,6 +12,19 @@ import org.junit.Test
 class RenderDynamicMethodTests  {
 
     @Test
+    void testCanaryTest() {
+        assert true == true
+    }
+
+    @Test
+    void testRenderContentDispositionWithArgsMap() {
+        controller.renderArgsMap()
+        assertEquals 'theFile', response.contentAsString
+        assertEquals 'text/plain;charset=utf-8', response.contentType
+        assertEquals "\"File Space Name.txt\"", response.getHeaders("Content-Disposition").toString().split("filename=")[1].replace("]", "")
+    }
+
+    @Test
     void testRenderTextWithLayout() {
         controller.renderTextWithLayout()
         assertEquals "text/html;charset=utf-8", response.contentType
@@ -107,6 +120,11 @@ class RenderDynamicMethodTests  {
 
 @Artefact('Controller')
 class RenderDynamicMethodTestController {
+
+    def renderArgsMap = {
+        render contentType:"text/plain;charset=utf-8", file:"theFile".bytes, fileName:"File Space Name.txt"
+    }
+
     def renderText = {
         render "text"
     }
