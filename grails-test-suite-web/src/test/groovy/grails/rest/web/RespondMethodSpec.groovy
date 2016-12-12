@@ -25,7 +25,6 @@ import org.grails.plugins.web.mime.MimeTypesFactoryBean
 import grails.web.mime.MimeType
 import grails.core.support.proxy.ProxyHandler
 import org.grails.web.util.GrailsApplicationAttributes
-import org.springframework.http.HttpHeaders
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Issue
 import spock.lang.Specification
@@ -252,7 +251,6 @@ class RespondMethodSpec extends Specification{
         response.json.name == 'Jeff'
         response.status == 201
     }
-
 }
 
 @Artefact("Controller")
