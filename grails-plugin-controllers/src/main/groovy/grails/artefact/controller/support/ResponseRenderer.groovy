@@ -275,7 +275,7 @@ trait ResponseRenderer extends WebAttributes {
                 if (isPromise) return
             }
 
-            applyContentType webRequest.currentResponse, argMap, null
+            applyContentType webRequest.currentResponse, argMap, null, false
 
             Map model
             if (modelObject instanceof Map) {
