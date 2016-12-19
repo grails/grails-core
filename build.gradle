@@ -27,7 +27,7 @@ ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
     antTraxVersion = "1.7.1"
-    antVersion = "1.9.6"
+    antVersion = "1.9.7"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
@@ -38,24 +38,24 @@ ext {
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.7"
     ivyVersion = "2.3.0"
-    jansiVersion = "1.11"
-    jlineVersion = "2.12"
-    jnaVersion = "4.0.0"
-    slf4jVersion = "1.7.21"
+    jansiVersion = "1.14"
+    jlineVersion = "2.14.2"
+    jnaVersion = "4.2.2"
+    slf4jVersion = "1.7.22"
     reactorCoreVersion = '2.0.8.RELEASE'
     reactorVersion = '2.0.7.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
-    springBootVersion = "1.4.1.RELEASE"
+    springBootVersion = "1.4.2.RELEASE"
     springLoadedVersion = "1.2.6.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.3.3.RELEASE"
+    springVersion = "4.3.4.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
-    tomcatVersion = "8.0.33"
+    tomcatVersion = "8.5.2"
     servletApiVersion = "3.0.1"
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
