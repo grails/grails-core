@@ -1,0 +1,11 @@
+grails.test.mixin.support.TestMixinRegistrar=org.grails.test.mixin.support.DefaultTestMixinRegistrar
+grails.test.runtime.TestPlugin=\
+grails.test.runtime.GrailsApplicationTestPlugin,\
+grails.test.runtime.CoreBeansTestPlugin,\
+grails.test.runtime.MetaClassCleanerTestPlugin,\
+grails.test.runtime.ControllerTestPlugin,\
+grails.test.runtime.GroovyPageTestPlugin,\
+grails.test.runtime.WebFlowTestPlugin,\
+grails.test.runtime.FiltersTestPlugin,\
+grails.test.runtime.InterceptorTestPlugin,\
+grails.test.runtime.DomainClassTestPlugin

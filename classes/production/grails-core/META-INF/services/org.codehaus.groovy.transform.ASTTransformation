@@ -1,0 +1,2 @@
+org.grails.compiler.injection.GlobalGrailsClassInjectorTransformation
+org.grails.compiler.injection.GlobalImportTransformation
