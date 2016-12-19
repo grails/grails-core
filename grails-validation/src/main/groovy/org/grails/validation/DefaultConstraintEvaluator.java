@@ -170,8 +170,9 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                         // remove the constraint given by user and warn
                         if (constraintMap.remove(propertyName) != null) {
                             LOG.warn("Derived domainClassProperties may not be constrained. Property [" + propertyName + "] of domain class " + theClass.getName() + " will not be checked during validation.");
-                            continue;
                         }
+                        // always remove constraints on derived properties
+                        continue;
                     }
                 }
                 else {
