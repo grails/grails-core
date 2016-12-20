@@ -134,7 +134,12 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         if (scriptSource == null) {
             cacheKey = contextPath + pluginName + uri;
         } else {
-            cacheKey = scriptSource.getURI();
+            if(pluginName != null) {
+                cacheKey = contextPath + pluginName + scriptSource.getURI();
+            }
+            else {
+                cacheKey = scriptSource.getURI();
+            }
         }
 
         return CacheEntry.getValue(templateCache, cacheKey, reloadEnabled ? GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL : -1, null,
