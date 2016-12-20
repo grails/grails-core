@@ -463,8 +463,9 @@ public class TestForTransformation extends TestMixinTransformation implements Te
         arguments.addExpression(new ConstantExpression(false));
         BlockStatement assignFromApplicationContext = new BlockStatement();
         ArgumentListExpression argWithClassName = new ArgumentListExpression();
-        MethodCallExpression getClassNameMethodCall = new MethodCallExpression(targetClass, "getName", new ArgumentListExpression());
-        argWithClassName.addExpression(getClassNameMethodCall);
+
+        final PropertyExpression classNamePropertyExpression = new PropertyExpression(targetClass, new ConstantExpression("name"));
+        argWithClassName.addExpression(classNamePropertyExpression);
 
         assignFromApplicationContext.addStatement(new ExpressionStatement(new BinaryExpression(fieldExpression, ASSIGN, new MethodCallExpression(appCtxVar, "getBean", argWithClassName))));
         BlockStatement elseBlock = new BlockStatement();
