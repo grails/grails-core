@@ -110,7 +110,7 @@ class CoreGrailsPlugin extends Plugin {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
 
-        grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
+        grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
         pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
 
         classLoader(MethodInvokingFactoryBean) {
