@@ -193,7 +193,7 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
 
         View view;
         try {
-            view = viewResolver.resolveViewName(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name),
+            view = viewResolver.resolveViewName(GrailsResourceUtils.cleanPath(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name)),
                     request.getLocale());
             // it's only possible to check that GroovyPageView exists
             if (viewMustExist && !(view instanceof AbstractGrailsView)) {
