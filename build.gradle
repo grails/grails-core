@@ -505,7 +505,7 @@ task buildscriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyRe
     configurations = project.buildscript.configurations
 }
 
-[Javadoc, Groovydoc].each {
+[Javadoc, Groovydoc, org.groovy.lang.groovydoc.tasks.GroovydocTask].each {
     tasks.withType(it).all {
         // exclude problematic jar file from javadoc classpath
         // http://www.adam-bien.com/roller/abien/entry/trouble_with_crippled_java_ee
