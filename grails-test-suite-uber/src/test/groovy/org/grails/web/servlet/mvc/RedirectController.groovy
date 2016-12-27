@@ -36,6 +36,18 @@ class RedirectController {
         redirect(action:'foo', permanent: true)
     }
 
+    def toActionPermanentFalse() {
+        redirect(action:'foo', permanent: false)
+    }
+
+    def toActionPermanentStringTrue() {
+        redirect(action:'foo', permanent: 'true')
+    }
+
+    def toActionPermanentStringFalse() {
+        redirect(action:'foo', permanent: 'false')
+    }
+
     def toActionWithGstring() {
         def prefix = 'f'
         redirect(action:"${prefix}oo")
