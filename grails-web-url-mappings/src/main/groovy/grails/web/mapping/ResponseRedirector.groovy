@@ -21,7 +21,6 @@ import grails.web.http.HttpHeaders
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.util.Assert
 import org.springframework.web.servlet.support.RequestDataValueProcessor
@@ -70,7 +69,14 @@ class ResponseRedirector {
             throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
         }
 
-        boolean permanent = DefaultGroovyMethods.asBoolean(arguments.get(ARGUMENT_PERMANENT))
+        boolean permanent
+
+        def permanentArgument = arguments.get(ARGUMENT_PERMANENT)
+        if(permanentArgument instanceof String) {
+            permanent = Boolean.valueOf(permanentArgument)
+        } else {
+            permanent = Boolean.TRUE == permanentArgument
+        }
 
         // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
         // which includes the contextPath
