@@ -184,6 +184,9 @@ class CodeGenConfig implements Cloneable, ConfigMap {
         } else if(requiredType==Boolean.class) {
             Boolean booleanObject = toBooleanObject(String.valueOf(value))
             return booleanObject != null ? booleanObject : Boolean.FALSE
+        } else if (requiredType==boolean) {
+            Boolean booleanObject = toBooleanObject(String.valueOf(value))
+            return booleanObject != null ? booleanObject.booleanValue() : Boolean.FALSE.booleanValue()
         } else if(requiredType==Integer.class) {
             if(value instanceof Number) {
                 return Integer.valueOf(((Number)value).intValue())
