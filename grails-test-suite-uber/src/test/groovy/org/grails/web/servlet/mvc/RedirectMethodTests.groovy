@@ -1,7 +1,6 @@
 package org.grails.web.servlet.mvc
 
 import org.grails.web.servlet.mvc.alpha.NamespacedController
-import grails.web.http.HttpHeaders
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.MutablePropertyValues
@@ -235,17 +234,6 @@ class UrlMappings {
         webRequest.controllerName = 'newsSignup'
         c.testNoController()
         assertEquals "/little-brown-bottle/thankyou", response.redirectedUrl
-    }
-
-    void testPermanentRedirect() {
-        def c = new RedirectController()
-        webRequest.controllerName = 'redirect'
-        webRequest.currentRequest.serverPort = 8080
-        c.toActionPermanent()
-
-        // location header should be absolute
-        assertEquals "http://localhost:8080/redirect/foo", response.getHeader(HttpHeaders.LOCATION)
-        assertEquals 301, response.status
     }
 }
 

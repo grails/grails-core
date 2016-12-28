@@ -17,6 +17,7 @@ class PermanentRedirectSpec extends Specification {
 
         then:
         status == FOUND.value()
+        response.redirectUrl == '/redirect/foo'
     }
 
     void 'test redirect with permanent attribute set to true'() {
@@ -25,6 +26,7 @@ class PermanentRedirectSpec extends Specification {
 
         then:
         status == MOVED_PERMANENTLY.value()
+        response.redirectUrl == '/redirect/foo'
     }
 
     void 'test redirect with permanent attribute set to false'() {
@@ -33,6 +35,7 @@ class PermanentRedirectSpec extends Specification {
 
         then:
         status == FOUND.value()
+        response.redirectUrl == '/redirect/foo'
     }
 
     void 'test redirect with permanent attribute set to the String true'() {
@@ -41,6 +44,7 @@ class PermanentRedirectSpec extends Specification {
 
         then:
         status == MOVED_PERMANENTLY.value()
+        response.redirectUrl == '/redirect/foo'
     }
 
     void 'test redirect with permanent attribute set to the String false'() {
@@ -49,5 +53,6 @@ class PermanentRedirectSpec extends Specification {
 
         then:
         status == FOUND.value()
+        response.redirectUrl == '/redirect/foo'
     }
 }
