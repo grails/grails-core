@@ -74,23 +74,23 @@ public class PropertySourcesConfig extends NavigableMapConfig {
     }
 
     protected void initializeFromPropertySources(PropertySources propertySources) {
-        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources);
-        Collections.reverse(propertySourceList);
-        for(PropertySource propertySource : propertySourceList) {
-            if(propertySource instanceof EnumerablePropertySource) {
-                EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
-                mergeEnumerablePropertySource(enumerablePropertySource);
-            }
-        }
 
         EnvironmentAwarePropertySource environmentAwarePropertySource = new EnvironmentAwarePropertySource(propertySources);
-        mergeEnumerablePropertySource(environmentAwarePropertySource);
         if(propertySources instanceof MutablePropertySources) {
             final String applicationConfig = "applicationConfigurationProperties";
             if (propertySources.contains(applicationConfig)) {
                 ((MutablePropertySources)propertySources).addBefore(applicationConfig, environmentAwarePropertySource);
             } else {
                 ((MutablePropertySources)propertySources).addLast(environmentAwarePropertySource);
+            }
+        }
+
+        List<PropertySource<?>> propertySourceList = DefaultGroovyMethods.toList(propertySources);
+        Collections.reverse(propertySourceList);
+        for(PropertySource propertySource : propertySourceList) {
+            if(propertySource instanceof EnumerablePropertySource) {
+                EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
+                mergeEnumerablePropertySource(enumerablePropertySource);
             }
         }
     }
