@@ -26,6 +26,15 @@ class UrlMappingsTestMixinTests {
     }
 
     @Test
+    @Issue("https://github.com/grails/grails-core/issues/9863")
+    void testGRAILS9863() {
+        mockUrlMappings(GRAILS9863UrlMappings)
+        assertReverseUrlMapping("/p/user", controller:"user", action:"index", plugin:"sample")
+        assertReverseUrlMapping("/n/user", controller:"user", action:"index", namespace: "sample")
+        assertReverseUrlMapping("/user/index", controller:"user", action:"index")
+    }
+
+
     void testMapUri() {
         mockController(GrailsUrlMappingsTestCaseFakeController)
         mockUrlMappings(MyUrlMappings)
@@ -258,6 +267,13 @@ class GRAILS5222UrlMappings {
             controller = "user"
             action = "publicProfile"
         }
+    }
+}
+
+class GRAILS9863UrlMappings {
+    static mappings = {
+        "/p/user" (controller:"user", action:"index", plugin:"sample")
+        "/n/user" (controller:"user", action:"index", namespace:"sample")
     }
 }
 
