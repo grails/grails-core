@@ -15,6 +15,7 @@
  */
 package grails.test.mixin.web
 
+import grails.web.UrlConverter
 import org.grails.web.mapping.mvc.GrailsControllerUrlMappingInfo
 
 import static junit.framework.Assert.assertEquals
@@ -278,11 +279,17 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
      */
     void assertReverseUrlMapping(Map assertions, url, Closure paramAssertions) {
         UrlMappingsHolder mappingsHolder = applicationContext.getBean("grailsUrlMappingsHolder", UrlMappingsHolder)
+        UrlConverter urlConverter = applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter)
         def controller = assertions.controller
         def action = assertions.action
         def method = assertions.method
         def plugin = assertions.plugin
         def namespace = assertions.namespace
+
+        String convertedControllerName, convertedActionName
+
+        if(controller) convertedControllerName = urlConverter.toUrlElement(controller) ?: controller
+        if(action) convertedControllerName = urlConverter.toUrlElement(action) ?: action
 
         def params = [:]
         if (paramAssertions) {
@@ -292,7 +299,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         }
         def urlCreator = mappingsHolder.getReverseMapping(controller, action, namespace, plugin, method, params)
         assertNotNull("could not create reverse mapping of '$url' for {controller = $controller, action = $action, params = $params}", urlCreator)
-        def createdUrl = urlCreator.createRelativeURL(controller, action, params, "UTF-8")
+        def createdUrl = urlCreator.createRelativeURL(convertedControllerName, convertedActionName, params, "UTF-8")
         assertEquals("reverse mapping assertion for {controller = $controller, action = $action, params = $params}", url, createdUrl)
     }
 
