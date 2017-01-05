@@ -281,13 +281,16 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         def controller = assertions.controller
         def action = assertions.action
         def method = assertions.method
+        def plugin = assertions.plugin
+        def namespace = assertions.namespace
+
         def params = [:]
         if (paramAssertions) {
             paramAssertions.delegate = params
             paramAssertions.resolveStrategy = Closure.DELEGATE_ONLY
             paramAssertions.call()
         }
-        def urlCreator = mappingsHolder.getReverseMapping(controller, action, null, null, method, params)
+        def urlCreator = mappingsHolder.getReverseMapping(controller, action, namespace, plugin, method, params)
         assertNotNull("could not create reverse mapping of '$url' for {controller = $controller, action = $action, params = $params}", urlCreator)
         def createdUrl = urlCreator.createRelativeURL(controller, action, params, "UTF-8")
         assertEquals("reverse mapping assertion for {controller = $controller, action = $action, params = $params}", url, createdUrl)
