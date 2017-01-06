@@ -289,7 +289,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         String convertedControllerName, convertedActionName
 
         if(controller) convertedControllerName = urlConverter.toUrlElement(controller) ?: controller
-        if(action) convertedControllerName = urlConverter.toUrlElement(action) ?: action
+        if(action) convertedActionName = urlConverter.toUrlElement(action) ?: action
 
         def params = [:]
         if (paramAssertions) {
