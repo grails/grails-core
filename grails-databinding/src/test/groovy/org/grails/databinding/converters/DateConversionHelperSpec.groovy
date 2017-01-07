@@ -1,10 +1,10 @@
 package org.grails.databinding.converters
 
-import java.text.ParseException
-
+import spock.lang.Issue
 import spock.lang.Specification
 
-import java.text.SimpleDateFormat
+import java.text.ParseException
+
 import static java.util.Calendar.*
 
 class DateConversionHelperSpec extends Specification {
@@ -115,4 +115,17 @@ class DateConversionHelperSpec extends Specification {
         then:
         date == null
     }
+
+    @Issue("https://github.com/grails/grails-core/issues/10387")
+    void 'Test lenient date'() {
+        given:
+        DateConversionHelper helper = new DateConversionHelper(formatStrings: ['yyyy-MM-dd'])
+
+        when:
+        helper.convert '2017-13-20'
+
+        then:
+        thrown ParseException
+    }
+
 }
