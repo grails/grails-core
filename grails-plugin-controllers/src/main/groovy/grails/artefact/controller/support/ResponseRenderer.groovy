@@ -275,7 +275,7 @@ trait ResponseRenderer extends WebAttributes {
                 if (isPromise) return
             }
 
-            applyContentType webRequest.currentResponse, argMap, null
+            applyContentType webRequest.currentResponse, argMap, null, false
 
             Map model
             if (modelObject instanceof Map) {
@@ -391,7 +391,7 @@ trait ResponseRenderer extends WebAttributes {
                         hasContentType = detectContentTypeFromFileName(webRequest, response, argMap, fileName)
                     }
                     if (fnO) {
-                        response.setHeader HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName
+                        response.setHeader HttpHeaders.CONTENT_DISPOSITION, "$DISPOSITION_HEADER_PREFIX\"$fileName\""
                     }
                 }
                 if (!hasContentType) {
