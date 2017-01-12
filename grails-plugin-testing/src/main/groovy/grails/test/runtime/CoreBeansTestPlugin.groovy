@@ -66,7 +66,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
             proxyHandler(DefaultProxyHandler)
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
-            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
+            grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
             transactionManagerAwarePostProcessor(TransactionManagerPostProcessor)
             grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, '${', grailsApplicationParam.config.toProperties())
             mapBasedSmartPropertyOverrideConfigurer(MapBasedSmartPropertyOverrideConfigurer) {

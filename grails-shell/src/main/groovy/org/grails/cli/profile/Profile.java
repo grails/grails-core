@@ -21,9 +21,8 @@ import org.grails.config.NavigableMap;
 import org.grails.io.support.Resource;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * A Profile defines an active code generation and command execution policy. For example the "web" profile allows
@@ -51,6 +50,15 @@ public interface Profile {
      */
     String getDescription();
 
+    /**
+     * @return The list of file extensions which should be treated as binary
+     */
+    Set<String> getBinaryExtensions();
+
+    /**
+     * @return The list of file patterns which should be executable in the resulting application
+     */
+    Set<String> getExecutablePatterns();
 
     /**
      * @return Text to display after an application has been created with the profile

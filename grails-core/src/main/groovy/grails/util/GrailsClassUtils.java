@@ -734,11 +734,50 @@ public class GrailsClassUtils {
 
         if (name.startsWith("get")) {
             name = name.substring(3);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+            if (isPropertyMethodSuffix(name)) return true;
         }
         else if (name.startsWith("is")) {
             name = name.substring(2);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+            if (isPropertyMethodSuffix(name)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * This method is used when interrogating a method name to determine if the
+     * method represents a property getter.  For example, if a method is named
+     * <code>getSomeProperty</code>, the value <code>"SomeProperty"</code> could
+     * be passed to this method to determine that the method should be considered
+     * a property getter.  Examples of suffixes that would be considered property
+     * getters:
+     * <ul>
+     *     <li>SomeProperty</li>
+     *     <li>Word</li>
+     *     <li>aProperty</li>
+     *     <li>S</li>
+     * </ul>
+     *
+     * Example sof suffixes that would not be considered property getters:
+     * <ul>
+     *     <li>someProperty</li>
+     *     <li>word</li>
+     *     <li>s</li>
+     * </ul>
+     * @param suffix The suffix to inspect
+     * @return true if suffix indicates a property name
+     */
+    protected static boolean isPropertyMethodSuffix(String suffix) {
+        if (suffix.length() > 0) {
+            if(suffix.length() == 1) {
+                if(Character.isUpperCase(suffix.charAt(0))) {
+                    return true;
+                }
+            } else {
+                if(Character.isUpperCase(suffix.charAt(0)) ||
+                   (Character.isUpperCase(suffix.charAt(1)) && Character.isLowerCase(suffix.charAt(0)))) {
+                    return true;
+                }
+            }
         }
         return false;
     }

@@ -4,6 +4,7 @@ import grails.doc.DocEngine
 import groovy.transform.InheritConstructors
 import org.asciidoctor.Options
 import org.asciidoctor.OptionsBuilder
+import org.asciidoctor.SafeMode
 import org.radeox.api.engine.context.RenderContext
 
 import static org.asciidoctor.Asciidoctor.Factory.create;
@@ -24,12 +25,14 @@ class AsciiDocEngine extends DocEngine {
     ]
     @Override
     String render(String content, RenderContext context) {
+        def optionsBuilder = OptionsBuilder.options()
+                                        .headerFooter(false)
+                                        .attributes(attributes)
+        if(attributes.containsKey('safe')) {
+            optionsBuilder.safe(SafeMode.valueOf(attributes.get('safe').toString()))
+        }
         asciidoctor.convert(content,
-            new OptionsBuilder()
-                .headerFooter(false)
-                .attributes(
-                    attributes
-                )
+            optionsBuilder
                 .get()
         )
     }

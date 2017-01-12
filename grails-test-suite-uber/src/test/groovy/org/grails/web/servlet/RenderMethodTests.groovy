@@ -54,7 +54,7 @@ class RenderMethodTests {
 
         controller.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain", fileName:"hello.txt"
         assert "hello" == response.contentAsString
-        assert "attachment;filename=hello.txt" == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
+        assert "attachment;filename=\"hello.txt\"" == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
     }
 
     @Test
