@@ -80,7 +80,7 @@ public interface GrailsClass extends GrailsApplicationAware{
     String getShortName();
 
     /**
-     * Returns the full name of the class in the application with the the trailing convention part and with
+     * Returns the full name of the class in the application with the trailing convention part and with
      * the package name.
      *
      * @return the full name
