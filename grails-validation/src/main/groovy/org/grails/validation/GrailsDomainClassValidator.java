@@ -95,11 +95,6 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
             constrainedPropertyNames.remove(propertyName);
         }
 
-        // Now process the remaining constrained properties, for example any transients.
-        for (String name : constrainedPropertyNames) {
-            validatePropertyWithConstraint(name, obj, errors, bean, constrainedProperties);
-        }
-
         postValidate(obj,errors);
     }
 

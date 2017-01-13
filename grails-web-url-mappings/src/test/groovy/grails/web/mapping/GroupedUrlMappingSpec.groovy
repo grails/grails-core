@@ -27,6 +27,30 @@ import javax.servlet.http.HttpServletResponse
  */
 class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
 
+    @Issue('#10308')
+    void "Test mapping with group and nested collection"() {
+        given:
+        def linkGenerator = getLinkGenerator {
+            "/foos"(resources: 'foo') {
+                collection {
+                    '/baz'(controller: 'foo', action: 'baz')
+                }
+            }
+
+            group "/g", {
+                "/bars"(resources: 'bar') {
+                    collection {
+                        '/baz'(controller: 'bar', action: 'baz')
+                    }
+                }
+            }
+        }
+
+        expect:
+        linkGenerator.link(controller:'bar', action:'baz', params:[barId:1]) == 'http://localhost/g/bars/1/baz'
+    }
+
+
     @Issue('#9417')
     void "Test that redirects to grouped resource mappings work when the method is specified"() {
         given:

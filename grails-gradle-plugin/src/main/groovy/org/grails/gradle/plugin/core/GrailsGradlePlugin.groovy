@@ -129,6 +129,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         configurePathingJar(project)
     }
 
+    @CompileStatic
     protected void configureProfile(Project project) {
         def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
 
@@ -182,7 +183,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         buildPropertiesTask.inputs.properties(buildPropertiesContents)
         buildPropertiesTask.outputs.file(buildInfoFile)
-        buildPropertiesTask << {
+        buildPropertiesTask.doLast {
             project.buildDir.mkdirs()
             ant.mkdir(dir:buildInfoFile.parentFile)
             ant.propertyfile(file: buildInfoFile) {
@@ -207,6 +208,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileStatic
     protected void registerToolingModelBuilder(Project project, ToolingModelBuilderRegistry registry) {
         registry.register(new GrailsClasspathToolingModelBuilder())
     }
@@ -222,11 +224,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.extensions.add("grails", new GrailsExtension(project))
     }
 
+    @CompileStatic
     protected void configureFileWatch(Project project) {
         def environment = Environment.current
         enableFileWatch(environment, project)
     }
 
+    @CompileStatic
     protected String configureGrailsBuildSettings(Project project) {
         System.setProperty(BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
     }
@@ -306,12 +310,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-    protected void configureForkSettings(project, grailsVersion) {
+    @CompileStatic
+    protected void configureForkSettings(Project project, grailsVersion) {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { String defaultGrailsEnv, JavaForkOptions task ->
             def map = System.properties.findAll { entry ->
-                entry.key.startsWith("grails.")
+                entry.key?.toString()?.startsWith("grails.")
             }
             for (key in map.keySet()) {
                 def value = map.get(key)
@@ -335,13 +340,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
             // Copy GRAILS_FORK_OPTS into the fork. Or use GRAILS_OPTS if no fork options provided
             // This allows run-app etc. to run using appropriate settings and allows users to provided
             // different FORK JVM options to the build options.
-            String opts = System.env.GRAILS_FORK_OPTS ?: System.env.GRAILS_OPTS
-            if(opts) task.jvmArgs opts.split(' ')
+            def envMap = System.getenv()
+            String opts = envMap.GRAILS_FORK_OPTS ?: envMap.GRAILS_OPTS
+            if(opts) {
+                task.jvmArgs opts.split(' ')
+            }
         }
 
-        def tasks = project.tasks
+        TaskContainer tasks = project.tasks
 
-        def grailsEnvSystemProperty = System.getProperty(Environment.KEY)
+        String grailsEnvSystemProperty = System.getProperty(Environment.KEY)
         tasks.withType(Test).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.TEST.name)
         tasks.withType(JavaExec).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.DEVELOPMENT.name)
     }
@@ -477,7 +485,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected Task createNative2AsciiTask(TaskContainer taskContainer, src, dest) {
         def native2asciiTask = taskContainer.create('native2ascii')
-        native2asciiTask << {
+        native2asciiTask.doLast {
             ant.native2ascii(src: src, dest: dest,
                     includes: "**/*.properties", encoding: "UTF-8")
         }

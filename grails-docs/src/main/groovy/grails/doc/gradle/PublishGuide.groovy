@@ -25,11 +25,11 @@ import org.gradle.api.tasks.*
  */
 class PublishGuide extends DefaultTask {
     @InputDirectory File sourceDir = new File(project.projectDir, "src")
-    @OutputDirectory File targetDir = project.outputDir as File
-    @InputDirectory File resourcesDir = new File(project.projectDir, "resources")
-    @Input List propertiesFiles = []
-    @Input String language = ""
-    @Input boolean asciidoc = false
+    @OutputDirectory File targetDir = new File(project.buildDir, "docs")
+    @InputDirectory @Optional File resourcesDir = new File(project.projectDir, "resources")
+    @Input @Optional List propertiesFiles = []
+    @Input @Optional String language = ""
+    @Input @Optional boolean asciidoc = false
     @Input @Optional String sourceRepo
     @Input @Optional Properties properties = new Properties()
     Collection macros = []
@@ -38,8 +38,11 @@ class PublishGuide extends DefaultTask {
     @TaskAction
     def publishGuide() {
         def props = new Properties()
-        new File("${resourcesDir}/doc.properties").withInputStream {input ->
-            props.load(input)
+        def docProperties = new File("${resourcesDir}/doc.properties")
+        if(docProperties.exists()) {
+            docProperties.withInputStream { input ->
+                props.load(input)
+            }
         }
 
         // Add properties from any optional properties files too.
@@ -55,7 +58,7 @@ class PublishGuide extends DefaultTask {
         publisher.ant = project.ant
         publisher.asciidoc = asciidoc
         publisher.workDir = workDir
-        publisher.apiDir = "${project.outputDir}" as File
+        publisher.apiDir = targetDir
         publisher.language = language ?: ''
         publisher.sourceRepo = sourceRepo
         publisher.images = project.file("${resourcesDir}/img")
