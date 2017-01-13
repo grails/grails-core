@@ -369,7 +369,7 @@ public class GrailsClassUtils {
             for (int i = 0; i < descriptors.length; i++) {
                 descriptor = descriptors[i];
                 Class<?> currentPropertyType = descriptor.getPropertyType();
-                if (isTypeInstanceOfPropertyType(propertyType, currentPropertyType)) {
+                if (propertySuperType.isAssignableFrom(descriptor.getPropertyType())) {
                     properties.add(descriptor);
                 }
             }
