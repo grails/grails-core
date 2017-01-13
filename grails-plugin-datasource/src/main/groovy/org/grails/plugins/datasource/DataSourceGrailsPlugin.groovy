@@ -15,7 +15,6 @@
  */
 package org.grails.plugins.datasource
 
-import grails.config.Config
 import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.Environment
@@ -25,7 +24,6 @@ import org.apache.commons.logging.LogFactory
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.transaction.ChainedTransactionManagerPostProcessor
-import org.grails.transaction.TransactionManagerPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
@@ -45,9 +43,9 @@ import javax.sql.DataSource
 class DataSourceGrailsPlugin extends Plugin {
 
     private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
-    public static
-    final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
+    public static final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
     public static final String TRANSACTION_MANAGER_BLACK_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern'
+    public static final String TRANSACTION_MANAGER_ENABLED = 'grails.transaction.chainedTransactionManagerPostProcessor.enabled'
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version]
 
@@ -55,35 +53,45 @@ class DataSourceGrailsPlugin extends Plugin {
 
     @Override
     Closure doWithSpring() {{->
-        def application = grailsApplication
-        Config config = application.config
-        if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
-            def whitelistPattern=config.getProperty(TRANSACTION_MANAGER_WHITE_LIST_PATTERN, '')
-            def blacklistPattern=config.getProperty(TRANSACTION_MANAGER_BLACK_LIST_PATTERN,'')
-            chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
-        }
-        transactionManagerPostProcessor(TransactionManagerPostProcessor)
+        GrailsApplication application = grailsApplication
 
-        def dataSources = config.getProperty('dataSources', Map, [:])
-        if(!dataSources) {
-            def defaultDataSource = config.getProperty('dataSource', Map)
-            if(defaultDataSource) {
-                dataSources['dataSource'] = defaultDataSource
+        if (pluginManager.hasGrailsPlugin('hibernate4') || pluginManager.hasGrailsPlugin('hibernate5')) {
+
+            if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
+                Boolean enabled = config.getProperty(TRANSACTION_MANAGER_ENABLED, Boolean, false)
+                if (enabled) {
+                    def whitelistPattern=config.getProperty(TRANSACTION_MANAGER_WHITE_LIST_PATTERN, '')
+                    def blacklistPattern=config.getProperty(TRANSACTION_MANAGER_BLACK_LIST_PATTERN,'')
+                    chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
+                }
+            }
+
+            if (ClassUtils.isPresent('org.h2.Driver', this.class.classLoader)) {
+                embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
+            }
+
+        } else {
+            def dataSources = config.getProperty('dataSources', Map, [:])
+            if(!dataSources) {
+                def defaultDataSource = config.getProperty('dataSource', Map)
+                if(defaultDataSource) {
+                    dataSources['dataSource'] = defaultDataSource
+                }
+            }
+
+            for(Map.Entry<String, Object> entry in dataSources.entrySet()) {
+                def name = entry.key
+                def value = entry.value
+
+                if(value instanceof Map) {
+                    createDatasource delegate, name, (Map)value
+                }
             }
         }
 
-        for(Map.Entry<String, Object> entry in dataSources.entrySet()) {
-            def name = entry.key
-            def value = entry.value
 
-            if(value instanceof Map) {
-                createDatasource delegate, name, (Map)value
-            }
-        }
 
-        embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
-
-        if(config.getProperty('dataSource.jmxExport', Boolean, false)) {
+        if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource')) {
             try {
                 def jmxMBeanServer = JmxUtils.locateMBeanServer()
                 if(jmxMBeanServer) {
