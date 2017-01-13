@@ -87,14 +87,18 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         }
 
         def req = request
+        def ctxPath = req.contextPath
         def uri = req.requestURI
+        def noCtxUri = uri - ctxPath
+        def checkNoCtxUri = ctxPath && uri.startsWith(ctxPath)
 
         def matchedInfo = request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
 
         UrlMappingInfo grailsMappingInfo = (UrlMappingInfo)matchedInfo
 
         for(Matcher matcher in allMatchers) {
-            if(matcher.doesMatch(uri, grailsMappingInfo, req.method)) {
+            if(matcher.doesMatch(uri, grailsMappingInfo, req.method) ||
+               (checkNoCtxUri && matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method))) {
                 request.setAttribute(interceptorMatchKey, Boolean.TRUE)
                 return true
             }

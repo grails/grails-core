@@ -746,12 +746,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                         TraitInjectionUtils.injectTrait(compilationUnit, source, commandObjectNode, Validateable.class);
 
                         List<ConstructorNode> declaredConstructors = commandObjectNode.getDeclaredConstructors();
-                        if(declaredConstructors.isEmpty()) {
+                        List<Statement> objectInitializerStatements = commandObjectNode.getObjectInitializerStatements();
+                        if(declaredConstructors.isEmpty() && !objectInitializerStatements.isEmpty()) {
                             BlockStatement constructorLogic = new BlockStatement();
                             ConstructorNode constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorLogic);
-                            ClassNode helper = Traits.findHelper(ClassHelper.make(Validateable.class));
                             commandObjectNode.addConstructor(constructorNode);
-                            constructorLogic.addStatement(new ExpressionStatement(new StaticMethodCallExpression(helper, "$init$", VariableExpression.THIS_EXPRESSION)));
+                            constructorLogic.addStatements(objectInitializerStatements);
                         }
                         argumentIsValidateable = true;
                     } else if (doesModulePathIncludeSubstring(commandObjectModule,
