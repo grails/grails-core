@@ -38,6 +38,8 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 
+    compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
+
     testRuntime 'com.h2database:h2:1.3.176'
 }
 
