@@ -1,11 +1,20 @@
 package org.grails.plugins.services
 
 import grails.config.Settings
+import grails.core.GrailsApplication
+import grails.plugins.GrailsPlugin
+import grails.plugins.GrailsPluginManager
+import grails.plugins.PluginFilter
+import grails.plugins.exceptions.PluginException
+import grails.web.servlet.plugins.GrailsWebPluginManager
 import org.grails.commons.test.AbstractGrailsMockTests
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockHibernateGrailsPlugin
+import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
+import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
+import org.springframework.core.type.filter.TypeFilter
 
 class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -206,7 +215,7 @@ class TransactionalAbsentService {
         def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
         def hibernatePlugin = new DefaultGrailsPlugin(MockHibernateGrailsPlugin, ga)
         def domainPlugin = new DefaultGrailsPlugin(domainPluginClass, ga)
-
+        dataSourcePlugin.manager = new GrailsWebPluginManager([dataSourcePluginClass, MockHibernateGrailsPlugin, domainPluginClass] as Class[], ga)
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
         springConfig.servletContext = createMockServletContext()
 
