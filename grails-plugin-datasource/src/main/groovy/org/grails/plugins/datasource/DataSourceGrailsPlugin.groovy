@@ -132,6 +132,10 @@ class DataSourceGrailsPlugin extends Plugin {
         boolean readOnly = Boolean.TRUE.equals(dataSourceData.readOnly)
         boolean pooled = !Boolean.FALSE.equals(dataSourceData.pooled)
 
+        if (pooled && !ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.TomcatDataSource', this.class.classLoader)) {
+            throw new GrailsConfigurationException("The datasource [$dataSourceName] specifies a pooled connection but org.apache.tomcat:tomcat-jdbc is not on the classpath")
+        }
+
         String driver = dataSourceData?.driverClassName ?: "org.h2.Driver"
 
         final String hsqldbDriver = "org.hsqldb.jdbcDriver"

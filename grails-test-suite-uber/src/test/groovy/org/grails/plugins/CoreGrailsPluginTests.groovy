@@ -2,6 +2,7 @@ package org.grails.plugins
 
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
+import grails.web.servlet.plugins.GrailsWebPluginManager
 import org.grails.config.PropertySourcesConfig
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
@@ -88,7 +89,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
     void testBeanPropertyOverride() {
         def co = new ConfigSlurper().parse('''
             dataSource {
-                pooled = true
+                pooled = false
                 driverClassName = "org.h2.Driver"
                 username = "sa"
                 password = ""
@@ -117,6 +118,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
         springConfig.servletContext = createMockServletContext()
 
         corePlugin.doWithRuntimeConfiguration(springConfig)
+        dataSourcePlugin.manager = new GrailsWebPluginManager([corePluginClass] as Class[], ga)
         dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
 
         def pluginClass = gcl.loadClass("org.grails.plugins.services.ServicesGrailsPlugin")
