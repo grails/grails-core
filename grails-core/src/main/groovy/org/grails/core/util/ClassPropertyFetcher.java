@@ -130,8 +130,10 @@ public class ClassPropertyFetcher {
                     if (method.getParameterTypes().length == 0) {
                         String name = method.getName();
                         if (name.indexOf('$') == -1) {
-                            if (name.length() > 3 && name.startsWith("get")
-                                    && Character.isUpperCase(name.charAt(3))) {
+                            if (name.length() > 3 && name.startsWith("get") && (
+                                    Character.isUpperCase(name.charAt(3))
+                                    || (name.length() > 4 && Character.isUpperCase(name.charAt(4)))
+                            )) {
                                 name = name.substring(3);
                             } else if (name.length() > 2
                                     && name.startsWith("is")
