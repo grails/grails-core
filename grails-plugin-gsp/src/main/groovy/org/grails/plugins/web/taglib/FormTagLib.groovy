@@ -1201,7 +1201,6 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
     void setConfiguration(Config co) {
         // Some attributes can be treated as boolean, but must be converted to the
         // expected value.
-        booleanAttributes = co.grails.tags.booleanToAttributes ?: ['disabled', 'checked', 'readonly']
-
+        booleanAttributes = co.getProperty('grails.tags.booleanToAttributes', List, ['disabled', 'checked', 'readonly'])
     }
 }
