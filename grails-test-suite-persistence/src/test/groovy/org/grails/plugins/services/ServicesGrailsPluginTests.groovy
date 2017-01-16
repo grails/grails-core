@@ -21,7 +21,7 @@ class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
     void onSetUp() {
         gcl.parseClass('''
             dataSource {
-                pooled = true
+                pooled = false
                 driverClassName = "org.h2.Driver"
                 username = "sa"
                 password = ""
@@ -206,7 +206,7 @@ class TransactionalAbsentService {
     private ApplicationContext initializeContext(boolean transactionManagement = true) {
 
         ga.getConfig().put(Settings.SPRING_TRANSACTION_MANAGEMENT, transactionManagement)
-        ga.getConfig().put("dataSources", [dataSource: [:]])
+        ga.getConfig().put("dataSources", [dataSource: [pooled: false]])
         def corePluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass, ga)
         def dataSourcePluginClass = gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
