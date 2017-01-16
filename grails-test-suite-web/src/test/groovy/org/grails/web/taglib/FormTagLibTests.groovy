@@ -2,7 +2,6 @@ package org.grails.web.taglib
 
 import grails.core.GrailsUrlMappingsClass
 import grails.util.MockRequestDataValueProcessor
-
 import org.grails.core.AbstractGrailsClass
 import org.grails.core.artefact.UrlMappingsArtefactHandler
 import org.grails.plugins.web.taglib.FormTagLib
@@ -28,7 +27,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             "/admin/books"(controller:'books', namespace:'admin')
             "/books"(controller:'books')
         }
-        grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, new MockGrailsUrlMappingsClass(mappingsClosure));
+        grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, new MockGrailsUrlMappingsClass(mappingsClosure))
     }
     
 //    void testFormNamespace() {
@@ -42,19 +41,19 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
     
     private static final class MockGrailsUrlMappingsClass extends AbstractGrailsClass implements GrailsUrlMappingsClass {
-        Closure mappingClosure;
+        Closure mappingClosure
         public MockGrailsUrlMappingsClass(Closure mappingClosure) {
-            super(this.getClass(), "UrlMappings");
-            this.mappingClosure = mappingClosure;
+            super(this.getClass(), "UrlMappings")
+            this.mappingClosure = mappingClosure
         }
         @Override
         public Closure getMappingsClosure() {
-            return mappingClosure;
+            return mappingClosure
         }
 
         @Override
         public List getExcludePatterns() {
-            return null;
+            return null
         }
     }
 
@@ -151,21 +150,31 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; &#39;_PROCESSED_" id="testField" />', template, [value:/foo > " & < '/])
     }
 
-    void testTextFieldTagWithNonBooleanAttributes() {
+    void testTextFieldTagWithNonBooleanAttributesAndNoConfig() {
         unRegisterRequestDataValueProcessor()
         def template = '<g:textField name="testField" value="1" disabled="false" checked="false" readonly="false" required="false" />'
         assertOutputEquals('<input type="text" name="testField" value="1" required="false" id="testField" />', template)
 
         template = '<g:textField name="testField" value="1" disabled="true" checked="true" readonly="true" required="true"/>'
         assertOutputEquals('<input type="text" name="testField" value="1" required="true" disabled="disabled" checked="checked" readonly="readonly" id="testField" />', template)
+    }
 
-        grailsApplication.config.grails.tags.booleanToAttributes = ['disabled', 'checked', 'readonly', 'required']
+    void testTextFieldTagWithNonBooleanAttributesAndConfig() {
+        unRegisterRequestDataValueProcessor()
+        withConfig('''
+                grails {
+                    tags {
+                        booleanToAttributes = ['disabled', 'checked', 'readonly', 'required']
+                    }
+                }
+                ''') {
+            appCtx.getBean(FormTagLib.name).setConfiguration(grailsApplication.config)
+            def template = '<g:textField name="testField" value="1" disabled="false" checked="false" readonly="false" required="false" />'
+            assertOutputEquals('<input type="text" name="testField" value="1" id="testField" />', template)
 
-        template = '<g:textField name="testField" value="1" disabled="false" checked="false" readonly="false" required="false" />'
-        assertOutputEquals('<input type="text" name="testField" value="1" id="testField" />', template)
-
-        template = '<g:textField name="testField" value="1" disabled="true" checked="true" readonly="true" required="true"/>'
-        assertOutputEquals('<input type="text" name="testField" value="1" disabled="disabled" checked="checked" readonly="readonly" required="required" id="testField" />', template)
+            template = '<g:textField name="testField" value="1" disabled="true" checked="true" readonly="true" required="true"/>'
+            assertOutputEquals('<input type="text" name="testField" value="1" disabled="disabled" checked="checked" readonly="readonly" required="required" id="testField" />', template)
+        }
     }
 
     void testTextAreaWithBody() {

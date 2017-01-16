@@ -16,6 +16,8 @@
 package org.grails.plugins.web.taglib
 
 import grails.artefact.TagLibrary
+import grails.config.Config
+import grails.core.support.GrailsConfigurationAware
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
 import org.grails.plugins.web.GrailsTagDateHelper
@@ -45,7 +47,7 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
  * @author Graeme Rocher
  */
 @TagLib
-class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrary {
+class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrary, GrailsConfigurationAware {
 
     private static final DEFAULT_CURRENCY_CODES = ['EUR', 'XCD', 'USD', 'XOF', 'NOK', 'AUD',
                                                    'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
@@ -57,7 +59,9 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
     GrailsTagDateHelper grailsTagDateHelper
     
     CodecLookup codecLookup
-    
+
+    private List<String> booleanAttributes = ['disabled', 'checked', 'readonly']
+
     void afterPropertiesSet() {
         if (applicationContext.containsBean('requestDataValueProcessor')) {
             requestDataValueProcessor = applicationContext.getBean('requestDataValueProcessor', RequestDataValueProcessor)
@@ -314,10 +318,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         }
         attrs.value = attrs.value != null ? attrs.value : "" // can't use ?: since 0 is groovy false
 
-        // Some attributes can be treated as boolean, but must be converted to the
-        // expected value.
-        def makeBooleanAttributes = grailsApplication.config.grails.tags.booleanToAttributes ?: ['disabled', 'checked', 'readonly']
-        makeBooleanAttributes.each {
+        booleanAttributes.each {
             booleanToAttribute(attrs, it)
         }
     }
@@ -1194,5 +1195,13 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         }
 
         return requestDataValueProcessor.processUrl(request, link)
+    }
+
+    @Override
+    void setConfiguration(Config co) {
+        // Some attributes can be treated as boolean, but must be converted to the
+        // expected value.
+        booleanAttributes = co.grails.tags.booleanToAttributes ?: ['disabled', 'checked', 'readonly']
+
     }
 }
