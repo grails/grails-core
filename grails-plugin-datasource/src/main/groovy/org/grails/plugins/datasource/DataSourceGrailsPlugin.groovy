@@ -73,14 +73,15 @@ class DataSourceGrailsPlugin extends Plugin {
             ConnectionSources sources = ConnectionSourcesInitializer.create(factory, config)
 
             for (ConnectionSource source: sources.allConnectionSources) {
-                if (source.name == ConnectionSource.DEFAULT) {
-                    dataSource(InstanceFactoryBean, source.source)
-                    transactionManager(DataSourceTransactionManager, ref("dataSource"))
-                } else {
+                String dsName = "dataSource"
+                String tmName = "transactionManager"
+                if (source.name != ConnectionSource.DEFAULT) {
                     String suffix = "_${source.name}"
-                    "dataSource$suffix"(InstanceFactoryBean, source.source)
-                    "transactionManager$suffix"(DataSourceTransactionManager, ref("dataSource$suffix"))
+                    dsName = "${dsName}${suffix}"
+                    tmName = "${tmName}${suffix}"
                 }
+                "$dsName"(InstanceFactoryBean, source.source)
+                "$tmName"(DataSourceTransactionManager, ref(dsName))
             }
 
         }
