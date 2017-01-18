@@ -9,8 +9,8 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    compileOnly "org.grails:grails.datastore.gorm:$datastoreVersion"
-    compileOnly "org.grails:grails.datastore.core:$datastoreVersion"
+    compileOnly "org.grails:grails-datastore-gorm:$datastoreVersion"
+    compileOnly "org.grails:grails-datastore-core:$datastoreVersion"
 
     compileOnly "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
     runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
