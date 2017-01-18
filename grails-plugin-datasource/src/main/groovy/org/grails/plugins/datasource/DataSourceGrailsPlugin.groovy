@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory
 import org.grails.datastore.gorm.jdbc.connections.DataSourceConnectionSourceFactory
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.connections.ConnectionSource
+import org.grails.datastore.mapping.core.connections.ConnectionSources
+import org.grails.datastore.mapping.core.connections.ConnectionSourcesInitializer
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.transaction.ChainedTransactionManagerPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
@@ -66,23 +68,21 @@ class DataSourceGrailsPlugin extends Plugin {
             }
 
         } else {
-            def dataSources = config.getProperty('dataSources', Map, [:])
-            if(!dataSources) {
-                def defaultDataSource = config.getProperty('dataSource', Map)
-                if(defaultDataSource) {
-                    dataSources['dataSource'] = defaultDataSource
-                }
-            }
             DataSourceConnectionSourceFactory factory = new DataSourceConnectionSourceFactory()
 
-            for(Map.Entry<String, Object> entry in dataSources.entrySet()) {
-                def name = entry.key
-                def value = entry.value
+            ConnectionSources sources = ConnectionSourcesInitializer.create(factory, config)
 
-                if(value instanceof Map) {
-                    createDatasource delegate, name, (Map)value, factory
+            for (ConnectionSource source: sources.allConnectionSources) {
+                if (source.name == ConnectionSource.DEFAULT) {
+                    dataSource(InstanceFactoryBean, source.source)
+                    transactionManager(DataSourceTransactionManager, ref("dataSource"))
+                } else {
+                    String suffix = "_${source.name}"
+                    "dataSource$suffix"(InstanceFactoryBean, source.source)
+                    "transactionManager$suffix"(DataSourceTransactionManager, ref("dataSource$suffix"))
                 }
             }
+
         }
 
         if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource')) {
@@ -101,23 +101,6 @@ class DataSourceGrailsPlugin extends Plugin {
             }
         }
     }}
-
-    protected void createDatasource(beanBuilder, String dataSourceName, Map dataSourceData, DataSourceConnectionSourceFactory factory) {
-        boolean isDefault = dataSourceName == 'dataSource'
-        String suffix = isDefault ? '' : "_$dataSourceName"
-        String beanName = isDefault ? 'dataSource' : "dataSource$suffix"
-
-        if (applicationContext?.containsBean(dataSourceName)) {
-            return
-        }
-
-        ConnectionSource source = factory.create(isDefault ? "DEFAULT" : dataSourceName, DatastoreUtils.createPropertyResolver(dataSourceData))
-
-        beanBuilder."$beanName"(InstanceFactoryBean, source.source)
-
-        // transactionManager beans will get overridden in Hibernate plugin
-        beanBuilder."transactionManager$suffix"(DataSourceTransactionManager, beanBuilder.ref(beanName))
-    }
 
     @Override
     void onShutdown(Map<String, Object> event) {
