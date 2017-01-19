@@ -910,7 +910,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
      * @attr optionKey By default value attribute of each &lt;option&gt; element will be the result of a "toString()" call on each element. Setting this allows the value to be a bean property of each element in the list.
      * @attr optionValue By default the body of each &lt;option&gt; element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be a bean property of each element in the list.
      * @attr value The current selected value that evaluates equals() to true for one of the elements in the from list.
-     * @attr multiple boolean value indicating whether the select a multi-select (automatically true if the value is a collection, defaults to false - single-select)
+     * @attr multiple boolean value indicating whether the select a multi-select (automatically true if the value is a collection, sets to single-select either if multiple is missing or it is explicitly set to false)
      * @attr valueMessagePrefix By default the value "option" element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be resolved from the I18n messages. The valueMessagePrefix will be suffixed with a dot ('.') and then the value attribute of the option to resolve the message. If the message could not be resolved, the value is presented.
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
@@ -936,6 +936,9 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         def dataAttrs = attrs.remove('dataAttrs')
         if (value instanceof Collection && attrs.multiple == null) {
             attrs.multiple = 'multiple'
+        }
+        if(attrs.multiple == false){
+            attrs.remove('multiple')
         }
         if (value instanceof CharSequence) {
             value = value.toString()
