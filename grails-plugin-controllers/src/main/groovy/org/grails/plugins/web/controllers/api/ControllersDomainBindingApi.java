@@ -93,13 +93,15 @@ public class ControllersDomainBindingApi {
     private static void autowire(Object instance) {
         if(!Environment.isInitializing()) {
 
-            final ApplicationContext applicationContext = Holders.findApplicationContext();
             final Config config = Holders.getConfig();
-            boolean autowire = config != null ? config.getProperty(Settings.GORM_AUTOWIRE_INSTANCES, Boolean.class, true) : true;
-            if(autowire && applicationContext != null ) {
-                applicationContext
-                        .getAutowireCapableBeanFactory()
-                        .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+            boolean autowire = config != null ? config.getProperty(Settings.GORM_AUTOWIRE_INSTANCES, Boolean.class, false) : false;
+            if(autowire) {
+                final ApplicationContext applicationContext = Holders.findApplicationContext();
+                if(applicationContext != null) {
+                    applicationContext
+                            .getAutowireCapableBeanFactory()
+                            .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+                }
             }
         }
     }
