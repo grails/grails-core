@@ -24,6 +24,8 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaProperty;
 import groovy.util.ConfigObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -60,6 +62,7 @@ import java.util.TreeSet;
  */
 public class GrailsClassUtils {
 
+    private static final Log LOG = LogFactory.getLog(GrailsClassUtils.class);
     public static final Map<Class<?>, Class<?>> PRIMITIVE_TYPE_COMPATIBLE_CLASSES = new HashMap<Class<?>, Class<?>>();
 
     /**
@@ -322,8 +325,11 @@ public class GrailsClassUtils {
         }
 
         Set<PropertyDescriptor> properties = new HashSet<PropertyDescriptor>();
+        PropertyDescriptor descriptor = null;
         try {
-            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(clazz)) {
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
+            for (int i = 0; i < descriptors.length; i++) {
+                descriptor = descriptors[i];
                 Class<?> currentPropertyType = descriptor.getPropertyType();
                 if (isTypeInstanceOfPropertyType(propertyType, currentPropertyType)) {
                     properties.add(descriptor);
@@ -331,6 +337,11 @@ public class GrailsClassUtils {
             }
         }
         catch (Exception e) {
+            if(descriptor == null) {
+                LOG.error(String.format("Got exception while checking property descriptors for class %s", clazz.getName()), e);
+            } else {
+                LOG.error(String.format("Got exception while checking PropertyDescriptor.propertyType for field %s.%s", clazz.getName(), descriptor.getName()), e);
+            }
             // if there are any errors in instantiating just return null for the moment
             return new PropertyDescriptor[0];
         }
@@ -352,14 +363,23 @@ public class GrailsClassUtils {
         if (clazz == null || propertySuperType == null) return new PropertyDescriptor[0];
 
         Set<PropertyDescriptor> properties = new HashSet<PropertyDescriptor>();
+        PropertyDescriptor descriptor = null;
         try {
-            for (PropertyDescriptor descriptor : BeanUtils.getPropertyDescriptors(clazz)) {
+            PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(clazz);
+            for (int i = 0; i < descriptors.length; i++) {
+                descriptor = descriptors[i];
+                Class<?> currentPropertyType = descriptor.getPropertyType();
                 if (propertySuperType.isAssignableFrom(descriptor.getPropertyType())) {
                     properties.add(descriptor);
                 }
             }
         }
         catch (Exception e) {
+            if(descriptor == null) {
+                LOG.error(String.format("Got exception while checking property descriptors for class %s", clazz.getName()), e);
+            } else {
+                LOG.error(String.format("Got exception while checking PropertyDescriptor.propertyType for field %s.%s", clazz.getName(), descriptor.getName()), e);
+            }
             return new PropertyDescriptor[0];
         }
         return properties.toArray(new PropertyDescriptor[properties.size()]);
