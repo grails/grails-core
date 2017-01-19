@@ -18,6 +18,7 @@ import org.springframework.core.type.filter.TypeFilter
 
 class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 
+
     void onSetUp() {
         gcl.parseClass('''
             dataSource {
