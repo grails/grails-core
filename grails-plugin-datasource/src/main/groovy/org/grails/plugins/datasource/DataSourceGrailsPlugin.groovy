@@ -21,17 +21,12 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.grails.datastore.gorm.jdbc.connections.DataSourceConnectionSourceFactory
-import org.grails.datastore.mapping.core.DatastoreUtils
-import org.grails.datastore.mapping.core.connections.ConnectionSource
-import org.grails.datastore.mapping.core.connections.ConnectionSources
-import org.grails.datastore.mapping.core.connections.ConnectionSourcesInitializer
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.transaction.ChainedTransactionManagerPostProcessor
-import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jmx.support.JmxUtils
 import org.springframework.util.ClassUtils
 
+import javax.sql.DataSource
 
 /**
  * Handles the configuration of a DataSource within Grails.
@@ -68,22 +63,17 @@ class DataSourceGrailsPlugin extends Plugin {
             }
 
         } else {
-            DataSourceConnectionSourceFactory factory = new DataSourceConnectionSourceFactory()
-
-            ConnectionSources sources = ConnectionSourcesInitializer.create(factory, config)
-
-            for (ConnectionSource source: sources.allConnectionSources) {
-                String dsName = "dataSource"
-                String tmName = "transactionManager"
-                if (source.name != ConnectionSource.DEFAULT) {
-                    String suffix = "_${source.name}"
-                    dsName = "${dsName}${suffix}"
-                    tmName = "${tmName}${suffix}"
+            def dataSources = config.getProperty('dataSources', Map, [:])
+            if(!dataSources) {
+                def defaultDataSource = config.getProperty('dataSource', Map)
+                if(defaultDataSource) {
+                    dataSources['dataSource'] = defaultDataSource
                 }
-                "$dsName"(InstanceFactoryBean, source.source)
-                "$tmName"(DataSourceTransactionManager, ref(dsName))
             }
-
+            if(dataSources) {
+                "dataSourceConnectionSources"(DataSourceConnectionSourcesFactoryBean, grailsApplication.config)
+                "dataSource"(InstanceFactoryBean, "#{dataSourceConnectionSources.defaultConnectionSource.source}", DataSource)
+            }
         }
 
         if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource')) {
