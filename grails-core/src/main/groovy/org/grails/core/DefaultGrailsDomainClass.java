@@ -18,6 +18,7 @@ package org.grails.core;
 import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
+import grails.core.LazyMappingContext;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 
@@ -39,6 +40,7 @@ import org.grails.core.exceptions.InvalidPropertyException;
 import grails.validation.ConstraintsEvaluator;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.datastore.mapping.model.PersistentEntity;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -70,6 +72,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private List<GrailsDomainClass> components = new ArrayList<GrailsDomainClass>();
     private List<GrailsDomainClassProperty> associations = new ArrayList<GrailsDomainClassProperty>();
 
+    private PersistentEntity persistentEntity;
+    private LazyMappingContext mappingContext;
+
     /**
      * Constructor.
      * @param clazz
@@ -77,6 +82,23 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      */
     public DefaultGrailsDomainClass(Class<?> clazz, Map<String, Object> defaultConstraints) {
         super(clazz, "");
+        this.defaultConstraints = defaultConstraints;
+    }
+
+    public DefaultGrailsDomainClass(Class<?> clazz, Map<String, Object> defaultConstraints, LazyMappingContext mappingContext) {
+        this(clazz, defaultConstraints);
+        this.mappingContext = mappingContext;
+    }
+
+    /**
+     * Constructor.
+     * @param clazz
+     */
+    public DefaultGrailsDomainClass(Class<?> clazz) {
+        this(clazz, null);
+    }
+
+    private void initialize(Class<?> clazz, Map<String, Object> defaultConstraints) {
         PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
 
         final Class<?> superClass = clazz.getSuperclass();
@@ -130,16 +152,39 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         establishPersistentProperties();
     }
 
-    /**
-     * Constructor.
-     * @param clazz
-     */
-    public DefaultGrailsDomainClass(Class<?> clazz) {
-        this(clazz, null);
+    void initializeProperties() {
+        PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
+
+        // First go through the properties of the class and create domain properties
+        // populating into a map
+        populateDomainClassProperties(propertyDescriptors);
+
+        // if no identifier property throw exception
+        if (identifier == null) {
+            throw new GrailsDomainException("Identity property not found, but required in domain class ["+getFullName()+"]");
+        }
+        // if no version property throw exception
+        if (version == null) {
+            throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]");
+        }
+        // set properties from map values
+        properties = propertyMap.values().toArray(new GrailsDomainClassProperty[propertyMap.size()]);
     }
 
+    void verifyContextIsInitialized() {
+        if (!mappingContext.isInitialized()) {
+            throw new RuntimeException("That API cannot be accessed before the spring context is initialized");
+        } else {
+            if (persistentEntity == null) {
+                persistentEntity = mappingContext.getPersistentEntity(this.getFullName());
+            }
+        }
+    }
+
+
     public boolean hasSubClasses() {
-        return !getSubClasses().isEmpty();
+        verifyContextIsInitialized();
+        return !mappingContext.getChildEntities(persistentEntity).isEmpty();
     }
 
     /**
@@ -627,14 +672,23 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     public boolean isOwningClass(Class domainClass) {
-        return owners.contains(domainClass);
+        verifyContextIsInitialized();
+        return persistentEntity.isOwningEntity(mappingContext.getPersistentEntity(domainClass.getName()));
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getProperties()
      */
     public GrailsDomainClassProperty[] getProperties() {
-        return properties;
+
+        if (!mappingContext.isInitialized()) {
+            if (properties.length == 0) {
+                initializeProperties();
+            }
+            return properties;
+        } else {
+
+        }
     }
 
     /* (non-Javadoc)
