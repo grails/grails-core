@@ -42,8 +42,10 @@ import org.grails.core.AbstractGrailsApplication;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -92,6 +94,8 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected Resource[] resources;
     protected boolean initialised = false;
     protected GrailsApplicationClass applicationClass;
+
+    protected LazyMappingContext mappingContext = new LazyMappingContext();
 
     /**
      * Creates a new empty Grails application.
@@ -791,7 +795,12 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected GrailsClass addArtefact(String artefactType, Class<?> artefactClass, boolean overrideable) {
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler != null && handler.isArtefact(artefactClass)) {
-            GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);
+            GrailsClass artefactGrailsClass;
+            if (handler instanceof DomainClassArtefactHandler) {
+                artefactGrailsClass = ((DomainClassArtefactHandler)handler).newArtefactClass(artefactClass, mappingContext);
+            } else {
+                artefactGrailsClass = handler.newArtefactClass(artefactClass);
+            }
             artefactGrailsClass.setGrailsApplication(this);
 
             // Store the GrailsClass in cache
@@ -823,5 +832,16 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         throw new GrailsConfigurationException("Cannot add " + artefactType + " class [" +
                 artefactClass + "]. It is not a " + artefactType + "!");
     }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        super.setApplicationContext(applicationContext);
+        try {
+            this.mappingContext.setMappingContext(applicationContext.getBean("grailsDomainClassMappingContext", MappingContext.class));
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
+
 }
 
