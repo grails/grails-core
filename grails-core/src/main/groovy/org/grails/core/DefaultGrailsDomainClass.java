@@ -19,20 +19,15 @@ import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.core.LazyMappingContext;
+import grails.gorm.validation.PersistentEntityValidator;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.core.exceptions.GrailsDomainException;
@@ -40,7 +35,10 @@ import org.grails.core.exceptions.InvalidPropertyException;
 import grails.validation.ConstraintsEvaluator;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.datastore.gorm.config.GrailsDomainClassPersistentProperty;
 import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.types.Association;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -52,25 +50,17 @@ import org.springframework.validation.Validator;
 @SuppressWarnings("rawtypes")
 public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass{
 
+    private static final Log log = LogFactory.getLog(DefaultGrailsDomainClass.class);
+
     private GrailsDomainClassProperty identifier;
     private GrailsDomainClassProperty version;
     private GrailsDomainClassProperty[] properties;
     private GrailsDomainClassProperty[] persistentProperties;
     private Map<String, GrailsDomainClassProperty> propertyMap;
     private Map relationshipMap;
-    private Map hasOneMap;
-
-    private Map constraints;
     private Map mappedBy;
-    private Validator validator;
     private String mappingStrategy = GrailsDomainClass.GORM;
-    private List<Class<?>> owners = new ArrayList<Class<?>>();
-    private boolean root = true;
-    private Set subClasses = new HashSet();
-    private Collection<String> embedded;
     private Map<String, Object> defaultConstraints;
-    private List<GrailsDomainClass> components = new ArrayList<GrailsDomainClass>();
-    private List<GrailsDomainClassProperty> associations = new ArrayList<GrailsDomainClassProperty>();
 
     private PersistentEntity persistentEntity;
     private LazyMappingContext mappingContext;
@@ -98,37 +88,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         this(clazz, null);
     }
 
-    private void initialize(Class<?> clazz, Map<String, Object> defaultConstraints) {
+    private void initializeProperties() {
         PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
-
-        final Class<?> superClass = clazz.getSuperclass();
-        if (DomainClassArtefactHandler.isDomainClass(superClass)) {
-            root = false;
-        }
-        propertyMap = new LinkedHashMap<String, GrailsDomainClassProperty>();
-        relationshipMap = getAssociationMap();
-        embedded = getEmbeddedList();
-        this.defaultConstraints = defaultConstraints;
-
-        // get mapping strategy by setting
-        mappingStrategy = getStaticPropertyValue(GrailsDomainClassProperty.MAPPING_STRATEGY, String.class);
-        if (mappingStrategy == null) {
-            mappingStrategy = GORM;
-        }
-
-        // get any mappedBy settings
-        mappedBy = getMergedConfigurationMap(GrailsDomainClassProperty.MAPPED_BY);
-        hasOneMap = getMergedConfigurationMap(GrailsDomainClassProperty.HAS_ONE);
-        if (hasOneMap == null) {
-            hasOneMap = Collections.emptyMap();
-        }
-
-        if (mappedBy == null) {
-            mappedBy = Collections.emptyMap();
-        }
-
-        // establish the owners of relationships
-        establishRelationshipOwners();
 
         // First go through the properties of the class and create domain properties
         // populating into a map
@@ -145,42 +106,26 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         // set properties from map values
         properties = propertyMap.values().toArray(new GrailsDomainClassProperty[propertyMap.size()]);
 
-        // establish relationships
-        establishRelationships();
-
-        // set persistent properties
         establishPersistentProperties();
     }
 
-    void initializeProperties() {
-        PropertyDescriptor[] propertyDescriptors = getPropertyDescriptors();
-
-        // First go through the properties of the class and create domain properties
-        // populating into a map
-        populateDomainClassProperties(propertyDescriptors);
-
-        // if no identifier property throw exception
-        if (identifier == null) {
-            throw new GrailsDomainException("Identity property not found, but required in domain class ["+getFullName()+"]");
-        }
-        // if no version property throw exception
-        if (version == null) {
-            throw new GrailsDomainException("Version property not found, but required in domain class ["+getFullName()+"]");
-        }
-        // set properties from map values
-        properties = propertyMap.values().toArray(new GrailsDomainClassProperty[propertyMap.size()]);
-    }
-
-    void verifyContextIsInitialized() {
+    private void verifyContextIsInitialized() {
         if (!mappingContext.isInitialized()) {
             throw new RuntimeException("That API cannot be accessed before the spring context is initialized");
         } else {
+            log.warn("The GrailsDomainClass API should no longer be used to retrieve data about domain classes. Use the mapping context API instead");
             if (persistentEntity == null) {
                 persistentEntity = mappingContext.getPersistentEntity(this.getFullName());
+                if (persistentEntity == null) {
+                    throw new RuntimeException("Could not retrieve the respective entity for domain " + this.getName() + " in the mapping context API");
+                }
             }
         }
     }
 
+    private void throwUnsupported() {
+        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " does not support that operation because it is a proxy for the mapping context API");
+    }
 
     public boolean hasSubClasses() {
         verifyContextIsInitialized();
@@ -203,30 +148,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     /**
-     * Evaluates the belongsTo property to find out who owns who
-     */
-    @SuppressWarnings("unchecked")
-    private void establishRelationshipOwners() {
-        Class<?> belongsTo = getStaticPropertyValue(GrailsDomainClassProperty.BELONGS_TO, Class.class);
-        if (belongsTo == null) {
-            List ownersProp = getStaticPropertyValue(GrailsDomainClassProperty.BELONGS_TO, List.class);
-            if (ownersProp != null) {
-                owners = ownersProp;
-            }
-            else {
-                Map ownersMap = getStaticPropertyValue(GrailsDomainClassProperty.BELONGS_TO, Map.class);
-                if (ownersMap!=null) {
-                    owners = new ArrayList(ownersMap.values());
-                }
-            }
-        }
-        else {
-            owners = new ArrayList();
-            owners.add(belongsTo);
-        }
-    }
-
-    /**
      * Populates the domain class properties map
      *
      * @param propertyDescriptors The property descriptors
@@ -241,7 +162,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
             // ignore certain properties
             if (GrailsDomainConfigurationUtil.isNotConfigurational(descriptor)) {
-                GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor, defaultConstraints);
+                GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor, defaultConstraints, mappingContext);
                 propertyMap.put(property.getName(), property);
 
                 if (property.isIdentity()) {
@@ -283,394 +204,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         return configurationMap;
     }
 
-    /**
-     * Retrieves the list of known embedded component types
-     *
-     * @return A list of embedded components
-     */
-    @SuppressWarnings("unchecked")
-    private Collection<String> getEmbeddedList() {
-        Collection potentialList = getStaticPropertyValue(GrailsDomainClassProperty.EMBEDDED, Collection.class);
-        if (potentialList != null) {
-            return potentialList;
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * Calculates the relationship type based other types referenced
-     */
-    private void establishRelationships() {
-        for (Object o : propertyMap.values()) {
-            DefaultGrailsDomainClassProperty currentProp = (DefaultGrailsDomainClassProperty) o;
-            if (!currentProp.isPersistent()) continue;
-
-            Class currentPropType = currentProp.getType();
-            // establish if the property is a one-to-many
-            // if it is a Set/Collection and there are relationships defined
-            // and it is defined as persistent
-            if (currentPropType != null) {
-                if (Collection.class.isAssignableFrom(currentPropType) || Map.class.isAssignableFrom(currentPropType)) {
-                    establishRelationshipForCollection(currentProp);
-                }
-                // otherwise if the type is a domain class establish relationship
-                else if (DomainClassArtefactHandler.isDomainClass(currentPropType) &&
-                        currentProp.isPersistent()) {
-                    associations.add(currentProp);
-                    establishDomainClassRelationship(currentProp);
-                }
-                else if (embedded.contains(currentProp.getName())) {
-                    associations.add(currentProp);
-                    establishDomainClassRelationship(currentProp);
-                }
-            }
-        }
-    }
-
-    /**
-     * Establishes a relationship for a java.util.Set
-     *
-     * @param property The collection property
-     */
-    private void establishRelationshipForCollection(DefaultGrailsDomainClassProperty property) {
-        // is it a relationship
-        Class<?> relatedClassType = getRelatedClassType(property.getName());
-
-        if (relatedClassType != null) {
-            // set the referenced type in the property
-            associations.add(property);
-            property.setReferencedPropertyType(relatedClassType);
-
-            // if the related type is a domain class
-            // then figure out what kind of relationship it is
-            if (DomainClassArtefactHandler.isDomainClass(relatedClassType)) {
-
-                // check the relationship defined in the referenced type
-                // if it is also a Set/domain class etc.
-                Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(relatedClassType);
-                Class<?> relatedClassPropertyType = null;
-
-                // First check whether there is an explicit relationship
-                // mapping for this property (as provided by "mappedBy").
-                String mappingProperty = (String)mappedBy.get(property.getName());
-                if (StringUtils.hasText(mappingProperty)) {
-                    // First find the specified property on the related class, if it exists.
-                    PropertyDescriptor pd = findProperty(GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz()), mappingProperty);
-
-                    // If a property of the required type does not exist, search
-                    // for any collection properties on the related class.
-                    if (pd == null) pd = findProperty(GrailsClassUtils.getPropertiesAssignableToType(relatedClassType, Collection.class), mappingProperty);
-
-                    // We've run out of options. The given "mappedBy"
-                    // setting is invalid.
-                    boolean isNone = "none".equals(mappingProperty);
-                    if (pd == null && !isNone) {
-                        throw new GrailsDomainException("Non-existent mapping property ["+mappingProperty+"] specified for property ["+property.getName()+"] in class ["+getClazz()+"]");
-                    }
-                    else if (pd != null) {
-                        // Tie the properties together.
-                        relatedClassPropertyType = pd.getPropertyType();
-                        property.setReferencePropertyName(pd.getName());
-                    }
-                }
-                else {
-                    if(mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
-                    // if the related type has a relationships map it may be a many-to-many
-                    // figure out if there is a many-to-many relationship defined
-                    if (isRelationshipManyToMany(property, relatedClassType, relatedClassRelationships)) {
-                        String relatedClassPropertyName = null;
-                        Map relatedClassMappedBy = GrailsDomainConfigurationUtil.getMappedByMap(relatedClassType);
-                        // retrieve the relationship property
-                        for (Object o : relatedClassRelationships.keySet()) {
-                            String currentKey = (String) o;
-                            String mappedByProperty = (String) relatedClassMappedBy.get(currentKey);
-                            if (mappedByProperty != null && !mappedByProperty.equals(property.getName())) continue;
-                            Class<?> currentClass = (Class<?>)relatedClassRelationships.get(currentKey);
-                            if (currentClass.isAssignableFrom(getClazz())) {
-                                relatedClassPropertyName = currentKey;
-                                break;
-                            }
-                        }
-
-                        // if there is one defined get the type
-                        if (relatedClassPropertyName != null) {
-                            relatedClassPropertyType = GrailsClassUtils.getPropertyType(relatedClassType, relatedClassPropertyName);
-                        }
-                    }
-                    // otherwise figure out if there is a one-to-many relationship by retrieving any properties that are of the related type
-                    // if there is more than one property then (for the moment) ignore the relationship
-                    if (relatedClassPropertyType == null) {
-                        PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz());
-
-                        if (descriptors.length == 1) {
-                            relatedClassPropertyType = descriptors[0].getPropertyType();
-                            property.setReferencePropertyName(descriptors[0].getName());
-                        }
-                        else if (descriptors.length > 1) {
-                            // try now to use the class name by convention
-                            String classPropertyName = getPropertyName();
-                            PropertyDescriptor pd = findProperty(descriptors, classPropertyName);
-                            if (pd == null) {
-                                throw new GrailsDomainException("Property ["+property.getName()+"] in class ["+getClazz()+"] is a bidirectional one-to-many with two possible properties on the inverse side. "+
-                                        "Either name one of the properties on other side of the relationship ["+classPropertyName+"] or use the 'mappedBy' static to define the property " +
-                                        "that the relationship is mapped with. Example: static mappedBy = ["+property.getName()+":'myprop']");
-                            }
-                            relatedClassPropertyType = pd.getPropertyType();
-                            property.setReferencePropertyName(pd.getName());
-                        }
-                    }
-                }
-
-                establishRelationshipForSetToType(property,relatedClassPropertyType);
-                // if its a many-to-many figure out the owning side of the relationship
-                if (property.isManyToMany()) {
-                    establishOwnerOfManyToMany(property, relatedClassType);
-                }
-            }
-            // otherwise set it to not persistent as you can't persist
-            // relationships to non-domain classes
-            else {
-                property.setBasicCollectionType(true);
-            }
-        }
-        else if (!Collection.class.isAssignableFrom(property.getType()) && !Map.class.isAssignableFrom(property.getType())) {
-            // no relationship defined for set/collection.
-            // set/collection not persistent
-            property.setPersistent(false);
-        }
-    }
-
-    /**
-     * Finds a property type is an array of descriptors for the given property name
-     *
-     * @param descriptors The descriptors
-     * @param propertyName The property name
-     * @return The Class or null
-     */
-    private PropertyDescriptor findProperty(PropertyDescriptor[] descriptors, String propertyName) {
-        PropertyDescriptor d = null;
-        for (PropertyDescriptor descriptor : descriptors) {
-            if (descriptor.getName().equals(propertyName)) {
-                d = descriptor;
-                break;
-            }
-        }
-        return d;
-    }
-
-    /**
-     * Find out if the relationship is a many-to-many
-     *
-     * @param property The property
-     * @param relatedClassType The related type
-     * @param relatedClassRelationships The related types relationships
-     * @return <code>true</code> if the relationship is a many-to-many
-     */
-    private boolean isRelationshipManyToMany(DefaultGrailsDomainClassProperty property,
-            Class<?> relatedClassType, Map relatedClassRelationships) {
-        return relatedClassRelationships != null &&
-            !relatedClassRelationships.isEmpty() &&
-            !relatedClassType.equals(property.getDomainClass().getClazz());
-    }
-
-    /**
-     * Inspects a related classes' ownership settings against this properties class' ownership
-     * settings to find out who owns a many-to-many relationship
-     *
-     * @param property The property
-     * @param relatedClassType The related type
-     */
-    @SuppressWarnings("unchecked")
-    private void establishOwnerOfManyToMany(DefaultGrailsDomainClassProperty property, Class<?> relatedClassType) {
-        ClassPropertyFetcher cpf = ClassPropertyFetcher.forClass(relatedClassType);
-        Object relatedBelongsTo = cpf.getPropertyValue(GrailsDomainClassProperty.BELONGS_TO);
-        boolean owningSide = false;
-        boolean relatedOwner = isOwningSide(relatedClassType, owners);
-        final Class<?> propertyClass = property.getDomainClass().getClazz();
-        if (relatedBelongsTo instanceof Collection) {
-            final Collection associatedOwners = (Collection)relatedBelongsTo;
-            owningSide = isOwningSide(propertyClass, associatedOwners);
-        }
-        else if (relatedBelongsTo instanceof Class) {
-            final Collection associatedOwners = new ArrayList();
-            associatedOwners.add(relatedBelongsTo);
-            owningSide = isOwningSide(propertyClass, associatedOwners);
-        }
-        property.setOwningSide(owningSide);
-        if (relatedOwner && property.isOwningSide()) {
-            throw new GrailsDomainException("Domain classes [" + propertyClass +
-                    "] and [" + relatedClassType +
-                    "] cannot own each other in a many-to-many relationship. Both contain belongsTo definitions that reference each other.");
-        }
-        if (!relatedOwner && !property.isOwningSide() && !(property.isCircular() && property.isManyToMany())) {
-            throw new GrailsDomainException("No owner defined between domain classes ["+propertyClass+"] and ["+relatedClassType+"] in a many-to-many relationship. Example: static belongsTo = "+relatedClassType.getName());
-        }
-    }
-
-    private boolean isOwningSide(Class<?> relatedClassType, Collection<Class<?>> potentialOwners) {
-        boolean relatedOwner = false;
-        for (Class<?> relatedClass : potentialOwners) {
-            if (relatedClass.isAssignableFrom(relatedClassType)) {
-                relatedOwner = true;
-                break;
-            }
-        }
-        return relatedOwner;
-    }
-
-    /**
-     * Establishes whether the relationship is a bi-directional or uni-directional one-to-many
-     * and applies the appropriate settings to the specified property
-     *
-     * @param property The property to apply settings to
-     * @param relatedClassPropertyType The related type
-     */
-    private void establishRelationshipForSetToType(DefaultGrailsDomainClassProperty property,
-            Class<?> relatedClassPropertyType) {
-
-        if (relatedClassPropertyType == null) {
-            // uni-directional one-to-many
-            property.setOneToMany(true);
-            property.setBidirectional(false);
-        }
-        else if (Collection.class.isAssignableFrom(relatedClassPropertyType) ||
-                 Map.class.isAssignableFrom(relatedClassPropertyType)) {
-            // many-to-many
-            property.setManyToMany(true);
-            property.setBidirectional(true);
-        }
-        else if (DomainClassArtefactHandler.isDomainClass(relatedClassPropertyType)) {
-            // bi-directional one-to-many
-            property.setOneToMany(true);
-            property.setBidirectional(true);
-        }
-    }
-
-    /**
-     * Establish relationship with related domain class
-     *
-     * @param property Establishes a relationship between this class and the domain class property
-     */
-    private void establishDomainClassRelationship(DefaultGrailsDomainClassProperty property) {
-        Class<?> propType = property.getType();
-        if (embedded.contains(property.getName())) {
-            property.setEmbedded(true);
-            return;
-        }
-
-        // establish relationship to type
-        Map relatedClassRelationships = GrailsDomainConfigurationUtil.getAssociationMap(propType);
-        Map mappedBy = GrailsDomainConfigurationUtil.getMappedByMap(propType);
-
-        Class<?> relatedClassPropertyType = null;
-
-        if(mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
-
-        // if there is a relationships map use that to find out
-        // whether it is mapped to a Set
-        if (relatedClassRelationships != null && !relatedClassRelationships.isEmpty()) {
-
-
-            String relatedClassPropertyName = findOneToManyThatMatchesType(property, relatedClassRelationships);
-            PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(getClazz(), property.getType());
-
-            // if there is only one property on many-to-one side of the relationship then
-            // try to establish if it is bidirectional
-            if (descriptors.length == 1 && isNotMappedToDifferentProperty(property,relatedClassPropertyName, mappedBy)) {
-                if (StringUtils.hasText(relatedClassPropertyName)) {
-                    property.setReferencePropertyName(relatedClassPropertyName);
-                    // get the type of the property
-                    relatedClassPropertyType = GrailsClassUtils.getPropertyType(propType, relatedClassPropertyName);
-                }
-            }
-            // if there is more than one property on the many-to-one side then we need to either
-            // find out if there is a mappedBy property or whether a convention is used to decide
-            // on the mapping property
-            else if (descriptors.length > 1) {
-                if (mappedBy.containsValue(property.getName())) {
-                    for (Object o : mappedBy.keySet()) {
-                        String mappedByPropertyName = (String) o;
-                        if (property.getName().equals(mappedBy.get(mappedByPropertyName))) {
-                            Class<?> mappedByRelatedType = (Class<?>) relatedClassRelationships.get(mappedByPropertyName);
-                            if (mappedByRelatedType != null && propType.isAssignableFrom(mappedByRelatedType))
-                                relatedClassPropertyType = GrailsClassUtils.getPropertyType(propType, mappedByPropertyName);
-                        }
-                    }
-                }
-                else {
-                    String classNameAsProperty = GrailsNameUtils.getPropertyName(propType);
-                    if (property.getName().equals(classNameAsProperty) && !mappedBy.containsKey(relatedClassPropertyName)) {
-                        relatedClassPropertyType = GrailsClassUtils.getPropertyType(propType, relatedClassPropertyName);
-                    }
-                }
-            }
-        }
-        // otherwise retrieve all the properties of the type from the associated class
-        if (relatedClassPropertyType == null) {
-            PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(propType, getClazz());
-
-            // if there is only one then the association is established
-            if (descriptors.length == 1) {
-                relatedClassPropertyType = descriptors[0].getPropertyType();
-            }
-        }
-
-        //    establish relationship based on this type
-        establishDomainClassRelationshipToType(property, relatedClassPropertyType);
-    }
-
-    private boolean isNotMappedToDifferentProperty(GrailsDomainClassProperty property,
-            String relatedClassPropertyName, Map mappedBy) {
-
-        String mappedByForRelation = (String)mappedBy.get(relatedClassPropertyName);
-        if (mappedByForRelation == null) return true;
-        if (!property.getName().equals(mappedByForRelation)) return false;
-        return true;
-    }
-
-    private String findOneToManyThatMatchesType(DefaultGrailsDomainClassProperty property, Map relatedClassRelationships) {
-        String relatedClassPropertyName = null;
-
-        for (Object o : relatedClassRelationships.keySet()) {
-            String currentKey = (String) o;
-            Class<?> currentClass = (Class<?>)relatedClassRelationships.get(currentKey);
-
-            if (property.getDomainClass().getClazz().getName().equals(currentClass.getName())) {
-                relatedClassPropertyName = currentKey;
-                break;
-            }
-        }
-        return relatedClassPropertyName;
-    }
-
-    private void establishDomainClassRelationshipToType(DefaultGrailsDomainClassProperty property, Class<?> relatedClassPropertyType) {
-        // uni-directional one-to-one
-
-        if (relatedClassPropertyType == null) {
-            if (hasOneMap.containsKey(property.getName())) {
-                property.setHasOne(true);
-            }
-            property.setOneToOne(true);
-            property.setBidirectional(false);
-        }
-        // bi-directional many-to-one
-        else if (Collection.class.isAssignableFrom(relatedClassPropertyType)||Map.class.isAssignableFrom(relatedClassPropertyType)) {
-            property.setManyToOne(true);
-            property.setBidirectional(true);
-        }
-        // bi-directional one-to-one
-        else if (DomainClassArtefactHandler.isDomainClass(relatedClassPropertyType)) {
-            if (hasOneMap.containsKey(property.getName())) {
-                property.setHasOne(true);
-            }
-
-            property.setOneToOne(true);
-            if (!getClazz().equals(relatedClassPropertyType)) {
-                property.setBidirectional(true);
-            }
-        }
-    }
-
     public boolean isOwningClass(Class domainClass) {
         verifyContextIsInitialized();
         return persistentEntity.isOwningEntity(mappingContext.getPersistentEntity(domainClass.getName()));
@@ -680,15 +213,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getProperties()
      */
     public GrailsDomainClassProperty[] getProperties() {
-
-        if (!mappingContext.isInitialized()) {
-            if (properties.length == 0) {
-                initializeProperties();
-            }
-            return properties;
-        } else {
-
+        if (properties.length == 0) {
+            initializeProperties();
         }
+        return properties;
     }
 
     /* (non-Javadoc)
@@ -729,8 +257,10 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         if (indexOfDot > 0) {
             String basePropertyName = name.substring(0, indexOfDot);
             if (propertyMap.containsKey(basePropertyName)) {
-                GrailsDomainClassProperty prop = propertyMap.get(basePropertyName);
-                GrailsDomainClass referencedDomainClass = prop.getReferencedDomainClass();
+                verifyContextIsInitialized();
+                PersistentProperty prop = persistentEntity.getPropertyByName(basePropertyName);
+                PersistentEntity referencedEntity = prop.getOwner();
+                GrailsDomainClass referencedDomainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, referencedEntity.getName());
                 if (referencedDomainClass != null) {
                     String restOfPropertyName = name.substring(indexOfDot + 1);
                     return referencedDomainClass.getPropertyByName(restOfPropertyName);
@@ -759,6 +289,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isOneToMany(java.lang.String)
      */
     public boolean isOneToMany(String propertyName) {
+        verifyContextIsInitialized();
         return getPropertyByName(propertyName).isOneToMany();
     }
 
@@ -766,6 +297,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#isManyToOne(java.lang.String)
      */
     public boolean isManyToOne(String propertyName) {
+        verifyContextIsInitialized();
         return getPropertyByName(propertyName).isManyToOne();
     }
 
@@ -773,7 +305,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see grails.core.GrailsDomainClass#getRelationshipType(java.lang.String)
      */
     public Class<?> getRelatedClassType(String propertyName) {
-        return (Class<?>)relationshipMap.get(propertyName);
+        verifyContextIsInitialized();
+        return persistentEntity.getPropertyByName(propertyName).getOwner().getJavaClass();
     }
 
     /* (non-Javadoc)
@@ -788,6 +321,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see grails.core.GrailsDomainClass#isBidirectional()
      */
     public boolean isBidirectional(String propertyName) {
+        verifyContextIsInitialized();
         return getPropertyByName(propertyName).isBidirectional();
     }
 
@@ -796,20 +330,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      */
     @SuppressWarnings("unchecked")
     public Map getConstrainedProperties() {
-        if (constraints == null) {
-            initializeConstraints();
-        }
-        return Collections.unmodifiableMap(constraints);
-    }
-
-    private void initializeConstraints() {
-        // process the constraints
-        final ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
-        if(constraintsEvaluator != null) {
-            constraints = constraintsEvaluator.evaluate(getClazz(), persistentProperties);
-        }
-        else {
-            constraints = Collections.emptyMap();
+        Validator validator = getValidator();
+        if (validator instanceof PersistentEntityValidator) {
+            return ((PersistentEntityValidator) validator).getConstrainedProperties();
+        } else {
+            return null;
         }
     }
 
@@ -817,14 +342,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see grails.core.GrailsDomainClass#getValidator()
      */
     public Validator getValidator() {
-        return validator;
+        verifyContextIsInitialized();
+        return mappingContext.getValidatorRegistry().getValidator(persistentEntity);
     }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClass#setValidator(Validator validator)
      */
     public void setValidator(Validator validator) {
-        this.validator = validator;
+        throwUnsupported();
     }
 
     /* (non-Javadoc)
@@ -835,31 +361,22 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     public boolean isRoot() {
-        return root;
+        verifyContextIsInitialized();
+        return persistentEntity.isRoot();
     }
 
     @SuppressWarnings("unchecked")
     public Set getSubClasses() {
+        verifyContextIsInitialized();
+        Set<GrailsDomainClass> subClasses = new LinkedHashSet<>();
+        for (PersistentEntity e : mappingContext.getChildEntities(persistentEntity)) {
+            subClasses.add((GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, e.getName()));
+        }
         return subClasses;
     }
 
     public void refreshConstraints() {
-        final ConstraintsEvaluator constraintEvaluator = getConstraintsEvaluator();
-        if (defaultConstraints!=null) {
-
-            constraints = constraintEvaluator.evaluate(getClazz(), persistentProperties);
-        }
-        else {
-            constraints = constraintEvaluator.evaluate(getClazz(), persistentProperties);
-        }
-
-        // Embedded components have their own ComponentDomainClass instance which
-        // won't be refreshed by the application. So, we have to do it here.
-        for (GrailsDomainClassProperty property : persistentProperties) {
-            if (property.isEmbedded()) {
-                property.getComponent().refreshConstraints();
-            }
-        }
+        throwUnsupported();
     }
 
     ConstraintsEvaluator getConstraintsEvaluator() {
@@ -888,14 +405,33 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     public void addComponent(GrailsDomainClass component) {
-        components.add(component);
+        throwUnsupported();
     }
 
     public List<GrailsDomainClass> getComponents() {
-        return Collections.unmodifiableList(components);
+        verifyContextIsInitialized();
+        List<GrailsDomainClass> components = new ArrayList<>();
+        for (Association a : persistentEntity.getAssociations()) {
+            if (a.isEmbedded()) {
+                components.add((GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, a.getAssociatedEntity().getName()));
+            }
+        }
+        return components;
     }
 
     public List<GrailsDomainClassProperty> getAssociations() {
+        verifyContextIsInitialized();
+        List<GrailsDomainClassProperty> associations = new ArrayList<>();
+        List<String> associationNames = new ArrayList<>();
+        for (Association a : persistentEntity.getAssociations()) {
+            associationNames.add(a.getName());
+        }
+        for (GrailsDomainClassProperty p : persistentProperties) {
+            if (associationNames.contains(p.getName())) {
+                associations.add(p);
+            }
+        }
         return associations;
+
     }
 }
