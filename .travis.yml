@@ -29,10 +29,6 @@ env:
 install: /bin/true
 script:
 - ./travis-build.sh
-after_success:
-- ./trigger-dependent-build.sh
-after_failure:
-- ./travis-after-failure.sh
 deploy:
   provider: releases
   api_key:

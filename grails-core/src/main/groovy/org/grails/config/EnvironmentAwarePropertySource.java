@@ -39,7 +39,7 @@ public class EnvironmentAwarePropertySource extends EnumerablePropertySource<Pro
     }
 
     protected List<String> propertyNames;
-    
+
     @Override
     public String[] getPropertyNames() {
         initialize();

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Configure GIT
+git config --global user.name "$GIT_NAME"
+git config --global user.email "$GIT_EMAIL"
+git config --global credential.helper "store --file=~/.git-credentials"
+
 # Set Gradle daemon JVM args
 mkdir ~/.gradle
 echo "org.gradle.jvmargs=-XX\:MaxPermSize\=512m -Xmx1024m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
@@ -73,18 +78,11 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
             ./gradlew assemble || EXIT_STATUS=$?
         fi
 
-        # Configure GIT
-        git config --global user.name "$GIT_NAME"
-        git config --global user.email "$GIT_EMAIL"
-        git config --global credential.helper "store --file=~/.git-credentials"
-
         # Tag and release the docs
         cd ..
-        git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
+        git clone -b 3.2.x https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
         cd grails-doc
-        git branch --track 3.2.x remotes/origin/3.2.x
-        git checkout 3.2.x
-        
+
         echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
         git add gradle.properties
         git commit -m "Release $TRAVIS_TAG docs"
@@ -107,6 +105,14 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0
 
     elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
+        cd ..
+        # Trigger the functional tests
+        git clone -b 3.2.x https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
+        cd functional-tests
+        echo "$(date)" > .snapshot
+        git add .snapshot
+        git commit -m "New Core Snapshot: $(date)"
+        git push
     fi
 
 fi
