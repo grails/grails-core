@@ -18,6 +18,7 @@ package org.grails.databinding.converters
 import grails.databinding.converters.FormattedValueConverter;
 import groovy.transform.CompileStatic
 
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 /**
@@ -37,7 +38,7 @@ class FormattedDateValueConverter implements FormattedValueConverter {
                 return null
             }
             else {
-                def fmt = new SimpleDateFormat(format)
+                DateFormat fmt = new SimpleDateFormat(format)
                 fmt.lenient = false
                 fmt.parse((String) value)
             }

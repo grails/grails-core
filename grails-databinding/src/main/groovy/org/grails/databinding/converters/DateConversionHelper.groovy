@@ -18,6 +18,7 @@ package org.grails.databinding.converters
 import grails.databinding.converters.ValueConverter;
 import groovy.transform.CompileStatic
 
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 /**
@@ -32,7 +33,17 @@ class DateConversionHelper implements ValueConverter {
      * This converter attempts to convert a String to a Date, these formats will be tried in
      * the order in which they appear in the List.
      */
-    List<String> formatStrings = []
+    private List<SimpleDateFormat> formats = []
+
+    void setFormatStrings(List<String> formatStrings) {
+        if(formats) formats.clear()
+
+        formatStrings?.each {
+            SimpleDateFormat fmt = new SimpleDateFormat(it)
+            fmt.lenient = false
+            formats.add fmt
+        }
+    }
 
     Object convert(value) {
         Date dateValue
@@ -40,10 +51,10 @@ class DateConversionHelper implements ValueConverter {
             if(!value) {
                 return null
             }
-            def firstException
-            formatStrings.each { String format ->
+
+            Exception firstException
+            formats.each { SimpleDateFormat formatter ->
                 if (dateValue == null) {
-                    def formatter = new SimpleDateFormat(format)
                     try {
                         dateValue = formatter.parse(value)
                     } catch (Exception e) {
@@ -51,10 +62,12 @@ class DateConversionHelper implements ValueConverter {
                     }
                 }
             }
+
             if(dateValue == null && firstException) {
                 throw firstException
             }
         }
+
         dateValue
     }
 
