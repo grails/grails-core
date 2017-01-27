@@ -49,7 +49,7 @@ dependencies {
         exclude group:'org.grails', module:'grails-bootstrap'
     }
 
-    //compile "org.grails:grails-datastore-gorm:$datastoreVersion"
+    compile "org.grails:grails-datastore-gorm-support:$datastoreVersion"
     compile "org.grails:grails-datastore-core:$datastoreVersion"
 
     testCompile("org.springframework:spring-jdbc:${springVersion}") {
