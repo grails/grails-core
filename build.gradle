@@ -46,10 +46,10 @@ ext {
     reactorVersion = '2.0.7.RELEASE'
 
     spockVersion = '1.0-groovy-2.4'
-    springBootVersion = "1.4.2.RELEASE"
+    springBootVersion = "1.4.4.RELEASE"
     springLoadedVersion = "1.2.6.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.3.4.RELEASE"
+    springVersion = "4.3.6.RELEASE"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
