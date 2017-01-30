@@ -35,6 +35,11 @@ class DateConversionHelper implements ValueConverter {
      */
     List<String> formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z"]
 
+    /**
+     * Whether data parsing is lenient
+     */
+    boolean dateParsingLenient = false
+
     Object convert(value) {
         Date dateValue
         if (value instanceof String) {
@@ -46,7 +51,7 @@ class DateConversionHelper implements ValueConverter {
                 if (dateValue == null) {
                     DateFormat formatter = new SimpleDateFormat(format)
                     try {
-                        formatter.lenient = false
+                        formatter.lenient = dateParsingLenient
                         dateValue = formatter.parse((String)value)
                     } catch (Exception e) {
                         firstException = firstException ?: e
