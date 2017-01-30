@@ -16,18 +16,32 @@
 
 package org.grails.compiler.injection
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.control.SourceUnit
 import org.springframework.expression.spel.standard.SpelExpressionParser
 import org.springframework.expression.spel.support.StandardEvaluationContext
 import org.springframework.expression.spel.support.StandardTypeLocator
 
+@CompileStatic
 class GroovyEclipseCompilationHelper {
+
+    /**
+     * Attempts to resolve the compilation directory when using Eclipse
+     *
+     * @param sourceUnit The source unit
+     * @return The File that represents the root directory or null
+     */
     static File resolveEclipseCompilationTargetDirectory(SourceUnit sourceUnit) {
         if (sourceUnit.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
             StandardEvaluationContext context = new StandardEvaluationContext()
             context.setTypeLocator(new StandardTypeLocator(sourceUnit.getClass().getClassLoader()))
             context.setRootObject(sourceUnit)
-            return (File) new SpelExpressionParser().parseExpression("eclipseFile.workspace.root.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation.makeAbsolute()).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context)
+            try {
+                return (File) new SpelExpressionParser().parseExpression("eclipseFile.workspace.root.getFolder(T(org.eclipse.jdt.core.JavaCore).create(eclipseFile.project).outputLocation.makeAbsolute()).rawLocation.makeAbsolute().toFile().absoluteFile").getValue(context)
+            } catch (Throwable e) {
+                // Not running Eclipse IDE, probably using the Eclipse compiler with Maven
+                return null
+            }
         }
         return null
     }
