@@ -113,8 +113,19 @@ public class GrailsClassUtilsTests extends TestCase {
     public void testIsGetterOrSetter() {
         assertTrue(GrailsClassUtils.isSetter("setSomething", new Class[] { String.class }));
         assertTrue(GrailsClassUtils.isGetter("getSomething", new Class[0]));
+        assertTrue(GrailsClassUtils.isGetter("isSomething", new Class[0]));
         assertTrue(GrailsClassUtils.isSetter("setURL", new Class[] { String.class }));
         assertTrue(GrailsClassUtils.isGetter("getURL", new Class[0]));
+        assertTrue(GrailsClassUtils.isGetter("isURL", new Class[0]));
+        assertTrue(GrailsClassUtils.isSetter("setaProp", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isGetter("getaProp", new Class[0]));
+        assertTrue(GrailsClassUtils.isGetter("isaProp", new Class[0]));
+        assertTrue(GrailsClassUtils.isSetter("setX", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isGetter("getX", new Class[0]));
+        assertTrue(GrailsClassUtils.isGetter("isX", new Class[0]));
+        assertTrue(GrailsClassUtils.isSetter("setX2", new Class[] { String.class }));
+        assertTrue(GrailsClassUtils.isGetter("getX2", new Class[0]));
+        assertTrue(GrailsClassUtils.isGetter("isX2", new Class[0]));
 
         assertFalse(GrailsClassUtils.isGetter("something", new Class[] { String.class }));
         assertFalse(GrailsClassUtils.isGetter("get", new Class[0]));
@@ -122,6 +133,20 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isGetter("somethingElse", new Class[0]));
         assertFalse(GrailsClassUtils.isSetter("setSomething", new Class[] { String.class, Object.class }));
         assertFalse(GrailsClassUtils.isGetter("getSomething", new Class[] { Object.class }));
+
+        assertFalse(GrailsClassUtils.isGetter("getsomething", new Class[0]));
+        assertFalse(GrailsClassUtils.isGetter("issomething", new Class[0]));
+        assertFalse(GrailsClassUtils.isSetter("setsomething", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isGetter("get0", new Class[0]));
+        assertFalse(GrailsClassUtils.isSetter("set0", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isGetter("get2other", new Class[0]));
+        assertFalse(GrailsClassUtils.isSetter("set2other", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isGetter("getq3", new Class[0]));
+        assertFalse(GrailsClassUtils.isSetter("setq3", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isGetter("get5A", new Class[0]));
+        assertFalse(GrailsClassUtils.isSetter("set5A", new Class[] { String.class }));
+        assertFalse(GrailsClassUtils.isGetter("", new Class[0]));
+        assertFalse(GrailsClassUtils.isSetter("", new Class[] { String.class }));
 
         assertFalse(GrailsClassUtils.isGetter(null, new Class[] { Object.class }));
         assertFalse(GrailsClassUtils.isGetter("getSomething", null));
@@ -132,6 +157,21 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("something", GrailsClassUtils.getPropertyForGetter("getSomething"));
         assertEquals("URL", GrailsClassUtils.getPropertyForGetter("getURL"));
         assertEquals("p", GrailsClassUtils.getPropertyForGetter("getP"));
+        assertEquals("URL", GrailsClassUtils.getPropertyForGetter("isURL"));
+        assertEquals("aProp", GrailsClassUtils.getPropertyForGetter("getaProp"));
+        assertEquals("x2", GrailsClassUtils.getPropertyForGetter("getX2"));
+        assertEquals("x2", GrailsClassUtils.getPropertyForGetter("isX2"));
+
+        assertNull(GrailsClassUtils.getPropertyForGetter(null));
+        assertNull(GrailsClassUtils.getPropertyForGetter(""));
+        assertNull(GrailsClassUtils.getPropertyForGetter("get0"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("get2other"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("getq3"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("get5A"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("setSomething"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("getit"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("geta"));
+        assertNull(GrailsClassUtils.getPropertyForGetter("get0"));
     }
 
     public void testGetStaticField() {
