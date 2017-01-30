@@ -357,7 +357,8 @@ class GrailsApp extends SpringApplication {
             }
             // in spring-boot context-path is chosen before contextPath ...
             String contextPath = context_path?context_path:app.config.getProperty('server.contextPath', '')
-            println("Grails application running at ${protocol}://localhost:${applicationContext.embeddedServletContainer.port}${contextPath} in environment: ${Environment.current.name}")
+            String hostName = app.config.getProperty('server.address', 'localhost')
+            println("Grails application running at ${protocol}://${hostName}:${applicationContext.embeddedServletContainer.port}${contextPath} in environment: ${Environment.current.name}")
         } catch (e) {
             // ignore
         }
