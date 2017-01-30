@@ -45,6 +45,7 @@ class DataBindingGrailsPlugin extends Plugin {
     public static final String CONVERT_EMPTY_STRINGS_TO_NULL = 'grails.databinding.convertEmptyStringsToNull'
     public static final String AUTO_GROW_COLLECTION_LIMIT = 'grails.databinding.autoGrowCollectionLimit'
     public static final String DATE_FORMATS = 'grails.databinding.dateFormats'
+    public static final String DATE_LENIENT_PARSING = 'grails.databinding.dateParsingLenient'
 
     def version = GrailsUtil.getGrailsVersion()
 
@@ -54,6 +55,7 @@ class DataBindingGrailsPlugin extends Plugin {
         def config = application.config
         boolean trimStringsSetting = config.getProperty(TRIM_STRINGS, Boolean, true)
         boolean convertEmptyStringsToNullSetting = config.getProperty(CONVERT_EMPTY_STRINGS_TO_NULL, Boolean, true)
+        boolean dateParsingLenientSetting = config.getProperty(DATE_LENIENT_PARSING, Boolean, false)
         Integer autoGrowCollectionLimitSetting = config.getProperty(AUTO_GROW_COLLECTION_LIMIT, Integer, 256)
         List dateFormats = config.getProperty(DATE_FORMATS, List, [])
 
@@ -73,13 +75,15 @@ class DataBindingGrailsPlugin extends Plugin {
             if(dateFormats) {
                 formatStrings = dateFormats
             }
+            // dateParsingLenient defaults to false
+            dateParsingLenient = dateParsingLenientSetting
         }
         [Short,   Short.TYPE,
          Integer, Integer.TYPE,
          Float,   Float.TYPE,
          Long,    Long.TYPE,
          Double,  Double.TYPE].each { numberType ->
-            "defaultGrails${numberType.name}Converter"(LocaleAwareNumberConverter) {
+            "defaultGrails${numberType.simpleName}Converter"(LocaleAwareNumberConverter) {
                 targetType = numberType
             }
         }
