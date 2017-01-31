@@ -17,6 +17,7 @@ package org.grails.web.mime
 
 import grails.web.mime.MimeType
 import grails.web.mime.MimeTypeResolver
+import groovy.transform.CompileStatic
 import org.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
@@ -25,6 +26,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
  * @author Graeme Rocher
  * @since 2.3
  */
+@CompileStatic
 class DefaultMimeTypeResolver implements MimeTypeResolver {
 
     /**
@@ -36,7 +38,7 @@ class DefaultMimeTypeResolver implements MimeTypeResolver {
     @Override
     MimeType resolveResponseMimeType(GrailsWebRequest webRequest= GrailsWebRequest.lookup()) {
         if (webRequest != null) {
-            return webRequest.response.mimeType
+            return HttpServletResponseExtension.getMimeType(webRequest.response)
         }
         return null
     }
@@ -50,7 +52,7 @@ class DefaultMimeTypeResolver implements MimeTypeResolver {
     @Override
     MimeType resolveRequestMimeType(GrailsWebRequest webRequest = GrailsWebRequest.lookup()) {
         if (webRequest != null) {
-            final allMimeTypes = webRequest.request.mimeTypes
+            final allMimeTypes = HttpServletRequestExtension.getMimeTypes(webRequest.request)
             if(allMimeTypes) {
                 return allMimeTypes[0]
             }
