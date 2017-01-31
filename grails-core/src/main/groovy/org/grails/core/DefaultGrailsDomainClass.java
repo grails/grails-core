@@ -28,16 +28,13 @@ import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.grails.core.artefact.DomainClassArtefactHandler;
-import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.core.exceptions.GrailsDomainException;
 import org.grails.core.exceptions.InvalidPropertyException;
-import grails.validation.ConstraintsEvaluator;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.Association;
-import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.validation.Validator;
 
@@ -335,9 +332,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     @SuppressWarnings("unchecked")
     public Map getConstrainedProperties() {
         Validator validator = getValidator();
-        System.out.println("is PEV: " + (validator instanceof PersistentEntityValidator));
         if (validator instanceof PersistentEntityValidator) {
-            System.out.println(((PersistentEntityValidator) validator).getConstrainedProperties());
             return ((PersistentEntityValidator) validator).getConstrainedProperties();
         } else {
             return null;

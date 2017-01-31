@@ -22,25 +22,16 @@ import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.grails.core.io.support.GrailsFactoriesLoader;
-import grails.validation.ConstraintsEvaluator;
-import org.grails.core.support.GrailsDomainConfigurationUtil;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.*;
 import org.springframework.util.ClassUtils;
 import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 /**
  * Represents a property of a domain class and contains meta information about the
@@ -130,7 +121,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                     persistentProperty = persistentEntity.getPropertyByName(this.getName());
                     if (persistentProperty instanceof Association) {
                         this.association = (Association)persistentProperty;
-                        if (!(association instanceof Basic)) {
+                        if (!association.isBasic()) {
                             this.referencedDomainClass = mappingContext.getDomainClass(association.getAssociatedEntity().getName());
                         }
                     }
@@ -322,6 +313,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             PersistentEntity entity = association.getAssociatedEntity();
             if (entity != null) {
                 return entity.getJavaClass();
+            } else if (association.isBasic()) {
+                return ((Basic)association).getComponentType();
             }
         }
         return null;
@@ -386,7 +379,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     public GrailsDomainClassProperty getOtherSide() {
         verifyContextIsInitialized();
-        if (referencedDomainClass != null) {
+        if (referencedDomainClass != null && association.isBidirectional()) {
             return referencedDomainClass.getPropertyByName(association.getReferencedPropertyName());
         } else {
             return null;
