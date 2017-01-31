@@ -317,7 +317,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
      */
     public void setDomainClass(GrailsDomainClass domainClass) {
         this.domainClass = domainClass;
-        domainClass.setValidator(this);
+        //domainClass.setValidator(this);
         targetClass = domainClass.getClazz();
     }
 

@@ -76,7 +76,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
 
     @SuppressWarnings("rawtypes")
     public GrailsClass newArtefactClass(Class artefactClass, LazyMappingContext mappingContext) {
-        return new DefaultGrailsDomainClass(artefactClass, defaultConstraints);
+        return new DefaultGrailsDomainClass(artefactClass, defaultConstraints, mappingContext);
     }
 
     @Override
