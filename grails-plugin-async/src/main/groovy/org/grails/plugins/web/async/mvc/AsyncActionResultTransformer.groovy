@@ -52,11 +52,20 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
             WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request)
             final response = webRequest.getResponse()
 
-            AsyncWebRequest asyncWebRequest = new AsyncGrailsWebRequest(request, response, webRequest.servletContext)
-            asyncManager.setAsyncWebRequest(asyncWebRequest)
+            AsyncGrailsWebRequest asyncWebRequest
+            if(asyncManager.isConcurrentHandlingStarted()) {
+                asyncWebRequest = AsyncGrailsWebRequest.lookup(request)
+                if(asyncWebRequest == null) {
+                    throw new IllegalStateException("Concurrency handling already started by another process")
+                }
+            }
+            else {
+                asyncWebRequest = new AsyncGrailsWebRequest(request, response, webRequest.servletContext)
+                asyncManager.setAsyncWebRequest(asyncWebRequest)
+                asyncWebRequest.startAsync()
+            }
 
-            asyncWebRequest.startAsync()
-            def asyncContext = asyncWebRequest.asyncContext
+            AsyncContext asyncContext = asyncWebRequest.asyncContext
             request.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
             asyncContext = new GrailsAsyncContext(asyncContext, webRequest)
 
