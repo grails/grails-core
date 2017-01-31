@@ -4,14 +4,26 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.springframework.context.ApplicationContext
 import spock.lang.Specification
 
 class DomainClassMarshallerSpec extends Specification {
+
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()
         def grailsApplication = new DefaultGrailsApplication(Author, Book)
         grailsApplication.initialise()
+
+        grailsApplication.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> {
+                def context = new KeyValueMappingContext("json")
+                context.addPersistentEntities(Book, Author)
+                context
+            }
+        })
         initializer.grailsApplication = grailsApplication
         initializer.initialize()
     }

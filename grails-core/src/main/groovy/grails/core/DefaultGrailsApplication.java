@@ -47,6 +47,7 @@ import org.grails.io.support.GrailsResourceUtils;
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -95,7 +96,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected boolean initialised = false;
     protected GrailsApplicationClass applicationClass;
 
-    protected LazyMappingContext mappingContext = new LazyMappingContext();
+    protected LazyMappingContext mappingContext = new LazyMappingContext(this);
 
     /**
      * Creates a new empty Grails application.
@@ -837,10 +838,12 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         super.setApplicationContext(applicationContext);
         try {
-            this.mappingContext.setMappingContext(applicationContext.getBean("grailsDomainClassMappingContext", MappingContext.class));
-        } catch (Exception e) {
-            // do nothing
+            MappingContext context = applicationContext.getBean("grailsDomainClassMappingContext", MappingContext.class);
+            mappingContext.setMappingContext(context);
+        } catch (NoSuchBeanDefinitionException e) {
+            // no-op
         }
+
     }
 
 }
