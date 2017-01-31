@@ -72,17 +72,14 @@ public class ControllersDomainBindingApi {
     }
 
     private static GrailsDomainClass getDomainClass(Object instance) {
-        GrailsDomainClass domainClass = GrailsMetaClassUtils.getPropertyIfExists(instance, GrailsDomainClassProperty.DOMAIN_CLASS, GrailsDomainClass.class);
-        if (domainClass == null) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if (webRequest != null) {
-                ApplicationContext applicationContext = webRequest.getApplicationContext();
-                if(applicationContext != null) {
-                    GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
-                        applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
-                    if (grailsApplication != null) {
-                        domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
-                    }
+        GrailsDomainClass domainClass = null;
+        if(!Environment.isInitializing()) {
+            final ApplicationContext applicationContext = Holders.findApplicationContext();
+            if(applicationContext != null) {
+                GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
+                    applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
+                if (grailsApplication != null) {
+                    domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
                 }
             }
         }

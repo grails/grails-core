@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 @CompileStatic
 class AsyncGrailsWebRequest extends GrailsWebRequest implements AsyncWebRequest, AsyncListener{
+    static final String WEB_REQUEST = "org.grails.ASYNC_WEB_REQUEST";
 
     Long timeout
     AsyncContext asyncContext
@@ -35,15 +36,29 @@ class AsyncGrailsWebRequest extends GrailsWebRequest implements AsyncWebRequest,
 
     AsyncGrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
         super(request, response, attributes)
+        request.setAttribute(WEB_REQUEST, this)
     }
 
     AsyncGrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response, servletContext)
+        request.setAttribute(WEB_REQUEST, this)
     }
 
     AsyncGrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext, ApplicationContext applicationContext) {
         super(request, response, servletContext, applicationContext)
+        request.setAttribute(WEB_REQUEST, this)
     }
+
+    /**
+     * Looks up the GrailsWebRequest from the current request.
+     * @param request The current request
+     * @return The GrailsWebRequest
+     */
+    public static AsyncGrailsWebRequest lookup(HttpServletRequest request) {
+        AsyncGrailsWebRequest webRequest = (AsyncGrailsWebRequest) request.getAttribute(WEB_REQUEST);
+        return webRequest
+    }
+
 
     @Override
     void addTimeoutHandler(Runnable runnable) {
