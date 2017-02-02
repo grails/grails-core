@@ -1,8 +1,11 @@
 package org.grails.commons
 
+import grails.core.DefaultGrailsApplication
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
 import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.test.support.MappingContextBuilder
 
 class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
     GrailsDomainClass parentClass
@@ -14,8 +17,12 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
 
     void setUp() {
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
-        parentClass = new DefaultGrailsDomainClass(ParentClass.class)
-        childClass = new DefaultGrailsDomainClass(ChildClass.class)
+        def ga = new DefaultGrailsApplication(ParentClass, ChildClass)
+        ga.initialise()
+        new MappingContextBuilder(ga).build(ParentClass, ChildClass)
+
+        parentClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, ParentClass.name)
+        childClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, ChildClass.name)
 
         prop1Parent = parentClass.getPropertyByName("prop1")
         prop1Child = childClass.getPropertyByName("prop1")
@@ -26,7 +33,7 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
         assertTrue(prop1Child.equals(prop1Child))
     }
 
-    void testSameInParentEqualsPropInChikd() {
+    void testSameInParentEqualsPropInChild() {
         assertTrue(prop1Parent.equals(prop1Child))
         assertTrue(prop1Child.equals(prop1Parent))
     }

@@ -1,9 +1,12 @@
 package org.grails.validation;
 
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
+import grails.gorm.validation.DefaultConstrainedProperty;
 import grails.util.Holders;
-import grails.validation.Constrained;
-import grails.validation.ConstrainedProperty;
 import groovy.lang.GroovyClassLoader;
 
 import java.util.Collection;
@@ -11,8 +14,9 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.test.support.MappingContextBuilder;
 import org.grails.test.support.MockHibernatePluginHelper;
-import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.plugins.MockGrailsPluginManager;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
@@ -44,7 +48,10 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 " String name\n" +
                 "}");
 
-        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
+        GrailsApplication ga = new DefaultGrailsApplication(groovyClass);
+        ga.initialise();
+        new MappingContextBuilder(ga).build(groovyClass);
+        GrailsDomainClass domainClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, groovyClass.getName());
 
         Map constraints = domainClass.getConstrainedProperties();
 
@@ -73,7 +80,8 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      */
     @SuppressWarnings("rawtypes")
     public void testNullableConstraint() throws Exception {
-        String bookClassSource =
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        gcl.parseClass(
                 "package org.grails.validation\n" +
                 "class Book {\n" +
                 "   Long id\n" +
@@ -99,11 +107,13 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String text\n" +
-                "}";
+                "}");
 
-        GroovyClassLoader gcl = new GroovyClassLoader();
+        GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses());
+        ga.initialise();
+        new MappingContextBuilder(ga).build(gcl.getLoadedClasses());
 
-        DefaultGrailsDomainClass bookClass = new DefaultGrailsDomainClass(gcl.parseClass(bookClassSource, "Book"));
+        GrailsDomainClass bookClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, "org.grails.validation.Book");
 
         Map constraints = bookClass.getConstrainedProperties();
         Constrained p = (Constrained)constraints.get("title");
@@ -111,7 +121,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         p = (Constrained)constraints.get("description");
         assertTrue("Description property should be optional", p.isNullable());
         p = (Constrained)constraints.get("author");
-        assertFalse("Author property should be required", p.isNullable());
+        assertNull(p);
         p = (Constrained)constraints.get("assistent");
         assertTrue("Assistent property should be optional", p.isNullable());
         // Test that Collections and Maps are nullable by default
@@ -153,11 +163,14 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
             classes[i] = gcl.parseClass(classSource[i]);
         }
 
-        DefaultGrailsDomainClass domainClass = new DefaultGrailsDomainClass(classes[classIndexToTest]);
+        GrailsApplication ga = new DefaultGrailsApplication(classes[classIndexToTest]);
+        ga.initialise();
+        new MappingContextBuilder(ga).build(classes[classIndexToTest]);
+        GrailsDomainClass domainClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, classes[classIndexToTest].getName());
 
         Map constraints = domainClass.getConstrainedProperties();
 
-        ConstrainedProperty p = (ConstrainedProperty)constraints.get("name");
+        DefaultConstrainedProperty p = (DefaultConstrainedProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
 
         assertEquals("Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());

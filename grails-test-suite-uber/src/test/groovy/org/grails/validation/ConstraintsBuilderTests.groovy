@@ -1,7 +1,8 @@
 package org.grails.validation
 
+import grails.core.GrailsDomainClass
 import org.grails.commons.test.AbstractGrailsMockTests
-import org.grails.validation.GrailsDomainClassValidator;
+import org.grails.test.support.MappingContextBuilder
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors
 
@@ -20,12 +21,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         bookMetaClass.setErrors = setter
         bookMetaClass.initialize()
         book.metaClass = bookMetaClass
-
-        def bookValidator = new GrailsDomainClassValidator()
-
-        bookValidator.domainClass = bookClass
-        bookValidator.messageSource = createMessageSource()
-        bookClass.validator = bookValidator
+        def bookValidator = ((GrailsDomainClass)bookClass).getValidator()
 
         def errors = new BindException(book, book.class.name)
 
@@ -48,7 +44,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         def theClass = ga.getDomainClass("Site")
 
         def instance = theClass.newInstance()
-        def validator = configureValidator(theClass, instance)
+        def validator = ((GrailsDomainClass)theClass).getValidator()
 
         instance.anotherURL = "http://grails.org"
         def errors = validateInstance(instance, validator)
@@ -78,21 +74,6 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         return errors
     }
 
-    GrailsDomainClassValidator configureValidator(theClass, instance) {
-        def metaClass = new ExpandoMetaClass(theClass.clazz)
-        def errorsProp = null
-        def setter = { Object obj -> errorsProp = obj }
-        metaClass.setErrors = setter
-        metaClass.initialize()
-        instance.metaClass = metaClass
-        def validator = new GrailsDomainClassValidator()
-
-        validator.domainClass = theClass
-        validator.messageSource = createMessageSource()
-        theClass.validator = validator
-        return validator
-    }
-
     protected void onSetUp() {
 
         gcl.parseClass('''
@@ -118,5 +99,9 @@ class Site {
     }
 }
         ''')
+    }
+
+    protected void postSetUp() {
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
     }
 }

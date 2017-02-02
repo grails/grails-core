@@ -44,8 +44,8 @@ dependencies {
 }
 
 test {
-    maxParallelForks = 2
-    forkEvery = isTravisBuild ? 25 : 100
+    //maxParallelForks = 2
+    //forkEvery = isTravisBuild ? 25 : 100
     if(!isTravisBuild) {
         maxHeapSize = '2048m'
         if(!isJava8Compatible) {
