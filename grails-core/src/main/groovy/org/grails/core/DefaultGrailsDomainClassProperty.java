@@ -98,14 +98,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             // figure out if this property is inherited
             inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), name);
         }
-
-        if (descriptor.getReadMethod() == null || descriptor.getWriteMethod() == null) {
-            persistent = false;
-        }
-
-        if (Errors.class.isAssignableFrom(type)) {
-            persistent = false;
-        }
         this.defaultConstraints = defaultConstraints;
         this.mappingContext = mappingContext;
     }
@@ -127,7 +119,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                     }
                 }
             }
-            if (persistentEntity == null || persistentProperty == null) {
+            if (persistentEntity == null) {
                 StringBuilder sb = new StringBuilder("Could not retrieve the respective entity for ");
                 sb.append(this.domainClass.getName());
                 sb.append(".");
@@ -161,7 +153,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isPersistant()
      */
     public boolean isPersistent() {
-        return persistent;
+        verifyContextIsInitialized();
+        return persistentProperty != null;
     }
 
     /* (non-Javadoc)
@@ -316,6 +309,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             } else if (association.isBasic()) {
                 return ((Basic)association).getComponentType();
             }
+        } else if (persistentProperty instanceof Simple) {
+            return persistentProperty.getType();
         }
         return null;
     }
@@ -379,11 +374,13 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     public GrailsDomainClassProperty getOtherSide() {
         verifyContextIsInitialized();
-        if (referencedDomainClass != null && association.isBidirectional()) {
-            return referencedDomainClass.getPropertyByName(association.getReferencedPropertyName());
-        } else {
-            return null;
+        if (referencedDomainClass != null && association != null) {
+            Association otherSide = association.getInverseSide();
+            if (otherSide != null) {
+                return referencedDomainClass.getPropertyByName(otherSide.getName());
+            }
         }
+        return null;
     }
 
     public void setOtherSide(GrailsDomainClassProperty property) {

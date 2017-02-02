@@ -1,6 +1,8 @@
 package org.grails.validation
 
+import grails.core.GrailsDomainClass
 import org.grails.commons.test.AbstractGrailsMockTests
+import org.grails.test.support.MappingContextBuilder
 import org.grails.validation.GrailsDomainClassValidator;
 import org.springframework.validation.BindException
 
@@ -24,16 +26,8 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         def book = bookClass.newInstance()
         book.metaClass = bookMetaClass
 
-        def bookValidator = new GrailsDomainClassValidator()
-        def authorValidator = new GrailsDomainClassValidator()
-
-        bookValidator.domainClass = bookClass
-        bookValidator.messageSource = createMessageSource()
-        bookValidator.grailsApplication = ga
-        authorValidator.domainClass = authorClass
-        authorValidator.messageSource = createMessageSource()
-        authorValidator.grailsApplication = ga
-        authorClass.validator = authorValidator
+        def bookValidator = ((GrailsDomainClass)bookClass).getValidator()
+        def authorValidator = ((GrailsDomainClass)authorClass).getValidator()
 
         def errors = new BindException(book, book.class.name)
 
@@ -98,10 +92,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         publisher.metaClass = publisherMetaClass
         publisher.name = "Book Publisher"
 
-        def publisherValidator = new GrailsDomainClassValidator()
-        publisherValidator.domainClass = publisherClass
-        publisherValidator.messageSource = createMessageSource()
-        publisherValidator.grailsApplication = ga
+        def publisherValidator = ((GrailsDomainClass)publisherClass).getValidator()
 
         errors = new BindException(publisher, publisher.class.name)
 
@@ -175,5 +166,9 @@ class Publisher {
     }
 }
         ''')
+    }
+
+    protected void postSetUp() {
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
     }
 }

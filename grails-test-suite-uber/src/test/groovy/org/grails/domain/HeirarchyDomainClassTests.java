@@ -21,6 +21,7 @@ import grails.core.DefaultGrailsApplication;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
+import org.grails.test.support.MappingContextBuilder;
 
 /**
  * Tests that class heirarchies get calculated appropriately.
@@ -39,6 +40,7 @@ public class HeirarchyDomainClassTests extends TestCase {
 
         GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ga.initialise();
+        new MappingContextBuilder(ga).build(gcl.getLoadedClasses());
 
         GrailsDomainClass gdc1 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Super");
         assertNotNull(gdc1);

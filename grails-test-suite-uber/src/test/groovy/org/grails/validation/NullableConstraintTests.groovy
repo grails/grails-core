@@ -2,13 +2,14 @@ package org.grails.validation
 
 import grails.core.DefaultGrailsApplication
 import grails.web.databinding.DataBindingUtils
+import org.grails.test.support.MappingContextBuilder
 
- /**
+/**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class NullableConstraintTests extends GroovyTestCase {
 
-    def gcl
+    GroovyClassLoader gcl
 
     protected void setUp() {
         super.setUp()
@@ -58,6 +59,7 @@ class ProjectVersion {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def project = ga.getDomainClass("Project")
 
@@ -67,16 +69,16 @@ class ProjectVersion {
 
         assertTrue constraints.status?.hasAppliedConstraint("nullable")
         assertTrue constraints.info?.hasAppliedConstraint("nullable")
-        assertTrue constraints.number?.hasAppliedConstraint("nullable")
+        assertNull constraints.number
 
         assertTrue constraints.info.nullable
         assertFalse constraints.status.nullable
-        assertFalse constraints.number.nullable
     }
 
     void testBindToNullable() {
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def projectDomain = ga.getDomainClass("Project")
         def projectClass = projectDomain.clazz

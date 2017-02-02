@@ -1,5 +1,7 @@
 package grails.validation;
 
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.util.Holders;
 import grails.validation.exceptions.ConstraintException;
@@ -9,7 +11,9 @@ import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
 import junit.framework.TestCase;
 import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.plugins.MockGrailsPluginManager;
+import org.grails.test.support.MappingContextBuilder;
 import org.grails.test.support.MockHibernatePluginHelper;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -350,10 +354,14 @@ public class ConstrainedPropertyTests extends TestCase {
                         "}\n" +
                         "}");
 
-        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
+        GrailsApplication ga = new DefaultGrailsApplication(groovyClass);
+        ga.initialise();
+        new MappingContextBuilder(ga).build(groovyClass);
+
+        GrailsDomainClass domainClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, "TestClass");
 
         Map constrainedProperties = domainClass.getConstrainedProperties();
-        assertTrue(constrainedProperties.size() == 3);
+        assert constrainedProperties.size() == 3;
         ConstrainedProperty loginConstraint = (ConstrainedProperty)constrainedProperties.get("login");
         Collection appliedConstraints = loginConstraint.getAppliedConstraints();
         assertTrue(appliedConstraints.size() == 3);
