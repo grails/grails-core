@@ -121,7 +121,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         p = (Constrained)constraints.get("description");
         assertTrue("Description property should be optional", p.isNullable());
         p = (Constrained)constraints.get("author");
-        assertNull(p);
+        assertFalse("Author property should be required", p.isNullable());
         p = (Constrained)constraints.get("assistent");
         assertTrue("Assistent property should be optional", p.isNullable());
         // Test that Collections and Maps are nullable by default

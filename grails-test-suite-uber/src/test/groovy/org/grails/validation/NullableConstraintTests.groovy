@@ -69,10 +69,11 @@ class ProjectVersion {
 
         assertTrue constraints.status?.hasAppliedConstraint("nullable")
         assertTrue constraints.info?.hasAppliedConstraint("nullable")
-        assertNull constraints.number
+        assertTrue constraints.number?.hasAppliedConstraint("nullable")
 
         assertTrue constraints.info.nullable
         assertFalse constraints.status.nullable
+        assertFalse constraints.number.nullable
     }
 
     void testBindToNullable() {
