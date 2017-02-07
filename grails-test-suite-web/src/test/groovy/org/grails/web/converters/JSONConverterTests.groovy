@@ -134,6 +134,12 @@ class JSONConverterTests {
     void testMoreStringsWithQuotes2() {
         assertEquals('{"key":"<a href=\\"#\\" class=\\"link\\">link<\\u002fa>"}',(['key': '<a href="#" class="link">link</a>'] as JSON).toString())
     }
+
+    // GRAILS-10393
+    @Test
+    void testJavaClassDoesntRenderClassProperty() {
+        assertEquals('{"age":86,"name":"Sally"}', (new Author("Sally", 86) as JSON).toString())
+    }
 }
 enum Role { HEAD, DISPATCHER, ADMIN }
 
