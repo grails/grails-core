@@ -21,7 +21,12 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
+import grails.persistence.PersistenceMethod;
+import grails.web.controllers.ControllerMethod;
+import org.grails.core.util.IncludeExcludeSupport;
+import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
 import org.grails.web.json.JSONWriter;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.ObjectMarshaller;
@@ -31,7 +36,7 @@ import org.springframework.beans.BeanUtils;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
+public class GenericJavaBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON> {
 
     public boolean supports(Object object) {
         return true;
@@ -39,12 +44,20 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
 
     public void marshalObject(Object o, JSON json) throws ConverterException {
         JSONWriter writer = json.getWriter();
+
+        Class<? extends Object> clazz = o.getClass();
+        List<String> excludes = json.getExcludes(clazz);
+        List<String> includes = json.getIncludes(clazz);
+        IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<String>();
+
         try {
             writer.object();
             for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
                 String name = property.getName();
                 Method readMethod = property.getReadMethod();
-                if (readMethod != null) {
+                if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
+                    if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
+                    if(readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Object value = readMethod.invoke(o, (Object[]) null);
                     writer.key(name);
                     json.convertAnother(value);
@@ -53,6 +66,8 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
             for (Field field : o.getClass().getDeclaredFields()) {
                 int modifiers = field.getModifiers();
                 if (field.isAccessible() && Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
+                    String name = field.getName();
+                    if(!shouldInclude(includeExcludeSupport,includes,excludes,o,name)) continue;
                     writer.key(field.getName());
                     json.convertAnother(field.get(o));
                 }
@@ -65,5 +80,9 @@ public class GenericJavaBeanMarshaller implements ObjectMarshaller<JSON> {
         catch (Exception e) {
             throw new ConverterException("Error converting Bean with class " + o.getClass().getName(), e);
         }
+    }
+
+    private boolean shouldInclude(IncludeExcludeSupport<String> includeExcludeSupport, List<String> includes, List<String> excludes, Object o, String name) {
+        return includeExcludeSupport.shouldInclude(includes,excludes, name) && shouldInclude(o,name);
     }
 }
