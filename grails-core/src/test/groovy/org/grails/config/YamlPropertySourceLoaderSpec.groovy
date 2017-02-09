@@ -12,7 +12,7 @@ class YamlPropertySourceLoaderSpec extends Specification {
         // reset environment
         System.setProperty(Environment.KEY, "")
     }
-    
+
     def "ensure the config for environment is merged with single environment block"() {
         given: "A PropertySourcesConfig instance"
         def propertySource = new YamlPropertySourceLoader()
