@@ -1,5 +1,6 @@
 package org.grails.config
 
+import grails.util.Environment
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
@@ -7,6 +8,11 @@ import spock.lang.Specification
 
 class YamlPropertySourceLoaderSpec extends Specification {
 
+    void setup() {
+        // reset environment
+        System.setProperty(Environment.KEY, "")
+    }
+    
     def "ensure the config for environment is merged with single environment block"() {
         given: "A PropertySourcesConfig instance"
         def propertySource = new YamlPropertySourceLoader()
