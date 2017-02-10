@@ -1,6 +1,5 @@
 package org.grails.web.json
 
-import com.google.gson.JsonObject
 import spock.lang.Issue
 
 /**
