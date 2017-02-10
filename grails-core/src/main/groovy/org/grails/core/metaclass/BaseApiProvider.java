@@ -131,7 +131,7 @@ public abstract class BaseApiProvider {
         boolean isStatic = Modifier.isStatic(modifiers);
 
         // skip plain setters/getters by default for instance methods (non-static)
-        if (!isStatic && (GrailsClassUtils.isSetter(name, method.getParameterTypes()) || GrailsClassUtils.isGetter(name, method.getParameterTypes()))) {
+        if (!isStatic && (GrailsClassUtils.isSetter(name, method.getParameterTypes()) || GrailsClassUtils.isGetter(name, method.getReturnType(), method.getParameterTypes()))) {
             return false;
         }
 

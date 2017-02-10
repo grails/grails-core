@@ -263,7 +263,7 @@ public class GrailsASTUtils {
         if (classNode.hasDeclaredMethod(methodName, copyParameters(parameterTypes, genericsPlaceholders))) {
             return null;
         }
-        String propertyName = GrailsClassUtils.getPropertyForGetter(methodName);
+        String propertyName = GrailsClassUtils.getPropertyForGetter(methodName, declaredMethod.getReturnType().getTypeClass());
         if (propertyName != null && parameterTypes.length == 0 && classNode.hasProperty(propertyName)) {
             return null;
         }
