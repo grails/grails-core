@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -201,7 +202,7 @@ public class TestForTransformation extends TestMixinTransformation implements Te
         // make sure the 'log' property is not the one from GroovyTestCase
         FieldNode log = classNode.getField("log");
         if (log == null || log.getDeclaringClass().getName().equals(GROOVY_TEST_CASE_CLASS_NAME)) {
-            LoggingTransformer.addLogField(classNode, classNode.getName());
+            LoggingTransformer.addLogField(classNode);
         }
         boolean isSpockTest = isSpockTest(classNode);
 

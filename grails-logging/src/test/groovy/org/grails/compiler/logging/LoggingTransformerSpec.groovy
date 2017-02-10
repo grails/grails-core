@@ -4,7 +4,9 @@ import org.slf4j.Logger
 import grails.compiler.ast.ClassInjector
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
+import spock.lang.Subject
 
+@Subject(LoggingTransformer)
 class LoggingTransformerSpec extends Specification {
 
     def "Test log field with inheritance"() {
@@ -18,7 +20,6 @@ class LoggingTransformerSpec extends Specification {
 class BaseController {}
 ''')
             def cls = gcl.parseClass('''
-
 class LoggingController extends BaseController{
     def index() {
         log.debug "message"
