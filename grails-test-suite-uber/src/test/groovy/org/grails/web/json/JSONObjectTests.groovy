@@ -23,6 +23,7 @@ class JSONObjectTests extends GroovyTestCase {
     @Issue("GRAILS-10412")
     void testToStringWithArray() {
         JSONObject j = new JSONObject([id:1, tags:['tag13333', 'tag2231']])
+        println j.toString()
         assert j.toString() == '{"id":1,"tags":["tag13333","tag2231"]}'
     }
 
