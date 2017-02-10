@@ -1091,15 +1091,28 @@ public class GrailsClassUtils {
      *
      * @param getterName The getter name
      * @return The property name equivalent
+     * @deprecated Use {@link #getPropertyForGetter(String, Class)} instead because this method has a defect for "is.." method with Boolean return types.
      */
     public static String getPropertyForGetter(String getterName) {
+        return getPropertyForGetter(getterName, boolean.class);
+    }
+
+    /**
+     * Returns a property name equivalent for the given getter name and return type or null if it is not a valid getter. If not null
+     * or empty the getter name is assumed to be a valid identifier.
+     *
+     * @param getterName The getter name
+     * @param returnType The type the method returns
+     * @return The property name equivalent
+     */
+    public static String getPropertyForGetter(String getterName, Class returnType) {
         if (getterName == null || getterName.length() == 0) return null;
 
         if (getterName.startsWith("get")) {
             String prop = getterName.substring(3);
             return convertValidPropertyMethodSuffix(prop);
         }
-        if (getterName.startsWith("is")) {
+        if (getterName.startsWith("is") && returnType == boolean.class) {
             String prop = getterName.substring(2);
             return convertValidPropertyMethodSuffix(prop);
         }

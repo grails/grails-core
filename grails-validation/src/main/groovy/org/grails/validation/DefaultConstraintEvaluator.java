@@ -408,9 +408,13 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator, org.cod
             Class<?> clazz = (Class<?>) aClassChain;
             for (Method method : clazz.getDeclaredMethods()) {
                 if (GrailsClassUtils.isPropertyGetter(method)) {
-                    String propertyName = GrailsClassUtils.getPropertyForGetter(method.getName());
+                    String propertyName = GrailsClassUtils.getPropertyForGetter(method.getName(), method.getReturnType());
                     if (!ignoredProperties.contains(propertyName)) {
-                        propertyMap.put(propertyName, method);
+                        System.out.println(method.getName());
+                        PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(theClass, propertyName);
+                        if (descriptor != null && descriptor.getWriteMethod() != null) {
+                            propertyMap.put(propertyName, method);
+                        }
                     }
                 }
             }
