@@ -1,4 +1,8 @@
 package org.grails.web.json
+
+import com.google.gson.JsonObject
+import spock.lang.Issue
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -15,6 +19,12 @@ class JSONObjectTests extends GroovyTestCase {
         JSONObject j = new JSONObject()
         j.put('test', 1)
         assert j.containsValue(1)
+    }
+
+    @Issue("GRAILS-10412")
+    void testToStringWithArray() {
+        JSONObject j = new JSONObject([id:1, tags:['tag13333', 'tag2231']])
+        assert j.toString() == '{"id":1,"tags":["tag13333","tag2231"]}'
     }
 
     void testEqualityOfJSONObjectsReturnedFromConverter() {
