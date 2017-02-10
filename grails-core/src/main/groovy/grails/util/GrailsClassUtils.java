@@ -940,7 +940,7 @@ public class GrailsClassUtils {
      * @return true if the method is a property getter
      */
     public static boolean isPropertyGetter(Method method) {
-        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && isGetter(method.getName(), method.getParameterTypes());
+        return !Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && isGetter(method.getName(), method.getReturnType(), method.getParameterTypes());
     }
 
     /**
@@ -1022,8 +1022,22 @@ public class GrailsClassUtils {
      * @param name The name of the method
      * @param args The arguments
      * @return true if it is a javabean property getter
+     * @deprecated use {@link #isGetter(String, Class, Class[])} instead because this method has a defect for "is.." method with Boolean return types.
      */
     public static boolean isGetter(String name, Class<?>[] args) {
+        return isGetter(name, boolean.class, args);
+    }
+
+    /**
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property getter.
+     * The name is assumed to be a valid Java method name, that is not verified.
+     *
+     * @param name The name of the method
+     * @param returnType The return type of the method
+     * @param args The arguments
+     * @return true if it is a javabean property getter
+     */
+    public static boolean isGetter(String name, Class returnType, Class<?>[] args) {
         if (!StringUtils.hasText(name) || args == null)return false;
         if (args.length != 0)return false;
 
@@ -1031,7 +1045,7 @@ public class GrailsClassUtils {
             name = name.substring(3);
             if (isPropertyMethodSuffix(name)) return true;
         }
-        else if (name.startsWith("is")) {
+        else if (name.startsWith("is") && returnType == boolean.class) {
             name = name.substring(2);
             if (isPropertyMethodSuffix(name)) return true;
         }
