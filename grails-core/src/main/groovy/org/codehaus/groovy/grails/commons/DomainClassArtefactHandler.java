@@ -21,7 +21,7 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.TreeSet;
 
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils;
@@ -72,7 +72,8 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         return isDomainClass(clazz);
     }
 
-    static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE = new ConcurrentHashMap<Integer, Boolean>();
+    static final TreeSet<String> DOMAIN_CLASS_CACHE = new TreeSet<String>();
+    static final TreeSet<String> NOT_DOMAIN_CLASS_CACHE = new TreeSet<String>();
 
     public static boolean isDomainClass(Class<?> clazz, boolean allowProxyClass) {
         boolean retval = isDomainClass(clazz);
@@ -85,18 +86,24 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public static boolean isDomainClass(Class<?> clazz) {
         if (clazz == null) return false;
 
-        Integer cacheKey = System.identityHashCode(clazz);
+        String cacheKey = clazz.getName();
 
-        Boolean retval = DOMAIN_CLASS_CHECK_CACHE.get(cacheKey);
-        if (retval != null) {
-            return retval;
+        if (DOMAIN_CLASS_CACHE.contains(cacheKey)) {
+            return true;
+        } else if (NOT_DOMAIN_CLASS_CACHE.contains(cacheKey)) {
+            return false;
         }
 
-        retval = doIsDomainClassCheck(clazz);
-        
+        boolean retval = doIsDomainClassCheck(clazz);
+
         if (!developmentMode) {
-            DOMAIN_CLASS_CHECK_CACHE.put(cacheKey, retval);
+            if (retval) {
+                DOMAIN_CLASS_CACHE.add(cacheKey);
+            } else {
+                NOT_DOMAIN_CLASS_CACHE.add(cacheKey);
+            }
         }
+
         return retval;
     }
 
