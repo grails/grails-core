@@ -924,6 +924,8 @@ class RestfulResourceMappingSpec extends Specification{
         expect:"The generated links to be correct"
             linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"show", method:"GET") == "http://localhost/book"
+            linkGenerator.link(resource:"book", action:"show", method:"GET") == "http://localhost/book"
+            linkGenerator.link(resource:Book, action:"show", method:"GET") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"edit", method:"GET") == "http://localhost/book/edit"
             linkGenerator.link(controller:"book", action:"delete", method:"DELETE") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"update", method:"PUT") == "http://localhost/book"
@@ -1033,6 +1035,7 @@ class RestfulResourceMappingSpec extends Specification{
         expect:"The generated links to be correct"
 
         linkGenerator.link(controller:"publisher", params:[bookId:1]) == "http://localhost/books/1/publisher"
+        linkGenerator.link(resource: Book, method:"GET") == "http://localhost/books"
         linkGenerator.link(resource:"book/publisher", method:"GET", bookId:1) == "http://localhost/books/1/publisher"
         linkGenerator.link(resource:"book/publisher", bookId:1) == "http://localhost/books/1/publisher"
 
@@ -1059,4 +1062,8 @@ class RestfulResourceMappingSpec extends Specification{
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }
+}
+
+class Book {
+
 }
