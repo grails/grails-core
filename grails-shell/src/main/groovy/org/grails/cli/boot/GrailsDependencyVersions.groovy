@@ -58,7 +58,7 @@ class GrailsDependencyVersions implements DependencyManagement {
         }
     }
 
-    GrapeEngine getDefaultEngine() {
+    static GrapeEngine getDefaultEngine() {
         def grape = Grape.getInstance()
         grape.addResolver((Map<String,Object>)[name:"grailsCentral", root:"https://repo.grails.org/grails/core"])
         grape
