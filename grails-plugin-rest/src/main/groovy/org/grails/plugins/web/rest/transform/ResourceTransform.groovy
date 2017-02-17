@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.web.rest.transform
 
+import org.codehaus.groovy.ast.expr.GStringExpression
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.artefact.Artefact
