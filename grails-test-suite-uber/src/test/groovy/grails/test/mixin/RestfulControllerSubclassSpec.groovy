@@ -3,12 +3,16 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.rest.RestfulController
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(ArtistController)
-@Mock(Album)
-class RestfulControllerSubclassSpec extends Specification {
+class RestfulControllerSubclassSpec extends Specification implements ControllerUnitTest<ArtistController>, DataTest {
+
+    void setupSpec() {
+        mockDomain Album
+    }
 
     void 'Test that save populates the newly created instance with values from the request body'() {
         when:

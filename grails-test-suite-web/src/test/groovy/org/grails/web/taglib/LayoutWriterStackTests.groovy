@@ -1,11 +1,10 @@
 package org.grails.web.taglib
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import org.junit.Test
 
-@TestFor(TwoColumnTagLib)
-class LayoutWriterStackTests {
+class LayoutWriterStackTests implements TagLibUnitTest<TwoColumnTagLib> {
     def template = """
     <g:twoColumn>
         <g:left>leftContent</g:left>

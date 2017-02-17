@@ -1,7 +1,7 @@
 package grails.test.mixin.unique
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 
 /*
@@ -23,8 +23,7 @@ import spock.lang.Specification
 /**
  * @author graemerocher
  */
-@TestFor(Foo)
-class UniqueConstraintOnHasOneSpec extends Specification {
+class UniqueConstraintOnHasOneSpec extends Specification implements DomainUnitTest<Foo> {
 
     void "Foo's name should be unique"() {
         given:

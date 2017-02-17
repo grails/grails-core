@@ -1,22 +1,27 @@
 package org.grails.web.mime
+
 import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
 import grails.test.runtime.FreshRuntime
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
 @FreshRuntime
-@TestFor(ContentController)
-@Mock(Gizmo)
-class ContentFormatControllerTests  {
+class ContentFormatControllerTests
+    implements ControllerUnitTest<ContentController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        Gizmo
+    }
 
     def doWithConfig(c) {
         c.grails.mime.use.accept.header = true

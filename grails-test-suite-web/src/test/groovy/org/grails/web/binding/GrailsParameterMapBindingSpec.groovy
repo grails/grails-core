@@ -2,14 +2,16 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(MyController)
-@Mock(MyDomain)
-class GrailsParameterMapBindingSpec extends Specification {
+class GrailsParameterMapBindingSpec extends Specification implements ControllerUnitTest<MyController>, DataTest {
+
+    void setupSpec() {
+        mockDomain MyDomain
+    }
     
     void 'Test binding body to command object'() {
         when: 'the body contains JSON'

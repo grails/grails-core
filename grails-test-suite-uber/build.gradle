@@ -49,6 +49,8 @@ dependencies {
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
     }
+
+    testCompile 'org.grails:grails-testing-support:1.0.0.BUILD-SNAPSHOT'
 }
 
 test {

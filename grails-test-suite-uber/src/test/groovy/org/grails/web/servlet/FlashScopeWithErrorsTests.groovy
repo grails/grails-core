@@ -16,16 +16,14 @@
 package org.grails.web.servlet
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import grails.util.GrailsWebMockUtil
-
 import org.junit.Test
 
 /**
 *  @author Graeme Rocher
 */
-@TestFor(Book)
-class FlashScopeWithErrorsTests  {
+class FlashScopeWithErrorsTests implements DomainUnitTest<Book> {
 
     @Test
     void testFlashScopeWithErrors() {

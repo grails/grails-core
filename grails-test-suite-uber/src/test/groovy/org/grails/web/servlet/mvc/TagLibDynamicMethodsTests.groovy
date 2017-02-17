@@ -1,12 +1,11 @@
 package org.grails.web.servlet.mvc
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import org.junit.Test
 import static org.junit.Assert.*
 
-@TestFor(TestTagLib)
-class TagLibDynamicMethodsTests {
+class TagLibDynamicMethodsTests implements TagLibUnitTest<TestTagLib> {
 
     @Test
     void testFlashObject() {

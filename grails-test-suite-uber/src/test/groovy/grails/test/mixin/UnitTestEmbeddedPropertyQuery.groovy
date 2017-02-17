@@ -1,10 +1,17 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import org.junit.Before
+import org.junit.Test
 
-@TestFor(Book2)
-@Mock([Author2, Book2])
-class UnitTestEmbeddedPropertyQuery {
+class UnitTestEmbeddedPropertyQuery implements DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [Author2, Book2]
+    }
+
+    @Before
     void setUp() {
         def author = new Author2(name: 'George')
 
@@ -20,6 +27,7 @@ class UnitTestEmbeddedPropertyQuery {
         author.save(flush: true, failOnError: true)
     }
 
+    @Test
     void testQueryEmbedded() {
 
         assert Book2.withCriteria {
@@ -51,6 +59,7 @@ class UnitTestEmbeddedPropertyQuery {
         }.size() == 1
     }
 
+    @Test
     void testAssociated() {
         assert Author2.withCriteria {
             books {
@@ -95,6 +104,7 @@ class UnitTestEmbeddedPropertyQuery {
         }.size() == 1
     }
 
+    @Test
     void testQueryToOne() {
         assert Book2.withCriteria {
             gt 'publishPeriod.startDate', new Date(2011, 1, 1)

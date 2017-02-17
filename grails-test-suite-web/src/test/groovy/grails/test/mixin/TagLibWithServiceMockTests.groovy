@@ -1,16 +1,18 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-import org.junit.Test
+import grails.testing.web.taglib.TagLibUnitTest
+import spock.lang.Specification
 
-@TestFor(TimeTagLib)
-@Mock(TimeService)
-class TagLibWithServiceMockTests {
+class TagLibWithServiceMockTests extends Specification implements TagLibUnitTest<TimeTagLib> {
 
-    @Test void canCallServiceMethod() {
-        def content = applyTemplate( "<g:time />" )
+    static doWithSpring = {
+        timeService TimeService
+    }
 
-        assert content == "<time>the time is now</time>"
+    void 'test calling service method'() {
+        expect:
+        applyTemplate( "<g:time />" ) == "<time>the time is now</time>"
     }
 }
 

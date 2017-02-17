@@ -1,12 +1,11 @@
 package org.grails.web.binding.hal.json
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
 import spock.lang.Specification
 
-@TestFor(BindingController)
-class HalJsonBindingSpec extends Specification {
+class HalJsonBindingSpec extends Specification implements ControllerUnitTest<BindingController> {
 
     void 'Test binding JSON body'() {
         when:

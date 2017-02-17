@@ -15,21 +15,21 @@
  */
 package org.grails.web.servlet
 
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.http.HttpHeaders
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
 
 import org.junit.Test
 import static org.junit.Assert.*
+import static groovy.test.GroovyAssert.shouldFail
 
 /**
  * Tests for the render method.
  *
  * @author Graeme Rocher
  */
-@TestFor(RenderController)
-class RenderMethodTests {
+class RenderMethodTests implements ControllerUnitTest<RenderController> {
 
     @Test
     void testRenderFile() {

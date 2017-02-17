@@ -14,14 +14,12 @@
  */
 package org.grails.web.taglib
 
-import grails.test.mixin.TestFor
-
+import grails.testing.web.taglib.TagLibUnitTest
 import org.grails.plugins.web.taglib.ApplicationTagLib
 
 import spock.lang.Specification
 
-@TestFor(ApplicationTagLib)
-class ApplyCodecTagSpec extends Specification {
+class ApplyCodecTagSpec extends Specification implements TagLibUnitTest<ApplicationTagLib> {
 
     def "applyCodec tag should apply codecs to values"() {
         when:

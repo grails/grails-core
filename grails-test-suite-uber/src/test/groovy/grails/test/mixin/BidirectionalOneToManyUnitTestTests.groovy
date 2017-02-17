@@ -1,11 +1,14 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
-
+import grails.testing.gorm.DataTest
 import org.junit.Test
 
-@Mock([Parent, Child])
-class BidirectionalOneToManyUnitTestTests {
+class BidirectionalOneToManyUnitTestTests implements DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [Parent, Child]
+    }
 
     // test for GRAILS-8030
     @Test

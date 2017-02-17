@@ -1,14 +1,20 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
 import spock.lang.Issue
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
-@Mock([BlogUser,Post])
-class PartialMockWithManyToManySpec extends Specification{
+class PartialMockWithManyToManySpec extends Specification
+    implements DataTest {
+
+    void setupSpec() {
+        mockDomains BlogUser, Post
+    }
+
     @Issue('GRAILS-10022')
     def "Test that a partially mocked domain containing a many-to-many doesn't produce an error"() {
         given: "A user with posts in the db"

@@ -1,14 +1,13 @@
 package org.grails.compiler.web
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 
 import javax.servlet.http.HttpServletResponse
 
 import spock.lang.Specification
 
-@TestFor(MimeTypesCompiledController)
-class WithFormatSpec extends Specification {
+class WithFormatSpec extends Specification implements ControllerUnitTest<MimeTypesCompiledController> {
 
     void "Test withFormat method injected at compile time"() {
         when:

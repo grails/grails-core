@@ -1,14 +1,20 @@
 package grails.test.mixin
 
-import org.junit.Test
-import grails.persistence.Entity
 import grails.artefact.Artefact
+import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import org.junit.Test
 
 /**
  */
-@TestFor(ShipController)
-@Mock([Ship2, Pirate2])
-class UnitTestDataBindingAssociatonTests {
+class UnitTestDataBindingAssociatonTests
+    implements ControllerUnitTest<ShipController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [Ship2, Pirate2]
+    }
+
     @Test
     void testBindingAssociationInUnitTest() {
         def pirate = new Pirate2(name: 'Joe')

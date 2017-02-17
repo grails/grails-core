@@ -1,7 +1,7 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact;
-
+import grails.artefact.Artefact
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -9,8 +9,7 @@ import org.springframework.context.ApplicationContextAware
 /**
  * Tests that services can be autowired into controllers via defineBeans
  */
-@TestFor(SpringController)
-class AutowireServiceViaDefineBeansTests {
+class AutowireServiceViaDefineBeansTests implements ControllerUnitTest<SpringController> {
 
     @Test
     void testThatBeansAreWired() {

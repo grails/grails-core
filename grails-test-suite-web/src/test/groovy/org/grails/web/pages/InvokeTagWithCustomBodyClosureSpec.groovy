@@ -2,10 +2,9 @@ package org.grails.web.pages
 
 import grails.artefact.Artefact
 import grails.test.AbstractGrailsEnvChangingSpec
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 
-@TestFor(CustomApplicationTagLib)
-class InvokeTagWithCustomBodyClosureSpec extends AbstractGrailsEnvChangingSpec {
+class InvokeTagWithCustomBodyClosureSpec extends AbstractGrailsEnvChangingSpec implements TagLibUnitTest<CustomApplicationTagLib> {
     def "Test that a custom tag library can invoke another tag with a closure body"(grailsEnv) {
         when:'We call a custom tag that invokes an existing tag with a closure body'
             changeGrailsEnv(grailsEnv)

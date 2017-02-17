@@ -2,10 +2,9 @@ package org.grails.web.pages
 
 import grails.artefact.Artefact
 import grails.test.AbstractGrailsEnvChangingSpec
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 
-@TestFor(TagLibMethodMissingTagLib)
-class TagLibMethodMissingSpec extends AbstractGrailsEnvChangingSpec {
+class TagLibMethodMissingSpec extends AbstractGrailsEnvChangingSpec implements TagLibUnitTest<TagLibMethodMissingTagLib> {
     def setupSpec() {
         mockTagLib(TagLibMethodMissingBTagLib)
     }

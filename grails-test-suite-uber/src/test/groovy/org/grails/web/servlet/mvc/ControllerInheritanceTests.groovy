@@ -1,12 +1,10 @@
 package org.grails.web.servlet.mvc
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 
-@TestFor(ControllerInheritanceFooController)
-class ControllerInheritanceTests  {
+class ControllerInheritanceTests implements ControllerUnitTest<ControllerInheritanceFooController> {
     // test for GRAILS-6247
     @Test
     void testCallSuperMethod() {

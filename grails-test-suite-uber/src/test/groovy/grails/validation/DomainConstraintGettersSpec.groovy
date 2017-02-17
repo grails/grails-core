@@ -1,11 +1,10 @@
 package grails.validation
 
+import grails.persistence.Entity
+import grails.testing.gorm.DataTest
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
-import grails.persistence.Entity
-import grails.test.mixin.TestFor
-import grails.test.mixin.Mock
 
 /**
  * Test is similar to CommandObjectConstraintGettersSpec but for domain classes.
@@ -14,12 +13,14 @@ import grails.test.mixin.Mock
  * @see grails.validation.CommandObjectConstraintGettersSpec
  */
 @Issue(['grails/grails-core#9749', 'grails/grails-core#9754'])
-@TestFor(SimplePropertiesDomain)
-@Mock([SimplePropertiesDomain, MethodPropertiesDomain, InheritedPropertiesDomain,
-        InheritedMethodPropertiesDomain, TraitPropertiesDomain, TraitMethodPropertiesDomain,
-        BoolMethodPropertiesDomain, InheritedBoolMethodPropertiesDomain, TraitBoolMethodPropertiesDomain,
-        DomainWithTransients, InheritedDomainWithTransients, TraitDomainWithTransients])
-class DomainConstraintGettersSpec extends Specification {
+class DomainConstraintGettersSpec extends Specification implements DataTest {
+
+    void setupSpec() {
+        mockDomains SimplePropertiesDomain, MethodPropertiesDomain, InheritedPropertiesDomain,
+                InheritedMethodPropertiesDomain, TraitPropertiesDomain, TraitMethodPropertiesDomain,
+                BoolMethodPropertiesDomain, InheritedBoolMethodPropertiesDomain, TraitBoolMethodPropertiesDomain,
+                DomainWithTransients, InheritedDomainWithTransients, TraitDomainWithTransients
+    }
 
     // STANDARD DOMAIN
     void 'ensure all public properties are by default constraint properties'() {

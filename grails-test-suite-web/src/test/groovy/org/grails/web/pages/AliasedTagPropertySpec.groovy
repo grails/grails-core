@@ -1,14 +1,13 @@
 package org.grails.web.pages
 
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
-import grails.test.mixin.TestFor
 import grails.artefact.Artefact
 
 /**
  *
  */
-@TestFor(AliasedTagLib)
-class AliasedTagPropertySpec extends Specification{
+class AliasedTagPropertySpec extends Specification implements TagLibUnitTest<AliasedTagLib> {
 
     def "Test that a property assigned to a tag is also a tag"() {
         when:"We call a regular tag"

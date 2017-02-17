@@ -1,14 +1,17 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
-
+import grails.testing.gorm.DataTest
 import org.junit.Test
 
 /**
  * Test for GRAILS-9010
  */
-@Mock([AbstractCustomPropertyValue,CustomProperty,StringPropertyValue])
-class InheritanceWithValidationTests {
+class InheritanceWithValidationTests implements DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [AbstractCustomPropertyValue,CustomProperty,StringPropertyValue]
+    }
 
     @Test
     void testNewStringValue () {

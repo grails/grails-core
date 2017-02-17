@@ -1,13 +1,13 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 
 /**
  * Tests a controller with a mock collaborator
  */
-@TestFor(ControllerWithCollabController)
-class ControllerWithMockCollabTests {
+class ControllerWithMockCollabTests implements ControllerUnitTest<ControllerWithCollabController> {
 
     @Test
     void testFirstCall() {

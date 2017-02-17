@@ -1,14 +1,16 @@
 package org.grails.web.binding
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
 import org.junit.Test
 
-@TestFor(NestedXmlController)
-@Mock([Person, Location, Foo, Bar])
-class NestedXmlBindingTests {
+class NestedXmlBindingTests implements ControllerUnitTest<NestedXmlController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [Person, Location, Foo, Bar]
+    }
 
     @Test
     void testNestedXmlBinding() {

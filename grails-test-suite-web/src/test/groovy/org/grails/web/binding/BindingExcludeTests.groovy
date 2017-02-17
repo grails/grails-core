@@ -1,14 +1,10 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 
-@TestFor(ExcludingController)
-@Mock([Person, Location])
-class BindingExcludeTests {
+class BindingExcludeTests implements ControllerUnitTest<ExcludingController> {
 
     @Test
     void testThatAssociationsAreExcluded() {

@@ -1,17 +1,18 @@
 package org.grails.web.taglib
 
 import grails.artefact.Artefact
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
-@TestFor(TestController)
-@Mock([MyTagLib, TwoTagLib])
-class ControllerTagLibMethodDispatchSpec extends Specification {
+class ControllerTagLibMethodDispatchSpec extends Specification implements ControllerUnitTest<TestController> {
+
+    void setupSpec() {
+        mockTagLibs MyTagLib, TwoTagLib
+    }
 
     void testControllerTagLibMethodDispatch() {
         when:

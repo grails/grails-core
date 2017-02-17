@@ -1,13 +1,14 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-
+import grails.testing.web.UrlMappingTest
 import org.junit.Test
 
-@TestFor(UrlMappings)
-@Mock([BookController])
+class UrlMappingsTests implements UrlMappingTest<UrlMappings> {
 
-class UrlMappingsTestForTests {
+    Class[] getControllersToMock() {
+        BookController
+    }
 
     @Test
     void testUrlMappings() {

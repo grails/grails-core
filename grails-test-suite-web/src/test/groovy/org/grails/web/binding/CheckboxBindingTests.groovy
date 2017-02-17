@@ -2,8 +2,7 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 import static org.junit.Assert.*
 
@@ -11,8 +10,7 @@ import static org.junit.Assert.*
  * @author Rob Fletcher
  * @since 1.3.0
  */
-@TestFor(CheckboxBindingController)
-class CheckboxBindingTests {
+class CheckboxBindingTests implements ControllerUnitTest<CheckboxBindingController> {
 
     @Test
     void testBindingCheckedValuesToObject() {

@@ -1,15 +1,15 @@
 package org.grails.web.taglib
 
 import grails.artefact.Artefact
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.GroovyPageUnitTestMixin
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Mock([FirstTagLib, SecondTagLib])
-@TestMixin(GroovyPageUnitTestMixin)
-class ControllerTagLibMethodInheritanceSpec extends Specification {
+class ControllerTagLibMethodInheritanceSpec extends Specification implements TagLibUnitTest<FirstTagLib> {
+
+    void setupSpec() {
+        mockTagLib SecondTagLib
+    }
 
     @Issue('GRAILS-10031')
     void 'Test calling an inherited tag which invokes a method overridden in the subclass'() {

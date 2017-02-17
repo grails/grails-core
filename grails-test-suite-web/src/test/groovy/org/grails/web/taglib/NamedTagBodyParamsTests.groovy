@@ -1,15 +1,14 @@
 package org.grails.web.taglib
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.taglib.TagLibUnitTest
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
-@TestFor(BodyParamTagLib)
-class NamedTagBodyParamsTests extends Specification {
+class NamedTagBodyParamsTests extends Specification implements TagLibUnitTest<BodyParamTagLib> {
 
     void testNamedBodyParams() {
         expect:

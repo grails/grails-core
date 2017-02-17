@@ -2,13 +2,18 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import org.junit.Test
 
-@TestFor(PersonController)
-@Mock([TargetPerson, Book])
-class BindXmlWithAssociationTests {
+class BindXmlWithAssociationTests
+        implements ControllerUnitTest<PersonController>, DataTest {
 
+    Class[] getDomainClassesToMock() {
+        [TargetPerson, Book]
+    }
+
+    @Test
     void testBindXmlWithAssociatedId() {
         request.method = 'POST'
         request.xml = '''
@@ -20,6 +25,7 @@ class BindXmlWithAssociationTests {
         assert response.text == 'saved'
     }
 
+    @Test
     void testBindXmlWithAssociatedIdAndProperties() {
         request.method = 'POST'
         request.xml = '''

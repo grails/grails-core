@@ -1,47 +1,53 @@
 package org.grails.web.metaclass
 
-import static org.junit.Assert.assertEquals
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.web.servlet.GrailsFlashScope
-import org.junit.Test
+import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(TestChainController)
-@Mock(TestChainBook)
-class ChainMethodTests {
+class ChainMethodSpec extends Specification implements ControllerUnitTest<TestChainController>, DataTest {
 
-    @Test
+    void setupSpec() {
+        mockDomain TestChainBook
+    }
+
     void testChainMethodWithModel() {
+        when:
         TestChainBook.metaClass.save = { false }
 
         controller.save()
 
         def flash = controller.flash
 
-        assert flash.chainModel.book
+        then:
+        flash.chainModel.book
 
+        when:
         def id = System.identityHashCode(flash.chainModel.book)
 
-        assert flash.chainModel[GrailsFlashScope.ERRORS_PREFIX+id]
+        then:
+        flash.chainModel[GrailsFlashScope.ERRORS_PREFIX + id]
 
+        when:
         org.springframework.mock.web.MockHttpServletResponse response = controller.response
 
-        assertEquals '/testChain/create', response.redirectedUrl
+        then:
+        '/testChain/create' == response.redirectedUrl
     }
 
-    @Test
     void testChainMethodWithId() {
+        when:
         controller.testId()
 
-        assertEquals "Test param", controller.flash.chainModel.str
-        assertEquals "/testChain/show/5", response.redirectedUrl
+        then:
+        "Test param" == controller.flash.chainModel.str
+        "/testChain/show/5" == response.redirectedUrl
     }
 }
 
@@ -51,10 +57,9 @@ class TestChainController {
         def book = new TestChainBook(params)
         if (!book.hasErrors() && book.save()) {
             flash.message = "Book ${book.id} created"
-            redirect(action:"show",id:book.id)
-        }
-        else {
-            chain(action:'create',model:[book:book])
+            redirect(action: "show", id: book.id)
+        } else {
+            chain(action: 'create', model: [book: book])
         }
     }
 

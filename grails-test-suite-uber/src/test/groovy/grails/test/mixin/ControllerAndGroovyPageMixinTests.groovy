@@ -2,14 +2,14 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.test.mixin.web.GroovyPageUnitTestMixin
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 
 /**
  * @author Graeme Rocher
  */
 @TestMixin(GroovyPageUnitTestMixin)
-@TestFor(MyController)
-class ControllerAndGroovyPageMixinTests {
+class ControllerAndGroovyPageMixinTests implements ControllerUnitTest<MyController> {
 
     // GRAILS-9718
     @Test

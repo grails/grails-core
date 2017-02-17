@@ -2,13 +2,15 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
-@TestFor(BindingController)
-@Mock(Employee)
-class BindingRequestMethodSpec extends Specification {
+class BindingRequestMethodSpec extends Specification implements ControllerUnitTest<BindingController>, DataTest {
+
+    void setupSpec() {
+        mockDomain Employee
+    }
 
     void 'Test binding to a domain class command object'() {
         when:

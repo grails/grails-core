@@ -1,14 +1,13 @@
 package org.grails.web.servlet.mvc
 
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.MockRequestDataValueProcessor
 
 import grails.web.http.HttpHeaders
 
 import spock.lang.Specification
 
-@TestFor(RedirectController)
-class RedirectMethodWithRequestDataValueProcessorSpec extends Specification {
+class RedirectMethodWithRequestDataValueProcessorSpec extends Specification implements ControllerUnitTest<RedirectController> {
 
     def doWithSpring = {
         requestDataValueProcessor MockRequestDataValueProcessor

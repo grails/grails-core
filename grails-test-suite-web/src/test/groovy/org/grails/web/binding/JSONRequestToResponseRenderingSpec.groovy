@@ -1,11 +1,10 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
-@TestFor(ArrayController)
-class JSONRequestToResponseRenderingSpec extends Specification {
+class JSONRequestToResponseRenderingSpec extends Specification implements ControllerUnitTest<ArrayController> {
 
     def "Test that JSON arrays are correctly converted in controllers"() {
         given:"A JSON request containing arrays"

@@ -5,8 +5,7 @@ import org.junit.Test
 /**
  * Tests the behavior of creating data in a setup method
  */
-@TestFor(BookController)
-@Mock(Book)
+@TestFor(Book)
 class DomainClassSetupMethodTests {
 
     void setUp() {
