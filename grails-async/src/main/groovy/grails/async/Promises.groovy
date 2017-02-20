@@ -29,146 +29,152 @@ import java.util.concurrent.TimeUnit
  * @since 2.3
  */
 @CompileStatic
-public class Promises {
+class Promises {
 
-    static PromiseFactory promiseFactory;
+    static PromiseFactory promiseFactory
 
     static {
         if (GparsPromiseFactory.isGparsAvailable()) {
-            promiseFactory = new GparsPromiseFactory();
+            promiseFactory = new GparsPromiseFactory()
         }
         else {
-            promiseFactory = new SynchronousPromiseFactory();
+            promiseFactory = new SynchronousPromiseFactory()
         }
     }
 
     private Promises() {
     }
 
-    public static PromiseFactory getPromiseFactory() {
+    static PromiseFactory getPromiseFactory() {
         if (promiseFactory == null) {
             if (GparsPromiseFactory.isGparsAvailable()) {
-                promiseFactory = new GparsPromiseFactory();
+                promiseFactory = new GparsPromiseFactory()
             }
             else {
-                promiseFactory = new SynchronousPromiseFactory();
+                promiseFactory = new SynchronousPromiseFactory()
             }
         }
-        return promiseFactory;
+        return promiseFactory
     }
 
-    public static void setPromiseFactory(PromiseFactory promiseFactory) {
-        Promises.@promiseFactory = promiseFactory;
+    static void setPromiseFactory(PromiseFactory promiseFactory) {
+        Promises.@promiseFactory = promiseFactory
     }
 
     /**
      * @see PromiseFactory#waitAll(grails.async.Promise[])
      */
-    public static<T> List<T> waitAll(Promise<T>...promises) {
-        return getPromiseFactory().waitAll(promises);
+    static<T> List<T> waitAll(Promise<T>...promises) {
+        return getPromiseFactory().waitAll(promises)
     }
 
     /**
      * @see PromiseFactory#waitAll(java.util.List)
      */
-    public static<T> List<T> waitAll(List<Promise<T>> promises) {
-        return getPromiseFactory().waitAll(promises);
+    static<T> List<T> waitAll(List<Promise<T>> promises) {
+        return getPromiseFactory().waitAll(promises)
     }
 
     /**
      * @see PromiseFactory#waitAll(java.util.List)
      */
-    public static<T> List<T> waitAll(List<Promise<T>> promises, final long timeout, final TimeUnit units) {
-        return getPromiseFactory().waitAll(promises, timeout, units);
+    static<T> List<T> waitAll(List<Promise<T>> promises, final long timeout, final TimeUnit units) {
+        return getPromiseFactory().waitAll(promises, timeout, units)
     }
 
     /**
      * @see PromiseFactory#onComplete(java.util.List, groovy.lang.Closure)
      */
-    public static<T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure<?> callable ) {
-        return getPromiseFactory().onComplete(promises, callable);
+    static<T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure<?> callable ) {
+        return getPromiseFactory().onComplete(promises, callable)
     }
     /**
      * @see PromiseFactory#onError(java.util.List, groovy.lang.Closure)
      */
-    public static<T> Promise<List<T>> onError(List<Promise<T>> promises, Closure<?> callable ) {
-        return getPromiseFactory().onError(promises, callable);
+    static<T> Promise<List<T>> onError(List<Promise<T>> promises, Closure<?> callable ) {
+        return getPromiseFactory().onError(promises, callable)
     }
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
-    public static<K,V> Promise<Map<K,V>> createPromise(Map<K, V> map) {
-        return getPromiseFactory().createPromise(map);
+    static<K,V> Promise<Map<K,V>> createPromise(Map<K, V> map) {
+        return getPromiseFactory().createPromise(map)
+    }
+    /**
+     * @see PromiseFactory#createPromise(java.util.Map)
+     */
+    static<K,V> Promise<Map<K,V>> createPromise(Map<K, V> map, List<PromiseDecorator> decorators) {
+        return getPromiseFactory().createPromise(map, decorators)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
-    public static<T> Promise<T> createPromise(Closure<T>... c) {
-        return getPromiseFactory().createPromise(c);
+    static<T> Promise<T> createPromise(Closure<T>... c) {
+        return getPromiseFactory().createPromise(c)
     }
 
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
-    public static<K,V> Promise<Map<K,V>> tasks(Map<K, V> map) {
-        return getPromiseFactory().createPromise(map);
+    static<K,V> Promise<Map<K,V>> tasks(Map<K, V> map) {
+        return getPromiseFactory().createPromise(map)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
-    public static<T> Promise<T> task(Closure<T> c) {
-        return getPromiseFactory().createPromise(c);
+    static<T> Promise<T> task(Closure<T> c) {
+        return getPromiseFactory().createPromise(c)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
-    public static<T> Promise<T> tasks(Closure<T>... c) {
-        return getPromiseFactory().createPromise(c);
+    static<T> Promise<T> tasks(Closure<T>... c) {
+        return getPromiseFactory().createPromise(c)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
-    public static<T> Promise<List<T>> tasks(List<Closure<T>> closures) {
-        return getPromiseFactory().createPromise(closures);
+    static<T> Promise<List<T>> tasks(List<Closure<T>> closures) {
+        return getPromiseFactory().createPromise(closures)
     }
 
     /**
      * @see grails.async.PromiseFactory#createPromise()
      */
-    public static Promise<Object> createPromise() {
-        return getPromiseFactory().createPromise();
+    static Promise<Object> createPromise() {
+        return getPromiseFactory().createPromise()
     }
 
     /**
      * @see grails.async.PromiseFactory#createPromise(Class)
      */
-    public static<T> Promise<T> createPromise(Class<T> returnType) {
-        return getPromiseFactory().createPromise(returnType);
+    static<T> Promise<T> createPromise(Class<T> returnType) {
+        return getPromiseFactory().createPromise(returnType)
     }
 
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
-    public static<T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
-        return getPromiseFactory().createPromise(c, decorators);
+    static<T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
+        return getPromiseFactory().createPromise(c, decorators)
     }
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
-    public static<T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
-        return getPromiseFactory().createPromise(closures, decorators);
+    static<T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
+        return getPromiseFactory().createPromise(closures, decorators)
     }
     /**
      * @see PromiseFactory#createPromise(grails.async.Promise[])
      */
-    public static <T> Promise<List<T>> createPromise(Promise<T>...promises) {
-        return getPromiseFactory().createPromise(promises);
+    static <T> Promise<List<T>> createPromise(Promise<T>...promises) {
+        return getPromiseFactory().createPromise(promises)
     }
 
     /**
      * @see PromiseFactory#createBoundPromise(java.lang.Object)
      */
-    public static<T> Promise<T> createBoundPromise(T value) {
-        return getPromiseFactory().createBoundPromise(value);
+    static<T> Promise<T> createBoundPromise(T value) {
+        return getPromiseFactory().createBoundPromise(value)
     }
 }
