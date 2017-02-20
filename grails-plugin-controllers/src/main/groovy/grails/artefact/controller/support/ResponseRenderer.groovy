@@ -447,12 +447,22 @@ trait ResponseRenderer extends WebAttributes {
         }
         else {
             // reached here so only the status was set, just send it back
-            def message = argMap?.message?.toString()
+            String message = argMap?.message?.toString()
+            int statusCode = response.status
             if( message ) {
-                response.sendError( response.status, message  )
+                response.sendError(statusCode, message  )
             }
             else {
-                response.sendError( response.status )
+                // if the status code is an error trigger the container
+                // forwarding logic
+                if(statusCode >= 300) {
+                    response.sendError(statusCode)
+                }
+                else {
+                    // otherwise just ensure the status is propagated to the client
+                    response.setStatus(statusCode)
+                    response.flushBuffer()
+                }
             }
         }
     }
