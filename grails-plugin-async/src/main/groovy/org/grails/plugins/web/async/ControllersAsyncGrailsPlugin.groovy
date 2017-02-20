@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 package org.grails.plugins.web.async
-import grails.async.Promises
+
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
-import groovy.transform.CompileStatic
-import org.grails.async.factory.reactor.ReactorPromiseFactory
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
-import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import reactor.Environment
+
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
  * by the compile time transform.
@@ -36,11 +33,5 @@ class ControllersAsyncGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
     }}
-
-    @Override
-    @CompileStatic
-    void doWithDynamicMethods() {
-        Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
-    }
 
 }
