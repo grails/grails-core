@@ -126,31 +126,24 @@ public class ClassPropertyFetcher {
                 if (!method.isPublic()) {
                     return;
                 }
-                if (returnType != Void.class && returnType != void.class) {
-                    if (method.getParameterTypes().length == 0) {
-                        String name = method.getName();
-                        if (name.indexOf('$') == -1) {
-                            if (name.length() > 3 && name.startsWith("get")
-                                    && Character.isUpperCase(name.charAt(3))) {
-                                name = name.substring(3);
-                            } else if (name.length() > 2
-                                    && name.startsWith("is")
-                                    && Character.isUpperCase(name.charAt(2))
-                                    && (returnType == Boolean.class ||
-                                    returnType == boolean.class)) {
-                                name = name.substring(2);
-                            }
-                            if (method.isStatic()) {
-                                GetterPropertyFetcher fetcher = new GetterPropertyFetcher(method, true);
-                                staticFetchers.put(name, fetcher);
-                                staticFetchers.put(StringUtils.uncapitalize(name),
-                                        fetcher);
-                            } else {
-                                instanceFetchers.put(StringUtils.uncapitalize(name),
-                                        new GetterPropertyFetcher(method, false));
-                            }
-                        }
-                    }
+                if (returnType == Void.class || returnType == void.class || method.getParameterTypes().length != 0) {
+                    return;
+                }
+
+                String propertyName = GrailsClassUtils.getPropertyForGetter(method.getName(), method.getReturnType());
+                if(propertyName == null || propertyName.indexOf('$') != -1) {
+                    return;
+                }
+
+                if (method.getName().startsWith("is") &&
+                            !(returnType == Boolean.class || returnType == boolean.class)) {
+                    return;
+                }
+
+                if (method.isStatic()) {
+                    staticFetchers.put(propertyName, new GetterPropertyFetcher(method, true));
+                } else {
+                    instanceFetchers.put(propertyName, new GetterPropertyFetcher(method, false));
                 }
             }
         };

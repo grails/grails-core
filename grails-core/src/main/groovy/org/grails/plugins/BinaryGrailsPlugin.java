@@ -48,10 +48,11 @@ import java.util.*;
 public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
     public static final String VIEWS_PROPERTIES = "views.properties";
-    public static final String RELATIVE_VIEWS_PROPERTIES = "../gsp/views.properties";
+    public static final String RELATIVE_VIEWS_PROPERTIES = "gsp/views.properties";
     public static final char UNDERSCORE = '_';
     public static final String PROPERTIES_EXTENSION = ".properties";
     public static final String DEFAULT_PROPERTIES_ENCODING = "UTF-8";
+    public static final String PLUGIN_DESCRIPTOR_PATH = "META-INF/grails-plugin.xml";
 
     private final BinaryGrailsPluginDescriptor descriptor;
     private Class[] providedArtefacts = {};
@@ -121,7 +122,12 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
         if (viewsPropertiesResource == null || !viewsPropertiesResource.exists()) {
             try {
-                viewsPropertiesResource = descriptorResource.createRelative(RELATIVE_VIEWS_PROPERTIES);
+                String urlString = descriptorResource.getURL().toString();
+                if(urlString.endsWith(PLUGIN_DESCRIPTOR_PATH)) {
+                    urlString = urlString.substring(0, urlString.length() - PLUGIN_DESCRIPTOR_PATH.length());
+                    URL newUrl = new URL(urlString + RELATIVE_VIEWS_PROPERTIES);
+                    viewsPropertiesResource = new UrlResource(newUrl);
+                }
             } catch (IOException e) {
                 // ignore
             }

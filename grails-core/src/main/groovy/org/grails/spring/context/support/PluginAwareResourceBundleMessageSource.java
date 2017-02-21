@@ -66,6 +66,14 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private boolean searchClasspath = false;
     private String messageBundleLocationPattern = "classpath*:*.properties";
 
+    public PluginAwareResourceBundleMessageSource() {
+    }
+
+    public PluginAwareResourceBundleMessageSource(GrailsApplication application, GrailsPluginManager pluginManager) {
+        this.application = application;
+        this.pluginManager = pluginManager;
+    }
+
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         application = grailsApplication;
     }
@@ -112,10 +120,15 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
             else {
                 DefaultGrailsApplication defaultGrailsApplication = (DefaultGrailsApplication) application;
-                GrailsApplicationClass applicationClass = defaultGrailsApplication.getApplicationClass();
-                if(applicationClass != null) {
-                    ResourcePatternResolver resourcePatternResolver = new ClassRelativeResourcePatternResolver(applicationClass.getClass());
-                    resources = resourcePatternResolver.getResources(messageBundleLocationPattern);
+                if(defaultGrailsApplication != null) {
+                    GrailsApplicationClass applicationClass = defaultGrailsApplication.getApplicationClass();
+                    if(applicationClass != null) {
+                        ResourcePatternResolver resourcePatternResolver = new ClassRelativeResourcePatternResolver(applicationClass.getClass());
+                        resources = resourcePatternResolver.getResources(messageBundleLocationPattern);
+                    }
+                    else {
+                        resources = resourceResolver.getResources(messageBundleLocationPattern);
+                    }
                 }
                 else {
                     resources = resourceResolver.getResources(messageBundleLocationPattern);
