@@ -314,11 +314,9 @@ class TestRuntimeFactory {
 
     private List<TestPlugin> sortByOrdinal(List<TestPlugin> pluginList) {
         // remove duplicates
-        def pluginSet = [] as Set
+        Set<TestPlugin> pluginSet = [] as Set
         pluginSet.addAll(pluginList)
-        def newPluginList = new ArrayList(pluginSet)
-        // sort by ordinal, reverse order (highest value comes first)
-        newPluginList.sort(false) { TestPlugin a, TestPlugin b ->
+        pluginSet.toSorted { TestPlugin a, TestPlugin b ->
             b.ordinal <=> a.ordinal
         }
     }

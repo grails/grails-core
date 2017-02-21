@@ -116,7 +116,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void "Test withFormat method with Accept header only"() {
         when: "The request Accept header is 'text/xml' and withFormat is used"
-            final webRequest = boundMimeTypeRequest()
+            def webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse
 
