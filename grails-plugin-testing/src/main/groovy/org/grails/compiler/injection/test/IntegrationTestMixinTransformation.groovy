@@ -87,6 +87,8 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             String mainClass = MainClassFinder.searchMainClass(source.source.URI)
             if(mainClass) {
                 applicationClassNode = ClassHelper.make(mainClass)
+            } else {
+                applicationClassNode = null
             }
         }
 
