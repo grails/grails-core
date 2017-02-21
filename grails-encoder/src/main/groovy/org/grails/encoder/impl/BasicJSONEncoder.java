@@ -62,7 +62,7 @@ public class BasicJSONEncoder extends AbstractCharReplacementEncoder {
             case '\b':
                 return "\\b";
             case '\u000B': // vertical tab: http://bclary.com/2004/11/07/#a-7.8.4
-                return "\\v";
+                return "\\u000B";
             case '\u2028':
                 return "\\u2028"; // Line separator
             case '\u2029':

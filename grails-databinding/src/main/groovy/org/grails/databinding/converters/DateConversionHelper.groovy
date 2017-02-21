@@ -18,6 +18,7 @@ package org.grails.databinding.converters
 import grails.databinding.converters.ValueConverter;
 import groovy.transform.CompileStatic
 
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 /**
@@ -34,18 +35,24 @@ class DateConversionHelper implements ValueConverter {
      */
     List<String> formatStrings = []
 
+    /**
+     * Whether data parsing is lenient
+     */
+    boolean dateParsingLenient = false
+
     Object convert(value) {
         Date dateValue
         if (value instanceof String) {
             if(!value) {
                 return null
             }
-            def firstException
+            Exception firstException
             formatStrings.each { String format ->
                 if (dateValue == null) {
-                    def formatter = new SimpleDateFormat(format)
+                    DateFormat formatter = new SimpleDateFormat(format)
                     try {
-                        dateValue = formatter.parse(value)
+                        formatter.lenient = dateParsingLenient
+                        dateValue = formatter.parse((String)value)
                     } catch (Exception e) {
                         firstException = firstException ?: e
                     }
