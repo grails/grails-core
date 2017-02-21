@@ -15,8 +15,10 @@
  */
 package org.grails.plugins.web.async
 
+import grails.async.Promises
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
 import org.grails.plugins.web.async.mvc.AsyncActionResultTransformer
 
 /**
@@ -33,5 +35,11 @@ class ControllersAsyncGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
     }}
+
+    @Override
+    @CompileStatic
+    void doWithDynamicMethods() {
+        Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
+    }
 
 }
