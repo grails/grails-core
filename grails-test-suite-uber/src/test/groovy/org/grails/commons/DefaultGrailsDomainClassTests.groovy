@@ -6,6 +6,7 @@ import grails.core.GrailsDomainClassProperty
 import org.grails.core.DefaultGrailsDomainClass
 import org.grails.core.exceptions.InvalidPropertyException
 import org.grails.core.support.GrailsDomainConfigurationUtil
+import org.grails.test.support.MappingContextBuilder
 
 /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
@@ -20,14 +21,14 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
                     Long id
                     Long version
                     Set others
-                    def hasMany = [others:Other]
-                    def fetchMode = [others:'eager']
+                    static hasMany = [others:Other]
+                    static fetchMode = [others:'eager']
                 }
                 class Other {
                     Long id
                     Long version
                     Set anothers
-                    def hasMany = [anothers:Another]
+                    static hasMany = [anothers:Another]
                 }
                 class Another {
                     Long id
@@ -37,6 +38,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def testDomain = ga.getDomainClass("Test")
         assertEquals(GrailsDomainClassProperty.FETCH_EAGER, testDomain.getPropertyByName('others').getFetchMode())
@@ -64,7 +66,11 @@ class Book {
 }
 ''')
 
-        def dc = new DefaultGrailsDomainClass(cls)
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses)
+        ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+
+        def dc = ga.getDomainClass("Book")
 
         assert dc.persistentProperties.size() == 2
         assert dc.properties.size() == 5
@@ -81,7 +87,11 @@ class Book {
 }
 ''')
 
-        def dc = new DefaultGrailsDomainClass(cls)
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses)
+        ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+
+        def dc = ga.getDomainClass("Book")
 
         assert dc.persistentProperties.size() == 2
         assert dc.properties.size() == 4
@@ -106,6 +116,8 @@ class Book {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+
         def testDomain = ga.getDomainClass("Test")
         def otherDomain = ga.getDomainClass("Other")
 
@@ -143,6 +155,7 @@ class Book {
         '''
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
         def airportClass = ga.getDomainClass("Airport")
         def routeClass = ga.getDomainClass("Route")
 
@@ -186,6 +199,8 @@ class OneToOneTest1 {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+
         def c1dc = ga.getDomainClass("RelationshipsTest1")
         def c2dc = ga.getDomainClass("OneToOneTest1")
 
@@ -212,12 +227,15 @@ class OneToOneTest1 {
                                     " A parent\n" +
                                     " Set children\n" +
                                     "}")
-        GrailsDomainClass dc = new DefaultGrailsDomainClass(a)
-        GrailsDomainClass[] dcs = new GrailsDomainClass[1]
-        dcs[0] =dc
-        Map domainMap = new HashMap()
-        domainMap.put(dc.getFullName(),dc)
-        GrailsDomainConfigurationUtil.configureDomainClassRelationships(dcs,domainMap)
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+        GrailsDomainClass dc = ga.getDomainClass("A")
+        //GrailsDomainClass[] dcs = new GrailsDomainClass[1]
+        //dcs[0] =dc
+        //Map domainMap = new HashMap()
+        //domainMap.put(dc.getFullName(),dc)
+        //GrailsDomainConfigurationUtil.configureDomainClassRelationships(dcs,domainMap)
 
         assertTrue(dc.getPropertyByName("children").isAssociation())
         assertTrue(dc.getPropertyByName("children").isOneToMany())
@@ -267,6 +285,7 @@ class OneToOneTest2 {
 }'''
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def c1dc = ga.getDomainClass("RelationshipsTest2")
         def c2dc = ga.getDomainClass("OneToManyTest2")
@@ -308,6 +327,7 @@ class OneToOneTest2 {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def topDomainClass = ga.getDomainClass('Top')
         def middleDomainClass = ga.getDomainClass('Middle')
@@ -370,13 +390,17 @@ class OneToOneTest2 {
         Class clazz = gcl.parseClass("class UserTest { " +
                 " int id\n" +
                 " int version\n" +
-                " List transients = [ \"age\" ]\n" +
+                " static List transients = [ \"age\" ]\n" +
                 " String firstName\n" +
                 " String lastName\n" +
                 " Date age\n" +
                 "}")
 
-        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(clazz)
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses)
+        ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+
+        def domainClass = ga.getDomainClass("UserTest")
 
         assertEquals("UserTest",domainClass.getName())
 
@@ -437,6 +461,7 @@ class Tag {
 ''')
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def bookmarkClass = ga.getDomainClass("Bookmark")
         def bookmarkSubclassClass = ga.getDomainClass("BookmarkSubclass")
