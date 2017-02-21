@@ -185,7 +185,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
 
             if (uriAttr != null || namespaceAttr != null) {
 
-                final String uri = uriAttr?.getText()
+                String uri = uriAttr?.getText()
                 final namespace=namespaceAttr?.getText()
                 if(uri || namespace) {
                     final urlMappingsClassNode = new ClassNode(UrlMappings).getPlainNodeReference()
