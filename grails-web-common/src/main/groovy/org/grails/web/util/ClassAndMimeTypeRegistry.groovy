@@ -59,7 +59,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         if(targetType == null) {
             return null
         }
-        final registeredObjects = registeredObjectsByType.get(targetType)
+        def registeredObjects = registeredObjectsByType.get(targetType)
         if (registeredObjects == null) {
             registeredObjects = new ConcurrentLinkedQueue<R>()
             registeredObjectsByType.put(targetType, registeredObjects)

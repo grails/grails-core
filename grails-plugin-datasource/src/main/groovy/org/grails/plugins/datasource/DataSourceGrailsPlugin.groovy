@@ -15,23 +15,15 @@
  */
 package org.grails.plugins.datasource
 
-import grails.config.Config
 import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
-import org.grails.core.exceptions.GrailsConfigurationException
+import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.transaction.ChainedTransactionManagerPostProcessor
-import org.grails.transaction.TransactionManagerPostProcessor
-import org.springframework.jdbc.datasource.DataSourceTransactionManager
-import org.springframework.jdbc.datasource.DriverManagerDataSource
-import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jmx.support.JmxUtils
-import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.util.ClassUtils
 
 import javax.sql.DataSource
@@ -45,45 +37,46 @@ import javax.sql.DataSource
 class DataSourceGrailsPlugin extends Plugin {
 
     private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
-    public static
-    final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
+    public static final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
     public static final String TRANSACTION_MANAGER_BLACK_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern'
+    public static final String TRANSACTION_MANAGER_ENABLED = 'grails.transaction.chainedTransactionManagerPostProcessor.enabled'
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version]
 
-    def watchedResources = "file:./grails-app/conf/DataSource.groovy"
-
     @Override
     Closure doWithSpring() {{->
-        def application = grailsApplication
-        Config config = application.config
-        if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
-            def whitelistPattern=config.getProperty(TRANSACTION_MANAGER_WHITE_LIST_PATTERN, '')
-            def blacklistPattern=config.getProperty(TRANSACTION_MANAGER_BLACK_LIST_PATTERN,'')
-            chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
-        }
-        transactionManagerPostProcessor(TransactionManagerPostProcessor)
+        GrailsApplication application = grailsApplication
 
-        def dataSources = config.getProperty('dataSources', Map, [:])
-        if(!dataSources) {
-            def defaultDataSource = config.getProperty('dataSource', Map)
-            if(defaultDataSource) {
-                dataSources['dataSource'] = defaultDataSource
+        if (pluginManager.hasGrailsPlugin('hibernate4') || pluginManager.hasGrailsPlugin('hibernate5')) {
+
+            if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
+                Boolean enabled = config.getProperty(TRANSACTION_MANAGER_ENABLED, Boolean, false)
+                if (enabled) {
+                    def whitelistPattern=config.getProperty(TRANSACTION_MANAGER_WHITE_LIST_PATTERN, '')
+                    def blacklistPattern=config.getProperty(TRANSACTION_MANAGER_BLACK_LIST_PATTERN,'')
+                    chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
+                }
+            }
+
+            if (ClassUtils.isPresent('org.h2.Driver', this.class.classLoader)) {
+                embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
+            }
+
+        } else {
+            def dataSources = config.getProperty('dataSources', Map, [:])
+            if(!dataSources) {
+                def defaultDataSource = config.getProperty('dataSource', Map)
+                if(defaultDataSource) {
+                    dataSources['dataSource'] = defaultDataSource
+                }
+            }
+            if(dataSources) {
+                "dataSourceConnectionSources"(DataSourceConnectionSourcesFactoryBean, grailsApplication.config)
+                "dataSource"(InstanceFactoryBean, "#{dataSourceConnectionSources.defaultConnectionSource.source}", DataSource)
             }
         }
 
-        for(Map.Entry<String, Object> entry in dataSources.entrySet()) {
-            def name = entry.key
-            def value = entry.value
-
-            if(value instanceof Map) {
-                createDatasource delegate, name, (Map)value
-            }
-        }
-
-        embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
-
-        if(config.getProperty('dataSource.jmxExport', Boolean, false)) {
+        if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource')) {
             try {
                 def jmxMBeanServer = JmxUtils.locateMBeanServer()
                 if(jmxMBeanServer) {
@@ -100,157 +93,8 @@ class DataSourceGrailsPlugin extends Plugin {
         }
     }}
 
-    protected void createDatasource(beanBuilder, String dataSourceName, Map dataSourceData ) {
-        boolean isDefault = dataSourceName == 'dataSource'
-        String suffix = isDefault ? '' : "_$dataSourceName"
-        String unproxiedName = "dataSourceUnproxied$suffix"
-        String lazyName = "dataSourceLazy$suffix"
-        String beanName = isDefault ? 'dataSource' : "dataSource_$dataSourceName"
-
-        if (applicationContext?.containsBean(dataSourceName)) {
-            return
-        }
-
-        if (dataSourceData?.jndiName) {
-            beanBuilder."$unproxiedName"(JndiObjectFactoryBean) {
-                jndiName = dataSourceData.jndiName
-                expectedType = DataSource
-            }
-            beanBuilder."$lazyName"(LazyConnectionDataSourceProxy, beanBuilder.ref(unproxiedName))
-            beanBuilder."$beanName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
-            return
-        }
-
-        boolean readOnly = Boolean.TRUE.equals(dataSourceData.readOnly)
-        boolean pooled = !Boolean.FALSE.equals(dataSourceData.pooled)
-
-        String driver = dataSourceData?.driverClassName ?: "org.h2.Driver"
-
-        final String hsqldbDriver = "org.hsqldb.jdbcDriver"
-        if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
-            throw new GrailsConfigurationException("Database driver [" + hsqldbDriver +
-                "] for HSQLDB not found. Since Grails 2.0 H2 is now the default database. You need to either " +
-                "add the 'org.h2.Driver' class as your database driver and change the connect URL format " +
-                "(for example 'jdbc:h2:mem:devDb') in DataSource.groovy or add HSQLDB as a dependency of your application.")
-        }
-
-        boolean defaultDriver = (driver == "org.h2.Driver")
-
-        String pwd
-        boolean passwordSet = false
-        if (dataSourceData.password) {
-            pwd = resolvePassword(dataSourceData, grailsApplication)
-            passwordSet = true
-        }
-        else if (defaultDriver) {
-            pwd = ''
-            passwordSet = true
-        }
-
-        beanBuilder."abstractGrailsDataSourceBean$suffix" {
-            driverClassName = driver
-
-            if (pooled) {
-                defaultReadOnly = readOnly
-            }
-
-            url = dataSourceData.url ?: "jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000"
-
-            String theUsername = dataSourceData.username ?: (defaultDriver ? "sa" : null)
-            if (theUsername != null) {
-                username = theUsername
-            }
-
-            if (passwordSet) password = pwd
-
-            // support for setting custom properties (for example maxActive) on the dataSource bean
-            def dataSourceProperties = dataSourceData.properties
-            if (dataSourceProperties) {
-                if (dataSourceProperties instanceof Map) {
-                    for (entry in dataSourceProperties) {
-                        log.debug("Setting property on dataSource bean $entry.key -> $entry.value")
-                        delegate."${entry.key}" = entry.value
-                    }
-                }
-                else {
-                    log.warn("dataSource.properties is not an instanceof java.util.Map, ignoring")
-                }
-            }
-        }
-
-        def parentConfig = { dsBean ->
-            dsBean.parent = 'abstractGrailsDataSourceBean' + suffix
-        }
-
-        String desc = isDefault ? 'data source' : "data source '$dataSourceName'"
-        log.info "[RuntimeConfiguration] Configuring $desc for environment: $Environment.current"
-
-        Class dsClass = pooled ? TomcatDataSource : readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
-
-        def bean = beanBuilder."$unproxiedName"(dsClass, parentConfig)
-        if (pooled) {
-            bean.destroyMethod = "close"
-        }
-
-        beanBuilder."$lazyName"(LazyConnectionDataSourceProxy, beanBuilder.ref(unproxiedName))
-        beanBuilder."$beanName"(TransactionAwareDataSourceProxy, beanBuilder.ref(lazyName))
-        
-        // transactionManager beans will get overridden in Hibernate plugin
-        beanBuilder."transactionManager$suffix"(DataSourceTransactionManager, beanBuilder.ref(lazyName))
-    }
-
-    String resolvePassword(ds, GrailsApplication application) {
-
-        if (!ds.passwordEncryptionCodec) {
-            return ds.password
-        }
-
-        def encryptionCodec = ds.passwordEncryptionCodec
-        if (encryptionCodec instanceof Class) {
-            try {
-                return encryptionCodec.decode(ds.password)
-            }
-            catch (e) {
-                throw new GrailsConfigurationException(
-                    "Error decoding dataSource password with codec [$encryptionCodec.name]: $e.message", e)
-            }
-        }
-
-        encryptionCodec = encryptionCodec.toString()
-        def codecClass = application.getArtefacts("Codec").find {
-            it.name.equalsIgnoreCase(encryptionCodec) || it.fullName == encryptionCodec
-        }?.clazz
-
-        try {
-            if (!codecClass) {
-                codecClass = Class.forName(encryptionCodec, true, application.classLoader)
-            }
-            if (codecClass) {
-                return codecClass.decode(ds.password)
-            }
-            else {
-                throw new GrailsConfigurationException(
-                    "Error decoding dataSource password. Codec class not found for name [$encryptionCodec]")
-            }
-        }
-        catch (ClassNotFoundException e) {
-            throw new GrailsConfigurationException(
-                "Error decoding dataSource password. Codec class not found for name [$encryptionCodec]: $e.message", e)
-        }
-        catch (e) {
-            throw new GrailsConfigurationException(
-                "Error decoding dataSource password with codec [$encryptionCodec]: $e.message", e)
-        }
-    }
-
     @Override
     void onShutdown(Map<String, Object> event) {
-        if (Environment.current.isWarDeployed() || Environment.isFork()) {
-            deregisterJDBCDrivers()
-        }
-    }
-
-    private void deregisterJDBCDrivers() {
         try {
             DataSourceUtils.clearJdbcDriverRegistrations()
         }
@@ -258,4 +102,5 @@ class DataSourceGrailsPlugin extends Plugin {
             log.debug "Error deregistering JDBC drivers: $e.message", e
         }
     }
+
 }

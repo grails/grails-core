@@ -397,7 +397,7 @@ trait Controller implements ResponseRenderer, ResponseRedirector, RequestForward
 
             if (commandObjectInstance != null
                     && commandObjectBindingSource != null) {
-                final boolean shouldDoDataBinding
+                boolean shouldDoDataBinding
 
                 if (entityIdentifierValue != null) {
                     switch (requestMethod) {
