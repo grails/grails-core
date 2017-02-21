@@ -130,7 +130,7 @@ public class ClassPropertyFetcher {
                     return;
                 }
 
-                String propertyName = GrailsClassUtils.getPropertyForGetter(method.getName());
+                String propertyName = GrailsClassUtils.getPropertyForGetter(method.getName(), method.getReturnType());
                 if(propertyName == null || propertyName.indexOf('$') != -1) {
                     return;
                 }

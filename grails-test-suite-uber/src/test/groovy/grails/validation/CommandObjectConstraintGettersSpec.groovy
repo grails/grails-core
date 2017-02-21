@@ -51,26 +51,31 @@ class CommandObjectConstraintGettersSpec extends Specification {
         constrainedProperties.containsKey('book')
     }
 
-    @Ignore
-    void 'ensure only public non-static properties with getter and setter are constrained properties'() {
+
+    void 'ensure only public non-static properties with getter are constrained properties'() {
         MethodPropertiesCommand command = new MethodPropertiesCommand()
+
         when: 'empty command with method properties is validated'
         command.validate()
 
-        then: 'only public with getter and setter should fail'
+        //anotherPublicProperty did not error because it is boolean which defaults to false
+        then: 'only public with getter should fail'
         command.hasErrors()
-        command.errors['publicProperty']?.code == 'nullable'
-        command.errors.getErrorCount() == 1
+        command.errors['booleanPublicProperty']?.code == 'nullable'
+        command.errors['getterOnly']?.code == 'nullable'
+        command.errors.getErrorCount() == 2
     }
 
-    @Ignore
+
     void 'ensure constrained method properties are only public ones with both getter and setter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = MethodPropertiesCommand.getConstraintsMap()
 
         then: 'only public property with getter and setter should fail'
-        constrainedProperties.size() == 1
-        constrainedProperties.containsKey('publicProperty')
+        constrainedProperties.size() == 3
+        constrainedProperties.containsKey('anotherPublicProperty')
+        constrainedProperties.containsKey('booleanPublicProperty')
+        constrainedProperties.containsKey('getterOnly')
     }
 
     // COMMAND OBJECT WITH SUPER CLASS
@@ -100,26 +105,30 @@ class CommandObjectConstraintGettersSpec extends Specification {
         constrainedProperties.containsKey('book')
     }
 
-    @Ignore
-    void 'ensure only public non-static inherited properties with getter and setter are constrained properties'() {
+
+    void 'ensure only public non-static inherited properties with getter are constrained properties'() {
         InheritedMethodPropertiesCommand command = new InheritedMethodPropertiesCommand()
         when: 'empty command with method properties is validated'
         command.validate()
 
+        //anotherPublicProperty did not error because it is boolean which defaults to false
         then: 'only public with getter and setter should fail'
         command.hasErrors()
-        command.errors['publicProperty']?.code == 'nullable'
-        command.errors.getErrorCount() == 1
+        command.errors['booleanPublicProperty']?.code == 'nullable'
+        command.errors['getterOnly']?.code == 'nullable'
+        command.errors.getErrorCount() == 2
     }
 
-    @Ignore
-    void 'ensure constrained inherited method properties are only public ones with both getter and setter'() {
+
+    void 'ensure constrained inherited method properties are only public ones with getter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedMethodPropertiesCommand.getConstraintsMap()
 
         then: 'only public with getter and setter should be there'
-        constrainedProperties.size() == 1
-        constrainedProperties.containsKey('publicProperty')
+        constrainedProperties.size() == 3
+        constrainedProperties.containsKey('anotherPublicProperty')
+        constrainedProperties.containsKey('booleanPublicProperty')
+        constrainedProperties.containsKey('getterOnly')
     }
 
     // COMMAND OBJECT WITH TRAIT
@@ -149,98 +158,110 @@ class CommandObjectConstraintGettersSpec extends Specification {
         constrainedProperties.containsKey('book')
     }
 
-    @Ignore
-    void 'ensure only public non-static properties from trait with getter and setter are constrained properties'() {
+
+    void 'ensure only public non-static properties from trait with getter are constrained properties'() {
         TraitMethodPropertiesCommand command = new TraitMethodPropertiesCommand()
         when: 'empty command with simple properties is validated'
         command.validate()
 
+        //anotherPublicProperty did not error because it is boolean which defaults to false
         then: 'all should fail on nullable constraint'
         command.hasErrors()
-        command.errors['publicProperty']?.code == 'nullable'
-        command.errors.getErrorCount() == 1
+        command.errors['booleanPublicProperty']?.code == 'nullable'
+        command.errors['getterOnly']?.code == 'nullable'
+        command.errors.getErrorCount() == 2
     }
 
-    @Ignore
-    void 'ensure constrained method properties from trait are only public ones with both getter and setter'() {
+
+    void 'ensure constrained method properties from trait are only public ones with getter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitMethodPropertiesCommand.getConstraintsMap()
 
         then: 'only 4 defined public properties are there'
-        constrainedProperties.size() == 1
-        constrainedProperties.containsKey('publicProperty')
+        constrainedProperties.size() == 3
+        constrainedProperties.containsKey('anotherPublicProperty')
+        constrainedProperties.containsKey('booleanPublicProperty')
+        constrainedProperties.containsKey('getterOnly')
     }
 
     // BOOL METHODS COMMAND OBJECT
-
-    @Ignore
-    void 'ensure only public non-static bool properties with getter and setter are constrained properties'() {
+    
+    void 'ensure only public non-static bool properties with getter are constrained properties'() {
         BoolMethodPropertiesCommand command = new BoolMethodPropertiesCommand()
         when: 'empty command with method properties is validated'
         command.validate()
 
+        //anotherPublicProperty did not error because it is boolean which defaults to false
         then: 'only public with getter and setter should fail'
         command.hasErrors()
-        command.errors['publicProperty']?.code == 'nullable'
-        command.errors.getErrorCount() == 1
+        command.errors['booleanPublicProperty']?.code == 'nullable'
+        command.errors['getterOnly']?.code == 'nullable'
+        command.errors.getErrorCount() == 2
     }
 
-    @Ignore
-    void 'ensure constrained bool method properties are only public ones with both getter and setter'() {
+
+    void 'ensure constrained bool method properties are only public ones with getter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = BoolMethodPropertiesCommand.getConstraintsMap()
 
         then: 'only public property with getter and setter should fail'
-        constrainedProperties.size() == 1
-        constrainedProperties.containsKey('publicProperty')
+        constrainedProperties.size() == 3
+        constrainedProperties.containsKey('anotherPublicProperty')
+        constrainedProperties.containsKey('booleanPublicProperty')
+        constrainedProperties.containsKey('getterOnly')
     }
 
     // BOOL COMMAND OBJECT WITH SUPER CLASS
 
-    @Ignore
-    void 'ensure only public non-static inherited bool properties with getter and setter are constrained properties'() {
+    void 'ensure only public non-static inherited bool properties with getter are constrained properties'() {
         InheritedBoolMethodPropertiesCommand command = new InheritedBoolMethodPropertiesCommand()
         when: 'empty command with method properties is validated'
         command.validate()
 
+        //anotherPublicProperty did not error because it is boolean which defaults to false
         then: 'only public with getter and setter should fail'
         command.hasErrors()
-        command.errors['publicProperty']?.code == 'nullable'
-        command.errors.getErrorCount() == 1
+        command.errors['booleanPublicProperty']?.code == 'nullable'
+        command.errors['getterOnly']?.code == 'nullable'
+        command.errors.getErrorCount() == 2
     }
 
-    @Ignore
-    void 'ensure constrained inherited bool method properties are only public ones with both getter and setter'() {
+    void 'ensure constrained inherited bool method properties are only public ones with getter'() {
         when: 'constrained properties map is get from child class'
         Map constrainedProperties = InheritedBoolMethodPropertiesCommand.getConstraintsMap()
 
         then: 'only public with getter and setter should be there'
-        constrainedProperties.size() == 1
-        constrainedProperties.containsKey('publicProperty')
+        constrainedProperties.size() == 3
+        constrainedProperties.containsKey('anotherPublicProperty')
+        constrainedProperties.containsKey('booleanPublicProperty')
+        constrainedProperties.containsKey('getterOnly')
     }
 
     // BOOL COMMAND OBJECT WITH TRAIT
 
-    @Ignore
-    void 'ensure only public non-static bool properties from trait with getter and setter are constrained properties'() {
+
+    void 'ensure only public non-static bool properties from trait with getter are constrained properties'() {
         TraitBoolMethodPropertiesCommand command = new TraitBoolMethodPropertiesCommand()
         when: 'empty command with simple properties is validated'
         command.validate()
 
+        //anotherPublicProperty did not error because it is boolean which defaults to false
         then: 'all should fail on nullable constraint'
         command.hasErrors()
-        command.errors['publicProperty']?.code == 'nullable'
-        command.errors.getErrorCount() == 1
+        command.errors['booleanPublicProperty']?.code == 'nullable'
+        command.errors['getterOnly']?.code == 'nullable'
+        command.errors.getErrorCount() == 2
     }
 
-    @Ignore
-    void 'ensure constrained bool method properties from trait are only public ones with both getter and setter'() {
+    void 'ensure constrained bool method properties from trait are only public ones with getter'() {
         when: 'constrained properties map is get'
         Map constrainedProperties = TraitBoolMethodPropertiesCommand.getConstraintsMap()
 
         then: 'only 4 defined public properties are there'
-        constrainedProperties.size() == 1
-        constrainedProperties.containsKey('publicProperty')
+        constrainedProperties.size() == 3
+        constrainedProperties.containsKey('anotherPublicProperty')
+        constrainedProperties.containsKey('booleanPublicProperty')
+        constrainedProperties.containsKey('getterOnly')
     }
 }
 
@@ -271,11 +292,25 @@ class InheritedPropertiesCommand extends SimplePropertiesCommand implements Vali
 class MethodPropertiesCommand implements Validateable {
 
     /**
-     * publicProperty should be constrained because those getter and setter
+     * booleanPublicProperty should  be constrained because it has a getter and setter
      */
-    String getPublicProperty() {}
+    Boolean getBooleanPublicProperty() {}
 
-    void setPublicProperty(String value) {}
+    void setBooleanPublicProperty(Boolean value) {}
+
+    /**
+     * publicProperty should not be constrained because it should be called getPublicProperty when the type is Boolean
+     */
+    Boolean isPublicProperty() {}
+
+    void setPublicProperty(Boolean value) {}
+
+    /**
+     * anotherPublicProperty should be constrained because those getter and setter
+     */
+    boolean isAnotherPublicProperty() {}
+
+    void setAnotherPublicProperty(boolean value) {}
 
     protected String getProtectedProperty() {}
 
@@ -347,11 +382,25 @@ trait SimplePropertiesTrait implements Validateable {
 trait MethodPropertiesTrait {
 
     /**
-     * publicProperty should be constrained because those getter and setter
+     * booleanPublicProperty should  be constrained because it has a getter and setter
      */
-    String getPublicProperty() {}
+    Boolean getBooleanPublicProperty() {}
 
-    void setPublicProperty(String value) {}
+    void setBooleanPublicProperty(Boolean value) {}
+
+    /**
+     * publicProperty should not be constrained because it should be called getPublicProperty when the type is Boolean
+     */
+    Boolean isPublicProperty() {}
+
+    void setPublicProperty(Boolean value) {}
+
+    /**
+     * anotherPublicProperty should be constrained because those getter and setter
+     */
+    boolean isAnotherPublicProperty() {}
+
+    void setAnotherPublicProperty(boolean value) {}
 
     private String getPrivateProperty() {}
 
@@ -398,43 +447,57 @@ class TraitMethodPropertiesCommand implements MethodPropertiesTrait, Validateabl
 class BoolMethodPropertiesCommand implements Validateable {
 
     /**
-     * publicProperty should be constrained because those getter and setter
+     * booleanPublicProperty should  be constrained because it has a getter and setter
+     */
+    Boolean getBooleanPublicProperty() {}
+
+    void setBooleanPublicProperty(Boolean value) {}
+
+    /**
+     * publicProperty should not be constrained because it should be called getPublicProperty when the type is Boolean
      */
     Boolean isPublicProperty() {}
 
     void setPublicProperty(Boolean value) {}
 
-    protected Boolean isProtectedProperty() {}
+    /**
+     * anotherPublicProperty should be constrained because those getter and setter
+     */
+    boolean isAnotherPublicProperty() {}
+
+    void setAnotherPublicProperty(boolean value) {}
+
+    protected Boolean getProtectedProperty() {}
 
     protected void setProtectedProperty(Boolean value) {}
 
-    private Boolean isPrivateProperty() {}
+    private Boolean getPrivateProperty() {}
 
     private void setPrivateProperty(Boolean value) {}
 
-    static Boolean isStaticPublicProperty() {}
+    static Boolean getStaticPublicProperty() {}
 
     static void setStaticPublicProperty(Boolean value) {}
 
-    static protected Boolean isStaticProtectedProperty() {}
+    static protected Boolean getStaticProtectedProperty() {}
 
     static protected void setStaticProtectedProperty(Boolean value) {}
 
-    static private Boolean isStaticPrivateProperty() {}
+    static private Boolean getStaticPrivateProperty() {}
 
     static private void setStaticPrivateProperty(Boolean value) {}
 
-    Boolean isGetterOnly() {}
+    Boolean getGetterOnly() {}
 
-    protected Boolean isProtectedGetterOnly() {}
+    protected Boolean getProtectedGetterOnly() {}
 
-    private Boolean isPrivateGetterOnly() {}
+    private Boolean getPrivateGetterOnly() {}
 
-    static Boolean isStaticGetterOnly() {}
+    static Boolean getStaticGetterOnly() {}
 
-    static protected Boolean isStaticProtectedGetterOnly() {}
+    static protected Boolean getStaticProtectedGetterOnly() {}
 
-    static private Boolean isStaticPrivateGetterOnly() {}
+    static private Boolean getStaticPrivateGetterOnly() {}
 
     void setSetterOnly(Boolean value) {}
 
@@ -455,31 +518,45 @@ class BoolMethodPropertiesCommand implements Validateable {
 trait BoolMethodPropertiesTrait {
 
     /**
-     * publicProperty should be constrained because those getter and setter
+     * booleanPublicProperty should  be constrained because it has a getter and setter
+     */
+    Boolean getBooleanPublicProperty() {}
+
+    void setBooleanPublicProperty(Boolean value) {}
+
+    /**
+     * publicProperty should not be constrained because it should be called getPublicProperty when the type is Boolean
      */
     Boolean isPublicProperty() {}
 
     void setPublicProperty(Boolean value) {}
 
-    private Boolean isPrivateProperty() {}
+    /**
+     * anotherPublicProperty should be constrained because those getter and setter
+     */
+    boolean isAnotherPublicProperty() {}
+
+    void setAnotherPublicProperty(boolean value) {}
+
+    private Boolean getPrivateProperty() {}
 
     private void setPrivateProperty(Boolean value) {}
 
-    static Boolean isStaticPublicProperty() {}
+    static Boolean getStaticPublicProperty() {}
 
     static void setStaticPublicProperty(Boolean value) {}
 
-    static private Boolean isStaticPrivateProperty() {}
+    static private Boolean getStaticPrivateProperty() {}
 
     static private void setStaticPrivateProperty(Boolean value) {}
 
-    Boolean isGetterOnly() {}
+    Boolean getGetterOnly() {}
 
-    private Boolean isPrivateGetterOnly() {}
+    private Boolean getPrivateGetterOnly() {}
 
-    static Boolean isStaticGetterOnly() {}
+    static Boolean getStaticGetterOnly() {}
 
-    static private Boolean isStaticPrivateGetterOnly() {}
+    static private Boolean getStaticPrivateGetterOnly() {}
 
     void setSetterOnly(Boolean value) {}
 
