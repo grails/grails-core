@@ -17,10 +17,15 @@ package grails.test.mixin.domain
 
 import grails.artefact.Enhanced
 import grails.core.GrailsDomainClass
+import grails.gorm.validation.PersistentEntityValidator
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.gorm.GormEnhancer
+import org.grails.datastore.gorm.bootstrap.support.InstanceFactoryBean
+import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.validation.ConstraintEvalUtils
@@ -75,9 +80,10 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         initialMockDomainSetup()
         Collection<PersistentEntity> entities = simpleDatastore.mappingContext.addPersistentEntities(domainClassesToMock)
         for (PersistentEntity entity in entities) {
+            entity.initialize()
             GrailsDomainClass domain = registerGrailsDomainClass(entity.javaClass)
 
-            Validator validator = registerDomainClassValidator(domain)
+            Validator validator = registerDomainClassValidator(domain, entity)
             simpleDatastore.mappingContext.addEntityValidator(entity, validator)
         }
         final failOnError = getFailOnError()
@@ -111,6 +117,12 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     }
 
     protected void initialMockDomainSetup() {
+        defineBeans(true) {
+            defaultConstraintRegistry(DefaultConstraintRegistry, ref("messageSource"))
+            defaultConstraintEvaluator(DefaultConstraintEvaluator, ref("defaultConstraintRegistry"), simpleDatastore.mappingContext, ConstraintEvalUtils.getDefaultConstraints(config))
+            grailsDomainClassMappingContext(InstanceFactoryBean, simpleDatastore.mappingContext)
+        }
+        grailsApplication.setApplicationContext(applicationContext)
         ConstraintEvalUtils.clearDefaultConstraints()
         grailsApplication.getArtefactHandler(DomainClassArtefactHandler.TYPE).setGrailsApplication(grailsApplication)
     }
@@ -136,19 +148,14 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         }
     }
 
-    protected Validator registerDomainClassValidator(GrailsDomainClass domain) {
+    protected Validator registerDomainClassValidator(GrailsDomainClass domain, PersistentEntity entity) {
         String validationBeanName = "${domain.fullName}Validator"
         defineBeans(true) {
             "${domain.fullName}"(domain.clazz) { bean ->
                 bean.singleton = false
                 bean.autowire = "byName"
             }
-            "$validationBeanName"(MockCascadingDomainClassValidator) { bean ->
-                delegate.messageSource = ref("messageSource")
-                bean.lazyInit = true
-                domainClass = domain
-                delegate.grailsApplication = grailsApplication
-            }
+            "$validationBeanName"(PersistentEntityValidator, entity, ref("messageSource"), ref("defaultConstraintEvaluator"))
         }
 
         applicationContext.getBean(validationBeanName, Validator)

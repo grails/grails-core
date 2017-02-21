@@ -27,6 +27,7 @@ import org.codehaus.groovy.ast.InnerClassNode;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.core.support.GrailsDomainConfigurationUtil;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
 import org.grails.validation.ConstraintEvalUtils;
@@ -73,6 +74,11 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         return new DefaultGrailsDomainClass(artefactClass, defaultConstraints);
     }
 
+    @SuppressWarnings("rawtypes")
+    public GrailsClass newArtefactClass(Class artefactClass, LazyMappingContext mappingContext) {
+        return new DefaultGrailsDomainClass(artefactClass, defaultConstraints, mappingContext);
+    }
+
     @Override
     protected boolean isArtefactResource(Resource resource) throws IOException {
         return super.isArtefactResource(resource) && GrailsResourceUtils.isDomainClass(resource.getURL());
@@ -104,9 +110,9 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
      */
     @Override
     public void initialize(ArtefactInfo artefacts) {
-        GrailsDomainConfigurationUtil.configureDomainClassRelationships(
+/*        GrailsDomainConfigurationUtil.configureDomainClassRelationships(
                 artefacts.getGrailsClasses(),
-                artefacts.getGrailsClassesByName());
+                artefacts.getGrailsClassesByName());*/
     }
 
     @Override

@@ -49,6 +49,8 @@ dependencies {
         exclude group:'org.grails', module:'grails-bootstrap'
     }
 
+    compile "org.grails:grails-datastore-core:$datastoreVersion"
+
     testCompile("org.springframework:spring-jdbc:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
