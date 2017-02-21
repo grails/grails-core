@@ -46,10 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -742,11 +740,12 @@ public class GrailsClassUtils {
     }
 
     /**
-     * Returns true if the name of the method specified and the number of arguments make it a javabean property
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property getter.
+     * The name is assumed to be a valid Java method name, that is not verified.
      *
-     * @param name True if its a Javabean property
+     * @param name The name of the method
      * @param args The arguments
-     * @return true if it is a javabean property method
+     * @return true if it is a javabean property getter
      */
     public static boolean isGetter(String name, Class<?>[] args) {
         if (!StringUtils.hasText(name) || args == null)return false;
@@ -775,90 +774,121 @@ public class GrailsClassUtils {
      *     <li>Word</li>
      *     <li>aProperty</li>
      *     <li>S</li>
+     *     <li>X567</li>
      * </ul>
      *
-     * Example sof suffixes that would not be considered property getters:
+     * Examples of suffixes that would not be considered property getters:
      * <ul>
      *     <li>someProperty</li>
      *     <li>word</li>
      *     <li>s</li>
+     *     <li>x567</li>
+     *     <li>2other</li>
+     *     <li>5</li>
      * </ul>
+     *
+     * A suffix like <code>prop</code> from a method <code>getprop()</code> is
+     * not recognized as a valid suffix. However Groovy will recognize such a
+     * method as a property getter but only if a method <code>getProp()</code> or
+     * a property <code>prop</code> does not also exist. The Java Beans
+     * specification is unclear on how to treat such method names, it only says
+     * that "by default" the suffix will start with a capital letter because of
+     * the camel case style usually used. (See the JavaBeans API specification
+     * sections 8.3 and 8.8.)
+     *
+     * This method assumes that all characters in the name are valid Java identifier
+     * letters.
+     *
      * @param suffix The suffix to inspect
      * @return true if suffix indicates a property name
      */
     protected static boolean isPropertyMethodSuffix(String suffix) {
-        if (suffix.length() > 0) {
-            if(suffix.length() == 1) {
-                if(Character.isUpperCase(suffix.charAt(0))) {
-                    return true;
-                }
-            } else {
-                if(Character.isUpperCase(suffix.charAt(0)) ||
-                   (Character.isUpperCase(suffix.charAt(1)) && Character.isLowerCase(suffix.charAt(0)))) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        if(suffix.length() == 0) return false;
+        if(!Character.isJavaIdentifierStart(suffix.charAt(0))) return false;
+        if(suffix.length() == 1) return Character.isUpperCase(suffix.charAt(0));
+        return Character.isUpperCase(suffix.charAt(0)) || Character.isUpperCase(suffix.charAt(1));
     }
 
     /**
-     * Returns a property name equivalent for the given getter name or null if it is not a getter
+     * Returns a property name equivalent for the given getter name or null if it is not a valid getter. If not null
+     * or empty the getter name is assumed to be a valid identifier.
      *
      * @param getterName The getter name
      * @return The property name equivalent
      */
     public static String getPropertyForGetter(String getterName) {
-        if (!StringUtils.hasText(getterName))return null;
+        if (getterName == null || getterName.length() == 0) return null;
 
         if (getterName.startsWith("get")) {
             String prop = getterName.substring(3);
-            return convertPropertyName(prop);
+            return convertValidPropertyMethodSuffix(prop);
         }
         if (getterName.startsWith("is")) {
             String prop = getterName.substring(2);
-            return convertPropertyName(prop);
+            return convertValidPropertyMethodSuffix(prop);
         }
         return null;
-    }
-
-    private static String convertPropertyName(String prop) {
-        if (prop.length() == 1) {
-            return prop.toLowerCase();
-        }
-        if (Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
-            return prop;
-        }
-        if (Character.isDigit(prop.charAt(0))) {
-            return prop;
-        }
-        return Character.toLowerCase(prop.charAt(0)) + prop.substring(1);
     }
 
     /**
-     * Returns a property name equivalent for the given setter name or null if it is not a getter
+     * This method functions the same as {@link #isPropertyMethodSuffix(String)},
+     * but in addition returns the property name, or null if not a valid property.
      *
-     * @param setterName The setter name
-     * @return The property name equivalent
+     * @param suffix The suffix to inspect
+     * @return The property name or null
      */
-    public static String getPropertyForSetter(String setterName) {
-        if (!StringUtils.hasText(setterName))return null;
+    private static String convertValidPropertyMethodSuffix(String suffix) {
+        if (suffix.length() == 0) return null;
 
-        if (setterName.startsWith("set")) {
-            String prop = setterName.substring(3);
-            return convertPropertyName(prop);
+        // We assume all characters are Character.isJavaIdentifierPart, but the first one may not be a valid
+        // starting character.
+        if (!Character.isJavaIdentifierStart(suffix.charAt(0))) return null;
+
+        if (suffix.length() == 1) {
+            return Character.isUpperCase(suffix.charAt(0)) ? suffix.toLowerCase() : null;
+        }
+        if (Character.isUpperCase(suffix.charAt(1))) {
+            // "aProperty", "AProperty"
+            return suffix;
+        }
+        if (Character.isUpperCase(suffix.charAt(0))) {
+            return Character.toLowerCase(suffix.charAt(0)) + suffix.substring(1);
         }
         return null;
     }
 
+    /**
+     * Returns a property name equivalent for the given setter name or null if it is not a valid setter. If not null
+     * or empty the setter name is assumed to be a valid identifier.
+     *
+     * @param setterName The setter name, must be null or empty or a valid identifier name
+     * @return The property name equivalent
+     */
+    public static String getPropertyForSetter(String setterName) {
+        if (setterName == null || setterName.length() == 0) return null;
+
+        if (setterName.startsWith("set")) {
+            String prop = setterName.substring(3);
+            return convertValidPropertyMethodSuffix(prop);
+        }
+        return null;
+    }
+
+    /**
+     * Returns true if the name of the method specified and the number of arguments make it a javabean property setter.
+     * The name is assumed to be a valid Java method name, that is not verified.
+     *
+     * @param name The name of the method
+     * @param args The arguments
+     * @return true if it is a javabean property setter
+     */
     @SuppressWarnings("rawtypes")
     public static boolean isSetter(String name, Class[] args) {
         if (!StringUtils.hasText(name) || args == null)return false;
 
         if (name.startsWith("set")) {
             if (args.length != 1) return false;
-            name = name.substring(3);
-            if (name.length() > 0 && Character.isUpperCase(name.charAt(0))) return true;
+            return isPropertyMethodSuffix(name.substring(3));
         }
 
         return false;
