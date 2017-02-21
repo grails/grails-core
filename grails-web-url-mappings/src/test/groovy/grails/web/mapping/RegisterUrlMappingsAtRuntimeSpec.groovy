@@ -11,7 +11,7 @@ class RegisterUrlMappingsAtRuntimeSpec extends AbstractUrlMappingsSpec{
             }
 
         when:"The mappings are obtained"
-            final mappings = urlMappings.urlMappings
+            def mappings = urlMappings.urlMappings
 
         then:"There is only a single mapping"
             mappings.size() == 1
@@ -20,7 +20,7 @@ class RegisterUrlMappingsAtRuntimeSpec extends AbstractUrlMappingsSpec{
             urlMappings.addMappings {
                 "/bar"(controller: "bar")
             }
-            mappings = urlMappings.getUrlMappings()
+            mappings = urlMappings.urlMappings
 
         then:"A new mapping exists"
             mappings.size() == 2
