@@ -13,7 +13,7 @@ class CoreTagsTests extends AbstractGrailsTagTests {
 
     @Override
     protected void onSetUp() {
-        System.setProperty(Environment.KEY, "")
+        System.setProperty(Environment.KEY, "development")
     }
 
     void testUnlessWithTestCondition() {
