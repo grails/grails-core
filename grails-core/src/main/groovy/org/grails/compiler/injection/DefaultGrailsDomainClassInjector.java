@@ -98,7 +98,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
         List<PropertyNode> propertiesToAdd = new ArrayList<PropertyNode>();
         for (PropertyNode propertyNode : classNode.getProperties()) {
             final String name = propertyNode.getName();
-            final boolean isHasManyProperty = name.equals(name.equals(GormProperties.HAS_MANY));
+            final boolean isHasManyProperty = name.equals(GormProperties.HAS_MANY);
             if (isHasManyProperty) {
                 Expression e = propertyNode.getInitialExpression();
                 propertiesToAdd.addAll(createPropertiesForHasManyExpression(e, classNode));
