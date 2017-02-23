@@ -33,39 +33,43 @@ class GrailsCorsConfiguration {
     Boolean enabled = false
 
     @Delegate
-    GrailsDefaultCorsMapping grailsCorsMapping = new GrailsDefaultCorsMapping()
+    GrailsDefaultCorsConfiguration grailsCorsMapping = new GrailsDefaultCorsConfiguration()
 
-    Map<String, TypeConvertingMap> mappings = [:]
+    Map<String, Object> mappings = [:]
 
     Map<String, CorsConfiguration> getCorsConfigurations() {
+        grailsCorsMapping.applyPermitDefaultValues()
         Map<String, CorsConfiguration> corsConfigurationMap = [:]
 
         if (enabled) {
             if (mappings.size() > 0) {
-                mappings.each { String key, TypeConvertingMap config ->
-                    CorsConfiguration corsConfiguration = grailsCorsMapping.toSpringConfig()
-                    if (config.containsKey('allowedOrigins')) {
-                        corsConfiguration.allowedOrigins = config.list('allowedOrigins')
-                    }
-                    if (config.containsKey('allowedMethods')) {
-                        corsConfiguration.allowedMethods = config.list('allowedMethods')
-                    }
-                    if (config.containsKey('allowedHeaders')) {
-                        corsConfiguration.allowedHeaders = config.list('allowedHeaders')
-                    }
-                    if (config.containsKey('exposedHeaders')) {
-                        corsConfiguration.exposedHeaders = config.list('exposedHeaders')
-                    }
-                    if (config.containsKey('maxAge')) {
-                        corsConfiguration.maxAge = config.long('maxAge')
-                    }
-                    if (config.containsKey('allowCredentials')) {
-                        corsConfiguration.allowCredentials = config.boolean('allowCredentials')
+                mappings.each { String key, Object value ->
+                    GrailsDefaultCorsConfiguration corsConfiguration = new GrailsDefaultCorsConfiguration(grailsCorsMapping)
+                    if (value instanceof Map) {
+                        TypeConvertingMap config = new TypeConvertingMap((Map)value)
+                        if (config.containsKey('allowedOrigins')) {
+                            corsConfiguration.allowedOrigins = config.list('allowedOrigins')
+                        }
+                        if (config.containsKey('allowedMethods')) {
+                            corsConfiguration.allowedMethods = config.list('allowedMethods')
+                        }
+                        if (config.containsKey('allowedHeaders')) {
+                            corsConfiguration.allowedHeaders = config.list('allowedHeaders')
+                        }
+                        if (config.containsKey('exposedHeaders')) {
+                            corsConfiguration.exposedHeaders = config.list('exposedHeaders')
+                        }
+                        if (config.containsKey('maxAge')) {
+                            corsConfiguration.maxAge = config.long('maxAge')
+                        }
+                        if (config.containsKey('allowCredentials')) {
+                            corsConfiguration.allowCredentials = config.boolean('allowCredentials')
+                        }
                     }
                     corsConfigurationMap[key] = corsConfiguration
                 }
             } else {
-                corsConfigurationMap["/**"] = grailsCorsMapping.toSpringConfig()
+                corsConfigurationMap["/**"] = grailsCorsMapping
             }
         }
 
