@@ -33,7 +33,9 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use {@link org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator} instead
  */
+@Deprecated
 public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
 
     protected org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator delegate;

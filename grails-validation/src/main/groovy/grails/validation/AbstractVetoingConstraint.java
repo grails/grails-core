@@ -21,7 +21,9 @@ import org.springframework.validation.Errors;
  * A constraint capable of vetoing processing of other constraints
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
+ * @deprecated Use {@link org.grails.datastore.gorm.validation.constraints.AbstractVetoingConstraint} instead
  */
+@Deprecated
 public abstract class AbstractVetoingConstraint extends AbstractConstraint implements VetoingConstraint {
 
     public boolean validateWithVetoing(Object target, Object propertyValue, Errors errors) {

@@ -25,7 +25,9 @@ import org.springframework.validation.Errors;
  * only if no one of vetoing constraint hadn't vetoed.
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
+ * @deprecated Use {@link grails.gorm.validation.VetoingConstraint} instead
  */
+@Deprecated
 public interface VetoingConstraint extends Constraint {
     boolean validateWithVetoing(Object target, Object propertyValue, Errors errors);
 }

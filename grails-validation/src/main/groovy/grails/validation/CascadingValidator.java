@@ -24,7 +24,9 @@ import org.springframework.validation.Validator;
  *
  * @author Graeme Rocher
  * @since 0.5
+ * @deprecated Use {@link grails.gorm.validation.CascadingValidator} instead
  */
+@Deprecated
 public interface CascadingValidator extends Validator, grails.gorm.validation.CascadingValidator {
 
     /**
