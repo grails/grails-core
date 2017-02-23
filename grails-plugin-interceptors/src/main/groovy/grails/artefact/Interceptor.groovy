@@ -72,7 +72,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      * @return Whether the current interceptor does match
      */
     boolean doesMatch(HttpServletRequest request) {
-        def allMatchers = matchers
+        Collection<Matcher> allMatchers = matchers
         if(allMatchers.isEmpty()) {
             // default to map just the controller by convention
             def matcher = new UrlMappingMatcher(this)
@@ -80,17 +80,11 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
             allMatchers << matcher
         }
 
-        String interceptorMatchKey = "${getClass().name}${InterceptorArtefactHandler.MATCH_SUFFIX}"
-        def existing = request.getAttribute(interceptorMatchKey)
-        if(existing != null && !WebUtils.isForward(request) && !WebUtils.isInclude(request)) {
-            return (Boolean)existing
-        }
-
-        def req = request
-        def ctxPath = req.contextPath
-        def uri = req.requestURI
-        def noCtxUri = uri - ctxPath
-        def checkNoCtxUri = ctxPath && uri.startsWith(ctxPath)
+        HttpServletRequest req = request
+        String ctxPath = req.contextPath
+        String uri = req.requestURI
+        String noCtxUri = uri - ctxPath
+        boolean checkNoCtxUri = ctxPath && uri.startsWith(ctxPath)
 
         def matchedInfo = request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
 
@@ -99,11 +93,9 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         for(Matcher matcher in allMatchers) {
             if(matcher.doesMatch(uri, grailsMappingInfo, req.method) ||
                (checkNoCtxUri && matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method))) {
-                request.setAttribute(interceptorMatchKey, Boolean.TRUE)
                 return true
             }
         }
-        request.setAttribute(interceptorMatchKey, Boolean.FALSE)
         return false
     }
 
