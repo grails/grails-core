@@ -5,6 +5,6 @@ dependencies {
             project(':grails-web'),
             project(':grails-test'),
             project(':grails-plugin-converters'),
-            project(':grails-plugin-domain-class'),
-            project(':grails-plugin-testing')
+            project(':grails-plugin-domain-class')
+//            project(':grails-plugin-testing')
 }
