@@ -8,9 +8,11 @@ set -x
 
 echo "Project Version: '$grailsVersion'"
 echo "EXIT STATUS of build: '$EXIT_STATUS'"
+echo "Builder Leader: '$BUILD_LEADER'"
 
 
 if [[ $TRAVIS_PULL_REQUEST == 'false'
+    && $BUILD_LEADER="YES"
     && $TRAVIS_REPO_SLUG == grails/grails-core
     && ( $TRAVIS_TAG =~ ^v[[:digit:]] || $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ )  ]]; then
     # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
@@ -84,7 +86,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false'
         ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     fi
 
-elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
+elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ && $BUILD_LEADER="YES" ]]; then
     ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     cd ..
     # Trigger the functional tests
