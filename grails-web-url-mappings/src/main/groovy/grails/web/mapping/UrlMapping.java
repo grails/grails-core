@@ -15,7 +15,8 @@
  */
 package grails.web.mapping;
 
-import grails.validation.ConstrainedProperty;
+
+import grails.gorm.validation.Constrained;
 
 import java.util.Map;
 
@@ -118,7 +119,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      *
      * @return An array containing the ConstrainedProperty objects of this URLMapping
      */
-    ConstrainedProperty[] getConstraints();
+    Constrained[] getConstraints();
 
     /**
      * Retrieves the controller name which is either a groovy.lang.Closure that evaluates the controller

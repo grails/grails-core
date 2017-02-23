@@ -20,7 +20,6 @@ import groovy.lang.GroovyObject;
 
 import java.util.*;
 
-import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 
 import grails.core.GrailsApplication;
@@ -28,6 +27,7 @@ import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 
 import org.grails.core.util.IncludeExcludeSupport;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.grails.web.converters.ConverterUtil;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;

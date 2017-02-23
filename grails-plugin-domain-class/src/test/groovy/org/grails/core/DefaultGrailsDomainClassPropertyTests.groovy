@@ -1,11 +1,10 @@
-package org.grails.commons
+package org.grails.core
 
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
-import org.grails.core.DefaultGrailsDomainClass
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.test.support.MappingContextBuilder
+import org.grails.core.support.MappingContextBuilder
 
 class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
     GrailsDomainClass parentClass

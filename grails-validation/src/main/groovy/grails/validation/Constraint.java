@@ -24,7 +24,7 @@ import org.springframework.validation.Errors;
  *
  * @author Graeme Rocher
  */
-public interface Constraint extends MessageSourceAware {
+public interface Constraint extends MessageSourceAware, grails.gorm.validation.Constraint {
 
     /**
      * Returns whether the constraint supports being applied against the specified type;

@@ -1,9 +1,11 @@
 package grails.validation
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.ClosureToMapPopulator
+import grails.util.Holders
+import org.grails.core.support.GrailsApplicationDiscoveryStrategy
+import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.validation.FieldError
 import spock.lang.Issue
 import spock.lang.Specification
@@ -11,9 +13,7 @@ import spock.lang.Specification
 /**
  * Ensure validation logic for command object with {@code Validateable} and whether or not compatible with domain class.
  *
- * @see grails.validation.DomainClassValidationSpec
  */
-@TestMixin(GrailsUnitTestMixin)
 class ValidateableTraitSpec extends Specification {
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
@@ -216,14 +216,20 @@ class ValidateableTraitSpec extends Specification {
 
     void "Test that default and shared constraints can be applied from configuration"() {
         given:
-        defineBeans {
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = new ClosureToMapPopulator().populate {
-                    '*' blank: false
-                    myShared matches: /MY_SHARED/, maxSize: 10
-                }
-            }
+        GenericApplicationContext applicationContext = new GenericApplicationContext()
+        applicationContext.refresh()
+        def defaultConstraints = new ClosureToMapPopulator().populate {
+            '*' blank: false
+            myShared matches: /MY_SHARED/, maxSize: 10
         }
+        applicationContext.beanFactory.registerSingleton(
+                "constraintEvaluator",
+                new DefaultConstraintEvaluator(defaultConstraints)
+        )
+
+        def strategy = Mock(GrailsApplicationDiscoveryStrategy)
+        strategy.findApplicationContext() >> applicationContext
+        Holders.addApplicationDiscoveryStrategy(strategy)
 
         and:
         def constraints = SharedConstraintsValidateable.getConstraintsMap()
@@ -246,11 +252,7 @@ class ValidateableTraitSpec extends Specification {
         constraints.town.hasAppliedConstraint 'maxSize'
 
         cleanup:
-        defineBeans {
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = Collections.emptyMap()
-            }
-        }
+        Holders.clear()
     }
 
     void 'Ensure properties of super class is inherited'() {

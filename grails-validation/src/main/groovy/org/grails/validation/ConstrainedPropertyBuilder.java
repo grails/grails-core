@@ -33,7 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.springframework.beans.InvalidPropertyException;
 
 /**

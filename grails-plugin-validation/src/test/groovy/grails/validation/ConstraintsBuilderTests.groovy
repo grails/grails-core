@@ -1,15 +1,18 @@
-package org.grails.validation
+package grails.validation
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
-import org.grails.commons.test.AbstractGrailsMockTests
-import org.grails.test.support.MappingContextBuilder
+import junit.framework.TestCase
+import org.grails.datastore.mapping.reflect.FieldEntityAccess
 import org.springframework.validation.BindException
 import org.springframework.validation.Errors
 
-class ConstraintsBuilderTests extends AbstractGrailsMockTests {
+class ConstraintsBuilderTests extends TestCase {
+    GrailsApplication ga
 
     void testPrimitiveIntAndMinConstraint() {
-        def bookClass = ga.getDomainClass("Book")
+        def bookClass = ga.getDomainClass("ConstraintsBuilderTestsBook")
         def book = bookClass.newInstance()
         book.title = "foo"
 
@@ -74,10 +77,18 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         return errors
     }
 
-    protected void onSetUp() {
+    @Override
+    protected void tearDown() throws Exception {
+        FieldEntityAccess.clearReflectors()
+    }
 
+    @Override
+    protected void setUp() {
+        super.setUp()
+        GroovyClassLoader gcl = new GroovyClassLoader()
         gcl.parseClass('''
-class Book {
+@grails.persistence.Entity
+class ConstraintsBuilderTestsBook {
     Long id
     Long version
     String title
@@ -88,6 +99,7 @@ class Book {
 
     }
 }
+@grails.persistence.Entity
 class Site {
     Long id
     Long version
@@ -99,9 +111,9 @@ class Site {
     }
 }
         ''')
-    }
-
-    protected void postSetUp() {
+        ga = new DefaultGrailsApplication(gcl.loadedClasses)
+        ga.initialise()
         new MappingContextBuilder(ga).build(gcl.loadedClasses)
     }
+
 }

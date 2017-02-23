@@ -96,8 +96,8 @@ class HalJsonRendererSpec extends Specification{
             "type": "application/hal+json"
         }
     },
-    "name": "MacBook",
     "numberInStock": 10,
+    "name": "MacBook",
     "_embedded": {
         "category": {
             "_links": {
@@ -152,8 +152,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "MacBook",
                 "numberInStock": 10,
+                "name": "MacBook",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -174,8 +174,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "iMac",
                 "numberInStock": 42,
+                "name": "iMac",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -234,8 +234,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "MacBook",
                 "numberInStock": 10,
+                "name": "MacBook",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -256,8 +256,8 @@ class HalJsonRendererSpec extends Specification{
                         "type": "application/hal+json"
                     }
                 },
-                "name": "iMac",
                 "numberInStock": 42,
+                "name": "iMac",
                 "_embedded": {
                     "category": {
                         "_links": {
@@ -726,7 +726,7 @@ class HalJsonRendererSpec extends Specification{
 
         then:"The resulting HAL is correct"
         response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-        response.contentAsString =='''{"_links":{"self":{"href":"http://localhost/products","hreflang":"en","type":"application/hal+json"}},"name":"MacBook","numberInStock":10,"_embedded":{}}'''
+        response.contentAsString =='''{"_links":{"self":{"href":"http://localhost/products","hreflang":"en","type":"application/hal+json"}},"numberInStock":10,"name":"MacBook","_embedded":{}}'''
     }
 
     @Issue('https://github.com/grails/grails-core/issues/10293')

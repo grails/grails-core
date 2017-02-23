@@ -38,8 +38,6 @@ public class GrailsSpringLoadedPlugin implements ReloadEventProcessorPlugin {
     @Override
     public void reloadEvent(String typename, Class<?> clazz, String encodedTimestamp) {
         CachedIntrospectionResults.clearClassLoader(clazz.getClassLoader());
-        org.grails.beans.support.CachedIntrospectionResults.clearClassLoader(clazz.getClassLoader());
-        ClassPropertyFetcher.clearClassPropertyFetcherCache();
         Introspector.flushFromCaches(clazz);
         ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
         for (ClassInjector classInjector : classInjectors) {

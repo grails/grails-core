@@ -1,8 +1,9 @@
 package org.grails.web.mapping;
 
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
+import grails.gorm.validation.Constraint;
 import grails.util.GrailsWebMockUtil;
-import grails.validation.ConstrainedProperty;
-import grails.validation.Constraint;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingInfo;
 import groovy.lang.Binding;
@@ -14,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.mock.web.MockServletContext;
 
 @SuppressWarnings("rawtypes")
 public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests {
@@ -133,10 +133,12 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
     }
 
     private boolean makeSureMatchesConstraintExistsOnId(UrlMapping mapping) {
-        ConstrainedProperty [] props = mapping.getConstraints();
+        Constrained[] props = mapping.getConstraints();
         for (int i = 0; i < props.length; i++) {
-            if ("id".equals(props[i].getPropertyName())) {
-                Constraint [] constraints = props[i].getAppliedConstraints().toArray(new Constraint[0]);
+
+            ConstrainedProperty prop = (ConstrainedProperty) props[i];
+            if ("id".equals(prop.getPropertyName())) {
+                Constraint[] constraints = prop.getAppliedConstraints().toArray(new Constraint[0]);
                 for (int j = 0; j < constraints.length; j++) {
                     if (constraints[j].getClass().getName().endsWith("MatchesConstraint")) {
                         return true;

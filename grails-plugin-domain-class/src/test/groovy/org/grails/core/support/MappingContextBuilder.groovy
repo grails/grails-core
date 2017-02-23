@@ -1,19 +1,14 @@
-package org.grails.test.support
+package org.grails.core.support
 
 import grails.core.GrailsApplication
-import grails.core.GrailsDomainClass
 import grails.gorm.validation.PersistentEntityValidator
-import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.support.MockApplicationContext
-import org.grails.validation.ConstraintEvalUtils
 import org.springframework.context.MessageSource
-import org.springframework.context.MessageSourceResolvable
-import org.springframework.context.NoSuchMessageException
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.validation.Validator
 
@@ -42,13 +37,15 @@ class MappingContextBuilder {
             Validator validator = new PersistentEntityValidator(entity, messageSource, constraintEvaluator)
             mappingContext.addEntityValidator(entity, validator)
         }
-        MockApplicationContext context
-        if (grailsApplication.parentContext instanceof MockApplicationContext) {
+        GenericApplicationContext context
+        if (grailsApplication.parentContext instanceof GenericApplicationContext) {
             context = grailsApplication.parentContext
         } else {
-            context = new MockApplicationContext()
+            context = new GenericApplicationContext()
+            context.refresh()
         }
-        context.registerMockBean("grailsDomainClassMappingContext", mappingContext)
+        context.beanFactory.registerSingleton("grailsDomainClassMappingContext", mappingContext)
         grailsApplication.setApplicationContext(context)
+        grailsApplication.setMappingContext(mappingContext)
     }
 }

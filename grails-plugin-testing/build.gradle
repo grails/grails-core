@@ -15,6 +15,7 @@ dependencies {
         exclude group: 'org.grails', module:'grails-web'
         exclude group: 'org.grails', module:'grails-plugin-mimetypes'
     }
+    compile("org.grails:grails-datastore-gorm-test:$datastoreVersion")
     compile ( project(':grails-logging') ) {
         exclude group: 'org.grails', module:'grails-web'
     }

@@ -56,7 +56,9 @@ import org.springframework.validation.Errors;
  * Utility methods used in configuring the Grails Hibernate integration.
  *
  * @author Graeme Rocher
+ * @deprecated Use the {@link org.grails.datastore.mapping.model.MappingContext} and {@link org.grails.datastore.mapping.model.MappingFactory} APIs instead
  */
+@Deprecated
 public class GrailsDomainConfigurationUtil {
 
     public static final String PROPERTY_NAME = "constraints";
@@ -329,10 +331,8 @@ public class GrailsDomainConfigurationUtil {
                 GrailsDomainClassProperty.ATTACHED, 
                 GrailsDomainClassProperty.DIRTY,
                 GrailsDomainClassProperty.DIRTY_PROPERTY_NAMES, 
-                GrailsDomainClassProperty.RELATES_TO_MANY,
-                GrailsDomainClassProperty.HAS_MANY, 
-                GrailsDomainClassProperty.EVANESCENT,
-                GrailsDomainClassProperty.CONSTRAINTS, 
+                GrailsDomainClassProperty.HAS_MANY,
+                GrailsDomainClassProperty.CONSTRAINTS,
                 GrailsDomainClassProperty.MAPPING_STRATEGY,
                 GrailsDomainClassProperty.MAPPED_BY, 
                 GrailsDomainClassProperty.BELONGS_TO,

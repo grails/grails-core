@@ -24,13 +24,13 @@ import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsClassUtils;
 
-import org.grails.core.util.ClassPropertyFetcher;
 import org.grails.core.util.IncludeExcludeSupport;
 
 import grails.core.support.proxy.EntityProxyHandler;
 import grails.core.support.proxy.ProxyHandler;
 
 import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.grails.web.converters.ConverterUtil;
 import org.grails.web.converters.exceptions.ConverterException;
 import org.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;

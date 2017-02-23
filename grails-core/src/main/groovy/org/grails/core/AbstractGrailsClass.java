@@ -24,8 +24,9 @@ import grails.web.Action;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import org.grails.core.exceptions.NewInstanceCreationException;
-import org.grails.core.util.ClassPropertyFetcher;
 import grails.plugins.GrailsVersionUtils;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -50,7 +51,6 @@ import java.lang.reflect.Modifier;
 public abstract class AbstractGrailsClass implements GrailsClass {
 
     private final Class<?> clazz;
-    private BeanWrapper reference;
     private final String fullName;
     private final String name;
     private final String packageName;
@@ -119,7 +119,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             return defaultConstructor.newInstance(new Object[]{});
         }
         catch (Exception e) {
-            Throwable targetException = null;
+            Throwable targetException;
             if (e instanceof InvocationTargetException) {
                 targetException = ((InvocationTargetException)e).getTargetException();
             }
@@ -156,7 +156,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public Object getReferenceInstance() {
-        Object obj = classPropertyFetcher.getReference();
+        Object obj = BeanUtils.instantiate(clazz);
         if (obj instanceof GroovyObject) {
             ((GroovyObject)obj).setMetaClass(getMetaClass());
         }
@@ -210,8 +210,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @return property value or null if no property or static field was found
      */
     protected <T> T getPropertyOrStaticPropertyOrFieldValue(String name, Class<T> type) {
-        Object value = classPropertyFetcher.getPropertyValue(name);
-        return returnOnlyIfInstanceOf(value, type);
+        return classPropertyFetcher.getPropertyValue(name, type);
     }
 
     /**
@@ -222,8 +221,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @return The property value or null
      */
     public <T> T getStaticPropertyValue(String propName, Class<T> type) {
-        T value = classPropertyFetcher.getStaticPropertyValue(propName, type);
-        return value;
+        return classPropertyFetcher.getStaticPropertyValue(propName, type);
     }
 
     /**
@@ -234,8 +232,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @return The property value or null
      */
     public <T> T getPropertyValue(String propName, Class<T> type) {
-        T value = classPropertyFetcher.getPropertyValue(propName, type);
-        return returnOnlyIfInstanceOf(value, type);
+        return classPropertyFetcher.getPropertyValue(propName, type);
     }
 
 
@@ -243,14 +240,6 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         return getPropertyValue(propertyNAme, Object.class);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T returnOnlyIfInstanceOf(Object value, Class<T> type) {
-        if ((value != null) && (type==Object.class || GrailsClassUtils.isGroovyAssignableFrom(type, value.getClass()))) {
-            return (T)value;
-        }
-
-        return null;
-    }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsClass#getPropertyValue(java.lang.String)

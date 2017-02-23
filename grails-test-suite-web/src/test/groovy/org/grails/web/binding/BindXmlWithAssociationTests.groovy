@@ -10,10 +10,11 @@ import grails.test.mixin.TestFor
 class BindXmlWithAssociationTests {
 
     void testBindXmlWithAssociatedId() {
+        Book b = new Book(title: "The Stand", pages: 1000).save(flush:true)
         request.method = 'POST'
-        request.xml = '''
-<person><name>xyz</name><book id='1'></book></person>
-'''
+        request.xml = """
+<person><name>xyz</name><book id='${b.id}'></book></person>
+""".toString()
 
         controller.save()
 

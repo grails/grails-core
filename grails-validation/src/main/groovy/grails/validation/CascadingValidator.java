@@ -25,7 +25,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  * @since 0.5
  */
-public interface CascadingValidator extends Validator {
+public interface CascadingValidator extends Validator, grails.gorm.validation.CascadingValidator {
 
     /**
      * An extended version of the validate(errors,obj) method that takes an additional argument specifying whether

@@ -1,12 +1,72 @@
-package org.grails.validation
+package grails.validation
 
+import grails.core.DefaultGrailsApplication
+import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
-import org.grails.commons.test.AbstractGrailsMockTests
-import org.grails.test.support.MappingContextBuilder
-import org.grails.validation.GrailsDomainClassValidator;
+import junit.framework.TestCase
+import org.grails.datastore.mapping.reflect.FieldEntityAccess
 import org.springframework.validation.BindException
 
-class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
+class GrailsDomainClassValidatorTests extends TestCase {
+    GrailsApplication ga
+    @Override
+    protected void setUp() throws Exception {
+        GroovyClassLoader gcl = new GroovyClassLoader()
+        gcl.parseClass('''
+@grails.persistence.Entity
+class Book {
+    Long id
+    Long version
+    String title
+    Author author
+    static belongsTo = Author
+    static constraints = {
+       title(blank:false, size:1..255)
+       author(nullable:false)
+    }
+}
+@grails.persistence.Entity
+class Author {
+    Long id
+    Long version
+    String name
+    Address address
+    Set books = new HashSet()
+    static hasMany = [books:Book]
+    static constraints = {
+        address(nullable:false)
+        name(size:1..255, blank:false)
+    }
+}
+@grails.persistence.Entity
+class Address {
+    Long id
+    Long version
+    Author author
+    String location
+    static constraints = {
+       author(nullable:false)
+       location(blank:false)
+    }
+}
+@grails.persistence.Entity
+class Publisher {
+    Long id
+    Long version
+    String name
+    Set authors = new HashSet()
+    static hasMany = [authors:Author]
+    static mapping = {
+        authors cascade: 'save-update'
+    }
+}
+        ''')
+
+        ga = new DefaultGrailsApplication(gcl.loadedClasses)
+        ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
+    }
+
 
     void testCascadingValidation() {
         def bookClass = ga.getDomainClass("Book")
@@ -81,7 +141,6 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         def publisherClass = ga.getDomainClass("Publisher")
 
         def authorsProperty = publisherClass.getPersistentProperties().find { it.name == 'authors' }
-        authorsProperty.explicitSaveUpdateCascade = true
 
         def publisherMetaClass = new ExpandoMetaClass(publisherClass.clazz)
         publisherMetaClass.setErrors = setter
@@ -120,55 +179,9 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
 
     }
 
-    protected void onSetUp() {
-         gcl.parseClass('''
-class Book {
-    Long id
-    Long version
-    String title
-    Author author
-    static belongsTo = Author
-    static constraints = {
-       title(blank:false, size:1..255)
-       author(nullable:false)
-    }
-}
-class Author {
-    Long id
-    Long version
-    String name
-    Address address
-    Set books = new HashSet()
-    static hasMany = [books:Book]
-    static constraints = {
-        address(nullable:false)
-        name(size:1..255, blank:false)
-    }
-}
-class Address {
-    Long id
-    Long version
-    Author author
-    String location
-    static constraints = {
-       author(nullable:false)
-       location(blank:false)
-    }
-}
-class Publisher {
-    Long id
-    Long version
-    String name
-    Set authors = new HashSet()
-    static hasMany = [authors:Author]
-    static mapping = {
-        authors cascade: 'save-update'
-    }
-}
-        ''')
+    @Override
+    protected void tearDown() throws Exception {
+        FieldEntityAccess.clearReflectors()
     }
 
-    protected void postSetUp() {
-        new MappingContextBuilder(ga).build(gcl.loadedClasses)
-    }
 }

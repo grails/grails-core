@@ -32,7 +32,9 @@ import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
 /**
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use traits instead
  */
+@Deprecated
 public abstract class BaseApiProvider {
 
     private static List<String> EXCLUDED_METHODS = Arrays.asList("setMetaClass", "getMetaClass", "setProperties", "getProperties");

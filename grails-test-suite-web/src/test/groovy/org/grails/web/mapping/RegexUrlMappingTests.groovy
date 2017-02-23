@@ -1,10 +1,13 @@
 package org.grails.web.mapping
 
+import grails.gorm.validation.ConstrainedProperty
+import grails.gorm.validation.DefaultConstrainedProperty
 import grails.util.GrailsWebMockUtil
-import grails.validation.ConstrainedProperty
 import grails.web.mapping.UrlMapping
 import grails.web.mapping.exceptions.UrlMappingException
-
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
+import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.*
 
 class RegexUrlMappingTests extends AbstractGrailsMappingTests {
@@ -228,7 +231,7 @@ mappings {
 
     void testMatchUriWithConstraints() {
 
-        def cp = new ConstrainedProperty(RegexUrlMappingTests.class, "hello", String.class)
+        def cp = new DefaultConstrainedProperty(RegexUrlMappingTests.class, "hello", String.class, new DefaultConstraintRegistry(new StaticMessageSource()))
         cp.nullable = false
 
         // mapping would be "/foo/$hello/bar
@@ -245,7 +248,7 @@ mappings {
 
     void testMatchUriWithMatchesConstraints() {
 
-        def cp = new ConstrainedProperty(RegexUrlMappingTests.class, "year", String.class)
+        def cp = new DefaultConstrainedProperty(RegexUrlMappingTests.class, "year", String.class, new DefaultConstraintRegistry(new StaticMessageSource()))
         cp.matches = /\d{4}/
 
         // mapping would be "/foo/$hello/bar

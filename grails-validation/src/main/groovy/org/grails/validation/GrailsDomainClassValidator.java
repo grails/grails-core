@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.datastore.mapping.model.config.GormProperties;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
@@ -44,12 +45,14 @@ import org.springframework.validation.FieldError;
  *
  * @author Graeme Rocher
  * @since 0.1
+ * @deprecated Replaced by {@link grails.gorm.validation.PersistentEntityValidator}
  */
+@Deprecated
 public class GrailsDomainClassValidator implements CascadingValidator, GrailsApplicationAware {
 
     private static final List<String> EMBEDDED_EXCLUDES = Arrays.asList(
-        GrailsDomainClassProperty.IDENTITY,
-        GrailsDomainClassProperty.VERSION);
+        GormProperties.IDENTITY,
+        GormProperties.VERSION);
 
     protected Class<?> targetClass;
     protected GrailsDomainClass domainClass;

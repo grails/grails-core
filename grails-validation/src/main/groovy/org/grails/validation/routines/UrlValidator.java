@@ -68,7 +68,9 @@ import java.util.regex.Pattern;
  * </a>
  *
  * @since Validator 1.4
+ * @deprecated Replaced by newer version of commons-validation
  */
+@Deprecated
 public class UrlValidator implements Serializable {
 
     private static final long serialVersionUID = 7154620567871023850L;

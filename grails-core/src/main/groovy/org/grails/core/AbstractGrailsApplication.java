@@ -25,6 +25,7 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
 import org.grails.config.FlatConfig;
 import org.grails.config.PropertySourcesConfig;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.*;

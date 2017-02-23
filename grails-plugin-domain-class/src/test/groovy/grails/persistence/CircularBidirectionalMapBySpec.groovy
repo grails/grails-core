@@ -17,13 +17,15 @@ class CircularBidirectionalMapBySpec extends Specification{
         given:"A Grails application"
             def application = new DefaultGrailsApplication([Person] as Class[], getClass().classLoader)
             application.initialise()
+            def context = new KeyValueMappingContext("circular")
+            context.addPersistentEntities(Person, Person2)
+
             application.setApplicationContext(Stub(ApplicationContext) {
                 getBean('grailsDomainClassMappingContext', MappingContext) >> {
-                    def context = new KeyValueMappingContext("circular")
-                    context.addPersistentEntities(Person, Person2)
                     context
                 }
             })
+            application.setMappingContext(context)
 
         when:"The domain instance is obtained"
             GrailsDomainClass domainClass = application.getDomainClass(Person.name)
@@ -38,13 +40,15 @@ class CircularBidirectionalMapBySpec extends Specification{
         given:"A Grails application"
         def application = new DefaultGrailsApplication([Person2] as Class[], getClass().classLoader)
         application.initialise()
+        def context = new KeyValueMappingContext("circular")
+        context.addPersistentEntities(Person, Person2)
+
         application.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> {
-                def context = new KeyValueMappingContext("circular")
-                context.addPersistentEntities(Person, Person2)
                 context
             }
         })
+        application.setMappingContext(context)
 
         when:"The domain instance is obtained"
         GrailsDomainClass domainClass = application.getDomainClass(Person2.name)

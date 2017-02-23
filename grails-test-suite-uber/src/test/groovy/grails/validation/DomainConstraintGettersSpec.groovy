@@ -11,7 +11,6 @@ import grails.test.mixin.Mock
  * Test is similar to CommandObjectConstraintGettersSpec but for domain classes.
  * Check more detailed description in CommandObjectConstraintGettersSpec
  *
- * @see grails.validation.CommandObjectConstraintGettersSpec
  */
 @Issue(['grails/grails-core#9749', 'grails/grails-core#9754'])
 @TestFor(SimplePropertiesDomain)

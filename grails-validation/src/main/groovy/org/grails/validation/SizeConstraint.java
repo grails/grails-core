@@ -30,7 +30,9 @@ import org.springframework.validation.Errors;
  *
  * @author Graeme Rocher
  * @since 0.4
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.SizeConstraint}
  */
+@Deprecated
 public class SizeConstraint extends AbstractConstraint {
 
     private IntRange range;

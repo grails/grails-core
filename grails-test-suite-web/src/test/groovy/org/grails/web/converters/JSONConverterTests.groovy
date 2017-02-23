@@ -35,7 +35,7 @@ class JSONConverterTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals("""{"author":"Stephen King","title":"The Stand"}""".toString(), response.contentAsString)
+        assertEquals("""{"title":"The Stand","author":"Stephen King"}""".toString(), response.contentAsString)
     }
 
     @Test
@@ -67,7 +67,7 @@ class JSONConverterTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals("""{"author":"Stephen King","title":"The Stand"}""".toString(), response.contentAsString)
+        assertEquals("""{"title":"The Stand","author":"Stephen King"}""".toString(), response.contentAsString)
     }
 
     @Test

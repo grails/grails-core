@@ -4,17 +4,13 @@ import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.util.Holders;
-import grails.validation.exceptions.ConstraintException;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
 import junit.framework.TestCase;
-import org.grails.core.DefaultGrailsDomainClass;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.plugins.MockGrailsPluginManager;
-import org.grails.test.support.MappingContextBuilder;
-import org.grails.test.support.MockHibernatePluginHelper;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 
@@ -34,7 +30,7 @@ public class ConstrainedPropertyTests extends TestCase {
         super.setUp();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
         Holders.setPluginManager(pluginManager);
-        pluginManager.registerMockPlugin(MockHibernatePluginHelper.FAKE_HIBERNATE_PLUGIN);
+//        pluginManager.registerMockPlugin(MockHibernatePluginHelper.FAKE_HIBERNATE_PLUGIN);
     }
 
     @Override
@@ -362,7 +358,7 @@ public class ConstrainedPropertyTests extends TestCase {
 
         Map constrainedProperties = domainClass.getConstrainedProperties();
         assert constrainedProperties.size() == 3;
-        ConstrainedProperty loginConstraint = (ConstrainedProperty)constrainedProperties.get("login");
+        grails.gorm.validation.ConstrainedProperty loginConstraint = (grails.gorm.validation.ConstrainedProperty)constrainedProperties.get("login");
         Collection appliedConstraints = loginConstraint.getAppliedConstraints();
         assertTrue(appliedConstraints.size() == 3);
 
@@ -376,7 +372,7 @@ public class ConstrainedPropertyTests extends TestCase {
         }
 
         // ...and for the 'other' property.
-        appliedConstraints = ((ConstrainedProperty) constrainedProperties.get("other")).getAppliedConstraints();
+        appliedConstraints = ((grails.gorm.validation.ConstrainedProperty) constrainedProperties.get("other")).getAppliedConstraints();
         index = 0;
         constraintNames = new String[] { "blank", "size", "nullable" };
         for (Iterator iter = appliedConstraints.iterator(); iter.hasNext();) {
@@ -385,7 +381,7 @@ public class ConstrainedPropertyTests extends TestCase {
             index++;
         }
 
-        ConstrainedProperty emailConstraint = (ConstrainedProperty)constrainedProperties.get("email");
+        grails.gorm.validation.ConstrainedProperty emailConstraint = (grails.gorm.validation.ConstrainedProperty)constrainedProperties.get("email");
         assertEquals(2,emailConstraint.getAppliedConstraints().size());
 
         GroovyObject go = (GroovyObject)groovyClass.newInstance();

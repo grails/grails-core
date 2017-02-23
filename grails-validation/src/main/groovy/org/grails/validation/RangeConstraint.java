@@ -27,7 +27,9 @@ import org.springframework.validation.Errors;
  * Validates a range.
  *
  * @author Graeme Rocher
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.RangeConstraint}
  */
+@Deprecated
 @SuppressWarnings({"unchecked","rawtypes"})
 public class RangeConstraint extends AbstractConstraint {
 

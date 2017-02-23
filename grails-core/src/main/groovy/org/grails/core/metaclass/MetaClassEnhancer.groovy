@@ -27,7 +27,9 @@ import org.springframework.beans.BeanUtils
  *
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use traits instead
  */
+@Deprecated
 class MetaClassEnhancer extends BaseApiProvider {
 
     void enhance(MetaClass mc) {
