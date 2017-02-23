@@ -43,7 +43,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     private static final class MockGrailsUrlMappingsClass extends AbstractGrailsClass implements GrailsUrlMappingsClass {
         Closure mappingClosure
         public MockGrailsUrlMappingsClass(Closure mappingClosure) {
-            super(this.getClass(), "UrlMappings")
+            super(FormTagLibTests.class, "UrlMappings")
             this.mappingClosure = mappingClosure
         }
         @Override
