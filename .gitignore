@@ -1,4 +1,5 @@
 classes
+*.log
 *.swp
 /src
 /out
