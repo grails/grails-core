@@ -4,8 +4,9 @@ jdk:
 - oraclejdk7
 env:
   matrix:
-  - GRADLE_FLAGS="--stacktrace " GRADLE_CMD="test -x grails-test-suite-web:test"
+  - GRADLE_FLAGS="--stacktrace " GRADLE_CMD="test -x grails-test-suite-web:test -x grails-test-suite-uber:test"
   - GRADLE_FLAGS="--stacktrace" GRADLE_CMD="grails-test-suite-web:test"
+  - GRADLE_FLAGS="--stacktrace" GRADLE_CMD="grails-test-suite-uber:test"
   - GRADLE_FLAGS="--stacktrace --info" GRADLE_CMD="integrationTest"
   global:
   - TERM=dumb
