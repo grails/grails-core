@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals
 class BindToPropertyThatIsNotReadableTests {
 
     @Test
-    @NotYetImplemented
     void testBindToPropertyThatIsNotReadable() {
         def b = new PropertyNotReadableBook()
 

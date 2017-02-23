@@ -18,7 +18,7 @@ package grails.validation;
 import org.springframework.validation.Errors;
 
 /**
- * TODO: write javadoc
+ * A constraint capable of vetoing processing of other constraints
  *
  * @author Sergey Nebolsin (<a href="mailto:nebolsin@gmail.com"/>)
  */

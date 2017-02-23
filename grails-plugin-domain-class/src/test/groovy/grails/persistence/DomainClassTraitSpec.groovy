@@ -5,6 +5,8 @@ import grails.gorm.validation.PersistentEntityValidator
 import grails.persistence.Entity
 import grails.util.Holders
 import grails.validation.ConstrainedProperty
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
+import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -25,23 +27,16 @@ class DomainClassTraitSpec extends Specification {
         given:
         def application = new DefaultGrailsApplication([Person] as Class[], getClass().classLoader)
         application.initialise()
-        def field = PersistentEntityValidator.getDeclaredField('constrainedProperties')
-        field.setAccessible(true)
-        Field modifiersField = Field.getDeclaredField("modifiers")
-        modifiersField.setAccessible(true)
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL)
-        def validator = Mock(PersistentEntityValidator)
 
-        field.set(validator, (Map)[name: [blank: false, inList: ['Joe']]])
-
+        def context = new KeyValueMappingContext("domainclasstraitspec")
+        context.addPersistentEntity(Person)
+        context.setValidatorRegistry(new DefaultValidatorRegistry(context, new ConnectionSourceSettings()))
         application.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> {
-                def context = new KeyValueMappingContext("domainclasstraitspec")
-                context.addPersistentEntities(Person)
-                context.addEntityValidator(context.getPersistentEntity(Person.class.name), validator)
                 context
             }
         })
+        application.setMappingContext(context)
         Holders.grailsApplication = application
 
         expect:
@@ -58,12 +53,4 @@ class DomainClassTraitSpec extends Specification {
         }
     }
 
-    class MockValidator extends PersistentEntityValidator {
-        MockValidator() {
-            def cp = Stub(ConstrainedProperty)
-            cp.blank = false
-            cp.inList = ['Joe']
-            this.constrainedProperties = [name: cp]
-        }
-    }
 }

@@ -20,6 +20,7 @@ import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.core.util.ClassPropertyFetcher
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfigUtilities
@@ -91,7 +92,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
         loadApplicationConfig()
         customizeGrailsApplication(grailsApplication)
         performGrailsInitializationSequence()
-        ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
 
     protected void customizePluginManager(GrailsPluginManager grailsApplication) {
@@ -233,11 +233,16 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
     @Override
     void onApplicationEvent(ApplicationContextEvent event) {
-        def context = event.applicationContext
+        ApplicationContext context = event.applicationContext
 
-        def lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
+        Collection<GrailsApplicationLifeCycle> lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
         if(event instanceof ContextRefreshedEvent) {
             Environment.setInitializing(false)
+            if(context.containsBean("grailsDomainClassMappingContext")) {
+                grailsApplication.setMappingContext(
+                    context.getBean("grailsDomainClassMappingContext", MappingContext)
+                )
+            }
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
             for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {

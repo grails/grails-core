@@ -1,11 +1,10 @@
-package org.grails.validation;
+package grails.validation;
 
 import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
+import grails.gorm.validation.*;
 import grails.gorm.validation.Constrained;
-import grails.gorm.validation.ConstrainedProperty;
-import grails.gorm.validation.DefaultConstrainedProperty;
 import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 
@@ -15,8 +14,6 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.grails.core.artefact.DomainClassArtefactHandler;
-import org.grails.test.support.MappingContextBuilder;
-import org.grails.test.support.MockHibernatePluginHelper;
 import org.grails.plugins.MockGrailsPluginManager;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
@@ -26,7 +23,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         super.setUp();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
         Holders.setPluginManager(pluginManager);
-        pluginManager.registerMockPlugin(MockHibernatePluginHelper.FAKE_HIBERNATE_PLUGIN);
+        pluginManager.registerMockPlugin(MappingContextBuilder.FAKE_HIBERNATE_PLUGIN);
     }
 
     @Override
@@ -83,7 +80,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass(
                 "package org.grails.validation\n" +
-                "class Book {\n" +
+                "@grails.persistence.Entity class Book {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String title\n" +
@@ -98,12 +95,12 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "      assistent(nullable: true)\n" +
                 "   }\n" +
                 "}\n" +
-                "class Author {\n" +
+                "@grails.persistence.Entity class Author {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String name\n" +
                 "}\n" +
-                "class Chapter {\n" +
+                "@grails.persistence.Entity class Chapter {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String text\n" +
@@ -170,7 +167,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
         Map constraints = domainClass.getConstrainedProperties();
 
-        DefaultConstrainedProperty p = (DefaultConstrainedProperty)constraints.get("name");
+        grails.gorm.validation.ConstrainedProperty p = (grails.gorm.validation.ConstrainedProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
 
         assertEquals("Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());

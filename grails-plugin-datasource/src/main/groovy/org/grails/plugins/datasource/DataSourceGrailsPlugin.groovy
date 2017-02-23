@@ -76,7 +76,7 @@ class DataSourceGrailsPlugin extends Plugin {
             }
         }
 
-        if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource')) {
+        if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource', getClass().classLoader)) {
             try {
                 def jmxMBeanServer = JmxUtils.locateMBeanServer()
                 if(jmxMBeanServer) {

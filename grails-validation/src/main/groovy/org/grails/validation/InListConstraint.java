@@ -27,7 +27,9 @@ import org.springframework.validation.Errors;
  *
  * @author Graeme Rocher
  * @since 0.4
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.InListConstraint}
  */
+@Deprecated
 public class InListConstraint extends AbstractConstraint {
 
     List<?> list;

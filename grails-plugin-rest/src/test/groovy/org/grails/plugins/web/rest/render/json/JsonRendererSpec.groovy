@@ -81,13 +81,15 @@ class JsonRendererSpec extends Specification {
         def renderer = new JsonRenderer(Song)
         def app = new DefaultGrailsApplication(Song)
         app.setConfig(new PropertySourcesConfig())
+        def context = new KeyValueMappingContext("jsonrenderer")
+        context.addPersistentEntities(Song)
+
         app.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> {
-                def context = new KeyValueMappingContext("jsonrenderer")
-                context.addPersistentEntities(Song)
                 context
             }
         })
+        app.setMappingContext(context)
         app.initialise()
         renderer.grailsApplication = app
         renderer.registerCustomConverter()
@@ -107,13 +109,15 @@ class JsonRendererSpec extends Specification {
         renderer.includes = ['version', 'class', 'title']
         def app = new DefaultGrailsApplication(Song)
         app.setConfig(new PropertySourcesConfig())
+        def context = new KeyValueMappingContext("jsonrenderer")
+        context.addPersistentEntities(Song)
+
         app.setApplicationContext(Stub(ApplicationContext) {
             getBean('grailsDomainClassMappingContext', MappingContext) >> {
-                def context = new KeyValueMappingContext("jsonrenderer")
-                context.addPersistentEntities(Song)
                 context
             }
         })
+        app.setMappingContext(context)
         app.initialise()
         renderer.grailsApplication = app
         renderer.registerCustomConverter()

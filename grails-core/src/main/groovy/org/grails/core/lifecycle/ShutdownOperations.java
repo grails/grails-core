@@ -37,8 +37,6 @@ public class ShutdownOperations {
     public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
         public void run() {
             Holders.reset();
-            //ExpandoMetaClass.disableGlobally();
-            ClassPropertyFetcher.clearClassPropertyFetcherCache();
         }
     };
 

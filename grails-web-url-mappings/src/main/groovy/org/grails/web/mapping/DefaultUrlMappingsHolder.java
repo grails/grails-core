@@ -16,9 +16,10 @@
 package org.grails.web.mapping;
 
 import grails.core.GrailsControllerClass;
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
 import grails.util.CollectionUtils;
 import grails.util.Holders;
-import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlCreator;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingEvaluator;
@@ -154,17 +155,19 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
             String version = mapping.getVersion();
             String namespace = mapping.getNamespace() instanceof String ? mapping.getNamespace().toString() : null;
 
-            ConstrainedProperty[] params = mapping.getConstraints();
+            Constrained[] params = mapping.getConstraints();
             Set<String> requiredParams = new HashSet<String>();
             int optionalIndex = -1;
             for (int j = 0; j < params.length; j++) {
-                ConstrainedProperty param = params[j];
-                if (!param.isNullable()) {
-                    requiredParams.add(param.getPropertyName());
-                }
-                else {
-                    optionalIndex = j;
-                    break;
+                Constrained param = params[j];
+                if(param instanceof ConstrainedProperty) {
+                    if (!param.isNullable()) {
+                        requiredParams.add(((ConstrainedProperty)param).getPropertyName());
+                    }
+                    else {
+                        optionalIndex = j;
+                        break;
+                    }
                 }
             }
             UrlMappingKey key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, version,requiredParams);
@@ -179,16 +182,20 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
             Set<String> requiredParamsAndOptionals = new HashSet<String>(requiredParams);
             if (optionalIndex > -1) {
                 for (int j = optionalIndex; j < params.length; j++) {
-                    ConstrainedProperty param = params[j];
-                    requiredParamsAndOptionals.add(param.getPropertyName());
-                    key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, version,new HashSet<String>(requiredParamsAndOptionals));
-                    mappingsLookup.put(key, mapping);
+                    Constrained constrained = params[j];
+                    if(constrained instanceof ConstrainedProperty) {
 
-                    listKey = new UrlMappingsListKey(controllerName, actionName, namespace, pluginName,httpMethod, version);
-                    mappingsListLookup.put(listKey, key);
+                        ConstrainedProperty param = (ConstrainedProperty) constrained;
+                        requiredParamsAndOptionals.add(param.getPropertyName());
+                        key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, version, new HashSet<>(requiredParamsAndOptionals));
+                        mappingsLookup.put(key, mapping);
 
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Reverse mapping: " + key + " -> " + mapping);
+                        listKey = new UrlMappingsListKey(controllerName, actionName, namespace, pluginName,httpMethod, version);
+                        mappingsListLookup.put(listKey, key);
+
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Reverse mapping: " + key + " -> " + mapping);
+                        }
                     }
                 }
             }

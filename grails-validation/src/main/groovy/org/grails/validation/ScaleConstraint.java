@@ -46,7 +46,9 @@ import org.springframework.validation.Errors;
  *
  * @author Jason Rudolph
  * @since 0.4
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.ScaleConstraint}
  */
+@Deprecated
 public class ScaleConstraint extends AbstractConstraint {
 
     private int scale;

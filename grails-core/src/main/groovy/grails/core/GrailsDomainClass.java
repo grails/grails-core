@@ -25,6 +25,7 @@ import org.springframework.validation.Validator;
  *
  * @author Graeme Rocher
  * @since Jul 5, 2005
+ *
  */
 public interface GrailsDomainClass extends GrailsClass {
 
@@ -45,31 +46,41 @@ public interface GrailsDomainClass extends GrailsClass {
     /**
      * Returns all of the properties of the domain class
      * @return The domain class properties
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     GrailsDomainClassProperty[] getProperties();
 
     /**
      * Returns all of the persistant properties of the domain class
      * @return The domain class' persistant properties
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     GrailsDomainClassProperty[] getPersistentProperties();
 
     /**
      * Returns the identifier property
      * @return The identifier property
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     GrailsDomainClassProperty getIdentifier();
 
     /**
      * Returns the version property
      * @return The version property
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     GrailsDomainClassProperty getVersion();
 
     /**
      * Returns this classes association map
      * @return The association map
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     Map getAssociationMap();
 
@@ -79,7 +90,9 @@ public interface GrailsDomainClass extends GrailsClass {
      * @param name The property for the name
      * @throws org.grails.core.exceptions.InvalidPropertyException
      * @return The domain class property for the given name
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     GrailsDomainClassProperty getPropertyByName(String name);
 
     /**
@@ -87,7 +100,9 @@ public interface GrailsDomainClass extends GrailsClass {
      *
      * @param name The property name
      * @return The property or null
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     GrailsDomainClassProperty getPersistentProperty(String name);
 
     /**
@@ -109,14 +124,18 @@ public interface GrailsDomainClass extends GrailsClass {
      * Returns true if the given property is a one to many relationship
      * @param propertyName The name of the property
      * @return A boolean value
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     boolean isOneToMany(String propertyName);
 
     /**
      * Returns true if the given property is a many to one relationship
      * @param propertyName The name of the property
      * @return A boolean value
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     boolean isManyToOne(String propertyName);
 
     /**
@@ -124,7 +143,9 @@ public interface GrailsDomainClass extends GrailsClass {
      *
      * @param propertyName The name of the property
      * @return A boolean value
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     boolean isBidirectional(String propertyName);
 
     /**
@@ -132,7 +153,9 @@ public interface GrailsDomainClass extends GrailsClass {
      *
      * @param propertyName The name of the property
      * @return The type of the class or null if no relationship exists for the specified property
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     Class getRelatedClassType(String propertyName);
 
@@ -161,37 +184,48 @@ public interface GrailsDomainClass extends GrailsClass {
 
     /**
      * @return The name of the ORM implementation used to map the domain class (default is "GORM")
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     String getMappingStrategy();
 
     /**
-     * Whether the class is the root of a heirarchy
+     * Whether the class is the root of a hierarchy
      *
-     * @return true if it is the root of the heirarchy
+     * @return true if it is the root of the hierarchy
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     boolean isRoot();
 
     /**
      * Returns the sub-classes for this class if any
      *
      * @return A set of sub classes or an empty set if none exist
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     Set<GrailsDomainClass> getSubClasses();
 
     /**
      * Refreshes the constraint defined on a domain class
      */
+    @Deprecated
     void refreshConstraints();
 
     /**
      * Returns true if the domain classes has sub classes
      * @return true if it does
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     boolean hasSubClasses();
 
     /**
      * @return The map that defines association mappings
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     Map getMappedBy();
 
@@ -199,12 +233,16 @@ public interface GrailsDomainClass extends GrailsClass {
      * Returns true if this domain class has a persistent property for the given name
      * @param propertyName The property name
      * @return true if it does
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     boolean hasPersistentProperty(String propertyName);
 
     /**
      * Sets the strategy to use for ORM mapping. Default is GORM
      * @param strategy The mapping strategy
+     * @deprecated Use {@link org.grails.datastore.mapping.model.MappingContext} API instead
      */
+    @Deprecated
     void setMappingStrategy(String strategy);
 }

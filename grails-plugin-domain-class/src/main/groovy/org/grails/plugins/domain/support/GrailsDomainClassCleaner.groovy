@@ -3,7 +3,7 @@ package org.grails.plugins.domain.support
 import grails.core.ComponentCapableDomainClass
 import grails.core.GrailsApplication
 import grails.core.GrailsDomainClass
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import org.grails.datastore.gorm.GormEntity
 import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
@@ -19,9 +19,10 @@ import java.lang.reflect.Modifier
  * 
  * 
  * @author Lari Hotari
- *
+ * @deprecated Handled by {@link org.grails.datastore.mapping.model.MappingContext} now
  */
-@Commons
+@Slf4j
+@Deprecated
 class GrailsDomainClassCleaner implements ApplicationListener<ContextClosedEvent>, ApplicationContextAware  {
     protected GrailsApplication grailsApplication
     protected ApplicationContext applicationContext

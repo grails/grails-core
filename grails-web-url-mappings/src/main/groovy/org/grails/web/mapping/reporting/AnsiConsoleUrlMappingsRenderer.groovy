@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping.reporting
 
+import grails.gorm.validation.ConstrainedProperty
 import grails.web.mapping.reporting.UrlMappingsRenderer
 
 import static org.fusesource.jansi.Ansi.ansi
@@ -108,12 +109,12 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
                 String finalToken = token
                 while(hasTokens) {
                     if (finalToken.contains(UrlMapping.CAPTURED_WILDCARD)) {
-                        def constraint = constraints[constraintIndex++]
+                        ConstrainedProperty constraint = (ConstrainedProperty)constraints[constraintIndex++]
                         def prop = '\\${' + constraint.propertyName + '}'
                         finalToken = finalToken.replaceFirst(/\(\*\)/, withAnsi ? variable(prop) : prop)
                     }
                     else if (finalToken.contains(UrlMapping.CAPTURED_DOUBLE_WILDCARD)) {
-                        def constraint = constraints[constraintIndex++]
+                        ConstrainedProperty constraint = (ConstrainedProperty)constraints[constraintIndex++]
                         def prop = '\\\${' + constraint.propertyName + '}**'
                         finalToken =  finalToken.replaceFirst(/\(\*\*\)/, prop)
                     }
@@ -131,7 +132,7 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
         }
         if (urlMapping.urlData.hasOptionalExtension()) {
             final allConstraints = urlMapping.constraints
-            def lastConstraint = allConstraints[-1]
+            ConstrainedProperty lastConstraint = (ConstrainedProperty)allConstraints[-1]
             urlPattern << "(.\${${lastConstraint.propertyName})?"
         }
         if (padding) {

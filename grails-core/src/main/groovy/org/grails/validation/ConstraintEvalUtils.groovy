@@ -18,7 +18,7 @@ package org.grails.validation
 import grails.config.Config
 import grails.config.Settings
 import grails.util.ClosureToMapPopulator
-
+import groovy.transform.CompileStatic
 import org.grails.core.lifecycle.ShutdownOperations
 
 /**
@@ -27,6 +27,7 @@ import org.grails.core.lifecycle.ShutdownOperations
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class ConstraintEvalUtils {
 
     static {
@@ -35,7 +36,7 @@ class ConstraintEvalUtils {
         } as Runnable, true)
     }
 
-    private static defaultConstraintsMap
+    private static Map<String, Object> defaultConstraintsMap
     private static configId
 
     /**

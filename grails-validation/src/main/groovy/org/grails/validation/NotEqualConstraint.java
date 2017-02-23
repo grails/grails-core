@@ -23,7 +23,9 @@ import org.springframework.validation.Errors;
 
 /**
  * Validates not equal to something.
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.NotEqualConstraint}
  */
+@Deprecated
 public class NotEqualConstraint extends AbstractConstraint {
 
     /* (non-Javadoc)

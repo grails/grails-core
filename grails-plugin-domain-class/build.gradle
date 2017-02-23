@@ -55,7 +55,4 @@ dependencies {
         exclude group: "javax.persistence", module:"persistence-api"
         exclude group: 'java-persistence', module:'persistence-api'
     }
-    compile("org.grails:grails-datastore-simple:$datastoreVersion") {
-        exclude group: 'org.grails', module:'grails-datastore-core'
-    }
 }

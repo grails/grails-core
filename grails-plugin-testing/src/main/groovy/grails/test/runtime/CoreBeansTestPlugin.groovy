@@ -39,7 +39,7 @@ import org.springframework.util.ClassUtils
  *
  */
 @CompileStatic
-public class CoreBeansTestPlugin implements TestPlugin {
+class CoreBeansTestPlugin implements TestPlugin {
     String[] requiredFeatures = ['grailsApplication']
     String[] providedFeatures = ['coreBeans']
     int ordinal = 0
@@ -65,7 +65,8 @@ public class CoreBeansTestPlugin implements TestPlugin {
 
             proxyHandler(DefaultProxyHandler)
             messageSource(StaticMessageSource)
-            "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
+            gormConstraintEvaluator(org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator, ref("messageSource"))
+            "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator, ref("gormConstraintEvaluator"))
             grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
             transactionManagerAwarePostProcessor(TransactionManagerPostProcessor)
             grailsPlaceholderConfigurer(GrailsPlaceholderConfigurer, '${', grailsApplicationParam.config.toProperties())
@@ -79,7 +80,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
         runtime.publishEvent("defineBeans", [closure: closure])
     }
 
-    public void onTestEvent(TestEvent event) {
+    void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'registerBeans':
                 registerBeans(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
@@ -87,7 +88,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
         }
     }
 
-    public void close(TestRuntime runtime) {
+    void close(TestRuntime runtime) {
 
     }
 }

@@ -107,12 +107,12 @@ class ConverterConfigurationTests {
 
         JSON.use("with-version") {
             assertEquals(
-                """{"id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
+                """{"id":4711,"version":0,"title":"The Definitive Guide to Grails","author":"Graeme Rocher"}""",
                 (createBook() as JSON).toString())
         }
         XML.use("with-version") {
             assertEquals(
-                """<?xml version="1.0" encoding="UTF-8"?><converterBook id="4711" version="0"><author>Graeme Rocher</author><title>The Definitive Guide to Grails</title></converterBook>""",
+                """<?xml version="1.0" encoding="UTF-8"?><converterBook id="4711" version="0"><title>The Definitive Guide to Grails</title><author>Graeme Rocher</author></converterBook>""",
                 (createBook() as XML).toString())
         }
     }

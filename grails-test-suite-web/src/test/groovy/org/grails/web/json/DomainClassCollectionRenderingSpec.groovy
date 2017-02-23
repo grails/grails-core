@@ -34,7 +34,7 @@ class DomainClassCollectionRenderingSpec extends Specification {
             renderer.render(undertow, new ServletRenderContext(webRequest, [includes:['title', 'companies']]))
 
         then: 'all of the nested elements have fully qualified class names'
-            webRequest.response.contentAsString == '{"companies":[{"id":1,"albums":[{"id":1},{"id":2}],"name":"Tool Inc."}],"title":"Undertow"}'
+            webRequest.response.contentAsString == '{"title":"Undertow","companies":[{"id":1,"albums":[{"id":1},{"id":2}],"name":"Tool Inc."}]}'
     }
 }
 

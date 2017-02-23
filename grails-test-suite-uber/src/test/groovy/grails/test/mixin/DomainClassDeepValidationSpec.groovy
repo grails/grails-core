@@ -41,7 +41,6 @@ class DomainClassDeepValidationSpec extends Specification{
 
         when: "When the children are assigned to the parent"
             testObj.manyChildren = manyChildren
-
         then: "The parent has validation errors"
             !testObj.validate(deepValidate: true)
             testObj.validate(deepValidate: false)

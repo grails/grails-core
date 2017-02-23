@@ -16,7 +16,8 @@
 package org.grails.web.mapping;
 
 import grails.core.GrailsApplication;
-import grails.validation.ConstrainedProperty;
+import grails.gorm.validation.Constrained;
+import grails.gorm.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import org.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
@@ -110,7 +111,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     /**
      * @see UrlMapping#getConstraints()
      */
-    public ConstrainedProperty[] getConstraints() {
+    public Constrained[] getConstraints() {
         return constraints;
     }
 

@@ -75,8 +75,10 @@ import org.springframework.validation.Errors;
  * </code>
  * @author Graeme Rocher
  * @since 07-Nov-2005
+ * @deprecated  Use {@link grails.gorm.validation.ConstrainedProperty instead}
  */
 @SuppressWarnings("serial")
+@Deprecated
 public class ConstrainedProperty implements Constrained {
 
     public static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";

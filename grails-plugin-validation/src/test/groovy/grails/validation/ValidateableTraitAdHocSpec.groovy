@@ -1,12 +1,13 @@
 package grails.validation
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.ClosureToMapPopulator
+import grails.util.Holders
+import org.grails.core.support.GrailsApplicationDiscoveryStrategy
+import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
+import org.springframework.context.support.GenericApplicationContext
 import spock.lang.Specification
 
-@TestMixin(GrailsUnitTestMixin)
 class ValidateableTraitAdHocSpec extends Specification {
 
     void 'Test that pre-declared constraints can be used'() {
@@ -221,14 +222,20 @@ class ValidateableTraitAdHocSpec extends Specification {
 
     void "Test that default and shared constraints can be applied from configuration"() {
         given:
-        defineBeans {
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = new ClosureToMapPopulator().populate {
-                    '*' matches: /DEFAULT_CONSTRAINT/
-                    myShared max: 20
-                }
-            }
+        GenericApplicationContext applicationContext = new GenericApplicationContext()
+        applicationContext.refresh()
+        def defaultConstraints = new ClosureToMapPopulator().populate {
+            '*' matches: /DEFAULT_CONSTRAINT/
+            myShared max: 20
         }
+        applicationContext.beanFactory.registerSingleton(
+                "constraintEvaluator",
+                new DefaultConstraintEvaluator(defaultConstraints)
+        )
+
+        def strategy = Mock(GrailsApplicationDiscoveryStrategy)
+        strategy.findApplicationContext() >> applicationContext
+        Holders.addApplicationDiscoveryStrategy(strategy)
 
         and:
         def person = new PersonAdHocSharedConstraintsValidateable(name: 'FOO', age: 99)
@@ -251,11 +258,7 @@ class ValidateableTraitAdHocSpec extends Specification {
         person.errors['age']?.code == 'max.exceeded'
 
         cleanup:
-        defineBeans {
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = Collections.emptyMap()
-            }
-        }
+        Holders.clear()
     }
 
     void 'Test that multiple ad-hoc constraints can be used'() {

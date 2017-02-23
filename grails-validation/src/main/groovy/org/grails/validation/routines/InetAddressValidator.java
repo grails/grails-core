@@ -28,7 +28,9 @@ import java.io.Serializable;
  * </p>
  *
  * @since Validator 1.4
+ * @deprecated Replaced by newer version of commons-validation
  */
+@Deprecated
 public class InetAddressValidator implements Serializable {
 
     private static final long serialVersionUID = -3986248595858163100L;

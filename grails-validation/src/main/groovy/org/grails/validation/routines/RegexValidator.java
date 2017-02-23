@@ -54,7 +54,9 @@ import org.springframework.util.Assert;
  * to the {@link Pattern} API are safe to use in a multi-threaded environment.
  *
  * @since Validator 1.4
+ * @deprecated Replaced by newer version of commons-validation
  */
+@Deprecated
 public class RegexValidator implements Serializable {
 
     private static final long serialVersionUID = -8965678328995950151L;

@@ -34,7 +34,9 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 @CompileStatic
 trait DomainClass {
 
-
+    /**
+     * @return The constrained properties for this domain class
+     */
     static Map<String, Constrained> getConstrainedProperties() {
         GrailsDomainClass domainClass = (GrailsDomainClass)Holders?.grailsApplication?.getArtefact(DomainClassArtefactHandler.TYPE, this.name)
         def constrainedProperties = domainClass?.getConstrainedProperties()

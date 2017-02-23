@@ -22,7 +22,10 @@ import grails.validation.ValidationErrors
 /**
  * @author Graeme Rocher
  * @since 1.1
+ *
+ * @deprecated Will be removed in a future version of Grails
  */
+@Deprecated
 class DomainClassPluginSupport {
 
     /**

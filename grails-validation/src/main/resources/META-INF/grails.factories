@@ -1,1 +1,2 @@
 grails.validation.ConstraintsEvaluator=org.grails.validation.DefaultConstraintEvaluator
+org.grails.validation.discovery.ConstrainedDiscovery=org.grails.validation.discovery.impl.DefaultConstrainedDiscovery

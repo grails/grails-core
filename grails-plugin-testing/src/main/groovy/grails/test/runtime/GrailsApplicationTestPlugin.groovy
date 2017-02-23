@@ -191,7 +191,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     void initialState() {
         Holders.clear()
-        ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
         CachedIntrospectionResults.clearClassLoader(resolveClassLoader())
         Promises.promiseFactory = new SynchronousPromiseFactory()
@@ -277,7 +276,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
     
     void resetGrailsApplication(TestRuntime runtime) {
-        ClassPropertyFetcher.clearClassPropertyFetcherCache()
         if(runtime.containsValueFor('grailsApplication')) {
             ((DefaultGrailsApplication)runtime.getValue('grailsApplication'))?.clear()
         }

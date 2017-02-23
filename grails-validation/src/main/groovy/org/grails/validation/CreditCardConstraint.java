@@ -26,7 +26,9 @@ import org.springframework.validation.Errors;
  *
  * @author Graeme Rocher
  * @since 0.4
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.CreditCardConstraint}
  */
+@Deprecated
 public class CreditCardConstraint extends AbstractConstraint {
 
     private boolean creditCard;

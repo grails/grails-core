@@ -58,7 +58,10 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
     public void callInit(ServletContext servletContext) {
         Closure<?> init = getInitClosure();
         if (init != null) {
-            init = init.curry(new Object[]{servletContext});
+            Class[] parameterTypes = init.getParameterTypes();
+            if(parameterTypes != null) {
+                init = init.curry(new Object[]{servletContext});
+            }
             Environment.executeForCurrentEnvironment(init);
         }
     }

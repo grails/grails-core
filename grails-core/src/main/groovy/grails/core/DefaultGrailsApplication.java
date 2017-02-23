@@ -27,6 +27,9 @@ import groovy.lang.MetaMethod;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -54,6 +57,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -96,7 +100,22 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     protected boolean initialised = false;
     protected GrailsApplicationClass applicationClass;
 
-    protected LazyMappingContext mappingContext = new LazyMappingContext(this);
+    protected MappingContext proxyMappingContext = buildMappingContextProxy(this);
+    protected MappingContext mappingContext;
+
+    private static MappingContext buildMappingContextProxy(final DefaultGrailsApplication application) {
+        InvocationHandler proxyHandler = new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                MappingContext realContext = application.mappingContext;
+                if(realContext == null) {
+                    throw new GrailsConfigurationException("The method ["+method+"] cannot be accessed before GORM has initialized");
+                }
+                return ReflectionUtils.invokeMethod(method, realContext, args);
+            }
+        };
+        return (MappingContext) Proxy.newProxyInstance(application.getClass().getClassLoader(), new Class[]{MappingContext.class}, proxyHandler);
+    }
 
     /**
      * Creates a new empty Grails application.
@@ -300,6 +319,9 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
                 if(environment instanceof ConfigurableEnvironment) {
                     MutablePropertySources propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
                     this.config = new PropertySourcesConfig(propertySources);
+                }
+                else {
+                    this.config = new PropertySourcesConfig();
                 }
             }
             else {
@@ -798,7 +820,7 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
         if (handler != null && handler.isArtefact(artefactClass)) {
             GrailsClass artefactGrailsClass;
             if (handler instanceof DomainClassArtefactHandler) {
-                artefactGrailsClass = ((DomainClassArtefactHandler)handler).newArtefactClass(artefactClass, mappingContext);
+                artefactGrailsClass = ((DomainClassArtefactHandler)handler).newArtefactClass(artefactClass, proxyMappingContext);
             } else {
                 artefactGrailsClass = handler.newArtefactClass(artefactClass);
             }
@@ -835,16 +857,16 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        super.setApplicationContext(applicationContext);
-        try {
-            MappingContext context = applicationContext.getBean("grailsDomainClassMappingContext", MappingContext.class);
-            mappingContext.setMappingContext(context);
-        } catch (NoSuchBeanDefinitionException e) {
-            // no-op
+    public MappingContext getMappingContext() {
+        if(mappingContext != null) {
+            return mappingContext;
         }
-
+        return proxyMappingContext;
     }
 
+    @Override
+    public void setMappingContext(MappingContext mappingContext) {
+        this.mappingContext = mappingContext;
+    }
 }
 

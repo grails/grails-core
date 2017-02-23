@@ -17,12 +17,43 @@ import spock.lang.Specification
 /**
  * Ensure validation logic for domain class and whether or not compatible with command object with {@code Validateable}.
  *
- * @see grails.validation.ValidateableTraitSpec
  */
 @TestMixin(GrailsUnitTestMixin)
 @Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
 class DomainClassValidationSpec extends Specification {
+    @Ignore
+    void "Test that default and shared constraints can be applied from configuration"() {
+        given:
+        defineBeans {
+            config.grails.gorm.default.constraints = {
+                '*' blank: false
+                myShared matches: /MY_SHARED/, maxSize: 10
+            }
+        }
 
+        and:
+        def constraints = getAssociatedDomainClassFromApplication(new SharedConstraintsDomainClass()).getConstrainedProperties()
+
+        expect:
+        constraints.size() == 2
+        constraints.name.hasAppliedConstraint 'matches'
+        constraints.town.hasAppliedConstraint 'inList'
+
+        and: 'default nullable'
+        constraints.name.hasAppliedConstraint 'nullable'
+        constraints.town.hasAppliedConstraint 'nullable'
+
+        and: 'default constraints "*"'
+        constraints.name.hasAppliedConstraint 'blank'
+        constraints.town.hasAppliedConstraint 'blank'
+
+        and: 'shared constraints'
+        constraints.town.hasAppliedConstraint 'matches'
+        constraints.town.hasAppliedConstraint 'maxSize'
+
+        cleanup:
+        config.grails.gorm.default.constraints = null
+    }
     @Issue('grails/grails-core#9749')
     void 'test that transient properties are not constrained by default but can be explicitly constrained'() {
         when:
@@ -236,44 +267,7 @@ class DomainClassValidationSpec extends Specification {
         constraints.transientString2
     }
 
-    void "Test that default and shared constraints can be applied from configuration"() {
-        given:
-        defineBeans {
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = new ClosureToMapPopulator().populate {
-                    '*' blank: false
-                    myShared matches: /MY_SHARED/, maxSize: 10
-                }
-            }
-        }
 
-        and:
-        def constraints = getAssociatedDomainClassFromApplication(new SharedConstraintsDomainClass()).getConstrainedProperties()
-
-        expect:
-        constraints.size() == 2
-        constraints.name.hasAppliedConstraint 'matches'
-        constraints.town.hasAppliedConstraint 'inList'
-
-        and: 'default nullable'
-        constraints.name.hasAppliedConstraint 'nullable'
-        constraints.town.hasAppliedConstraint 'nullable'
-
-        and: 'default constraints "*"'
-        constraints.name.hasAppliedConstraint 'blank'
-        constraints.town.hasAppliedConstraint 'blank'
-
-        and: 'shared constraints'
-        constraints.town.hasAppliedConstraint 'matches'
-        constraints.town.hasAppliedConstraint 'maxSize'
-
-        cleanup:
-        defineBeans {
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = Collections.emptyMap()
-            }
-        }
-    }
 
     void 'Ensure properties of super class is inherited'() {
         when:
@@ -432,5 +426,30 @@ class SubClassDomainClass extends SuperClassDomainClass {
 
     static constraints = {
         subName matches: /SUB/
+    }
+}
+class MyValidateable implements Validateable {
+    String name
+    Integer age
+    String town
+    private String _someProperty = 'default value'
+
+    void setSomeOtherProperty(String s) {}
+
+    void setSomeProperty(String s) {
+        _someProperty = s
+    }
+
+    String getSomeProperty() {
+        _someProperty
+    }
+
+    int getTwiceAge() {
+        age * 2
+    }
+
+    static constraints = {
+        name matches: /[A-Z].*/
+        age range: 1..99
     }
 }
