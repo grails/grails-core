@@ -26,16 +26,7 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
 else
     echo "Executing tests"
-    ./gradlew --stacktrace test -x grails-test-suite-web:test -x grails-test-suite-base:test || EXIT_STATUS=$?
-    if [[ $EXIT_STATUS == 0 ]]; then
-        ./gradlew --stop
-        ./gradlew --stacktrace grails-test-suite-base:test || EXIT_STATUS=$?
-
-        if [[ $EXIT_STATUS == 0 ]]; then
-            ./gradlew --stop
-            ./gradlew --stacktrace grails-test-suite-web:test || EXIT_STATUS=$?
-        fi
-    fi
+    ./gradlew --stacktrace test  || EXIT_STATUS=$?
     echo "Done."
     if [[ $EXIT_STATUS == 0 ]]; then
       echo "Executing integration tests"
