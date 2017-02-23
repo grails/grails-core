@@ -79,11 +79,7 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLU
         # Rebuild Artifactory index
         curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
 
-    elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
-    fi
-
-elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ && $BUILD_LEADER='YES' ]]; then
+elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ && $BUILD_LEADER='YES']]; then
     ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     cd ..
     # Trigger the functional tests
