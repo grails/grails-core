@@ -21,6 +21,7 @@ package grails.validation.exceptions;
  *
  * @author Graeme Rocher
  */
+@Deprecated
 public class ConstraintException extends RuntimeException {
 
     private static final long serialVersionUID = -4866968714197516789L;

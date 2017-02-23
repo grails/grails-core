@@ -20,7 +20,9 @@ package grails.validation;
  *
  * @author Graeme Rocher
  * @since 0.4
+ * @deprecated Use {@link org.grails.datastore.gorm.validation.constraints.factory.ConstraintFactory} instead
  */
+@Deprecated
 public interface ConstraintFactory {
     Constraint newInstance();
 }

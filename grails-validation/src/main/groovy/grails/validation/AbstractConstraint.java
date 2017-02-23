@@ -36,7 +36,9 @@ import org.springframework.validation.FieldError;
  * Abstract class for constraints to extend.
  *
  * @author Graeme Rocher
+ * @deprecated Use {@link org.grails.datastore.gorm.validation.constraints.AbstractConstraint} instead
  */
+@Deprecated
 public abstract class AbstractConstraint implements Constraint {
 
     protected String constraintPropertyName;

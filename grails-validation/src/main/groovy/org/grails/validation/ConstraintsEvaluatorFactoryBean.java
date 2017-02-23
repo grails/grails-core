@@ -28,7 +28,9 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use {@link org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator} instead
  */
+@Deprecated
 public class ConstraintsEvaluatorFactoryBean implements FactoryBean<ConstraintsEvaluator>, InitializingBean {
 
     private ConstraintsEvaluator constraintsEvaluator;
