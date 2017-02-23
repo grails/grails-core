@@ -10,6 +10,12 @@ echo "Project Version: '$grailsVersion'"
 echo "EXIT STATUS of build: '$EXIT_STATUS'"
 echo "Builder Leader: '$BUILD_LEADER'"
 
+# Configure GIT
+git config --global credential.helper "store --file=~/.git-credentials"
+echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
+
+git config --global user.name "$GIT_NAME"
+git config --global user.email "$GIT_EMAIL"
 
 if [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Builder Leading Publishing Release..."
@@ -48,12 +54,6 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLU
         ./gradlew assemble || EXIT_STATUS=$?
     fi
 
-    # Configure GIT
-    git config --global credential.helper "store --file=~/.git-credentials"
-    echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
-
-    git config --global user.name "$GIT_NAME"
-    git config --global user.email "$GIT_EMAIL"
 
     # Tag and release the docs
     git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
