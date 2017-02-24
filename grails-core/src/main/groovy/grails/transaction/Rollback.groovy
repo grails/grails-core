@@ -29,6 +29,7 @@ import java.lang.annotation.Target
  *
  * @author Graeme Rocher
  * @since 2.4
+ * @deprecated Use grails.gorm.transactions.Rollback instead
  */
 @Target([ElementType.METHOD, ElementType.TYPE])
 @Retention(RetentionPolicy.RUNTIME)
