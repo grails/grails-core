@@ -19,6 +19,7 @@ import grails.util.Environment;
 import groovy.lang.Closure;
 import org.grails.core.AbstractGrailsClass;
 import grails.web.servlet.bootstrap.GrailsBootstrapClass;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 
 import javax.servlet.ServletContext;
 
@@ -34,13 +35,21 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
         @Override
         public Object call(Object... args) { return null; }
     };
+    private final Object instance;
 
     public DefaultGrailsBootstrapClass(Class<?> clazz) {
         super(clazz, BOOT_STRAP);
+        this.instance = super.getReferenceInstance();
+    }
+
+    @Override
+    public Object getReferenceInstance() {
+        return this.instance;
     }
 
     public Closure<?> getInitClosure() {
-        Object obj = getPropertyValueObject(INIT_CLOSURE);
+
+        Object obj = ClassPropertyFetcher.getInstancePropertyValue(instance, INIT_CLOSURE);
         if (obj instanceof Closure) {
             return (Closure<?>)obj;
         }
@@ -48,7 +57,7 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
     }
 
     public Closure<?> getDestroyClosure() {
-        Object obj = getPropertyValueObject(DESTROY_CLOSURE);
+        Object obj = ClassPropertyFetcher.getInstancePropertyValue(instance, DESTROY_CLOSURE);
         if (obj instanceof Closure) {
             return (Closure<?>)obj;
         }

@@ -17,10 +17,9 @@ package org.grails.core;
 
 import grails.core.GrailsTagLibClass;
 import groovy.lang.Closure;
+import groovy.lang.MetaProperty;
 import org.grails.core.artefact.TagLibArtefactHandler;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,13 +52,12 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
     public DefaultGrailsTagLibClass(Class<?> clazz) {
         super(clazz, TAG_LIB);
 
-        for (PropertyDescriptor prop : getPropertyDescriptors()) {
-            Method readMethod = prop.getReadMethod();
-            if (readMethod == null || Modifier.isStatic(readMethod.getModifiers())) {
+        for (MetaProperty prop : getMetaProperties()) {
+            if (Modifier.isStatic(prop.getModifiers())) {
                 continue;
             }
 
-            if (Closure.class.isAssignableFrom(prop.getPropertyType())) {
+            if (Closure.class.isAssignableFrom(prop.getType())) {
                 tags.add(prop.getName());
             }
         }
