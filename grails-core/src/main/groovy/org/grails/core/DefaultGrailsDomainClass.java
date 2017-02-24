@@ -63,7 +63,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private MappingContext mappingContext;
     private Map<String, Constrained> constrainedProperties;
     private boolean propertiesInitialized;
-
+    private Boolean autowire = null;
     /**
      * @param clazz
      * @param defaultConstraints
@@ -201,6 +201,15 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         }
 
         return configurationMap;
+    }
+
+    @Override
+    public boolean isAutowire() {
+        if(autowire == null) {
+            verifyContextIsInitialized();
+            autowire = persistentEntity.getMapping().getMappedForm().isAutowire();
+        }
+        return autowire;
     }
 
     public boolean isOwningClass(Class domainClass) {

@@ -18,6 +18,7 @@ package org.grails.plugins.web.controllers.api;
 import grails.config.Config;
 import grails.config.Settings;
 import grails.core.GrailsApplication;
+import grails.core.GrailsClass;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.Environment;
@@ -28,7 +29,11 @@ import grails.web.databinding.DataBindingUtils;
 import java.util.Map;
 
 import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.core.exceptions.GrailsConfigurationException;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -74,13 +79,9 @@ public class ControllersDomainBindingApi {
     private static GrailsDomainClass getDomainClass(Object instance) {
         GrailsDomainClass domainClass = null;
         if(!Environment.isInitializing()) {
-            final ApplicationContext applicationContext = Holders.findApplicationContext();
-            if(applicationContext != null) {
-                GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
-                    applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
-                if (grailsApplication != null) {
-                    domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
-                }
+            final GrailsApplication grailsApplication = Holders.findApplication();
+            if (grailsApplication != null) {
+                domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
             }
         }
 
@@ -90,14 +91,23 @@ public class ControllersDomainBindingApi {
     private static void autowire(Object instance) {
         if(!Environment.isInitializing()) {
 
-            final Config config = Holders.getConfig();
-            boolean autowire = config != null ? config.getProperty(Settings.GORM_AUTOWIRE_INSTANCES, Boolean.class, false) : false;
-            if(autowire) {
-                final ApplicationContext applicationContext = Holders.findApplicationContext();
-                if(applicationContext != null) {
-                    applicationContext
-                            .getAutowireCapableBeanFactory()
-                            .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+            GrailsApplication application = Holders.findApplication();
+            if(application != null) {
+
+                GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
+                if(domainClass != null) {
+                    try {
+                        if(domainClass.isAutowire()) {
+                            final ApplicationContext applicationContext = Holders.findApplicationContext();
+                            if(applicationContext != null) {
+                                applicationContext
+                                        .getAutowireCapableBeanFactory()
+                                        .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+                            }
+                        }
+                    } catch (GrailsConfigurationException e) {
+                        // ignore, Mapping Context not initialized yet
+                    }
                 }
             }
         }
