@@ -18,7 +18,6 @@ package org.grails.compiler.injection;
 import grails.artefact.Enhanced;
 import grails.compiler.ast.GrailsArtefactClassInjector;
 import grails.core.GrailsDomainClassProperty;
-import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
@@ -257,11 +256,12 @@ public class GrailsASTUtils {
         if (classNode.hasDeclaredMethod(methodName, copyParameters(parameterTypes, genericsPlaceholders))) {
             return null;
         }
-        String propertyName = GrailsClassUtils.getPropertyForGetter(methodName, declaredMethod.getReturnType().getTypeClass());
+        ClassNode returnType = declaredMethod.getReturnType();
+        String propertyName = !returnType.isPrimaryClassNode() ? GrailsNameUtils.getPropertyForGetter(methodName, returnType.getTypeClass()) : GrailsNameUtils.getPropertyForGetter(methodName);
         if (propertyName != null && parameterTypes.length == 0 && classNode.hasProperty(propertyName)) {
             return null;
         }
-        propertyName = GrailsClassUtils.getPropertyForSetter(methodName);
+        propertyName = GrailsNameUtils.getPropertyForSetter(methodName);
         if (propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
             return null;
         }
@@ -269,7 +269,7 @@ public class GrailsASTUtils {
         BlockStatement methodBody = new BlockStatement();
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, thisAsFirstArgument, genericsPlaceholders);
 
-        ClassNode returnType = replaceGenericsPlaceholders(declaredMethod.getReturnType(), genericsPlaceholders);
+        returnType = replaceGenericsPlaceholders(returnType, genericsPlaceholders);
 
         MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, methodName, arguments);
         methodCallExpression.setMethodTarget(declaredMethod);
