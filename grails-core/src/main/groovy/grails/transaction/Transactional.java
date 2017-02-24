@@ -43,12 +43,14 @@ import java.lang.annotation.*;
  * @author Juergen Hoeller
  *
  * @since 2.3
+ * @deprecated Use grails.gorm.transactions.Transactional instead
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
 @GroovyASTTransformationClass("org.grails.datastore.gorm.transactions.transform.TransactionalTransform")
+@Deprecated
 public @interface Transactional {
     /**
      * A qualifier value for the specified transaction.
