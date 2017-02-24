@@ -48,7 +48,7 @@ class DataSourceGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         GrailsApplication application = grailsApplication
 
-        if (pluginManager.hasGrailsPlugin('hibernate4') || pluginManager.hasGrailsPlugin('hibernate5')) {
+        if (pluginManager.hasGrailsPlugin('hibernate')) {
 
             if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
                 Boolean enabled = config.getProperty(TRANSACTION_MANAGER_ENABLED, Boolean, false)
