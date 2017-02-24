@@ -237,12 +237,12 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
 
         Collection<GrailsApplicationLifeCycle> lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
         if(event instanceof ContextRefreshedEvent) {
-            Environment.setInitializing(false)
             if(context.containsBean("grailsDomainClassMappingContext")) {
                 grailsApplication.setMappingContext(
                     context.getBean("grailsDomainClassMappingContext", MappingContext)
                 )
             }
+            Environment.setInitializing(false)
             pluginManager.setApplicationContext(context)
             pluginManager.doDynamicMethods()
             for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
