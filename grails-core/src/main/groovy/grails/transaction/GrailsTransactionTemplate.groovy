@@ -34,8 +34,10 @@ import org.springframework.transaction.support.TransactionTemplate
  * @author Kazuki YAMAMOTO
  * @author Graeme Rocher
  * @since 2.4
+ * @deprecated Use grails.gorm.transactions.GrailsTransactionTemplate instead
  */
 @CompileStatic
+@Deprecated
 class GrailsTransactionTemplate {
     
     GrailsTransactionAttribute transactionAttribute

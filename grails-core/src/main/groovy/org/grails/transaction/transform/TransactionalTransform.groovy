@@ -64,9 +64,11 @@ import org.springframework.transaction.interceptor.RollbackRuleAttribute
  *
  * @author Graeme Rocher
  * @since 2.3
+ * @deprecated Use org.grails.datastore.gorm.transactions.transform.TransactionalTransform instead
  */
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
+@Deprecated
 class TransactionalTransform implements ASTTransformation{
     public static final ClassNode MY_TYPE = new ClassNode(Transactional)
     public static final ClassNode COMPILE_STATIC_TYPE = ClassHelper.make(CompileStatic)

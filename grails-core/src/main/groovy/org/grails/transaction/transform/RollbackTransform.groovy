@@ -24,9 +24,12 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 
 /**
  * The transform class for {@link grails.transaction.Rollback}
+ *
+ * @deprecated Use org.grails.datastore.gorm.transactions.transform.RollbackTransform instead
  */
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
+@Deprecated
 class RollbackTransform extends TransactionalTransform {
 
     public static final ClassNode MY_TYPE = new ClassNode(Rollback)
