@@ -48,7 +48,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@GroovyASTTransformationClass("org.grails.transaction.transform.TransactionalTransform")
+@GroovyASTTransformationClass("org.grails.datastore.gorm.transactions.transform.TransactionalTransform")
 public @interface Transactional {
     /**
      * A qualifier value for the specified transaction.

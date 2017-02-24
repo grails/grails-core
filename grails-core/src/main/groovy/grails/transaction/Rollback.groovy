@@ -34,7 +34,7 @@ import java.lang.annotation.Target
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@GroovyASTTransformationClass("org.grails.transaction.transform.RollbackTransform")
+@GroovyASTTransformationClass("org.grails.datastore.gorm.transactions.transform.RollbackTransform")
 public @interface Rollback {
     /**
      * Whether or not the transaction for the annotated method should be rolled
