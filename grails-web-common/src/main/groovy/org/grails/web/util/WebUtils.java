@@ -188,11 +188,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), locale);
     }
 
-    public static String addViewPrefix(String viewName) {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        return addViewPrefix(viewName, webRequest != null ? webRequest.getControllerName() : null);
-    }
-
     public static String addViewPrefix(String viewName, String controllerName) {
         if (!viewName.startsWith(String.valueOf(SLASH))) {
             if(viewName.startsWith(UrlBasedViewResolver.REDIRECT_URL_PREFIX) || viewName.startsWith(UrlBasedViewResolver.FORWARD_URL_PREFIX)) {
