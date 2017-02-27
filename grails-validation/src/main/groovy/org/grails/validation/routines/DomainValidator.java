@@ -58,7 +58,9 @@ import java.util.List;
  * </p>
  *
  * @since Validator 1.4
+ * @deprecated Replaced by newer version of commons-validation
  */
+@Deprecated
 public class DomainValidator implements Serializable {
 
     private static final long serialVersionUID = -7709130257134339371L;

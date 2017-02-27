@@ -17,10 +17,18 @@ package grails.test.mixin.domain
 
 import grails.artefact.Enhanced
 import grails.core.GrailsDomainClass
+import grails.gorm.validation.PersistentEntityValidator
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.gorm.GormEnhancer
+import org.grails.datastore.gorm.bootstrap.support.InstanceFactoryBean
+import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory
+import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint
+import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.validation.ConstraintEvalUtils
@@ -75,14 +83,9 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         initialMockDomainSetup()
         Collection<PersistentEntity> entities = simpleDatastore.mappingContext.addPersistentEntities(domainClassesToMock)
         for (PersistentEntity entity in entities) {
-            GrailsDomainClass domain = registerGrailsDomainClass(entity.javaClass)
-
-            Validator validator = registerDomainClassValidator(domain)
-            simpleDatastore.mappingContext.addEntityValidator(entity, validator)
+            entity.initialize()
+            registerGrailsDomainClass(entity.javaClass)
         }
-        final failOnError = getFailOnError()
-        new GormEnhancer(simpleDatastore, transactionManager, failOnError instanceof Boolean ? (Boolean)failOnError : false)
-
         initializeMappingContext()
     }
 
@@ -111,7 +114,19 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     }
 
     protected void initialMockDomainSetup() {
-        ConstraintEvalUtils.clearDefaultConstraints()
+        defineBeans(true) {
+            grailsDomainClassMappingContext(InstanceFactoryBean, simpleDatastore.mappingContext)
+        }
+        grailsApplication.setApplicationContext(applicationContext)
+        MappingContext mappingContext = applicationContext.getBean(MappingContext)
+        DefaultValidatorRegistry validatorRegistry = new DefaultValidatorRegistry(
+                mappingContext, simpleDatastore.connectionSources.defaultConnectionSource.settings, messageSource
+        )
+        validatorRegistry.addConstraintFactory(
+            new MappingContextAwareConstraintFactory(UniqueConstraint.class, messageSource, mappingContext)
+        )
+        mappingContext.setValidatorRegistry(validatorRegistry)
+        grailsApplication.setMappingContext(mappingContext)
         grailsApplication.getArtefactHandler(DomainClassArtefactHandler.TYPE).setGrailsApplication(grailsApplication)
     }
 
@@ -125,34 +140,6 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         }
     }
 
-    protected void enhanceSingleEntity(PersistentEntity entity) {
-        def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
-        final failOnError = config?.grails?.gorm?.failOnError
-        enhancer.failOnError = failOnError instanceof Boolean ? (Boolean)failOnError : false
-        if (entity.javaClass.getAnnotation(Enhanced) != null) {
-            enhancer.enhance(entity, true)
-        } else {
-            enhancer.enhance(entity)
-        }
-    }
-
-    protected Validator registerDomainClassValidator(GrailsDomainClass domain) {
-        String validationBeanName = "${domain.fullName}Validator"
-        defineBeans(true) {
-            "${domain.fullName}"(domain.clazz) { bean ->
-                bean.singleton = false
-                bean.autowire = "byName"
-            }
-            "$validationBeanName"(MockCascadingDomainClassValidator) { bean ->
-                delegate.messageSource = ref("messageSource")
-                bean.lazyInit = true
-                domainClass = domain
-                delegate.grailsApplication = grailsApplication
-            }
-        }
-
-        applicationContext.getBean(validationBeanName, Validator)
-    }
 
     @CompileStatic
     protected GrailsDomainClass registerGrailsDomainClass(Class<?> domainClassToMock) {

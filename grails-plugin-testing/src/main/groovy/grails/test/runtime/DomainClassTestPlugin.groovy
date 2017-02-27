@@ -21,7 +21,8 @@ import grails.validation.ConstrainedProperty
 import grails.validation.ConstraintsEvaluator
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
+import org.grails.datastore.gorm.events.ConfigurableApplicationContextEventPublisher
+import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher
 import org.grails.plugins.domain.support.GrailsDomainClassCleaner
 import org.grails.plugins.domain.DomainClassGrailsPlugin
 import org.grails.datastore.gorm.events.AutoTimestampEventListener
@@ -53,14 +54,8 @@ class DomainClassTestPlugin implements TestPlugin {
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
         defineBeans(runtime) {
-            grailsDatastore(SimpleMapDatastore, grailsApplication.mainContext)
-            transactionManager(DatastoreTransactionManager) {
-                datastore = ref("grailsDatastore")
-            }
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
-            }
-            grailsDomainClassCleaner(GrailsDomainClassCleaner, grailsApplication)
+            grailsDatastore(SimpleMapDatastore, grailsApplication.config, new DefaultApplicationEventPublisher(), new Class[0])
+            transactionManager(grailsDatastore:"getTransactionManager")
         }
     }
     
@@ -72,20 +67,12 @@ class DomainClassTestPlugin implements TestPlugin {
         ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         ((AbstractMappingContext)simpleDatastore.mappingContext).setCanInitializeEntities(false)
-        applicationContext.addApplicationListener applicationContext.getBean(GrailsDomainClassCleaner)
-        applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
-        applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
     }
 
-    protected void cleanupDatastore() {
-        ClassPropertyFetcher.clearCache()
-        ConstrainedProperty.removeConstraint("unique")
-    }
 
     protected void connectDatastore(TestRuntime runtime, GrailsApplication grailsApplication) {
         ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
-        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
         Session currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
         runtime.putValue("domainClassCurrentSession", currentSession)
     }
@@ -118,7 +105,7 @@ class DomainClassTestPlugin implements TestPlugin {
         (GrailsApplication)event.runtime.getValue("grailsApplication")
     }
 
-    public void onTestEvent(TestEvent event) {
+    void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'before':
                 before(event.runtime, getGrailsApplication(event))
@@ -132,16 +119,10 @@ class DomainClassTestPlugin implements TestPlugin {
             case 'applicationInitialized':
                 applicationInitialized(event.runtime, (GrailsApplication)event.arguments.grailsApplication)
                 break
-            case 'beforeClass':
-                ClassPropertyFetcher.clearCache()
-                break
-            case 'afterClass':
-                cleanupDatastore()
-                break
         }
     }
-    
-    public void close(TestRuntime runtime) {
+
+    void close(TestRuntime runtime) {
         
     }
 }

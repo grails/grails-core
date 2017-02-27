@@ -69,7 +69,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
             renderer.render(book, renderContext)
 
         then:"The resulting HAL is correct"
-            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/books/1" hreflang="en"><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
+            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/books/1" hreflang="en"><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
             response.contentType == GrailsWebUtil.getContentType(HalXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
 
 

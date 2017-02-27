@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 package org.grails.plugins.web.controllers
+
 import grails.config.Settings
-import grails.core.GrailsApplication
 import grails.core.GrailsControllerClass
-import grails.core.support.GrailsApplicationAware
 import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
+import groovy.util.logging.Slf4j
 import org.grails.core.artefact.ControllerArtefactHandler
 import org.grails.plugins.web.servlet.context.BootStrapClassRunner
 import org.grails.web.errors.GrailsExceptionResolver
 import org.grails.web.filters.HiddenHttpMethodFilter
-import org.grails.web.mapping.mvc.UrlMappingsInfoHandlerAdapter
 import org.grails.web.servlet.mvc.GrailsDispatcherServlet
 import org.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.grails.web.servlet.mvc.TokenResponseActionResultTransformer
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.beans.factory.support.AbstractBeanDefinition
-import org.springframework.boot.context.embedded.FilterRegistrationBean
-import org.springframework.boot.context.embedded.ServletRegistrationBean
+import org.springframework.boot.web.servlet.FilterRegistrationBean
+import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
-import org.springframework.core.Ordered
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
@@ -47,13 +44,14 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 
 import javax.servlet.MultipartConfigElement
+
 /**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
-@Commons
+@Slf4j
 class ControllersGrailsPlugin extends Plugin {
 
     def watchedResources = [

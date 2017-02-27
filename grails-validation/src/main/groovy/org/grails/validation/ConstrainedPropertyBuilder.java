@@ -33,14 +33,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.grails.core.util.ClassPropertyFetcher;
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher;
 import org.springframework.beans.InvalidPropertyException;
 
 /**
  * Builder used as a delegate within the "constraints" closure of GrailsDomainClass instances .
  *
  * @author Graeme Rocher
+ * @deprecated Use {@link org.grails.datastore.gorm.validation.constraints.builder.ConstrainedPropertyBuilder} instead
  */
+@Deprecated
 public class ConstrainedPropertyBuilder extends BuilderSupport {
 
     private Map<String, Constrained> constrainedProperties = new LinkedHashMap<String, Constrained>();

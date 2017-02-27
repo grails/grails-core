@@ -66,7 +66,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
 
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/books/1","hreflang":"en","type":"application/hal+json"},"The Publisher":{"href":"/publisher","hreflang":"en"},"author":{"href":"http://localhost/authors/2","hreflang":"en"}},"title":"The Stand","_embedded":{"author":{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"Stephen King"},"authors":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"Stephen King"},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en"}},"name":"King Stephen"}]}}'
+            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/books/1","hreflang":"en","type":"application/hal+json"},"The Publisher":{"href":"/publisher","hreflang":"en"},"author":{"href":"http://localhost/authors/2","hreflang":"en"}},"title":"The Stand","_embedded":{"authors":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"Stephen King"},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en"}},"name":"King Stephen"}],"author":{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"Stephen King"}}}'
 
 
     }

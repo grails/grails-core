@@ -127,8 +127,8 @@ class SelectTagTests extends AbstractGrailsTagTests {
     }
 
     void testSelectTag() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         def range = 1..10
 
@@ -169,8 +169,8 @@ class SelectTagTests extends AbstractGrailsTagTests {
     }
 
     void testSelectTagWithNoSelectionSet() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         def range = ['a', 'b', 'c', 'd', 'e']
 
@@ -211,8 +211,8 @@ class SelectTagTests extends AbstractGrailsTagTests {
     }
 
     void testSelectTagWithValueMessagePrefixSet() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         def categoryMap = ['M':'Mystery' , 'T':'Thriller', 'F':'Fantasy']
         def categoryList = categoryMap.keySet()

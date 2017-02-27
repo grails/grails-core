@@ -26,7 +26,9 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator instead
  */
+@Deprecated
 public interface ConstraintsEvaluator {
 
     String PROPERTY_NAME = "constraints";

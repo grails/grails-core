@@ -176,6 +176,8 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                         } else if (DomainClassArtefactHandler.isDomainClass(resourceAttribute.getClass(), true)) {
                             resource = GrailsNameUtils.getPropertyName(resourceAttribute.getClass())
                             hasId = true
+                        } else if (resourceAttribute instanceof Class) {
+                            resource = GrailsNameUtils.getPropertyName(resourceAttribute)
                         } else {
                             resource = resourceAttribute.toString()
                         }

@@ -27,8 +27,6 @@ import java.util.List;
  */
 public interface Constrained {
 
-
-
     /**
      * @param constraintName The name of the constraint to check
      * @return Returns true if the specified constraint name is being applied to this property

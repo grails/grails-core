@@ -15,40 +15,43 @@
  */
 package grails.core;
 
+import org.grails.datastore.mapping.core.connections.ConnectionSource;
+import org.grails.datastore.mapping.model.config.GormProperties;
+
 /**
  * A property of a GrailsDomainClass instance.
  *
  * @author Graeme Rocher
+ * @deprecated Use the {@link org.grails.datastore.mapping.model.MappingContext} API instead
  */
+@Deprecated
 public interface GrailsDomainClassProperty {
 
-    String IDENTITY = "id";
-    String VERSION = "version";
-    String ATTACHED = "attached";
-    String TRANSIENT = "transients";
-    String CONSTRAINTS = "constraints";
-    String EVANESCENT = "evanescent";
-    String RELATES_TO_MANY = "relatesToMany";
-    String META_CLASS = "metaClass";
-    String CLASS = "class";
-    String MAPPING_STRATEGY = "mapWith";
-    String MAPPED_BY = "mappedBy";
-    String BELONGS_TO = "belongsTo";
-    String HAS_MANY = "hasMany";
-    String HAS_ONE = "hasOne";
+    String IDENTITY = GormProperties.IDENTITY;
+    String VERSION = GormProperties.VERSION;
+    String ATTACHED = GormProperties.ATTACHED;
+    String TRANSIENT = GormProperties.TRANSIENT;
+    String CONSTRAINTS = GormProperties.CONSTRAINTS;
+    String META_CLASS = GormProperties.META_CLASS;
+    String CLASS = GormProperties.CLASS;
+    String MAPPING_STRATEGY = GormProperties.MAPPING_STRATEGY;
+    String MAPPED_BY = GormProperties.MAPPED_BY;
+    String BELONGS_TO = GormProperties.BELONGS_TO;
+    String HAS_MANY = GormProperties.HAS_MANY;
+    String HAS_ONE = GormProperties.HAS_ONE;
     String FETCH_MODE = "fetchMode";
-    String DATE_CREATED = "dateCreated";
-    String MAPPING = "mapping";
-    String NAMED_QUERIES = "namedQueries";
-    String LAST_UPDATED = "lastUpdated";
+    String DATE_CREATED = GormProperties.DATE_CREATED;
+    String MAPPING = GormProperties.MAPPING;
+    String NAMED_QUERIES = GormProperties.NAMED_QUERIES;
+    String LAST_UPDATED = GormProperties.LAST_UPDATED;
     String DOMAIN_CLASS = "domainClass";
     String SORT = "sort";
-    String EMBEDDED = "embedded";
-    String ERRORS = "errors";
-    String DIRTY = "dirty";
-    String DIRTY_PROPERTY_NAMES = "dirtyPropertyNames";
-    String DEFAULT_DATA_SOURCE = "DEFAULT";
-    String ALL_DATA_SOURCES = "ALL";
+    String EMBEDDED = GormProperties.EMBEDDED;
+    String ERRORS = GormProperties.ERRORS;
+    String DIRTY = GormProperties.DIRTY;
+    String DIRTY_PROPERTY_NAMES = GormProperties.DIRTY_PROPERTY_NAMES;
+    String DEFAULT_DATA_SOURCE = ConnectionSource.DEFAULT;
+    String ALL_DATA_SOURCES = ConnectionSource.ALL;
     int FETCH_EAGER = 1;
     int FETCH_LAZY = 0;
 

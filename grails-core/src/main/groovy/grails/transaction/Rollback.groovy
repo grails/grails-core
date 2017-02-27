@@ -29,12 +29,13 @@ import java.lang.annotation.Target
  *
  * @author Graeme Rocher
  * @since 2.4
+ * @deprecated Use grails.gorm.transactions.Rollback instead
  */
 @Target([ElementType.METHOD, ElementType.TYPE])
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@GroovyASTTransformationClass("org.grails.transaction.transform.RollbackTransform")
+@GroovyASTTransformationClass("org.grails.datastore.gorm.transactions.transform.RollbackTransform")
 public @interface Rollback {
     /**
      * Whether or not the transaction for the annotated method should be rolled

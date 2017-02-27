@@ -18,7 +18,9 @@ package org.grails.validation.routines;
 
 /**
  * Groups tests and expected results.
+ * @deprecated Replaced by newer version of commons-validation
  */
+@Deprecated
 public class ResultPair {
     public String item;
     public boolean valid;

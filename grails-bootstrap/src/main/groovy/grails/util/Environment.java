@@ -325,7 +325,7 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentEnvironmentAvailable() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed();
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed() && !isWarDeployed();
     }
 
     /**

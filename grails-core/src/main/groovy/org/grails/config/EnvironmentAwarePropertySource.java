@@ -39,32 +39,16 @@ public class EnvironmentAwarePropertySource extends EnumerablePropertySource<Pro
     }
 
     protected List<String> propertyNames;
+
     @Override
     public String[] getPropertyNames() {
-        if(propertyNames == null) {
-            propertyNames = new ArrayList<String>();
-            Environment env = Environment.getCurrent();
-            String key = "environments." + env.getName();
-            for(PropertySource propertySource : source) {
-
-                if((propertySource != this) &&
-                        !propertySource.getName().contains("plugin") && // plugin default configuration is not allowed to be environment aware (GRAILS-12123)
-                            propertySource instanceof EnumerablePropertySource) {
-                    EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
-
-                    for(String propertyName : enumerablePropertySource.getPropertyNames()) {
-                        if(propertyName.startsWith(key) && propertyName.length() > key.length()) {
-                            propertyNames.add(propertyName.substring(key.length() + 1));
-                        }
-                    }
-                }
-            }
-        }
+        initialize();
         return propertyNames.toArray(new String[propertyNames.size()]);
     }
 
     @Override
     public Object getProperty(String name) {
+        initialize();
         if(!propertyNames.contains(name)) {
             return null;
         }
@@ -78,5 +62,27 @@ public class EnvironmentAwarePropertySource extends EnumerablePropertySource<Pro
             }
         }
         return null;
+    }
+
+    private void initialize() {
+        if(propertyNames == null) {
+            propertyNames = new ArrayList<>();
+            Environment env = Environment.getCurrent();
+            String key = "environments." + env.getName();
+            for(PropertySource propertySource : source) {
+
+                if((propertySource != this) &&
+                        !propertySource.getName().contains("plugin") && // plugin default configuration is not allowed to be environment aware (GRAILS-12123)
+                        propertySource instanceof EnumerablePropertySource) {
+                    EnumerablePropertySource enumerablePropertySource = (EnumerablePropertySource)propertySource;
+
+                    for(String propertyName : enumerablePropertySource.getPropertyNames()) {
+                        if(propertyName.startsWith(key) && propertyName.length() > key.length()) {
+                            propertyNames.add(propertyName.substring(key.length() + 1));
+                        }
+                    }
+                }
+            }
+        }
     }
 }

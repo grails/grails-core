@@ -23,8 +23,10 @@ import org.springframework.validation.Errors;
  * Defines a validatable constraint.
  *
  * @author Graeme Rocher
+ * @deprecated Use {@link grails.gorm.validation.Constraint} instead
  */
-public interface Constraint extends MessageSourceAware {
+@Deprecated
+public interface Constraint extends MessageSourceAware, grails.gorm.validation.Constraint {
 
     /**
      * Returns whether the constraint supports being applied against the specified type;

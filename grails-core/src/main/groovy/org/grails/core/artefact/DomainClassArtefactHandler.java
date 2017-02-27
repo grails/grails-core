@@ -26,18 +26,15 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.InnerClassNode;
 import org.grails.compiler.injection.GrailsASTUtils;
 import org.grails.core.DefaultGrailsDomainClass;
-import org.grails.core.support.GrailsDomainConfigurationUtil;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.io.support.GrailsResourceUtils;
 import org.grails.io.support.Resource;
-import org.grails.validation.ConstraintEvalUtils;
 import org.springframework.core.Ordered;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.TreeSet;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.
@@ -50,16 +47,13 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public static final String TYPE = "Domain";
     public static final String PLUGIN_NAME = "domainClass";
 
-    private Map<String, Object> defaultConstraints;
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
     private static boolean developmentMode = Environment.isDevelopmentMode();
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        if (grailsApplication != null) {
-            defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
-        }
+        // no-op
     }
 
     @Override
@@ -70,7 +64,12 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     @Override
     @SuppressWarnings("rawtypes")
     public GrailsClass newArtefactClass(Class artefactClass) {
-        return new DefaultGrailsDomainClass(artefactClass, defaultConstraints);
+        return new DefaultGrailsDomainClass(artefactClass);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public GrailsClass newArtefactClass(Class artefactClass, MappingContext mappingContext) {
+        return new DefaultGrailsDomainClass(artefactClass, mappingContext);
     }
 
     @Override
@@ -98,24 +97,14 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         }
     }
 
-    /**
-     * Sets up the relationships between the domain classes, this has to be done after
-     * the intial creation to avoid looping
-     */
-    @Override
-    public void initialize(ArtefactInfo artefacts) {
-        GrailsDomainConfigurationUtil.configureDomainClassRelationships(
-                artefacts.getGrailsClasses(),
-                artefacts.getGrailsClassesByName());
-    }
-
     @Override
     @SuppressWarnings("rawtypes")
     public boolean isArtefactClass(Class clazz) {
         return isDomainClass(clazz);
     }
 
-    static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE = new ConcurrentHashMap<Integer, Boolean>();
+    static final TreeSet<String> DOMAIN_CLASS_CACHE = new TreeSet<>();
+    private static final TreeSet<String> NOT_DOMAIN_CLASS_CACHE = new TreeSet<String>();
 
     public static boolean isDomainClass(Class<?> clazz, boolean allowProxyClass) {
         boolean retval = isDomainClass(clazz);
@@ -128,17 +117,22 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public static boolean isDomainClass(Class<?> clazz) {
         if (clazz == null) return false;
 
-        Integer cacheKey = System.identityHashCode(clazz);
+        String cacheKey = clazz.getName();
 
-        Boolean retval = DOMAIN_CLASS_CHECK_CACHE.get(cacheKey);
-        if (retval != null) {
-            return retval;
+        if (DOMAIN_CLASS_CACHE.contains(cacheKey)) {
+            return true;
+        } else if (NOT_DOMAIN_CLASS_CACHE.contains(cacheKey)) {
+            return false;
         }
 
-        retval = doIsDomainClassCheck(clazz);
-        
+        boolean retval = doIsDomainClassCheck(clazz);
+
         if (!developmentMode) {
-            DOMAIN_CLASS_CHECK_CACHE.put(cacheKey, retval);
+            if (retval) {
+                DOMAIN_CLASS_CACHE.add(cacheKey);
+            } else {
+                NOT_DOMAIN_CLASS_CACHE.add(cacheKey);
+            }
         }
         return retval;
     }
@@ -164,8 +158,8 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         while (testClass != null && !testClass.equals(GroovyObject.class) && !testClass.equals(Object.class)) {
             try {
                 // make sure the identify and version field exist
-                testClass.getDeclaredField(GrailsDomainClassProperty.IDENTITY);
-                testClass.getDeclaredField(GrailsDomainClassProperty.VERSION);
+                testClass.getDeclaredField(GormProperties.IDENTITY);
+                testClass.getDeclaredField(GormProperties.VERSION);
 
                 // passes all conditions return true
                 return true;

@@ -4,14 +4,26 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
+import org.springframework.context.ApplicationContext
 import spock.lang.Specification
 
 class DomainClassMarshallerSpec extends Specification {
+
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()
         def grailsApplication = new DefaultGrailsApplication(Author, Book)
         grailsApplication.initialise()
+        def mappingContext = new KeyValueMappingContext("json")
+        mappingContext.addPersistentEntities(Book, Author)
+        grailsApplication.setApplicationContext(Stub(ApplicationContext) {
+            getBean('grailsDomainClassMappingContext', MappingContext) >> {
+                mappingContext
+            }
+        })
+        grailsApplication.setMappingContext(mappingContext)
         initializer.grailsApplication = grailsApplication
         initializer.initialize()
     }
@@ -41,8 +53,8 @@ class DomainClassMarshallerSpec extends Specification {
 
         where:
         authors                                                      | expectedJson                                                                                                                     | expectedXml
-        [new Author(id: 1, name: 'a'), new Author(id: 2, name: 'b')] | '{"id":1,"authorsMap":{"a":{"id":1,"name":"a"},"b":{"id":2,"name":"b"}},"authorsSet":[{"id":1,"name":"a"},{"id":2,"name":"b"}]}' | '<?xml version="1.0" encoding="UTF-8"?><book id="1"><authorsMap><entry key="a" id="1"><name>a</name></entry><entry key="b" id="2"><name>b</name></entry></authorsMap><authorsSet><author id="1"><name>a</name></author><author id="2"><name>b</name></author></authorsSet></book>'
-        [new Author(id: 2, name: 'b'), new Author(id: 1, name: 'a')] | '{"id":1,"authorsMap":{"b":{"id":2,"name":"b"},"a":{"id":1,"name":"a"}},"authorsSet":[{"id":2,"name":"b"},{"id":1,"name":"a"}]}' | '<?xml version="1.0" encoding="UTF-8"?><book id="1"><authorsMap><entry key="b" id="2"><name>b</name></entry><entry key="a" id="1"><name>a</name></entry></authorsMap><authorsSet><author id="2"><name>b</name></author><author id="1"><name>a</name></author></authorsSet></book>'
+        [new Author(id: 1, name: 'a'), new Author(id: 2, name: 'b')] | '{"id":1,"authorsSet":[{"id":1,"name":"a"},{"id":2,"name":"b"}],"authorsMap":{"a":{"id":1,"name":"a"},"b":{"id":2,"name":"b"}}}' | '<?xml version="1.0" encoding="UTF-8"?><book id="1"><authorsSet><author id="1"><name>a</name></author><author id="2"><name>b</name></author></authorsSet><authorsMap><entry key="a" id="1"><name>a</name></entry><entry key="b" id="2"><name>b</name></entry></authorsMap></book>'
+        [new Author(id: 2, name: 'b'), new Author(id: 1, name: 'a')] | '{"id":1,"authorsSet":[{"id":2,"name":"b"},{"id":1,"name":"a"}],"authorsMap":{"b":{"id":2,"name":"b"},"a":{"id":1,"name":"a"}}}' | '<?xml version="1.0" encoding="UTF-8"?><book id="1"><authorsSet><author id="2"><name>b</name></author><author id="1"><name>a</name></author></authorsSet><authorsMap><entry key="b" id="2"><name>b</name></entry><entry key="a" id="1"><name>a</name></entry></authorsMap></book>'
     }
 }
 

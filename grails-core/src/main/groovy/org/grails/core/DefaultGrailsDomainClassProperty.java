@@ -15,31 +15,19 @@
  */
 package org.grails.core;
 
-import grails.core.ComponentCapableDomainClass;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsNameUtils;
+import org.grails.core.artefact.DomainClassArtefactHandler;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.types.*;
+import org.springframework.util.ClassUtils;
 
-import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import javax.persistence.FetchType;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-
-import grails.validation.Constrained;
-import org.grails.core.artefact.DomainClassArtefactHandler;
-import org.grails.core.io.support.GrailsFactoriesLoader;
-import grails.validation.ConstraintsEvaluator;
-import org.grails.core.support.GrailsDomainConfigurationUtil;
-import org.grails.core.util.ClassPropertyFetcher;
-import org.springframework.core.style.ToStringCreator;
-import org.springframework.util.ClassUtils;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
 
 /**
  * Represents a property of a domain class and contains meta information about the
@@ -51,153 +39,53 @@ import org.springframework.validation.Validator;
 public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProperty {
 
     private GrailsDomainClass domainClass;
-    private boolean persistent = true; // persistant by default
-    private boolean identity;
-    private boolean oneToMany;
-    private String name;
-    private Class<?> type;
-    private boolean manyToMany;
-    private boolean manyToOne;
-    private boolean oneToOne;
-    private boolean hasOne = false;
-    private boolean bidirectional;
-    private boolean derived = false;
 
-    private Class<?> referencedPropertyType;
-    private GrailsDomainClass referencedDomainClass;
-    private GrailsDomainClassProperty otherSide;
     private String naturalName;
-    private boolean inherited;
-    private int fetchMode = FETCH_LAZY;
-    private boolean owningSide;
-    private String referencePropertyName;
-    private boolean embedded;
-    private GrailsDomainClass component;
-    private boolean basicCollectionType;
-    private Map<String, Object> defaultConstraints;
     private boolean explicitSaveUpdateCascade = false;
 
+    private final PersistentEntity persistentEntity;
+    private final PersistentProperty persistentProperty;
+    private final Association association;
+    private final GrailsDomainClass referencedDomainClass;
     /**
      * Constructor.
-     * @param domainClass
-     * @param descriptor
-     */
-    public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor) {
-        this(domainClass, descriptor, null);
-    }
-
-    /**
-     * Constructor.
-     * @param domainClass
-     * @param descriptor
+     * @param domainClass The domain class
+     * @param property The persistent property instance
      */
     @SuppressWarnings("rawtypes")
-    public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor, Map<String, Object> defaultConstraints) {
+    public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PersistentEntity entity, PersistentProperty property) {
         this.domainClass = domainClass;
-        name = descriptor.getName();
-        naturalName = GrailsNameUtils.getNaturalName(descriptor.getName());
-        type = descriptor.getPropertyType();
-        identity = descriptor.getName().equals(IDENTITY);
-
-        // establish if property is persistant
-        if (domainClass != null) {
-            // figure out if this property is inherited
-            if (!domainClass.isRoot()) {
-                inherited = GrailsClassUtils.isPropertyInherited(domainClass.getClazz(), name);
+        this.persistentEntity = entity;
+        this.persistentProperty = property;
+        this.association = property instanceof Association ? (Association) property : null;
+        if(association != null) {
+            PersistentEntity associatedEntity = association.getAssociatedEntity();
+            if(associatedEntity != null) {
+                this.referencedDomainClass = (GrailsDomainClass) domainClass
+                        .getApplication()
+                        .getArtefact(
+                        DomainClassArtefactHandler.TYPE, associatedEntity.getName()
+                );
             }
-            List transientProps = getTransients();
-            checkIfTransient(transientProps);
-
-            establishFetchMode();
-        }
-
-        if (descriptor.getReadMethod() == null || descriptor.getWriteMethod() == null) {
-            persistent = false;
-        }
-
-        if (Errors.class.isAssignableFrom(type)) {
-            persistent = false;
-        }
-        this.defaultConstraints = defaultConstraints;
-    }
-
-    /**
-     * Evaluates the fetchmode.
-     */
-    @SuppressWarnings("rawtypes")
-    private void establishFetchMode() {
-        Map fetchMap = domainClass.getPropertyValue(GrailsDomainClassProperty.FETCH_MODE, Map.class);
-        if (fetchMap != null && fetchMap.containsKey(name)) {
-            if ("eager".equals(fetchMap.get(name))) {
-                fetchMode = FETCH_EAGER;
+            else {
+                this.referencedDomainClass = null;
             }
         }
+        else {
+            this.referencedDomainClass = null;
+        }
+        naturalName = GrailsNameUtils.getNaturalName(property.getName());
     }
 
-    /**
-     * Checks whether this property is transient
-     *
-     * @param transientProps The transient properties
-     */
-    @SuppressWarnings("rawtypes")
-    private void checkIfTransient(List transientProps) {
-        if (transientProps == null) {
-            return;
-        }
-
-        for (Object currentObj : transientProps) {
-            // make sure its a string otherwise ignore. Note: Again maybe a warning?
-            if (currentObj instanceof String) {
-                String propertyName = (String)currentObj;
-                // if the property name is on the not persistant list
-                // then set persistant to false
-                if (propertyName.equals(name)) {
-                    persistent = false;
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Retrieves the transient properties
-     *
-     * @return A list of transient properties
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private List getTransients() {
-        List allTransientProps = new ArrayList();
-
-        List<Class<?>> allClasses = getAllDomainClassesInHierarchy();
-        for (Class currentClass : allClasses) {
-            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(currentClass);
-            Object transientProperty = propertyFetcher.getPropertyValue(TRANSIENT, false);
-            if (transientProperty instanceof List) {
-                List transientList = (List) transientProperty;
-                allTransientProps.addAll(transientList);
-            }
-        }
-
-        return allTransientProps;
-    }
-
-    private List<Class<?>> getAllDomainClassesInHierarchy() {
-        List<Class<?>> classesInHierarchy = new ArrayList<Class<?>>();
-
-        Class<?> currentClass = domainClass.getClazz();
-        while(currentClass != null) {
-            classesInHierarchy.add(currentClass);
-            Class<?> superClass = currentClass.getSuperclass();
-            currentClass = DomainClassArtefactHandler.isDomainClass(superClass) ? superClass : null;
-        }
-        return classesInHierarchy;
+    private void throwUnsupported() {
+        throw new UnsupportedOperationException("The DomainClass property API does not support that operation. Use the mapping context API instead.");
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#getName()
      */
     public String getName() {
-        return name;
+        return persistentProperty.getName();
     }
 
     /* (non-Javadoc)
@@ -205,52 +93,55 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     @SuppressWarnings("rawtypes")
     public Class getType() {
-        return type;
+        return persistentProperty.getType();
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isPersistant()
      */
     public boolean isPersistent() {
-        return persistent;
+        return persistentProperty != null;
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isRequired()
      */
     public boolean isOptional() {
-        Constrained constrained = (Constrained) domainClass.getConstrainedProperties().get(name);
-        return (constrained != null) && constrained.isNullable();
+        return persistentProperty.isNullable();
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isIdentity()
      */
     public boolean isIdentity() {
-        return identity;
+        return persistentProperty instanceof Identity;
     }
 
+    @Deprecated
     public void setIdentity(boolean b) {
-        identity = b;
+        throwUnsupported();
     }
 
+    @Override
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isOneToMany()
      */
     public boolean isOneToMany() {
-        return oneToMany;
+        return persistentProperty instanceof OneToMany;
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isManyToOne()
      */
+    @Override
     public boolean isManyToOne() {
-        return manyToOne;
+        return persistentProperty instanceof ManyToOne;
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#getFieldName()
      */
+    @Override
     public String getFieldName() {
         return getName().toUpperCase();
     }
@@ -258,13 +149,15 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isOneToOne()
      */
+    @Override
     public boolean isOneToOne() {
-        return oneToOne;
+        return persistentProperty instanceof OneToOne;
     }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClassProperty#getDomainClass()
      */
+    @Override
     public GrailsDomainClass getDomainClass() {
         return domainClass;
     }
@@ -272,72 +165,82 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClassProperty#isManyToMany()
      */
+    @Override
     public boolean isManyToMany() {
-        return manyToMany;
+        return persistentProperty instanceof ManyToMany;
     }
 
     /**
      * @param manyToMany The manyToMany to set.
      */
+    @Deprecated
     protected void setManyToMany(boolean manyToMany) {
-        this.manyToMany = manyToMany;
+        throwUnsupported();
     }
 
     /**
      * @param oneToMany The oneToMany to set.
      */
+    @Deprecated
     protected void setOneToMany(boolean oneToMany) {
-        this.oneToMany = oneToMany;
+        throwUnsupported();
     }
 
     /**
      * @param manyToOne The manyToOne to set.
      */
+    @Deprecated
     protected void setManyToOne(boolean manyToOne) {
-        this.manyToOne = manyToOne;
+        throwUnsupported();
     }
 
     /**
      * @param oneToOne The oneToOne to set.
      */
+    @Deprecated
     protected void setOneToOne(boolean oneToOne) {
-        this.oneToOne = oneToOne;
+        throwUnsupported();
     }
 
     /**
      * Set whether the foreign key is stored in the parent or child in a one-to-one
      * @param isHasOne True if its stored in the parent
      */
+    @Deprecated
     protected void setHasOne(boolean isHasOne) {
-        this.hasOne = isHasOne;
+        throwUnsupported();
     }
 
     /**
      * @return true if the foreign key in a one-to-one is stored in the parent
      */
+    @Override
     public boolean isHasOne() {
-        return hasOne;
+        return association instanceof ToOne && ((ToOne)association).isForeignKeyInChild();
     }
 
     /**
      * @param persistent The persistant to set.
      */
+    @Deprecated
     protected void setPersistent(boolean persistent) {
-        this.persistent = persistent;
+        throwUnsupported();
     }
 
     /**
      * Sets whether the relationship is bidirectional or not
      */
+    @Deprecated
     protected void setBidirectional(boolean bidirectional) {
-        this.bidirectional = bidirectional;
+        throwUnsupported();
     }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClassProperty#getTypePropertyName()
      */
+    @Override
     public String getTypePropertyName() {
-        String shortTypeName = ClassUtils.getShortName(type);
+        String shortTypeName = ClassUtils.getShortName(persistentProperty.getType());
         return shortTypeName.substring(0,1).toLowerCase(Locale.ENGLISH) + shortTypeName.substring(1);
     }
 
@@ -345,31 +248,36 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @see grails.core.GrailsDomainClassProperty#getReferencedPropertyType()
      */
     @SuppressWarnings("rawtypes")
+    @Override
     public Class getReferencedPropertyType() {
-        if (isDomainAssociation()) {
-            return referencedPropertyType;
+        if (association != null) {
+            PersistentEntity entity = association.getAssociatedEntity();
+            if (entity != null) {
+                return entity.getJavaClass();
+            } else if (association.isBasic()) {
+                return ((Basic)association).getComponentType();
+            }
+        } else if (persistentProperty instanceof Simple) {
+            return persistentProperty.getType();
         }
-
-        return getType();
+        return null;
     }
 
-    private boolean isDomainAssociation() {
-        return (Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) &&
-                referencedPropertyType != null;
-    }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClassProperty#isBidirectional()
      */
+    @Override
     public boolean isBidirectional() {
-        return bidirectional;
+        return association != null && association.isBidirectional();
     }
 
     /**
      * Sets the referenced property type of this property
      */
+    @Deprecated
     protected void setReferencedPropertyType(Class<?> referencedPropertyType) {
-        this.referencedPropertyType = referencedPropertyType;
+        throwUnsupported();
     }
 
     /* (non-Javadoc)
@@ -380,21 +288,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     public void setReferencedDomainClass(GrailsDomainClass referencedDomainClass) {
-        if (referencedDomainClass != null) {
-            this.referencedDomainClass = referencedDomainClass;
-            this.referencedPropertyType = referencedDomainClass.getClazz();
-        }
+        throwUnsupported();
     }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClassProperty#isAssociation()
      */
     public boolean isAssociation() {
-        return isOneToMany() ||
-                isOneToOne() ||
-                isManyToOne() ||
-                isManyToMany() ||
-                isEmbedded();
+        return association != null;
     }
 
     public boolean isEnum() {
@@ -410,122 +311,99 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     @Override
     public String toString() {
-        String assType = null;
-        if (isManyToMany()) {
-            assType = "many-to-many";
-        }
-        else if (isOneToMany()) {
-            assType = "one-to-many";
-        }
-        else if (isOneToOne()) {
-            assType = "one-to-one";
-        }
-        else if (isManyToOne()) {
-            assType = "many-to-one";
-        }
-        else if (isEmbedded()) {
-            assType = "embedded";
-        }
-        return new ToStringCreator(this)
-                .append("name", name)
-                .append("type", type)
-                .append("persistent", isPersistent())
-                .append("optional", isOptional())
-                .append("association", isAssociation())
-                .append("bidirectional", isBidirectional())
-                .append("association-type", assType)
-                .toString();
+        return persistentProperty.toString();
     }
 
     /* (non-Javadoc)
      * @see grails.core.GrailsDomainClassProperty#getOtherSide()
      */
     public GrailsDomainClassProperty getOtherSide() {
-        return otherSide;
+        if (referencedDomainClass != null && association != null) {
+            Association otherSide = association.getInverseSide();
+            if (otherSide != null) {
+                return referencedDomainClass.getPropertyByName(otherSide.getName());
+            }
+        }
+        return null;
     }
 
     public void setOtherSide(GrailsDomainClassProperty property) {
-        if (!equals(property)) {
-            setBidirectional(true);
-            if (isOneToOne() && property.isOneToMany()) {
-                setOneToOne(false);
-                setManyToOne(true);
-            }
-        }
-        otherSide = property;
+        throwUnsupported();
     }
 
+    @Override
     public boolean isExplicitSaveUpdateCascade() {
-        return explicitSaveUpdateCascade;
+        throwUnsupported();
+        return false;
     }
 
+    @Override
     public void setExplicitSaveUpdateCascade(boolean explicitSaveUpdateCascade) {
-        this.explicitSaveUpdateCascade = explicitSaveUpdateCascade;
+        throwUnsupported();
     }
 
     public boolean isInherited() {
-        return inherited;
+        return persistentProperty.isInherited();
     }
 
     public int getFetchMode() {
-        return fetchMode;
+        FetchType fetchStrategy = persistentProperty.getMapping().getMappedForm().getFetchStrategy();
+        switch (fetchStrategy) {
+            case EAGER:
+                return FETCH_EAGER;
+            case LAZY:
+                return FETCH_LAZY;
+        }
+        return FETCH_LAZY;
     }
 
     public boolean isOwningSide() {
-        return isHasOne() || owningSide;
+        return association != null && association.isOwningSide();
     }
 
     public void setOwningSide(boolean b) {
-        owningSide = b;
+        throwUnsupported();
     }
 
     @SuppressWarnings("unchecked")
     public boolean isCircular() {
-        if (otherSide != null) {
-            if (otherSide.getDomainClass().getClazz().isAssignableFrom(domainClass.getClazz())) {
-                return true;
-            }
-        }
-        else if (getReferencedPropertyType().isAssignableFrom(domainClass.getClazz())) {
-            return true;
-        }
-        return false;
+        return association != null && association.isCircular();
     }
 
     public void setReferencePropertyName(String name) {
-        referencePropertyName = name;
+        throwUnsupported();
     }
 
     public String getReferencedPropertyName() {
-        return referencePropertyName;
-    }
-
-    public boolean isEmbedded() {
-        return embedded;
-    }
-
-    public GrailsDomainClass getComponent() {
-        return component;
-    }
-
-    public void setEmbedded(boolean isEmbedded) {
-        embedded = isEmbedded;
-        if (isEmbedded) {
-            component = new ComponentDomainClass(getType());
-
-            final GrailsDomainClass dc = getDomainClass();
-            if (dc instanceof ComponentCapableDomainClass) {
-                ((ComponentCapableDomainClass) dc).addComponent(component);
-            }
+        if (association != null) {
+            return association.getReferencedPropertyName();
+        } else {
+            return null;
         }
     }
 
+    public boolean isEmbedded() {
+        return association != null && association.isEmbedded();
+    }
+
+    public GrailsDomainClass getComponent() {
+        if (association instanceof Embedded) {
+            return getReferencedDomainClass();
+        } else {
+            return null;
+        }
+    }
+
+    public void setEmbedded(boolean isEmbedded) {
+        throwUnsupported();
+    }
+
     public boolean isDerived() {
-        return derived;
+        return persistentProperty.getMapping().getMappedForm().isDerived();
     }
 
     public void setDerived(boolean derived) {
-        this.derived = derived;
+        throwUnsupported();
     }
 
     /**
@@ -560,178 +438,11 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     public void setBasicCollectionType(boolean b) {
-        basicCollectionType = b;
+        throwUnsupported();
     }
 
     public boolean isBasicCollectionType() {
-        return basicCollectionType;
+        return persistentProperty != null && persistentProperty instanceof Basic;
     }
 
-    @SuppressWarnings("rawtypes")
-    private class ComponentDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
-        private GrailsDomainClassProperty[] properties;
-        private Map constraints = Collections.emptyMap();
-        private List transients = Collections.emptyList();
-
-        public ComponentDomainClass(Class<?> type) {
-            super(type, "");
-
-            PropertyDescriptor[] descriptors = getPropertyDescriptors();
-
-            List tmp = getPropertyValue(GrailsDomainClassProperty.TRANSIENT, List.class);
-            if (tmp != null) transients = tmp;
-            properties = createDomainClassProperties(descriptors);
-
-            ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
-            if(constraintsEvaluator != null) {
-                constraints = constraintsEvaluator.evaluate(type, properties);
-            }
-            else {
-                constraints = Collections.emptyMap();
-            }
-        }
-
-        private ConstraintsEvaluator getConstraintsEvaluator() {
-            if (domainClass instanceof DefaultGrailsDomainClass) {
-                return ((DefaultGrailsDomainClass) domainClass).getConstraintsEvaluator();
-            }
-            return GrailsFactoriesLoader.loadFactory(ConstraintsEvaluator.class);
-        }
-
-        private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {
-
-            List<DefaultGrailsDomainClassProperty> props = new ArrayList<DefaultGrailsDomainClassProperty>();
-            Collection<String> embeddedNames = getEmbeddedList();
-            for (PropertyDescriptor descriptor : descriptors) {
-                if (isPersistentProperty(descriptor)) {
-                    DefaultGrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(
-                            this, descriptor, defaultConstraints);
-                    props.add(property);
-                    if (embeddedNames.contains(property.getName())) {
-                        property.setEmbedded(true);
-                    }
-                }
-            }
-            return props.toArray(new GrailsDomainClassProperty[props.size()]);
-        }
-
-        @SuppressWarnings("unchecked")
-        private Collection<String> getEmbeddedList() {
-            Object potentialList = GrailsClassUtils.getStaticPropertyValue(getClazz(), "embedded");
-            if (potentialList instanceof Collection) {
-                return (Collection<String>)potentialList;
-            }
-            return Collections.emptyList();
-        }
-
-        private boolean isPersistentProperty(PropertyDescriptor descriptor) {
-            String propertyName = descriptor.getName();
-
-            return GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) && !transients.contains(propertyName);
-        }
-
-        public boolean isOwningClass(Class dc) {
-            return dc != null && dc.equals(getDomainClass().getClazz());
-        }
-
-        public GrailsDomainClassProperty[] getProperties() {
-            return properties;
-        }
-
-        public GrailsDomainClassProperty[] getPersistentProperties() {
-            return properties;
-        }
-
-        public GrailsDomainClassProperty getIdentifier() {
-            return null;  // no identifier for embedded component
-        }
-
-        public GrailsDomainClassProperty getVersion() {
-            return null;  // no version for embedded component
-        }
-
-        public Map getAssociationMap() {
-            return Collections.emptyMap();
-        }
-
-        public GrailsDomainClassProperty getPropertyByName(String name) {
-            for (GrailsDomainClassProperty property : properties) {
-                if (property.getName().equals(name)) return property;
-            }
-            return null;
-        }
-
-        public GrailsDomainClassProperty getPersistentProperty(String name) {
-            return getPropertyByName(name);
-        }
-
-        public String getFieldName(String propertyName) {
-            return null;
-        }
-
-        public boolean isOneToMany(String propertyName) {
-            return false;
-        }
-
-        public boolean isManyToOne(String propertyName) {
-            return false;
-        }
-
-        public boolean isBidirectional(String propertyName) {
-            return false;
-        }
-
-        public Class<?> getRelatedClassType(String propertyName) {
-            return getPropertyByName(propertyName).getReferencedPropertyType();
-        }
-
-        public Map getConstrainedProperties() {
-            return constraints;
-        }
-
-        public Validator getValidator() {
-            return null;
-        }
-
-        public void setValidator(Validator validator) {
-            // ignored
-        }
-
-        public String getMappingStrategy() {
-            return GrailsDomainClass.GORM;
-        }
-
-        public boolean isRoot() {
-            return true;
-        }
-
-        @SuppressWarnings("unchecked")
-        public Set getSubClasses() {
-            return Collections.emptySet();
-        }
-
-        public void refreshConstraints() {
-            constraints =getConstraintsEvaluator().evaluate(getClazz(), getPersistentProperties());
-        }
-
-        public boolean hasSubClasses() {
-            return false;
-        }
-
-        public Map getMappedBy() {
-            return Collections.emptyMap();
-        }
-
-        public boolean hasPersistentProperty(String propertyName) {
-            for (int i = 0; i < properties.length; i++) {
-                GrailsDomainClassProperty persistantProperty = properties[i];
-                if (persistantProperty.getName().equals(propertyName)) return true;
-            }
-            return false;
-        }
-
-        public void setMappingStrategy(String strategy) {
-            // do nothing
-        }
-    }
 }

@@ -19,6 +19,7 @@ import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.Environment
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.grails.spring.beans.factory.InstanceFactoryBean
@@ -37,9 +38,9 @@ import javax.sql.DataSource
 class DataSourceGrailsPlugin extends Plugin {
 
     private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
-    public static final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.whitelistPattern'
-    public static final String TRANSACTION_MANAGER_BLACK_LIST_PATTERN = 'grails.transaction.chainedTransactionManagerPostProcessor.blacklistPattern'
-    public static final String TRANSACTION_MANAGER_ENABLED = 'grails.transaction.chainedTransactionManagerPostProcessor.enabled'
+    public static final String TRANSACTION_MANAGER_WHITE_LIST_PATTERN = 'grails.transaction.chainedTransactionManager.whitelistPattern'
+    public static final String TRANSACTION_MANAGER_BLACK_LIST_PATTERN = 'grails.transaction.chainedTransactionManager.blacklistPattern'
+    public static final String TRANSACTION_MANAGER_ENABLED = 'grails.transaction.chainedTransactionManager.enabled'
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version]
 
@@ -47,7 +48,7 @@ class DataSourceGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         GrailsApplication application = grailsApplication
 
-        if (pluginManager.hasGrailsPlugin('hibernate4') || pluginManager.hasGrailsPlugin('hibernate5')) {
+        if (pluginManager.hasGrailsPlugin('hibernate')) {
 
             if (!springConfig.unrefreshedApplicationContext?.containsBean('transactionManager')) {
                 Boolean enabled = config.getProperty(TRANSACTION_MANAGER_ENABLED, Boolean, false)
@@ -76,7 +77,7 @@ class DataSourceGrailsPlugin extends Plugin {
             }
         }
 
-        if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource')) {
+        if(config.getProperty('dataSource.jmxExport', Boolean, false) && ClassUtils.isPresent('org.apache.tomcat.jdbc.pool.DataSource', getClass().classLoader)) {
             try {
                 def jmxMBeanServer = JmxUtils.locateMBeanServer()
                 if(jmxMBeanServer) {
@@ -94,6 +95,7 @@ class DataSourceGrailsPlugin extends Plugin {
     }}
 
     @Override
+    @CompileStatic
     void onShutdown(Map<String, Object> event) {
         try {
             DataSourceUtils.clearJdbcDriverRegistrations()

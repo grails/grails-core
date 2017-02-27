@@ -35,7 +35,7 @@ class JSONConverterTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals("""{"author":"Stephen King","title":"The Stand"}""".toString(), response.contentAsString)
+        assertEquals("""{"title":"The Stand","author":"Stephen King"}""".toString(), response.contentAsString)
     }
 
     @Test
@@ -67,7 +67,7 @@ class JSONConverterTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals("""{"author":"Stephen King","title":"The Stand"}""".toString(), response.contentAsString)
+        assertEquals("""{"title":"The Stand","author":"Stephen King"}""".toString(), response.contentAsString)
     }
 
     @Test
@@ -133,6 +133,12 @@ class JSONConverterTests {
     @Test
     void testMoreStringsWithQuotes2() {
         assertEquals('{"key":"<a href=\\"#\\" class=\\"link\\">link<\\u002fa>"}',(['key': '<a href="#" class="link">link</a>'] as JSON).toString())
+    }
+
+    // GRAILS-10393
+    @Test
+    void testJavaClassDoesntRenderClassProperty() {
+        assertEquals('{"age":86,"name":"Sally"}', (new Author("Sally", 86) as JSON).toString())
     }
 }
 enum Role { HEAD, DISPATCHER, ADMIN }

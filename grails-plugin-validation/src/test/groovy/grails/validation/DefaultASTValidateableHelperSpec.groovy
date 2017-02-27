@@ -58,7 +58,6 @@ class DefaultASTValidateableHelperSpec extends Specification {
 
         def servletContext = new MockServletContext()
         def applicationContext = new GenericWebApplicationContext(servletContext)
-        applicationContext.defaultListableBeanFactory.registerSingleton(ConstraintsEvaluator.BEAN_NAME, new DefaultConstraintEvaluator())
         applicationContext.refresh()
         servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
 

@@ -26,7 +26,9 @@ import org.springframework.validation.Validator
  *
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Will be removed in a future version of Grails
  */
+@Deprecated
 class GormApiSupport {
 
     static GormValidationApi getGormValidationApi(Datastore datastore, Class cls, Validator validator) {

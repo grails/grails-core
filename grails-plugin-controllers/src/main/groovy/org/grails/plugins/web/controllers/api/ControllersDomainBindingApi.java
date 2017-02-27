@@ -15,22 +15,17 @@
  */
 package org.grails.plugins.web.controllers.api;
 
-import grails.config.Config;
-import grails.config.Settings;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
-import grails.core.GrailsDomainClassProperty;
 import grails.util.Environment;
-import grails.util.GrailsMetaClassUtils;
 import grails.util.Holders;
 import grails.web.databinding.DataBindingUtils;
-
-import java.util.Map;
-
 import org.grails.core.artefact.DomainClassArtefactHandler;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.core.exceptions.GrailsConfigurationException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
+
+import java.util.Map;
 
 /**
  * Enhancements made to domain classes for data binding.
@@ -72,18 +67,11 @@ public class ControllersDomainBindingApi {
     }
 
     private static GrailsDomainClass getDomainClass(Object instance) {
-        GrailsDomainClass domainClass = GrailsMetaClassUtils.getPropertyIfExists(instance, GrailsDomainClassProperty.DOMAIN_CLASS, GrailsDomainClass.class);
-        if (domainClass == null) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if (webRequest != null) {
-                ApplicationContext applicationContext = webRequest.getApplicationContext();
-                if(applicationContext != null) {
-                    GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
-                        applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
-                    if (grailsApplication != null) {
-                        domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
-                    }
-                }
+        GrailsDomainClass domainClass = null;
+        if(!Environment.isInitializing()) {
+            final GrailsApplication grailsApplication = Holders.findApplication();
+            if (grailsApplication != null) {
+                domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
             }
         }
 
@@ -93,13 +81,24 @@ public class ControllersDomainBindingApi {
     private static void autowire(Object instance) {
         if(!Environment.isInitializing()) {
 
-            final ApplicationContext applicationContext = Holders.findApplicationContext();
-            final Config config = Holders.getConfig();
-            boolean autowire = config != null ? config.getProperty(Settings.GORM_AUTOWIRE_INSTANCES, Boolean.class, true) : true;
-            if(autowire && applicationContext != null ) {
-                applicationContext
-                        .getAutowireCapableBeanFactory()
-                        .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+            GrailsApplication application = Holders.findApplication();
+            if(application != null) {
+
+                GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
+                if(domainClass != null) {
+                    try {
+                        if(domainClass.isAutowire()) {
+                            final ApplicationContext applicationContext = Holders.findApplicationContext();
+                            if(applicationContext != null) {
+                                applicationContext
+                                        .getAutowireCapableBeanFactory()
+                                        .autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+                            }
+                        }
+                    } catch (GrailsConfigurationException e) {
+                        // ignore, Mapping Context not initialized yet
+                    }
+                }
             }
         }
     }

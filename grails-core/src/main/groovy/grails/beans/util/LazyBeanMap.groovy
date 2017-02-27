@@ -16,9 +16,8 @@
 package grails.beans.util
 
 import groovy.transform.CompileStatic
-import org.grails.core.util.ClassPropertyFetcher
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 
-import java.beans.PropertyDescriptor
 
 /**
  * <p>A map that backs onto a bean. The map is not initialized from the beans property values on creation, but instead lazily reads the values on demand.
@@ -52,7 +51,7 @@ class LazyBeanMap implements Map<String,Object>{
 
     @Override
     int size() {
-        return cpf ? cpf.getPropertyDescriptors().size() : 0
+        return cpf ? cpf.metaProperties.size() : 0
     }
 
     @Override
@@ -109,7 +108,7 @@ class LazyBeanMap implements Map<String,Object>{
     Set<String> keySet() {
         if(!cpf) return [] as Set<String>
         else {
-            return new HashSet<String>( cpf.getPropertyDescriptors().collect { PropertyDescriptor pd -> pd.name} )
+            return new HashSet<String>( cpf.metaProperties.collect { MetaProperty pd -> pd.name} )
         }
     }
 

@@ -71,6 +71,7 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
         ga.setApplicationContext(ctx);
         ga.initialise();
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga);
+        postSetUp();
     }
 
     @Override
@@ -81,6 +82,10 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
     }
 
     protected void onSetUp() {
+        // implemented in subclasses
+    }
+
+    protected void postSetUp() {
         // implemented in subclasses
     }
 

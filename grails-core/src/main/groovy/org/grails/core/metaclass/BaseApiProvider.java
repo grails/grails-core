@@ -15,6 +15,7 @@
  */
 package org.grails.core.metaclass;
 
+import grails.util.GrailsNameUtils;
 import groovy.lang.GString;
 
 import java.lang.reflect.Method;
@@ -32,7 +33,9 @@ import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
 /**
  * @author Graeme Rocher
  * @since 2.0
+ * @deprecated Use traits instead
  */
+@Deprecated
 public abstract class BaseApiProvider {
 
     private static List<String> EXCLUDED_METHODS = Arrays.asList("setMetaClass", "getMetaClass", "setProperties", "getProperties");
@@ -131,7 +134,7 @@ public abstract class BaseApiProvider {
         boolean isStatic = Modifier.isStatic(modifiers);
 
         // skip plain setters/getters by default for instance methods (non-static)
-        if (!isStatic && (GrailsClassUtils.isSetter(name, method.getParameterTypes()) || GrailsClassUtils.isGetter(name, method.getParameterTypes()))) {
+        if (!isStatic && (GrailsClassUtils.isSetter(name, method.getParameterTypes()) || GrailsNameUtils.isGetter(name, method.getReturnType(), method.getParameterTypes()))) {
             return false;
         }
 

@@ -45,7 +45,9 @@ import org.springframework.validation.Errors;
  *
  * @author Marc Palmer
  * @since 0.4
+ * @deprecated Replaced by {@link org.grails.datastore.gorm.validation.constraints.ValidatorConstraint}
  */
+@Deprecated
 public class ValidatorConstraint extends AbstractConstraint {
 
     private Closure<?> validator;

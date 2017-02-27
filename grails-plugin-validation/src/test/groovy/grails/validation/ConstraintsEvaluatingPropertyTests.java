@@ -1,9 +1,11 @@
-package org.grails.validation;
+package grails.validation;
 
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
+import grails.gorm.validation.*;
+import grails.gorm.validation.Constrained;
 import grails.util.Holders;
-import grails.validation.Constrained;
-import grails.validation.ConstrainedProperty;
 import groovy.lang.GroovyClassLoader;
 
 import java.util.Collection;
@@ -11,8 +13,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.grails.test.support.MockHibernatePluginHelper;
-import org.grails.core.DefaultGrailsDomainClass;
+import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.grails.plugins.MockGrailsPluginManager;
 
 public class ConstraintsEvaluatingPropertyTests extends TestCase {
@@ -22,7 +23,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         super.setUp();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
         Holders.setPluginManager(pluginManager);
-        pluginManager.registerMockPlugin(MockHibernatePluginHelper.FAKE_HIBERNATE_PLUGIN);
+        pluginManager.registerMockPlugin(MappingContextBuilder.FAKE_HIBERNATE_PLUGIN);
     }
 
     @Override
@@ -44,7 +45,10 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 " String name\n" +
                 "}");
 
-        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(groovyClass);
+        GrailsApplication ga = new DefaultGrailsApplication(groovyClass);
+        ga.initialise();
+        new MappingContextBuilder(ga).build(groovyClass);
+        GrailsDomainClass domainClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, groovyClass.getName());
 
         Map constraints = domainClass.getConstrainedProperties();
 
@@ -73,9 +77,10 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      */
     @SuppressWarnings("rawtypes")
     public void testNullableConstraint() throws Exception {
-        String bookClassSource =
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        gcl.parseClass(
                 "package org.grails.validation\n" +
-                "class Book {\n" +
+                "@grails.persistence.Entity class Book {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String title\n" +
@@ -90,20 +95,22 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "      assistent(nullable: true)\n" +
                 "   }\n" +
                 "}\n" +
-                "class Author {\n" +
+                "@grails.persistence.Entity class Author {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String name\n" +
                 "}\n" +
-                "class Chapter {\n" +
+                "@grails.persistence.Entity class Chapter {\n" +
                 "   Long id\n" +
                 "   Long version\n" +
                 "   String text\n" +
-                "}";
+                "}");
 
-        GroovyClassLoader gcl = new GroovyClassLoader();
+        GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses());
+        ga.initialise();
+        new MappingContextBuilder(ga).build(gcl.getLoadedClasses());
 
-        DefaultGrailsDomainClass bookClass = new DefaultGrailsDomainClass(gcl.parseClass(bookClassSource, "Book"));
+        GrailsDomainClass bookClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, "org.grails.validation.Book");
 
         Map constraints = bookClass.getConstrainedProperties();
         Constrained p = (Constrained)constraints.get("title");
@@ -153,11 +160,14 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
             classes[i] = gcl.parseClass(classSource[i]);
         }
 
-        DefaultGrailsDomainClass domainClass = new DefaultGrailsDomainClass(classes[classIndexToTest]);
+        GrailsApplication ga = new DefaultGrailsApplication(classes[classIndexToTest]);
+        ga.initialise();
+        new MappingContextBuilder(ga).build(classes[classIndexToTest]);
+        GrailsDomainClass domainClass = (GrailsDomainClass)ga.getArtefact(DomainClassArtefactHandler.TYPE, classes[classIndexToTest].getName());
 
         Map constraints = domainClass.getConstrainedProperties();
 
-        ConstrainedProperty p = (ConstrainedProperty)constraints.get("name");
+        grails.gorm.validation.ConstrainedProperty p = (grails.gorm.validation.ConstrainedProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
 
         assertEquals("Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());

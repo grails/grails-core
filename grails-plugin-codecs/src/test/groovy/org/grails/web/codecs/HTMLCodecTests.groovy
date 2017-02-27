@@ -1,13 +1,13 @@
 package org.grails.web.codecs
 
+import grails.core.DefaultGrailsApplication
 import org.grails.plugins.codecs.HTMLCodec
-import grails.core.StandaloneGrailsApplication
 
 class HTMLCodecTests extends GroovyTestCase {
 
     def getEncoderXml() {
         def htmlCodec = new HTMLCodec()
-        def grailsApplication = new StandaloneGrailsApplication()
+        def grailsApplication = new DefaultGrailsApplication()
         grailsApplication.config.grails.views.gsp.htmlcodec = 'xml'
         grailsApplication.configChanged()
         htmlCodec.setGrailsApplication(grailsApplication)
@@ -17,7 +17,7 @@ class HTMLCodecTests extends GroovyTestCase {
 
     def getEncoderHtml() {
         def htmlCodec = new HTMLCodec()
-        def grailsApplication = new StandaloneGrailsApplication()
+        def grailsApplication = new DefaultGrailsApplication()
         grailsApplication.config.grails.views.gsp.htmlcodec = 'html'
         grailsApplication.configChanged()
         htmlCodec.setGrailsApplication(grailsApplication)
@@ -27,7 +27,7 @@ class HTMLCodecTests extends GroovyTestCase {
 
     def getDecoder() {
         def htmlCodec = new HTMLCodec()
-        def grailsApplication = new StandaloneGrailsApplication()
+        def grailsApplication = new DefaultGrailsApplication()
         htmlCodec.setGrailsApplication(grailsApplication)
         htmlCodec.afterPropertiesSet()
         return htmlCodec.getDecoder()

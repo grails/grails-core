@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.domain;
+package org.grails.core;
 
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
@@ -21,6 +21,7 @@ import grails.core.DefaultGrailsApplication;
 import org.grails.core.artefact.DomainClassArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.core.GrailsDomainClass;
+import org.grails.core.support.MappingContextBuilder;
 
 /**
  * Tests that class heirarchies get calculated appropriately.
@@ -33,12 +34,13 @@ public class HeirarchyDomainClassTests extends TestCase {
     public void testClassHeirarchy() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        gcl.parseClass("class Super { Long id;Long version;}\n" +
+        gcl.parseClass("@grails.persistence.Entity class Super { Long id;Long version;}\n" +
                        "class Sub extends Super { }\n" +
                        "class Sub2 extends Sub { }");
 
         GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ga.initialise();
+        new MappingContextBuilder(ga).build(gcl.getLoadedClasses());
 
         GrailsDomainClass gdc1 = (GrailsDomainClass) ga.getArtefact(DomainClassArtefactHandler.TYPE, "Super");
         assertNotNull(gdc1);
