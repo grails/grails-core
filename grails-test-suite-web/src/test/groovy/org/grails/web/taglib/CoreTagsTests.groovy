@@ -71,7 +71,6 @@ bar
    }
 
     void testIfWithEnv() {
-        println "ENVIRONMENT= " + System.getProperty(Environment.KEY)
         def template = '''
 <g:if env="testing" test="${foo}">foo</g:if>
 '''
@@ -85,7 +84,6 @@ bar
     }
 
     void testIfWithEnvAndWithoutTestAttribute() {
-        println "ENVIRONMENT= " + System.getProperty(Environment.KEY)
         def template = '''<g:if env="development">foo</g:if>'''
         assertOutputEquals("foo", template)
     }
@@ -97,7 +95,6 @@ bar
     }
 
     void testElseIf() {
-        println "ENVIRONMENT= " + System.getProperty(Environment.KEY)
         def template = '''
 <g:if test="${foo}">foo</g:if>
 <g:elseif env="development">bar</g:elseif>
