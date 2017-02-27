@@ -117,7 +117,8 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                     return (ModelAndView) result
                 } else if(result == null &&
                           webRequest.renderView) {
-                    def viewUri = "/${controllerClass.logicalPropertyName}/${action}"
+                    String viewName = controllerClass.actionUriToViewName(action)
+                    def viewUri = "/${controllerClass.logicalPropertyName}/${viewName}"
                     if(controllerClass.namespace != null) {
                         viewUri = "/${controllerClass.namespace}${viewUri}"
                     }
