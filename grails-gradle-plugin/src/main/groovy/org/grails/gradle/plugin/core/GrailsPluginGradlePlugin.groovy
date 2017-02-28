@@ -71,12 +71,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     }
 
-    @CompileDynamic
-    @Override
-    void addDefaultProfile(Project project, Configuration profileConfig) {
-        project.dependencies {
-            profile  ":${System.getProperty("grails.profile") ?: 'web-plugin'}:"
-        }
+    protected String getDefaultProfile() {
+        'web-plugin'
     }
 
     /**
