@@ -132,13 +132,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 addDefaultProfile(project, profileConfiguration)
             }
         }
-
-        profileConfiguration.resolutionStrategy.eachDependency {
-            DependencyResolveDetails details = (DependencyResolveDetails) it
-            def group = details.requested.group ?: "org.grails.profiles"
-            def version = details.requested.version ?: BuildSettings.grailsVersion
-            details.useTarget(group: group, name: details.requested.name, version: version)
-        }
     }
 
     @CompileStatic
@@ -153,9 +146,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    protected String getDefaultProfile() {
+        'web'
+    }
+
     @CompileStatic
     void addDefaultProfile(Project project, Configuration profileConfig) {
-        project.dependencies.add('profile', ":${System.getProperty("grails.profile") ?: 'web'}:")
+        project.dependencies.add('profile', "org.grails.profiles:${System.getProperty("grails.profile") ?: defaultProfile}:")
     }
 
     protected Task createBuildPropertiesTask(Project project) {
