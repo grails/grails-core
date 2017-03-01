@@ -65,14 +65,14 @@ abstract class AbstractProfile implements Profile {
     protected Set<String> defaultFeaturesNames = []
     protected Set<String> requiredFeatureNames = []
     protected String parentTargetFolder
-    final ClassLoader classLoader
+    protected final ClassLoader classLoader
     protected ExclusionDependencySelector exclusionDependencySelector = new ExclusionDependencySelector()
     protected String description = "";
     protected String instructions = "";
     protected String version = BuildSettings.package.implementationVersion
 
     AbstractProfile(Resource profileDir) {
-        this(profileDir, getClass().getClassLoader())
+        this(profileDir, AbstractProfile.getClassLoader())
     }
 
     AbstractProfile(Resource profileDir, ClassLoader classLoader) {
