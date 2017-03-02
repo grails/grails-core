@@ -118,7 +118,7 @@ public enum Environment {
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
-    private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
+    private static Holder<Environment> cachedCurrentEnvironment = new Holder<>("Environment");
     private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT;
     private static boolean initializingState = false;
 
@@ -265,7 +265,7 @@ public enum Environment {
             return current;
         }
 
-        return resolveCurrentEnvironment();
+        return cacheCurrentEnvironment();
     }
 
     private static Environment resolveCurrentEnvironment() {
@@ -297,8 +297,10 @@ public enum Environment {
         return env;
     }
 
-    public static void cacheCurrentEnvironment() {
-        cachedCurrentEnvironment.set(resolveCurrentEnvironment());
+    private static Environment cacheCurrentEnvironment() {
+        Environment env = resolveCurrentEnvironment();
+        cachedCurrentEnvironment.set(env);
+        return env;
     }
 
     /**
