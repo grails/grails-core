@@ -158,7 +158,7 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec {
         def result = handlerAdapter.handle(request, webRequest.response, handlerChain.handler)
 
         then:"The model and view is correct"
-        result.viewName == '/foo/fooBar'
+        result.viewName == 'fooBar'
         !result.model
 
     }
