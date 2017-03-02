@@ -260,11 +260,20 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
+        String envName = System.getProperty(Environment.KEY);
+        Environment env;
+        if(!isBlank(envName)) {
+            env = getEnvironment(envName);
+            if(env != null) {
+                return env;
+            }
+        }
+
+
         Environment current = cachedCurrentEnvironment.get();
         if (current != null) {
             return current;
         }
-
         return cacheCurrentEnvironment();
     }
 
@@ -309,6 +318,14 @@ public enum Environment {
      */
     public static Environment getCurrentEnvironment() {
         return getCurrent();
+    }
+
+    /**
+     * Reset the current environment
+     */
+    public static void reset() {
+        cachedCurrentEnvironment.set(null);
+        Metadata.reset();
     }
 
     /**
