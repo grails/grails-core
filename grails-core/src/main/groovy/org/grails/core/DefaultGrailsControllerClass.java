@@ -169,7 +169,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             actionUriToViewName.put(urlConverter.toUrlElement(actionName), actionName);
             actions.put( urlConverter.toUrlElement(actionName), actions.remove(actionName));
         }
-        defaultActionName = urlConverter.toUrlElement(defaultActionName);
     }
 
     /**

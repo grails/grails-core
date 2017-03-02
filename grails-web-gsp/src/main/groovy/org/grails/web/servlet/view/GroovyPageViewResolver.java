@@ -82,6 +82,11 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
     public void setGroovyPageLocator(GrailsConventionGroovyPageLocator groovyPageLocator) {
         this.groovyPageLocator = groovyPageLocator;
     }
+    
+    @Override
+    public View resolveViewName(String viewName, Locale locale) throws Exception {
+        return super.resolveViewName(WebUtils.addViewPrefix(viewName), locale);
+    }
 
     @Override
     protected View loadView(String viewName, Locale locale) throws Exception {

@@ -158,42 +158,10 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec {
         def result = handlerAdapter.handle(request, webRequest.response, handlerChain.handler)
 
         then:"The model and view is correct"
-        result.viewName == 'fooBar'
+        result.viewName == '/foo/fooBar'
         !result.model
+
     }
-
-    void "Test that a matched URL returns a URLMappingInfo with controller with defaultAction"() {
-
-        given:
-        def grailsApplication = new DefaultGrailsApplication(FooController)
-        grailsApplication.initialise()
-        def holder = getUrlMappingsHolder {
-            "/foo"(controller:"foo")
-        }
-        def urlConverter = new HyphenatedUrlConverter()
-        holder = new GrailsControllerUrlMappings(grailsApplication, holder, urlConverter)
-        def handler = new UrlMappingsHandlerMapping(holder)
-
-        when:"A URI is matched"
-
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
-        webRequest.renderView = true
-        def request = webRequest.request
-        request.setRequestURI("/foo")
-        def handlerChain = handler.getHandler(request)
-
-        then:"A handlerChain is created"
-        handlerChain != null
-
-        when:"A HandlerAdapter is used with a hyphenated url converter"
-        def handlerAdapter = new UrlMappingsInfoHandlerAdapter()
-        def result = handlerAdapter.handle(request, webRequest.response, handlerChain.handler)
-
-        then:"The model and view is correct"
-        result.viewName == 'fooBar'
-        !result.model
-    }
-
 
     void "test modelAndView is returned for URI"() {
         given:
@@ -218,9 +186,6 @@ class UrlMappingsHandlerMappingSpec extends AbstractUrlMappingsSpec {
 
 @Artefact('Controller')
 class FooController  {
-
-    static defaultAction = 'fooBar'
-
     @Action
     def bar() {
         [foo:"bar"]
