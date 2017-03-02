@@ -13,11 +13,6 @@ class CoreTagsTests extends AbstractGrailsTagTests {
 
     @Override
     protected void onSetUp() {
-        System.setProperty(Environment.KEY, "dev")
-    }
-
-    @Override
-    protected void onDestroy() {
         System.setProperty(Environment.KEY, "")
     }
 
