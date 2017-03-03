@@ -16,6 +16,7 @@
 package org.grails.web.servlet.view;
 
 import grails.util.CacheEntry;
+import grails.util.GrailsStringUtils;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
 
@@ -26,13 +27,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.grails.gsp.GroovyPagesTemplateEngine;
 import org.grails.web.gsp.io.GrailsConventionGroovyPageLocator;
 import org.grails.gsp.io.GroovyPageScriptSource;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
-import org.grails.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +95,7 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
 
         String viewCacheKey = groovyPageLocator.resolveViewFormat(viewName);
         
-        String currentControllerKeyPrefix = resolveCurrentControllerKeyPrefixes();
+        String currentControllerKeyPrefix = resolveCurrentControllerKeyPrefixes(viewName.startsWith("/"));
         if (currentControllerKeyPrefix != null) {
             viewCacheKey = currentControllerKeyPrefix + ':' + viewCacheKey;
         }
@@ -139,14 +138,25 @@ public class GroovyPageViewResolver extends InternalResourceViewResolver impleme
     /**
      * @return prefix for cache key that contains current controller's context (currently plugin and namespace)
      */
-    protected String resolveCurrentControllerKeyPrefixes() {
+    protected String resolveCurrentControllerKeyPrefixes(boolean absolute) {
         String pluginContextPath;
         String namespace;
+        String controller;
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if(webRequest != null) {
+            StringBuilder stringBuilder = new StringBuilder();
             namespace = webRequest.getControllerNamespace();
+            controller = webRequest.getControllerName();
             pluginContextPath = (webRequest.getAttributes() != null && webRequest.getCurrentRequest() != null) ? webRequest.getAttributes().getPluginContextPath(webRequest.getCurrentRequest()) : null;
-            return (pluginContextPath != null ? pluginContextPath : "-") + "," + (namespace != null ? namespace : "-");
+
+            stringBuilder.append(GrailsStringUtils.isNotEmpty(pluginContextPath) ? pluginContextPath : "-");
+            stringBuilder.append(',');
+            stringBuilder.append(GrailsStringUtils.isNotEmpty(namespace) ? namespace : "-");
+            if (!absolute && GrailsStringUtils.isNotEmpty(controller)) {
+                stringBuilder.append(',');
+                stringBuilder.append(controller);
+            }
+            return stringBuilder.toString();
         } else {
             return null;
         }
