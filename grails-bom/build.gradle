@@ -130,7 +130,7 @@ publishing {
                                 }
                             }
 
-                            ['core', 'simple','web','rest-client','gorm', 'gorm-support', 'test-support', 'gorm-cassandra', 'gorm-mongodb', 'gorm-neo4j', 'gorm-hibernate4', 'gorm-hibernate5', 'gorm-hibernate', 'gorm-test'].each { name ->
+                            ['core', 'simple','web','rest-client','gorm', 'gorm-validation', 'gorm-support', 'test-support', 'hibernate-core','gorm-test'].each { name ->
                                 mkp.dependency {
                                     mkp.groupId 'org.grails'
                                     mkp.artifactId "grails-datastore-$name"
