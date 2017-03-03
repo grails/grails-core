@@ -230,7 +230,7 @@ class IOUtils extends SpringIOUtils {
 
 
     @Memoized
-    public static File findApplicationDirectoryFile() {
+    static File findApplicationDirectoryFile() {
         def directory = findApplicationDirectory()
         if(directory) {
             def f = new File(directory)
@@ -248,7 +248,7 @@ class IOUtils extends SpringIOUtils {
      * @param targetClass The target class
      * @return The application directory or null if it can't be found
      */
-    public static File findApplicationDirectoryFile(Class targetClass) {
+    static File findApplicationDirectoryFile(Class targetClass) {
 
         def rootResource = findRootResource(targetClass)
         if(rootResource != null) {
@@ -267,8 +267,46 @@ class IOUtils extends SpringIOUtils {
         return null
     }
 
+    /**
+     * Finds a source file for the given class name
+     *
+     * @param className The class name
+     * @return The source file
+     */
     @Memoized
-    public static String findApplicationDirectory() {
+    static File findSourceFile(String className) {
+        File applicationDir = BuildSettings.BASE_DIR
+        File file = null
+        if(applicationDir != null) {
+            String fileName = className.replace('.' as char, File.separatorChar) + '.groovy'
+            List<File> allFiles = [ new File(applicationDir, "src/main/groovy") ]
+            File[] files = new File(applicationDir, "grails-app").listFiles(new FileFilter() {
+                @Override
+                boolean accept(File f) {
+                    return f.isDirectory() && !f.isHidden() && !f.name.startsWith('.')
+                }
+            })
+            if(files != null) {
+                allFiles.addAll( Arrays.asList(files) )
+            }
+            for(File dir in allFiles) {
+                File possibleFile = new File(dir, fileName)
+                if(possibleFile.exists()) {
+                    file = possibleFile
+                    break
+                }
+            }
+
+        }
+        return file
+    }
+
+    /**
+     * Finds the directory where the Application class is contained
+     * @return The application directory
+     */
+    @Memoized
+    static String findApplicationDirectory() {
         if(applicationDirectory) {
             return applicationDirectory
         }
@@ -296,10 +334,10 @@ class IOUtils extends SpringIOUtils {
                 final Class<?> mainClass = Thread.currentThread().contextClassLoader.loadClass(mainClassName)
                 final URL classResource = mainClass ? findClassResource(mainClass) : null
                 if(classResource) {
-                    def file = new UrlResource(classResource).getFile()
-                    def path = file.canonicalPath
+                    File file = new UrlResource(classResource).getFile()
+                    String path = file.canonicalPath
 
-                    def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
+                    String buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
                     if(path.contains(buildClassespath)) {
                         location = path.substring(0, path.indexOf(buildClassespath) - 1)
                     }
@@ -312,6 +350,6 @@ class IOUtils extends SpringIOUtils {
             // ignore
         }
         applicationDirectory = location
-        return location;
+        return location
     }
 }
