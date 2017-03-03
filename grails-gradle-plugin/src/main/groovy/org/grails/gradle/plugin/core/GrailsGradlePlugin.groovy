@@ -19,12 +19,13 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import io.spring.gradle.dependencymanagement.DependencyManagementExtension
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -33,7 +34,6 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
-import org.gradle.api.file.CopySpec
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
@@ -72,6 +72,7 @@ import javax.inject.Inject
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
+    public static final List<String> CORE_GORM_LIBRARIES = ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'test-support', 'hibernate-core', 'gorm-test']
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
@@ -148,9 +149,39 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.plugins.apply(SpringBootPlugin)
         }
 
-        if (!project.plugins.findPlugin(DependencyManagementPlugin)) {
+        DependencyManagementPlugin dependencyManagementPlugin = project.plugins.findPlugin(DependencyManagementPlugin)
+        if (dependencyManagementPlugin == null) {
             project.plugins.apply(DependencyManagementPlugin)
         }
+
+        DependencyManagementExtension dme = project.extensions.findByType(DependencyManagementExtension)
+
+        applyBomImport(dme, project)
+
+        if(project.hasProperty('gormVersion')) {
+            String gormVersion = project.properties['gormVersion']
+            project.configurations.all( { Configuration configuration ->
+                configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
+                    String dependencyName = details.requested.name
+                    if(details.requested.group == 'org.grails' &&
+                            dependencyName.startsWith('grails-datastore')) {
+                        for(suffix in GrailsGradlePlugin.CORE_GORM_LIBRARIES) {
+                            if(dependencyName.endsWith(suffix)) {
+                                details.useVersion(gormVersion)
+                                return
+                            }
+                        }
+                    }
+                } as Action<DependencyResolveDetails>)
+            } as Action<Configuration>)
+        }
+    }
+
+    private void applyBomImport(DependencyManagementExtension dme, project) {
+        dme.imports({
+            mavenBom("org.grails:grails-bom:${project.properties['grailsVersion']}")
+        })
+        dme.setApplyMavenExclusions(false)
     }
 
     protected String getDefaultProfile() {
