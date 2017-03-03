@@ -245,9 +245,6 @@ class GroovyPagesGrailsPlugin extends Plugin {
             if (enableReload) {
                 cacheTimeout = gspCacheTimeout
             }
-            else {
-                cache = true
-            }
         }
         // Configure a Spring MVC view resolver
         jspViewResolver(GroovyPageViewResolver) { bean ->
