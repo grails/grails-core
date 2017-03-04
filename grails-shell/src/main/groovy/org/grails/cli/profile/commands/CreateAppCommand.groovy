@@ -33,6 +33,7 @@ import org.grails.cli.profile.Feature
 import org.grails.cli.profile.Profile
 import org.grails.cli.profile.ProfileRepository
 import org.grails.cli.profile.ProfileRepositoryAware
+import org.grails.cli.profile.repository.MavenProfileRepository
 import org.grails.io.support.FileSystemResource
 import org.grails.io.support.Resource
 import java.nio.file.FileVisitResult
@@ -225,6 +226,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             }
 
             initializeVariables(cmd.appName, defaultpackagename, profileName, cmd.grailsVersion)
+
+            if(profileRepository instanceof MavenProfileRepository) {
+                MavenProfileRepository mpr = (MavenProfileRepository)profileRepository
+                org.springframework.boot.cli.compiler.dependencies.Dependency gormDep = mpr.profileDependencyVersions.find("org.grails", "grails-datastore-core")
+                if(gormDep != null) {
+                    variables['gorm.version'] = gormDep.version
+                }
+            }
 
             Path appFullDirectory = Paths.get(cmd.baseDir.path, appname)
 
