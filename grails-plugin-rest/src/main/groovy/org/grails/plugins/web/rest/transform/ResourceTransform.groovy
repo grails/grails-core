@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.web.rest.transform
 
+import grails.io.IOUtils
+
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
 import grails.artefact.Artefact
@@ -69,8 +71,6 @@ import org.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.grails.compiler.injection.TraitInjectionUtils
 import org.grails.compiler.web.ControllerActionTransformer
 import org.grails.core.artefact.ControllerArtefactHandler
-import org.grails.core.io.DefaultResourceLocator
-import org.grails.core.io.ResourceLocator
 import org.grails.transaction.transform.TransactionalTransform
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -99,18 +99,8 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
     public static final String REDIRECT_METHOD = "redirect"
     public static final ClassNode AUTOWIRED_CLASS_NODE = new ClassNode(Autowired).getPlainNodeReference()
 
-    private ResourceLocator resourceLocator
     private CompilationUnit unit
     
-    ResourceLocator getResourceLocator() {
-        if (resourceLocator == null) {
-            resourceLocator = new DefaultResourceLocator()
-            String basedir = BuildSettings.BASE_DIR.absolutePath
-
-            resourceLocator.setSearchLocation(basedir)
-        }
-        return resourceLocator
-    }
 
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -124,10 +114,8 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             return
         }
 
-        final resourceLocator = getResourceLocator()
-        final className = "${parent.name}${ControllerArtefactHandler.TYPE}"
-        final resource = resourceLocator.findResourceForClassName(className)
-
+        String className = "${parent.name}${ControllerArtefactHandler.TYPE}"
+        final File resource = IOUtils.findSourceFile(className)
         LinkableTransform.addLinkingMethods(parent)
 
         if (resource == null) {
