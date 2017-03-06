@@ -72,7 +72,7 @@ import javax.inject.Inject
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
-    public static final List<String> CORE_GORM_LIBRARIES = ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'test-support', 'hibernate-core', 'gorm-test']
+    public static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
