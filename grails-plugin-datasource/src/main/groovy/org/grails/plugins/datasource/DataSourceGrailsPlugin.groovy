@@ -65,11 +65,9 @@ class DataSourceGrailsPlugin extends Plugin {
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
         def dataSources = config.getProperty('dataSources', Map, [:])
-        if(!dataSources) {
-            def defaultDataSource = config.getProperty('dataSource', Map)
-            if(defaultDataSource) {
-                dataSources['dataSource'] = defaultDataSource
-            }
+        def defaultDataSource = config.getProperty('dataSource', Map)
+        if(defaultDataSource) {
+            dataSources['dataSource'] = defaultDataSource
         }
 
         for(Map.Entry<String, Object> entry in dataSources.entrySet()) {
