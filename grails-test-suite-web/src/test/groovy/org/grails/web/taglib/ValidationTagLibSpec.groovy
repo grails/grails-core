@@ -186,6 +186,43 @@ class ValidationTagLibSpec extends Specification {
         applyTemplate('''<g:fieldValue bean="${book}" field="publisherURL" />''', [book:b]) == "http://google.com"
     }
 
+    void testFieldValueTagWithValueMessagePrefix() {
+        given:
+        def b = new ValidationTagLibBook()
+
+        // With no message
+        when:
+        b.properties = [publisherURL:"http://google.com"]
+
+        then:
+        applyTemplate('''<g:fieldValue bean="${book}" field="publisherURL" valueMessagePrefix="default.book" />''', [book:b]) == "http://google.com"
+
+        // With a French message
+        when:
+        webRequest.currentRequest.addPreferredLocale(Locale.FRENCH)
+        messageSource.addMessage("default.book.publisherURL", Locale.FRENCH, "http://google.fr")
+
+        then:
+        applyTemplate('''<g:fieldValue bean="${book}" field="publisherURL" valueMessagePrefix="default.book" />''', [book:b]) == "http://google.fr"
+
+        // With an English message
+        when:
+        webRequest.currentRequest.addPreferredLocale(Locale.US)
+        messageSource.addMessage("default.book.publisherURL", Locale.US, "http://google.com")
+
+        then:
+        applyTemplate('''<g:fieldValue bean="${book}" field="publisherURL" valueMessagePrefix="default.book" />''', [book:b]) == "http://google.com"
+
+        // With a message overriding a property
+        when:
+        webRequest.currentRequest.addPreferredLocale(Locale.FRENCH)
+        messageSource.addMessage("default.book.publisherURL", Locale.FRENCH, "http://google.fr")
+        b.properties = [publisherURL:"http://google.com"]
+
+        then:
+        applyTemplate('''<g:fieldValue bean="${book}" field="publisherURL" valueMessagePrefix="default.book" />''', [book:b]) == "http://google.fr"
+    }
+
     void testFieldValueTagWithDecimalNumber() {
         given:
         def b = new ValidationTagLibBook()
