@@ -225,6 +225,7 @@ class GrailsCli {
 
         if(mainCommandLine.environmentSet) {
             System.setProperty(Environment.KEY, mainCommandLine.environment)
+            Environment.reset()
         }
 
         File grailsAppDir=new File("grails-app")
