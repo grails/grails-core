@@ -1,6 +1,8 @@
 package org.grails.compiler.injection
 
 import grails.artefact.Artefact
+import grails.compiler.ast.SupportsClassNode
+import grails.compiler.traits.TraitInjector
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
@@ -8,6 +10,7 @@ import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.grails.core.artefact.ControllerArtefactHandler
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -60,6 +63,76 @@ class ArtefactTypeAstTransformationSpec extends Specification {
         thrown(RuntimeException)
     }
 
+	@Issue("https://github.com/grails/grails-core/issues/10531")
+	void "TraitInjector without SupportsClassNode gets applied to artefacts"() {
+		setup:
+		TraitInjectionUtils.@traitInjectors = [new TestTraitInjector()]
+		GrailsAwareClassLoader gcl = new GrailsAwareClassLoader()
+
+		Class clazz = gcl.parseClass """
+			 	@grails.artefact.Artefact("Controller")
+				class FooController {
+			
+				}
+			"""
+
+		when:
+		def t = clazz.newInstance()
+
+		then:
+		t instanceof Test10531Trait
+		t.hello10531() == "Hello"
+
+		cleanup:
+		TraitInjectionUtils.@traitInjectors = null
+	}
+
+	@Issue("https://github.com/grails/grails-core/issues/10531")
+	void "TraitInjector with SupportsClassNode gets applied only if supports return true"() {
+		setup:
+		TraitInjectionUtils.@traitInjectors = [new TestTraitInjectorForSupportsClassNode(false)]
+		GrailsAwareClassLoader gcl = new GrailsAwareClassLoader()
+
+		Class clazz = gcl.parseClass """
+			 	@grails.artefact.Artefact("Controller")
+				class FooController {
+			
+				}
+			"""
+
+		when: "Supports returns false"
+		def t = clazz.newInstance()
+
+		then: "Trait is not applied"
+		!(t instanceof Test10531Trait)
+
+		when:
+		t.hello10531()
+
+		then:
+		thrown(MissingMethodException)
+
+
+		when: "Supports returns true"
+		TraitInjectionUtils.@traitInjectors = [new TestTraitInjectorForSupportsClassNode(true)]
+		clazz = gcl.parseClass """
+			 	@grails.artefact.Artefact("Controller")
+				class BarController {
+			
+				}
+			"""
+
+		t = clazz.newInstance()
+
+		then: "Trait is applied"
+		t instanceof Test10531Trait
+		t.hello10531() == "Hello"
+
+
+		cleanup:
+		TraitInjectionUtils.@traitInjectors = null
+
+	}
 
     //Inclusion to verify compilation
     @Artefact("Controller")
@@ -69,6 +142,46 @@ class ArtefactTypeAstTransformationSpec extends Specification {
     @Artefact(ControllerArtefactHandler.TYPE)
     class Test2 {
 
+    }
+
+    class TestTraitInjector implements TraitInjector {
+
+		@Override
+		Class getTrait() {
+			return Test10531Trait
+		}
+
+		@Override
+		String[] getArtefactTypes() {
+			return ["Controller"]
+		}
+	}
+
+	class TestTraitInjectorForSupportsClassNode implements TraitInjector, SupportsClassNode {
+		boolean shouldSupport
+
+		TestTraitInjectorForSupportsClassNode(boolean support) {
+			this.shouldSupport = support
+		}
+
+		@Override
+		Class getTrait() {
+			return Test10531Trait
+		}
+
+		@Override
+		String[] getArtefactTypes() {
+			return ["Controller"]
+		}
+
+		@Override
+		boolean supports(ClassNode classNode) {
+			return shouldSupport
+		}
+	}
+
+    trait Test10531Trait {
+        def hello10531() { return "Hello" }
     }
 
 }
