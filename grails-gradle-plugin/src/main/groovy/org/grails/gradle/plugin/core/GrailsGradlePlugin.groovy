@@ -15,6 +15,7 @@
  */
 package org.grails.gradle.plugin.core
 
+import grails.plugins.GrailsVersionUtils
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
@@ -73,6 +74,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
     public static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
+    public static final List<String> CORE_GORM_PLUGINS = ['hibernate4','hibernate5', 'mongodb', 'neo4j', 'rx-mongodb']
+
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
@@ -161,9 +164,14 @@ class GrailsGradlePlugin extends GroovyPlugin {
         if(project.hasProperty('gormVersion')) {
             String gormVersion = project.properties['gormVersion']
             project.configurations.all( { Configuration configuration ->
+                if(GrailsVersionUtils.isVersionGreaterThan("6.1.0", gormVersion)) {
+                    configuration.exclude(module:'grails-datastore-simple')
+                }
+
                 configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
                     String dependencyName = details.requested.name
-                    if(details.requested.group == 'org.grails' &&
+                    String group = details.requested.group
+                    if(group == 'org.grails' &&
                             dependencyName.startsWith('grails-datastore')) {
                         for(suffix in GrailsGradlePlugin.CORE_GORM_LIBRARIES) {
                             if(dependencyName.endsWith(suffix)) {
@@ -171,6 +179,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
                                 return
                             }
                         }
+                    }
+                    else if(group == 'org.grails.plugins' && GrailsGradlePlugin.CORE_GORM_PLUGINS.contains(dependencyName)) {
+                        details.useVersion(gormVersion - '.RELEASE')
                     }
                 } as Action<DependencyResolveDetails>)
             } as Action<Configuration>)
