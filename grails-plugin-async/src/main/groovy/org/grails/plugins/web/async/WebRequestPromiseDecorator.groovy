@@ -11,8 +11,10 @@ import grails.async.decorator.PromiseDecorator
  *
  * @author Graeme Rocher
  * @since 2.3
+ * @deprecated This class is unsafe because the request may have terminated by the time the promise executes
  */
 @CompileStatic
+@Deprecated
 class WebRequestPromiseDecorator implements PromiseDecorator {
     GrailsWebRequest webRequest
 

@@ -16,6 +16,7 @@
 package org.grails.async.factory.gpars
 
 import grails.async.Promise
+import grails.async.PromiseFactory
 import grails.async.Promises
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -32,14 +33,16 @@ import java.util.concurrent.TimeUnit
 @CompileStatic
 class  GparsPromise<T> implements Promise<T> {
 
-    groovyx.gpars.dataflow.Promise internalPromise
+    final groovyx.gpars.dataflow.Promise internalPromise
+    final PromiseFactory promiseFactory
 
-    GparsPromise(groovyx.gpars.dataflow.Promise internalPromise) {
+    GparsPromise(PromiseFactory promiseFactory, groovyx.gpars.dataflow.Promise internalPromise) {
         this.internalPromise = internalPromise
+        this.promiseFactory = promiseFactory
     }
 
-    GparsPromise(Closure callable) {
-        internalPromise = Dataflow.task(callable)
+    GparsPromise(PromiseFactory promiseFactory, Closure callable) {
+        this(promiseFactory, Dataflow.task(callable))
     }
 
     @Override
@@ -83,7 +86,7 @@ class  GparsPromise<T> implements Promise<T> {
 
     @SuppressWarnings("unchecked")
     Promise onComplete(Closure callable) {
-        callable = Promises.promiseFactory.applyDecorators(callable, null)
+        callable = promiseFactory.applyDecorators(callable, null)
         internalPromise.whenBound { val ->
             if (!(val instanceof Throwable)) {
                 callable.call(val)
@@ -94,7 +97,7 @@ class  GparsPromise<T> implements Promise<T> {
 
     @SuppressWarnings("unchecked")
     Promise onError(Closure callable) {
-        callable = Promises.promiseFactory.applyDecorators(callable, null)
+        callable = promiseFactory.applyDecorators(callable, null)
         internalPromise.whenBound { val ->
             if (val instanceof Throwable) {
                 callable.call(val)
@@ -105,7 +108,7 @@ class  GparsPromise<T> implements Promise<T> {
 
     @SuppressWarnings("unchecked")
     Promise then(Closure callable) {
-        callable = Promises.promiseFactory.applyDecorators(callable, null)
-        return new GparsPromise(internalPromise.then(callable))
+        callable = promiseFactory.applyDecorators(callable, null)
+        return new GparsPromise(promiseFactory, internalPromise.then(callable))
     }
 }
