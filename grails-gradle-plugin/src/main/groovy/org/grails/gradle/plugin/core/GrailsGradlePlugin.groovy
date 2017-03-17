@@ -373,7 +373,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
             List<String> jvmArgs = task.jvmArgs
             if (!isJava8Compatible) {
-                if(jvmArgs.any { !it.startsWith('-XX:PermSize')}) {
+                if(!jvmArgs.any { !it.startsWith('-XX:MaxPermSize')}) {
                     task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
                 }
             }
