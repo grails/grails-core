@@ -27,6 +27,33 @@ import java.lang.reflect.Field
  */
 class TransactionalTransformSpec extends Specification {
 
+    @Issue('https://github.com/grails/grails-core/issues/10533')
+    void "Test transactional transform with generics"() {
+        when:"A service uses a generic argument"
+        def (testService, interfaceType) = new GroovyShell().evaluate('''
+import groovy.transform.CompileStatic
+import grails.transaction.Transactional
+
+@CompileStatic
+@Transactional
+class FooService<Param extends Named> {
+
+    void serviceMethod(Param param) {
+
+    }
+}
+interface Named {
+
+    String getName()
+}
+
+[FooService, Named]
+''')
+        then:"the types are correct"
+        interfaceType.name == "Named"
+        testService.getMethod('serviceMethod', interfaceType) != null
+    }
+
     @Issue('https://github.com/grails/grails-core/issues/9989')
     void "Test transactional transform when applied to inheritance"() {
         when: "A subclass subclasses a transactional service"

@@ -20,6 +20,7 @@ import grails.compiler.DelegatingMethod
 import grails.transaction.Rollback
 import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
+import org.codehaus.groovy.ast.tools.GenericsUtils
 import org.codehaus.groovy.classgen.VariableScopeVisitor
 import org.codehaus.groovy.control.ErrorCollector
 import org.springframework.beans.factory.annotation.Autowired
@@ -306,7 +307,9 @@ class TransactionalTransform implements ASTTransformation{
     protected MethodCallExpression moveOriginalCodeToNewMethod(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
         String renamedMethodName = '$tt__' + methodNode.getName()
         final transactionStatusParameter = new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")
-        def newParameters = methodNode.getParameters() ? (copyParameters(((methodNode.getParameters() as List) + [transactionStatusParameter]) as Parameter[])) : [transactionStatusParameter] as Parameter[]
+        Map<String, ClassNode> genericsSpec = GenericsUtils.addMethodGenerics(methodNode, GenericsUtils.createGenericsSpec(classNode))
+
+        def newParameters = methodNode.getParameters() ? (copyParameters(((methodNode.getParameters() as List) + [transactionStatusParameter]) as Parameter[], genericsSpec)) : [transactionStatusParameter] as Parameter[]
 
 
         def body = methodNode.code
