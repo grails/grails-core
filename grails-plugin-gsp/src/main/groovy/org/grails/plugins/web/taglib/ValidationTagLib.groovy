@@ -81,19 +81,26 @@ class ValidationTagLib implements TagLibrary {
      *
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr valueMessagePrefix Setting this allows the value to be resolved from the I18n messages.
+     *
      */
     Closure fieldValue = { attrs, body ->
         def bean = attrs.bean
         String field = attrs.field?.toString()
-
         if (!bean || !field) {
             return
         }
+        def valueMessagePrefix = attrs.valueMessagePrefix
+        def valueMessage = (valueMessagePrefix) ?
+            messageSource.getMessage("${valueMessagePrefix}.${field}", null, null, request.locale) :
+            null
 
         def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
 
         def rejectedValue = null
-        if (bean.metaClass.hasProperty(bean, 'errors')) {
+        if (valueMessage) {
+            rejectedValue = valueMessage
+        } else if (bean.metaClass.hasProperty(bean, 'errors')) {
             Errors errors = bean.errors
             rejectedValue = errors?.getFieldError(field)?.rejectedValue
             if (rejectedValue == null) {
