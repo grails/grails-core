@@ -35,11 +35,4 @@ class ControllersAsyncGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
     }}
-
-    @Override
-    @CompileStatic
-    void doWithDynamicMethods() {
-        Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
-    }
-
 }
