@@ -365,10 +365,17 @@ class GrailsGradlePlugin extends GroovyPlugin {
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
             task.systemProperty Environment.KEY, defaultGrailsEnv
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
-            task.minHeapSize = "768m"
-            task.maxHeapSize = "768m"
+            if(task.minHeapSize == null) {
+                task.minHeapSize = "768m"
+            }
+            if(task.maxHeapSize == null) {
+                task.maxHeapSize = "768m"
+            }
+            List<String> jvmArgs = task.jvmArgs
             if (!isJava8Compatible) {
-                task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+                if(jvmArgs.any { !it.startsWith('-XX:PermSize')}) {
+                    task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+                }
             }
             task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
 
