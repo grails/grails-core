@@ -38,6 +38,7 @@ import org.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -98,8 +99,8 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         }
 
         if (request instanceof MultipartHttpServletRequest) {
-            Map<String,MultipartFile> fileMap = ((MultipartHttpServletRequest)request).getFileMap();
-            for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
+            MultiValueMap<String, MultipartFile> fileMap = ((MultipartHttpServletRequest)request).getMultiFileMap();
+            for (Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
                 requestMap.put(entry.getKey(), entry.getValue());
             }
         }
