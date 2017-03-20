@@ -518,7 +518,15 @@ class DocPublisher {
             ant = new AntBuilder()
         }
         def metaProps = DocPublisher.metaClass.properties
-        def props = engineProperties ?: new Properties()
+        Properties props
+        if(engineProperties != null) {
+            props = engineProperties
+        }
+        else {
+            props = new Properties()
+            engineProperties = props
+        }
+
 
         if(propertiesFile?.exists()) {
             if(propertiesFile.name.endsWith('.properties')) {
