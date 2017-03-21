@@ -19,6 +19,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.core.GrailsApplication
 import grails.core.support.GrailsApplicationAware
+import grails.plugins.Plugin
 import grails.util.GrailsUtil
 
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -34,23 +35,14 @@ import org.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as Xm
  *
  * @since 0.6
  */
-class ConvertersGrailsPlugin implements GrailsApplicationAware {
+class ConvertersGrailsPlugin extends Plugin {
 
     def version = GrailsUtil.getGrailsVersion()
-
-    def author = "Siegfried Puchbauer"
-    def title = "Provides JSON and XML Conversion for common Objects (Domain Classes, Lists, Maps, POJO)"
-    def description = """
-        The grails-converters plugin aims to give you the ability to convert your domain objects, maps and lists to JSON or XML very quickly, to ease development for AJAX based applications. The plugin leverages the the groovy "as" operator and extends the render method in grails controllers to directly send the result to the output stream. It also adds the Grails Codecs mechanism for XML and JSON.
-    """
-    def documentation = "http://grails.org/Converters+Plugin"
     def observe = ["controllers"]
-
     def dependsOn = [controllers: version, domainClass: version]
 
-    GrailsApplication grailsApplication
-
-    def doWithSpring = {
+    @Override
+    Closure doWithSpring() {{->
         jsonErrorsMarshaller(JsonErrorsMarshaller)
 
         xmlErrorsMarshaller(XmlErrorsMarshaller)
@@ -66,5 +58,5 @@ class ConvertersGrailsPlugin implements GrailsApplicationAware {
             marshaller = { JsonErrorsMarshaller om -> }
             converterClass = JSON
         }
-    }
+    }}
 }
