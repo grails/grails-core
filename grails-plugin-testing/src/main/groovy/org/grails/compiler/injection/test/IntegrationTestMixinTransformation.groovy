@@ -6,6 +6,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.*
+import static org.codehaus.groovy.ast.tools.GeneralUtils.*
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.syntax.Token
@@ -134,9 +135,7 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
 
             if( GrailsASTUtils.findAnnotation(classNode, SpringBootTest) == null) {
                 AnnotationNode webIntegrationTestAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, SpringBootTest)
-                webIntegrationTestAnnotation.addMember("webEnvironment", new ConstantExpression(SpringBootTest.WebEnvironment.RANDOM_PORT))
-                classNode.addAnnotation(webIntegrationTestAnnotation)
-
+                webIntegrationTestAnnotation.addMember("webEnvironment", propX(classX(SpringBootTest.WebEnvironment), "RANDOM_PORT"))
                 if(classNode.getProperty("serverPort") == null) {
 
                     def serverPortField = new FieldNode("serverPort", Modifier.PROTECTED, ClassHelper.Integer_TYPE, classNode, new ConstantExpression(8080))
