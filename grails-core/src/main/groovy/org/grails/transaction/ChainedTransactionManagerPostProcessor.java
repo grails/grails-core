@@ -185,7 +185,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         if(transactional == null) {
             Boolean isReadOnly =  config.getProperty(DATA_SOURCES_PREFIX + suffix + "." + READONLY, Boolean.class, null);
             if (isReadOnly != null && isReadOnly == true) {
-                transactional = false
+                transactional = false;
             }
         }
         if(transactional != null){
