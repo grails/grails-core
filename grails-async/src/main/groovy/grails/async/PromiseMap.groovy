@@ -239,7 +239,7 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
 
     Promise<Map<K, V>> then(Closure callable) {
         def promises = promises.values().toList()
-        Promises.onComplete(promises, { List values -> values}).then { List values ->
+        (Promise<Map<K, V>>)Promises.onComplete(promises, { List values -> values}).then { List values ->
             Map<K,V> newMap = [:]
             int i = 0
             for(value in values) {

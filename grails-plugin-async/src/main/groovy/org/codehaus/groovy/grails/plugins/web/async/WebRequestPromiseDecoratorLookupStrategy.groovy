@@ -34,7 +34,7 @@ class WebRequestPromiseDecoratorLookupStrategy implements PromiseDecoratorLookup
     List<PromiseDecorator> findDecorators() {
         final webRequest = GrailsWebRequest.lookup()
         if (webRequest) {
-            return [new WebRequestPromsiseDecorator(webRequest)]
+            return [new WebRequestPromsiseDecorator(webRequest)] as List<PromiseDecorator>
         }
         return Collections.emptyList()
     }

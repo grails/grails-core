@@ -82,8 +82,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
         // TODO Need to decide what to do if the root element is not a JsonArray
         JsonArray jsonElement = (JsonArray)parser.parse(jsonReader)
-        def dataBindingSources = jsonElement.collect { JsonElement element ->
-            new SimpleMapDataBindingSource(createJsonObjectMap(element))
+        List<DataBindingSource> dataBindingSources = jsonElement.collect { JsonElement element ->
+            (DataBindingSource)new SimpleMapDataBindingSource(createJsonObjectMap(element))
         }
         return new CollectionDataBindingSource() {
             List<DataBindingSource> getDataBindingSources() {

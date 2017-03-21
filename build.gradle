@@ -22,21 +22,21 @@ ext {
     antVersion = "1.9.4"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
-    commonsCollectionsVersion = "3.2.1"
-    commonsIOVersion = "2.2"
+    commonsCollectionsVersion = "3.2.2"
+    commonsIOVersion = "2.5"
     commonsLangVersion = "2.6"
     datastoreVersion = "3.1.5.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.5"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.10"
     ivyVersion = "2.3.0"
     jansiVersion = "1.11"
     jlineVersion = "2.12"
     jnaVersion = "4.0.0"
-    slf4jVersion = "1.7.5"
+    slf4jVersion = "1.7.21"
 
     spockVersion = '1.0-groovy-2.4'
-    springLoadedVersion = "1.2.5.RELEASE"
+    springLoadedVersion = "1.2.6.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.1.9.RELEASE" // ensure to sync "aspectjVersion" (see commend above)
     ehcacheVersion = "2.4.6"

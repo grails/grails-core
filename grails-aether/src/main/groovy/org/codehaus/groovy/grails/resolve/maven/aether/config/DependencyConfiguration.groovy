@@ -90,7 +90,7 @@ class DependencyConfiguration {
     }
 
     protected List<Exclusion> getExclusionList() {
-        !dependency.exclusions ? [] : new ArrayList<Exclusion>(dependency.exclusions)
+        !dependency.exclusions ? new ArrayList<Exclusion>() : new ArrayList<Exclusion>(dependency.exclusions)
     }
 
     void setScope(String s) {

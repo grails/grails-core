@@ -31,8 +31,8 @@ public class GrailsCoreDependencies {
 
     public final String grailsVersion;
     public final String servletVersion;
-    protected final String groovyVersion = System.getenv("CI_GROOVY_VERSION") != null ? System.getenv("CI_GROOVY_VERSION") : "2.4.4";
-    protected final String springVersion = "4.1.8.RELEASE";
+    protected final String groovyVersion = System.getenv("CI_GROOVY_VERSION") != null ? System.getenv("CI_GROOVY_VERSION") : "2.4.10";
+    protected final String springVersion = "4.1.9.RELEASE";
     protected final String log4jVersion = "1.2.17";
     protected final String h2Version = "1.3.176";
     protected final String jaxbVersion = "2.0";

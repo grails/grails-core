@@ -77,6 +77,6 @@ class ValidationSupport {
     static Map<String, ConstrainedProperty> getConstrainedPropertiesForClass(Class<?> clazz, boolean defaultNullable = false) {
         BeanFactory ctx = Holders.applicationContext
         ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
-        evaluator.evaluate clazz, defaultNullable
+        (Map<String, ConstrainedProperty>)evaluator.evaluate( clazz, defaultNullable )
     }
 }
