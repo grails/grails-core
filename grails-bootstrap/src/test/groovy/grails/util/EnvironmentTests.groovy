@@ -12,6 +12,7 @@ class EnvironmentTests extends GroovyTestCase {
         System.setProperty(Environment.RELOAD_LOCATION, "")
 
         Metadata.reset()
+        Environment.reset()
     }
 
     void testExecuteForEnvironment() {
@@ -176,6 +177,7 @@ grails:
         assertEquals Environment.PRODUCTION, Environment.getCurrent()
 
         Metadata.getInstance(new ByteArrayInputStream(''.bytes))
+        Environment.reset()
         assertEquals Environment.DEVELOPMENT, Environment.getCurrent()
     }
 

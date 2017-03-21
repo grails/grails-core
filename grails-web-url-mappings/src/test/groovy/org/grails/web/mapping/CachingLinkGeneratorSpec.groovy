@@ -87,6 +87,19 @@ class CachingLinkGeneratorSpec extends Specification {
         key == "link[controller:foo, action:bar, namespace:fooParam]"
     }
 
+    void "test resource with action"() {
+        given:
+        String key
+
+        when: "the args are a resource and action"
+        request.setControllerNamespace("fooReq")
+        request.setControllerName("foo")
+        key = linkGenerator.makeKey([resource: new Resource(id: 1), action: "bar"])
+
+        then: "controller and namespace aren't in the key"
+        key == "link[resource:org.grails.web.mapping.CachingLinkGeneratorSpec\$Resource->1, action:bar]"
+    }
+
 
     class MyCachingLinkGenerator extends CachingLinkGenerator {
         public MyCachingLinkGenerator(String serverBaseURL) {
@@ -95,6 +108,14 @@ class CachingLinkGeneratorSpec extends Specification {
 
         String makeKey(Map attrs) {
             super.makeKey(LINK_PREFIX, attrs)
+        }
+    }
+
+    class Resource {
+        Long id
+
+        Long ident() {
+            id
         }
     }
 }

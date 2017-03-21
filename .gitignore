@@ -6,6 +6,7 @@ classes
 /bin
 /*/bin
 /conf
+*.log
 *.ipr
 *.iml
 *.iws

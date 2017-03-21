@@ -16,6 +16,8 @@
 
 package org.grails.plugins.events
 
+import grails.config.Config
+import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
@@ -42,7 +44,8 @@ class EventBusGrailsPlugin extends Plugin {
     @Override
     Closure doWithSpring() {
         {->
-            reactorConfigurationReader(GrailsReactorConfigurationReader, grailsApplication.config, ref("grailsConfigProperties"))
+            Config config = grailsApplication.config
+            reactorConfigurationReader(GrailsReactorConfigurationReader, config, ref("grailsConfigProperties"))
             reactorEnv(Environment, ref("reactorConfigurationReader"))
 
             eventBus(MethodInvokingFactoryBean) { bean ->
@@ -50,7 +53,11 @@ class EventBusGrailsPlugin extends Plugin {
                 targetMethod = "create"
                 arguments = [reactorEnv]
             }
-            springReactorEventTranslator(SpringEventTranslator)
+
+            // make it possible to disable reactor events
+            if(config.getProperty(Settings.GORM_REACTOR_EVENTS, Boolean.class, true)) {
+                springReactorEventTranslator(SpringEventTranslator)
+            }
             consumerBeanAutoConfiguration(ConsumerBeanAutoConfiguration)
         }
     }

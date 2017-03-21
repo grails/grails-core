@@ -15,16 +15,18 @@
  */
 package org.grails.gradle.plugin.core
 
+import grails.plugins.GrailsVersionUtils
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import io.spring.gradle.dependencymanagement.DependencyManagementExtension
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -33,7 +35,6 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
-import org.gradle.api.file.CopySpec
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
@@ -72,6 +73,9 @@ import javax.inject.Inject
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
+    public static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
+    public static final List<String> CORE_GORM_PLUGINS = ['hibernate4','hibernate5', 'mongodb', 'neo4j', 'rx-mongodb']
+
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
@@ -138,17 +142,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 addDefaultProfile(project, profileConfiguration)
             }
         }
-
-        profileConfiguration.resolutionStrategy.eachDependency {
-            DependencyResolveDetails details = (DependencyResolveDetails) it
-            def group = details.requested.group ?: "org.grails.profiles"
-            def version = details.requested.version ?: BuildSettings.grailsVersion
-            details.useTarget(group: group, name: details.requested.name, version: version)
-        }
-
-        if (!project.plugins.findPlugin(DependencyManagementPlugin)) {
-            project.plugins.apply(DependencyManagementPlugin)
-        }
     }
 
 
@@ -159,14 +152,56 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.plugins.apply(SpringBootPlugin)
         }
 
-        if (!project.plugins.findPlugin(DependencyManagementPlugin)) {
+        DependencyManagementPlugin dependencyManagementPlugin = project.plugins.findPlugin(DependencyManagementPlugin)
+        if (dependencyManagementPlugin == null) {
             project.plugins.apply(DependencyManagementPlugin)
         }
+
+        DependencyManagementExtension dme = project.extensions.findByType(DependencyManagementExtension)
+
+        applyBomImport(dme, project)
+
+        if(project.hasProperty('gormVersion')) {
+            String gormVersion = project.properties['gormVersion']
+            project.configurations.all( { Configuration configuration ->
+                if(GrailsVersionUtils.isVersionGreaterThan("6.1.0", gormVersion)) {
+                    configuration.exclude(module:'grails-datastore-simple')
+                }
+
+                configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
+                    String dependencyName = details.requested.name
+                    String group = details.requested.group
+                    if(group == 'org.grails' &&
+                            dependencyName.startsWith('grails-datastore')) {
+                        for(suffix in GrailsGradlePlugin.CORE_GORM_LIBRARIES) {
+                            if(dependencyName.endsWith(suffix)) {
+                                details.useVersion(gormVersion)
+                                return
+                            }
+                        }
+                    }
+                    else if(group == 'org.grails.plugins' && GrailsGradlePlugin.CORE_GORM_PLUGINS.contains(dependencyName)) {
+                        details.useVersion(gormVersion - '.RELEASE')
+                    }
+                } as Action<DependencyResolveDetails>)
+            } as Action<Configuration>)
+        }
+    }
+
+    private void applyBomImport(DependencyManagementExtension dme, project) {
+        dme.imports({
+            mavenBom("org.grails:grails-bom:${project.properties['grailsVersion']}")
+        })
+        dme.setApplyMavenExclusions(false)
+    }
+
+    protected String getDefaultProfile() {
+        'web'
     }
 
     @CompileStatic
     void addDefaultProfile(Project project, Configuration profileConfig) {
-        project.dependencies.add('profile', ":${System.getProperty("grails.profile") ?: 'web'}:")
+        project.dependencies.add('profile', "org.grails.profiles:${System.getProperty("grails.profile") ?: defaultProfile}:")
     }
 
     protected Task createBuildPropertiesTask(Project project) {
@@ -330,10 +365,17 @@ class GrailsGradlePlugin extends GroovyPlugin {
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
             task.systemProperty Environment.KEY, defaultGrailsEnv
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
-            task.minHeapSize = "768m"
-            task.maxHeapSize = "768m"
+            if(task.minHeapSize == null) {
+                task.minHeapSize = "768m"
+            }
+            if(task.maxHeapSize == null) {
+                task.maxHeapSize = "768m"
+            }
+            List<String> jvmArgs = task.jvmArgs
             if (!isJava8Compatible) {
-                task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+                if(!jvmArgs.any { !it.startsWith('-XX:MaxPermSize')}) {
+                    task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+                }
             }
             task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
 

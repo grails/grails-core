@@ -58,26 +58,26 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     def <T> Promise<T> createBoundPromise(T value) {
         final variable = new DataflowVariable()
         variable << value
-        return new GparsPromise<T>(variable)
+        return new GparsPromise<T>(this,variable)
     }
 
     @Override
     def <T> Promise<T> createPromise(Class<T> returnType) {
         final variable = new DataflowVariable()
-        return new GparsPromise<T>(variable)
+        return new GparsPromise<T>(this,variable)
     }
 
     @Override
     Promise<Object> createPromise() {
         final variable = new DataflowVariable()
-        return new GparsPromise<Object>(variable)
+        return new GparsPromise<Object>(this,variable)
     }
 
     @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
             final callable = closures[0]
-            return new GparsPromise(applyDecorators(callable, null))
+            return new GparsPromise(this,applyDecorators(callable, null))
         }
 
         def promiseList = new PromiseList()
@@ -110,12 +110,14 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
 
     def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure<?> callable) {
         new GparsPromise<List<T>>(
+            this,
             Dataflow.whenAllBound(toGparsPromises(promises), callable)
         )
     }
 
     def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure<?> callable) {
         new GparsPromise<List<T>>(
+            this,
             Dataflow.whenAllBound(toGparsPromises(promises), {List l ->}, callable)
         )
     }

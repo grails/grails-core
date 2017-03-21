@@ -16,6 +16,11 @@ class CoreTagsTests extends AbstractGrailsTagTests {
         System.setProperty(Environment.KEY, "development")
     }
 
+    @Override
+    protected void onDestroy() {
+        System.setProperty(Environment.KEY, "")
+    }
+
     void testUnlessWithTestCondition() {
         def template = '<g:unless test="${cond}">body text</g:unless>'
         assertOutputEquals 'body text', template, [cond: false], {it.toString().trim()}
@@ -66,7 +71,6 @@ bar
    }
 
     void testIfWithEnv() {
-
         def template = '''
 <g:if env="testing" test="${foo}">foo</g:if>
 '''
@@ -91,7 +95,6 @@ bar
     }
 
     void testElseIf() {
-
         def template = '''
 <g:if test="${foo}">foo</g:if>
 <g:elseif env="development">bar</g:elseif>

@@ -6,9 +6,6 @@ import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory
 import org.eclipse.aether.impl.DefaultServiceLocator
 import org.eclipse.aether.internal.impl.DefaultRepositorySystem
-import org.eclipse.aether.repository.Authentication
-import org.eclipse.aether.repository.AuthenticationContext
-import org.eclipse.aether.repository.AuthenticationDigest
 import org.eclipse.aether.repository.RemoteRepository
 import org.eclipse.aether.repository.RepositoryPolicy
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
@@ -31,49 +28,49 @@ import org.springframework.boot.cli.compiler.grape.RepositorySystemSessionAutoCo
  */
 class GrailsAetherGrapeEngineFactory {
 
-    public static AetherGrapeEngine create(GroovyClassLoader classLoader,
+    static AetherGrapeEngine create(GroovyClassLoader classLoader,
                                            List<GrailsRepositoryConfiguration> repositoryConfigurations,
                                            DependencyResolutionContext dependencyResolutionContext) {
 
         RepositorySystem repositorySystem = createServiceLocator()
-                .getService(RepositorySystem.class);
+                .getService(RepositorySystem.class)
 
         DefaultRepositorySystemSession repositorySystemSession = MavenRepositorySystemUtils
-                .newSession();
+                .newSession()
 
         ServiceLoader<RepositorySystemSessionAutoConfiguration> autoConfigurations = ServiceLoader
-                .load(RepositorySystemSessionAutoConfiguration.class);
+                .load(RepositorySystemSessionAutoConfiguration.class)
 
         for (RepositorySystemSessionAutoConfiguration autoConfiguration : autoConfigurations) {
-            autoConfiguration.apply(repositorySystemSession, repositorySystem);
+            autoConfiguration.apply(repositorySystemSession, repositorySystem)
         }
 
         new DefaultRepositorySystemSessionAutoConfiguration()
-                .apply(repositorySystemSession, repositorySystem);
+                .apply(repositorySystemSession, repositorySystem)
 
         return new AetherGrapeEngine(classLoader, repositorySystem,
                 repositorySystemSession, createRepositories(repositoryConfigurations),
-                dependencyResolutionContext);
+                dependencyResolutionContext)
     }
 
     private static ServiceLocator createServiceLocator() {
-        DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-        locator.addService(RepositorySystem.class, DefaultRepositorySystem.class);
+        DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator()
+        locator.addService(RepositorySystem.class, DefaultRepositorySystem.class)
         locator.addService(RepositoryConnectorFactory.class,
-                BasicRepositoryConnectorFactory.class);
-        locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
-        locator.addService(TransporterFactory.class, FileTransporterFactory.class);
-        return locator;
+                BasicRepositoryConnectorFactory.class)
+        locator.addService(TransporterFactory.class, HttpTransporterFactory.class)
+        locator.addService(TransporterFactory.class, FileTransporterFactory.class)
+        return locator
     }
 
     private static List<RemoteRepository> createRepositories(
             List<GrailsRepositoryConfiguration> repositoryConfigurations) {
         List<RemoteRepository> repositories = new ArrayList<RemoteRepository>(
-                repositoryConfigurations.size());
+                repositoryConfigurations.size())
         for (GrailsRepositoryConfiguration repositoryConfiguration : repositoryConfigurations) {
             RemoteRepository.Builder builder = new RemoteRepository.Builder(
                     repositoryConfiguration.getName(), "default",
-                    repositoryConfiguration.getUri().toASCIIString());
+                    repositoryConfiguration.getUri().toASCIIString())
             if (repositoryConfiguration.hasCredentials()) {
                 builder.authentication = new AuthenticationBuilder()
                         .addUsername(repositoryConfiguration.username)
@@ -83,10 +80,10 @@ class GrailsAetherGrapeEngineFactory {
             if (!repositoryConfiguration.getSnapshotsEnabled()) {
                 builder.setSnapshotPolicy(
                         new RepositoryPolicy(false, RepositoryPolicy.UPDATE_POLICY_NEVER,
-                                RepositoryPolicy.CHECKSUM_POLICY_IGNORE));
+                                RepositoryPolicy.CHECKSUM_POLICY_IGNORE))
             }
-            repositories.add(builder.build());
+            repositories.add(builder.build())
         }
-        return repositories;
+        return repositories
     }
 }
