@@ -20,8 +20,7 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.boot.test.IntegrationTest
-import org.springframework.boot.test.WebIntegrationTest
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.test.context.ContextConfiguration
@@ -57,8 +56,7 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
     public static final ClassNode CONTEXT_CONFIG_ANNOTATION = ClassHelper.make(ContextConfiguration)
     public static final ClassNode GRAILS_APPLICATION_CONTEXT_LOADER = ClassHelper.make(GrailsApplicationContextLoader)
     public static final ClassNode WEB_APP_CONFIGURATION = ClassHelper.make(WebAppConfiguration)
-    public static final ClassNode INTEGRATION_TEST_CLASS_NODE = ClassHelper.make(IntegrationTest)
-    public static final ClassNode WEB_INTEGRATION_TEST_CLASS_NODE = ClassHelper.make(WebIntegrationTest)
+    public static final ClassNode INTEGRATION_TEST_CLASS_NODE = ClassHelper.make(SpringBootTest)
     public static final ClassNode SPRING_APPLICATION_CONFIGURATION_CLASS_NODE = ClassHelper.make(GrailsTestConfiguration)
     public static final ClassNode RUN_WITH_ANNOTATION_NODE = ClassHelper.make(RunWith)
     public static final ClassNode SPRING_JUNIT4_CLASS_RUNNER = ClassHelper.make(GrailsJunit4ClassRunner)
@@ -131,12 +129,12 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
         }
 
         // now add integration test annotations
-        // @WebAppConfiguration
-        // @IntegrationTest
+        // @SpringBootTest
         if (ClassUtils.isPresent("javax.servlet.ServletContext", Thread.currentThread().contextClassLoader)) {
-            if( classNode.getAnnotations(WEB_INTEGRATION_TEST_CLASS_NODE).isEmpty() ) {
-                def webIntegrationTestAnnotation = new AnnotationNode(WEB_INTEGRATION_TEST_CLASS_NODE)
-                webIntegrationTestAnnotation.addMember("randomPort", new ConstantExpression(Boolean.TRUE))
+
+            if( GrailsASTUtils.findAnnotation(classNode, SpringBootTest) == null) {
+                AnnotationNode webIntegrationTestAnnotation = GrailsASTUtils.addAnnotationOrGetExisting(classNode, SpringBootTest)
+                webIntegrationTestAnnotation.addMember("webEnvironment", new ConstantExpression(SpringBootTest.WebEnvironment.RANDOM_PORT))
                 classNode.addAnnotation(webIntegrationTestAnnotation)
 
                 if(classNode.getProperty("serverPort") == null) {

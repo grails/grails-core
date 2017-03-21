@@ -45,7 +45,7 @@ import org.grails.web.servlet.view.GroovyPageViewResolver
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.config.PropertiesFactoryBean
-import org.springframework.boot.context.embedded.ServletRegistrationBean
+import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 import org.springframework.web.servlet.view.InternalResourceViewResolver
