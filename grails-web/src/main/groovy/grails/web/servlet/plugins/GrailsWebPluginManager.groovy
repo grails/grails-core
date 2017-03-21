@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 import grails.core.GrailsApplication
 import grails.plugins.DefaultGrailsPluginManager
 import grails.plugins.GrailsPlugin
-import org.springframework.boot.context.embedded.ServletContextInitializer
+import org.springframework.boot.web.servlet.ServletContextInitializer
 import org.springframework.core.io.Resource
 
 import javax.servlet.ServletContext

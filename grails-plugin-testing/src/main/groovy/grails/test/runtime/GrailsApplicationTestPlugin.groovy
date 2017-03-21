@@ -33,14 +33,10 @@ import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.commons.CodecArtefactHandler
 import org.grails.commons.DefaultGrailsCodecClass
 import org.grails.core.lifecycle.ShutdownOperations
-import org.grails.core.util.ClassPropertyFetcher
 import org.grails.plugins.IncludingPluginFilter
 import org.grails.spring.RuntimeSpringConfiguration
-import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.grails.web.servlet.context.GrailsConfigUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.MutablePropertyValues
 import org.springframework.beans.factory.config.BeanDefinition
@@ -48,16 +44,14 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.beans.factory.config.ConstructorArgumentValues
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.RootBeanDefinition
-import org.springframework.boot.test.ConfigFileApplicationContextInitializer
+import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.AnnotationConfigUtils
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.test.context.MergedContextConfiguration
-import org.springframework.test.context.TestContextManager
 import org.springframework.util.ClassUtils
 
 import java.lang.reflect.Modifier
+
 /**
  * A TestPlugin for TestRuntime that builds the GrailsApplication instance for tests
  * 
