@@ -15,6 +15,7 @@
  */
 package org.grails.compiler.injection;
 
+import grails.compiler.ast.SupportsClassNode;
 import grails.compiler.traits.TraitInjector;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -115,7 +116,14 @@ public class TraitInjectionUtils {
         final List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
         for (final TraitInjector injector : traitInjectors) {
             final List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
-            if (artefactTypes.contains(artefactType)) {
+
+            boolean supportsClassNode = true;
+
+            if (injector instanceof SupportsClassNode) {
+                supportsClassNode = ((SupportsClassNode)injector).supports(cNode);
+            }
+
+            if (artefactTypes.contains(artefactType) && supportsClassNode) {
                 injectorsToUse.add(injector);
             }
         }

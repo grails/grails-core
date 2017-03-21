@@ -11,7 +11,7 @@ class UrlMappingMatcherSpec extends Specification {
     @Issue('https://github.com/grails/grails-core/issues/9179')
     void 'test a matcher with a uri does not match all requests'() {
         given:
-        def matcher = new UrlMappingMatcher()
+        def matcher = new UrlMappingMatcher(Mock(Interceptor))
         def mappingInfo = Mock(UrlMappingInfo)
 
         when:
@@ -25,7 +25,6 @@ class UrlMappingMatcherSpec extends Specification {
     void "test caching of results in production"() {
         given:
         System.setProperty(Environment.KEY, "prod")
-        Environment.cacheCurrentEnvironment()
         String controller = "foo"
         String url = "/foo/test"
         def info = Mock(UrlMappingInfo)
@@ -49,6 +48,5 @@ class UrlMappingMatcherSpec extends Specification {
 
         cleanup:
         System.setProperty(Environment.KEY, "test")
-        Environment.cacheCurrentEnvironment()
     }
 }

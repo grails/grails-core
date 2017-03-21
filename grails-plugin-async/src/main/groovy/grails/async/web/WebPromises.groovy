@@ -28,6 +28,7 @@ class WebPromises {
     static {
         if (GparsPromiseFactory.isGparsAvailable()) {
             promiseFactory = new GparsPromiseFactory()
+            promiseFactory.addPromiseDecoratorLookupStrategy(DECORATOR_LOOKUP)
         }
         else {
             promiseFactory = new SynchronousPromiseFactory()

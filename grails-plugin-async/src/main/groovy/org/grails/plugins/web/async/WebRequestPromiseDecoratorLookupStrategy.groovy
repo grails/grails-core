@@ -24,9 +24,10 @@ import grails.async.decorator.PromiseDecoratorLookupStrategy
  * A promise decorated lookup strategy that binds a WebRequest to the promise thread
  *
  * @author Graeme Rocher
- * @since 2.3
+ * @deprecated This class is unsafe because the request may have terminated by the time the promise executes
  */
 @CompileStatic
+@Deprecated
 class WebRequestPromiseDecoratorLookupStrategy implements PromiseDecoratorLookupStrategy {
     @Override
     List<PromiseDecorator> findDecorators() {
