@@ -104,7 +104,7 @@ class TransactionalTransform implements ASTTransformation{
             weaveTransactionalMethod(source, declaringClassNode, annotationNode, methodNode)
         }
         else if (parent instanceof ClassNode) {
-            weaveTransactionalBehavior(source, parent, annotationNode)
+            weaveTransactionalBehavior(source, (ClassNode)parent, annotationNode)
         }
 
     }

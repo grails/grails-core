@@ -16,6 +16,7 @@
 package org.grails.plugins.web.rest.transform
 
 import grails.io.IOUtils
+import org.grails.datastore.gorm.transactions.transform.TransactionalTransform
 
 import static java.lang.reflect.Modifier.*
 import static org.grails.compiler.injection.GrailsASTUtils.*
@@ -23,7 +24,6 @@ import grails.artefact.Artefact
 import grails.compiler.ast.ClassInjector
 import grails.rest.Resource
 import grails.rest.RestfulController
-import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.web.controllers.ControllerMethod
 import grails.web.mapping.UrlMappings
@@ -201,7 +201,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
 
                     final urlMappingsVar = new VariableExpression(urlMappingsField.name)
 
-                    Expression map=new MapExpression()
+                    MapExpression map=new MapExpression()
                     if(uri){
                         map.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName)))
                     }
@@ -235,7 +235,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
             newControllerClassNode.addProperty("responseFormats", publicStaticFinal, new ClassNode(List).getPlainNodeReference(), responseFormatsExpression, null, null)
 
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { it instanceof ControllerActionTransformer })
-            new TransactionalTransform().weaveTransactionalBehavior(source, newControllerClassNode, transactionalAnn)
+            new TransactionalTransform().visit(source, transactionalAnn, newControllerClassNode)
             newControllerClassNode.setModule(ast)
 
             final artefactAnnotation = new AnnotationNode(new ClassNode(Artefact))
