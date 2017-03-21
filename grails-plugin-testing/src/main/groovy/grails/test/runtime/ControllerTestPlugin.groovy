@@ -74,7 +74,7 @@ class ControllerTestPlugin implements TestPlugin {
         runtime.putValue("groovyPages", groovyPages)
         
         defineBeans(runtime, new MimeTypesGrailsPlugin().doWithSpring())
-        defineBeans(runtime, new ConvertersGrailsPlugin().doWithSpring)
+        defineBeans(runtime, new ConvertersGrailsPlugin().doWithSpring())
         def config = grailsApplication.config
         defineBeans(runtime) {
             rendererRegistry(DefaultRendererRegistry) {
