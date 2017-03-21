@@ -16,8 +16,6 @@
  */
 package grails.compiler.traits;
 
-import java.net.URL;
-
 /**
  * 
  * @author Jeff Brown
@@ -28,5 +26,6 @@ public interface TraitInjector {
     Class getTrait();
 
     String[] getArtefactTypes();
+
 }
 
