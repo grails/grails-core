@@ -101,7 +101,13 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         if (request instanceof MultipartHttpServletRequest) {
             MultiValueMap<String, MultipartFile> fileMap = ((MultipartHttpServletRequest)request).getMultiFileMap();
             for (Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
-                requestMap.put(entry.getKey(), entry.getValue());
+                List<MultipartFile> value = entry.getValue();
+                if(value.size() == 1) {
+                    requestMap.put(entry.getKey(), value.get(0));
+                }
+                else {
+                    requestMap.put(entry.getKey(), value);
+                }
             }
         }
 
