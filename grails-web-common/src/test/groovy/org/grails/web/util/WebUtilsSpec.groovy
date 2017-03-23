@@ -1,6 +1,5 @@
-package grails.web.servlet.mvc
+package org.grails.web.util
 
-import org.grails.web.util.WebUtils
 import spock.lang.Issue
 import spock.lang.Specification
 
