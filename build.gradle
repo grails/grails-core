@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'idea'
 
 ext {
-    grailsVersion = '2.5.6.BUILD-SNAPSHOT'
+    grailsVersion = '2.5.6'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -36,7 +36,7 @@ ext {
     slf4jVersion = "1.7.21"
 
     spockVersion = '1.0-groovy-2.4'
-    springLoadedVersion = "1.2.6.RELEASE"
+    springLoadedVersion = "1.2.7.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.1.9.RELEASE" // ensure to sync "aspectjVersion" (see commend above)
     ehcacheVersion = "2.4.6"
