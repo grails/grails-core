@@ -25,7 +25,8 @@ import junit.framework.TestCase;
 public class GrailsUtilTests extends TestCase {
 
     public void testGrailsVersion() {
-        assertEquals("3.2.8.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
+//        assertEquals("3.2.9.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
+        assertEquals("3.2.8", GrailsUtil.getGrailsVersion());
     }
 
     @Override
