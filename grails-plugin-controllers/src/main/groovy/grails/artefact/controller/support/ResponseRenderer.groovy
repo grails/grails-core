@@ -15,7 +15,6 @@
  */
 package grails.artefact.controller.support
 
-import grails.async.Promise
 import grails.config.Settings
 import grails.converters.JSON
 import grails.io.IOUtils
@@ -267,12 +266,10 @@ trait ResponseRenderer extends WebAttributes {
             }
             Object modelObject = argMap[ARGUMENT_MODEL]
             if (modelObject) {
-                boolean isPromise = modelObject instanceof Promise
                 Collection<ActionResultTransformer> resultTransformers = actionResultTransformers
                 for (ActionResultTransformer resultTransformer : resultTransformers) {
                     modelObject = resultTransformer.transformActionResult webRequest,viewUri, modelObject
                 }
-                if (isPromise) return
             }
 
             applyContentType webRequest.currentResponse, argMap, null, false

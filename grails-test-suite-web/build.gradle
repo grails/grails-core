@@ -11,7 +11,6 @@ dependencies {
                 project(':grails-plugin-codecs'),
                 project(':grails-plugin-datasource'),
                 project(':grails-plugin-i18n'),
-                project(':grails-plugin-async'),
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-databinding'),
                 project(':grails-plugin-services'),

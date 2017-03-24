@@ -1,7 +1,6 @@
 rootProject.name = "grails.core.ROOT"
 
 include (
-        'grails-async',
         'grails-bootstrap',
         'grails-codecs',
         'grails-console',
@@ -34,7 +33,6 @@ include (
         'grails-bom',
 
         // Plugins
-        'grails-plugin-async',
         'grails-plugin-codecs',
         'grails-plugin-controllers',
         'grails-plugin-converters',
@@ -42,7 +40,6 @@ include (
         'grails-plugin-datasource',
         'grails-plugin-domain-class',
         'grails-plugin-interceptors',
-        'grails-plugin-events',
         'grails-plugin-gsp',
         'grails-plugin-i18n',
         'grails-plugin-mimetypes',
