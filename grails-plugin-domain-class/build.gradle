@@ -2,7 +2,7 @@ dependencies {
 
     compile project(":grails-core"), project(":grails-spring"), project(":grails-validation")
 
-    provided project(":grails-async")
+    provided "org.grails:grails-async:$asyncVersion"
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {

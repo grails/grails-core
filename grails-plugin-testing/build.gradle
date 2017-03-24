@@ -19,7 +19,7 @@ dependencies {
     compile ( project(':grails-logging') ) {
         exclude group: 'org.grails', module:'grails-web'
     }
-    compile ( project(':grails-async') )
+    compile "org.grails:grails-async:$asyncVersion"
 
     compile("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
