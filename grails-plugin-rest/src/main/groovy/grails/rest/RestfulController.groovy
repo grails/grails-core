@@ -90,8 +90,7 @@ class RestfulController<T> {
         }
         def instance = createResource()
 
-        instance.validate()
-        if (instance.hasErrors()) {
+        if (!instance.validate()) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view:'create' // STATUS CODE 422
             return
@@ -149,7 +148,7 @@ class RestfulController<T> {
 
         instance.properties = getObjectToBind()
 
-        if (instance.hasErrors()) {
+        if (!instance.validate()) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view:'edit' // STATUS CODE 422
             return
