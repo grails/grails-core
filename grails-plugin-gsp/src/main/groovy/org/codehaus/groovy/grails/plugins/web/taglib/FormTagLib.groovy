@@ -313,6 +313,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'checked')
         booleanToAttribute(attrs, 'readonly')
+        booleanToAttribute(attrs, 'required')
     }
 
     /**
@@ -938,6 +939,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         }
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
+        booleanToAttribute(attrs, 'required')
 
         writer << "<select "
         // process remaining attributes
