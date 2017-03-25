@@ -97,6 +97,16 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         referenceStack = new Stack<Object>();
     }
 
+    public void prepareRenderPartial(Writer out) {
+        writer = prettyPrint ? new PrettyPrintJSONWriter(out) : new JSONWriter(out);
+        if (circularReferenceBehaviour == CircularReferenceBehaviour.PATH) {
+            if (log.isInfoEnabled()) {
+                log.info(String.format("Using experimental CircularReferenceBehaviour.PATH for %s", getClass().getName()));
+            }
+            writer = new PathCapturingJSONWriterWrapper(writer);
+        }
+    }
+
     private void finalizeRender(Writer out) {
         try {
             out.flush();
@@ -120,6 +130,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         finalizeRender(out);
     }
 
+    public void renderPartial(JSONWriter out) {
+        writer = out;
+        referenceStack = new Stack<Object>();
+        value(target);
+    }
     /**
      * Directs the JSON Writer to the Outputstream of the HttpServletResponse and sets the Content-Type to application/json
      *
