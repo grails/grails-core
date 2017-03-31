@@ -15,15 +15,11 @@
  */
 package grails.artefact.controller.support
 
-import grails.config.Settings
-import grails.converters.JSON
 import grails.io.IOUtils
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.util.GrailsStringUtils
 import grails.util.GrailsWebUtil
-import grails.util.Holders
-import grails.web.JSONBuilder
 import grails.web.api.WebAttributes
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
@@ -148,16 +144,9 @@ trait ResponseRenderer extends WebAttributes {
     }
 
     private void renderJsonInternal(HttpServletResponse response, Closure callable) {
-        if( Holders.getConfig()?.getProperty(Settings.SETTING_LEGACY_JSON_BUILDER, Boolean.class, false) ) {
-            def builder = new JSONBuilder()
-            JSON json = builder.build(callable)
-            json.render response
-        }
-        else {
-            response.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), response.getCharacterEncoding() ?: "UTF-8"))
-            def jsonBuilder = new StreamingJsonBuilder(response.writer)
-            jsonBuilder.call callable
-        }
+        response.setContentType(GrailsWebUtil.getContentType(MimeType.JSON.getName(), response.getCharacterEncoding() ?: "UTF-8"))
+        def jsonBuilder = new StreamingJsonBuilder(response.writer)
+        jsonBuilder.call callable
     }
 
     /**
