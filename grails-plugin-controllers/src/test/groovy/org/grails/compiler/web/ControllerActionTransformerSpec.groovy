@@ -1,8 +1,6 @@
 package org.grails.compiler.web
 
 import grails.compiler.ast.ClassInjector
-import grails.compiler.traits.ControllerTraitInjector
-import grails.compiler.traits.TraitInjector
 import grails.util.BuildSettings
 import grails.util.GrailsWebMockUtil
 import grails.web.Action
@@ -12,7 +10,6 @@ import org.codehaus.groovy.control.CompilationUnit
 import java.lang.reflect.Modifier
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
-import org.grails.compiler.web.ControllerActionTransformer
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -173,7 +170,7 @@ class ControllerActionTransformerSpec extends Specification {
     }
 
 
-    void "test controller with trait action with params"() {
+    void "test controller with trait action with command params"() {
         given:
         def cls = gcl.parseClass('''
             @grails.artefact.Artefact('Controller')
