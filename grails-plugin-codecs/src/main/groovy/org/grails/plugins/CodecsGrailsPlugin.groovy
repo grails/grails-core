@@ -22,11 +22,9 @@ import org.grails.commons.CodecArtefactHandler
 import org.grails.encoder.impl.HTML4Codec
 import org.grails.plugins.codecs.HTMLCodec
 import org.grails.encoder.impl.HTMLJSCodec
-import org.grails.plugins.codecs.JSONCodec
 import org.grails.encoder.impl.JavaScriptCodec
 import org.grails.encoder.impl.RawCodec
 import org.grails.plugins.codecs.URLCodec
-import org.grails.plugins.codecs.XMLCodec
 
 /**
  * Configures pluggable codecs.
@@ -41,8 +39,6 @@ class CodecsGrailsPlugin extends Plugin {
     def providedArtefacts = [
             HTMLCodec,
             HTML4Codec,
-            XMLCodec,
-            JSONCodec,
             JavaScriptCodec,
             HTMLJSCodec,
             URLCodec,
