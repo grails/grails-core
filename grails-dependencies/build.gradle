@@ -122,9 +122,9 @@ publishing {
                             }
                         }
                         delegate.dependency {
-                            delegate.groupId "org.grails"
-                            delegate.artifactId "grails-plugin-async"
-                            delegate.version( asyncVersion )
+                            delegate.groupId "org.grails.plugins"
+                            delegate.artifactId "async"
+                            delegate.version asyncVersion
                             delegate.scope "compile"
                             delegate.exclusions {
                                 delegate.exclusion {
