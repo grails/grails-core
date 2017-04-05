@@ -30,7 +30,6 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.SpringIOUtils
-import org.grails.web.converters.Converter
 import org.grails.web.json.JSONElement
 import org.grails.web.servlet.mvc.ActionResultTransformer
 import org.grails.web.servlet.mvc.GrailsWebRequest
@@ -164,18 +163,6 @@ trait ResponseRenderer extends WebAttributes {
         handleStatusArgument argMap, webRequest, response
         render body
         applySiteMeshLayout webRequest.currentRequest, false, explicitSiteMeshLayout
-    }
-
-    /**
-     * Render the given converter to the response
-     *
-     * @param converter The converter to render
-     */
-    void render(Converter<?> converter) {
-        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes()
-        HttpServletResponse response = webRequest.currentResponse
-        webRequest.renderView = false
-        converter.render response
     }
 
     /**

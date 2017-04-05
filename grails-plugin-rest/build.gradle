@@ -4,6 +4,8 @@ dependencies {
             project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
 
+    compile "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
+
     testCompile project(":grails-plugin-url-mappings"),
                 project(":grails-test-suite-base")
 }
