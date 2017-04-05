@@ -1,7 +1,0 @@
-dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion"
-
-    compile project(":grails-web"),
-            project(':grails-plugin-domain-class')
-    provided "org.grails:grails-async:$asyncVersion"
-}
