@@ -7,9 +7,10 @@ dependencies {
              project(':grails-plugin-gsp'),
              project(':grails-plugin-interceptors'),
              project(':grails-plugin-mimetypes'),
-             project(':grails-plugin-converters'),
              project(':grails-plugin-rest'),
              project(':grails-plugin-codecs')
+
+    provided "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
 
     compile ( project(':grails-test') ) {
         exclude group: 'org.grails', module:'grails-web'
