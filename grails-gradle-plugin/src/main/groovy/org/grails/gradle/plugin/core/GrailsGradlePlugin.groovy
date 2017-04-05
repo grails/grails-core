@@ -162,15 +162,16 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         applyBomImport(dme, project)
 
-        if(project.hasProperty('gormVersion')) {
-            String gormVersion = project.properties['gormVersion']
-            project.configurations.all( { Configuration configuration ->
+        project.configurations.all( { Configuration configuration ->
+            for(oldPluginExcludes in ['async', 'events', 'converters']) {
+                configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
+            }
+
+            if(project.hasProperty('gormVersion')) {
+                String gormVersion = project.properties['gormVersion']
+
                 if(GrailsVersionUtils.isVersionGreaterThan("6.1.0", gormVersion)) {
                     configuration.exclude(module:'grails-datastore-simple')
-
-                }
-                for(oldPluginExcludes in ['async', 'events']) {
-                    configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
                 }
 
                 configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
@@ -189,8 +190,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
                         details.useVersion(gormVersion - '.RELEASE')
                     }
                 } as Action<DependencyResolveDetails>)
-            } as Action<Configuration>)
-        }
+            }
+        } as Action<Configuration>)
     }
 
     private void applyBomImport(DependencyManagementExtension dme, project) {
