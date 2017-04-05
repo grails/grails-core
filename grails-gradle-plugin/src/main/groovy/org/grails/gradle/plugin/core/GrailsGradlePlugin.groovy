@@ -35,6 +35,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
+import org.gradle.api.artifacts.DependencySubstitutions
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
@@ -166,6 +167,10 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.configurations.all( { Configuration configuration ->
                 if(GrailsVersionUtils.isVersionGreaterThan("6.1.0", gormVersion)) {
                     configuration.exclude(module:'grails-datastore-simple')
+
+                }
+                for(oldPluginExcludes in ['async', 'events']) {
+                    configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
                 }
 
                 configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
