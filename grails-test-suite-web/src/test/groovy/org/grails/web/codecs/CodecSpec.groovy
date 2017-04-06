@@ -6,7 +6,8 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
 
 import org.grails.buffer.StreamCharBuffer
-
+import org.grails.plugins.codecs.JSONCodec
+import org.grails.plugins.codecs.XMLCodec
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -38,6 +39,8 @@ class CodecSpec extends Specification {
     
     @Issue("GRAILS-10980")
     void "JSON codec behaviour like in Grails versions pre 2.3.x"() {
+        given:
+            mockCodec(JSONCodec)
         when:
             String x=null
         then:
@@ -49,6 +52,8 @@ class CodecSpec extends Specification {
 
     @Issue("GRAILS-10980")
     void "XML codec behaviour like in Grails versions pre 2.3.x"() {
+        given:
+            mockCodec(XMLCodec)
         when:
             String x=null
         then:
