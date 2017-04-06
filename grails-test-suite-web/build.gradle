@@ -20,6 +20,7 @@ dependencies {
                 project(':grails-plugin-rest'),
                 project(':grails-web'),
                 project(':grails-spring')
+    testCompile "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
 
     testCompile "org.grails:grails-datastore-gorm-hibernate4:$datastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
