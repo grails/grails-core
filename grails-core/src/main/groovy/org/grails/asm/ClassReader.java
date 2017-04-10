@@ -1050,7 +1050,7 @@ class ClassReader {
                 cpIndex = items[readUnsignedShort(cpIndex + 2)];
                 String name = readUTF8(cpIndex, buf);
                 String desc = readUTF8(cpIndex + 2, buf);
-                return new Handle(tag, owner, name, desc);
+                return new Handle(tag, owner, name, desc, tag == Opcodes.H_INVOKEINTERFACE);
         }
     }
 }

@@ -96,7 +96,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         }
 
         Resource[] resources;
-        if(Environment.isDevelopmentMode()) {
+        if(Environment.isDevelopmentEnvironmentAvailable()) {
             File[] propertiesFiles = new File(BuildSettings.BASE_DIR, GRAILS_APP_I18N_PATH_COMPONENT).listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
