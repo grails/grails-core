@@ -697,6 +697,33 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         String requestParameterName = paramName;
         List<AnnotationNode> requestParameters = param.getAnnotations(
                 new ClassNode(RequestParameter.class));
+
+        //Check to see if the method was inherited from a trait
+        if (actionNode instanceof MethodNode && paramName.startsWith("arg")) {
+            List<AnnotationNode> traitBridges = ((MethodNode) actionNode).getAnnotations(new ClassNode(Traits.TraitBridge.class));
+            if (traitBridges.size() == 1) {
+                //Get the trait class this method came from
+                Expression traitClass = traitBridges.get(0).getMember("traitClass");
+                if (traitClass instanceof ClassExpression) {
+                    ClassNode helperClass = Traits.findHelper(traitClass.getType());
+                    //Look for a method in the trait helper with the name of the action
+                    List<MethodNode> methods = helperClass.getMethods(actionName);
+                    if (methods.size() == 1) {
+                        Parameter[] parameters = methods.get(0).getParameters();
+                        //Look for a parameter of index (argX) in the method.
+                        //The $self is the first parameter, so arg1 == index of 1
+                        int argNum = Integer.valueOf(paramName.replaceFirst("arg", ""));
+                        if (parameters.length >= argNum + 1) {
+                            Parameter helperParam = parameters[argNum];
+                            //Set the request parameter name based off of the parameter in the trait helper method
+                            requestParameterName = helperParam.getName();
+                            requestParameters = helperParam.getAnnotations(new ClassNode(RequestParameter.class));
+                        }
+                    }
+                }
+            }
+        }
+
         if (requestParameters.size() == 1) {
             requestParameterName = requestParameters.get(0).getMember("value").getText();
         }
