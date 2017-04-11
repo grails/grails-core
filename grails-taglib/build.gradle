@@ -1,6 +1,0 @@
-dependencies {
-    compile project(":grails-core"), {
-        exclude group:'org.grails', module:'grails-spring'
-    }    
-    compile project(":grails-encoder")
-}

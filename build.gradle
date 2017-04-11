@@ -26,6 +26,7 @@ ext {
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     asyncVersion = '3.3.0.M1'
+    gspVersion = '3.3.0.BUILD-SNAPSHOT'
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses

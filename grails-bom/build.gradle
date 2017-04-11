@@ -185,6 +185,12 @@ publishing {
                                 mkp.version( asyncVersion )
                             }
 
+                            mkp.dependency {
+                                mkp.groupId 'org.grails.plugins'
+                                mkp.artifactId "gsp"
+                                mkp.version( gspVersion )
+                            }
+
 
                             for(profile in profiles) {
                                 mkp.dependency {

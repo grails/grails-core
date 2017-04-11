@@ -19,13 +19,6 @@ include (
         'grails-web-databinding',
         'grails-web-fileupload',
         'grails-web-mvc',
-        'grails-web-gsp',
-        'grails-web-taglib',
-        'grails-web-gsp-taglib',
-        'grails-web-sitemesh',
-        'grails-web-jsp',
-        'grails-gsp',
-        'grails-taglib',
         'grails-web-url-mappings',
 
         // POM / BOMs
@@ -39,7 +32,6 @@ include (
         'grails-plugin-datasource',
         'grails-plugin-domain-class',
         'grails-plugin-interceptors',
-        'grails-plugin-gsp',
         'grails-plugin-i18n',
         'grails-plugin-mimetypes',
         'grails-plugin-rest',

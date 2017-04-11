@@ -113,7 +113,7 @@ publishing {
                                 }
                             }
                         }
-                        for(sub in ['rest', 'databinding', 'i18n', 'gsp', 'services', 'url-mappings', 'interceptors']) {
+                        for(sub in ['rest', 'databinding', 'i18n', 'services', 'url-mappings', 'interceptors']) {
                             delegate.dependency {
                                 delegate.groupId "org.grails"
                                 delegate.artifactId "grails-plugin-${sub}"
@@ -125,6 +125,18 @@ publishing {
                             delegate.groupId "org.grails.plugins"
                             delegate.artifactId "async"
                             delegate.version asyncVersion
+                            delegate.scope "compile"
+                            delegate.exclusions {
+                                delegate.exclusion {
+                                    delegate.groupId 'javax'
+                                    delegate.artifactId 'javaee-web-api'
+                                }
+                            }
+                        }
+                        delegate.dependency {
+                            delegate.groupId "org.grails.plugins"
+                            delegate.artifactId "gsp"
+                            delegate.version gspVersion
                             delegate.scope "compile"
                             delegate.exclusions {
                                 delegate.exclusion {

@@ -1,16 +1,16 @@
 dependencies {
 
-    provided project(':grails-plugin-url-mappings'),
-             project(':grails-plugin-databinding'),
-             project(':grails-plugin-controllers'),
-             project(':grails-plugin-domain-class'),
-             project(':grails-plugin-gsp'),
-             project(':grails-plugin-interceptors'),
-             project(':grails-plugin-mimetypes'),
-             project(':grails-plugin-rest'),
-             project(':grails-plugin-codecs')
+    compileOnly project(':grails-plugin-url-mappings'),
+                 project(':grails-plugin-databinding'),
+                 project(':grails-plugin-controllers'),
+                 project(':grails-plugin-domain-class'),             
+                 project(':grails-plugin-interceptors'),
+                 project(':grails-plugin-mimetypes'),
+                 project(':grails-plugin-rest'),
+                 project(':grails-plugin-codecs')
 
-    provided "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
+    compileOnly "org.grails.plugins:gsp:$gspVersion"
+    compileOnly "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
 
     compile ( project(':grails-test') ) {
         exclude group: 'org.grails', module:'grails-web'
