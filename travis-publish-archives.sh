@@ -17,7 +17,10 @@ echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
 git config --global user.name "$GIT_NAME"
 git config --global user.email "$GIT_EMAIL"
 
-if [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
+if [[ $BUILD_AGGREGATE_STATUS = 'others_failed' ]]; then
+    echo "BUILD FAILED"
+    exit 1
+elif [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Builder Leading Publishing Release..."
     # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
     openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
