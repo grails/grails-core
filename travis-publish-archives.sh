@@ -17,7 +17,7 @@ echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
 git config --global user.name "$GIT_NAME"
 git config --global user.email "$GIT_EMAIL"
 
-if [[ $BUILD_AGGREGATE_STATUS = 'others_failed' ]]; then
+if [[ $BUILD_LEADER='YES' && $BUILD_AGGREGATE_STATUS = 'others_failed' ]]; then
     echo "BUILD FAILED"
     exit 1
 elif [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
