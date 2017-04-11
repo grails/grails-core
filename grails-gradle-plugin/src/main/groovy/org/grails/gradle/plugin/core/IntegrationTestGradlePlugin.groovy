@@ -21,6 +21,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.TestReport
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 
 /**
  * Gradle plugin for adding separate src/integration-test folder to hold integration tests
@@ -59,6 +60,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
                 }
 
                 task(type: Test, 'integrationTest') {
+                    group = LifecycleBasePlugin.VERIFICATION_GROUP
                     testClassesDir = sourceSets.integrationTest.output.classesDir
                     classpath = sourceSets.integrationTest.runtimeClasspath
                     maxParallelForks = 1
