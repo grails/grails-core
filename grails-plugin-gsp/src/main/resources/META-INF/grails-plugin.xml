@@ -1,3 +1,0 @@
-<plugin name='groovyPages'>
-  <type>org.grails.plugins.web.GroovyPagesGrailsPlugin</type>
-</plugin>

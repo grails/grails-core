@@ -1,11 +1,11 @@
 dependencies {
 
     compile project(':grails-test-suite-base'),
-            project(':grails-plugin-interceptors'),
-            project(':grails-plugin-gsp'),
+            project(':grails-plugin-interceptors'),        
             project(':grails-plugin-controllers'),
             project(':grails-plugin-testing')
 
+    compile "org.grails.plugins:gsp:$gspVersion"
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'
