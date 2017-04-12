@@ -163,7 +163,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         applyBomImport(dme, project)
 
         project.configurations.all( { Configuration configuration ->
-            for(oldPluginExcludes in ['async', 'events', 'converters']) {
+            for(oldPluginExcludes in ['async', 'events', 'converters', 'gsp']) {
                 configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
             }
 
