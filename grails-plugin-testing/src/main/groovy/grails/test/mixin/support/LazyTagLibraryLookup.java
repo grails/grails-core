@@ -15,9 +15,9 @@
  */
 package grails.test.mixin.support;
 
-import grails.core.GrailsTagLibClass;
+import grails.core.gsp.GrailsTagLibClass;
 import groovy.lang.GroovyObject;
-import org.grails.core.DefaultGrailsTagLibClass;
+import org.grails.core.gsp.DefaultGrailsTagLibClass;
 import org.grails.plugins.web.GroovyPagesGrailsPlugin;
 import org.grails.taglib.TagLibraryLookup;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -37,7 +37,7 @@ import java.util.Map;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class LazyTagLibraryLookup extends TagLibraryLookup {
     List<Class> tagLibClasses = (List<Class>) new GroovyPagesGrailsPlugin().getProvidedArtefacts();
-    private Map<String, GrailsTagLibClass> lazyLoadableTagLibs = new HashMap<String, GrailsTagLibClass>();
+    private Map<String, GrailsTagLibClass> lazyLoadableTagLibs = new HashMap<>();
 
     @Override
     protected void registerTagLibraries() {
