@@ -15,7 +15,7 @@
  */
 package grails.test.mixin.support;
 
-import grails.core.gsp.GrailsTagLibClass;
+import grails.core.GrailsTagLibClass;
 import groovy.lang.GroovyObject;
 import org.grails.core.gsp.DefaultGrailsTagLibClass;
 import org.grails.plugins.web.GroovyPagesGrailsPlugin;
