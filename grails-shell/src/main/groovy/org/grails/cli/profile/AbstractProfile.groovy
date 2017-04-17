@@ -254,11 +254,11 @@ abstract class AbstractProfile implements Profile {
     @Override
     Iterable<Feature> getFeatures() {
         Set<Feature> calculatedFeatures = []
+        calculatedFeatures.addAll(features)
         def parents = getExtends()
         for(profile in parents) {
             calculatedFeatures.addAll profile.features
         }
-        calculatedFeatures.addAll(features)
         return calculatedFeatures
     }
 
