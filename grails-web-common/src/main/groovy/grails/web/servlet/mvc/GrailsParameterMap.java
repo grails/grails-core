@@ -27,15 +27,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import grails.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import grails.core.GrailsDomainClassProperty;
+import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.binding.StructuredDateEditor;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import grails.util.TypeConvertingMap;
 import org.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.MultiValueMap;
@@ -54,7 +54,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
 
-    private static final Log LOG = LogFactory.getLog(GrailsParameterMap.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsParameterMap.class);
     private static final Map<String, String> CACHED_DATE_FORMATS  = new ConcurrentHashMap<String, String>();
 
     private final Map nestedDateMap = new LinkedHashMap();
@@ -240,7 +240,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
      * @return The identifier in the request
      */
     public Object getIdentifier() {
-        return get(GrailsDomainClassProperty.IDENTITY);
+        return get(GormProperties.IDENTITY);
     }
 
     private String lookupFormat(String name) {

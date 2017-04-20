@@ -15,8 +15,8 @@
  */
 package org.grails.test.support
 
-import grails.core.GrailsDomainClassProperty
 import grails.util.GrailsClassUtils
+import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.springframework.context.ApplicationContext
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
@@ -43,7 +43,7 @@ class GrailsTestTransactionInterceptor {
         def datasourceNames = []
 
         if (applicationContext.containsBean('dataSource')) {
-            datasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+            datasourceNames << ConnectionSource.DEFAULT
         }
 
         for (name in applicationContext.grailsApplication.config.keySet()) {
@@ -53,7 +53,7 @@ class GrailsTestTransactionInterceptor {
         }
 
         for (datasourceName in datasourceNames) {
-            boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+            boolean isDefault = datasourceName == ConnectionSource.DEFAULT
             String suffix = isDefault ? '' : '_' + datasourceName
 
             if (applicationContext.containsBean("transactionManager$suffix")) {
