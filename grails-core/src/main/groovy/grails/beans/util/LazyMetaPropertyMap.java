@@ -21,21 +21,12 @@ import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import groovy.transform.CompileStatic;
 import groovy.util.MapEntry;
+import org.grails.datastore.mapping.model.config.GormProperties;
+import org.grails.datastore.mapping.reflect.NameUtils;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import grails.core.GrailsDomainClassProperty;
-import org.grails.core.support.GrailsDomainConfigurationUtil;
-import org.springframework.util.Assert;
+import java.util.*;
 
 /**
  * A map implementation that reads an objects properties lazily using Groovy's MetaClass.
@@ -48,7 +39,7 @@ public class LazyMetaPropertyMap implements Map {
 
     private MetaClass metaClass;
     private Object instance;
-    private static List<String> EXCLUDES = Arrays.asList("properties", GrailsDomainClassProperty.IDENTITY, GrailsDomainClassProperty.VERSION, "domainClass", "dirty", GrailsDomainClassProperty.ERRORS, "dirtyPropertyNames");
+    private static List<String> EXCLUDES = Arrays.asList("properties", GormProperties.IDENTITY, GormProperties.VERSION, "domainClass", "dirty", GormProperties.ERRORS, "dirtyPropertyNames");
 
     /**
      * Constructs the map
@@ -86,7 +77,7 @@ public class LazyMetaPropertyMap implements Map {
         Assert.isInstanceOf(String.class, propertyName, "This map implementation only supports String based keys!");
 
         String pn = propertyName.toString();
-        return !GrailsDomainConfigurationUtil.isConfigurational(pn) && metaClass.getMetaProperty(pn) != null;
+        return !NameUtils.isConfigurational(pn) && metaClass.getMetaProperty(pn) != null;
     }
 
     /**
@@ -125,7 +116,7 @@ public class LazyMetaPropertyMap implements Map {
             return submap;
         }
 
-        if (GrailsDomainConfigurationUtil.isConfigurational(propertyName.toString())) {
+        if (NameUtils.isConfigurational(propertyName.toString())) {
             return null;
         }
 
@@ -162,8 +153,7 @@ public class LazyMetaPropertyMap implements Map {
     }
 
     public void putAll(Map map) {
-        for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-            Object key = i.next();
+        for (Object key : map.keySet()) {
             put(key, map.get(key));
         }
     }
@@ -176,7 +166,7 @@ public class LazyMetaPropertyMap implements Map {
     }
 
     public Set<String> keySet() {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (MetaProperty mp : metaClass.getProperties()) {
             if (isExcluded(mp)) continue;
             names.add(mp.getName());
@@ -185,7 +175,7 @@ public class LazyMetaPropertyMap implements Map {
     }
 
     public Collection<Object> values() {
-        Collection<Object> values = new ArrayList<Object>();
+        Collection<Object> values = new ArrayList<>();
         for (MetaProperty mp : metaClass.getProperties()) {
             if (isExcluded(mp)) continue;
             values.add(mp.getProperty(instance));
@@ -217,7 +207,7 @@ public class LazyMetaPropertyMap implements Map {
     }
 
     public Set<MapEntry> entrySet() {
-        Set<MapEntry> entries = new HashSet<MapEntry>();
+        Set<MapEntry> entries = new HashSet<>();
         for (MetaProperty mp : metaClass.getProperties()) {
             if (isExcluded(mp)) continue;
 
@@ -230,7 +220,7 @@ public class LazyMetaPropertyMap implements Map {
         return
                 Modifier.isStatic(mp.getModifiers()) ||
                         EXCLUDES.contains(mp.getName()) ||
-                        GrailsDomainConfigurationUtil.isConfigurational(mp.getName()) ||
+                        NameUtils.isConfigurational(mp.getName()) ||
                         (mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null;
     }
 }
