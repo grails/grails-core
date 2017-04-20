@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.databinding
 
+import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
@@ -42,11 +43,6 @@ import org.grails.databinding.converters.web.LocaleAwareNumberConverter
  */
 class DataBindingGrailsPlugin extends Plugin {
 
-    public static final String TRIM_STRINGS = 'grails.databinding.trimStrings'
-    public static final String CONVERT_EMPTY_STRINGS_TO_NULL = 'grails.databinding.convertEmptyStringsToNull'
-    public static final String AUTO_GROW_COLLECTION_LIMIT = 'grails.databinding.autoGrowCollectionLimit'
-    public static final String DATE_FORMATS = 'grails.databinding.dateFormats'
-    public static final String DATE_LENIENT_PARSING = 'grails.databinding.dateParsingLenient'
 
     public static final List<String> DEFAULT_DATE_FORMATS = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"]
 
@@ -56,11 +52,11 @@ class DataBindingGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         def application = grailsApplication
         def config = application.config
-        boolean trimStringsSetting = config.getProperty(TRIM_STRINGS, Boolean, true)
-        boolean convertEmptyStringsToNullSetting = config.getProperty(CONVERT_EMPTY_STRINGS_TO_NULL, Boolean, true)
-        boolean dateParsingLenientSetting = config.getProperty(DATE_LENIENT_PARSING, Boolean, false)
-        Integer autoGrowCollectionLimitSetting = config.getProperty(AUTO_GROW_COLLECTION_LIMIT, Integer, 256)
-        List dateFormats = config.getProperty(DATE_FORMATS, List, DEFAULT_DATE_FORMATS)
+        boolean trimStringsSetting = config.getProperty(Settings.TRIM_STRINGS, Boolean, true)
+        boolean convertEmptyStringsToNullSetting = config.getProperty(Settings.CONVERT_EMPTY_STRINGS_TO_NULL, Boolean, true)
+        boolean dateParsingLenientSetting = config.getProperty(Settings.DATE_LENIENT_PARSING, Boolean, false)
+        Integer autoGrowCollectionLimitSetting = config.getProperty(Settings.AUTO_GROW_COLLECTION_LIMIT, Integer, 256)
+        List dateFormats = config.getProperty(Settings.DATE_FORMATS, List, DEFAULT_DATE_FORMATS)
 
 
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, grailsApplication) {

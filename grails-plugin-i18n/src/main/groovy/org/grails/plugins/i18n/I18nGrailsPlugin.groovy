@@ -40,9 +40,6 @@ import java.nio.file.Files
 @Slf4j
 class I18nGrailsPlugin extends Plugin {
 
-    public static final String I18N_CACHE_SECONDS = 'grails.i18n.cache.seconds'
-    public static final String I18N_FILE_CACHE_SECONDS = 'grails.i18n.filecache.seconds'
-
     String baseDir = "grails-app/i18n"
     String version = GrailsUtil.getGrailsVersion()
     String watchedResources = "file:./${baseDir}/**/*.properties".toString()
@@ -57,8 +54,8 @@ class I18nGrailsPlugin extends Plugin {
         messageSource(PluginAwareResourceBundleMessageSource, application, pluginManager) {
             fallbackToSystemLocale = false
             if (Environment.current.isReloadEnabled() || gspEnableReload) {
-                cacheSeconds = config.getProperty(I18N_CACHE_SECONDS, Integer, 5)
-                fileCacheSeconds = config.getProperty(I18N_FILE_CACHE_SECONDS, Integer, 5)
+                cacheSeconds = config.getProperty(Settings.I18N_CACHE_SECONDS, Integer, 5)
+                fileCacheSeconds = config.getProperty(Settings.I18N_FILE_CACHE_SECONDS, Integer, 5)
             }
             defaultEncoding = encoding
         }
