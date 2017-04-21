@@ -44,16 +44,6 @@ class ControllerExceptionHandlerSpec extends Specification {
     }
 
     @Issue('GRAILS-11453')
-    void 'Test exception handler which renders a String from command object closure action'() {
-        when:
-        params.exceptionToThrow = 'java.sql.SQLException'
-        controller.testClosureActionWithCommandObject()
-
-        then:
-        response.contentAsString == 'A SQLException Was Handled From DatabaseExceptionHandler'
-    }
-
-    @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String from action with typed parameter'() {
         when:
         params.exceptionToThrow = 'java.sql.SQLException'
@@ -207,10 +197,6 @@ class ErrorHandlersController extends SomeAbstractController implements Database
         throw exceptionClass.newInstance()
     }
 
-    def testClosureActionWithCommandObject = { MyCommand co ->
-        def exceptionClass = Class.forName(co.exceptionToThrow)
-        throw exceptionClass.newInstance()
-    }
 
     def testActionWithNonCommandObjectParameter(String exceptionToThrow) {
         def exceptionClass = Class.forName(exceptionToThrow)
