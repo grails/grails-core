@@ -352,10 +352,13 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
                 if (domainClass != null) {
                     def property = domainClass.getPropertyByName(metaProperty.name)
-                    if (property != null && property instanceof Association && property.isBidirectional()) {
-                        def otherSide = property.inverseSide
-                        if (otherSide instanceof OneToOne) {
-                            val[otherSide.name] = obj
+                    if (property != null && property instanceof Association) {
+                        Association association = (Association)property
+                        if (association.isBidirectional()) {
+                            def otherSide = association.inverseSide
+                            if (otherSide instanceof OneToOne) {
+                                val[otherSide.name] = obj
+                            }
                         }
                     }
                 }
@@ -500,10 +503,13 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         def domainClass = grailsApplication.mappingContext.getPersistentEntity(obj.getClass().name)
         if (domainClass != null) {
             def property = domainClass.getPropertyByName(propertyName)
-            if (property != null && property instanceof Association && property.isBidirectional()) {
-                def otherSide = property.inverseSide
-                if (otherSide instanceof ManyToOne) {
-                    val[otherSide.name] = obj
+            if (property != null && property instanceof Association) {
+                Association association = (Association)property
+                if (association.isBidirectional()) {
+                    def otherSide = association.inverseSide
+                    if (otherSide instanceof ManyToOne) {
+                        val[otherSide.name] = obj
+                    }
                 }
             }
         }
@@ -535,17 +541,21 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         if (grailsApplication != null) {
             def domainClass = grailsApplication.mappingContext.getPersistentEntity(obj.getClass().name)
             if (domainClass != null) {
-                def property = domainClass.getPropertyByName(propName)
+                PersistentProperty property = domainClass.getPropertyByName(propName)
                 if (property != null) {
                     if (Collection.isAssignableFrom(property.type)) {
                         if (propertyValue instanceof String) {
                             isSet = addElementToCollection obj, propName, property, propertyValue, true
-                        } else if (propertyValue instanceof String[]){
-                            if (property instanceof Association && !((Association) property).isBasic()) {
-                                propertyValue.each { val ->
-                                    boolean clearCollection = !isSet
-                                    isSet = addElementToCollection(obj, propName, property, val, clearCollection) || isSet
+                        } else if (propertyValue instanceof String[]) {
+                            if (property instanceof Association) {
+                                Association association = (Association)property
+                                if (association.associatedEntity != null) {
+                                    propertyValue.each { val ->
+                                        boolean clearCollection = !isSet
+                                        isSet = addElementToCollection(obj, propName, association, val, clearCollection) || isSet
+                                    }
                                 }
+
                             }
                         }
                     }
@@ -600,7 +610,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 if (property != null && property instanceof Association) {
                     Association association = ((Association)property)
                     if (association.bidirectional) {
-                        def otherSide = property.inverseSide
+                        def otherSide = association.inverseSide
                         if (otherSide instanceof ManyToOne) {
                             propertyValue[otherSide.name] = obj
                         }
