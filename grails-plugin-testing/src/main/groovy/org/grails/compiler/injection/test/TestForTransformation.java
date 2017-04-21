@@ -201,7 +201,7 @@ public class TestForTransformation extends TestMixinTransformation implements Te
         // make sure the 'log' property is not the one from GroovyTestCase
         FieldNode log = classNode.getField("log");
         if (log == null || log.getDeclaringClass().getName().equals(GROOVY_TEST_CASE_CLASS_NAME)) {
-            LoggingTransformer.addLogField(classNode, classNode.getName());
+            new LoggingTransformer().performInjectionOnAnnotatedClass(classNode.getModule().getContext(), classNode);
         }
         boolean isSpockTest = isSpockTest(classNode);
 
