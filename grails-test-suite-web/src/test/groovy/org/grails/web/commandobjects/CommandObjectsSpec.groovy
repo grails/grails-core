@@ -4,7 +4,7 @@ import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.ClosureToMapPopulator
 import grails.validation.ConstraintsEvaluator
-
+import groovy.util.logging.Slf4j
 import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import spock.lang.Ignore;
 import spock.lang.Issue
@@ -34,27 +34,14 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         expectedCalendar.set Calendar.YEAR, 1973
         def expectedDate = expectedCalendar.time
 
+
         when:
         controller.params.birthday = "struct"
         controller.params.birthday_day = "03"
         controller.params.birthday_month = "05"
         controller.params.birthday_year = "1973"
-        def model = controller.closureActionWithDate()
+        def model = controller.methodActionWithDate()
         def birthday = model.command?.birthday
-
-        then:
-        model.command
-        !model.command.hasErrors()
-        birthday
-        expectedDate == birthday
-
-        when:
-        controller.params.birthday = "struct"
-        controller.params.birthday_day = "03"
-        controller.params.birthday_month = "05"
-        controller.params.birthday_year = "1973"
-        model = controller.methodActionWithDate()
-        birthday = model.command?.birthday
 
         then:
         model.command
@@ -96,12 +83,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         then:
         model.commandObject.name == 'Beardfish'
 
-        when:
-        controller.params.name = "Spock's Beard"
-        model = controller.closureActionWithNonValidateableCommandObject()
-
-        then:
-        model.commandObject.name == "Spock's Beard"
     }
 
     void 'Test binding to a command object setter property'() {
@@ -124,15 +105,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.artist.name == 'Emerson'
         model.person.name == 'Emerson'
 
-        when:
-        controller.params.name = 'Emerson'
-        model = controller.closureActionWithMultipleCommandObjects()
-
-        then:
-        model.person
-        model.artist
-        model.artist.name == 'Emerson'
-        model.person.name == 'Emerson'
     }
 
     @Issue('GRAILS-11218')
@@ -148,16 +120,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.artist.name == 'Lake'
         model.person.name == 'Emerson'
 
-        when:
-        controller.params.person = [name: 'Emerson']
-        controller.params.artist = [name: 'Lake']
-        model = controller.closureActionWithMultipleCommandObjects()
-
-        then:
-        model.person
-        model.artist
-        model.artist.name == 'Lake'
-        model.person.name == 'Emerson'
     }
 
     void "Test clearErrors"() {
@@ -206,11 +168,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         then:
         model.person.theAnswer == 42
 
-        when:
-        model = controller.closureAction()
-
-        then:
-        model.person.theAnswer == 42
     }
 
     void 'Test bindable command object constraint'() {
@@ -227,17 +184,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         model.person.city == null
     }
 
-    void 'Test subscript operator on command object errors'() {
-        when:
-        controller.params.name = 'Maynard'
-        def model = controller.closureAction()
-
-        then:
-        model.person.hasErrors()
-        model.person.name == 'Maynard'
-        model.person.errors['name'].code == 'matches.invalid'
-    }
-
     void "Test validation"() {
         when:
         controller.params.name = 'JFK'
@@ -246,22 +192,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         then:
         !model.person.hasErrors()
         model.person.name == 'JFK'
-
-        when:
-        controller.params.name = 'JFK'
-        model = controller.closureAction()
-
-        then:
-        !model.person.hasErrors()
-        model.person.name == 'JFK'
-
-        when:
-        controller.params.name = 'Maynard'
-        model = controller.closureAction()
-
-        then:
-        model.person.hasErrors()
-        model.person.name == 'Maynard'
 
         when:
         controller.params.name = 'Maynard'
@@ -277,18 +207,7 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         when:
         controller.params.name = 'Emerson'
         controller.params.bandName = 'Emerson Lake and Palmer'
-        def model = controller.closureActionWithArtistSubclass()
-
-        then:
-        model.artist
-        model.artist.name == 'Emerson'
-        model.artist.bandName == 'Emerson Lake and Palmer'
-        !model.artist.hasErrors()
-
-        when:
-        controller.params.name = 'Emerson'
-        controller.params.bandName = 'Emerson Lake and Palmer'
-        model = controller.methodActionWithArtistSubclass()
+        def model = controller.methodActionWithArtistSubclass()
 
         then:
         model.artist
@@ -298,14 +217,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
 
         when:
         controller.params.clear()
-        model = controller.closureActionWithArtistSubclass()
-
-        then:
-        model.artist
-        model.artist.hasErrors()
-        model.artist.errors.errorCount == 2
-
-        when:
         model = controller.methodActionWithArtistSubclass()
 
         then:
@@ -315,29 +226,14 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
     }
 
     void "Test validation with shared constraints"() {
+
         when:
         controller.params.name = 'Emerson'
-        def model = controller.closureActionWithArtist()
+        def model = controller.methodActionWithArtist()
 
         then:
         model.artist
         !model.artist.hasErrors()
-
-        when:
-        controller.params.name = 'Emerson'
-        model = controller.methodActionWithArtist()
-
-        then:
-        model.artist
-        !model.artist.hasErrors()
-
-        when:
-        controller.params.name = 'Hendrix'
-        model = controller.closureActionWithArtist()
-
-        then:
-        model.artist
-        model.artist.hasErrors()
 
         when:
         controller.params.name = 'Hendrix'
@@ -378,23 +274,12 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
         0 == model.co.validationCounter
 
         when:
-        model = controller.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
-
-        then:
-        0 == model.co.validationCounter
-
-        when:
         ClassWithNoValidateMethod.metaClass.validate = { -> ++ delegate.validationCounter }
         model = controller.methodActionWithNonValidateableCommandObjectWithAValidateMethod()
 
         then:
         1 == model.co.validationCounter
 
-        when:
-        model = controller.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
-
-        then:
-        1 == model.co.validationCounter
     }
 
     @Issue('grails/grails-core#9172')
@@ -416,10 +301,6 @@ class CommandObjectsSpec extends Specification implements ControllerUnitTest<Tes
 
 @Artefact('Controller')
 class TestController {
-    def closureAction = { Person p ->
-        [person: p]
-    }
-
     def methodAction(Person p) {
         [person: p]
     }
@@ -428,28 +309,12 @@ class TestController {
         [command: co]
     }
 
-    def closureActionWithDate = { DateComamndObject co ->
-        [command: co]
-    }
-
-    def closureActionWithArtist = { Artist a ->
-        [artist: a]
-    }
-
     def methodActionWithArtist(Artist a) {
         [artist: a]
     }
 
     def methodActionWithArtistSubclass(ArtistSubclass a) {
         [artist: a]
-    }
-
-    def closureActionWithArtistSubclass = { ArtistSubclass a ->
-        [artist: a]
-    }
-
-    def closureActionWithMultipleCommandObjects = { Person person, Artist artist ->
-        [person: person, artist: artist]
     }
 
     def methodActionWithMultipleCommandObjects(Person person, Artist artist)  {
@@ -462,14 +327,6 @@ class TestController {
 
     def methodActionWithWidgetCommand(WidgetCommand widget) {
         [widget: widget]
-    }
-
-    def closureActionWithNonValidateableCommandObjectWithAValidateMethod = { ClassWithNoValidateMethod co ->
-        [co: co]
-    }
-
-    def closureActionWithNonValidateableCommandObject = { NonValidateableCommand co ->
-        [commandObject: co]
     }
 
     def methodActionWithValidateableParam(SomeValidateableClass svc) {
