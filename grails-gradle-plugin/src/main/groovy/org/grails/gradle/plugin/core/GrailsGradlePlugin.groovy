@@ -35,7 +35,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
-import org.gradle.api.artifacts.DependencySubstitutions
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
@@ -162,15 +162,41 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         applyBomImport(dme, project)
 
+        boolean isGorm61 = false
+        boolean hasGormVersion = project.hasProperty('gormVersion')
+        String gormVersion
+
+        if(hasGormVersion) {
+            gormVersion = project.properties['gormVersion']
+            isGorm61 = GrailsVersionUtils.supportsAtLeastVersion(gormVersion, "6.1.0")
+        }
+
+        if (isGorm61) {
+            project.afterEvaluate {
+                DependencySet dependencies = project.configurations.getByName('testCompile').allDependencies
+                boolean hasPluginTesting = false
+                boolean hasGormTest = false
+                dependencies.each {
+                    if (it.name == "grails-plugin-testing") {
+                        hasPluginTesting = true
+                    }
+                    if (it.name == "grails-datastore-gorm-test") {
+                        hasGormTest = true
+                    }
+                }
+                if (hasPluginTesting && !hasGormTest) {
+                    project.dependencies.add "testCompile", "org.grails:grails-datastore-gorm-test:$gormVersion"
+                }
+            }
+        }
+
         project.configurations.all( { Configuration configuration ->
             for(oldPluginExcludes in ['async', 'events', 'converters', 'gsp']) {
                 configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
             }
 
-            if(project.hasProperty('gormVersion')) {
-                String gormVersion = project.properties['gormVersion']
-
-                if(GrailsVersionUtils.isVersionGreaterThan("6.1.0", gormVersion)) {
+            if(hasGormVersion) {
+                if(isGorm61) {
                     configuration.exclude(module:'grails-datastore-simple')
                 }
 
