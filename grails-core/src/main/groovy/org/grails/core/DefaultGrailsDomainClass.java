@@ -47,6 +47,7 @@ import java.util.*;
  * @since 0.1
  */
 @SuppressWarnings("rawtypes")
+@Deprecated
 public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultGrailsDomainClass.class);
