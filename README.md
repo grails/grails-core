@@ -1,20 +1,17 @@
 #### Waffle.IO Board
 - [![Stories in Acknowledged](https://badge.waffle.io/grails/grails-core.png?label=Acknowledged&title=Acknowledged)](https://waffle.io/grails/grails-core)
-- [![Stories in Progress](https://badge.waffle.io/grails/grails-core.png?label=in progress&title=In Progress)](http://waffle.io/grails/grails-core)
+- [![Stories in Progress](https://badge.waffle.io/grails/grails-core.png?label=in%20progress&title=In%20Progress)](http://waffle.io/grails/grails-core)
 
 #### Build Status
 - [![Build Status](https://travis-ci.org/grails/grails-core.svg?branch=master)](https://travis-ci.org/grails/grails-core)
 
 #### Slack Signup
-- [![Slack Signup](http://slack-signup.grails.org/badge.svg)](http://slack-signup.grails.org)
+- [Slack Signup](http://slack-signup.grails.org)
 
 Grails
 ===
 
-[Grails][Grails] is a framework used to build web applications with the [Groovy][Groovy] programming language. The core framework is very extensible and there are numerous [plugins][plugins] available that provide easy integration of add-on features.
-[Grails]: http://grails.org/
-[Groovy]: http://groovy-lang.org/
-[plugins]: http://grails.org/plugins/
+[Grails](http://grails.org/) is a framework used to build web applications with the [Groovy](http://groovy-lang.org/) programming language. The core framework is very extensible and there are numerous [plugins](http://grails.org/plugins/) available that provide easy integration of add-on features.
 
 Grails is sponsored by [Object Computing Inc.](http://www.ociweb.com) in St. Louis Missouri.  Please contact <info@ociweb.com> for support inquiries.
 
@@ -24,17 +21,17 @@ Getting Started
 You need a Java Development Kit (JDK) installed, but it is not necessary to install Groovy because it's bundled with the Grails distribution.
 
 To install Grails, visit http://grails.org/Download and download the version you would like to use. Set a `GRAILS_HOME` environment variable to point to the root of the extracted download and add `GRAILS_HOME/bin` to your executable `PATH`. Then in a shell, type the following:
-	
+
 	grails create-app sampleapp
 	cd sampleapp
 	grails run-app
-	
+
 To build Grails, clone this GitHub repository and execute the install Gradle target:
 
     git clone https://github.com/grails/grails-core.git
     cd grails-core
     ./gradlew install
-    
+
 If you encounter out of memory errors when trying to run the install target, try adjusting Gradle build settings. For example:
 
     export GRADLE_OPTS="-Xmx2G -Xms2G -XX:NewSize=512m -XX:MaxNewSize=512m -XX:MaxPermSize=1G"
@@ -64,8 +61,7 @@ The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatical
 License
 ---
 
-Grails and Groovy are licensed under the terms of the [Apache License, Version 2.0][Apache License, Version 2.0].
-[Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
+Grails and Groovy are licensed under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 
 ***
