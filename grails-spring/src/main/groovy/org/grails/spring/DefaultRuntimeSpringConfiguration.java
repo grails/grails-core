@@ -135,7 +135,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
             setClassLoaderOnContext(classLoader);
         }
 
-        Assert.notNull(context);
+        Assert.notNull(context, "ApplicationContext cannot be null");
     }
 
     public BeanConfiguration addSingletonBean(String name, @SuppressWarnings("rawtypes") Class clazz) {
