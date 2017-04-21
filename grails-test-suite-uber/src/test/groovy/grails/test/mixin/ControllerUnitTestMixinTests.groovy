@@ -463,7 +463,7 @@ class TestController  {
         render 'method 3'
     }
 
-    def handleCommand = { TestCommand test ->
+    def handleCommand( TestCommand test ) {
         if (test.hasErrors()) {
             render "Bad"
         }
