@@ -863,6 +863,9 @@ public class GrailsClassUtils {
         if (Character.isUpperCase(suffix.charAt(0))) {
             return Character.toLowerCase(suffix.charAt(0)) + suffix.substring(1);
         }
+        if('_' == suffix.charAt(0)) {
+            return suffix;
+        }
         return null;
     }
 
