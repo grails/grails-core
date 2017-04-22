@@ -1,5 +1,6 @@
 package org.grails.core.util
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -25,10 +26,20 @@ class ClassPropertyFetcherSpec extends Specification {
         person.getxAge() == 30
         cpf.getPropertyValue(person, "xAge") == 30
     }
+
+    @Issue('grails/grails-core#10600')
+    void 'test retrieving property type when property name begins with underscore'() {
+        when:
+        def cpf = ClassPropertyFetcher.forClass(Person)
+
+        then:
+        cpf.getPropertyType('_someProperty') == String
+    }
 }
 class Person {
     String name
     Integer xAge
+    String _someProperty
 }
 class Author extends Person {
     Set books
