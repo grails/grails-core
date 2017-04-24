@@ -3,11 +3,10 @@ dependencies {
     compile project(":grails-web-databinding")
     compile project(":grails-web-fileupload"), optional
     compile project(":grails-web-url-mappings")
+    compile project(":grails-web-mvc")
 
 
     compile "org.grails:grails-web-gsp:$gspVersion"
-    compile "org.grails:grails-web-jsp:$gspVersion"
-    compile "org.grails:grails-web-mvc:$gspVersion"
     compile "org.grails:grails-web-sitemesh:$gspVersion"
 
     // Required for AspectJ support

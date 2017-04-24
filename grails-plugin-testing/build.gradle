@@ -10,6 +10,7 @@ dependencies {
                  project(':grails-plugin-codecs')
 
     compileOnly "org.grails.plugins:gsp:$gspVersion"
+    compileOnly "org.grails:grails-web-jsp:$gspVersion"
     compileOnly "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
 
     compile ( project(':grails-test') ) {
