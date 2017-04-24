@@ -161,6 +161,7 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("aProp", GrailsClassUtils.getPropertyForGetter("getaProp"));
         assertEquals("x2", GrailsClassUtils.getPropertyForGetter("getX2"));
         assertEquals("x2", GrailsClassUtils.getPropertyForGetter("isX2"));
+        assertEquals("_someProperty", GrailsClassUtils.getPropertyForGetter("get_someProperty", String.class));
 
         assertNull(GrailsClassUtils.getPropertyForGetter(null));
         assertNull(GrailsClassUtils.getPropertyForGetter(""));
