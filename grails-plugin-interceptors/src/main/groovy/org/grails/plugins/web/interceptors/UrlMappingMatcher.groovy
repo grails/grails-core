@@ -20,7 +20,7 @@ import grails.interceptors.Matcher
 import grails.util.Environment
 import grails.web.mapping.UrlMappingInfo
 import groovy.transform.CompileStatic
-import org.apache.commons.lang.builder.HashCodeBuilder
+import org.codehaus.groovy.util.HashCodeHelper
 import org.springframework.util.AntPathMatcher
 
 import java.util.concurrent.ConcurrentHashMap
@@ -211,9 +211,9 @@ class UrlMappingMatcher implements Matcher {
     }
 
     protected int hashCode(UrlMappingInfo info) {
-        new HashCodeBuilder()
-            .append(interceptor)
-            .append(info)
-            .toHashCode()
+        int hash = HashCodeHelper.initHash()
+        hash = HashCodeHelper.updateHash(hash, interceptor)
+        hash = HashCodeHelper.updateHash(hash, info)
+        return hash
     }
 }
