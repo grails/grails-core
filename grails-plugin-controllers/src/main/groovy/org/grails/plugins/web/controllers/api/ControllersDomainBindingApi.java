@@ -72,7 +72,11 @@ public class ControllersDomainBindingApi {
         if(!Environment.isInitializing()) {
             final GrailsApplication grailsApplication = Holders.findApplication();
             if (grailsApplication != null) {
-                domainClass = grailsApplication.getMappingContext().getPersistentEntity(instance.getClass().getName());
+                try {
+                    domainClass = grailsApplication.getMappingContext().getPersistentEntity(instance.getClass().getName());
+                } catch (GrailsConfigurationException e) {
+                    //no-op
+                }
             }
         }
 

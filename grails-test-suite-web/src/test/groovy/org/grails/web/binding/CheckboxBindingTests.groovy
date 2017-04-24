@@ -3,8 +3,11 @@ package org.grails.web.binding
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.TestFor
-
+import org.grails.core.support.MappingContextBuilder
+import org.junit.BeforeClass
 import org.junit.Test
+import spock.lang.Specification
+
 import static org.junit.Assert.*
 
 /**
@@ -12,9 +15,13 @@ import static org.junit.Assert.*
  * @since 1.3.0
  */
 @TestFor(CheckboxBindingController)
-class CheckboxBindingTests {
+class CheckboxBindingTests extends Specification {
 
-    @Test
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(Pizza)
+    }
+
+
     void testBindingCheckedValuesToObject() {
         params.name = "Capricciosa"
         params."_delivery" = ""
@@ -24,13 +31,14 @@ class CheckboxBindingTests {
         params."options._stuffedCrust" = ""
         params."options.stuffedCrust" = "on"
 
+        when:
         def model = controller.save()
 
-        assertEquals "Capricciosa", model.pizza.name
-        assertTrue "checked value 'delivery' failed to bind", model.pizza.delivery
-        assertTrue "nested checked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
-        assertTrue "nested checked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
+        then:
+        model.pizza.name == "Capricciosa"
+        model.pizza.delivery
+        model.pizza.options.extraAnchovies
+        model.pizza.options.stuffedCrust
     }
 
     @Test
@@ -39,13 +47,14 @@ class CheckboxBindingTests {
         params."_delivery" = ""
         params.options = [_extraAnchovies: '', _stuffedCrust: '']
 
+        when:
         def model = controller.save()
 
-        assertEquals "Capricciosa", model.pizza.name
-        assertFalse "unchecked value 'delivery' failed to bind", model.pizza.delivery
-        assertFalse "nested unchecked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
-        assertFalse "nested unchecked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
+        then:
+        model.pizza.name == "Capricciosa"
+        !model.pizza.delivery
+        !model.pizza.options.extraAnchovies
+        !model.pizza.options.stuffedCrust
     }
 
 }

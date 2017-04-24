@@ -4,12 +4,17 @@ import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+import org.grails.core.support.MappingContextBuilder
 import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(BindingController)
 @Mock(Person)
 class XmlBindingSpec extends Specification {
+
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(Person, Address)
+    }
 
     void 'Test binding XML body'() {
         when:
