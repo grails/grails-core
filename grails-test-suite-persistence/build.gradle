@@ -41,6 +41,12 @@ dependencies {
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
 
     testRuntime 'com.h2database:h2:1.3.176'
+
+    //    // Required for AspectJ support
+    testRuntime "org.springframework:spring-aspects:${springVersion}"
+    testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
+                  "org.aspectj:aspectjweaver:$aspectjVersion"
+
 }
 
 test {

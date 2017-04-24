@@ -8,9 +8,4 @@ dependencies {
 
     compile "org.grails:grails-web-gsp:$gspVersion"
     compile "org.grails:grails-web-sitemesh:$gspVersion"
-
-    // Required for AspectJ support
-    runtime "org.springframework:spring-aspects:${springVersion}"
-    runtime "org.aspectj:aspectjrt:$aspectjVersion",
-            "org.aspectj:aspectjweaver:$aspectjVersion"
 }
