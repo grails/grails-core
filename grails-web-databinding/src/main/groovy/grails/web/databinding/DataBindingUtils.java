@@ -38,6 +38,7 @@ import grails.web.mime.MimeType;
 import grails.web.mime.MimeTypeResolver;
 import grails.web.mime.MimeTypeUtils;
 
+import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.OneToOne;
@@ -221,7 +222,11 @@ public class DataBindingUtils {
         final GrailsApplication application = Holders.findApplication();
         PersistentEntity entity = null;
         if (application != null) {
-            entity = application.getMappingContext().getPersistentEntity(targetType.getName());
+            try {
+                entity = application.getMappingContext().getPersistentEntity(targetType.getClass().getName());
+            } catch (GrailsConfigurationException e) {
+                //no-op
+            }
         }
         final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
         for(final DataBindingSource dataBindingSource : dataBindingSources) {
@@ -255,7 +260,11 @@ public class DataBindingUtils {
         GrailsApplication application = Holders.findApplication();
         PersistentEntity entity = null;
         if (application != null) {
-            entity = application.getMappingContext().getPersistentEntity(object.getClass().getName());
+            try {
+                entity = application.getMappingContext().getPersistentEntity(object.getClass().getName());
+            } catch (GrailsConfigurationException e) {
+                //no-op
+            }
         }
         return bindObjectToDomainInstance(entity, object, source, include, exclude, filter);
     }
