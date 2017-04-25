@@ -18,6 +18,7 @@ package org.grails.plugins.web.taglib
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
+import org.grails.plugins.web.DefaultGrailsTagDateHelper
 import org.grails.plugins.web.GrailsTagDateHelper
 
 import java.text.DateFormat
@@ -54,7 +55,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
     ConversionService conversionService
-    GrailsTagDateHelper grailsTagDateHelper
+    GrailsTagDateHelper grailsTagDateHelper = new DefaultGrailsTagDateHelper()
     
     CodecLookup codecLookup
     
