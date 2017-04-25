@@ -5,12 +5,17 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.Validateable
+import org.grails.core.support.MappingContextBuilder
 import spock.lang.Issue
 import spock.lang.Specification
 
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Writer, Book])
 class GrailsWebDataBinderBindingXmlSpec extends Specification {
+
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(Writer, Book)
+    }
 
     @Issue('GRAILS-10868')
     void 'Test binding a single XML child element to a List'() {

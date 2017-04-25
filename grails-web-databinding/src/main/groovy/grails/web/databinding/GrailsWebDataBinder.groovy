@@ -699,7 +699,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     private PersistentEntity getPersistentEntity(Class clazz) {
         if (grailsApplication != null) {
             try {
-                grailsApplication.mappingContext.getPersistentEntity(clazz.name)
+                return grailsApplication.mappingContext.getPersistentEntity(clazz.name)
             } catch (GrailsConfigurationException e) {
                 //no-op
             }
