@@ -27,6 +27,7 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
 import org.apache.commons.lang.builder.CompareToBuilder
+import org.grails.core.support.MappingContextBuilder
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -38,6 +39,10 @@ class GrailsWebDataBinderSpec extends Specification {
     private static Locale defaultLocale = Locale.getDefault()
 
     GrailsWebDataBinder binder
+
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget)
+    }
 
     void setup() {
         binder = grailsApplication.mainContext.getBean(DataBindingUtils.DATA_BINDER_BEAN_NAME)
