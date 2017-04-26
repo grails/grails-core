@@ -2,7 +2,8 @@ package grails.web.databinding
 
 import grails.databinding.SimpleMapDataBindingSource;
 import grails.test.mixin.Mock
-import grails.web.databinding.GrailsWebDataBinder;
+import grails.web.databinding.GrailsWebDataBinder
+import org.grails.core.support.MappingContextBuilder;
 import spock.lang.Specification
 
 
@@ -17,7 +18,11 @@ import spock.lang.Specification
 class GrailsWebDataBinderConfigurationSpec extends Specification {
 
     GrailsWebDataBinder binder
-    
+
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(Author, Team)
+    }
+
     void setup() {
         binder = new GrailsWebDataBinder(grailsApplication)
     }

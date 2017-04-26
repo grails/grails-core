@@ -3,10 +3,15 @@ package org.grails.web.binding.hal.json
 import grails.persistence.Entity
 import grails.test.mixin.TestFor
 import grails.web.Controller
+import org.grails.core.support.MappingContextBuilder
 import spock.lang.Specification
 
 @TestFor(BindingController)
 class HalJsonBindingSpec extends Specification {
+
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(Person, Address)
+    }
 
     void 'Test binding JSON body'() {
         when:

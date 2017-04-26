@@ -16,8 +16,6 @@
 package grails.web.databinding
 
 import grails.core.GrailsApplication
-import grails.core.GrailsDomainClass
-import grails.core.GrailsDomainClassProperty
 import grails.databinding.*
 import grails.databinding.converters.FormattedValueConverter
 import grails.databinding.converters.ValueConverter
@@ -36,8 +34,17 @@ import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.core.artefact.AnnotationDomainClassArtefactHandler
 import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.xml.GPathResultMap
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentProperty
+import org.grails.datastore.mapping.model.types.Association
+import org.grails.datastore.mapping.model.types.Basic
+import org.grails.datastore.mapping.model.types.ManyToOne
+import org.grails.datastore.mapping.model.types.OneToMany
+import org.grails.datastore.mapping.model.types.OneToOne
+import org.grails.datastore.mapping.model.types.Simple
 import org.grails.web.databinding.DataBindingEventMulticastListener
 import org.grails.web.databinding.DefaultASTDatabindingHelper
 import org.grails.web.databinding.GrailsWebDataBindingListener
@@ -117,10 +124,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     protected populateErrors(obj, BindingResult bindingResult) {
-        GrailsDomainClass domain = null
-        if (grailsApplication != null) {
-            domain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,obj.getClass().name)
-        }
+        PersistentEntity domain = getPersistentEntity(obj.getClass())
 
         if (domain != null && bindingResult != null) {
             def newResult = new ValidationErrors(obj)
@@ -131,14 +135,17 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     if (!isBlank) {
                         newResult.addError(fieldError)
                     }
-                    else if (domain.hasPersistentProperty(fieldError.getField())) {
-                        final boolean isOptional = domain.getPropertyByName(fieldError.getField()).isOptional()
-                        if (!isOptional) {
+                    else {
+                        PersistentProperty prop = domain.getPropertyByName(fieldError.getField())
+                        if (prop != null) {
+                            final boolean isOptional = prop.isNullable()
+                            if (!isOptional) {
+                                newResult.addError(fieldError)
+                            }
+                        }
+                        else {
                             newResult.addError(fieldError)
                         }
-                    }
-                    else {
-                        newResult.addError(fieldError)
                     }
                 }
                 else {
@@ -158,12 +165,23 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     @Override
     protected Class<?> getReferencedTypeForCollection(String name, Object target) {
         def referencedType = super.getReferencedTypeForCollection(name, target)
-        if (referencedType == null && grailsApplication != null) {
-            def dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().name)
+        if (referencedType == null) {
+            PersistentEntity dc = getPersistentEntity(target.getClass())
+
             if (dc != null) {
-                def domainProperty = dc.getPersistentProperty(name)
+                def domainProperty = dc.getPropertyByName(name)
                 if (domainProperty != null) {
-                    referencedType = domainProperty.referencedPropertyType
+                    if (domainProperty instanceof Association) {
+                        Association association = ((Association)domainProperty)
+                        PersistentEntity entity = association.getAssociatedEntity()
+                        if (entity != null) {
+                            referencedType = entity.getJavaClass()
+                        } else if (association.isBasic()) {
+                            referencedType = ((Basic)association).getComponentType()
+                        }
+                    } else if (domainProperty instanceof Simple) {
+                        referencedType = domainProperty.getType()
+                    }
                 }
             }
         }
@@ -327,14 +345,18 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         }
                     }
                 }
-            } else if(grailsApplication != null) { // Fixes bidirectional oneToOne binding issue #9308
-                def domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
+            } else if (grailsApplication != null) { // Fixes bidirectional oneToOne binding issue #9308
+                PersistentEntity domainClass = getPersistentEntity(obj.getClass())
+
                 if (domainClass != null) {
-                    def property = domainClass.getPersistentProperty metaProperty.name
-                    if (property != null && property.isBidirectional()) {
-                        def otherSide = property.otherSide
-                        if (otherSide.isOneToOne()) {
-                            val[otherSide.name] = obj
+                    def property = domainClass.getPropertyByName(metaProperty.name)
+                    if (property != null && property instanceof Association) {
+                        Association association = (Association)property
+                        if (association.isBidirectional()) {
+                            def otherSide = association.inverseSide
+                            if (otherSide instanceof OneToOne) {
+                                val[otherSide.name] = obj
+                            }
                         }
                     }
                 }
@@ -472,21 +494,21 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected addElementToCollectionAt(obj, String propertyName, Collection collection, index, val) {
         super.addElementToCollectionAt obj, propertyName, collection, index, val
 
-        if (grailsApplication == null) {
-            return
-        }
-
-        def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
+        def domainClass = getPersistentEntity(obj.getClass())
         if (domainClass != null) {
-            def property = domainClass.getPersistentProperty propertyName
-            if (property != null && property.isBidirectional()) {
-                def otherSide = property.otherSide
-                if (otherSide.isManyToOne()) {
-                    val[otherSide.name] = obj
+            def property = domainClass.getPropertyByName(propertyName)
+            if (property != null && property instanceof Association) {
+                Association association = (Association)property
+                if (association.isBidirectional()) {
+                    def otherSide = association.inverseSide
+                    if (otherSide instanceof ManyToOne) {
+                        val[otherSide.name] = obj
+                    }
                 }
             }
         }
     }
+
     private Map resolveConstrainedProperties(object) {
         Map constrainedProperties = null
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass())
@@ -511,40 +533,48 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
         boolean isSet = false
-        if (grailsApplication != null) {
-            def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
-            if (domainClass != null) {
-                def property = domainClass.getPersistentProperty propName
-                if (property != null) {
-                    if (Collection.isAssignableFrom(property.type)) {
-                        if (propertyValue instanceof String) {
-                            isSet = addElementToCollection obj, propName, property, propertyValue, true
-                        } else if (propertyValue instanceof String[]){
-                            if (isDomainClass(property.referencedPropertyType)) {
+        def domainClass = getPersistentEntity(obj.getClass())
+        if (domainClass != null) {
+            PersistentProperty property = domainClass.getPropertyByName(propName)
+            if (property != null) {
+                if (Collection.isAssignableFrom(property.type)) {
+                    if (propertyValue instanceof String) {
+                        isSet = addElementToCollection obj, propName, property, propertyValue, true
+                    } else if (propertyValue instanceof String[]) {
+                        if (property instanceof Association) {
+                            Association association = (Association)property
+                            if (association.associatedEntity != null) {
                                 propertyValue.each { val ->
                                     boolean clearCollection = !isSet
-                                    isSet = addElementToCollection(obj, propName, property, val, clearCollection) || isSet
+                                    isSet = addElementToCollection(obj, propName, association, val, clearCollection) || isSet
+                                }
+                            }
+
+                        }
+                    }
+                }
+                PersistentProperty otherSide
+                if (property instanceof Association) {
+                    if (((Association) property).bidirectional) {
+                        otherSide = ((Association) property).inverseSide
+                    }
+                }
+                if (otherSide != null && List.isAssignableFrom(otherSide.getType()) && !property.isNullable()) {
+                    DeferredBindingActions.addBindingAction(new Runnable() {
+                        void run() {
+                            if (obj[propName] != null && otherSide instanceof OneToMany) {
+                                Collection collection = GrailsMetaClassUtils.getPropertyIfExists(obj[propName], otherSide.name, Collection)
+                                if (collection == null || !collection.contains(obj)) {
+                                    def methodName = 'addTo' + GrailsNameUtils.getClassName(otherSide.name)
+                                    GrailsMetaClassUtils.invokeMethodIfExists(obj[propName], methodName, [obj] as Object[])
                                 }
                             }
                         }
-                    }
-                    def otherSide = property.getOtherSide()
-                    if (otherSide != null && List.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
-                        DeferredBindingActions.addBindingAction(new Runnable() {
-                            void run() {
-                                if (obj[propName] != null && otherSide.isOneToMany()) {
-                                    Collection collection = GrailsMetaClassUtils.getPropertyIfExists(obj[propName], otherSide.name, Collection)
-                                    if (collection == null || !collection.contains(obj)) {
-                                        def methodName = 'addTo' + GrailsNameUtils.getClassName(otherSide.name)
-                                        GrailsMetaClassUtils.invokeMethodIfExists(obj[propName], methodName, [obj] as Object[])
-                                    }
-                                }
-                            }
-                        })
-                    }
+                    })
                 }
             }
         }
+
         if (!isSet) {
             super.setPropertyValue obj, source, metaProperty, propertyValue, listener
         }
@@ -569,13 +599,14 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
 
         // Fix for issue #9308 sets propertyValue's otherside value to the owning object for bidirectional manyToOne relationships
-        if (grailsApplication != null) {
-            def domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
-            if (domainClass != null) {
-                def property = domainClass.getPersistentProperty propName
-                if (property != null && property.isBidirectional()) {
-                    def otherSide = property.otherSide
-                    if (otherSide.isManyToOne()) {
+        def domainClass = getPersistentEntity(obj.getClass())
+        if (domainClass != null) {
+            def property = domainClass.getPropertyByName(propName)
+            if (property != null && property instanceof Association) {
+                Association association = ((Association)property)
+                if (association.bidirectional) {
+                    def otherSide = association.inverseSide
+                    if (otherSide instanceof ManyToOne) {
                         propertyValue[otherSide.name] = obj
                     }
                 }
@@ -595,7 +626,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         super.addElementToCollection obj, propName, propertyType, elementToAdd, clearCollection
     }
 
-    protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
+    protected addElementToCollection(obj, String propName, PersistentProperty property, propertyValue, boolean clearCollection) {
         addElementToCollection obj, propName, property.type, propertyValue, clearCollection
     }
 
@@ -663,6 +694,17 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected Locale getLocale() {
         def request = GrailsWebRequest.lookup()
         request ? request.getLocale() : Locale.getDefault()
+    }
+
+    private PersistentEntity getPersistentEntity(Class clazz) {
+        if (grailsApplication != null) {
+            try {
+                return grailsApplication.mappingContext.getPersistentEntity(clazz.name)
+            } catch (GrailsConfigurationException e) {
+                //no-op
+            }
+        }
+        null
     }
 }
 
