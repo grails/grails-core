@@ -1,27 +1,33 @@
 package org.grails.web.binding
 
-import static org.junit.Assert.assertEquals
+import org.grails.core.support.MappingContextBuilder
+import spock.lang.Specification
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.TestFor
-
-import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 @TestFor(StatusController)
-class EnumBindingTests  {
+class EnumBindingTests extends Specification {
 
-    @Test
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(StatusTransition)
+    }
+
+
     void testBindEnumInConstructor() {
+        when:
         def model = controller.bindMe()
 
-        assertEquals "blah", model.statusTransition.title
-        assertEquals "OPEN", model.statusTransition.status.toString()
+        then:
+        model.statusTransition.title == "blah"
+        model.statusTransition.status.toString() == "OPEN"
     }
 }
+
 @Entity
 class StatusTransition {
     String title

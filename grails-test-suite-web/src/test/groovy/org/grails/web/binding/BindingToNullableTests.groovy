@@ -1,44 +1,45 @@
 package org.grails.web.binding
 
-import static org.junit.Assert.*
+import org.grails.core.support.MappingContextBuilder
+import spock.lang.Specification
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.test.mixin.TestFor
-
-import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
 @TestFor(NullBindingPersonController)
-class BindingToNullableTests {
+class BindingToNullableTests extends Specification {
 
-    @Test
+    void setupSpec() {
+        new MappingContextBuilder(grailsApplication).build(NullBindingPerson)
+    }
+
     void testDataBindingBlankStringToNull() {
         controller.params.name = "fred"
         controller.params.dateOfBirth = ''
 
+        when:
         def model = controller.update()
 
-        assertNotNull "should have redirected with no validation error",controller.response.redirectedUrl
+        then:
+        controller.response.redirectedUrl != null
     }
 
-    @Test
     void testDataBindingToNull() {
         controller.params.name = "fred"
         controller.params.dateOfBirth = 'invalid'
 
+        when:
         def model = controller.update()
 
-        if (controller.response.redirectedUrl) {
-            fail "Request should not have been redirected as there should be errors, but was redirected to $controller.response.redirectedUrl"
-        }
-
-        def person = model.personInstance
-        assertEquals "fred", person.name
-        assertTrue person.hasErrors()
-        assertEquals("typeMismatch", person.errors.getFieldError("dateOfBirth").code)
+        then:
+        !controller.response.redirectedUrl
+        model.personInstance.name == "fred"
+        model.personInstance.hasErrors()
+        model.personInstance.errors.getFieldError("dateOfBirth").code == "typeMismatch"
     }
 }
 
