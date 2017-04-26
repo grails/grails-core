@@ -245,7 +245,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def buildPropertiesTask = project.tasks.create("buildProperties")
         def buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
                                         'info.app.name': project.name,
-                                        'info.app.version':  project.version,
+                                        'info.app.version':  project.version instanceof Serializable ? project.version : project.version.toString(),
                                         'info.app.grailsVersion': project.properties.get('grailsVersion')]
 
         buildPropertiesTask.inputs.properties(buildPropertiesContents)
