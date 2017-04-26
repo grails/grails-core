@@ -22,15 +22,10 @@ apply plugin: 'idea'
 ext {
     bintrayPublish = false
     // Sets release version
-<<<<<<< HEAD
     grailsVersion = '3.3.0.BUILD-SNAPSHOT'
-=======
-   grailsVersion = '3.2.10.BUILD-SNAPSHOT'
-    // grailsVersion = '3.2.9'
->>>>>>> 3.2.x
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    asyncVersion = '3.3.0.M1'
+    asyncVersion = '3.3.0.M2'
     gspVersion = '3.3.0.BUILD-SNAPSHOT'
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
@@ -39,12 +34,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-<<<<<<< HEAD
-    datastoreVersion = "6.1.1.RELEASE"
-    asyncVersion = "3.3.0.BUILD-SNAPSHOT"
-=======
-    datastoreVersion = "6.0.10.RELEASE"
->>>>>>> 3.2.x
+    datastoreVersion = "6.1.2.RELEASE"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.10"
     ivyVersion = "2.3.0"
@@ -54,7 +44,7 @@ ext {
     slf4jVersion = "1.7.22"
 
     spockVersion = '1.1-groovy-2.4-rc-3'
-    springBootVersion = "1.5.2.RELEASE"
+    springBootVersion = "1.5.3.RELEASE"
     springLoadedVersion = "1.2.7.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "4.3.8.RELEASE"
