@@ -56,7 +56,7 @@ ext {
     objenesisVersion = "1.4"
     tomcatVersion = "8.5.2"
     servletApiVersion = "3.0.1"
-    legacyConvertersVersion = "3.3.0.BUILD-SNAPSHOT"
+    legacyConvertersVersion = "3.3.0.M1"
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
 
