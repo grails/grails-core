@@ -23,7 +23,7 @@ dependencies {
 
     provided project(":grails-plugin-mimetypes")
     provided project(":grails-web")
-    provided "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
+    provided "org.grails.plugins:converters:$legacyConvertersVersion"
 
     // command line requirements
     provided  "jline:jline:$jlineVersion"

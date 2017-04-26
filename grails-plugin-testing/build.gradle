@@ -12,7 +12,7 @@ dependencies {
     compile "org.grails:grails-web-jsp:$gspVersion"
 
     compileOnly "org.grails.plugins:gsp:$gspVersion"
-    compileOnly "org.grails.plugins:grails-plugin-converters:$legacyConvertersVersion"
+    compileOnly "org.grails.plugins:converters:$legacyConvertersVersion"
 
     compile ( project(':grails-test') ) {
         exclude group: 'org.grails', module:'grails-web'
