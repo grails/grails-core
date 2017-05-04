@@ -215,12 +215,24 @@ public abstract class NavigableMapConfig implements Config {
                         T value = conversionService.convert(originalValue, targetType);
                         return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
                     } catch (ConversionException e) {
-                        // ignore, return default value
+                        if(targetType.isEnum()) {
+                            String stringValue = originalValue.toString();
+                            try {
+                                T value = (T) toEnumValue(targetType, stringValue);
+                                return value;
+                            } catch (Throwable e2) {
+                                // ignore e2 and throw original
+                            }
+                        }
                     }
                 }
             }
         }
         return defaultValue;
+    }
+
+    private Object toEnumValue(Class targetType, String stringValue) {
+        return Enum.valueOf(targetType, stringValue.toUpperCase());
     }
 
     @Override
@@ -229,7 +241,7 @@ public abstract class NavigableMapConfig implements Config {
 
         if(!GrailsStringUtils.isBlank(className)) {
             try {
-                Class<T> clazz = (Class<T>) ClassUtils.forName((String) className, classLoader);
+                Class<T> clazz = (Class<T>) ClassUtils.forName(className, classLoader);
                 if(clazz != targetType) {
                     throw new ClassConversionException(clazz, targetType);
                 }
