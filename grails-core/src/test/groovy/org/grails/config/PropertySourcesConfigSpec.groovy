@@ -6,6 +6,8 @@ import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
+import javax.persistence.FlushModeType
+
 /*
  * Copyright 2014 original authors
  *
@@ -29,7 +31,7 @@ class PropertySourcesConfigSpec extends Specification {
 
     void "Test that PropertySourcesConfig works as expected"() {
         given:"A PropertySourcesConfig instance"
-            def propertySource = new MapPropertySource("foo", [one:1, two:2, 'three.four': 34, 'empty.value':null])
+            def propertySource = new MapPropertySource("foo", [one:1, two:2, 'flush.mode': 'commit', 'three.four': 34, 'empty.value':null])
             def propertySources = new MutablePropertySources()
             propertySources.addLast(propertySource)
             def config = new PropertySourcesConfig(propertySources)
@@ -45,6 +47,7 @@ class PropertySourcesConfigSpec extends Specification {
             config.get('three.four') == 34
             config.getProperty('three.four') == '34'
             config.getProperty('three.four', Date) == null
+            config.getProperty('flush.mode', FlushModeType) == FlushModeType.COMMIT
             !config.empty.value
 
 
