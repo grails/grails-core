@@ -223,8 +223,8 @@ class GrailsApp extends SpringApplication {
                                 recompile(f, compilerConfig, location)
                                 if(newFiles.contains(f)) {
                                     newFiles.remove(f)
-                                    pluginManager.informOfFileChange(f)
                                 }
+                                pluginManager.informOfFileChange(f)
                                 sleep 1000
                             }
                         }
@@ -241,8 +241,8 @@ class GrailsApp extends SpringApplication {
                                 recompile(changedFile, compilerConfig, location)
                                 if(newFiles.contains(changedFile)) {
                                     newFiles.remove(changedFile)
-                                    pluginManager.informOfFileChange(changedFile)
                                 }
+                                pluginManager.informOfFileChange(changedFile)
                             }
                         }
 
