@@ -43,7 +43,7 @@ ext {
     jnaVersion = "4.2.2"
     slf4jVersion = "1.7.22"
 
-    spockVersion = '1.1-groovy-2.4-rc-3'
+    spockVersion = '1.1-groovy-2.4'
     springBootVersion = "1.5.3.RELEASE"
     springLoadedVersion = "1.2.7.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
