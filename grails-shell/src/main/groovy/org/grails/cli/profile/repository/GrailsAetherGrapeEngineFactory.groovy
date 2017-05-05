@@ -1,5 +1,6 @@
 package org.grails.cli.profile.repository
 
+import groovy.transform.CompileStatic
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.eclipse.aether.DefaultRepositorySystemSession
 import org.eclipse.aether.RepositorySystem
@@ -26,6 +27,7 @@ import org.springframework.boot.cli.compiler.grape.RepositorySystemSessionAutoCo
  * @author James Kleeh
  * @since 3.2
  */
+@CompileStatic
 class GrailsAetherGrapeEngineFactory {
 
     static AetherGrapeEngine create(GroovyClassLoader classLoader,
@@ -50,7 +52,7 @@ class GrailsAetherGrapeEngineFactory {
 
         return new AetherGrapeEngine(classLoader, repositorySystem,
                 repositorySystemSession, createRepositories(repositoryConfigurations),
-                dependencyResolutionContext)
+                dependencyResolutionContext, false)
     }
 
     private static ServiceLocator createServiceLocator() {
