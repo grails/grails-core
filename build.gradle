@@ -35,7 +35,7 @@ ext {
     commonsCliVersion = "1.2"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "6.1.2.RELEASE"
+    datastoreVersion = "6.1.3.RELEASE"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.10"
     jansiVersion = "1.14"
