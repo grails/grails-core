@@ -69,7 +69,7 @@ class DefaultMappingContextFactoryBean implements FactoryBean<MappingContext>, I
         ConnectionSourceSettingsBuilder builder = new ConnectionSourceSettingsBuilder(configuration)
         ConnectionSourceSettings settings = builder.build()
 
-        KeyValueMappingContext mappingContext = new KeyValueMappingContext("default", settings)
+        this.mappingContext = new KeyValueMappingContext("default", settings)
         DefaultValidatorRegistry validatorRegistry = new DefaultValidatorRegistry(mappingContext, settings, messageSource)
         for(factory in constraintFactories) {
             validatorRegistry.addConstraintFactory(factory)
@@ -80,16 +80,5 @@ class DefaultMappingContextFactoryBean implements FactoryBean<MappingContext>, I
 
         GrailsClass[] persistentClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE)
         mappingContext.addPersistentEntities(persistentClasses.collect() { GrailsClass cls -> cls.clazz} as Class[])
-
-        if(applicationContext instanceof ConfigurableApplicationContext) {
-            ConfigurableApplicationContext cac = (ConfigurableApplicationContext)applicationContext
-            cac.beanFactory.registerSingleton(
-                "gormValidatorRegistry", validatorRegistry
-            )
-            cac.beanFactory.registerSingleton(
-                "gormConstraintEvaluator", validatorRegistry.constraintsEvaluator
-            )
-        }
-        this.mappingContext
     }
 }
