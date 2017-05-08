@@ -27,13 +27,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import grails.web.mapping.UrlMapping;
-import grails.web.servlet.mvc.GrailsParameterMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import grails.core.GrailsApplication;
-import grails.util.GrailsClassUtils;
 import org.grails.exceptions.reporting.DefaultStackTraceFilterer;
 import org.grails.core.exceptions.GrailsRuntimeException;
 import org.grails.exceptions.reporting.StackTraceFilterer;
@@ -43,7 +40,6 @@ import org.grails.exceptions.ExceptionUtils;
 import org.grails.web.mapping.DefaultUrlMappingInfo;
 import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
-import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.exceptions.GrailsMVCException;
 import org.grails.web.sitemesh.GrailsContentBufferingResponse;
@@ -170,7 +166,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             if ( requestInfo != null ) {
                 Map params = new HashMap();
                 params.putAll(requestInfo.getParameters());
-                params.putAll(UrlMappingUtils.collectParamsNotInUrlMappingKeywords(info.getParameters()));
+                params.putAll(UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(info.getParameters()));
                 info = new DefaultUrlMappingInfo(info, params, grailsApplication);
             }
         }

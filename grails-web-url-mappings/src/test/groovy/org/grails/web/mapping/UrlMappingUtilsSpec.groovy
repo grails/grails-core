@@ -1,19 +1,18 @@
 package org.grails.web.mapping
 
-import grails.core.GrailsApplication
-import grails.web.mapping.UrlMappingData
-import grails.web.mapping.UrlMappingInfo
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class UrlMappingUtilsSpec extends Specification {
 
+    @Unroll
     def "test buildDispatchUrlForMapping"() {
-        when:
-        UrlMappingData urlData = new ResponseCodeMappingData("500")
-        UrlMappingInfo info = new DefaultUrlMappingInfo([controller: 'error', action: 'logError'], urlData, null)
-        String dispatchUrl = UrlMappingUtils.buildDispatchUrlForMapping(info, true)
+        expect:
+        expected == UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(params)
 
-        then:
-        dispatchUrl == 'fresa'
+        where:
+        params                      | expected
+        [id: 1, controller: 'home'] | [id: 1]
+        [id: 1, format: 'json']     | [id: 1, format: 'json']
     }
 }

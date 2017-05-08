@@ -64,7 +64,7 @@ public class UrlMappingUtils {
      *
      * @return a Map without entries whose key belongs to UrlMapping#KEYWORDS
      */
-    public static  Map<String, Object> collectParamsNotInUrlMappingKeywords(Map<String, Object> params) {
+    public static  Map<String, Object> findAllParamsNotInUrlMappingKeywords(Map<String, Object> params) {
         Map<String, Object> urlParams = new HashMap<>();
         if ( params != null ) {
             for (String key : params.keySet()) {
