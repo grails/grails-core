@@ -20,16 +20,15 @@ import grails.config.Settings;
 import grails.util.Environment;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.web.mapping.UrlMapping;
+import grails.web.servlet.mvc.GrailsParameterMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -41,8 +40,10 @@ import org.grails.exceptions.reporting.StackTraceFilterer;
 import grails.core.support.GrailsApplicationAware;
 import grails.web.mapping.UrlMappingInfo;
 import org.grails.exceptions.ExceptionUtils;
+import org.grails.web.mapping.DefaultUrlMappingInfo;
 import org.grails.web.mapping.UrlMappingUtils;
 import grails.web.mapping.UrlMappingsHolder;
+import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.mvc.exceptions.GrailsMVCException;
 import org.grails.web.sitemesh.GrailsContentBufferingResponse;
@@ -162,6 +163,18 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             HttpServletResponse response, ModelAndView mv) {
 
         UrlMappingInfo info = matchStatusCode(ex, urlMappings);
+
+        if ( info != null ) {
+            UrlMappingInfo requestInfo = urlMappings.match(request.getRequestURI());
+
+            if ( requestInfo != null ) {
+                Map params = new HashMap();
+                params.putAll(requestInfo.getParameters());
+                params.putAll(UrlMappingUtils.collectParamsNotInUrlMappingKeywords(info.getParameters()));
+                info = new DefaultUrlMappingInfo(info, params, grailsApplication);
+            }
+        }
+
         try {
             if (info != null && info.getViewName() != null) {
                 resolveView(request, info, mv);
