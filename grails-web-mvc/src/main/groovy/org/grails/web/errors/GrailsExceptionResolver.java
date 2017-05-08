@@ -190,7 +190,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             ModelAndView mv, String uri) throws ServletException, IOException {
         info.configure(WebUtils.retrieveGrailsWebRequest());
         String forwardUrl = UrlMappingUtils.forwardRequestForUrlMappingInfo(
-                request, response, info, mv.getModel());
+                request, response, info, mv.getModel(), true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Matched URI [" + uri + "] to URL mapping [" + info +
                     "], forwarding to [" + forwardUrl + "] with response [" + response.getClass() + "]");
