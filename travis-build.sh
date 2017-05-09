@@ -20,12 +20,15 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
 else
     echo "Executing tests"
-    ./gradlew $GRADLE_FLAGS $GRADLE_CMD || EXIT_STATUS=$?
+    ./gradlew check || EXIT_STATUS=$?
     echo "Done."
 fi
 
-export EXIT_STATUS
-export grailsVersion
+if [[ $EXIT_STATUS -eq 0 ]]; then
+    ./gradlew --stop
+    ./travis-publish-archives.sh || EXIT_STATUS=$?
+fi
+
 # done. after build, then after_success will run if EXIT_STATUS is 0
 #
 # This also means that the later modifications to EXIT_STATUS will not affect

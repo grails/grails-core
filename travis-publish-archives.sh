@@ -8,7 +8,7 @@ set -x
 
 echo "Project Version: '$grailsVersion'"
 echo "EXIT STATUS of build: '$EXIT_STATUS'"
-echo "Builder Leader: '$BUILD_LEADER'"
+
 
 # Configure GIT
 git config --global credential.helper "store --file=~/.git-credentials"
@@ -17,10 +17,7 @@ echo "https://$GH_TOKEN:@github.com" > ~/.git-credentials
 git config --global user.name "$GIT_NAME"
 git config --global user.email "$GIT_EMAIL"
 
-if [[ $BUILD_LEADER='YES' && $BUILD_AGGREGATE_STATUS = 'others_failed' ]]; then
-    echo "BUILD FAILED"
-    exit 1
-elif [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
+if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Builder Leading Publishing Release..."
     # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
     openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
@@ -82,7 +79,7 @@ elif [[ $TRAVIS_PULL_REQUEST == 'false' && $BUILD_LEADER='YES' && $TRAVIS_REPO_S
     # Rebuild Artifactory index
     curl -H "X-Api-Key:$ARTIFACTORY_API_KEY" -X POST "http://repo.grails.org/grails/api/maven?repos=libs-releases-local,plugins-releases-local,plugins3-releases-local,core&force=1"
 
-elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ && $BUILD_LEADER = 'YES' ]]; then
+elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
     echo "Builder Leading Publishing Snapshot..."
     ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
     cd ..
