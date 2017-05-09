@@ -122,5 +122,10 @@ public interface UrlMappingInfo {
      */
     Object getRedirectInfo();
 
+    /**
+     * Retrieves the UrlMappingData (information about a parsed URL) if any
+     *
+     * @return The UrlMappingData instance
+     */
     UrlMappingData getUrlData();
 }
