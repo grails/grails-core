@@ -137,7 +137,7 @@ public class UrlMappingUtils {
             }
         }
 
-        final Map parameters = info.getParameters();
+        final Map parameters = findAllParamsNotInUrlMappingKeywords(info.getParameters());
         if (parameters != null && !parameters.isEmpty() && includeParams) {
             try {
                 forwardUrl.append(WebUtils.toQueryString(parameters));

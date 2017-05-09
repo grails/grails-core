@@ -165,8 +165,8 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
             if ( requestInfo != null ) {
                 Map params = new HashMap();
-                params.putAll(requestInfo.getParameters());
-                params.putAll(UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(info.getParameters()));
+                params.putAll(UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(requestInfo.getParameters()));
+                params.putAll(info.getParameters());
                 info = new DefaultUrlMappingInfo(info, params, grailsApplication);
             }
         }
