@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
 import grails.core.GrailsApplication;
+import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.exceptions.UrlMappingException;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.WebUtils;
@@ -124,7 +125,6 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this(params, urlData, grailsApplication);
         this.viewName = viewName;
         Assert.notNull(viewName, "Argument [viewName] cannot be null or blank");
-
     }
 
     public DefaultUrlMappingInfo(Object uri, UrlMappingData data, GrailsApplication grailsApplication) {
@@ -139,6 +139,17 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.httpMethod = httpMethod;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
+
+    public DefaultUrlMappingInfo(UrlMappingInfo info, Map params, GrailsApplication grailsApplication) {
+        this(params, info.getUrlData(), grailsApplication);
+        this.redirectInfo = info.getRedirectInfo();
+        this.controllerName = info.getControllerName();
+        this.actionName = info.getActionName();
+        this.namespace = info.getNamespace();
+        this.pluginName = info.getPluginName();
+        this.viewName = info.getViewName();
+    }
+
 
     @Override
     public String getHttpMethod() {
@@ -266,6 +277,11 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     @Override
     public Object getRedirectInfo() {
         return redirectInfo;
+    }
+
+    @Override
+    public UrlMappingData getUrlData() {
+        return null;
     }
 
     @Override
