@@ -18,6 +18,8 @@ package grails.web.mapping;
 
 import grails.gorm.validation.Constrained;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -89,6 +91,33 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * The namespace of the URL mapping
      */
     String NAMESPACE = "namespace";
+
+
+    String VIEW = "view";
+
+    String RESOURCES = "resources";
+
+    String EXCLUDES = "excludes";
+
+    String INCLUDES = "includes";
+
+    String PERMANENT = "permanent";
+
+    String EXCEPTION = "exception";
+
+    List<String> KEYWORDS = Arrays.asList(CONTROLLER,
+            ACTION,
+            HTTP_METHOD,
+            REDIRECT_INFO,
+            VERSION,
+            URI,
+            PLUGIN,
+            NAMESPACE,
+            VIEW,
+            RESOURCES,
+            INCLUDES,
+            PERMANENT,
+            EXCEPTION);
 
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
