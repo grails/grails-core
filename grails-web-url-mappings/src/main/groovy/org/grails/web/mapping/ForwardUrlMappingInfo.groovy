@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping
 
+import grails.web.mapping.UrlMappingData
 import groovy.transform.CompileStatic
 
 /**
@@ -63,5 +64,10 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
 
     boolean isParsingRequest() {
         return false
+    }
+
+    @Override
+    UrlMappingData getUrlData() {
+        null
     }
 }
