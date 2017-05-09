@@ -247,13 +247,20 @@ public class GrailsWebRequest extends DispatcherServletWebRequest  {
     }
 
     /**
-     * Reset params by re-reading & initializing parameters from request
+     * @return The Grails params object
      */
-    public void resetParams() {
+    public GrailsParameterMap getOriginalParams() {
         if (originalParams == null) {
             originalParams = new GrailsParameterMap(getCurrentRequest());
         }
-        params = (GrailsParameterMap)originalParams.clone();
+        return originalParams;
+    }
+
+    /**
+     * Reset params by re-reading & initializing parameters from request
+     */
+    public void resetParams() {
+        params = (GrailsParameterMap)getOriginalParams().clone();
     }
 
     @SuppressWarnings("rawtypes")
