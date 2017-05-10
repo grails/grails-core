@@ -156,10 +156,10 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 	 * @param basenames the basenames of the bundle
 	 * @return a list with all codes from valid registered bundles
 	 */
-	public List<String> getBundleCodes(Locale locale,String...basenames){
+	public Set<String> getBundleCodes(Locale locale,String...basenames){
 		List<String> validBaseNames = getValidBasenames(basenames);
 		
-		List<String> codes = new ArrayList<>();
+		Set<String> codes = new HashSet<>();
 		for(String basename: validBaseNames){
 			List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename,locale);
 			for (Pair<String, Resource> filenameAndResource : filenamesAndResources) {
