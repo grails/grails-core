@@ -9,8 +9,7 @@ class ResourceBundleMessageSourceSpec extends Specification {
     File resourceFolder
     
     void setup(){
-        resourceFolder = new File(System.getProperty('java.io.tmpdir'),'resources')
-        resourceFolder.mkdirs()
+        resourceFolder = File.createTempDir()
         def messages = new File(resourceFolder,'messages.properties')
         messages.text = '''\
             foo=bar
