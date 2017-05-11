@@ -9,7 +9,9 @@ class ResourceBundleMessageSourceSpec extends Specification {
     File resourceFolder
     
     void setup(){
-        resourceFolder = File.createTempDir()
+        resourceFolder = new File(System.getProperty('user.home'),'.grails/test-resources')
+        if(!resourceFolder.exists()) resourceFolder.mkdirs()
+        
         def messages = new File(resourceFolder,'messages.properties')
         messages.text = '''\
             foo=bar
@@ -33,9 +35,9 @@ class ResourceBundleMessageSourceSpec extends Specification {
             messageSource.setBasenames('messages','other')
             def locale = Locale.default
         expect:
-            messageSource.getBundleCodes(locale,'messages') == ['foo']
-            messageSource.getBundleCodes(locale,'other') == ['bar']
-            messageSource.getBundleCodes(locale,'messages','other') == ['foo','bar']
+            messageSource.getBundleCodes(locale,'messages') == (['foo'] as Set)
+            messageSource.getBundleCodes(locale,'other') == (['bar'] as Set)
+            messageSource.getBundleCodes(locale,'messages','other') == (['foo','bar'] as Set)
     }
     
 }
