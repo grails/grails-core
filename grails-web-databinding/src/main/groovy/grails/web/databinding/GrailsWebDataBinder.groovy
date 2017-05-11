@@ -552,20 +552,20 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected preprocessValue(propertyValue) {
-        if(propertyValue instanceof CharSequence) {
+    protected preprocessValue(Class type, Object propertyValue) {
+        if (propertyValue instanceof CharSequence) {
             String stringValue = propertyValue.toString()
             if (trimStrings) {
                 stringValue = stringValue.trim()
             }
-            if (convertEmptyStringsToNull && "".equals(stringValue)) {
+            if ((convertEmptyStringsToNull || !CharSequence.isAssignableFrom(type)) && "".equals(stringValue)) {
                 stringValue = null
             }
             return stringValue
         }
         propertyValue
     }
-    
+
     @Override
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
 
