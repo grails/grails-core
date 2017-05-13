@@ -151,6 +151,7 @@ class RestfulController<T> {
 
         instance.properties = getObjectToBind()
 
+        instance.validate()
         if (instance.hasErrors()) {
             transactionStatus.setRollbackOnly()
             respond instance.errors, view:'edit' // STATUS CODE 422
