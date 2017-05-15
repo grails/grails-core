@@ -189,7 +189,7 @@ class RestfulController<T> {
             return
         }
 
-        instance.delete flush:true
+        deleteResource instance
 
         request.withFormat {
             form multipartForm {
@@ -212,18 +212,6 @@ class RestfulController<T> {
         } else {
             return false
         }
-    }
-
-    /**
-     * This method is no longer used.
-     *
-     * @see #getObjectToBind
-     * @return The parameters
-     * @deprecated
-     */
-    @Deprecated
-    protected Map getParametersToBind() {
-        params
     }
     
     /**
@@ -318,7 +306,16 @@ class RestfulController<T> {
     protected T updateResource(T resource) {
         saveResource resource
     }
-    
+
+    /**
+     * Deletes a resource
+     * 
+     * @param resource The resource to be deleted
+     */
+    protected void deleteResource(T resource) {
+        resource.delete flush: true
+    }
+
     protected String getClassMessageArg() {
         message(code: "${resourceName}.label".toString(), default: resourceClassName)
     }

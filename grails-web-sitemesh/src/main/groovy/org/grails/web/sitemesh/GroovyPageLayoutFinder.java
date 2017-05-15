@@ -24,13 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import grails.util.GrailsClassUtils;
 import grails.util.GrailsStringUtils;
 import org.grails.core.artefact.ControllerArtefactHandler;
 import org.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.view.AbstractGrailsView;
@@ -227,7 +224,7 @@ public class GroovyPageLayoutFinder implements ApplicationListener<ContextRefres
             d = getNamedDecorator(request, layoutProperty.toString());
         }
         else {
-            if (d == null && !GrailsStringUtils.isBlank(actionUri)) {
+            if (!GrailsStringUtils.isBlank(actionUri)) {
                 d = getNamedDecorator(request, actionUri.substring(1), true);
             }
 

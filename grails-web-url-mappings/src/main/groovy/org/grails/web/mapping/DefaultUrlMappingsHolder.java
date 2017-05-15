@@ -64,7 +64,7 @@ import com.googlecode.concurrentlinkedhashmap.Weigher;
  * @since 0.4
  */
 @SuppressWarnings("rawtypes")
-public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groovy.grails.web.mapping.UrlMappings {
+public class DefaultUrlMappingsHolder implements UrlMappings {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
@@ -236,7 +236,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
 
     @Override
     public UrlCreator getReverseMapping(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
-        if (params == null) params = Collections.EMPTY_MAP;
+        if (params == null) params = Collections.emptyMap();
 
         if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, namespace, pluginName, httpMethod,params);
@@ -271,7 +271,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
 
     @Override
     public UrlCreator getReverseMappingNoDefault(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
-        if (params == null) params = Collections.EMPTY_MAP;
+        if (params == null) params = Collections.emptyMap();
 
         if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, namespace, pluginName, httpMethod, params);
@@ -312,7 +312,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
             }
         }
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            UrlMappingKey lookupKey = new UrlMappingKey(controller, action, namespace, pluginName, httpMethod,version, Collections.EMPTY_SET);
+            UrlMappingKey lookupKey = new UrlMappingKey(controller, action, namespace, pluginName, httpMethod,version, Collections.<String>emptySet());
             mapping = mappingsLookup.get(lookupKey);
             if (mapping == null) {
                 lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -685,7 +685,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings, org.codehaus.groov
         String pluginName;
         String httpMethod;
         String version;
-        Set<String> paramNames = Collections.EMPTY_SET;
+        Set<String> paramNames = Collections.emptySet();
 
         public UrlMappingKey(String controller, String action, String namespace, String pluginName, String httpMethod, String version,Set<String> paramNames) {
             this.controller = controller;

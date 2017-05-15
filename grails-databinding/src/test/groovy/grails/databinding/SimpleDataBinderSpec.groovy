@@ -14,14 +14,9 @@
  */
 package grails.databinding
 
-import grails.databinding.SimpleDataBinder
-import grails.databinding.SimpleMapDataBindingSource
+
 import grails.databinding.errors.BindingError
 import grails.databinding.events.DataBindingListenerAdapter
-
-import grails.databinding.BindUsing
-import org.grails.databinding.BindingFormat as LegacyBindingFormat
-import grails.databinding.BindingFormat
 import org.grails.databinding.converters.DateConversionHelper
 
 import spock.lang.Ignore
@@ -159,20 +154,6 @@ class SimpleDataBinderSpec extends Specification {
         obj.formattedUtilDate == nowDate
     }
 
-    @Issue('GRAILS-10925')
-    void 'Test binding a Date to a Date property marked with the legacy @BindingFormat'() {
-        given:
-        def binder = new SimpleDataBinder()
-        def obj = new DateContainer()
-        def nowDate = new Date()
-        
-        when:
-        binder.bind obj, [legacyFormattedUtilDate: nowDate] as SimpleMapDataBindingSource
-        
-        then:
-        obj.legacyFormattedUtilDate == nowDate
-    }
-
     void 'Test listener is notified for properties in nested maps'() {
         given:
         def binder = new SimpleDataBinder()
@@ -224,7 +205,7 @@ class SimpleDataBinderSpec extends Specification {
     void 'Test binding string to date'() {
         given:
         def binder = new SimpleDataBinder()
-        binder.registerConverter new DateConversionHelper()
+        binder.registerConverter new DateConversionHelper(formatStrings: ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"])
 
         def obj = new DateContainer()
 
@@ -603,9 +584,6 @@ class DateContainer {
 
     @BindingFormat('MMddyyyy')
     Date formattedUtilDate
-
-    @LegacyBindingFormat('MMddyyyy')
-    Date legacyFormattedUtilDate
 }
 
 enum Role {

@@ -239,12 +239,12 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
 
     @Override
     protected Object createNode(Object name) {
-        return createNode(name, Collections.EMPTY_MAP);
+        return createNode(name, Collections.emptyMap());
     }
 
     @Override
     protected Object createNode(Object name, Object value) {
-        return createNode(name,Collections.EMPTY_MAP,value);
+        return createNode(name, Collections.emptyMap(),value);
     }
 
     public Map<String, Constrained> getConstrainedProperties() {

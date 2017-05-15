@@ -103,6 +103,8 @@ public class GrailsResourceUtils {
      */
     public static final String VIEWS_DIR_PATH_NO_SLASH = GRAILS_APP_DIR + "/views";
 
+    public static final String DOMAIN_DIR_PATH = GRAILS_APP_DIR + "/domain/";
+
     public static final String REGEX_FILE_SEPARATOR = "[\\\\/]"; // backslashes need escaping in regexes
 
     /*
@@ -491,7 +493,7 @@ public class GrailsResourceUtils {
         return collectionToDelimitedString(coll, delim, "", "");
     }
     private static String collectionToDelimitedString(Collection<?> coll, String delim, String prefix, String suffix) {
-        if (coll != null && coll.isEmpty()) {
+        if (coll == null || coll.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder();

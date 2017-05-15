@@ -21,6 +21,7 @@ import grails.core.support.ClassLoaderAware;
 import grails.io.IOUtils;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.PluginManagerAware;
+import grails.util.GrailsUtil;
 import grails.validation.ConstrainedProperty;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingData;
@@ -85,22 +86,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
     private static final String EXCEPTION = "exception";
     private static final String PARSE_REQUEST = "parseRequest";
+    private static final String SINGLE = "single";
     private static final String RESOURCE = "resource";
     private static final String RESOURCES = "resources";
 
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
     private GrailsApplication grailsApplication;
-
-
-    /**
-     * @param servletContext The servlet context
-     * @deprecated Used DefaultUrLMappingsEvaluator(ApplicationContext) instead
-     */
-    @Deprecated
-    public DefaultUrlMappingEvaluator(ServletContext servletContext) {
-        this(WebApplicationContextUtils.getWebApplicationContext(servletContext));
-    }
 
     public DefaultUrlMappingEvaluator(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -587,7 +579,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         if (!hasParent) {
                             urlDefiningMode = false;
                         }
-                        args = args != null && args.length > 0 ? args : new Object[]{Collections.EMPTY_MAP};
+                        args = args != null && args.length > 0 ? args : new Object[]{Collections.emptyMap()};
                         if (args[0] instanceof Closure) {
                             UrlMappingData urlData = createUrlMappingData(mappedURI, isResponseCode);
 
@@ -623,7 +615,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                             if (binding != null) {
                                 Map bindingVariables = variables;
-                                Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
+                                Object parse = getParseRequest(Collections.emptyMap(), bindingVariables);
                                 if (parse instanceof Boolean) {
                                     urlMapping.setParseRequest((Boolean) parse);
                                 }
@@ -650,8 +642,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                             UrlMappingData urlData = createUrlMappingData(uri, isResponseCode);
 
-                            if (namedArguments.containsKey(RESOURCE)) {
-                                Object controller = namedArguments.get(RESOURCE);
+                            if (namedArguments.containsKey(RESOURCE) || namedArguments.containsKey(SINGLE)) {
+                                Object controller;
+                                if (namedArguments.containsKey(RESOURCE)) {
+                                    GrailsUtil.deprecated("The " + RESOURCE + " syntax is deprecated and will be removed in a future release. Use " + SINGLE + " instead.");
+                                    controller = namedArguments.get(RESOURCE);
+                                } else {
+                                    controller = namedArguments.get(SINGLE);
+                                }
                                 String controllerName = controller.toString();
                                 mappingInfo.setController(controllerName);
                                 parentResources.push(new ParentResource(controllerName, uri, true));

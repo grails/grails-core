@@ -24,11 +24,8 @@ import org.eclipse.aether.graph.Dependency
 import org.grails.cli.boot.GrailsDependencyVersions
 import org.grails.cli.profile.Profile
 import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine
-import org.springframework.boot.cli.compiler.grape.AetherGrapeEngineFactory
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionFailedException
-import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
-
 
 /**
  *  Resolves profiles from a configured list of repositories using Aether
@@ -39,20 +36,20 @@ import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration
 @CompileStatic
 class MavenProfileRepository extends AbstractJarProfileRepository {
 
-    public static final RepositoryConfiguration DEFAULT_REPO = new RepositoryConfiguration("grailsCentral", new URI("https://repo.grails.org/grails/core"), true)
+    public static final GrailsRepositoryConfiguration DEFAULT_REPO = new GrailsRepositoryConfiguration("grailsCentral", new URI("https://repo.grails.org/grails/core"), true)
 
-    List<RepositoryConfiguration> repositoryConfigurations
+    List<GrailsRepositoryConfiguration> repositoryConfigurations
     AetherGrapeEngine grapeEngine
     GroovyClassLoader classLoader
     DependencyResolutionContext resolutionContext
     GrailsDependencyVersions profileDependencyVersions
     private boolean resolved = false
 
-    MavenProfileRepository(List<RepositoryConfiguration> repositoryConfigurations) {
+    MavenProfileRepository(List<GrailsRepositoryConfiguration> repositoryConfigurations) {
         this.repositoryConfigurations = repositoryConfigurations
         classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader)
         resolutionContext = new DependencyResolutionContext()
-        this.grapeEngine = AetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, resolutionContext)
+        this.grapeEngine = GrailsAetherGrapeEngineFactory.create(classLoader, repositoryConfigurations, resolutionContext)
         profileDependencyVersions = new GrailsDependencyVersions(grapeEngine)
         resolutionContext.addDependencyManagement(profileDependencyVersions)
     }

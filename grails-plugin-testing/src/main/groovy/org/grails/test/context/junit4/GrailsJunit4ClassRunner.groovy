@@ -1,6 +1,6 @@
 package org.grails.test.context.junit4
 
-import grails.boot.config.GrailsApplicationContextLoader
+import grails.boot.test.GrailsApplicationContextLoader
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner

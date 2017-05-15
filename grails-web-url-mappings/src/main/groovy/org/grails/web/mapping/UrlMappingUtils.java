@@ -18,6 +18,7 @@ package org.grails.web.mapping;
 import grails.util.GrailsStringUtils;
 import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
+import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappingsHolder;
 import groovy.lang.Binding;
@@ -57,6 +58,22 @@ import java.util.Map;
  */
 public class UrlMappingUtils {
     private UrlMappingUtils() {
+    }
+
+    /**
+     *
+     * @return a Map without entries whose key belongs to UrlMapping#KEYWORDS
+     */
+    public static  Map<String, Object> findAllParamsNotInUrlMappingKeywords(Map<String, Object> params) {
+        Map<String, Object> urlParams = new HashMap<>();
+        if ( params != null ) {
+            for (String key : params.keySet()) {
+                if (!UrlMapping.KEYWORDS.contains(key)) {
+                    urlParams.put(key, params.get(key));
+                }
+            }
+        }
+        return urlParams;
     }
 
     /**
@@ -120,7 +137,7 @@ public class UrlMappingUtils {
             }
         }
 
-        final Map parameters = info.getParameters();
+        final Map parameters = findAllParamsNotInUrlMappingKeywords(info.getParameters());
         if (parameters != null && !parameters.isEmpty() && includeParams) {
             try {
                 forwardUrl.append(WebUtils.toQueryString(parameters));
@@ -137,7 +154,7 @@ public class UrlMappingUtils {
      */
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
-        return forwardRequestForUrlMappingInfo(request, response, info, Collections.EMPTY_MAP);
+        return forwardRequestForUrlMappingInfo(request, response, info, Collections.emptyMap());
     }
 
     /**
@@ -314,9 +331,4 @@ public class UrlMappingUtils {
             WebUtils.cleanupIncludeRequestAttributes(request, toRestore);
         }
     }
-
-
-
-
-
 }

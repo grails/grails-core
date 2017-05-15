@@ -23,14 +23,12 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-import org.grails.core.legacy.LegacyGrailsApplication
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import org.grails.spring.context.support.GrailsPlaceholderConfigurer
 import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
-import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.grails.core.io.DefaultResourceLocator
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
@@ -42,6 +40,7 @@ import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.config.YamlProcessor
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.boot.yaml.SpringProfileDocumentMatcher
 import org.springframework.context.annotation.AnnotationConfigUtils
@@ -83,7 +82,6 @@ class CoreGrailsPlugin extends Plugin {
             placeholderPrefix = placeHolderPrefix
         }
         grailsConfigProperties(ConfigProperties, config)
-        legacyGrailsApplication(LegacyGrailsApplication, application)
 
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
@@ -112,7 +110,7 @@ class CoreGrailsPlugin extends Plugin {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
 
-        grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
+        grailsApplicationAwarePostProcessor(GrailsApplicationAwareBeanPostProcessor, ref("grailsApplication"))
         pluginManagerPostProcessor(PluginManagerAwareBeanPostProcessor)
 
         classLoader(MethodInvokingFactoryBean) {
@@ -180,7 +178,7 @@ class CoreGrailsPlugin extends Plugin {
         if (event.source instanceof Resource) {
             Resource res = (Resource)event.source
             if(res.filename.endsWith('.xml')) {
-                def xmlBeans = new OptimizedAutowireCapableBeanFactory()
+                def xmlBeans = new DefaultListableBeanFactory()
                 new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(res)
                 for(String beanName in xmlBeans.beanDefinitionNames) {
                     applicationContext.registerBeanDefinition(beanName, xmlBeans.getBeanDefinition(beanName))

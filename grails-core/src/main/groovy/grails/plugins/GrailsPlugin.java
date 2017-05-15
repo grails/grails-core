@@ -50,7 +50,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  */
 @SuppressWarnings("rawtypes")
-public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo, org.codehaus.groovy.grails.plugins.GrailsPlugin {
+public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo {
 
     int EVENT_ON_CHANGE = 0;
     int EVENT_ON_CONFIG_CHANGE = 1;
@@ -229,7 +229,10 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
 
     /**
      * Write some documentation to the DocumentationContext
+     * @deprecated Dynamic document generation no longer supported
+     * @param text
      */
+    @Deprecated
     void doc(String text);
 
     /**

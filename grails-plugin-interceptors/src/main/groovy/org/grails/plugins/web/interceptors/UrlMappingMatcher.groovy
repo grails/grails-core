@@ -38,7 +38,6 @@ import java.util.regex.Pattern
 class UrlMappingMatcher implements Matcher {
 
     public static Pattern WILD_CARD_PATTERN = ~/.*/
-    private static final Map<Integer, Boolean> CACHED_MATCHES = new ConcurrentHashMap<>()
 
     protected Pattern controllerRegex = WILD_CARD_PATTERN
     protected Pattern actionRegex = WILD_CARD_PATTERN
@@ -75,14 +74,7 @@ class UrlMappingMatcher implements Matcher {
                     }
                 }
             } else if (info) {
-                def infoCode = hashCode(info)
-                Boolean matched = CACHED_MATCHES.get(infoCode)
-                if (matched != null) return matched
-
                 if (doesMatchInternal(info, method)) {
-                    if (Environment.current == Environment.PRODUCTION) {
-                        CACHED_MATCHES.put(infoCode, Boolean.TRUE)
-                    }
                     return true
                 }
             }
@@ -91,8 +83,10 @@ class UrlMappingMatcher implements Matcher {
     }
 
     protected boolean isExcluded(String uri, UrlMappingInfo info) {
-        if( uriExcludePatterns.any() { String p -> pathMatcher.match(p, uri)} ) {
-            return true
+        for(pattern in uriExcludePatterns) {
+            if(pathMatcher.match(pattern, uri)) {
+                return true
+            }
         }
         if(info) {
             for(exclude in excludes) {
@@ -101,7 +95,7 @@ class UrlMappingMatcher implements Matcher {
                 }
             }
         }
-        false
+        return false
     }
 
     protected boolean doesMatchInternal(UrlMappingInfo info, String method) {

@@ -198,7 +198,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         } else if (object instanceof Iterable) {
             if (object) {
                 final iterator = object.iterator()
-                final first = iterator.next()
+                def first = iterator.next()
                 if (first) {
                     if (proxyHandler != null) {
                         first = proxyHandler.unwrapIfProxy(first)
@@ -208,7 +208,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
             }
         } else if (object instanceof Map) {
             if (object) {
-                final first = object.values().iterator().next()
+                def first = object.values().iterator().next()
                 if (first) {
                     if (proxyHandler != null) {
                         first = proxyHandler.unwrapIfProxy(first)
@@ -217,7 +217,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                 }
             }
         } else if (object instanceof BeanPropertyBindingResult) {
-            final target = ((BeanPropertyBindingResult) object).target
+            def target = ((BeanPropertyBindingResult) object).target
             if (target) {
                 if (proxyHandler != null) {
                     target = proxyHandler.unwrapIfProxy(target)

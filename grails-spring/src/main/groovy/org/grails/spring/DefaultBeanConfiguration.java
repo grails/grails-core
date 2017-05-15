@@ -153,7 +153,7 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     private String name;
     private boolean singleton = true;
     private AbstractBeanDefinition definition;
-    private Collection<?> constructorArgs = Collections.EMPTY_LIST;
+    private Collection<?> constructorArgs = Collections.emptyList();
     private BeanWrapper wrapper;
 
     public DefaultBeanConfiguration(String name, Class<?> clazz) {
@@ -162,12 +162,12 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     }
 
     public DefaultBeanConfiguration(String name, Class<?> clazz, boolean prototype) {
-        this(name,clazz,Collections.EMPTY_LIST);
+        this(name,clazz, Collections.emptyList());
         singleton = !prototype;
     }
 
     public DefaultBeanConfiguration(String name) {
-        this(name,null,Collections.EMPTY_LIST);
+        this(name,null, Collections.emptyList());
     }
 
     public DefaultBeanConfiguration(Class<?> clazz2) {
@@ -181,7 +181,7 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
     }
 
     public DefaultBeanConfiguration(String name2, boolean prototype) {
-        this(name2,null,Collections.EMPTY_LIST);
+        this(name2,null, Collections.emptyList());
         singleton = !prototype;
     }
 

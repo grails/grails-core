@@ -64,6 +64,7 @@ class GrailsInterceptorHandlerInterceptorAdapterSpec extends Specification{
         when:"The adapter prehandle is executed"
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def modelAndView = new ModelAndView()
+        adapter.preHandle(webRequest.request, webRequest.response, this)
         adapter.postHandle(webRequest.request, webRequest.response, this, modelAndView)
 
         then:"The prehandle is true"

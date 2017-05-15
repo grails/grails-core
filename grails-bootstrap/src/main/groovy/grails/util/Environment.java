@@ -118,7 +118,7 @@ public enum Environment {
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
-    private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
+    private static Holder<Environment> cachedCurrentEnvironment = new Holder<>("Environment");
     private static final boolean DEVELOPMENT_MODE = getCurrent() == DEVELOPMENT && BuildSettings.GRAILS_APP_DIR_PRESENT;
     private static boolean initializingState = false;
 
@@ -260,12 +260,21 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
+        String envName = System.getProperty(Environment.KEY);
+        Environment env;
+        if(!isBlank(envName)) {
+            env = getEnvironment(envName);
+            if(env != null) {
+                return env;
+            }
+        }
+
+
         Environment current = cachedCurrentEnvironment.get();
         if (current != null) {
             return current;
         }
-
-        return resolveCurrentEnvironment();
+        return cacheCurrentEnvironment();
     }
 
     private static Environment resolveCurrentEnvironment() {
@@ -297,8 +306,10 @@ public enum Environment {
         return env;
     }
 
-    public static void cacheCurrentEnvironment() {
-        cachedCurrentEnvironment.set(resolveCurrentEnvironment());
+    private static Environment cacheCurrentEnvironment() {
+        Environment env = resolveCurrentEnvironment();
+        cachedCurrentEnvironment.set(env);
+        return env;
     }
 
     /**
@@ -307,6 +318,14 @@ public enum Environment {
      */
     public static Environment getCurrentEnvironment() {
         return getCurrent();
+    }
+
+    /**
+     * Reset the current environment
+     */
+    public static void reset() {
+        cachedCurrentEnvironment.set(null);
+        Metadata.reset();
     }
 
     /**
@@ -325,7 +344,7 @@ public enum Environment {
      * @return True if the development sources are present
      */
     public static boolean isDevelopmentEnvironmentAvailable() {
-        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed();
+        return BuildSettings.GRAILS_APP_DIR_PRESENT && !isStandaloneDeployed() && !isWarDeployed();
     }
 
     /**
@@ -337,6 +356,7 @@ public enum Environment {
         Environment env = Environment.getCurrent();
         return isDevelopmentEnvironmentAvailable() && Boolean.getBoolean(RUN_ACTIVE) && (env == Environment.DEVELOPMENT);
     }
+    
     /**
      * Check whether the application is deployed
      * @return true if is

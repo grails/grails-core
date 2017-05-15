@@ -182,7 +182,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
 
             } else if ((a instanceof ToOne) && (proxyHandler instanceof EntityProxyHandler)) {
                 if (associatedEntity) {
-                    final proxy = ClassPropertyFetcher.forClass(object.getClass()).getPropertyValue(object, propertyName)
+                    final proxy = mappingContext.getEntityReflector(a.owner).getProperty(object, propertyName)
                     final id = proxyHandler.getProxyIdentifier(proxy)
                     final href = linkGenerator.link(resource: associatedEntity.decapitalizedName, id: id, method: HttpMethod.GET, absolute: absoluteLinks)
                     final associationTitle = getLinkTitle(associatedEntity, locale)

@@ -46,7 +46,7 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
     private View view;
 
     public SpringMVCViewDecorator(String name, View view) {
-        super(name, (view instanceof AbstractUrlBasedView) ? ((AbstractUrlBasedView)view).getUrl() : view.toString(), Collections.EMPTY_MAP);
+        super(name, (view instanceof AbstractUrlBasedView) ? ((AbstractUrlBasedView)view).getUrl() : view.toString(), Collections.emptyMap());
         this.view = view;
     }
 

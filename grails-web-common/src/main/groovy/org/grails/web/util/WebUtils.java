@@ -188,6 +188,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), locale);
     }
 
+    /**
+     * @deprecated Does not take into account the url converter
+     */
     public static String addViewPrefix(String viewName) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         return addViewPrefix(viewName, webRequest != null ? webRequest.getControllerName() : null);
@@ -348,10 +351,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     @SuppressWarnings("rawtypes")
     private static boolean appendEntry(Map.Entry entry, StringBuilder queryString, String encoding, String path) throws UnsupportedEncodingException {
         String name = entry.getKey().toString();
-        if (name.indexOf(".") > -1) return false; // multi-d params handled by recursion
-
         Object value = entry.getValue();
-        if (value == null) value = "";
+
+        if (name.indexOf(".") > -1 && (value instanceof GrailsParameterMap)) return false; // multi-d params handled by recursion
+        else if (value == null) value = "";
         else if (value instanceof GrailsParameterMap) {
             GrailsParameterMap child = (GrailsParameterMap)value;
             Set nestedEntrySet = child.entrySet();

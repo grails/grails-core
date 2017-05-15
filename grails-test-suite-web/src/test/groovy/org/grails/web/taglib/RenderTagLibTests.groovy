@@ -277,8 +277,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testSortableColumnTagWithTitleKey() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         // test message not resolved; title property will be used (when provided)
 
@@ -337,8 +337,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testSortableColumnTagWithDefaultOrder() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         // default order: desc
 
@@ -396,8 +396,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testSortableColumnTagSorted() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         // column sorted asc
 

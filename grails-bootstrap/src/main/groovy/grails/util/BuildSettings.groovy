@@ -88,14 +88,6 @@ class BuildSettings {
     public static final String COMPILER_SOURCE_LEVEL = "grails.project.source.level"
 
     /**
-     * The dependency resolver to use
-     *
-     * @deprecated Use Gradle dependency resolution instead
-     */
-    @Deprecated
-    public static final String DEPENDENCY_RESOLVER = "grails.project.dependency.resolver"
-
-    /**
      * The compiler source level to use
      */
     public static final String COMPILER_TARGET_LEVEL = "grails.project.target.level"
@@ -120,46 +112,6 @@ class BuildSettings {
     public static final String OFFLINE_MODE= "grails.offline.mode"
 
     /**
-     * The name of the system property for WAR exploded directory
-     *
-     * @deprecated Exploded WAR directory no longer supported
-     */
-    @Deprecated
-    public static final String PROJECT_WAR_EXPLODED_DIR = "grails.project.war.exploded.dir"
-
-    /**
-     * The name of the system property for plugin staging directory
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String PLUGIN_STAGING_DIR = "grails.project.plugin.staging.dir"
-
-    /**
-     * The name of the system property for plugin include source
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String PLUGIN_INCLUDE_SOURCE = "grails.project.plugin.includeSource"
-
-    /**
-     * The name of the system property for the project plugins directory
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String PLUGINS_DIR = "grails.project.plugins.dir"
-
-    /**
-     * The name of the system property for global plugins directory
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String GLOBAL_PLUGINS_DIR = "grails.global.plugins.dir"
-
-    /**
      * The name of the system property for {@link #}.
      */
     public static final String PROJECT_RESOURCES_DIR = "grails.project.resource.dir"
@@ -170,39 +122,9 @@ class BuildSettings {
     public static final String PROJECT_SOURCE_DIR = "grails.project.source.dir"
 
     /**
-     * The name of the system property for for the web.xml location
-     *
-     * @deprecated A web.xml is no longer supported
-     */
-    @Deprecated
-    public static final String PROJECT_WEB_XML_FILE = "grails.project.web.xml"
-    /**
      * The name of the system property for the project classes directory. Must be set if changed from build/main/classes.
      */
     public static final String PROJECT_CLASSES_DIR = "grails.project.class.dir"
-    /**
-     * The name of the system property for the plugin classes directory
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String PROJECT_PLUGIN_CLASSES_DIR = "grails.project.plugin.class.dir"
-
-    /**
-     * The name of the system property for project build classes directory.
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String PROJECT_PLUGIN_BUILD_CLASSES_DIR = "grails.project.plugin.build.class.dir"
-
-    /**
-     * The name of the system property for plugin provided classes diretory
-     *
-     * @deprecated Source plugins no longer supported
-     */
-    @Deprecated
-    public static final String PROJECT_PLUGIN_PROVIDED_CLASSES_DIR = "grails.project.plugin.provided.class.dir"
 
     /**
      * The name of the system property for project test classes directory. Must be set if changed from build/test/classes
@@ -238,22 +160,6 @@ class BuildSettings {
      * The name of the WAR file of the project
      */
     public static final String PROJECT_AUTODEPLOY_DIR = "grails.project.autodeploy.dir"
-
-    /**
-     * The name of the system property for multiple build listeners
-     *
-     * @deprecated Build listeners no longer supported. Use gradle instead.
-     */
-    @Deprecated
-    public static final String BUILD_LISTENERS = "grails.build.listeners"
-
-    /**
-     * The name of the system property for enabling verbose compilation verbose compile
-     *
-     * @deprecated Use Gradle configuration instead
-     */
-    @Deprecated
-    public static final String VERBOSE_COMPILE = "grails.project.compile.verbose"
 
     /**
      * A system property with this name is populated in the preparation phase of functional testing

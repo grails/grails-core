@@ -4,3 +4,8 @@ dependencies {
 
     testRuntime( project(":grails-spring") )
 }
+
+compileGroovy.doLast {
+    // unfortunate workaround, since the generated one overrides the one in src/main/resources
+    project.delete("build/classes/main/META-INF/grails.factories")
+}

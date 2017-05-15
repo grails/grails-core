@@ -234,7 +234,7 @@ mappings {
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
 
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null,UrlMapping.ANY_VERSION, [cp] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null,UrlMapping.ANY_VERSION, [cp] as ConstrainedProperty[], ga)
 
         def info = m.match("/foo/world/bar")
         assert info
@@ -250,7 +250,7 @@ mappings {
 
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null, UrlMapping.ANY_VERSION,[cp] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null, UrlMapping.ANY_VERSION,[cp] as ConstrainedProperty[], ga)
 
         def info = m.match("/foo/2007/bar")
         assert info
@@ -295,12 +295,12 @@ mappings {
     
     void testInit() {
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,[] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, null, null, UrlMapping.ANY_VERSION,[] as ConstrainedProperty[], ga)
     }
 
     void testMatchUriNoConstraints() {
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, null,UrlMapping.ANY_VERSION, [] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, null,UrlMapping.ANY_VERSION, [] as ConstrainedProperty[], ga)
 
         def info = m.match("/foo/test/bar")
         assert info

@@ -18,9 +18,8 @@ package org.grails.plugins.web.taglib
 import grails.artefact.TagLibrary
 import grails.gsp.TagLib
 import groovy.transform.CompileStatic
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.convert.support.DefaultConversionService
-import org.springframework.core.convert.support.GenericConversionService
+import org.grails.plugins.web.DefaultGrailsTagDateHelper
+import org.grails.plugins.web.GrailsTagDateHelper
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
@@ -56,6 +55,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
     ConversionService conversionService
+    GrailsTagDateHelper grailsTagDateHelper = new DefaultGrailsTagDateHelper()
     
     CodecLookup codecLookup
     
@@ -578,9 +578,10 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         else if (xdefault.toString() != 'none') {
             if (xdefault instanceof String) {
                 xdefault = DateFormat.getInstance().parse(xdefault)
+
             }
-            else if (!(xdefault instanceof Date)) {
-                throwTagError("Tag [datePicker] requires the default date to be a parseable String or a Date")
+            else if (!grailsTagDateHelper.supportsDatePicker(xdefault.class)) {
+                throwTagError("Tag [datePicker] the default date is not a supported class")
             }
         }
         else {
@@ -616,7 +617,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
             noSelection = noSelection.entrySet().iterator().next()
         }
 
-        final PRECISION_RANKINGS = ["year": 0, "month": 10, "day": 20, "hour": 30, "minute": 40]
+        // make below final once GROOVY-8093 is fixed
+        def PRECISION_RANKINGS = ["year": 0, "month": 10, "day": 20, "hour": 30, "minute": 40]
         def precision = (attrs.precision ? PRECISION_RANKINGS[attrs.precision] :
             (grailsApplication.config.grails.tags.datePicker.default.precision ?
                 PRECISION_RANKINGS["${grailsApplication.config.grails.tags.datePicker.default.precision}"] :
@@ -634,8 +636,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
             c = value
         }
         else if (value != null) {
-            c = new GregorianCalendar()
-            c.setTime(value)
+            c = grailsTagDateHelper.buildCalendar(value)
         }
 
         if (c != null) {
@@ -914,6 +915,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
      * @attr readonly boolean value indicating whether the select is read only or editable (defaults to false - editable)
+     * @attr dataAttrs a Map that adds data-* attributes to the &lt;option&gt; elements. Map's keys will be used as names of the data-* attributes like so: data-${key} (i.e. with a "data-" prefix). The object belonging to a Map's key determines the value of the data-* attribute. It can be a string referring to a property of beans in {@code from}, a Closure that accepts an item from {@code from} and returns the value or a List that contains a value for each of the &lt;option&gt;s.
      */
     Closure select = { attrs ->
         if (!attrs.name) {
@@ -931,6 +933,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         def optionDisabled = attrs.remove('optionDisabled')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
+        def dataAttrs = attrs.remove('dataAttrs')
         if (value instanceof Collection && attrs.multiple == null) {
             attrs.multiple = 'multiple'
         }
@@ -961,10 +964,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         from.eachWithIndex {el, i ->
             def keyDisabled
             def keyValue
+            def dataAttrsMap = getDataAttr(el, dataAttrs, i)
             writer << '<option '
             if (keys) {
                 keyValue = keys[i]
-                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, dataAttrsMap)
             }
             else if (optionKey) {
                 def keyValueObject
@@ -987,11 +991,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
                         keyDisabled = el[optionDisabled]
                     }
                 }
-                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject,keyDisabled)
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, dataAttrsMap, keyValueObject, keyDisabled)
             }
             else {
                 keyValue = el
-                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, dataAttrsMap)
             }
             writer << '>'
             if (optionValue) {
@@ -1033,14 +1037,14 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         writer << '</select>'
     }
 
-    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer) {
-        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, null)
+    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, dataAttrsMap) {
+        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, dataAttrsMap, null)
     }
-    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el) {
-        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el, null)
+    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, dataAttrsMap, el) {
+        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, dataAttrsMap, el, null)
     }
 
-    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el, keyDisabled) {
+    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, dataAttrsMap, el, keyDisabled) {
 
         boolean selected = false
         def keyClass = keyValue?.getClass()
@@ -1070,12 +1074,36 @@ class FormTagLib implements ApplicationContextAware, InitializingBean, TagLibrar
         }
         keyValue = processFormFieldValueIfNecessary(selectName, "${keyValue}","option")
         writer << "value=\"${keyValue.toString().encodeAsHTML()}\" "
+
+        if(dataAttrsMap) {
+            dataAttrsMap.each {key, val->
+                writer << "data-${key.toString().encodeAsHTML()}=\"${val.toString().encodeAsHTML()}\""
+            }
+        }
         if (selected) {
             writer << 'selected="selected" '
         }
         if(keyDisabled && !selected) {
             writer << 'disabled="disabled" '
         }
+    }
+
+    private static Map getDataAttr(el, dataAttrs, index) {
+        Map ret = [:]
+        if(dataAttrs) {
+            dataAttrs.each { k, v ->
+                if (v instanceof CharSequence) {
+                    //in case of bean property
+                    ret[k] = el[v]
+                } else if(v instanceof Closure) {
+                    ret[k] = v(el)
+                } else {
+                    //in case of collection
+                    ret[k] = v[index]
+                }
+            }
+        }
+        ret
     }
 
     /**

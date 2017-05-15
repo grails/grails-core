@@ -1,11 +1,11 @@
 package org.grails.plugins.services
 
-import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
+import grails.config.Settings
 import org.grails.commons.test.AbstractGrailsMockTests
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockHibernateGrailsPlugin
+import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.context.ApplicationContext
-import org.springframework.transaction.NoTransactionException
 
 class ServicesGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -38,25 +38,120 @@ class NonTransactionalService {
 
 @Transactional(readOnly = true)
 class SpringTransactionalService {
+
     def serviceMethod() {
-        def status = TransactionAspectSupport.currentTransactionStatus()
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
         return "hasTransaction = \${status!=null}"
     }
 }
 
 class PerMethodTransactionalService {
+
     @Transactional
     def methodOne() {
-        def status = TransactionAspectSupport.currentTransactionStatus()
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
         return "hasTransaction = \${status!=null}"
     }
 
     def methodTwo() {
-        def status = TransactionAspectSupport.currentTransactionStatus()
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
         return "hasTransaction = \${status!=null}"
     }
 }
+
+class TransactionalFalseService {
+
+    static transactional = false
+
+    def methodOne() {
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
+        return "hasTransaction = \${status != null}"
+    }
+
+    def methodTwo() {
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
+        return "hasTransaction = \${status != null}"
+    }
+}
+
+class TransactionalTrueService {
+
+    static transactional = true
+
+    def methodOne() {
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
+        return "hasTransaction = \${status != null}"
+    }
+
+    def methodTwo() {
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
+        return "hasTransaction = \${status != null}"
+    }
+}
+
+
+class TransactionalAbsentService {
+
+    def methodOne() {
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
+        return "hasTransaction = \${status != null}"
+    }
+
+    def methodTwo() {
+        def status = null
+        try { status = TransactionAspectSupport.currentTransactionStatus() } catch(e){ println e.message }
+        return "hasTransaction = \${status != null}"
+    }
+}
 """
+    }
+
+    void testTransactionalFalseService() {
+        def appCtx = initializeContext()
+
+        def springService = appCtx.getBean("transactionalFalseService")
+        assertEquals "hasTransaction = false", springService.methodOne()
+        springService.methodTwo()
+    }
+
+    void testTransactionalFalseServiceConfigDisabled() {
+        def appCtx = initializeContext(false)
+
+        def springService = appCtx.getBean("transactionalFalseService")
+        assertEquals "hasTransaction = false", springService.methodOne()
+        springService.methodTwo()
+    }
+
+    void testTransactionalTrueService() {
+        def appCtx = initializeContext()
+
+        def springService = appCtx.getBean("transactionalTrueService")
+        assertEquals "hasTransaction = true", springService.methodOne()
+        assertEquals "hasTransaction = true", springService.methodTwo()
+    }
+
+    void testTransactionalTrueServiceConfigDisabled() {
+        def appCtx = initializeContext(false)
+
+        def springService = appCtx.getBean("transactionalTrueService")
+        assertEquals "hasTransaction = false", springService.methodOne()
+        assertEquals "hasTransaction = false", springService.methodTwo()
+    }
+
+    void testTransactionalAbsentService() {
+        def appCtx = initializeContext()
+
+        def springService = appCtx.getBean("transactionalAbsentService")
+        assertEquals "hasTransaction = false", springService.methodOne()
+        springService.methodTwo()
     }
 
     void testPerMethodTransactionAnnotations() {
@@ -64,9 +159,17 @@ class PerMethodTransactionalService {
 
         def springService = appCtx.getBean("perMethodTransactionalService")
         assertEquals "hasTransaction = true", springService.methodOne()
-        shouldFail(NoTransactionException) {
-            springService.methodTwo()
-        }
+
+        //Given one method having annotation, then the whole service will be be proxied
+        assertEquals "hasTransaction = true", springService.methodTwo()
+    }
+
+    void testPerMethodTransactionAnnotationsConfigDisabled() {
+        def appCtx = initializeContext(false)
+
+        def springService = appCtx.getBean("perMethodTransactionalService")
+        assertEquals "hasTransaction = false", springService.methodOne()
+        assertEquals "hasTransaction = false", springService.methodTwo()
     }
 
     void testSpringConfiguredService() {
@@ -74,6 +177,13 @@ class PerMethodTransactionalService {
 
         def springService = appCtx.getBean("springTransactionalService")
         assertEquals "hasTransaction = true", springService.serviceMethod()
+    }
+
+    void testSpringConfiguredServiceConfigDisabled() {
+        def appCtx = initializeContext(false)
+
+        def springService = appCtx.getBean("springTransactionalService")
+        assertEquals "hasTransaction = false", springService.serviceMethod()
     }
 
     void testServicesPlugin() {
@@ -84,10 +194,12 @@ class PerMethodTransactionalService {
         assertTrue appCtx.containsBean("nonTransactionalService")
     }
 
-    private ApplicationContext initializeContext() {
+    private ApplicationContext initializeContext(boolean transactionManagement = true) {
 
+        ga.getConfig().put(Settings.SPRING_TRANSACTION_MANAGEMENT, transactionManagement)
+        ga.getConfig().put("dataSources", [dataSource: [:]])
         def corePluginClass = gcl.loadClass("org.grails.plugins.CoreGrailsPlugin")
-        def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
+        def corePlugin = new DefaultGrailsPlugin(corePluginClass, ga)
         def dataSourcePluginClass = gcl.loadClass("org.grails.plugins.datasource.DataSourceGrailsPlugin")
 
         def domainPluginClass = gcl.loadClass("org.grails.plugins.domain.DomainClassGrailsPlugin")
@@ -105,7 +217,9 @@ class PerMethodTransactionalService {
 
         def pluginClass = gcl.loadClass("org.grails.plugins.services.ServicesGrailsPlugin")
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)
+
         plugin.doWithRuntimeConfiguration(springConfig)
+
 
         springConfig.getApplicationContext()
     }

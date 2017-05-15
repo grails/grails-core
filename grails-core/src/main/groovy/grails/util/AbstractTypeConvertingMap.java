@@ -426,7 +426,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     public List getList(String name) {
         Object paramValues = get(name);
         if (paramValues == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         if (paramValues.getClass().isArray()) {
             return Arrays.asList((Object[])paramValues);

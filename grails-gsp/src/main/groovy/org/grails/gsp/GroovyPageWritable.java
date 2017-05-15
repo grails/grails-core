@@ -111,10 +111,8 @@ public class GroovyPageWritable implements Writable {
             if (hasRequest) {
                 parentBinding = outputContext.getBinding();
                 if (parentBinding == null) {
-                    if (outputContext != null) {
-                        parentBinding = outputContext.createAndRegisterRootBinding();
-                        newParentCreated = true;
-                    }
+                    parentBinding = outputContext.createAndRegisterRootBinding();
+                    newParentCreated = true;
                 }
             }
 

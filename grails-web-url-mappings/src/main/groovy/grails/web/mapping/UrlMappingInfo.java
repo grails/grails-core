@@ -121,4 +121,11 @@ public interface UrlMappingInfo {
      * @return redirect information for this url mapping, null if no redirect is specified
      */
     Object getRedirectInfo();
+
+    /**
+     * Retrieves the UrlMappingData (information about a parsed URL) if any
+     *
+     * @return The UrlMappingData instance
+     */
+    UrlMappingData getUrlData();
 }

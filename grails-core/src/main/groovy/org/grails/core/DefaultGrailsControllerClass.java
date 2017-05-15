@@ -43,7 +43,7 @@ import java.util.*;
  * @since 0.1
  */
 @SuppressWarnings("rawtypes")
-public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass implements GrailsControllerClass, org.codehaus.groovy.grails.commons.GrailsControllerClass {
+public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass implements GrailsControllerClass {
 
     public static final String CONTROLLER = "Controller";
 
@@ -169,6 +169,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             actionUriToViewName.put(urlConverter.toUrlElement(actionName), actionName);
             actions.put( urlConverter.toUrlElement(actionName), actions.remove(actionName));
         }
+        defaultActionName = urlConverter.toUrlElement(defaultActionName);
     }
 
     /**

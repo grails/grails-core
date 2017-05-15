@@ -33,7 +33,6 @@ import groovy.json.StreamingJsonBuilder
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.gsp.GroovyPageTemplate
 import org.grails.io.support.SpringIOUtils
 import org.grails.web.converters.Converter
@@ -46,7 +45,6 @@ import org.grails.web.servlet.view.GroovyPageView
 import org.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.grails.web.sitemesh.GrailsLayoutView
 import org.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.grails.web.sitemesh.SitemeshLayoutView
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
@@ -287,7 +285,7 @@ trait ResponseRenderer extends WebAttributes {
                 model = [:]
             }
 
-            ((GroovyObject)this).setProperty ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY, new ModelAndView(viewUri, model)
+            ((GroovyObject)this).setProperty "modelAndView", new ModelAndView(viewUri, model)
             applySiteMeshLayout webRequest.currentRequest, true, explicitSiteMeshLayout
         }
         else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
@@ -449,12 +447,22 @@ trait ResponseRenderer extends WebAttributes {
         }
         else {
             // reached here so only the status was set, just send it back
-            def message = argMap?.message?.toString()
+            String message = argMap?.message?.toString()
+            int statusCode = response.status
             if( message ) {
-                response.sendError( response.status, message  )
+                response.sendError(statusCode, message  )
             }
             else {
-                response.sendError( response.status )
+                // if the status code is an error trigger the container
+                // forwarding logic
+                if(statusCode >= 300) {
+                    response.sendError(statusCode)
+                }
+                else {
+                    // otherwise just ensure the status is propagated to the client
+                    response.setStatus(statusCode)
+                    response.flushBuffer()
+                }
             }
         }
     }

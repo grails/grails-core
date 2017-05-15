@@ -164,22 +164,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         pluginFilter = new PluginFilterRetriever().getPluginFilter(application.getConfig());
     }
 
-    /**
-     * @deprecated Will be removed in a future version of Grails
-     */
-    @Deprecated
-    public void startPluginChangeScanner() {
-        // do nothing
-    }
-
-    /**
-     * @deprecated Will be removed in a future version of Grails
-     */
-    @Deprecated
-    public void stopPluginChangeScanner() {
-        // do nothing
-    }
-
     public void refreshPlugin(String name) {
         if (hasGrailsPlugin(name)) {
             getGrailsPlugin(name).refresh();
@@ -685,8 +669,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         plugin.doWithApplicationContext(applicationContext);
         plugin.doWithDynamicMethods(applicationContext);
     }
-
-
 
     @Override
     public void setApplication(GrailsApplication application) {

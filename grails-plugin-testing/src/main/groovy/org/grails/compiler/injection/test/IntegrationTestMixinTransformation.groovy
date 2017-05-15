@@ -1,5 +1,5 @@
 package org.grails.compiler.injection.test
-import grails.boot.config.GrailsApplicationContextLoader
+import grails.boot.test.GrailsApplicationContextLoader
 import grails.boot.config.GrailsAutoConfiguration
 import grails.test.mixin.integration.Integration
 import groovy.transform.CompileStatic
@@ -87,6 +87,8 @@ class IntegrationTestMixinTransformation implements ASTTransformation {
             String mainClass = MainClassFinder.searchMainClass(source.source.URI)
             if(mainClass) {
                 applicationClassNode = ClassHelper.make(mainClass)
+            } else {
+                applicationClassNode = null
             }
         }
 

@@ -15,10 +15,11 @@
  */
 package grails.boot.config
 
+import grails.config.Config
+import grails.core.GrailsApplication
 import grails.boot.config.tools.ClassPathScanner
 import grails.core.GrailsApplicationClass
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
 import org.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.springframework.aop.config.AopConfigUtils
@@ -37,20 +38,20 @@ import java.lang.reflect.Field
  *
  */
 @CompileStatic
-@Slf4j
+// WARNING: Never add logging to the source of this class, early initialization causes problems
 class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationContextAware {
 
-    private static final String APC_PRIORITY_LIST_FIELD = "APC_PRIORITY_LIST";
+    private static final String APC_PRIORITY_LIST_FIELD = "APC_PRIORITY_LIST"
 
     static {
         try {
             // patch AopConfigUtils if possible
-            Field field = AopConfigUtils.class.getDeclaredField(APC_PRIORITY_LIST_FIELD);
+            Field field = AopConfigUtils.class.getDeclaredField(APC_PRIORITY_LIST_FIELD)
             if(field != null) {
-                field.setAccessible(true);
-                Object obj = field.get(null);
-                List<Class<?>> list = (List<Class<?>>) obj;
-                list.add(GroovyAwareAspectJAwareAdvisorAutoProxyCreator.class);
+                field.setAccessible(true)
+                Object obj = field.get(null)
+                List<Class<?>> list = (List<Class<?>>) obj
+                list.add(GroovyAwareAspectJAwareAdvisorAutoProxyCreator.class)
             }
         } catch (Throwable e) {
             // ignore
@@ -146,6 +147,14 @@ class GrailsAutoConfiguration implements GrailsApplicationClass, ApplicationCont
     @Override
     void onShutdown(Map<String, Object> event) {
         // no-op
+    }
+
+    GrailsApplication getGrailsApplication() {
+        applicationContext.getBean(GrailsApplication)
+    }
+
+    Config getConfig() {
+        grailsApplication.config
     }
 
 }

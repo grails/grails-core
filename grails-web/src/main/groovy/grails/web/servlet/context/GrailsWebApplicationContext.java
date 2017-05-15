@@ -22,7 +22,6 @@ import javax.servlet.ServletContext;
 
 import grails.core.GrailsApplication;
 import grails.web.servlet.context.support.GrailsEnvironment;
-import org.grails.spring.beans.factory.OptimizedAutowireCapableBeanFactory;
 import org.grails.spring.GrailsApplicationContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -59,7 +58,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     private GrailsApplication grailsApplication;
 
     public GrailsWebApplicationContext() throws BeansException {
-        super(new OptimizedAutowireCapableBeanFactory());
+        super();
     }
 
     public GrailsWebApplicationContext(GrailsApplication grailsApplication) {
@@ -68,7 +67,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     }
 
     public GrailsWebApplicationContext(ApplicationContext parent) throws BeansException {
-        this(new OptimizedAutowireCapableBeanFactory(), parent);
+        super(parent);
     }
 
     public GrailsWebApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory, GrailsApplication grailsApplication) {

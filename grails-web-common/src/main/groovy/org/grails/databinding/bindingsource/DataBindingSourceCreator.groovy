@@ -25,10 +25,9 @@ import grails.web.mime.MimeTypeProvider
  * A factory for DataBindingSource instances
  *
  * @since 2.3
- * @see DataBindingSourceRegistry
  * @see DataBindingSource
  */
-interface DataBindingSourceCreator extends MimeTypeProvider, org.codehaus.groovy.grails.web.mime.MimeTypeProvider {
+interface DataBindingSourceCreator extends MimeTypeProvider {
 
     /**
      * @return The target type of this creator

@@ -291,9 +291,7 @@ public class TestMixinTransformation implements ASTTransformation{
             FieldNode spockSharedRuleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "SharedClassRule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new FieldExpression(staticRuleFieldNode));
             spockSharedRuleFieldNode.addAnnotation(classRuleAnnotation);
             spockSharedRuleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Shared.class)));
-            if(spockTest) {
-                addSpockFieldMetadata(spockSharedRuleFieldNode, 0);
-            }
+            addSpockFieldMetadata(spockSharedRuleFieldNode, 0);
         } else {
             staticRuleFieldNode.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
             staticRuleFieldNode.addAnnotation(classRuleAnnotation);

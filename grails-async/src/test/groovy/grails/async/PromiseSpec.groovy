@@ -81,7 +81,7 @@ class PromiseSpec extends Specification {
                 result = v
             }
 
-            sleep 200
+            sleep 400
         then:"The result is correct"
             result == [2,4]
 
@@ -92,7 +92,7 @@ class PromiseSpec extends Specification {
                 result = v
             }
 
-            sleep 200
+            sleep 400
         then:"The result is correct"
             result == [2,4]
 

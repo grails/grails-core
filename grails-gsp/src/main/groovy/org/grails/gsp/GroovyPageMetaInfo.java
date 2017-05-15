@@ -63,7 +63,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private int[] lineNumbers;
     private String[] htmlParts;
     @SuppressWarnings("rawtypes")
-    private Map jspTags = Collections.EMPTY_MAP;
+    private Map jspTags = Collections.emptyMap();
     private GroovyPagesException compilationException;
     private Encoder expressionEncoder;
     private Encoder staticEncoder;
@@ -297,7 +297,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     @SuppressWarnings("rawtypes")
     public void setJspTags(Map jspTags) {
-        this.jspTags = jspTags != null ? jspTags : Collections.EMPTY_MAP;
+        this.jspTags = jspTags != null ? jspTags : Collections.emptyMap();
     }
 
     @SuppressWarnings("rawtypes")

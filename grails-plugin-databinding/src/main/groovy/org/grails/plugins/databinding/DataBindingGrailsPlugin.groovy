@@ -23,6 +23,7 @@ import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.HalXmlDataBindingSourceCreator
+import org.grails.web.databinding.bindingsource.JsonApiDataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.JsonDataBindingSourceCreator
 import org.grails.web.databinding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.databinding.converters.CurrencyValueConverter
@@ -47,6 +48,8 @@ class DataBindingGrailsPlugin extends Plugin {
     public static final String DATE_FORMATS = 'grails.databinding.dateFormats'
     public static final String DATE_LENIENT_PARSING = 'grails.databinding.dateParsingLenient'
 
+    public static final List<String> DEFAULT_DATE_FORMATS = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'HH:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z","yyyy-MM-dd'T'HH:mm:ss.SSSX"]
+
     def version = GrailsUtil.getGrailsVersion()
 
     @Override
@@ -57,7 +60,7 @@ class DataBindingGrailsPlugin extends Plugin {
         boolean convertEmptyStringsToNullSetting = config.getProperty(CONVERT_EMPTY_STRINGS_TO_NULL, Boolean, true)
         boolean dateParsingLenientSetting = config.getProperty(DATE_LENIENT_PARSING, Boolean, false)
         Integer autoGrowCollectionLimitSetting = config.getProperty(AUTO_GROW_COLLECTION_LIMIT, Integer, 256)
-        List dateFormats = config.getProperty(DATE_FORMATS, List, [])
+        List dateFormats = config.getProperty(DATE_FORMATS, List, DEFAULT_DATE_FORMATS)
 
 
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, grailsApplication) {
@@ -72,9 +75,7 @@ class DataBindingGrailsPlugin extends Plugin {
         timeZoneConverter(TimeZoneConverter)
 
         defaultDateConverter(DateConversionHelper) {
-            if(dateFormats) {
-                formatStrings = dateFormats
-            }
+            formatStrings = dateFormats
             // dateParsingLenient defaults to false
             dateParsingLenient = dateParsingLenientSetting
         }
@@ -100,7 +101,9 @@ class DataBindingGrailsPlugin extends Plugin {
         jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
         halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
+        jsonApiDataBindingSourceCreator(JsonApiDataBindingSourceCreator)
 
         defaultCurrencyConverter CurrencyValueConverter
     }}
+
 }

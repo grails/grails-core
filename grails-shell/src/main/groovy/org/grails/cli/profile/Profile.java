@@ -21,9 +21,8 @@ import org.grails.config.NavigableMap;
 import org.grails.io.support.Resource;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * A Profile defines an active code generation and command execution policy. For example the "web" profile allows
@@ -50,6 +49,21 @@ public interface Profile {
      * @return The description of the profile
      */
     String getDescription();
+
+    /**
+     * @return The list of file extensions which should be treated as binary
+     */
+    Set<String> getBinaryExtensions();
+
+    /**
+     * @return The list of file patterns which should be executable in the resulting application
+     */
+    Set<String> getExecutablePatterns();
+
+    /**
+     * @return Text to display after an application has been created with the profile
+     */
+    String getInstructions();
 
     /**
      * @return The features for this profile
@@ -108,8 +122,6 @@ public interface Profile {
      */
     Command getCommand(ProjectContext context, String name);
 
-
-
     /**
      * The profile completers
      * @param context The {@link org.grails.cli.profile.ProjectContext} instance
@@ -154,4 +166,18 @@ public interface Profile {
      */
     List<String> getBuildPlugins();
 
+    /**
+     * @return The subfolder the parent profile(s) skeleton should be copied into
+     */
+    String getParentSkeletonDir();
+
+    /**
+     * @return The directory the parent profile(s) skeleton should be copied into
+     */
+    File getParentSkeletonDir(File parent);
+
+    /**
+     * @return A list of paths to exclude from the skeleton. Used in ant fileset exclude:
+     */
+    List<String> getSkeletonExcludes();
 }

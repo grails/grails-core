@@ -62,10 +62,6 @@ dependencies {
     provided "org.apache.ant:ant:${antVersion}"
     provided "jline:jline:$jlineVersion"
     provided "org.fusesource.jansi:jansi:$jansiVersion"
-    provided("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
-        exclude group:'commons-cli', module:'commons-cli'
-        exclude group:'org.apache.ant', module:'ant'
-    }
 
 }
 

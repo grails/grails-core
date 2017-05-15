@@ -81,8 +81,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
             simpleDatastore.mappingContext.addEntityValidator(entity, validator)
         }
         final failOnError = getFailOnError()
-        def enhancer = new GormEnhancer(simpleDatastore, transactionManager, failOnError instanceof Boolean ? (Boolean) failOnError : false)
-        enhancer.enhance()
+        new GormEnhancer(simpleDatastore, transactionManager, failOnError instanceof Boolean ? (Boolean)failOnError : false)
 
         initializeMappingContext()
     }

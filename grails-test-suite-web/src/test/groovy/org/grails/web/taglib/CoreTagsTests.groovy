@@ -1,5 +1,6 @@
 package org.grails.web.taglib
 
+import grails.util.Environment
 import org.grails.taglib.GrailsTagException
 
 /**
@@ -9,6 +10,16 @@ import org.grails.taglib.GrailsTagException
  * @since 0.6
  */
 class CoreTagsTests extends AbstractGrailsTagTests {
+
+    @Override
+    protected void onSetUp() {
+        System.setProperty(Environment.KEY, "dev")
+    }
+
+    @Override
+    protected void onDestroy() {
+        System.setProperty(Environment.KEY, "")
+    }
 
     void testUnlessWithTestCondition() {
         def template = '<g:unless test="${cond}">body text</g:unless>'
@@ -60,7 +71,6 @@ bar
    }
 
     void testIfWithEnv() {
-
         def template = '''
 <g:if env="testing" test="${foo}">foo</g:if>
 '''
@@ -85,7 +95,6 @@ bar
     }
 
     void testElseIf() {
-
         def template = '''
 <g:if test="${foo}">foo</g:if>
 <g:elseif env="development">bar</g:elseif>

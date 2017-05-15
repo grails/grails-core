@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping.mvc
 
+import grails.web.mapping.cors.GrailsCorsConfiguration
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import grails.web.mapping.UrlMapping
@@ -204,5 +205,9 @@ class UrlMappingsHandlerMapping extends AbstractHandlerMapping {
         void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
             request.removeAttribute(MATCHED_REQUEST)
         }
+    }
+
+    public void setGrailsCorsConfiguration(GrailsCorsConfiguration grailsCorsConfiguration) {
+        this.corsConfigurations = grailsCorsConfiguration.corsConfigurations
     }
 }

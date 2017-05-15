@@ -229,7 +229,7 @@ public class ConstrainedProperty implements Constrained {
     private String widget; // the widget to use to render the property
     private boolean password; // whether the property is a password
     @SuppressWarnings("rawtypes")
-    private Map attributes = Collections.EMPTY_MAP; // a map of attributes of property
+    private Map attributes = Collections.emptyMap(); // a map of attributes of property
     protected MessageSource messageSource;
     private Map<String, Object> metaConstraints = new HashMap<String, Object>();
 
@@ -1056,10 +1056,7 @@ public class ConstrainedProperty implements Constrained {
         for (Object constraintFactory : candidateConstraints) {
 
             Constraint c;
-            if(constraintFactory instanceof org.codehaus.groovy.grails.validation.ConstraintFactory) {
-                c = ((org.codehaus.groovy.grails.validation.ConstraintFactory)constraintFactory).newInstance();
-            }
-            else if (constraintFactory instanceof ConstraintFactory) {
+            if (constraintFactory instanceof ConstraintFactory) {
                 c = ((ConstraintFactory)constraintFactory).newInstance();
             }
             else {

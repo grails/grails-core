@@ -10,7 +10,7 @@ abstract class AbstractGrailsMappingTests extends AbstractGrailsControllerTests 
 
     protected void setUp() {
         super.setUp()
-        servletContext.setAttribute(GrailsApplication.APPLICATION_ID, ga)
-        evaluator = new DefaultUrlMappingEvaluator(servletContext)
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+        evaluator = new DefaultUrlMappingEvaluator(ctx)
     }
 }

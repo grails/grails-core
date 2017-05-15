@@ -216,7 +216,7 @@ public class GrailsDomainConfigurationUtil {
 
         Map<?, ?> associationMap = cpf.getPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
         if (associationMap == null) {
-            associationMap = Collections.EMPTY_MAP;
+            associationMap = Collections.emptyMap();
         }
         return associationMap;
     }
@@ -232,7 +232,7 @@ public class GrailsDomainConfigurationUtil {
 
         Map<?, ?> mappedByMap = cpf.getPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
         if (mappedByMap == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
         return mappedByMap;
     }
@@ -354,23 +354,6 @@ public class GrailsDomainConfigurationUtil {
         return !isConfigurational(name);
     }
 
-    /**
-     * Evaluates the constraints closure to build the list of constraints
-     *
-     * @param instance   The instance to evaluate constraints for
-     * @param properties The properties of the instance
-     * @param defaultConstraints A map that defines the default constraints
-     *
-     * @return A Map of constraints
-     *
-     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
-     */
-    @Deprecated
-    public static Map<String, Constrained> evaluateConstraints(Object instance,
-            GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
-        final Class<?> theClass = instance.getClass();
-        return getConstraintMap(properties, defaultConstraints, theClass);
-    }
 
     private static Map<String, Constrained> getConstraintMap(GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints, Class<?> theClass) {
         ConstraintsEvaluator constraintsEvaluator = GrailsFactoriesLoader.loadFactory(ConstraintsEvaluator.class, defaultConstraints);
@@ -378,82 +361,6 @@ public class GrailsDomainConfigurationUtil {
             return constraintsEvaluator.evaluate(theClass, properties);
         }
         return Collections.emptyMap();
-    }
-
-    /**
-     * Evaluates the constraints closure to build the list of constraints
-     *
-     * @param theClass  The domain class to evaluate constraints for
-     * @param properties The properties of the instance
-     * @param defaultConstraints A map that defines the default constraints
-     *
-     * @return A Map of constraints
-     *
-     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
-     */
-    @Deprecated
-    public static Map<String, Constrained> evaluateConstraints(final Class<?> theClass,
-            GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
-        return getConstraintMap(properties, defaultConstraints, theClass);
-    }
-
-    /**
-     * Evaluates the constraints closure to build the list of constraints.
-     *
-     * @param instance   The instance to evaluate constraints for
-     * @param properties The properties of the instance
-     * @return A Map of constraints
-     *          When the bean cannot be introspected
-     *
-     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
-     */
-    @Deprecated
-    public static Map<String, Constrained> evaluateConstraints(Object instance,
-            GrailsDomainClassProperty[] properties) {
-        return evaluateConstraints(instance, properties,null);
-    }
-
-    /**
-     * Evaluates the constraints closure to build the list of constraints.
-     *
-     * @param instance   The instance to evaluate constraints for
-     * @return A Map of constraints
-     *          When the bean cannot be introspected
-     *
-     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
-     */
-    @Deprecated
-    public static Map<String, Constrained> evaluateConstraints(Object instance) {
-        return evaluateConstraints(instance, null, null);
-    }
-
-    /**
-     * Evaluates the constraints closure to build the list of constraints
-     *
-     * @param theClass  The class to evaluate constraints for
-     * @return A Map of constraints
-     *          When the bean cannot be introspected
-     *
-     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
-     */
-    @Deprecated
-    public static Map<String, Constrained> evaluateConstraints(Class<?> theClass) {
-        return evaluateConstraints(theClass, null, null);
-    }
-
-    /**
-     * Evaluates the constraints closure to build the list of constraints.
-     *
-     * @param theClass  The class to evaluate constraints for
-     * @return A Map of constraints
-     *          When the bean cannot be introspected
-     *
-     * @deprecated Use {@link grails.validation.ConstraintsEvaluator} instead
-     */
-    @Deprecated
-    public static Map<String, Constrained> evaluateConstraints(Class<?> theClass,
-            GrailsDomainClassProperty[] properties) {
-        return evaluateConstraints(theClass, properties, null);
     }
 
     public static LinkedList<?> getSuperClassChain(Class<?> theClass) {

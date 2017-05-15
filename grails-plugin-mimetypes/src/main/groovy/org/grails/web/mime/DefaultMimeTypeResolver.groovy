@@ -27,7 +27,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequest
  * @since 2.3
  */
 @CompileStatic
-class DefaultMimeTypeResolver implements MimeTypeResolver, org.codehaus.groovy.grails.web.mime.MimeTypeResolver {
+class DefaultMimeTypeResolver implements MimeTypeResolver {
 
     /**
      * Resolve the {@link grails.web.mime.MimeType} to be used for the response, typically established from the ACCEPT header

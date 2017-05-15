@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.async.factory;
+package grails.async.factory
 
-import grails.async.Promise;
-import grails.async.PromiseFactory;
-import grails.async.PromiseList;
-import grails.async.PromiseMap;
-import groovy.lang.Closure
+import grails.async.Promise
+import grails.async.PromiseFactory
+import grails.async.PromiseList
+import grails.async.PromiseMap
+import grails.async.decorator.PromiseDecorator
+import grails.async.decorator.PromiseDecoratorLookupStrategy
 import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
+import org.grails.async.factory.BoundPromise
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import grails.async.decorator.PromiseDecorator;
-import grails.async.decorator.PromiseDecoratorLookupStrategy;
-import org.grails.async.factory.BoundPromise;
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Abstract implementation of the {@link grails.async.PromiseFactory} interface, subclasses should extend
@@ -42,97 +35,102 @@ import org.grails.async.factory.BoundPromise;
  * @since 2.3
  */
 @CompileStatic
-public abstract class AbstractPromiseFactory implements PromiseFactory {
+abstract class AbstractPromiseFactory implements PromiseFactory {
 
-    protected Collection<PromiseDecoratorLookupStrategy> lookupStrategies = new ConcurrentLinkedQueue<PromiseDecoratorLookupStrategy>();
+    protected Collection<PromiseDecoratorLookupStrategy> lookupStrategies = new ConcurrentLinkedQueue<PromiseDecoratorLookupStrategy>()
 
-    public void addPromiseDecoratorLookupStrategy(PromiseDecoratorLookupStrategy lookupStrategy) {
-        lookupStrategies.add(lookupStrategy);
+    void addPromiseDecoratorLookupStrategy(PromiseDecoratorLookupStrategy lookupStrategy) {
+        lookupStrategies.add(lookupStrategy)
     }
 
-    public <T> Promise<T> createBoundPromise(T value) {
-        return new BoundPromise<T>(value);
+    def <T> Promise<T> createBoundPromise(T value) {
+        return new BoundPromise<T>(value)
     }
 
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
-    public <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
-        c = applyDecorators(c, decorators);
+    def <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
+        c = applyDecorators(c, decorators)
 
-        return createPromiseInternal(c);
+        return createPromiseInternal(c)
     }
 
-    public <T> Closure<T> applyDecorators(Closure<T> c, List<PromiseDecorator> decorators) {
-        List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
+    def <T> Closure<T> applyDecorators(Closure<T> c, List<PromiseDecorator> decorators) {
+        List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>()
         for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
-            allDecorators.addAll(lookupStrategy.findDecorators());
+            allDecorators.addAll(lookupStrategy.findDecorators())
         }
         if (!allDecorators.isEmpty()) {
             for(PromiseDecorator d : allDecorators) {
-                c = d.decorate(c);
+                c = d.decorate(c)
             }
         }
-        return c;
+        return c
     }
 
     /**
      * @see PromiseFactory#createPromise(java.util.List)
      */
-    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures) {
-        return createPromise(closures,null);
+    def <T> Promise<List<T>> createPromise(List<Closure<T>> closures) {
+        return createPromise(closures,null)
     }
 
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
-    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
+    def <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
 
-        List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
+        List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size())
         for (Closure<T> closure : closures) {
-            newClosures.add(applyDecorators(closure, decorators));
+            newClosures.add(applyDecorators(closure, decorators))
         }
-        closures = newClosures;
-        PromiseList<T> promiseList = new PromiseList<T>();
+        closures = newClosures
+        PromiseList<T> promiseList = new PromiseList<T>()
 
         for (Closure<T> closure : closures) {
-            promiseList.add(closure);
+            promiseList.add(closure)
         }
-        return promiseList;
+        return promiseList
     }
 
     /**
      * @see PromiseFactory#createPromise(grails.async.Promise[])
      */
-    public <T> Promise<List<T>> createPromise(Promise<T>... promises) {
-        PromiseList<T> promiseList = new PromiseList<T>();
+    def <T> Promise<List<T>> createPromise(Promise<T>... promises) {
+        PromiseList<T> promiseList = new PromiseList<T>()
         for(Promise<T> p : promises) {
-            promiseList.add(p);
+            promiseList.add(p)
         }
-        return promiseList;
+        return promiseList
     }
 
+    @Override
+    def <K, V> Promise<Map<K, V>> createPromise(Map<K, V> map, List<PromiseDecorator> decorators) {
+        PromiseMap<K,V> promiseMap = new PromiseMap<K,V>()
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            K key = entry.getKey()
+            Object value = entry.getValue()
+            if (value instanceof Promise) {
+                promiseMap.put(key, (Promise<?>)value)
+            }
+            else if (value instanceof Closure) {
+                Closure<?> c = (Closure<?>) value
+                applyDecorators(c, decorators)
+                promiseMap.put(key, createPromiseInternal(c))
+            }
+            else {
+                promiseMap.put(key, new BoundPromise<V>((V)value))
+            }
+        }
+
+        return promiseMap
+    }
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
-    public <K, V> Promise<Map<K, V>> createPromise(Map<K, V> map) {
-        PromiseMap<K,V> promiseMap = new PromiseMap<K,V>();
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            K key = entry.getKey();
-            Object value = entry.getValue();
-            if (value instanceof Promise) {
-                promiseMap.put(key, (Promise<?>)value);
-            }
-            else if (value instanceof Closure) {
-                Closure<?> c = (Closure<?>) value;
-                promiseMap.put(key, createPromiseInternal(c));
-            }
-            else {
-                promiseMap.put(key, new BoundPromise<V>((V)value));
-            }
-        }
-
-        return promiseMap;
+    def <K, V> Promise<Map<K, V>> createPromise(Map<K, V> map) {
+        createPromise(map, Collections.<PromiseDecorator>emptyList())
     }
 
     @CompileDynamic
@@ -144,7 +142,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
      * @see PromiseFactory#waitAll(grails.async.Promise[])
      */
     @CompileDynamic
-    public <T> List<T> waitAll(Promise<T>... promises) {
-        return waitAll(Arrays.asList(promises));
+    <T> List<T> waitAll(Promise<T>... promises) {
+        return waitAll(Arrays.asList(promises))
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.grails.web.mapping;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import grails.util.GrailsStringUtils;
@@ -100,34 +101,37 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     }
 
     // Based on DGM toMapString, but with StringBuilder instead of StringBuffer
-    private void appendMapKey(StringBuilder buffer, Map map) {
-        if (map==null || map.isEmpty()) {
+    private void appendMapKey(StringBuilder buffer, Map<String, Object> params) {
+        if (params==null || params.isEmpty()) {
             buffer.append(EMPTY_MAP_STRING);
-        }
-        final String requestControllerName = getRequestStateLookupStrategy().getControllerName();
-        if (map.get(UrlMapping.ACTION) != null && map.get(UrlMapping.CONTROLLER) == null) {
-            Object action = map.remove(UrlMapping.ACTION);
-            map.put(UrlMapping.CONTROLLER, requestControllerName);
-            map.put(UrlMapping.ACTION, action);
-        }
-        if (map.get(UrlMapping.NAMESPACE) == null && map.get(UrlMapping.CONTROLLER) == requestControllerName) {
-            String namespace = getRequestStateLookupStrategy().getControllerNamespace();
-            if (GrailsStringUtils.isNotEmpty(namespace)) {
-                map.put(UrlMapping.NAMESPACE, namespace);
+            buffer.append(OPENING_BRACKET);
+        } else {
+            buffer.append(OPENING_BRACKET);
+            Map map = new LinkedHashMap<>(params);
+            final String requestControllerName = getRequestStateLookupStrategy().getControllerName();
+            if (map.get(UrlMapping.ACTION) != null && map.get(UrlMapping.CONTROLLER) == null && map.get(RESOURCE_PREFIX) == null) {
+                Object action = map.remove(UrlMapping.ACTION);
+                map.put(UrlMapping.CONTROLLER, requestControllerName);
+                map.put(UrlMapping.ACTION, action);
             }
-        }
-        buffer.append(OPENING_BRACKET);
-        boolean first = true;
-        for (Object o : map.entrySet()) {
-            Map.Entry entry = (Map.Entry) o;
-            Object value = entry.getValue();
-            if (value == null) continue;
-            first = appendCommaIfNotFirst(buffer, first);
-            Object key = entry.getKey();
-            if(RESOURCE_PREFIX.equals(key)) {
-                value = getCacheKeyValueForResource(value);
+            if (map.get(UrlMapping.NAMESPACE) == null && map.get(UrlMapping.CONTROLLER) == requestControllerName) {
+                String namespace = getRequestStateLookupStrategy().getControllerNamespace();
+                if (GrailsStringUtils.isNotEmpty(namespace)) {
+                    map.put(UrlMapping.NAMESPACE, namespace);
+                }
             }
-            appendKeyValue(buffer, map, key, value);
+            boolean first = true;
+            for (Object o : map.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                Object value = entry.getValue();
+                if (value == null) continue;
+                first = appendCommaIfNotFirst(buffer, first);
+                Object key = entry.getKey();
+                if (RESOURCE_PREFIX.equals(key)) {
+                    value = getCacheKeyValueForResource(value);
+                }
+                appendKeyValue(buffer, map, key, value);
+            }
         }
         buffer.append(CLOSING_BRACKET);
     }

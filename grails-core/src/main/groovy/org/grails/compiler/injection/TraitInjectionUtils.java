@@ -15,6 +15,7 @@
  */
 package org.grails.compiler.injection;
 
+import grails.compiler.ast.SupportsClassNode;
 import grails.compiler.traits.TraitInjector;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -40,36 +41,56 @@ public class TraitInjectionUtils {
     private TraitInjectionUtils() {
     }
 
+    private static void extendTraits(CompilationUnit unit, SourceUnit source, ClassNode classNode) {
+        if(unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
+            TraitComposer.doExtendTraits(classNode, source, unit);
+        }
+    }
+
+    private static boolean addTrait(ClassNode classNode, Class trait) {
+        boolean traitsAdded = false;
+        boolean implementsTrait = false;
+        boolean traitNotLoaded = false;
+        ClassNode traitClassNode = ClassHelper.make(trait);
+        try {
+            implementsTrait = classNode.declaresInterface(traitClassNode);
+        } catch (Throwable e) {
+            // if we reach this point, the trait injector could not be loaded due to missing dependencies (for example missing servlet-api). This is ok, as we want to be able to compile against non-servlet environments.
+            traitNotLoaded = true;
+        }
+        if (!implementsTrait && !traitNotLoaded) {
+            final GenericsType[] genericsTypes = traitClassNode.getGenericsTypes();
+            final Map<String, ClassNode> parameterNameToParameterValue = new LinkedHashMap<String, ClassNode>();
+            if(genericsTypes != null) {
+                for(GenericsType gt : genericsTypes) {
+                    parameterNameToParameterValue.put(gt.getName(), classNode);
+                }
+            }
+            classNode.addInterface(GrailsASTUtils.replaceGenericsPlaceholders(traitClassNode, parameterNameToParameterValue, classNode));
+            traitsAdded = true;
+        }
+        return traitsAdded;
+    }
+
+    public static void injectTrait(CompilationUnit unit, SourceUnit source, ClassNode classNode, Class trait) {
+        boolean traitsAdded = addTrait(classNode, trait);
+        if(traitsAdded) {
+            extendTraits(unit, source, classNode);
+        }
+    }
+
     private static void doInjectionInternal(CompilationUnit unit, SourceUnit source, ClassNode classNode,
             List<TraitInjector> injectorsToUse) {
         boolean traitsAdded = false;
 
         for (TraitInjector injector : injectorsToUse) {
             Class<?> trait = injector.getTrait();
-            ClassNode traitClassNode = ClassHelper.make(trait);
-            boolean implementsTrait = false;
-            boolean traitNotLoaded = false;
-            try {
-                implementsTrait = classNode.declaresInterface(traitClassNode);
-            } catch (Throwable e) {
-                // if we reach this point, the trait injector could not be loaded due to missing dependencies (for example missing servlet-api). This is ok, as we want to be able to compile against non-servlet environments.
-                traitNotLoaded = true;
-            }
-            if (!implementsTrait && !traitNotLoaded) {
-                final GenericsType[] genericsTypes = traitClassNode.getGenericsTypes();
-                final Map<String, ClassNode> parameterNameToParameterValue = new LinkedHashMap<String, ClassNode>();
-                if(genericsTypes != null) {
-                    for(GenericsType gt : genericsTypes) {
-                        parameterNameToParameterValue.put(gt.getName(), classNode);
-                    }
-                }
-                classNode.addInterface(GrailsASTUtils.replaceGenericsPlaceholders(traitClassNode, parameterNameToParameterValue, classNode));
+            if (addTrait(classNode, trait)) {
                 traitsAdded = true;
             }
         }
-        if(traitsAdded && 
-           unit.getPhase() != CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber()) {
-            TraitComposer.doExtendTraits(classNode, source, unit);
+        if(traitsAdded) {
+            extendTraits(unit, source, classNode);
         }
     }
 
@@ -95,7 +116,14 @@ public class TraitInjectionUtils {
         final List<TraitInjector> injectorsToUse = new ArrayList<TraitInjector>();
         for (final TraitInjector injector : traitInjectors) {
             final List<String> artefactTypes = Arrays.asList(injector.getArtefactTypes());
-            if (artefactTypes.contains(artefactType)) {
+
+            boolean supportsClassNode = true;
+
+            if (injector instanceof SupportsClassNode) {
+                supportsClassNode = ((SupportsClassNode)injector).supports(cNode);
+            }
+
+            if (artefactTypes.contains(artefactType) && supportsClassNode) {
                 injectorsToUse.add(injector);
             }
         }

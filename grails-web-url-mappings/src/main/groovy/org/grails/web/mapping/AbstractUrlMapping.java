@@ -47,7 +47,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected ServletContext servletContext;
     protected GrailsApplication grailsApplication;
     @SuppressWarnings("rawtypes")
-    protected Map parameterValues = Collections.EMPTY_MAP;
+    protected Map parameterValues = Collections.emptyMap();
     protected boolean parseRequest;
     protected String mappingName;
     protected String httpMethod = ANY_HTTP_METHOD;
@@ -95,21 +95,6 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         this.constraints = constraints;
         this.grailsApplication = grailsApplication;
         setGrailsApplication(grailsApplication);
-    }
-
-    @Deprecated
-    public AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints, WebUtils.findApplication(servletContext));
-    }
-
-    @Deprecated
-    protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(viewName, constraints, WebUtils.findApplication(servletContext));
-    }
-
-    @Deprecated
-    protected AbstractUrlMapping(URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        this(uri, constraints, WebUtils.findApplication(servletContext));
     }
 
     @Override

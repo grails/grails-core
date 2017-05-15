@@ -20,8 +20,6 @@ import grails.config.Settings
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
-import org.springframework.context.ConfigurableApplicationContext
 
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -121,20 +119,47 @@ class ServicesGrailsPlugin extends Plugin  {
         serviceBeanAliasPostProcessor(ServiceBeanAliasPostProcessor)
     }}
 
+    /**
+     * Will use proxy in the case of service being transactional and the absence of the grails.transaction.Transactional.
+     * Using org.springframework.transaction.annotation.Transactional will lead to creation of proxy instead of AST transform.
+     * @param serviceClass
+     * @return
+     */
     @CompileStatic
-    boolean shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
-        Class javaClass = serviceClass.clazz
-
+    private static boolean shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
         try {
-            serviceClass.transactional &&
-              !AnnotationUtils.findAnnotation(javaClass, grails.transaction.Transactional) &&
-              !AnnotationUtils.findAnnotation(javaClass, Transactional) &&
-                 !javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional) != null ||
-                                                        AnnotationUtils.findAnnotation(m, grails.transaction.Transactional) != null}
+            return isTransactionalOrHasSpringTransactionalAnnotation(serviceClass) &&
+                    !hasGrailsTransactionalAnnotation(serviceClass)
         }
         catch (e) {
             return false
         }
+    }
+
+    /**
+     * Determines if grails service class has grails.transactional.Transactional annotation present on class or methods
+     * @param serviceClass grails service class
+     * @return boolean
+     */
+    @CompileStatic
+    public static hasGrailsTransactionalAnnotation(GrailsServiceClass serviceClass){
+        Class javaClass = serviceClass.clazz
+        return AnnotationUtils.findAnnotation(javaClass, grails.transaction.Transactional) != null ||
+                javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, grails.transaction.Transactional) != null}
+    }
+
+    /**
+     * Determines if grails service class has org.springframework.transaction.annotation.Transactional annotation
+     * present on class or methods OR if service class has transactional = true static property
+     * @param serviceClass grails service class
+     * @return boolean
+     */
+    @CompileStatic
+    public static isTransactionalOrHasSpringTransactionalAnnotation(GrailsServiceClass serviceClass){
+        Class javaClass = serviceClass.clazz
+        return serviceClass.isTransactional() ||
+                AnnotationUtils.findAnnotation(javaClass, Transactional) != null ||
+                javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional) != null}
     }
 
     void onChange(Map<String,Object> event) {

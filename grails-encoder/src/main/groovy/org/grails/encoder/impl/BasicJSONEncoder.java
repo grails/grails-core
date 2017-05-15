@@ -96,7 +96,7 @@ public class BasicJSONEncoder extends AbstractCharReplacementEncoder {
         if(o == null) {
             return null;
         }        
-        if(o instanceof CharSequence || (o != null && ClassUtils.isPrimitiveOrWrapper(o.getClass())) ) {
+        if(o instanceof CharSequence || ClassUtils.isPrimitiveOrWrapper(o.getClass()) ) {
             return super.encode(o);
         } else {
             return encodeAsJsonObject(o);            

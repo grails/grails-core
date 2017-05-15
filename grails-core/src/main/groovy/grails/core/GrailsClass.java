@@ -18,8 +18,6 @@ package grails.core;
 import groovy.lang.MetaClass;
 
 import grails.core.support.GrailsApplicationAware;
-import org.codehaus.groovy.grails.commons.*;
-import org.springframework.beans.BeanWrapper;
 
 /**
  * Represents any class in a Grails application.
@@ -36,16 +34,6 @@ public interface GrailsClass extends GrailsApplicationAware{
      * @return true if it is abstract
      */
     boolean isAbstract();
-
-    /**
-     * The GrailsApplication that this class belongs to
-     *
-     * @return The GrailsApplication instance
-     * @deprecated Use {@link #getApplication()} instead
-     */
-    @Deprecated
-    org.codehaus.groovy.grails.commons.GrailsApplication getGrailsApplication();
-
 
     /**
      * The GrailsApplication that this class belongs to
@@ -72,7 +60,7 @@ public interface GrailsClass extends GrailsApplicationAware{
      * Creates a new instance of this class.
      *
      * This method can be used as factory method in the Spring application context.
-     * @return a new instance of this class
+     * @return A new instance of this class
      */
     Object newInstance();
 
@@ -80,7 +68,7 @@ public interface GrailsClass extends GrailsApplicationAware{
      * Returns the logical name of the class in the application without the trailing convention part if applicable
      * and without the package name.
      *
-     * @return the logical name
+     * @return The logical name
      */
     String getName();
 
@@ -92,10 +80,10 @@ public interface GrailsClass extends GrailsApplicationAware{
     String getShortName();
 
     /**
-     * Returns the full name of the class in the application with the the trailing convention part and with
+     * Returns the full name of the class in the application with the trailing convention part and with
      * the package name.
      *
-     * @return the full name
+     * @return The full name
      */
     String getFullName();
 
@@ -122,14 +110,14 @@ public interface GrailsClass extends GrailsApplicationAware{
     /**
      * Returns the package name of the class.
      *
-     * @return the package name
+     * @return The package name
      */
     String getPackageName();
 
     /**
      * Returns the actual clazz represented by the GrailsClass.
      *
-     * @return the class
+     * @return The class
      */
     @SuppressWarnings("rawtypes")
     Class getClazz();
@@ -138,13 +126,6 @@ public interface GrailsClass extends GrailsApplicationAware{
      * @return The MetaClass for this Grails class
      */
     MetaClass getMetaClass();
-
-    /**
-     * @deprecated
-     * @return BeanWrapper for reference instance, deprecated
-     */
-    @Deprecated
-    BeanWrapper getReference();
 
     /**
      * @return Sample (reference) instance for this Grails class
@@ -156,7 +137,7 @@ public interface GrailsClass extends GrailsApplicationAware{
      * @param name The name
      * @param type The type
      *
-     * @return  The property value
+     * @return The property value
      */
     <T> T getPropertyValue(String name, Class<T> type);
 

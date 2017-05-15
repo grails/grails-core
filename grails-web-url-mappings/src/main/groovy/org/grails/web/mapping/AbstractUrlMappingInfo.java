@@ -36,7 +36,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractUrlMappingInfo implements UrlMappingInfo {
 
-    private Map<String, Object> params = Collections.EMPTY_MAP;
+    private Map<String, Object> params = Collections.emptyMap();
 
     public Map<String, Object> getParams() {
         return params;

@@ -15,16 +15,18 @@
  */
 package org.grails.gradle.plugin.core
 
+import grails.plugins.GrailsVersionUtils
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import io.spring.gradle.dependencymanagement.DependencyManagementExtension
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import nebula.plugin.extraconfigurations.ProvidedBasePlugin
 import org.apache.tools.ant.filters.EscapeUnicode
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -33,7 +35,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
-import org.gradle.api.file.CopySpec
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.file.FileCollection
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
@@ -51,13 +53,14 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.build.parsing.CommandLineParser
 import org.grails.gradle.plugin.agent.AgentTasksEnhancer
 import org.grails.gradle.plugin.commands.ApplicationContextCommandTask
+import org.grails.gradle.plugin.commands.ApplicationContextScriptTask
 import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
-import org.springframework.boot.gradle.SpringBootPlugin
 import org.springframework.boot.gradle.SpringBootPluginExtension
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
 import org.springframework.boot.gradle.repackage.RepackageTask
 
 import javax.inject.Inject
@@ -71,6 +74,9 @@ import javax.inject.Inject
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
+    public static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'datastore-rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
+    public static final List<String> CORE_GORM_PLUGINS = ['hibernate4','hibernate5', 'mongodb', 'neo4j', 'rx-mongodb']
+
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
     List<String> grailsAppResourceDirs = ['views', 'i18n', 'conf']
@@ -121,9 +127,14 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
         createBuildPropertiesTask(project)
 
+        configureRunScript(project)
+
+        configureRunCommand(project)
+
         configurePathingJar(project)
     }
 
+    @CompileStatic
     protected void configureProfile(Project project) {
         def profileConfiguration = project.configurations.create(PROFILE_CONFIGURATION)
 
@@ -134,6 +145,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+
     @CompileStatic
     protected void applyDefaultPlugins(Project project) {
         def springBoot = project.extensions.findByType(SpringBootPluginExtension)
@@ -141,9 +153,68 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.plugins.apply(SpringBootPlugin)
         }
 
-        if (!project.plugins.findPlugin(DependencyManagementPlugin)) {
+        DependencyManagementPlugin dependencyManagementPlugin = project.plugins.findPlugin(DependencyManagementPlugin)
+        if (dependencyManagementPlugin == null) {
             project.plugins.apply(DependencyManagementPlugin)
         }
+
+        DependencyManagementExtension dme = project.extensions.findByType(DependencyManagementExtension)
+
+        applyBomImport(dme, project)
+
+        if(project.hasProperty('gormVersion')) {
+            String gormVersion = project.properties['gormVersion']
+            boolean isGorm61 = GrailsVersionUtils.supportsAtLeastVersion(gormVersion, "6.1.0")
+
+            if (isGorm61) {
+                project.afterEvaluate {
+                    DependencySet dependencies = project.configurations.getByName('testCompile').allDependencies
+                    boolean hasPluginTesting = false
+                    boolean hasGormTest = false
+                    dependencies.each {
+                        if (it.name == "grails-plugin-testing") {
+                            hasPluginTesting = true
+                        }
+                        if (it.name == "grails-datastore-gorm-test") {
+                            hasGormTest = true
+                        }
+                    }
+                    if (hasPluginTesting && !hasGormTest) {
+                        project.dependencies.add "testCompile", "org.grails:grails-datastore-gorm-test:$gormVersion"
+                    }
+                }
+            }
+
+            project.configurations.all( { Configuration configuration ->
+                if(isGorm61) {
+                    configuration.exclude(module:'grails-datastore-simple')
+                }
+
+                configuration.resolutionStrategy.eachDependency( { DependencyResolveDetails details ->
+                    String dependencyName = details.requested.name
+                    String group = details.requested.group
+                    if(group == 'org.grails' &&
+                            dependencyName.startsWith('grails-datastore')) {
+                        for(suffix in GrailsGradlePlugin.CORE_GORM_LIBRARIES) {
+                            if(dependencyName.endsWith(suffix)) {
+                                details.useVersion(gormVersion)
+                                return
+                            }
+                        }
+                    }
+                    else if(group == 'org.grails.plugins' && GrailsGradlePlugin.CORE_GORM_PLUGINS.contains(dependencyName)) {
+                        details.useVersion(gormVersion - '.RELEASE')
+                    }
+                } as Action<DependencyResolveDetails>)
+            } as Action<Configuration>)
+        }
+    }
+
+    private void applyBomImport(DependencyManagementExtension dme, project) {
+        dme.imports({
+            mavenBom("org.grails:grails-bom:${project.properties['grailsVersion']}")
+        })
+        dme.setApplyMavenExclusions(false)
     }
 
     protected String getDefaultProfile() {
@@ -164,12 +235,12 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def buildPropertiesTask = project.tasks.create("buildProperties")
         def buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
                                         'info.app.name': project.name,
-                                        'info.app.version':  project.version,
+                                        'info.app.version':  project.version instanceof Serializable ? project.version : project.version.toString(),
                                         'info.app.grailsVersion': project.properties.get('grailsVersion')]
 
         buildPropertiesTask.inputs.properties(buildPropertiesContents)
         buildPropertiesTask.outputs.file(buildInfoFile)
-        buildPropertiesTask << {
+        buildPropertiesTask.doLast {
             project.buildDir.mkdirs()
             ant.mkdir(dir:buildInfoFile.parentFile)
             ant.propertyfile(file: buildInfoFile) {
@@ -194,6 +265,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileStatic
     protected void registerToolingModelBuilder(Project project, ToolingModelBuilderRegistry registry) {
         registry.register(new GrailsClasspathToolingModelBuilder())
     }
@@ -209,11 +281,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.extensions.add("grails", new GrailsExtension(project))
     }
 
+    @CompileStatic
     protected void configureFileWatch(Project project) {
         def environment = Environment.current
         enableFileWatch(environment, project)
     }
 
+    @CompileStatic
     protected String configureGrailsBuildSettings(Project project) {
         System.setProperty(BuildSettings.APP_BASE_DIR, project.projectDir.absolutePath)
     }
@@ -226,6 +300,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             project.tasks.create(taskName, ApplicationContextCommandTask) {
                 classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
                 command = commandName
+                systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
                 if (project.hasProperty('args')) {
                     args(CommandLineParser.translateCommandline(project.args))
                 }
@@ -292,12 +367,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-    protected void configureForkSettings(project, grailsVersion) {
+    @CompileStatic
+    protected void configureForkSettings(Project project, grailsVersion) {
         boolean isJava8Compatible = JavaVersion.current().isJava8Compatible()
 
         def systemPropertyConfigurer = { String defaultGrailsEnv, JavaForkOptions task ->
             def map = System.properties.findAll { entry ->
-                entry.key.startsWith("grails.")
+                entry.key?.toString()?.startsWith("grails.")
             }
             for (key in map.keySet()) {
                 def value = map.get(key)
@@ -311,23 +387,33 @@ class GrailsGradlePlugin extends GroovyPlugin {
             task.systemProperty Metadata.APPLICATION_GRAILS_VERSION, grailsVersion
             task.systemProperty Environment.KEY, defaultGrailsEnv
             task.systemProperty Environment.FULL_STACKTRACE, System.getProperty(Environment.FULL_STACKTRACE) ?: ""
-            task.minHeapSize = "768m"
-            task.maxHeapSize = "768m"
+            if(task.minHeapSize == null) {
+                task.minHeapSize = "768m"
+            }
+            if(task.maxHeapSize == null) {
+                task.maxHeapSize = "768m"
+            }
+            List<String> jvmArgs = task.jvmArgs
             if (!isJava8Compatible) {
-                task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+                if(!jvmArgs.any { !it.startsWith('-XX:MaxPermSize')}) {
+                    task.jvmArgs "-XX:PermSize=96m", "-XX:MaxPermSize=256m"
+                }
             }
             task.jvmArgs "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"
 
             // Copy GRAILS_FORK_OPTS into the fork. Or use GRAILS_OPTS if no fork options provided
             // This allows run-app etc. to run using appropriate settings and allows users to provided
             // different FORK JVM options to the build options.
-            String opts = System.env.GRAILS_FORK_OPTS ?: System.env.GRAILS_OPTS
-            if(opts) task.jvmArgs opts.split(' ')
+            def envMap = System.getenv()
+            String opts = envMap.GRAILS_FORK_OPTS ?: envMap.GRAILS_OPTS
+            if(opts) {
+                task.jvmArgs opts.split(' ')
+            }
         }
 
-        def tasks = project.tasks
+        TaskContainer tasks = project.tasks
 
-        def grailsEnvSystemProperty = System.getProperty(Environment.KEY)
+        String grailsEnvSystemProperty = System.getProperty(Environment.KEY)
         tasks.withType(Test).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.TEST.name)
         tasks.withType(JavaExec).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.DEVELOPMENT.name)
     }
@@ -350,6 +436,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 project.tasks.withType(ApplicationContextCommandTask) { ApplicationContextCommandTask task ->
                     task.args mainClassName
                 }
+            }
+            project.tasks.withType(ApplicationContextScriptTask) { ApplicationContextScriptTask task ->
+                task.args mainClassName
             }
         }
 
@@ -460,7 +549,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected Task createNative2AsciiTask(TaskContainer taskContainer, src, dest) {
         def native2asciiTask = taskContainer.create('native2ascii')
-        native2asciiTask << {
+        native2asciiTask.doLast {
             ant.native2ascii(src: src, dest: dest,
                     includes: "**/*.properties", encoding: "UTF-8")
         }
@@ -485,6 +574,26 @@ class GrailsGradlePlugin extends GroovyPlugin {
                         file.toURI().toURL().toString().replaceFirst(/file:\/+/, '/')
                     }.join(' ')
                 }
+            }
+        }
+    }
+
+    protected void configureRunScript(Project project) {
+        project.tasks.create("runScript", ApplicationContextScriptTask) {
+            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+            if (project.hasProperty('args')) {
+                args(CommandLineParser.translateCommandline(project.args))
+            }
+        }
+    }
+
+    protected void configureRunCommand(Project project) {
+        project.tasks.create("runCommand", ApplicationContextCommandTask) {
+            classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
+            systemProperty Environment.KEY, System.getProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+            if (project.hasProperty('args')) {
+                args(CommandLineParser.translateCommandline(project.args))
             }
         }
     }
@@ -519,7 +628,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
             if (grailsExt.pathingJar && Os.isFamily(Os.FAMILY_WINDOWS)) {
                 project.tasks.withType(JavaExec) { JavaExec task ->
-                    if (task.name in ['console', 'shell'] || task instanceof ApplicationContextCommandTask) {
+                    if (task.name in ['console', 'shell'] || task instanceof ApplicationContextCommandTask || task instanceof ApplicationContextScriptTask) {
                         task.dependsOn(pathingJarCommand)
                         task.doFirst {
                             classpath = pathingClasspathCommand
@@ -531,8 +640,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
                         }
                     }
                 }
+
             }
         }
     }
+
+
 
 }

@@ -54,7 +54,7 @@ class PluginDefiner {
 
     @CompileStatic
     Dependency project(String path) {
-        if(Environment.isDevelopmentRun() && exploded) {
+        if(Environment.isDevelopmentRun()) {
             project.dependencies.project(path:path, configuration:'exploded')
         }
         else {

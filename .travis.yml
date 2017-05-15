@@ -12,8 +12,6 @@ env:
   - secure: tvWIqrDyxdGkC43Us8BNwqU8aiu3NF5YWMPFW216n+KIO6HXJNyS6oV8gWCcUr/7MQzJEKmDvgnaRYykcX7tVfRQznWhXGro2V5Je6OOdvNrXu6Qr9/2Ue586NHWlA7rLhPOS9XOA6rFIKfPAbbjBwY2bhNXQ0ITxQ7oaT+EiyE=
   - secure: UWz9O2KG0QdQu9n45OTVInrwN3r3+HzgCllnb+N8WsZvSgHt5M2uGNu1KniR+TJ9meTTb5Z2hPoCPBXCMU+Q8BJyYdMM++LeyvucHkJFHgoXM7I4CHEw/LNqf109s4FTw3ErLtlgHi6NXhBg8C1uCGc206FfW7hqlHib8NRIoWw=
   - secure: E8N5lASIE4lqfCK0uwIov39cA7nH5GwEzvJ7XCd+R3/4rP31TYvSWdlMGYdzTWizOWzUPo+kjreYkmqRuWZNBVJYvlGE8Gm1cThvILemb0Y0jVtvCAAZnmGByNUcmX20HZ53heUb+P59Zdy5AhZy64XwQfbR9K4SQTvq8WJOrKE=
-  - secure: fl6HQdSa1Y6wBA2M5VXWcyOmzARn/2FexnMEdbbfaukxSAojISLxbXbW46vUs3uVqOCQTXaAFqBPukFI05cdNcSRGTqyeY1YQAJYIRl7oZUkEYCxQQnBRHMzJ3VNRXDA2H4NH7FTaXthwMDOVBGYZnPY29TBmoRG8VM2YEl4kLE=
-  - secure: j3JBNcwvnLR9E9HhnCNZrsE2d5Ruw0RNLq8cB8X4kBAMuwfsVBg/VWq0R5saBK81mcGGbO664r/tm3V+xNNUvMXJmUpFCywwbtd82kuHDDT7q/J5sHii8Dw3fszOyagqg8sjcmN7oejlcJJ3B7B9WzRFux0DBMkZ/ty1rydNKcs=
   - secure: j751QVDiQQGqTXm1MpR57IC8YbGgldHsKtTwfppg7F8Lh6tCKzkSA8cTPWqmCOpmqy7Tx3az1IOPJdLZ8/gwfA6/+izJ7xfkjjUKM3UCg0b+auKphTjuiRSMrLDCQ01S5EVvBBrGADtNzmcj8D8l7D4vQ18aAb+4XfzJ5UfGHHo=
   - secure: MhEGOXJAXc/IBrh9lvMEm6K0SO4dd1taW8FbJYi6vAMrKTouLFlARjKZzSm/IREjrHr/pbmgn1ViN7bp24QPMqtq/kqMClEUeZTK8dmZfPlswiwfTsg6kjGD+gK4njNj+dAv/RXW7ceSRcbvNdNPwgiyvu7oAPMI9+vKKePKWz0=
   - secure: MkATC+v6IOk/ab8PByniOC6QBSQlBjEiLqe6BXt/clBDHJW/tZrLtWAxxfMfmkhRptkorsdTAA/I+1Z5A0+9UqSLwrWe4KqPoa/4FnxtU1KmfzWLnpbVJJsh0B7Y8TiDn09wM5R+jkwetANeDyPqDpF4iXJMlHPmX8EK0XJvvTY=
@@ -26,9 +24,10 @@ env:
   - secure: Frvf9gLJ/pfy3SWMm9LXdprO/snMFfDO9pTd1bl2GN3QBmkF40G20NzoFI6jbYeyg+gwJQmnC6NVi/KDAkJ/EBO05Xk/qMKwWWsASgdDzdnUNTynFPH0zcnv64d6qZAaLWeH/gWQPZ+99zmbVzFqSNDggEo+cPBm9QjqJ608Yx4=
   - secure: JM8mzEz6+UtRnG68vbitVoPzcrSHbEIa0z7Nfhu3RKMDOmQgfGNIF+ZDZPAa/tYpNBTJWKjeIJc8opCfd1p1+s6ISc7B29ymulQ3ztwFWcetunrSmxl8H96aqzjc+82DO6huj4Tzi0u2MADnh9wVm+A1+tcqLjpaLGmskMlvdbw=
   - secure: ICWgIGwHFH37nlY9k094qnnKy0tW2XDSOtGsvHb65AxsPsXB1zqj7Qd76Fboo1xFGQGpg+S6AHekY6Ch1prNOpkpPHw35UaQzaRqUxFUhfZYiD0rlmvzKrvKTesrFLy4LJwrTzGCQrViYgqfHvCeQ3r53wWff6nu8uFmMOPmGNY=
-script: ./travis-build.sh
+  - secure: XwKxDJFXlxPhJox9sZYFrOhHY5BfPRNrqolMfOe2ZMMJyeX5uap9i9gyGrKF0gqtJx4XR4kn6HrrtK2DT7LAjPJgY2DJGXtMulRLTGtsCz3PF95Pc7q2Eb4h6t5XM0Hl//xT4fmREQLN4FEsOUkFcJALCua7uS6xYvmHAMLEtsw=
 install: /bin/true
-after_failure: ./travis-after-failure.sh
+script:
+- ./travis-build.sh
 deploy:
   provider: releases
   api_key:
@@ -40,9 +39,7 @@ deploy:
     tags: true
     all_branches: true
 after_deploy:
-- ./gradlew sdkMinorRelease
-after_success:
-- ./trigger-dependent-build.sh
+- ./gradlew sdkMajorRelease
 cache:
   directories:
   - $HOME/.gradle

@@ -118,6 +118,11 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
                         classNode.addAnnotation(annotationNode)
 
                         List<ClassInjector> injectors = cache[handler.type]
+                        for (ClassInjector injector: injectors) {
+                            if (injector instanceof CompilationUnitAware) {
+                                ((CompilationUnitAware)injector).compilationUnit = compilationUnit
+                            }
+                        }
                         ArtefactTypeAstTransformation.performInjection(source, classNode, injectors)
                         TraitInjectionUtils.processTraitsForNode(source, classNode, handler.getType(), compilationUnit)
                     }

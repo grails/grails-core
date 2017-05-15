@@ -51,7 +51,7 @@ mappings {
     void testEvaluateMappings() {
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(servletContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         assert mappings

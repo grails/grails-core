@@ -1,6 +1,7 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
+import grails.databinding.BindingFormat
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
@@ -426,7 +427,7 @@ class BookReview {
 
 @Entity
 class MyBean {
-  @org.grails.databinding.BindingFormat('MMddyyyy')
+  @BindingFormat('MMddyyyy')
   Date formattedDate
   Integer someIntProperty
   Integer someOtherIntProperty

@@ -12,6 +12,7 @@ class BindingExcludeTests {
 
     @Test
     void testThatAssociationsAreExcluded() {
+        request.method = "POST"
         request.xml = '''
 <person>
    <name>John Doe</name>
