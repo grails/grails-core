@@ -74,8 +74,10 @@ import javax.inject.Inject
 class GrailsGradlePlugin extends GroovyPlugin {
     public static final String APPLICATION_CONTEXT_COMMAND_CLASS = "grails.dev.commands.ApplicationCommand"
     public static final String PROFILE_CONFIGURATION = "profile"
-    public static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'datastore-rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
-    public static final List<String> CORE_GORM_PLUGINS = ['hibernate4','hibernate5', 'mongodb', 'neo4j', 'rx-mongodb']
+
+    protected static final List<String> CORE_GORM_LIBRARIES = ['async','core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-plugin-support','gorm-support', 'test-support', 'hibernate-core', 'gorm-test', 'rx', 'rx-plugin-support']
+    // NOTE: mongodb, neo4j etc. should NOT be included here so they can be independently versioned
+    protected static final List<String> CORE_GORM_PLUGINS = ['hibernate4','hibernate5']
 
     List<Class<Plugin>> basePluginClasses = [ProvidedBasePlugin, IntegrationTestGradlePlugin]
     List<String> excludedGrailsAppSourceDirs = ['migrations', 'assets']
@@ -206,7 +208,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
                     if(group == 'org.grails' &&
                             dependencyName.startsWith('grails-datastore')) {
                         for(suffix in GrailsGradlePlugin.CORE_GORM_LIBRARIES) {
-                            if(dependencyName.endsWith(suffix)) {
+                            if(dependencyName == "grails-datastore-$suffix") {
                                 details.useVersion(gormVersion)
                                 return
                             }
