@@ -19,7 +19,7 @@ import grails.util.GrailsStringUtils;
 import grails.validation.AbstractConstraint;
 import grails.validation.ConstrainedProperty;
 
-import org.apache.commons.validator.routines.EmailValidator;
+import org.grails.validation.routines.EmailValidator;
 import org.springframework.validation.Errors;
 
 /**
