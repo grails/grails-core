@@ -15,9 +15,9 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
 else
     echo "Executing tests"
     ./gradlew --stop
-    ./gradlew compileTestGroovy --no-daemon
-    killall -9 java
-    ./gradlew check --no-daemon || EXIT_STATUS=$?
+    ./gradlew grails-test-suite-persistence:test --no-daemon
+
+    ./gradlew check -x grails-test-suite-persistence:test --no-daemon || EXIT_STATUS=$?
     echo "Done."
 fi
 
