@@ -39,6 +39,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
     public void testGet() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class<?> groovyClass = gcl.parseClass("package org.grails.validation\n" +
+                "@grails.persistence.Entity \n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -61,6 +62,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      */
     public void testStaticConstraints() throws Exception {
         String classSource = "package org.grails.validation\n" +
+                "@grails.persistence.Entity \n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -133,6 +135,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
      */
     public void testInheritedConstraints() throws Exception {
         String classSource = "package org.grails.validation\n" +
+                "@grails.persistence.Entity \n" +
                 "class Test {\n" +
                 "   Long id\n"+  // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
@@ -142,6 +145,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "   }" +
                 "}";
         String descendentSource = "package org.grails.validation\n" +
+                "@grails.persistence.Entity \n" +
                 "class TestB extends Test {\n" +
                 "   static constraints = {\n" +
                 "      name(size:5..20)\n" +
