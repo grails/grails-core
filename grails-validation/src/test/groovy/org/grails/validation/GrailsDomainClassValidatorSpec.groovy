@@ -1,5 +1,6 @@
 package org.grails.validation
 
+import grails.persistence.Entity
 import grails.validation.ValidationErrors
 import org.grails.core.DefaultGrailsDomainClass
 import org.springframework.context.MessageSource
@@ -30,6 +31,7 @@ class GrailsDomainClassValidatorSpec extends Specification {
     }
 
 
+    @Entity
     static class Test {
         Long id,version
         String name

@@ -96,6 +96,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
     protected void onSetUp() {
 
         gcl.parseClass('''
+@grails.persistence.Entity
 class Book {
     Long id
     Long version
@@ -107,6 +108,7 @@ class Book {
 
     }
 }
+@grails.persistence.Entity
 class Site {
     Long id
     Long version

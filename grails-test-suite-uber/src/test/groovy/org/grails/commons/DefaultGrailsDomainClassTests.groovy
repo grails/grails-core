@@ -16,6 +16,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
     void testFetchMode() {
         gcl.parseClass """
+                @grails.persistence.Entity
                 class Test {
                     Long id
                     Long version
@@ -23,12 +24,14 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
                     def hasMany = [others:Other]
                     def fetchMode = [others:'eager']
                 }
+                @grails.persistence.Entity
                 class Other {
                     Long id
                     Long version
                     Set anothers
                     def hasMany = [anothers:Another]
                 }
+                @grails.persistence.Entity
                 class Another {
                     Long id
                     Long version
@@ -47,6 +50,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
     void testPersistentProperties() {
         def cls = gcl.parseClass('''
+@grails.persistence.Entity
 class Book {
     Long id
     Long version
@@ -73,6 +77,7 @@ class Book {
 
     void testListPersistentProperties() {
         def cls = gcl.parseClass('''
+@grails.persistence.Entity
 class Book {
     Long id
     Long version
@@ -89,12 +94,14 @@ class Book {
 
     void testManyToManyIntegrity() {
         gcl.parseClass """
+                @grails.persistence.Entity
                 class Test {
                     Long id
                     Long version
                     Set others
                     static hasMany = [others:Other]
                 }
+                @grails.persistence.Entity
                 class Other {
                     Long id
                     Long version
@@ -125,6 +132,7 @@ class Book {
 
     void testTwoManyToOneIntegrity() {
         gcl.parseClass '''
+            @grails.persistence.Entity
             class Airport {
                 Long id
                 Long version
@@ -133,6 +141,7 @@ class Book {
                 static hasMany = [routes:Route]
                 static mappedBy = [routes:"airport"]
             }
+            @grails.persistence.Entity
             class Route {
                 Long id
                 Long version
@@ -169,12 +178,14 @@ class Book {
     void testOneToOneRelationships() {
 
         gcl.parseClass '''
+@grails.persistence.Entity
 class RelationshipsTest1 {
     Long id
     Long version
     OneToOneTest1 one // uni-directional one-to-one
 }
 
+@grails.persistence.Entity
 class OneToOneTest1 {
 
     Long id
@@ -205,7 +216,7 @@ class OneToOneTest1 {
 
     void testCircularOneToManyRelationship() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader()
-        Class a = gcl.parseClass("class A { \n" +
+        Class a = gcl.parseClass("@grails.persistence.Entity\nclass A { \n" +
                                     " Long id\n" +
                                     " Long version\n" +
                                     " static hasMany = [ children : A]\n" +
@@ -230,6 +241,7 @@ class OneToOneTest1 {
     void testOneToManyRelationships() {
 
         gcl.parseClass '''
+@grails.persistence.Entity
 class RelationshipsTest2 {
    static hasMany = [     "ones" : OneToManyTest2.class,
                                   "manys" : ManyToManyTest2.class,
@@ -243,22 +255,23 @@ class RelationshipsTest2 {
     Set ones // bi-directional one-to-many relationship
     Set uniones // uni-directional one-to-many relationship
 }
+@grails.persistence.Entity
 class OneToManyTest2 {
     Long id
     Long version
     RelationshipsTest2 other // many-to-one relationship
 }
-
+@grails.persistence.Entity
 class UniOneToManyTest2 {
     Long id
     Long version
 }
-
+@grails.persistence.Entity
 class ManyToManyTest2 {
     Long id
     Long version
 }
-
+@grails.persistence.Entity
 class OneToOneTest2 {
     Long id
     Long version
@@ -288,19 +301,19 @@ class OneToOneTest2 {
     }
 
     void testPersistentPropertyInheritance() {
-        Class topClass = gcl.parseClass("class Top {\n" +
+        Class topClass = gcl.parseClass("@grails.persistence.Entity\nclass Top {\n" +
                 "int id\n" +
                 "int version\n" +
                 "String topString\n" +
                 "String transientString\n" +
                 "static transients=['transientString']\n"+
                 "}")
-        Class middleClass = gcl.parseClass("class Middle extends Top {\n" +
+        Class middleClass = gcl.parseClass("@grails.persistence.Entity\nclass Middle extends Top {\n" +
                 "String middleString\n" +
                 "String transientString2\n" +
                 "static transients=['transientString2']\n"+
         "}")
-        Class bottomClass = gcl.parseClass("class Bottom extends Middle {\n" +
+        Class bottomClass = gcl.parseClass("@grails.persistence.Entity\nclass Bottom extends Middle {\n" +
                 "String bottomString\n" +
                 "String transientString3\n" +
                 "static transients=['transientString3']\n"+
@@ -413,6 +426,7 @@ class OneToOneTest2 {
 
     void testManyToManyInSubclass() throws Exception {
         gcl.parseClass('''
+@grails.persistence.Entity
 class Bookmark {
     Long id
     Long version
@@ -422,11 +436,13 @@ class Bookmark {
     static belongsTo = [Tag]
 }
 
+@grails.persistence.Entity
 class BookmarkSubclass extends Bookmark {
     Long id
     Long version
 }
 
+@grails.persistence.Entity
 class Tag {
     Long id
     Long version

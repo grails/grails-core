@@ -131,6 +131,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
 
     protected void onSetUp() {
          gcl.parseClass('''
+@grails.persistence.Entity
 class Book {
     Long id
     Long version
@@ -142,6 +143,8 @@ class Book {
        author(nullable:false)
     }
 }
+
+@grails.persistence.Entity
 class Author {
     Long id
     Long version
@@ -154,6 +157,8 @@ class Author {
         name(size:1..255, blank:false)
     }
 }
+
+@grails.persistence.Entity
 class Address {
     Long id
     Long version
@@ -164,6 +169,8 @@ class Address {
        location(blank:false)
     }
 }
+
+@grails.persistence.Entity
 class Publisher {
     Long id
     Long version

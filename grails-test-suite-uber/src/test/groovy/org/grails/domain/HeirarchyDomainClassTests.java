@@ -33,9 +33,9 @@ public class HeirarchyDomainClassTests extends TestCase {
     public void testClassHeirarchy() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        gcl.parseClass("class Super { Long id;Long version;}\n" +
-                       "class Sub extends Super { }\n" +
-                       "class Sub2 extends Sub { }");
+        gcl.parseClass("@grails.persistence.Entity\nclass Super { Long id;Long version;}\n" +
+                       "@grails.persistence.Entity\nclass Sub extends Super { }\n" +
+                       "@grails.persistence.Entity\nclass Sub2 extends Sub { }");
 
         GrailsApplication ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ga.initialise();
