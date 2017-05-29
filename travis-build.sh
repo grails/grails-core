@@ -14,6 +14,7 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     echo "Tagged Release Skipping Tests for Publish"
 else
     echo "Executing tests"
+    ./gradlew compileTestGroovy --no-daemon 
     ./gradlew check --no-daemon || EXIT_STATUS=$?
     echo "Done."
 fi
