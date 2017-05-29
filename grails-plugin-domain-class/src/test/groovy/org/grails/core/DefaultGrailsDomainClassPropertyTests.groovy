@@ -3,6 +3,7 @@ package org.grails.core
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsDomainClass
 import grails.core.GrailsDomainClassProperty
+import grails.persistence.Entity
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.core.support.MappingContextBuilder
 
@@ -53,6 +54,7 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
     }
 }
 
+@Entity
 class ParentClass {
     Integer id
     String prop1
@@ -70,5 +72,5 @@ class ParentClass {
         this.version = version
     }
 }
-
+@Entity
 class ChildClass extends ParentClass {}
