@@ -25,7 +25,7 @@ ext {
     grailsVersion = '3.3.0.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    asyncVersion = '3.3.0.RC1'
+    asyncVersion = '3.3.0.RC2'
     gspVersion = '3.3.0.M2'
     legacyConvertersVersion = "3.3.0.M1"
 
