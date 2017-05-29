@@ -17,6 +17,39 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
     def gcl = new GroovyClassLoader()
 
+    void testFetchMode() {
+        gcl.parseClass """
+                @grails.persistence.Entity
+                class Test {
+                    Long id
+                    Long version
+                    Set others
+                    def hasMany = [others:Other]
+                    def fetchMode = [others:'eager']
+                }
+                @grails.persistence.Entity
+                class Other {
+                    Long id
+                    Long version
+                    Set anothers
+                    def hasMany = [anothers:Another]
+                }
+                @grails.persistence.Entity
+                class Another {
+                    Long id
+                    Long version
+                }
+                """
+
+        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        ga.initialise()
+
+        def testDomain = ga.getDomainClass("Test")
+        assertEquals(GrailsDomainClassProperty.FETCH_EAGER, testDomain.getPropertyByName('others').getFetchMode())
+
+        def otherDomain = ga.getDomainClass("Other")
+        assertEquals(GrailsDomainClassProperty.FETCH_LAZY, otherDomain.getPropertyByName('anothers').getFetchMode())
+    }
 
     void testPersistentProperties() {
         def cls = gcl.parseClass('''
@@ -79,7 +112,7 @@ class Book {
                     Set others
                     static hasMany = [others:Other]
                 }
-                
+   
                 @grails.persistence.Entity
                 class Other {
                     Long id
@@ -113,7 +146,6 @@ class Book {
 
     void testTwoManyToOneIntegrity() {
         gcl.parseClass '''
-
             @grails.persistence.Entity
             class Airport {
                 Long id
@@ -123,7 +155,7 @@ class Book {
                 static hasMany = [routes:Route]
                 static mappedBy = [routes:"airport"]
             }
-            
+
             @grails.persistence.Entity
             class Route {
                 Long id
@@ -202,7 +234,7 @@ class OneToOneTest1 {
 
     void testCircularOneToManyRelationship() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader()
-        Class a = gcl.parseClass("@grails.persistence.Entity class A { \n" +
+        Class a = gcl.parseClass("@grails.persistence.Entity\nclass A { \n" +
                                     " Long id\n" +
                                     " Long version\n" +
                                     " static hasMany = [ children : A]\n" +
@@ -244,7 +276,6 @@ class RelationshipsTest2 {
     Set ones // bi-directional one-to-many relationship
     Set uniones // uni-directional one-to-many relationship
 }
-
 @grails.persistence.Entity
 class OneToManyTest2 {
     Long id
@@ -295,19 +326,19 @@ class OneToOneTest2 {
     }
 
     void testPersistentPropertyInheritance() {
-        Class topClass = gcl.parseClass("class Top {\n" +
+        Class topClass = gcl.parseClass("@grails.persistence.Entity\nclass Top {\n" +
                 "int id\n" +
                 "int version\n" +
                 "String topString\n" +
                 "String transientString\n" +
                 "static transients=['transientString']\n"+
                 "}")
-        Class middleClass = gcl.parseClass("class Middle extends Top {\n" +
+        Class middleClass = gcl.parseClass("@grails.persistence.Entity\nclass Middle extends Top {\n" +
                 "String middleString\n" +
                 "String transientString2\n" +
                 "static transients=['transientString2']\n"+
         "}")
-        Class bottomClass = gcl.parseClass("class Bottom extends Middle {\n" +
+        Class bottomClass = gcl.parseClass("@grails.persistence.Entity\nclass Bottom extends Middle {\n" +
                 "String bottomString\n" +
                 "String transientString3\n" +
                 "static transients=['transientString3']\n"+
