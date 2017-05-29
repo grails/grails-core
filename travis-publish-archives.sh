@@ -26,32 +26,26 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core
     mkdir -p ~/.m2
     cp settings.xml ~/.m2/settings.xml
 
-    mv ~/.gradle/gradle.properties{,.orig}
-    echo "org.gradle.jvmargs=-XX\:MaxPermSize\=1024m -Xmx1500m -Dfile.encoding\=UTF-8 -Duser.country\=US -Duser.language\=en -Duser.variant" >> ~/.gradle/gradle.properties
-    echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
-    ./gradlew --stop
-    #./gradlew groovydoc
-    mv ~/.gradle/gradle.properties{.orig,}
-
     echo "Publishing archives"
 
     gpg --keyserver keyserver.ubuntu.com --recv-key $SIGNING_KEY
 
     echo "Running Gradle publish for branch $TRAVIS_BRANCH"
-
-    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
+    ./gradlew --stop
+    ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
     ./gradlew closeAndPromoteRepository
 
     if [[ $EXIT_STATUS == 0 ]]; then
         ./gradlew --stop
         # wait 30 seconds to ensure the previous promotion completes
         sleep 30
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
+        ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
         ./gradlew closeAndPromoteRepository
     fi
 
     if [[ $EXIT_STATUS == 0 ]]; then
-        ./gradlew assemble || EXIT_STATUS=$?
+        ./gradlew --stop
+        ./gradlew --no-daemon assemble || EXIT_STATUS=$?
     fi
 
 
