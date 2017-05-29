@@ -337,7 +337,8 @@ public class ConstrainedPropertyTests extends TestCase {
     public void testConstraintBuilder() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        Class groovyClass = gcl.parseClass("class TestClass {\n" +
+        Class groovyClass = gcl.parseClass("@grails.persistence.Entity\n" +
+                "       class TestClass {\n" +
                         "Long id\n" +
                         "Long version\n" +
                         "String login\n" +
