@@ -66,6 +66,7 @@ class DomainClassTestPlugin implements TestPlugin {
     protected void initializeDatastoreImplementation(GrailsApplication grailsApplication) {
         ConfigurableApplicationContext applicationContext = (ConfigurableApplicationContext)grailsApplication.mainContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
+        grailsApplication.setMappingContext(simpleDatastore.getMappingContext())
         ((AbstractMappingContext)simpleDatastore.mappingContext).setCanInitializeEntities(false)
     }
 

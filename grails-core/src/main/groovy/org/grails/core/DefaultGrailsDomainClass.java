@@ -16,6 +16,7 @@
 package org.grails.core;
 
 import grails.core.ComponentCapableDomainClass;
+import grails.core.DefaultGrailsApplication;
 import grails.core.GrailsDomainClass;
 import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsNameUtils;
@@ -26,6 +27,7 @@ import org.grails.core.exceptions.GrailsConfigurationException;
 import org.grails.core.exceptions.GrailsDomainException;
 import org.grails.core.exceptions.InvalidPropertyException;
 import org.grails.core.io.support.GrailsFactoriesLoader;
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext;
 import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
@@ -141,7 +143,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
             if (persistentEntity == null) {
                 persistentEntity = mappingContext.getPersistentEntity(this.getFullName());
                 if (persistentEntity == null) {
-                    throw new GrailsConfigurationException("Could not retrieve the respective entity for domain " + this.getName() + " in the mapping context API");
+                    MappingContext concreteMappingContext = getApplication().getMappingContext();
+                    if(concreteMappingContext.getClass() == KeyValueMappingContext.class) {
+                        // In a unit testing context, allow
+                        persistentEntity = concreteMappingContext.addPersistentEntity(getClazz());
+                    }
+                    else {
+                        throw new GrailsConfigurationException("Could not retrieve the respective entity for domain " + this.getName() + " in the mapping context API");
+                    }
                 }
             }
         }
