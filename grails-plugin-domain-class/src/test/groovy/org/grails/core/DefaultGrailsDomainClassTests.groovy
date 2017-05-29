@@ -23,16 +23,19 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
                 class Test {
                     Long id
                     Long version
-                    Set others
-                    def hasMany = [others:Other]
-                    def fetchMode = [others:'eager']
+                    Set<Other> others
+                    static hasMany = [others:Other]
+                    
+                    static mapping = {
+                        others fetch:'eager'
+                    }
                 }
                 @grails.persistence.Entity
                 class Other {
                     Long id
                     Long version
                     Set anothers
-                    def hasMany = [anothers:Another]
+                    static hasMany = [anothers:Another]
                 }
                 @grails.persistence.Entity
                 class Another {
@@ -43,6 +46,7 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
+        new MappingContextBuilder(ga).build(gcl.loadedClasses)
 
         def testDomain = ga.getDomainClass("Test")
         assertEquals(GrailsDomainClassProperty.FETCH_EAGER, testDomain.getPropertyByName('others').getFetchMode())
