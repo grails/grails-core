@@ -16,6 +16,7 @@
 package grails.util
 
 import grails.config.ConfigMap
+import grails.io.IOUtils
 import groovy.transform.CompileStatic
 import org.grails.config.NavigableMap
 import org.grails.io.support.FileSystemResource
@@ -23,9 +24,9 @@ import org.grails.io.support.Resource
 import org.grails.io.support.UrlResource
 import org.yaml.snakeyaml.Yaml
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.*;
+import java.lang.ref.Reference
+import java.lang.ref.SoftReference
+import java.util.*
 
 /**
  * Represents the application Metadata and loading mechanics.
@@ -34,44 +35,44 @@ import java.util.*;
  * @since 1.1
  */
 @CompileStatic
-public class Metadata extends NavigableMap implements ConfigMap  {
-    private static final long serialVersionUID = -582452926111226898L;
-    public static final String FILE = "application.yml";
-    public static final String APPLICATION_VERSION = "info.app.version";
-    public static final String APPLICATION_NAME = "info.app.name";
-    public static final String APPLICATION_GRAILS_VERSION = "info.app.grailsVersion";
-    public static final String SERVLET_VERSION = "info.app.servletVersion";
-    public static final String WAR_DEPLOYED = "info.app.warDeployed";
-    public static final String DEFAULT_SERVLET_VERSION = "3.0";
+class Metadata extends NavigableMap implements ConfigMap  {
+    private static final long serialVersionUID = -582452926111226898L
+    public static final String FILE = "application.yml"
+    public static final String APPLICATION_VERSION = "info.app.version"
+    public static final String APPLICATION_NAME = "info.app.name"
+    public static final String APPLICATION_GRAILS_VERSION = "info.app.grailsVersion"
+    public static final String SERVLET_VERSION = "info.app.servletVersion"
+    public static final String WAR_DEPLOYED = "info.app.warDeployed"
+    public static final String DEFAULT_SERVLET_VERSION = "3.0"
 
-    private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata");
+    private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata")
     public static final String BUILD_INFO_FILE = "META-INF/grails.build.info"
 
-    private Resource metadataFile;
-    private boolean warDeployed;
-    private String servletVersion = DEFAULT_SERVLET_VERSION;
-    private Object source;
+    private Resource metadataFile
+    private boolean warDeployed
+    private String servletVersion = DEFAULT_SERVLET_VERSION
+    private Object source
 
     private Metadata() {
-        loadFromDefault();
+        loadFromDefault()
     }
 
     private Metadata(Resource res) {
-        loadFromFile(res);
+        loadFromFile(res)
     }
 
     private Metadata(File f) {
-        metadataFile = new FileSystemResource(f);
-        loadFromFile(metadataFile);
+        metadataFile = new FileSystemResource(f)
+        loadFromFile(metadataFile)
     }
 
     private Metadata(InputStream inputStream) {
-        loadFromInputStream(inputStream);
+        loadFromInputStream(inputStream)
     }
 
     private Metadata(Map<String, String> properties) {
         merge(properties, true)
-        afterLoading();
+        afterLoading()
     }
 
     /**
@@ -81,18 +82,18 @@ public class Metadata extends NavigableMap implements ConfigMap  {
         return source
     }
 
-    public Resource getMetadataFile() {
-        return metadataFile;
+    Resource getMetadataFile() {
+        return metadataFile
     }
 
     /**
      * Resets the current state of the Metadata so it is re-read.
      */
-    public static void reset() {
-        Metadata m = getFromMap();
+    static void reset() {
+        Metadata m = getFromMap()
         if (m != null) {
-            m.clear();
-            m.afterLoading();
+            m.clear()
+            m.afterLoading()
         }
     }
 
@@ -106,48 +107,52 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     /**
      * @return the metadata for the current application
      */
-    public static Metadata getCurrent() {
-        Metadata m = getFromMap();
+    static Metadata getCurrent() {
+        Metadata m = getFromMap()
         if (m == null) {
-            m = new Metadata();
-            holder.set(new SoftReference<Metadata>(m));
+            m = new Metadata()
+            holder.set(new SoftReference<Metadata>(m))
         }
-        return m;
+        return m
     }
 
     private void loadFromDefault() {
         try {
             def classLoader = Thread.currentThread().getContextClassLoader()
-            URL url = classLoader.getResource(FILE);
+            URL url = classLoader.getResource(FILE)
             if (url == null) {
-                url = getClass().getClassLoader().getResource(FILE);
+                url = getClass().getClassLoader().getResource(FILE)
             }
             if (url != null) {
                 url.withInputStream { input ->
-                    this.@source = loadYml(input);
+                    this.@source = loadYml(input)
                 }
                 this.metadataFile = new UrlResource(url)
             }
 
-            url = classLoader.getResource(BUILD_INFO_FILE);
+            url = classLoader.getResource(BUILD_INFO_FILE)
             if(url != null) {
-                url.withInputStream { input ->
-                    loadAndMerge(input)
+                if(IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
+                    url.withInputStream { input ->
+                        loadAndMerge(input)
+                    }
                 }
             }
             else {
                 // try WAR packaging resolve
                 url = classLoader.getResource("../../" + BUILD_INFO_FILE)
                 if(url != null) {
-                    url.withInputStream { input ->
-                        loadAndMerge(input)
+                    if(IOUtils.isWithinBinary(url) || !Environment.isDevelopmentEnvironmentAvailable()) {
+                        url.withInputStream { input ->
+                            loadAndMerge(input)
+                        }
                     }
                 }
             }
-            afterLoading();
+            afterLoading()
         }
         catch (Exception e) {
-            throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
+            throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e)
         }
     }
 
@@ -176,23 +181,23 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     private void loadFromInputStream(InputStream inputStream) {
-        loadYml(inputStream);
-        afterLoading();
+        loadYml(inputStream)
+        afterLoading()
     }
 
     private void loadFromFile(Resource file) {
         if (file != null && file.exists()) {
-            InputStream input = null;
+            InputStream input = null
             try {
-                input = file.getInputStream();
-                loadYml(input);
-                afterLoading();
+                input = file.getInputStream()
+                loadYml(input)
+                afterLoading()
             }
             catch (Exception e) {
-                throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
+                throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e)
             }
             finally {
-                closeQuietly(input);
+                closeQuietly(input)
             }
         }
     }
@@ -202,10 +207,10 @@ public class Metadata extends NavigableMap implements ConfigMap  {
      * @param inputStream The InputStream
      * @return a Metadata instance
      */
-    public static Metadata getInstance(InputStream inputStream) {
-        Metadata m = new Metadata(inputStream);
-        holder.set(new FinalReference<Metadata>(m));
-        return m;
+    static Metadata getInstance(InputStream inputStream) {
+        Metadata m = new Metadata(inputStream)
+        holder.set(new FinalReference<Metadata>(m))
+        return m
     }
 
     /**
@@ -213,7 +218,7 @@ public class Metadata extends NavigableMap implements ConfigMap  {
      * @param file The File
      * @return A Metadata object
      */
-    public static Metadata getInstance(File file) {
+    static Metadata getInstance(File file) {
         return getInstance(new FileSystemResource(file))
     }
 
@@ -222,90 +227,90 @@ public class Metadata extends NavigableMap implements ConfigMap  {
      * @param file The File
      * @return A Metadata object
      */
-    public static Metadata getInstance(Resource file) {
-        Reference<Metadata> ref = holder.get();
+    static Metadata getInstance(Resource file) {
+        Reference<Metadata> ref = holder.get()
         if (ref != null) {
-            Metadata metadata = ref.get();
+            Metadata metadata = ref.get()
             if (metadata != null && metadata.getMetadataFile() != null && metadata.getMetadataFile().equals(file)) {
-                return metadata;
+                return metadata
             }
             else {
-                createAndBindNew(file);
+                createAndBindNew(file)
             }
         }
-        return createAndBindNew(file);
+        return createAndBindNew(file)
     }
 
     private static Metadata createAndBindNew(Resource file) {
-        Metadata m = new Metadata(file);
-        holder.set(new FinalReference<Metadata>(m));
-        return m;
+        Metadata m = new Metadata(file)
+        holder.set(new FinalReference<Metadata>(m))
+        return m
     }
 
     /**
      * Reloads the application metadata.
      * @return The metadata object
      */
-    public static Metadata reload() {
-        Resource f = getCurrent().getMetadataFile();
+    static Metadata reload() {
+        Resource f = getCurrent().getMetadataFile()
         if (f != null && f.exists()) {
-            return getInstance(f);
+            return getInstance(f)
         }
 
-        return f == null ? new Metadata() : new Metadata(f);
+        return f == null ? new Metadata() : new Metadata(f)
     }
 
     /**
      * @return The application version
      */
-    public String getApplicationVersion() {
-        return get(APPLICATION_VERSION)?.toString();
+    String getApplicationVersion() {
+        return get(APPLICATION_VERSION)?.toString()
     }
 
     /**
      * @return The Grails version used to build the application
      */
-    public String getGrailsVersion() {
-        return get(APPLICATION_GRAILS_VERSION)?.toString() ?: getClass().getPackage().getImplementationVersion();
+    String getGrailsVersion() {
+        return get(APPLICATION_GRAILS_VERSION)?.toString() ?: getClass().getPackage().getImplementationVersion()
     }
 
     /**
      * @return The environment the application expects to run in
      */
-    public String getEnvironment() {
-        return get(Environment.KEY)?.toString();
+    String getEnvironment() {
+        return get(Environment.KEY)?.toString()
     }
 
     /**
      * @return The application name
      */
-    public String getApplicationName() {
-        return get(APPLICATION_NAME)?.toString();
+    String getApplicationName() {
+        return get(APPLICATION_NAME)?.toString()
     }
 
 
     /**
      * @return The version of the servlet spec the application was created for
      */
-    public String getServletVersion() {
-        String servletVersion = get(SERVLET_VERSION)?.toString();
+    String getServletVersion() {
+        String servletVersion = get(SERVLET_VERSION)?.toString()
         if (servletVersion == null) {
-            servletVersion = System.getProperty(SERVLET_VERSION) != null ? System.getProperty(SERVLET_VERSION) : this.servletVersion;
-            return servletVersion;
+            servletVersion = System.getProperty(SERVLET_VERSION) != null ? System.getProperty(SERVLET_VERSION) : this.servletVersion
+            return servletVersion
         }
-        return servletVersion;
+        return servletVersion
     }
 
 
-    public void setServletVersion(String servletVersion) {
-        this.servletVersion = servletVersion;
+    void setServletVersion(String servletVersion) {
+        this.servletVersion = servletVersion
     }
 
 
     /**
      * @return true if this application is deployed as a WAR
      */
-    public boolean isWarDeployed() {
+    boolean isWarDeployed() {
         Environment.isWarDeployed()
     }
 
@@ -320,7 +325,7 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     private static void closeQuietly(Closeable c) {
         if (c != null) {
             try {
-                c.close();
+                c.close()
             }
             catch (Exception ignored) {
                 // ignored
@@ -329,32 +334,33 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     private static Metadata getFromMap() {
-        Reference<Metadata> metadata = holder.get();
-        return metadata == null ? null : metadata.get();
+        Reference<Metadata> metadata = holder.get()
+        return metadata == null ? null : metadata.get()
     }
 
 
 
     static class FinalReference<T> extends SoftReference<T> {
-        private final T ref;
-        public FinalReference(T t) {
-            super(t);
-            ref = t;
+        private final T ref
+
+        FinalReference(T t) {
+            super(t)
+            ref = t
         }
 
         @Override
-        public T get() {
-            return ref;
+        T get() {
+            return ref
         }
     }
 
     @Override
-    def <T> T getProperty(String key, Class<T> targetType) {
+    <T> T getProperty(String key, Class<T> targetType) {
         return get(key)?.asType(targetType)
     }
 
     @Override
-    def <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
+    <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
         def v = getProperty(key, targetType)
         if(v == null) {
             return defaultValue
@@ -363,10 +369,10 @@ public class Metadata extends NavigableMap implements ConfigMap  {
     }
 
     @Override
-    def <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
+    <T> T getRequiredProperty(String key, Class<T> targetType) throws IllegalStateException {
         def value = get(key)
         if(value == null) {
-            throw new IllegalStateException("Value for key ["+key+"] cannot be resolved");
+            throw new IllegalStateException("Value for key ["+key+"] cannot be resolved")
         }
         return value.asType(targetType)
     }

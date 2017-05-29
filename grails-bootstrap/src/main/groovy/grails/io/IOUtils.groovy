@@ -104,6 +104,16 @@ class IOUtils extends SpringIOUtils {
     }
 
     /**
+     * Whether the given URL is within a binary like a JAR or WAR file
+     * @param url The URL
+     * @return True if it is
+     */
+    static boolean isWithinBinary(URL url) {
+        String protocol = url.protocol
+        return protocol == null || protocol != 'file'
+    }
+
+    /**
      * Finds a JAR for the given resource
      *
      * @param resource The resource
