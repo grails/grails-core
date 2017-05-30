@@ -406,7 +406,7 @@ public class SpringIOUtils {
             saxParserFactory.setValidating(false);
 
             try {
-                saxParserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+                saxParserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             } catch (Exception pce) {
                 // ignore, parser doesn't support
             }
