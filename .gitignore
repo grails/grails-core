@@ -10,6 +10,7 @@ classes
 *.ipr
 *.iml
 *.iws
+*.hprof
 idea
 /lib
 /doc
