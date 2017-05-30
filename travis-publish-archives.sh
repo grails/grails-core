@@ -33,14 +33,14 @@ if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core
     echo "Running Gradle publish for branch $TRAVIS_BRANCH"
     ./gradlew --stop
     ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
-    ./gradlew closeAndPromoteRepository
+    ./gradlew closeAndReleaseRepository
 
     if [[ $EXIT_STATUS == 0 ]]; then
         ./gradlew --stop
         # wait 30 seconds to ensure the previous promotion completes
         sleep 30
         ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
-        ./gradlew closeAndPromoteRepository
+        ./gradlew closeAndReleaseRepository
     fi
 
     if [[ $EXIT_STATUS == 0 ]]; then
