@@ -1,15 +1,10 @@
 package org.grails.web.mapping
 
-import org.grails.web.mapping.DefaultUrlMappingEvaluator
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
-
-import org.junit.Test
-import static org.junit.Assert.assertEquals
+import grails.testing.web.GrailsWebUnitTest
+import spock.lang.Specification
 import org.springframework.core.io.*
 
-@TestMixin(ControllerUnitTestMixin)
-class UrlMappingEvaluatorTests  {
+class UrlMappingEvaluatorTests extends Specification implements GrailsWebUnitTest {
 
     def mappingScript = '''
 mappings {
@@ -47,77 +42,96 @@ mappings {
 }
 '''
 
-    @Test
     void testEvaluateMappings() {
+        given:
         def res = new ByteArrayResource(mappingScript.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
-        assert mappings
-        assertEquals 7, mappings.size()
+        expect:
+        mappings.size() == 7
 
+        when:
         def m = mappings[0]
-        assertEquals "/(*)/(*)?/(*)?/(*)?", m.urlData.urlPattern
-        assertEquals 4, m.urlData.tokens.size()
 
+        then:
+        "/(*)/(*)?/(*)?/(*)?" == m.urlData.urlPattern
+        4 == m.urlData.tokens.size()
+
+        when:
         def info = m.match("/myentry/2007/04/28")
 
-        assertEquals "myentry", info.id
-        assertEquals "2007", info.parameters.year
-        assertEquals "04", info.parameters.month
-        assertEquals "28", info.parameters.day
-        assertEquals "blog", info.controllerName
-        assertEquals "show", info.actionName
+        then:
+        "myentry" == info.id
+        "2007" == info.parameters.year
+        "04" == info.parameters.month
+        "28" == info.parameters.day
+        "blog" == info.controllerName
+        "show" == info.actionName
 
-        assert m.match("/myentry/2007/04/28")
-        assert m.match("/myentry/2007/04")
-        assert m.match("/myentry/2007")
-        assert m.match("/myentry")
+        m.match("/myentry/2007/04/28")
+        m.match("/myentry/2007/04")
+        m.match("/myentry/2007")
+        m.match("/myentry")
 
+        when:
         m = mappings[1]
         info = m.match("/product/MacBook")
-        assert info
-        assertEquals "MacBook", info.parameters.name
 
-        assert !m.match("/product")
-        assert !m.match("/foo/bar")
-        assert !m.match("/product/MacBook/foo")
+        then:
+        "MacBook" == info.parameters.name
 
+        !m.match("/product")
+        !m.match("/foo/bar")
+        !m.match("/product/MacBook/foo")
+
+        when:
         m = mappings[3]
         info = m.match("/author/Brown/Jeff")
-        assert info
-        assertEquals "Brown", info.parameters.lastName
-        assertEquals "Jeff", info.parameters.firstName
-        assertEquals "show", info.actionName
-        assertEquals "author", info.controllerName
+
+        then:
+        info
+        "Brown" == info.parameters.lastName
+        "Jeff" == info.parameters.firstName
+        "show" == info.actionName
+        "author" == info.controllerName
 
         // first name too long
-        assert !m.match("/author/Lang/Johnny")
+        !m.match("/author/Lang/Johnny")
 
         // both names too long
-        assert !m.match("/author/Winter/Johnny")
+        !m.match("/author/Winter/Johnny")
 
         // last name too long
-        assert !m.match("/author/Winter/Edgar")
+        !m.match("/author/Winter/Edgar")
 
+        when:
         info = mappings[4].match("/music/Rush/Hemispheres")
-        assert info
-        assertEquals "Rush", info.parameters.band
-        assertEquals "Hemispheres", info.parameters.album
-        assertEquals "show", info.actionName
-        assertEquals "music", info.controllerName
 
+        then:
+        info
+        "Rush" == info.parameters.band
+        "Hemispheres" == info.parameters.album
+        "show" == info.actionName
+        "music" == info.controllerName
+
+        when:
         info = mappings[5].match("/myFiles/something-hello.txt")
-        assert info
-        assertEquals "files", info.controllerName
-        assertEquals "hello", info.parameters.fname
-        assertEquals "txt", info.parameters.fext
 
+        then:
+        info
+        "files" == info.controllerName
+        "hello" == info.parameters.fname
+        "txt" == info.parameters.fext
+
+        when:
         // Test the double-wildcard, "**".
         info = mappings[6].match("/long/path/to/some/file")
-        assert info
-        assertEquals "path/to/some/file", info.parameters.path
-        assertEquals "files", info.controllerName
+
+        then:
+        info
+        "path/to/some/file" == info.parameters.path
+        "files" == info.controllerName
     }
 }

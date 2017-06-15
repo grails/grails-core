@@ -1,12 +1,11 @@
 package org.grails.web.binding
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.RequestParameter
 import spock.lang.Specification
 
-@TestFor(TestBindingController)
-class ControllerActionParameterBindingSpec extends Specification {
+class ControllerActionParameterBindingSpec extends Specification implements ControllerUnitTest<TestBindingController> {
     void "Test request parameter name matching argument name but not matching @RequestParameter name"() {
         when:
             controller.params.name = 'Herbert'

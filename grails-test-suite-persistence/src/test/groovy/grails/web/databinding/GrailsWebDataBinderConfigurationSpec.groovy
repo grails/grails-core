@@ -1,9 +1,7 @@
 package grails.web.databinding
 
 import grails.databinding.SimpleMapDataBindingSource;
-import grails.test.mixin.Mock
-import grails.web.databinding.GrailsWebDataBinder
-import org.grails.core.support.MappingContextBuilder;
+import grails.testing.gorm.DataTest
 import spock.lang.Specification
 
 
@@ -14,13 +12,12 @@ import spock.lang.Specification
  * one test causes problems for other tests.
  *
  */
-@Mock([Author, Team])
-class GrailsWebDataBinderConfigurationSpec extends Specification {
+class GrailsWebDataBinderConfigurationSpec extends Specification implements DataTest {
 
     GrailsWebDataBinder binder
 
     void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(Author, Team)
+        mockDomains(Author, Team)
     }
 
     void setup() {

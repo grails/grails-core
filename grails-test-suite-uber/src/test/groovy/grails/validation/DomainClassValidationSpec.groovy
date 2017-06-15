@@ -2,12 +2,8 @@ package grails.validation
 
 import grails.core.GrailsDomainClass
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
-import grails.util.ClosureToMapPopulator
+import grails.testing.gorm.DataTest
 import org.grails.core.artefact.DomainClassArtefactHandler
-import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.hibernate.Hibernate
 import org.springframework.validation.FieldError
 import spock.lang.Ignore
@@ -18,23 +14,25 @@ import spock.lang.Specification
  * Ensure validation logic for domain class and whether or not compatible with command object with {@code Validateable}.
  *
  */
-@TestMixin(GrailsUnitTestMixin)
-@Mock([MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, SharedConstraintsDomainClass, SuperClassDomainClass, SubClassDomainClass])
-class DomainClassValidationSpec extends Specification {
+class DomainClassValidationSpec extends Specification implements DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [MyDomainClass, MyNullableDomainClass, NoConstraintsDomainClass, DomainClassGetters, /*SharedConstraintsDomainClass*/SuperClassDomainClass, SubClassDomainClass]
+    }
+
+/*    Closure doWithConfig() {{ config ->
+        config.grails.gorm.default.constraints = {
+            '*' blank: false
+            myShared matches: /MY_SHARED/, maxSize: 10
+        }
+    }}*/
+
     @Ignore
     void "Test that default and shared constraints can be applied from configuration"() {
-        given:
-        defineBeans {
-            config.grails.gorm.default.constraints = {
-                '*' blank: false
-                myShared matches: /MY_SHARED/, maxSize: 10
-            }
-        }
-
-        and:
+        when:
         def constraints = getAssociatedDomainClassFromApplication(new SharedConstraintsDomainClass()).getConstrainedProperties()
 
-        expect:
+        then:
         constraints.size() == 2
         constraints.name.hasAppliedConstraint 'matches'
         constraints.town.hasAppliedConstraint 'inList'
@@ -54,6 +52,7 @@ class DomainClassValidationSpec extends Specification {
         cleanup:
         config.grails.gorm.default.constraints = null
     }
+
     @Issue('grails/grails-core#9749')
     void 'test that transient properties are not constrained by default but can be explicitly constrained'() {
         when:

@@ -1,7 +1,6 @@
 package org.grails.web.mapping
 
 import grails.web.mapping.UrlCreator
-import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.core.io.ByteArrayResource
 
 /**

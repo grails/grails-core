@@ -1,45 +1,46 @@
 package org.grails.web.servlet.mvc
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-import org.junit.Test
-import static org.junit.Assert.*
+import grails.testing.web.taglib.TagLibUnitTest
+import spock.lang.Specification
 
-@TestFor(TestTagLib)
-class TagLibDynamicMethodsTests {
+class TagLibDynamicMethodsTests extends Specification implements TagLibUnitTest<TestTagLib> {
 
-    @Test
     void testFlashObject() {
+        when:
         tagLib.flash.test = "hello"
 
-        assertEquals "hello", tagLib.flash.test
+        then:
+        tagLib.flash.test == "hello"
     }
 
-    @Test
     void testParamsObject() {
+        when:
         tagLib.params.test = "hello"
 
-        assertEquals "hello", tagLib.params.test
+        then:
+        tagLib.params.test == "hello"
     }
 
-    @Test
     void testSessionObject() {
+        when:
         tagLib.session.test = "hello"
 
-        assertEquals "hello", tagLib.session.test
+        then:
+        tagLib.session.test == "hello"
     }
 
-    @Test
     void testGrailsAttributesObject() {
-        assertNotNull(tagLib.grailsAttributes)
+        expect:
+        tagLib.grailsAttributes != null
     }
 
-    @Test
     void testRequestObjects() {
-        assertNotNull(tagLib.request)
+        expect:
+        tagLib.request != null
 
-        assertNotNull(tagLib.response)
-        assertNotNull(tagLib.servletContext)
+        tagLib.response != null
+        tagLib.servletContext != null
     }
 }
 

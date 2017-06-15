@@ -1,22 +1,16 @@
 package org.grails.web.binding
 
-import org.grails.core.support.MappingContextBuilder
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(StatusController)
-class EnumBindingTests extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(StatusTransition)
-    }
-
+class EnumBindingTests extends Specification implements ControllerUnitTest<StatusController>, DomainUnitTest<StatusTransition> {
 
     void testBindEnumInConstructor() {
         when:

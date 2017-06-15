@@ -2,28 +2,27 @@ package grails.test.mixin
 
 import grails.databinding.SimpleMapDataBindingSource;
 import grails.databinding.converters.ValueConverter;
-import grails.test.mixin.support.GrailsUnitTestMixin
-import grails.test.runtime.FreshRuntime
 
 import org.grails.spring.beans.factory.InstanceFactoryBean
 import org.grails.plugins.databinding.DataBindingGrailsPlugin
+import org.grails.testing.GrailsUnitTest
 import spock.lang.Specification
 
 /**
  * @author Lari Hotari
  */
-@FreshRuntime
-@TestMixin(GrailsUnitTestMixin)
-class SpyBeanSpec extends Specification {
+class SpyBeanSpec extends Specification implements GrailsUnitTest {
+
     def myAddressValueConverter=Spy(MyAddressValueConverter)
-    def doWithSpring = {
+
+    Closure doWithSpring() {{ ->
         def plugin = new DataBindingGrailsPlugin()
         plugin.grailsApplication = delegate.application
         def otherClosure= plugin.doWithSpring().clone()
         otherClosure.delegate=delegate
         otherClosure.call()
         myAddressValueConverter(InstanceFactoryBean, myAddressValueConverter, MyAddressValueConverter)
-    }
+    }}
 
     def "it's possible to use Spy instances as beans as well"() {
         given:

@@ -1,17 +1,19 @@
 package org.grails.web.binding
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
-import org.junit.Test
+import spock.lang.Specification
 
-@TestFor(NestedXmlController)
-@Mock([Person, Location, Foo, Bar])
-class NestedXmlBindingTests {
+class NestedXmlBindingTests extends Specification implements ControllerUnitTest<NestedXmlController>, DataTest {
 
-    @Test
+    Class<?>[] getDomainClassesToMock() {
+        [Person, Location, Foo, Bar]
+    }
+
     void testNestedXmlBinding() {
+        when:
         request.method = 'POST'
         request.xml = '''
 <person>
@@ -23,20 +25,19 @@ class NestedXmlBindingTests {
 </person>
 '''
         def result = controller.bind()
-
-        assert result != null
-
         Person p = result.person
 
-        assert p != null
-        assert p.name == "John Doe"
-        assert p.location != null
-        assert p.location.shippingAddress == 'foo'
-        assert p.location.billingAddress == 'bar'
+        then:
+        result != null
+        p != null
+        p.name == "John Doe"
+        p.location != null
+        p.location.shippingAddress == 'foo'
+        p.location.billingAddress == 'bar'
     }
 
-    @Test
     void testNestedXmlBindingWithId() {
+        when:
         request.method = 'POST'
         request.xml = '''
 <person>
@@ -48,21 +49,20 @@ class NestedXmlBindingTests {
 </person>
 '''
         def result = controller.bind()
-
-        assert result != null
-
         Person p = result.person
 
-        assert p != null
-        assert p.name == "John Doe"
-        assert p.location != null
-        assert p.location.id == 1
-        assert p.location.shippingAddress == 'foo'
-        assert p.location.billingAddress == 'bar'
+        then:
+        result != null
+        p != null
+        p.name == "John Doe"
+        p.location != null
+        p.location.id == 1
+        p.location.shippingAddress == 'foo'
+        p.location.billingAddress == 'bar'
     }
 
-    @Test
     void testBindToArrayOfDomains() {
+        when:
         request.method = 'POST'
         request.xml = '''
 <person>
@@ -80,23 +80,21 @@ class NestedXmlBindingTests {
 </person>
 '''
         def result = controller.bind()
-
-        assert result != null
-
         Person p = result.person
 
-        assert p != null
-        assert p.name == "John Doe"
-        assert p.locations.size() == 2
-        assert p.locations[0].shippingAddress == 'foo'
-        assert p.locations[0].billingAddress == 'bar'
-        assert p.locations[1].shippingAddress == 'foo2'
-        assert p.locations[1].billingAddress == 'bar2'
-
+        then:
+        result != null
+        p != null
+        p.name == "John Doe"
+        p.locations.size() == 2
+        p.locations[0].shippingAddress == 'foo'
+        p.locations[0].billingAddress == 'bar'
+        p.locations[1].shippingAddress == 'foo2'
+        p.locations[1].billingAddress == 'bar2'
     }
 
-    @Test
     void testBindToOne() {
+        when:
         request.method = 'POST'
         request.xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <foo>
@@ -106,14 +104,14 @@ class NestedXmlBindingTests {
         new Bar().save(flush:true)
         def result = controller.bindToOne()
 
-        assert result != null
-
-        assert result.bar != null
-        assert result.bar.id == 1
+        then:
+        result != null
+        result.bar != null
+        result.bar.id == 1
     }
 
-    @Test
     void testBindToArrayOfDomainsWithJson() {
+        when:
         request.method = 'POST'
         request.json = '''
 {
@@ -125,16 +123,16 @@ class NestedXmlBindingTests {
 }
 '''
         def result = controller.bind()
-
-        assert result != null
-
         Person p = result.person
 
-        assert p != null
-        assert p.name == "John Doe"
-        assert p.locations.size() == 2
+        then:
+        result != null
+        p != null
+        p.name == "John Doe"
+        p.locations.size() == 2
     }
 }
+
 @Controller
 class NestedXmlController {
     def bind() {

@@ -1,14 +1,11 @@
 package org.grails.commons.metaclass
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.beans.util.LazyMetaPropertyMap
 import spock.lang.Specification
 
 /**
  * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
  */
-@TestMixin(GrailsUnitTestMixin)
 class LazyMetaPropertyMapSpec extends Specification {
 
     void "test putAll adds all key and value pairs provided to this map"() {

@@ -2,22 +2,19 @@
 
 package org.grails.web.metaclass
 
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.MockRequestDataValueProcessor
 
 import org.grails.web.servlet.GrailsFlashScope
 
 import spock.lang.Specification
 
+class ChainMethodWithRequestDataValueProcessorSpec extends Specification implements ControllerUnitTest<TestChainController>, DomainUnitTest<TestChainBook> {
 
-@TestFor(TestChainController)
-@Mock(TestChainBook)
-class ChainMethodWithRequestDataValueProcessorSpec extends Specification {
-
-    def doWithSpring = {
+    Closure doWithSpring() {{ ->
         requestDataValueProcessor MockRequestDataValueProcessor
-    }
+    }}
 
     void 'test chain method with model and request data value processor'() {
         when:

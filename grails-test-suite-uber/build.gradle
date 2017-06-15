@@ -1,9 +1,12 @@
+configurations.testCompile {
+    exclude module: "grails-plugin-testing"
+}
+
 dependencies {
 
     compile project(':grails-test-suite-base'),
             project(':grails-plugin-interceptors'),        
-            project(':grails-plugin-controllers'),
-            project(':grails-plugin-testing')
+            project(':grails-plugin-controllers')
 
     compile "org.grails.plugins:gsp:$gspVersion"
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
@@ -51,6 +54,13 @@ dependencies {
         exclude group: 'javassit', module:'javassist'
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javassist', module: 'javassist'
+    }
+
+    testCompile ('org.grails:grails-web-testing-support:1.0.0.BUILD-SNAPSHOT') {
+        changing = true
+    }
+    testCompile ('org.grails:grails-gorm-testing-support:1.0.0.BUILD-SNAPSHOT') {
+        changing = true
     }
 }
 

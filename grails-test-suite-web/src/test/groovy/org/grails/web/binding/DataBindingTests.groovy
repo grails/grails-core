@@ -3,12 +3,10 @@ package org.grails.web.binding
 import grails.artefact.Artefact
 import grails.databinding.BindingFormat
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.plugins.testing.GrailsMockMultipartFile
-import org.junit.Test
-import static org.junit.Assert.*
+import spock.lang.Specification
 
  /**
  * Tests Grails data binding capabilities.
@@ -16,69 +14,73 @@ import static org.junit.Assert.*
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(TestController)
-@Mock(MyBean)
-class DataBindingTests  {
+class DataBindingTests extends Specification implements ControllerUnitTest<TestController>, DomainUnitTest<MyBean> {
 
-    @Test
     void testBindingPogoToDomainClass() {
+        when:
         def author = new Author()
         def clown = new Clown(name: 'Bozo', hairColour: 'Orange')
 
         author.properties = clown
 
-        assert !author.hasErrors()
-        assert author.name == 'Bozo'
-        assert author.hairColour == 'Orange'
+        then:
+        !author.hasErrors()
+        author.name == 'Bozo'
+        author.hairColour == 'Orange'
     }
 
-    @Test
     void testDateFormatError() {
+        when:
         def bean = new MyBean()
 
         request.addParameter 'formattedDate', 'BAD'
 
         bean.properties = request
-
-        assert bean.hasErrors()
-        assert bean.errors.errorCount == 1
-
         def dateError = bean.errors.getFieldError('formattedDate')
-        assert dateError != null
 
-        assert dateError.defaultMessage == 'Unparseable date: "BAD"'
+
+        then:
+        bean.hasErrors()
+        bean.errors.errorCount == 1
+
+        dateError != null
+
+        dateError.defaultMessage == 'Unparseable date: "BAD"'
     }
 
-    @Test
     void testBindingWithIndexedBlankId() {
+        when:
         def city = new City()
 
         request.addParameter 'people[0].id', ''
 
         city.properties = request
 
-        assert !city.hasErrors()
-        assert city.people instanceof Set
-        assert city.people.size() == 1
+        then:
+        !city.hasErrors()
+        city.people instanceof Set
+        city.people.size() == 1
     }
 
-    @Test
     void testUpdatingSetElementByIdThatDoesNotExist() {
+        when:
         def city = new City()
 
         request.addParameter 'people[0].id', '42'
 
         city.properties = request
-
-        assert city.hasErrors()
-        assert city.errors.errorCount == 1
-
         def error = city.errors.getFieldError('people')
-        assert error.defaultMessage == 'Illegal attempt to update element in [people] Set with id [42]. No such record was found.'
+
+        then:
+        city.hasErrors()
+        city.errors.errorCount == 1
+
+        error.defaultMessage == 'Illegal attempt to update element in [people] Set with id [42]. No such record was found.'
     }
 
-    @Test
+
     void testBindingObjectsWithHashcodeAndEqualsToASet() {
+        when:
         // GRAILS-9825 = this test fails with the spring binder
         // and passes with GrailsWebDataBinder
 
@@ -91,40 +93,43 @@ class DataBindingTests  {
 
         city.properties = request
 
-        assert city.people instanceof Set
-        assert city.people.size() == 3
-        assert city.people.find { it.name == 'Jeff' && it.birthDate == null} != null
-        assert city.people.find { it.name == 'Jake' && it.birthDate != null} != null
-        assert city.people.find { it.name == 'Zack' && it.birthDate == null} != null
+        then:
+        city.people instanceof Set
+        city.people.size() == 3
+        city.people.find { it.name == 'Jeff' && it.birthDate == null} != null
+        city.people.find { it.name == 'Jake' && it.birthDate != null} != null
+        city.people.find { it.name == 'Zack' && it.birthDate == null} != null
     }
 
-    @Test
     void testBindingASinglePropertyWithSubscriptOperator() {
+        when:
         def person = new DataBindingTestsPerson()
 
         person.properties['birthDate'] = '2013-04-15 21:26:31.973'
-
-        assert person.birthDate instanceof Date
         def cal = Calendar.instance
         cal.time = person.birthDate
-        assert Calendar.APRIL == cal.get(Calendar.MONTH)
-        assert 2013 == cal.get(Calendar.YEAR)
+
+        then:
+        person.birthDate instanceof Date
+        Calendar.APRIL == cal.get(Calendar.MONTH)
+        2013 == cal.get(Calendar.YEAR)
     }
 
-    @Test
     void testBindintToNestedArray() {
+        when:
         def author = new AuthorCommand()
         request.addParameter 'beans[0].integers[0]', '42'
 
         author.properties = request
 
-        assert author.beans.size() == 1
-        assert author.beans[0].integers.length == 1
-        assert author.beans[0].integers[0] == 42
+        then:
+        author.beans.size() == 1
+        author.beans[0].integers.length == 1
+        author.beans[0].integers[0] == 42
     }
 
-    @Test
     void testFieldErrorObjectName() {
+        when:
         def myBean = new MyBean()
 
         request.addParameter 'someIntProperty', 'bad integer'
@@ -132,13 +137,14 @@ class DataBindingTests  {
         def errors = myBean.errors
         def fieldError = errors.getFieldError('someIntProperty')
 
-        assert myBean.someIntProperty == null
-        assert fieldError.rejectedValue == 'bad integer'
-        assert fieldError.objectName == 'org.grails.web.binding.MyBean'
+        then:
+        myBean.someIntProperty == null
+        fieldError.rejectedValue == 'bad integer'
+        fieldError.objectName == 'org.grails.web.binding.MyBean'
     }
 
-    @Test
     void testBindingMalformedNumber() {
+        when:
         // GRAILS-6766
         def myBean = new MyBean()
 
@@ -149,34 +155,40 @@ class DataBindingTests  {
         def errors = myBean.errors
         def fieldError = errors.getFieldError('someFloatProperty')
 
-        // these fail with GrailsDataBinder and pass with GrailsWebDataBinder
-        assert myBean.someFloatProperty == null
-        assert fieldError.rejectedValue == '21.12Rush'
+        then: 'these fail with GrailsDataBinder and pass with GrailsWebDataBinder'
+        myBean.someFloatProperty == null
+        fieldError.rejectedValue == '21.12Rush'
     }
 
-    @Test
+
     void testBinderDoesNotCreateExtraneousInstances() {
+        when:
         // GRAILS-9914
         int originalCount = DataBindingTestsBook.instanceCount
         def book = new DataBindingTestsBook(title: 'Some Book')
 
-        assert originalCount + 1 == DataBindingTestsBook.instanceCount
+        then:
+        originalCount + 1 == DataBindingTestsBook.instanceCount
 
+        when:
         def bookReview = new BookReview(book: book)
 
-        assert 'Some Book' == bookReview.book.title
+        then:
+        'Some Book' == bookReview.book.title
 
+        when:
         request.addParameter 'book.title', 'Some New Book'
         bookReview.properties = request
 
-        assert 'Some New Book' == bookReview.book.title
+        then:
+        'Some New Book' == bookReview.book.title
 
         // this fails with GrailsDataBinder and passes with GrailsWebDataBinder
-        assert originalCount + 1 == DataBindingTestsBook.instanceCount
+        originalCount + 1 == DataBindingTestsBook.instanceCount
     }
 
-    @Test
     void testBindEmbeddedWithMultipartFileAndDate() {
+        when:
         def e = new WithEncoding()
         request.addFile(new GrailsMockMultipartFile("eDate.aFile", "foo".bytes))
         request.addParameter("eDate.aDate", "struct")
@@ -186,26 +198,29 @@ class DataBindingTests  {
 
         e.properties = request
 
-        assert e.eDate.aFile != null
-        assert e.eDate.aDate != null
+        then:
+        e.eDate.aFile != null
+        e.eDate.aDate != null
 
     }
 
-    @Test
     void testBindingMapValue() {
+        when:
         def pet = new Pet()
         pet.properties = [name: 'lemur', detailMap: [first: 'one', second: 'two'], owner: [name: 'Jeff'], foo: 'bar', bar: [a: 'a', b: 'b']]
 
-        assert pet.name == 'lemur'
-        assert pet.detailMap.first == 'one'
-        assert pet.detailMap.second == 'two'
-        assert !pet.hasErrors()
+        then:
+        pet.name == 'lemur'
+        pet.detailMap.first == 'one'
+        pet.detailMap.second == 'two'
+        !pet.hasErrors()
     }
 
-    @Test
     void testBindingNullToANullableDateThatAlreadyHasAValue() {
+        given:
         def person = new DataBindingTestsPerson()
 
+        when:
         params.name = 'Douglas Adams'
         params.birthDate_year = '1952'
         params.birthDate_day = '11'
@@ -213,9 +228,12 @@ class DataBindingTests  {
         params.birthDate = 'struct'
 
         person.properties = params
-        assertEquals 'Douglas Adams', person.name
-        assertNotNull person.birthDate
 
+        then:
+        'Douglas Adams' == person.name
+        person.birthDate != null
+
+        when:
         params.name = 'Douglas Adams'
         params.birthDate_year = ''
         params.birthDate_day = ''
@@ -223,36 +241,42 @@ class DataBindingTests  {
         params.birthDate = 'struct'
 
         person.properties = params
-        assertEquals 'Douglas Adams', person.name
-        assertNull person.birthDate
+
+        then:
+        'Douglas Adams' ==  person.name
+        person.birthDate == null
     }
 
-    @Test
     void testNamedBinding() {
+        when:
         def author = new Author()
 
         params.name = 'Douglas Adams'
         params.hairColour = 'Grey'
 
         author.properties['name'] = params
-        assertEquals 'Douglas Adams', author.name
-        assertNull author.hairColour
+
+        then:
+        'Douglas Adams' == author.name
+        author.hairColour == null
     }
 
-    @Test
     void testNamedBindingWithMultipleProperties() {
+        when:
         def author = new Author()
 
         params.name = 'Douglas Adams'
         params.hairColour = 'Grey'
 
         author.properties['name', 'hairColour'] = params
-        assertEquals 'Douglas Adams', author.name
-        assertEquals 'Grey', author.hairColour
+
+        then:
+        'Douglas Adams' == author.name
+        'Grey' == author.hairColour
     }
 
-    @Test
     void testThreeLevelDataBinding() {
+        when:
         def b = new DataBindingTestsBook()
 
         params.title = "The Stand"
@@ -260,13 +284,14 @@ class DataBindingTests  {
 
         b.properties = params
 
-        assertEquals "The Stand",b.title
-        assertEquals "Maine", b.author.placeOfBirth.name
-        assertEquals "Stephen King", b.author.name
+        then:
+        "The Stand" == b.title
+        "Maine" == b.author.placeOfBirth.name
+        "Stephen King" == b.author.name
     }
 
-    @Test
     void testConvertingBlankAndEmptyStringsToNull() {
+        when:
         def a = new Author()
 
         params.name =  ''
@@ -274,12 +299,13 @@ class DataBindingTests  {
 
         a.properties = params
 
-        assertNull a.name
-        assertNull a.hairColour
+        then:
+        a.name == null
+        a.hairColour == null
     }
 
-    @Test
     void testTypeConversionErrorsWithNestedAssociations() {
+        when:
         request.addParameter("author.name", "Stephen King")
         request.addParameter("author.hairColour", "Black")
 
@@ -289,26 +315,27 @@ class DataBindingTests  {
 
         def a = b.author
 
-        assert !a.hasErrors()
-        assert !b.hasErrors()
+        then:
+        !a.hasErrors()
+        !b.hasErrors()
     }
 
-    @Test
     void testTypeConversionErrors() {
-
+        when:
         request.addParameter("site", "not_a_valid_URL")
 
         def b = new DataBindingTestsBook()
 
         b.properties = params
 
-        assert b.hasErrors()
+        then:
+        b.hasErrors()
 
-        def error = b.errors.getFieldError('site')
+        //def error = b.errors.getFieldError('site')
     }
 
-    @Test
     void testValidationAfterBindingFails() {
+        when:
         // binding should fail for this one
         request.addParameter("someIntProperty", "foo")
 
@@ -324,39 +351,42 @@ class DataBindingTests  {
 
         myBean.properties = params
 
-        assertEquals "wrong number of errors before validation", 2, myBean.errors.errorCount
-        assertFalse 'validation should have failed', myBean.validate()
-        assertEquals 'wrong number of errors after validation', 3, myBean.errors.errorCount
+        then:
+        2 == myBean.errors.errorCount //"wrong number of errors before validation"
+        !myBean.validate() //'validation should have failed'
+        3 == myBean.errors.errorCount //'wrong number of errors after validation'
     }
 
-    @Test
     void testAssociationAutoCreation() {
+        when:
         request.addParameter("title", "The Stand")
         request.addParameter("author.name", "Stephen King")
-
-        assertEquals "The Stand", params.title
-
         def b = new DataBindingTestsBook()
 
         b.properties = params
-        assertEquals "The Stand", b.title
-        assertEquals "Stephen King", b.author?.name
+
+        then:
+        "The Stand" == params.title
+        "The Stand" == b.title
+        "Stephen King" == b.author?.name
     }
 
-    @Test
     void testNullAssociations() {
+        when:
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "null")
 
         def b = new DataBindingTestsBook()
 
         b.properties = params
-        assertEquals "Wrong 'title' property", "The Stand", b.title
-        assertNull "Expected null for property 'author'", b.author
+
+        then:
+        "The Stand" == b.title
+        b.author == null
     }
 
-    @Test
     void testAssociationsBinding() {
+        when:
         def authorClass = new Author()
 
         Author.metaClass.static.get = { Serializable id ->
@@ -373,29 +403,30 @@ class DataBindingTests  {
 
         b.properties = params
 
-        assertEquals "Wrong 'title' property", "The Stand", b.title
-        assertNotNull "Association 'author' should be bound", b.author
-        assertEquals 5, b.author.id
-        assertEquals "Mocked 5", b.author.name
+        then:
+        "The Stand" == b.title
+        b.author != null
+        5 == b.author.id
+        "Mocked 5" == b.author.name
     }
 
-    @Test
     void testMultiDBinding() {
+        when:
         request.addParameter("author.name", "Stephen King")
         request.addParameter("author.hairColour", "Black")
         request.addParameter("title", "The Stand")
 
         def a = new Author()
-
-        assertEquals "Stephen King",params['author'].name
-        a.properties = params['author']
-        assertEquals "Stephen King", a.name
-        assertEquals "Black", a.hairColour
-
         def b = new DataBindingTestsBook()
         b.properties = params
-        assertEquals "The Stand", b.title
-        assertEquals "Stephen King", b.author?.name
+        a.properties = params['author']
+
+        then:
+        "Stephen King" == params['author'].name
+        "Stephen King" == a.name
+        "Black" == a.hairColour
+        "The Stand" == b.title
+        "Stephen King" == b.author?.name
     }
 }
 

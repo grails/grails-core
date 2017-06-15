@@ -1,24 +1,20 @@
 package org.grails.web.mime
+
 import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-import grails.test.runtime.FreshRuntime
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.Controller
-import org.junit.Test
+import spock.lang.Specification
 
-import static org.junit.Assert.assertEquals
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@FreshRuntime
-@TestFor(ContentController)
-@Mock(Gizmo)
-class ContentFormatControllerTests  {
-
-    def doWithConfig(c) {
+class ContentFormatControllerTests extends Specification implements ControllerUnitTest<ContentController>, DomainUnitTest<Gizmo> {
+    
+    Closure doWithConfig() {{ c ->
         c.grails.mime.use.accept.header = true
         c.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                               xml: ['text/xml', 'application/xml'],
@@ -31,147 +27,188 @@ class ContentFormatControllerTests  {
                               all: '*/*',
                               json: 'application/json'
         ]
-    }
-
-    @Test
+    }}
+    
     void testFormatWithRenderAsXML() {
+        when:
         request.setParameter "format", "xml"
         controller.testWithFormatRenderAs()
-        assertEquals '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''', response.contentAsString
+        
+        then:
+        '''<?xml version="1.0" encoding="UTF-8"?><gizmo><name>iPod</name></gizmo>''' == response.contentAsString
     }
-
-    @Test
+    
     void testFormatWithRenderAsJSON() {
+        when:
         request.setParameter "format", "json"
         controller.testWithFormatRenderAs()
-        assertEquals """{"name":"iPod"}""".toString(), response.contentAsString
+        
+        then:
+        """{"name":"iPod"}""".toString() == response.contentAsString
     }
-
-    @Test
+    
     void testAllFormat() {
+        when:
         request.addHeader "Accept", "*/*"
         controller.testFormat()
-        assertEquals "all", response.contentAsString
+        
+        then:
+        "all" == response.contentAsString
     }
 
-    @Test
     void testWithFormatAndAll() {
+        when:
         request.addHeader "Accept", "*/*"
-        assertEquals "all", response.format
+        
+        then:
+        "all" == response.format
+        
+        when:
         controller.testWithFormat()
-        assertEquals "<html></html>", response.contentAsString
-        assertEquals "html", response.format
+        
+        then:
+        "<html></html>" == response.contentAsString
+        "html" == response.format
     }
 
-    @Test
     void testWithFormatAndAll2() {
+        when:
         request.addHeader "Accept", "*/*"
-        assertEquals "all", response.format
+
+        then:
+        "all" == response.format
+
+        when:
         controller.testWithFormatAndModel()
-        assertEquals "alert('hello')", response.contentAsString
-        assertEquals "js", response.format
+
+        then:
+        "alert('hello')" == response.contentAsString
+        "js" == response.format
     }
 
-    @Test
     void testDefaultFormat() {
+        when:
         controller.testFormat()
-        assertEquals "all", response.contentAsString
+
+        then:
+        "all" == response.contentAsString
     }
 
-    @Test
+
     void testWithContentTypeAndAcceptHeader() {
+        when:
         // should favour content type header
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         request.addHeader "Content-Type", "text/html"
 
         controller.testFormat()
-        assertEquals "js", response.contentAsString
+
+        then:
+        "js" == response.contentAsString
     }
 
-    @Test
     void testFirefox2AcceptHeader() {
+        when:
         request.addHeader "Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
         controller.testFormat()
 
-        assertEquals "html", response.contentAsString
+        then:
+        "html" == response.contentAsString
     }
 
-    @Test
     void testFirefox3AcceptHeader() {
+        when:
         request.addHeader "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         controller.testFormat()
 
-        assertEquals "html", response.contentAsString
+        then:
+        "html" == response.contentAsString
     }
 
-    @Test
     void testFirefox2AcceptHeaderWithFormatOrdering() {
+        when:
         request.addHeader "Accept", "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
         controller.testWithFormatAndEqualQualityGrading()
 
-        assertEquals "<html></html>", response.contentAsString
-        assertEquals "html", request.format
+        then:
+        "<html></html>" == response.contentAsString
+        "html" == request.format
     }
 
-    @Test
     void testPrototypeFormat() {
+        when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         controller.testFormat()
-        assertEquals "js", response.contentAsString
+
+        then:
+        "js" == response.contentAsString
     }
 
-    @Test
     void testOverrideWithRequestParameter() {
+        when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         request.setParameter "format", "xml"
         controller.testFormat()
-        assertEquals "xml", response.contentAsString
+
+        then:
+        "xml" == response.contentAsString
     }
 
-    @Test
     void testOverrideWithControllerParameter() {
+        when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
 
         params.format = "xml"
         controller.testFormat()
-        assertEquals "xml", response.contentAsString
+
+        then:
+        "xml" == response.contentAsString
     }
 
-    @Test
     void testWithFormatAndDefaults() {
+        when:
         controller.testWithFormat()
-        assertEquals "<html></html>", response.contentAsString
+
+        then:
+        "<html></html>" == response.contentAsString
     }
 
-    @Test
     void testPrototypeWithFormat() {
+        when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         controller.testWithFormat()
-        assertEquals "alert('hello')", response.contentAsString
+
+        then:
+        "alert('hello')" == response.contentAsString
     }
 
-    @Test
     void testWithFormatParameterOverride() {
+        when:
         request.setParameter "format", "js"
         webRequest.controllerName = 'content'
         controller.testWithFormat()
-        assertEquals "alert('hello')", response.contentAsString
+
+        then:
+        "alert('hello')" == response.contentAsString
     }
 
-    @Test
     void testWithFormatAndModel() {
+        when:
         request.addHeader "Accept", "text/html"
         def model = controller.testWithFormatAndModel()
 
-        assertEquals 'world', model?.hello
+        then:
+        'world' == model?.hello
     }
 
-    @Test
     void testWithFormatZeroArgs() {
+        when:
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"
         webRequest.controllerName = 'content'
         controller.testWithFormatZeroArgs()
-        assertEquals "html", request.format
+
+        then:
+        "html" == request.format
     }
 
 }

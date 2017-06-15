@@ -1,19 +1,16 @@
 package grails.test.mixin
 
-import org.junit.Before
-import org.junit.Test
+import grails.testing.gorm.DomainUnitTest
+import spock.lang.Specification
 
-@TestFor(BookController)
-@Mock(Book)
-class DomainClassAnnotatedSetupMethodTests {
+class DomainClassAnnotatedSetupMethodTests extends Specification implements DomainUnitTest<Book> {
 
-    @Before
-    void addBooks() {
-        assert new Book(title:"The Stand", pages:100).save(flush:true) != null
+    void setup() {
+        new Book(title:"The Stand", pages:100).save(flush:true)
     }
 
-    @Test
     void testSaveInSetup() {
-        //assert Book.count() == 1
+        expect:
+        Book.count() == 1
     }
 }

@@ -3,7 +3,7 @@ package org.grails.plugins.web.rest.render.xml
 import grails.converters.XML
 import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
 import grails.web.mime.MimeType
@@ -22,8 +22,7 @@ import spock.lang.Specification
 /**
  * @author Graeme Rocher
  */
-@TestFor(XmlBook)
-class DefaultXmlRendererSpec extends Specification {
+class DefaultXmlRendererSpec extends Specification implements DomainUnitTest<XmlBook> {
 
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()

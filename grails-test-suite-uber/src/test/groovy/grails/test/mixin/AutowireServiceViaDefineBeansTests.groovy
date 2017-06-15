@@ -1,26 +1,31 @@
 package grails.test.mixin
 
-import grails.artefact.Artefact;
-
-import org.junit.Test
+import grails.artefact.Artefact
+import grails.testing.web.controllers.ControllerUnitTest;
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import spock.lang.Specification
 
 /**
  * Tests that services can be autowired into controllers via defineBeans
  */
-@TestFor(SpringController)
-class AutowireServiceViaDefineBeansTests {
+class AutowireServiceViaDefineBeansTests extends Specification implements ControllerUnitTest<SpringController> {
 
-    @Test
     void testThatBeansAreWired() {
+        given:
         defineBeans {
             springService(SpringService)
         }
 
+        expect:
         applicationContext.getBean("springService") instanceof SpringService
+
+        when:
         controller.index()
         controller.index()
+
+        then:
+        noExceptionThrown()
     }
 }
 

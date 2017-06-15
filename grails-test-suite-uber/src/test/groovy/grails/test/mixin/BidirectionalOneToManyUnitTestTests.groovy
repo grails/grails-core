@@ -1,19 +1,23 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
+import spock.lang.Specification
 
-import org.junit.Test
+class BidirectionalOneToManyUnitTestTests extends Specification implements DataTest {
 
-@Mock([Parent, Child])
-class BidirectionalOneToManyUnitTestTests {
+    Class[] getDomainClassesToMock() {
+        [Parent, Child]
+    }
 
     // test for GRAILS-8030
-    @Test
     void testRelationship() {
+        when:
         def parent = new Parent()
         def child = new Child()
-
         parent.addToChildren child
+
+        then:
         parent.save()
     }
 }

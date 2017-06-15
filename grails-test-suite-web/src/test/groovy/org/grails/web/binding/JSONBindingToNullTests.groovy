@@ -4,38 +4,32 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.JSONBuilder
+import spock.lang.Specification
 
-import org.junit.Before
-import org.junit.Test
+class JSONBindingToNullTests extends Specification implements ControllerUnitTest<UserController>, DomainUnitTest<User> {
 
-@TestFor(UserController)
-@Mock(User)
-class JSONBindingToNullTests {
+    Closure doWithConfig() {{ config ->
+        config.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
+                                     xml: ['text/xml', 'application/xml'],
+                                     text: 'text/plain',
+                                     js: 'text/javascript',
+                                     rss: 'application/rss+xml',
+                                     atom: 'application/atom+xml',
+                                     css: 'text/css',
+                                     csv: 'text/csv',
+                                     all: '*/*',
+                                     json: ['application/json','text/json'],
+                                     form: 'application/x-www-form-urlencoded',
+                                     multipartForm: 'multipart/form-data'
+        ]
 
-    @Before
-    void addConfig() {
-        grailsApplication.config.grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
-                      xml: ['text/xml', 'application/xml'],
-                      text: 'text/plain',
-                      js: 'text/javascript',
-                      rss: 'application/rss+xml',
-                      atom: 'application/atom+xml',
-                      css: 'text/css',
-                      csv: 'text/csv',
-                      all: '*/*',
-                      json: ['application/json','text/json'],
-                      form: 'application/x-www-form-urlencoded',
-                      multipartForm: 'multipart/form-data'
-                    ]
+    }}
 
-    }
-
-    @Test
     void testJsonBindingToNull() {
-
+        when:
         def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
 
         def builder = new JSONBuilder()
@@ -46,12 +40,13 @@ class JSONBindingToNullTests {
 
         controller.update()
 
-        // if any binding errors occurred this will break
-        assert response.json.id == pebbles.id
+        then: 'if any binding errors occurred this will break'
+        response.json.id == pebbles.id
     }
 
-    @Test
+
     void testXmlBindingToNull() {
+        when:
         def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
 
         request.method = 'PUT'
@@ -60,8 +55,8 @@ class JSONBindingToNullTests {
 
         controller.update()
 
-        // if any binding errors occurred this will break
-        assert response.xml.@id == pebbles.id
+        then: 'if any binding errors occurred this will break'
+        response.xml.@id == pebbles.id
     }
 }
 

@@ -1,30 +1,29 @@
 package org.grails.web.servlet
 
-import static org.junit.Assert.assertEquals
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
-import org.junit.Test
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(MultipleRenderController)
-class MultipleRenderCallsContentTypeTests {
+class MultipleRenderCallsContentTypeTests extends Specification implements ControllerUnitTest<MultipleRenderController> {
 
-    @Test
     void testLastContentTypeWins() {
+        when:
         controller.test()
 
-        assertEquals "application/json;charset=utf-8", response.contentType
+        then:
+        "application/json;charset=utf-8" == response.contentType
     }
 
-    @Test
     void testPriorSetContentTypeWins() {
+        when:
         controller.test2()
 
-        assertEquals "text/xml", response.contentType
+        then:
+        "text/xml" == response.contentType
     }
 }
 

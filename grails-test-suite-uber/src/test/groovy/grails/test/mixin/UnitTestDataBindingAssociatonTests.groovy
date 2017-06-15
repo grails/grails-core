@@ -1,16 +1,22 @@
 package grails.test.mixin
 
-import org.junit.Test
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.persistence.Entity
 import grails.artefact.Artefact
+import spock.lang.Specification
 
 /**
  */
-@TestFor(ShipController)
-@Mock([Ship2, Pirate2])
-class UnitTestDataBindingAssociatonTests {
-    @Test
+class UnitTestDataBindingAssociatonTests extends Specification implements ControllerUnitTest<ShipController>, DataTest {
+
+    void setupSpec() {
+        mockDomains Ship2, Pirate2
+    }
+
+
     void testBindingAssociationInUnitTest() {
+        when:
         def pirate = new Pirate2(name: 'Joe')
         pirate.save(failOnError: true, validate: false)
 
@@ -23,7 +29,8 @@ class UnitTestDataBindingAssociatonTests {
         params.id = ship.id
         controller.pirate()
 
-        assert  'new name' == ship.pirate.name
+        then:
+        'new name' == ship.pirate.name
     }
 }
 

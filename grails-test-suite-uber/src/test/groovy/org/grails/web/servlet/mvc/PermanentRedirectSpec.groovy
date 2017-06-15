@@ -1,15 +1,14 @@
 package org.grails.web.servlet.mvc
 
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 
 import static org.springframework.http.HttpStatus.FOUND
 import static org.springframework.http.HttpStatus.MOVED_PERMANENTLY
 import spock.lang.Specification
 
-@TestFor(RedirectController)
 @Issue('grails/grails-core#10375')
-class PermanentRedirectSpec extends Specification {
+class PermanentRedirectSpec extends Specification implements ControllerUnitTest<RedirectController> {
 
     void 'test redirect with no permanent attribute'() {
         when:

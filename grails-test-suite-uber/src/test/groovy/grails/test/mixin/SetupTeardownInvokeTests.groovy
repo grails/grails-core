@@ -16,34 +16,35 @@
 
 package grails.test.mixin
 
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.FixMethodOrder
-import org.junit.Test
 import org.junit.runners.MethodSorters
+import spock.lang.Specification
+
 /**
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@TestFor(SetupTeardownController)
-class SetupTeardownInvokeTests {
+class SetupTeardownInvokeTests extends Specification implements ControllerUnitTest<SetupTeardownController> {
     static int counter=1
 
-    void setUp() {
+    void setup() {
         controller.value = 'World!'
     }
 
-    void tearDown() {
+    void cleanup() {
         controller.counter++
     }
 
-    @Test
     void testThatSetupWasInvoked() {
         println "invoked 1 ${counter++} ${SetupTeardownController.class.hashCode()}"
-        assert controller.value == 'World!'
+        expect:
+        controller.value == 'World!'
     }
 
-    @Test
     void testThatSetupWasInvoked2() {
         println "invoked 2 ${counter++} ${SetupTeardownController.class.hashCode()}"
-        assert controller.counter == 1
+        expect:
+        controller.counter == 1
     }
 }
 

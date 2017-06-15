@@ -1,23 +1,23 @@
 package org.grails.web.mime
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
+import grails.util.Holders
 import grails.web.mime.MimeType
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(FormatController)
-class WithFormatContentTypeSpec extends Specification {
+class WithFormatContentTypeSpec extends Specification implements ControllerUnitTest<FormatController> {
 
-    static doWithConfig(config) {
+    Closure doWithConfig() {{ config ->
         // unit tests in real applications will not need to do 
         // this because the real Config.groovy will be loaded
         config.grails.mime.types = [(MimeType.ALL.extension): MimeType.ALL.name,
                                     (MimeType.FORM.extension): MimeType.FORM.name,
                                     (MimeType.MULTIPART_FORM.extension): MimeType.MULTIPART_FORM.name,
                                     (MimeType.JSON.extension): MimeType.JSON.name]
-    }
-    
+    }}
+
     @Issue('GRAILS-11093')
     void 'Test specifying form contentType'() {
         when: 'content type is specified'

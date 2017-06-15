@@ -2,14 +2,18 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
-@TestFor(PersonController)
-@Mock([TargetPerson, Book])
-class BindXmlWithAssociationTests {
+class BindXmlWithAssociationTests extends Specification implements ControllerUnitTest<PersonController>, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [TargetPerson, Book]
+    }
 
     void testBindXmlWithAssociatedId() {
+        when:
         Book b = new Book(title: "The Stand", pages: 1000).save(flush:true)
         request.method = 'POST'
         request.xml = """
@@ -18,27 +22,28 @@ class BindXmlWithAssociationTests {
 
         controller.save()
 
-        assert response.text == 'saved'
+        then:
+        response.text == 'saved'
     }
 
     void testBindXmlWithAssociatedIdAndProperties() {
+        when:
         request.method = 'POST'
         request.xml = '''
 <person><name>xyz</name><book id='1'><title>Blah</title><pages>300</pages></book></person>
 '''
 
         controller.save()
-
-        assert response.text == 'saved'
-
         TargetPerson person = request.person
 
-        assert person != null
-        assert person.name == 'xyz'
-        assert person.book != null
-        assert person.book.id == 1
-        assert person.book.title == 'Blah'
-        assert person.book.pages == 300
+        then:
+        response.text == 'saved'
+        person != null
+        person.name == 'xyz'
+        person.book != null
+        person.book.id == 1
+        person.book.title == 'Blah'
+        person.book.pages == 300
     }
 }
 

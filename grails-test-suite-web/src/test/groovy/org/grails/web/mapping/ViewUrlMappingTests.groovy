@@ -1,21 +1,17 @@
 package org.grails.web.mapping
 
+import grails.testing.web.GrailsWebUnitTest
 import grails.web.mapping.UrlMappingInfo
 import grails.web.mapping.UrlMappingsHolder
-import org.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.grails.web.mapping.DefaultUrlMappingsHolder
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
-
 import org.junit.Test
+import spock.lang.Specification
 import static org.junit.Assert.*
 import org.springframework.core.io.ByteArrayResource
 
 /**
  * @author mike
  */
-@TestMixin(ControllerUnitTestMixin)
-class ViewUrlMappingTests  {
+class ViewUrlMappingTests extends Specification implements GrailsWebUnitTest {
 
     def topLevelMapping = '''
 mappings {
@@ -28,7 +24,7 @@ mappings {
 '''
     def UrlMappingsHolder holder
 
-    void setUp() {
+    void setup() {
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
         def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
@@ -37,33 +33,33 @@ mappings {
         holder = new DefaultUrlMappingsHolder(mappings)
     }
 
-    @Test
     void testParse() {
-        assertNotNull holder
+        expect:
+        holder != null
     }
 
-    @Test
     void testMatch() {
+        when:
         UrlMappingInfo info = holder.match("/book/joyce/ullisses")
 
-        assertNotNull info
-        assertEquals "book.gsp", info.getViewName()
+        then:
+        "book.gsp" == info.getViewName()
     }
 
-    @Test
     void testMatch2() {
+        when:
         UrlMappingInfo info = holder.match("/book2/foo")
 
-        assertNotNull info
-        assertEquals "book.gsp", info.getViewName()
+        then:
+        "book.gsp" == info.getViewName()
     }
 
-    @Test
     void testMatchToControllerAndView() {
+        when:
         UrlMappingInfo info = holder.match("/book3")
 
-        assertNotNull info
-        assertEquals "list", info.viewName
-        assertEquals "book", info.controllerName
+        then:
+        "list" == info.viewName
+        "book" == info.controllerName
     }
 }

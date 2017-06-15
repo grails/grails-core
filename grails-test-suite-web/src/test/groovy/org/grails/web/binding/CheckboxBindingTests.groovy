@@ -2,25 +2,16 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
-import org.grails.core.support.MappingContextBuilder
-import org.junit.BeforeClass
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
 import spock.lang.Specification
-
-import static org.junit.Assert.*
 
 /**
  * @author Rob Fletcher
  * @since 1.3.0
  */
-@TestFor(CheckboxBindingController)
-class CheckboxBindingTests extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(Pizza)
-    }
-
+class CheckboxBindingTests extends Specification implements ControllerUnitTest<CheckboxBindingController>, DomainUnitTest<Pizza> {
 
     void testBindingCheckedValuesToObject() {
         params.name = "Capricciosa"

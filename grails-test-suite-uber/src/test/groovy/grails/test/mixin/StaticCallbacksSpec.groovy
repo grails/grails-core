@@ -1,27 +1,20 @@
 package grails.test.mixin
 
-import grails.test.mixin.support.GrailsUnitTestMixin
-
-import org.junit.ClassRule
-import org.junit.rules.TestRule
-
-import spock.lang.Ignore;
-import spock.lang.IgnoreRest
-import spock.lang.Shared;
+import org.grails.testing.GrailsUnitTest
 import spock.lang.Specification
 
 /**
  * @author Lari Hotari
  */
-@TestMixin(GrailsUnitTestMixin)
-class StaticCallbacksSpec extends Specification {
-    static doWithSpring = {
+class StaticCallbacksSpec extends Specification implements GrailsUnitTest {
+
+    Closure doWithSpring() {{ ->
         myService(MyService)
-    }
+    }}
     
-    static doWithConfig(c) {
+    Closure doWithConfig() {{ c ->
         c.myConfigValue = 'Hello'    
-    }
+    }}
     
     def "grailsApplication is not null"() {
         expect:

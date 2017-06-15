@@ -2,20 +2,15 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
-import org.grails.core.support.MappingContextBuilder
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(EmbeddedAddressController)
-class BindToObjectWithEmbeddableTests extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(EmbeddedAddressPerson)
-    }
+class BindToObjectWithEmbeddableTests extends Specification implements ControllerUnitTest<EmbeddedAddressController>, DomainUnitTest<EmbeddedAddressPerson> {
 
     void testBindToObjectWithEmbedded() {
         params.name = "Joe"

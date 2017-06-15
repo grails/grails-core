@@ -1,18 +1,21 @@
 package org.grails.web.json
+
 import grails.persistence.Entity
 import grails.rest.render.json.JsonRenderer
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.testing.gorm.DataTest
+import grails.testing.web.GrailsWebUnitTest
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestMixin(ControllerUnitTestMixin)
-@Mock([Album, Company])
-class DomainClassCollectionRenderingSpec extends Specification {
+class DomainClassCollectionRenderingSpec extends Specification implements GrailsWebUnitTest, DataTest {
+
+    Class[] getDomainClassesToMock() {
+        [Album, Company]
+    }
+
     void setup() {
         final initializer = new ConvertersConfigurationInitializer(grailsApplication: grailsApplication)
         initializer.initialize()

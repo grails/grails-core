@@ -1,19 +1,12 @@
 package org.grails.web.binding.json
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-import org.grails.core.support.MappingContextBuilder
+import grails.testing.web.controllers.ControllerUnitTest
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException
 
 import spock.lang.Specification
 
-
-@TestFor(BindingWithExceptionHandlerMethodController)
-class JsonBindingWithExceptionHandlerSpec extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build()
-    }
+class JsonBindingWithExceptionHandlerSpec extends Specification implements ControllerUnitTest<BindingWithExceptionHandlerMethodController> {
 
     void 'test binding malformed JSON'() {
         given:

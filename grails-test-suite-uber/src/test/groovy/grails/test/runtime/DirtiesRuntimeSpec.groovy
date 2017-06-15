@@ -1,12 +1,11 @@
 package grails.test.runtime
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.support.GrailsUnitTestMixin
-import grails.test.runtime.DirtiesRuntime;
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.util.mop.ConfineMetaClassChanges
 
-@TestMixin(GrailsUnitTestMixin)
+@Stepwise
 class DirtiesRuntimeSpec extends Specification {
 
     @Issue('GRAILS-11671')
@@ -21,7 +20,7 @@ class DirtiesRuntimeSpec extends Specification {
         !String.metaClass.hasMetaMethod('someNewMethod')
     }
     
-    @DirtiesRuntime
+    @ConfineMetaClassChanges([String])
     @Issue('GRAILS-11671')
     void 'test method 3'() {
         when:

@@ -1,5 +1,8 @@
 package grails.test.mixin
 
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
+
 import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.persistence.Entity
@@ -9,9 +12,7 @@ import spock.lang.Specification
 /**
  * @video Graeme Rocher
  */
-@TestFor(VideoController)
-@Mock(Video)
-class RestfulControllerSpec extends Specification {
+class RestfulControllerSpec extends Specification implements ControllerUnitTest<VideoController>, DomainUnitTest<Video> {
 
     def populateValidParams(params) {
         assert params != null
