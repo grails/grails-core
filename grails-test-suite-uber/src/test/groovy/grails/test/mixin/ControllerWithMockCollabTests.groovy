@@ -1,22 +1,29 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
+import grails.testing.web.controllers.ControllerUnitTest
 import org.junit.Test
+import spock.lang.Specification
 
 /**
  * Tests a controller with a mock collaborator
  */
-@TestFor(ControllerWithCollabController)
-class ControllerWithMockCollabTests {
+class ControllerWithMockCollabTests extends Specification implements ControllerUnitTest<ControllerWithCollabController> {
 
-    @Test
     void testFirstCall() {
+        when:
         executeCallTest()
+
+        then:
+        noExceptionThrown()
     }
 
-    @Test
     void testSecondCall() {
+        when:
         executeCallTest()
+
+        then:
+        noExceptionThrown()
     }
 
     private void executeCallTest() {

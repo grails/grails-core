@@ -1,17 +1,13 @@
 package org.grails.web.includes
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.GroovyPageUnitTestMixin
-
+import grails.testing.web.GrailsWebUnitTest
 import org.springframework.web.util.WebUtils
-
 import spock.lang.Specification
 
 /**
  * Tests the behavior of the include tag
  */
-@TestMixin(GroovyPageUnitTestMixin)
-class IncludeHandlingSpec extends Specification {
+class IncludeHandlingSpec extends Specification implements GrailsWebUnitTest {
 
     void "Test the appropriate request headers are set and URI of a page included"() {
         given:"A template that includes a view"

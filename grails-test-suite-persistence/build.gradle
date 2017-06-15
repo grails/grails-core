@@ -1,8 +1,11 @@
+configurations.testCompile {
+    exclude module: "grails-plugin-testing"
+}
+
 dependencies {
 
     testCompile project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
-                project(':grails-plugin-testing'),
                 project(':grails-plugin-datasource'),
                 project(':grails-plugin-i18n'),
                 project(':grails-plugin-url-mappings'),
@@ -47,6 +50,9 @@ dependencies {
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 
+    testCompile ('org.grails:grails-gorm-testing-support:1.0.0.BUILD-SNAPSHOT') {
+        changing = true
+    }
 }
 
 test {

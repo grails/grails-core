@@ -1,15 +1,14 @@
 package grails.test.web
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
 import java.text.SimpleDateFormat
 
-@TestFor(YourController)
 @Issue('GRAILS-9196')
-class GetHeadersFromResponseSpec extends Specification{
+class GetHeadersFromResponseSpec extends Specification implements ControllerUnitTest<YourController> {
     def "Test inspection of response headers"() {
 
         when:"An action that sets response headers is called"

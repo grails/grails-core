@@ -3,22 +3,16 @@ package org.grails.web.converters
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
-import java.text.SimpleDateFormat
-
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import javax.annotation.PostConstruct
-
 import spock.lang.Specification
 
-@TestFor(JsonMarshallerController)
-@Mock(Post)
-class MarshallerRegistrarSpec extends Specification {
+class MarshallerRegistrarSpec extends Specification implements ControllerUnitTest<JsonMarshallerController>, DomainUnitTest<Post> {
 
-    static doWithSpring = {
+    Closure doWithSpring() {{ ->
         marshallerRegistrar(MarshallerRegistrar)
-    }
+    }}
     
     def "should use custom marshaller"() {
         when:

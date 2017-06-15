@@ -2,16 +2,14 @@ package grails.test.web
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
-@TestFor(BookController)
-@Mock(Book)
-class RedirectToDomainSpec extends Specification {
+class RedirectToDomainSpec extends Specification implements ControllerUnitTest<BookController>, DomainUnitTest<Book> {
 
     void "Test redirect to domain"() {
         given:"A domain instance"

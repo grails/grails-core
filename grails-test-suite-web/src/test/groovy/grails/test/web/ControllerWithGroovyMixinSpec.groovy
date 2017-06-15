@@ -1,14 +1,13 @@
 package grails.test.web
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 /**
  * Tests that Groovy's @Mixin works on a controller
  */
-@TestFor(MixedController)
-class ControllerWithGroovyMixinSpec extends Specification {
+class ControllerWithGroovyMixinSpec extends Specification implements ControllerUnitTest<MixedController> {
 
     void "Test that Groovy's mixin transform works with controllers"() {
         when:"An action with a mixin is executed"

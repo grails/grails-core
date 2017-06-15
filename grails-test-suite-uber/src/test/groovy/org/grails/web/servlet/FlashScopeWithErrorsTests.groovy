@@ -16,38 +16,41 @@
 package org.grails.web.servlet
 
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DomainUnitTest
 import grails.util.GrailsWebMockUtil
-
-import org.junit.Test
+import spock.lang.Specification
 
 /**
 *  @author Graeme Rocher
 */
-@TestFor(Book)
-class FlashScopeWithErrorsTests  {
+class FlashScopeWithErrorsTests extends Specification implements DomainUnitTest<Book>  {
 
-    @Test
     void testFlashScopeWithErrors() {
         GrailsWebMockUtil.bindMockWebRequest()
 
+        when:
         def b = new Book()
-
         b.validate()
-        assert b.hasErrors()
 
+        then:
+        b.hasErrors()
+
+        when:
         def flash = new GrailsFlashScope()
 
         flash.book = b
 
         flash.next()
 
-        assert flash.book
-        assert flash.book.hasErrors()
+        then:
+        flash.book
+        flash.book.hasErrors()
 
+        when:
         flash.next()
 
-        assert !flash.book
+        then:
+        !flash.book
     }
 }
 

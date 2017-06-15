@@ -1,17 +1,11 @@
 package org.grails.web.commandobjects
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-import org.grails.core.support.MappingContextBuilder
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(CommandController)
-class CommandObjectNullabilitySpec extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build()
-    }
+class CommandObjectNullabilitySpec extends Specification implements ControllerUnitTest<CommandController> {
 
     @Issue('GRAILS-9686')
     void 'Test nullability'() {

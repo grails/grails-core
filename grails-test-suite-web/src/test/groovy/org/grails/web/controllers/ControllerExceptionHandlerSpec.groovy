@@ -1,18 +1,14 @@
 package org.grails.web.controllers
 
 import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-
+import grails.testing.web.controllers.ControllerUnitTest
 import java.sql.BatchUpdateException
 import java.sql.SQLException
-
 import javax.xml.soap.SOAPException
-
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestFor(ErrorHandlersController)
-class ControllerExceptionHandlerSpec extends Specification {
+class ControllerExceptionHandlerSpec extends Specification implements ControllerUnitTest<ErrorHandlersController> {
 
     @Issue('GRAILS-11453')
     void 'Test exception handler which renders a String'() {

@@ -2,19 +2,14 @@ package org.grails.web.commandobjects
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
-
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import javax.servlet.http.HttpServletResponse
-
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
-
-@TestFor(InstantiationController)
-@Mock(DomainClassCommandObject)
-class CommandObjectInstantiationSpec extends Specification {
+class CommandObjectInstantiationSpec extends Specification implements ControllerUnitTest<InstantiationController>, DomainUnitTest<DomainClassCommandObject> {
 
     @Unroll
     @Issue('GRAILS-11247')

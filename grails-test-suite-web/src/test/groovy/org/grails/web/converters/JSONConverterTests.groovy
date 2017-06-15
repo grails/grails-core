@@ -1,16 +1,16 @@
 package org.grails.web.converters
 
-import static org.junit.Assert.assertEquals
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
+
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
 
 import org.grails.web.servlet.mvc.HibernateProxy
 import org.grails.web.servlet.mvc.LazyInitializer
 import org.grails.buffer.StreamCharBuffer
-import org.junit.Test
 
 /**
  * Tests for the JSON converter.
@@ -18,129 +18,143 @@ import org.junit.Test
  * @author Graeme Rocher
  * @since 0.4
  */
-@TestFor(JSONConverterController)
-@Mock(Book)
-class JSONConverterTests {
+class JSONConverterTests extends Specification implements ControllerUnitTest<JSONConverterController>, DomainUnitTest<Book> {
 
-    @Test
     void testNullJSONValues() {
+        when:
         controller.testNullValues()
 
-        assertEquals('{}', response.contentAsString)
+        then:
+        '{}' == response.contentAsString
     }
 
-    @Test
     void testJSONConverter() {
+        when:
         controller.test()
+        def json = response.json
 
-        // @todo this test is fragile and depends on runtime environment because
-        // of hash key ordering variations
-        assertEquals("""{"title":"The Stand","author":"Stephen King"}""".toString(), response.contentAsString)
+        then:
+        json.title == "The Stand"
+        json.author == "Stephen King"
+        json.size() == 2
     }
 
-    @Test
     void testConvertErrors() {
+        when:
         controller.testErrors()
-
-        // @todo this test is fragile and depends on runtime environment because
-        // of hash key ordering variations
-        def json = JSON.parse(response.contentAsString)
+        def json = response.json
         def titleError = json.errors.find { it.field == 'title' }
-
-        assertEquals "Property [title] of class [class ${Book.name}] cannot be null".toString(), titleError.message
         def authorError = json.errors.find { it.field == 'author' }
-        assertEquals "Property [author] of class [class ${Book.name}] cannot be null".toString(), authorError.message
+
+        then:
+        titleError.message == "Property [title] of class [class ${Book.name}] cannot be null".toString()
+        authorError.message == "Property [author] of class [class ${Book.name}] cannot be null".toString()
     }
 
-    @Test
-    void testProxiedDomainClassWithJSONConverter() {
 
+    void testProxiedDomainClassWithJSONConverter() {
+        given:
         def obj = new Book()
         obj.title = "The Stand"
         obj.author = "Stephen King"
 
         def hibernateInitializer = [getImplementation:{obj}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
+
+        when:
         params.b = proxy
-
         controller.testProxy()
+        def json = response.json
 
-        // @todo this test is fragile and depends on runtime environment because
-        // of hash key ordering variations
-        assertEquals("""{"title":"The Stand","author":"Stephen King"}""".toString(), response.contentAsString)
+        then:
+        json.title == "The Stand"
+        json.author == "Stephen King"
+        json.size() == 2
     }
 
-    @Test
     void testJSONEnumConverting() {
+        when:
         def enumInstance = Role.HEAD
         params.e = enumInstance
         controller.testEnum()
+        def json = response.json
 
-        // @todo this test is fragile and depends on runtime environment because
-        // of hash key ordering variations
-        assertEquals('{"enumType":"org.grails.web.converters.Role","name":"HEAD"}', response.contentAsString)
+        then:
+        json.enumType == "org.grails.web.converters.Role"
+        json.name == "HEAD"
+        json.size() == 2
     }
 
     // GRAILS-11513
-    @Test
     void testStringsWithQuotes() {
+        when:
         def json = [quotedString: "I contain a \"Quote\"!", nonquotedString: "I don't!"] as JSON
-        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+
+        then:
+        json.toString() == '{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}'
     }
 
-    @Test
     void testGStringsWithQuotes() {
+        when:
         def json = [quotedString: "I contain a \"${'Quote'}\"!", nonquotedString: "I ${'don'}'t!"] as JSON
-        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+        then:
+        json.toString() == '{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}'
     }
 
-    @Test
     void testStreamCharBufferWithQuotes() {
+        when:
         def quotedBuffer = new StreamCharBuffer()
         quotedBuffer.writer << "I contain a \"Quote\"!"
         def nonquotedBuffer = new StreamCharBuffer()
         nonquotedBuffer.writer << "I don't!"
         def json = [quotedString: quotedBuffer, nonquotedString: nonquotedBuffer] as JSON
-        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+
+        then:
+        json.toString() == '{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}'
     }
 
-    @Test
     void testObjectWithQuotes() {
+        when:
         def json = [quotedString: new CustomCharSequence("I contain a \"Quote\"!"), nonquotedString: new CustomCharSequence("I don't!")] as JSON
-        assertEquals('{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}', json.toString())
+
+        then:
+        json.toString() == '{"quotedString":"I contain a \\"Quote\\"!","nonquotedString":"I don\'t!"}'
     }
 
     // GRAILS-11515
-    @Test
     void testJsonMultilineSerialization() {
+        when:
         String multiLine = "first line \n second line"
         def object = [ line: multiLine ]
         def result = object as JSON
 
-        assertEquals('{"line":"first line \\n second line"}', result.toString())
+        then:
+        result.toString() == '{"line":"first line \\n second line"}'
     }
 
     // GRAILS-11530
-    @Test
     void testMoreStringsWithQuotes() {
+        when:
         def str = 'Hi, this is my "test"'
         def json = new grails.converters.JSON([a:str])
-        assertEquals('{"a":"Hi, this is my \\"test\\""}', json.toString())
 
+        then:
+        json.toString() == '{"a":"Hi, this is my \\"test\\""}'
     }
 
     // GRAILS-11517
-    @Test
     void testMoreStringsWithQuotes2() {
-        assertEquals('{"key":"<a href=\\"#\\" class=\\"link\\">link<\\/a>"}',(['key': '<a href="#" class="link">link</a>'] as JSON).toString())
+        expect:
+        '{"key":"<a href=\\"#\\" class=\\"link\\">link<\\/a>"}' == (['key': '<a href="#" class="link">link</a>'] as JSON).toString()
     }
 
     // GRAILS-10393
-    @Test
     void testJavaClassDoesntRenderClassProperty() {
-        assertEquals('{"age":86,"name":"Sally"}', (new Author("Sally", 86) as JSON).toString())
+        expect:
+        '{"age":86,"name":"Sally"}' == (new Author("Sally", 86) as JSON).toString()
     }
 }
+
 enum Role { HEAD, DISPATCHER, ADMIN }
 
 @Artefact("Controller")

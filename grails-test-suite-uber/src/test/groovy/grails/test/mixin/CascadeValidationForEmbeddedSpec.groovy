@@ -1,11 +1,14 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DataTest
 import spock.lang.Specification
 
-@TestFor(Company)
-@Mock([Company, CompanyAddress])
-class CascadeValidationForEmbeddedSpec extends Specification {
+class CascadeValidationForEmbeddedSpec extends Specification implements DataTest {
+
+    void setupSpec() {
+        mockDomains(Company, CompanyAddress)
+    }
 
     void "Test that validation cascades to embedded entities"() {
 

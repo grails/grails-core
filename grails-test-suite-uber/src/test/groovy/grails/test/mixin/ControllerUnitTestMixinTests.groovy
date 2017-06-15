@@ -3,7 +3,7 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
-import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.validation.Validateable
 import grails.web.Controller
 import grails.web.mime.MimeUtility
@@ -12,6 +12,7 @@ import org.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
+import spock.lang.Specification
 
 import javax.servlet.http.HttpServletResponse
 
@@ -20,141 +21,140 @@ import javax.servlet.http.HttpServletResponse
  *
  * @author Graeme Rocher
  */
-@TestMixin(ControllerUnitTestMixin)
-class ControllerUnitTestMixinTests extends GroovyTestCase {
+class ControllerUnitTestMixinTests extends Specification implements ControllerUnitTest<TestController> {
 
     void testRenderText() {
-        def controller = getMockController()
-
+        when:
         controller.renderText()
-        assert response.text == "good"
-    }
-
-    protected getMockController() {
-        mockController(TestController)
+        
+        then:
+        response.text == "good"
     }
 
     void testCallingSuperMethod() {
+        when:
         def subController = mockController(SubController)
-
         subController.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 1'
     }
 
     void testSimpleControllerRedirect() {
-
-        def controller = getMockController()
-
+        when:
         controller.redirectToController()
-
-        assert response.redirectedUrl == '/bar'
+        
+        then:
+        response.redirectedUrl == '/bar'
     }
 
     void testRenderView() {
-        def controller = getMockController()
-
+        when:
         controller.renderView()
 
-        assert "/test/foo" == view
+        then:
+        "/test/foo" == view
     }
 
     void testRenderXml() {
-        def controller = getMockController()
-
+        when:
         controller.renderXml()
 
-        assert "<book title='Great'/>" == controller.response.contentAsString
-        assert "Great" == controller.response.xml.@title.text()
+        then:
+        "<book title='Great'/>" == controller.response.contentAsString
+        "Great" == controller.response.xml.@title.text()
     }
 
     void testRenderJson() {
-
-        def controller = getMockController()
-
+        when:
         controller.renderJson()
 
-        assert '{"book":"Great"}' == controller.response.contentAsString
-        assert "Great" == controller.response.json.book
+        then:
+        '{"book":"Great"}' == controller.response.contentAsString
+        "Great" == controller.response.json.book
     }
 
     void testRenderAsJson() {
-
-        def controller = getMockController()
-
+        when:
         controller.renderAsJson()
 
-        assert '{"foo":"bar"}' == controller.response.contentAsString
-        assert "bar" == controller.response.json.foo
+        then:
+        '{"foo":"bar"}' == controller.response.contentAsString
+        "bar" == controller.response.json.foo
     }
 
     void testRenderState() {
+        when:
         params.foo = "bar"
         request.bar = "foo"
-        def controller = getMockController()
-
+        
         controller.renderState()
 
         def xml = response.xml
 
-        assert xml.parameter.find { it.@name == 'foo' }.@value.text() == 'bar'
-        assert xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
+        then:
+        xml.parameter.find { it.@name == 'foo' }.@value.text() == 'bar'
+        xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
     }
 
     void testInjectedProperties() {
-        assert request != null
-        assert response != null
-        assert servletContext != null
-        assert params != null
-        assert grailsApplication != null
-        assert applicationContext != null
-        assert webRequest != null
+        expect:
+        request != null
+        response != null
+        servletContext != null
+        params != null
+        grailsApplication != null
+        applicationContext != null
+        webRequest != null
     }
 
     void testControllerAutowiring() {
         messageSource.addMessage("foo.bar", request.locale, "Hello World")
 
-        def controller = getMockController()
-
+        
+        when:
         controller.renderMessage()
 
-        assert 'Hello World' == controller.response.contentAsString
+        then:
+        'Hello World' == controller.response.contentAsString
     }
 
     void testRenderWithFormatXml() {
-        def controller = getMockController()
-
+        when:
         response.format = 'xml'
         controller.renderWithFormat()
 
-        assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
+        then:
+        '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
     }
 
     void testRenderWithFormatHtml() {
-        def controller = getMockController()
-
+        when:
         response.format = 'html'
         def model = controller.renderWithFormat()
 
-        assert model?.foo == 'bar'
+        then:
+        model?.foo == 'bar'
     }
 
     void testRenderWithRequestFormat() {
-        def controller = getMockController()
-
+        when:
         request.format = 'xml'
         controller.renderWithRequestFormat()
 
-        assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
+        then:
+        '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
     }
 
     void testWithFormTokenSynchronization() {
-
-        def controller = getMockController()
+        when:
         controller.renderWithForm()
 
-        assert "Bad" == response.contentAsString
+        then:
+        "Bad" == response.contentAsString
 
+        when:
         def holder = SynchronizerTokensHolder.store(session)
         def token = holder.generateToken('/test')
         params[SynchronizerTokensHolder.TOKEN_URI] = '/test'
@@ -164,273 +164,368 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         controller.renderWithForm()
 
-        assert "Good" == response.contentAsString
+        then:
+        "Good" == response.contentAsString
     }
 
     void testFileUpload() {
-        def controller = getMockController()
-
+        when:
         final file = new GrailsMockMultipartFile("myFile", "foo".bytes)
         request.addFile(file)
         controller.uploadFile()
 
-        assert file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
+        then:
+        file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
     }
 
     void testRenderBasicTemplateNoTags() {
-        def controller = getMockController()
-
+        when:
         groovyPages['/test/_bar.gsp'] = 'Hello <%= 10 %>'
         controller.renderTemplate()
 
-        assert response.contentAsString == "Hello 10"
+        then:
+        response.contentAsString == "Hello 10"
     }
 
     void testRenderBasicTemplateWithTags() {
-        def controller = getMockController()
         messageSource.addMessage("foo.bar", request.locale, "World")
 
+        when:
         groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
         controller.renderTemplate()
 
-        assert response.contentAsString == "Hello World"
+        then:
+        response.contentAsString == "Hello World"
     }
 
     void testRenderBasicTemplateWithLinkTag() {
-        def controller = getMockController()
-
+        
+        when:
         groovyPages['/test/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
         controller.renderTemplate()
 
-        assert response.contentAsString == "Hello /bar"
+        then:
+        response.contentAsString == "Hello /bar"
     }
 
     void testInvokeTagLibraryMethod() {
-
-        def controller = getMockController()
+        when:
         controller.renderTemplateContents()
 
-        assert response.contentAsString == "/foo"
+        then:
+        response.contentAsString == "/foo"
     }
 
     void testInvokeTagLibraryMethodViaNamespace() {
-
-        def controller = getMockController()
-
+        when:
         groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
 
         controller.renderTemplateContentsViaNamespace()
 
-        assert response.contentAsString == "Hello foo.bar"
+        then:
+        response.contentAsString == "Hello World"
     }
 
     void testInvokeWithCommandObject() {
-        def controller = getMockController()
-        def cmd = mockCommandObject(TestCommand)
+        given:
+        def cmd = new TestCommand()
         cmd.name = ''
 
+        when:
         cmd.validate()
         controller.handleCommand(cmd)
 
-        assert response.contentAsString == 'Bad'
+        then:
+        response.contentAsString == 'Bad'
 
+        when:
         response.reset()
-
         cmd.name = "Bob"
         cmd.clearErrors()
         cmd.validate()
         controller.handleCommand(cmd)
 
-        assert response.contentAsString == 'Good'
+        then:
+        response.contentAsString == 'Good'
     }
 
     void testAllowedMethods() {
-        def controller = getMockController()
-
+        when:
         controller.action1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 1'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 1'
 
+        when:
         response.reset()
         request.method = "POST"
         controller.action1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 1'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 1'
 
+        when:
         response.reset()
         request.method = "PUT"
         controller.action1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 1'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 1'
 
+        when:
         response.reset()
         request.method = "PATCH"
         controller.action1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 1'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 1'
 
+        when:
         response.reset()
         request.method = "DELETE"
         controller.action1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 1'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 1'
 
+        when:
         response.reset()
         request.method = 'POST'
         controller.action2()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 2'
+        
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 2'
 
+        when:
         response.reset()
         request.method = 'GET'
         controller.action2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+        
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        when:
         response.reset()
         request.method = 'PUT'
         controller.action2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+        
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        when:
         response.reset()
         request.method = 'PATCH'
         controller.action2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'DELETE'
         controller.action2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'POST'
         controller.action3()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 3'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 3'
+
+        when:
         response.reset()
         request.method = 'PUT'
         controller.action3()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 3'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 3'
+
+        when:
         response.reset()
         request.method = 'PATCH'
         controller.action3()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'action 3'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'action 3'
+
+        when:
         response.reset()
         request.method = 'GET'
         controller.action3()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'DELETE'
         controller.action3()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'GET'
         controller.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 1'
+
+        when:
         response.reset()
         request.method = "POST"
         controller.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 1'
+
+        when:
         response.reset()
         request.method = "PUT"
         controller.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 1'
+
+        when:
         response.reset()
         request.method = "PATCH"
         controller.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 1'
+
+        when:
         response.reset()
         request.method = "DELETE"
         controller.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 1'
+
+        when:
         response.reset()
         request.method = 'POST'
         controller.method2()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 2'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 2'
+
+        when:
         response.reset()
         request.method = 'GET'
         controller.method2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'PUT'
         controller.method2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'PATCH'
         controller.method2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'DELETE'
         controller.method2()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'POST'
         controller.method3()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 3'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 3'
+
+        when:
         response.reset()
         request.method = 'PUT'
         controller.method3()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 3'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 3'
+
+        when:
         response.reset()
         request.method = 'PATCH'
         controller.method3()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 3'
 
+        then:
+        response.status == HttpServletResponse.SC_OK
+        response.contentAsString == 'method 3'
+
+        when:
         response.reset()
         request.method = 'GET'
         controller.method3()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
 
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        when:
         response.reset()
         request.method = 'DELETE'
         controller.method3()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        then:
+        response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
     }
 
     void testContentTypeConstantsAreAddedToTheTest() {
-        assert FORM_CONTENT_TYPE == 'application/x-www-form-urlencoded'
-        assert MULTIPART_FORM_CONTENT_TYPE == 'multipart/form-data'
-        assert ALL_CONTENT_TYPE == '*/*'
-        assert HTML_CONTENT_TYPE == 'text/html'
-        assert XHTML_CONTENT_TYPE == 'application/xhtml+xml'
-        assert XML_CONTENT_TYPE == 'application/xml'
-        assert JSON_CONTENT_TYPE == 'application/json'
-        assert TEXT_XML_CONTENT_TYPE == 'text/xml'
-        assert TEXT_JSON_CONTENT_TYPE == 'text/json'
-        assert HAL_JSON_CONTENT_TYPE == 'application/hal+json'
-        assert HAL_XML_CONTENT_TYPE == 'application/hal+xml'
-        assert ATOM_XML_CONTENT_TYPE == 'application/atom+xml'
+        expect:
+        FORM_CONTENT_TYPE == 'application/x-www-form-urlencoded'
+        MULTIPART_FORM_CONTENT_TYPE == 'multipart/form-data'
+        ALL_CONTENT_TYPE == '*/*'
+        HTML_CONTENT_TYPE == 'text/html'
+        XHTML_CONTENT_TYPE == 'application/xhtml+xml'
+        XML_CONTENT_TYPE == 'application/xml'
+        JSON_CONTENT_TYPE == 'application/json'
+        TEXT_XML_CONTENT_TYPE == 'text/xml'
+        TEXT_JSON_CONTENT_TYPE == 'text/json'
+        HAL_JSON_CONTENT_TYPE == 'application/hal+json'
+        HAL_XML_CONTENT_TYPE == 'application/hal+xml'
+        ATOM_XML_CONTENT_TYPE == 'application/atom+xml'
     }
     
     void testDefaultRequestMethod() {
-        assert request.method == 'GET'
+        expect:
+        request.method == 'GET'
     }
 }
 

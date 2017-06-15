@@ -1,30 +1,27 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
-
-import org.junit.Test
+import grails.testing.gorm.DataTest
+import spock.lang.Specification
 
 /**
  * Test for GRAILS-9010
  */
-@Mock([AbstractCustomPropertyValue,CustomProperty,StringPropertyValue])
-class InheritanceWithValidationTests {
+class InheritanceWithValidationTests extends Specification implements DataTest {
 
-    @Test
+    void setupSpec() {
+        mockDomains AbstractCustomPropertyValue, CustomProperty, StringPropertyValue
+    }
+
     void testNewStringValue () {
+        when:
         CustomProperty property = new CustomProperty ()
 
         AbstractCustomPropertyValue propertyValue = property.newValue ("testValue")
-        assertValid (propertyValue)
-    }
 
-    private void assertValid (def propertyValue) {
-        assert propertyValue.valid
-
-        def result = propertyValue.validate () // fails here with: java.lang.IllegalArgumentException:
-        // Argument [org.example.StringPropertyValue : null] is not an instance of
-        // [class org.example.AbstractCustomPropertyValue] which this validator is configured for
-        assert result == true
+        then:
+        propertyValue.valid
+        propertyValue.validate()
     }
 }
 

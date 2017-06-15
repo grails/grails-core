@@ -1,20 +1,15 @@
 package grails.web.databinding
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.testing.gorm.DataTest
 import grails.validation.Validateable
-import org.grails.core.support.MappingContextBuilder
 import spock.lang.Issue
 import spock.lang.Specification
 
-@TestMixin(DomainClassUnitTestMixin)
-@Mock([Writer, Book])
-class GrailsWebDataBinderBindingXmlSpec extends Specification {
+class GrailsWebDataBinderBindingXmlSpec extends Specification implements DataTest {
 
     void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(Writer, Book)
+        mockDomains(Writer, Book)
     }
 
     @Issue('GRAILS-10868')

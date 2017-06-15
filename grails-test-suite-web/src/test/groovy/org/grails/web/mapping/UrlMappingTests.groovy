@@ -1,9 +1,6 @@
 package org.grails.web.mapping
 
-import org.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.core.io.*
-import org.springframework.mock.web.MockServletContext
 
 class UrlMappingTests extends AbstractGrailsMappingTests {
 

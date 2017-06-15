@@ -10,7 +10,7 @@ class TransactionalIntegrationTestSpec extends Specification {
     void "test that @Integration tests are correctly transformed"() {
         when:
         Class testClass = new GroovyClassLoader().parseClass('''
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
 import grails.transaction.*
 
 import spock.lang.*

@@ -2,8 +2,8 @@ package org.grails.web.binding
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
-import org.grails.core.support.MappingContextBuilder
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
 
@@ -11,12 +11,7 @@ import spock.lang.Specification
  * @author Graeme Rocher
  * @since 1.1
  */
-@TestFor(EnumBindingController)
-class BindToEnumTests extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(RoleHolder)
-    }
+class BindToEnumTests extends Specification implements ControllerUnitTest<EnumBindingController>, DomainUnitTest<RoleHolder> {
 
     void testBindBlankValueToEnum() {
         params.role = ""

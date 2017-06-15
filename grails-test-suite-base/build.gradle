@@ -5,7 +5,6 @@ dependencies {
             project(':grails-web'),
             project(':grails-test'),
             project(':grails-plugin-domain-class')
-//            project(':grails-plugin-testing')
 
     compile "org.grails.plugins:converters:$legacyConvertersVersion"
 }

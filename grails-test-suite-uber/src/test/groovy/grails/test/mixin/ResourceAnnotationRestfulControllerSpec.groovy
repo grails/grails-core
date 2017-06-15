@@ -3,10 +3,8 @@ package grails.test.mixin
 import grails.artefact.Controller
 import grails.artefact.controller.RestResponder
 import grails.artefact.controller.support.ResponseRenderer
-import grails.persistence.*
-import grails.rest.*
-import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
+import grails.testing.gorm.DataTest
+import grails.testing.web.controllers.ControllerUnitTest
 import grails.web.api.WebAttributes
 import grails.web.databinding.DataBinder
 
@@ -17,8 +15,7 @@ import spock.lang.Specification
 /**
  * @author Graeme Rocher
  */
-@TestMixin([ControllerUnitTestMixin, DomainClassUnitTestMixin])
-class ResourceAnnotationRestfulControllerSpec extends Specification{
+class ResourceAnnotationRestfulControllerSpec extends Specification implements DataTest, ControllerUnitTest {
 
     @Shared Class domainClass
     @Shared Class controllerClass
@@ -57,7 +54,8 @@ class Video {
     }
 
     def setup() {
-        controller = testFor(controllerClass)
+        mockController(controllerClass)
+        controller = applicationContext.getBean(controllerClass)
     }
     
     void 'Test that the generated controller implements the expected traits'() {
@@ -75,8 +73,8 @@ class Video {
             controller.index()
 
         then:"The model is correct"
-            assert !model.videoList
-            assert model.videoCount == 0
+            !model.videoList
+            model.videoCount == 0
     }
 
     void "Test the create action returns the correct model"() {

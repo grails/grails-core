@@ -1,36 +1,37 @@
 package grails.test.mixin
 
-import grails.test.mixin.support.GrailsUnitTestMixin
-import org.junit.FixMethodOrder
-import org.junit.Test
-import org.junit.runners.MethodSorters
+import spock.lang.Specification
+import spock.lang.Stepwise
 
 /**
  * @author Graeme Rocher
  */
-@TestMixin(GrailsUnitTestMixin)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class TestMixinSetupTeardownInvokeTests {
-    static int counter=1
+@Stepwise
+class TestMixinSetupTeardownInvokeTests extends Specification {
+
+    static int counter = 1
 
     def value
-    void setUp() {
+
+    void setup() {
         value = 'World!'
     }
 
-    void tearDown() {
+    void cleanup() {
         System.setProperty(TestMixinSetupTeardownInvokeTests.name, "invoked")
     }
 
-    @Test
     void testThatSetupWasInvoked() {
         println "invoked 1 ${counter++} ${TestMixinSetupTeardownInvokeTests.class.hashCode()}"
-        assert value == 'World!'
+
+        expect:
+        value == 'World!'
     }
 
-    @Test
     void testThatSetupWasInvoked2() {
         println "invoked 2 ${counter++} ${TestMixinSetupTeardownInvokeTests.class.hashCode()}"
-        assert System.getProperty(TestMixinSetupTeardownInvokeTests.name) == 'invoked'
+
+        expect:
+        System.getProperty(TestMixinSetupTeardownInvokeTests.name) == 'invoked'
     }
 }

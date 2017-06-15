@@ -1,12 +1,21 @@
+configurations.all {
+    resolutionStrategy {
+        preferProjectModules()
+    }
+}
+
+configurations.testCompile {
+    exclude module: "grails-plugin-testing"
+}
+
 dependencies {
 
     testCompile 'javax.servlet.jsp:jsp-api:2.1'
     testCompile 'jstl:jstl:1.1.2'
     testCompile 'javax.el:el-api:1.0'
-    compile "org.grails.plugins:gsp:$gspVersion"
+    testCompile "org.grails.plugins:gsp:$gspVersion"
     testCompile "commons-io:commons-io:${commonsIOVersion}"
     testCompile project(':grails-test-suite-base'),
-                project(':grails-plugin-testing'),
                 project(':grails-plugin-domain-class'),
                 project(':grails-plugin-codecs'),
                 project(':grails-plugin-datasource'),
@@ -18,6 +27,7 @@ dependencies {
                 project(':grails-plugin-controllers'),
                 project(':grails-plugin-rest'),
                 project(':grails-web'),
+                project(':grails-web-databinding'),
                 project(':grails-spring')
     testCompile "org.grails.plugins:converters:$legacyConvertersVersion"
 
@@ -51,7 +61,13 @@ dependencies {
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
 
-    testCompile 'org.grails:grails-web-testing-support:1.0.0.BUILD-SNAPSHOT'
+    testCompile ('org.grails:grails-web-testing-support:1.0.0.BUILD-SNAPSHOT') {
+        changing = true
+    }
+    testCompile ('org.grails:grails-gorm-testing-support:1.0.0.BUILD-SNAPSHOT') {
+        changing = true
+    }
+
     testRuntime "org.springframework:spring-aspects:${springVersion}"
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
@@ -88,7 +104,8 @@ def isolatedTests = ["**/ContentFormatControllerTests.class",
 		"**/GSPResponseWriterSpec.class",
 		"**/RespondMethodSpec.class",
         "**/ContentNegotiationSpec.class",
-        "**/pages/ext/jsp/*.class"]
+        "**/pages/ext/jsp/*.class",
+        "**/WithFormatContentTypeSpec.class"]
 
 task execIsolatedTests(type: Test) {
     configure defaultTestConfig

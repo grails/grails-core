@@ -1,14 +1,10 @@
 package org.grails.web.mapping
 
+import grails.testing.web.GrailsWebUnitTest
 import org.springframework.core.io.*
-import grails.test.mixin.TestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
+import spock.lang.Specification
 
-import org.junit.Test
-import static org.junit.Assert.*
-
-@TestMixin(ControllerUnitTestMixin)
-class UrlMappingsHolderTests {
+class UrlMappingsHolderTests extends Specification implements GrailsWebUnitTest {
 
     def mappingScript = '''
 mappings {
@@ -61,103 +57,106 @@ mappings {
 }
 '''
 
-    @Test
     void testGetReverseMappingWithNamespace() {
+        given:
         def res = new ByteArrayResource(mappingWithNamespace.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
 
+        when:
         def m = holder.getReverseMapping("product", "show", "foo", null, [:])
-        assertNotNull "getReverseMapping returned null", m
 
-        assertEquals "/foo/product/show", m.createURL("product", "show", "foo", null, [:], "utf-8")
+        then:
+        "/foo/product/show" == m.createURL("product", "show", "foo", null, [:], "utf-8")
     }
 
-
-    @Test
     void testGetReverseMappingWithNamedArgsAndClosure() {
+        when:
         def res = new ByteArrayResource(mappingWithNamedArgsAndClosure.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
 
         def params = [lastName:'Winter', firstName:'Johnny']
         def m = holder.getReverseMapping("product", "show", params)
-        assertNotNull "getReverseMapping returned null", m
 
-        assertEquals "/author/Winter/Johnny", m.createURL(params, "utf-8")
+        then:
+        "/author/Winter/Johnny" == m.createURL(params, "utf-8")
     }
 
-    @Test
     void testGetReverseMappingWithNamedArgs() {
+        given:
         def res = new ByteArrayResource(mappingWithNamedArgs.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
 
+        when:
         def params = [lastName:'Winter', firstName:'Johnny']
         def m = holder.getReverseMapping("product", "show", params)
-        assertNotNull "getReverseMapping returned null", m
 
-        assertEquals "/author/Winter/Johnny", m.createURL(params, "utf-8")
+        then:
+        "/author/Winter/Johnny" == m.createURL(params, "utf-8")
     }
 
-    @Test
     void testGetReverseMappingWithExcessArgs() {
+        given:
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
 
+        when:
         // test with exact argument match
         Map vars = [entry: "foo", year: 2007, month: 3, day: 17, some: "other"]
         def m = holder.getReverseMapping("blog", "show", vars)
 
-        assert m
-
-        def url = m.createRelativeURL("blog", "show", vars, "utf-8")
-        assertEquals("/blog/foo/2007/3/17?some=other", url)
+        then:
+        "/blog/foo/2007/3/17?some=other" == m.createRelativeURL("blog", "show", vars, "utf-8")
     }
 
-    @Test
     void testGetReverseMappingWithVariables() {
+        given:
         def res = new ByteArrayResource(mappingScript2.bytes)
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
 
+        when:
         // test with fewer arguments
         def m = holder.getReverseMapping("test", "list",null)
-        assert m
 
-        assertEquals "/admin/test/list/1", m.createURL(controller:"test", action:"list",id:1, "utf-8")
+        then:
+        "/admin/test/list/1" == m.createURL(controller:"test", action:"list",id:1, "utf-8")
 
         // make sure caching works as expected
-        assertEquals "/admin/test/list/1", m.createURL("test", "list", [id:1], "utf-8")
-        assertEquals "/admin/test/list/1", m.createURL("test", "list", [id:1], "utf-8")
+        "/admin/test/list/1" == m.createURL("test", "list", [id:1], "utf-8")
+        "/admin/test/list/1" == m.createURL("test", "list", [id:1], "utf-8")
 
-        assertEquals "/admin/test/list/1?foo=bar", m.createURL(controller:"test", action:"list",id:1, foo:"bar", "utf-8")
+        "/admin/test/list/1?foo=bar" == m.createURL(controller:"test", action:"list",id:1, foo:"bar", "utf-8")
 
+        when:
         m = holder.getReverseMapping("someController", "test", null)
-        assert m
-        assertEquals "/specific/test", m.createURL(controller:"someController", action:"test", "utf-8")
+
+        then:
+        "/specific/test" == m.createURL(controller:"someController", action:"test", "utf-8")
     }
 
-    @Test
     void testGetReverseMappingWithFewerArgs() {
+        given:
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         // use un-cached holder for testing
@@ -165,19 +164,20 @@ mappings {
         holder.setUrlCreatorMaxWeightedCacheCapacity(0)
         holder.initialize()
 
+        when:
         // test with fewer arguments
         def m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007])
 
-        assert m
-        assertEquals "blog", m.controllerName
-        assertEquals "show", m.actionName
+        then:
+        "blog" == m.controllerName
+        "show" == m.actionName
     }
 
-    @Test
     void testGetReverseMappingWithExactArgs() {
+        given:
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator(mainContext)
+        def evaluator = new DefaultUrlMappingEvaluator(applicationContext)
         def mappings = evaluator.evaluateMappings(res)
 
         // use un-cached holder for testing
@@ -185,26 +185,33 @@ mappings {
         holder.setUrlCreatorMaxWeightedCacheCapacity(0)
         holder.initialize()
 
+        when:
         // test with exact argument match
         def m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007, month:3, day:17])
 
-        assert m
-        assertEquals "blog", m.controllerName
-        assertEquals "show", m.actionName
-        assertEquals("/blog/foo/2007/3/17?test=test", m.createURL([controller:"blog",action:"show",entry:"foo",year:2007,month:3,day:17,test:'test'], "utf-8"))
+        then:
+        "blog" == m.controllerName
+        "show" == m.actionName
+        "/blog/foo/2007/3/17?test=test" == m.createURL([controller:"blog",action:"show",entry:"foo",year:2007,month:3,day:17,test:'test'], "utf-8")
 
+        when:
         // test with fewer arguments
         m = holder.getReverseMapping("blog", "show", [entry:"foo", year:2007])
 
-        assert m
-        assertEquals "blog", m.controllerName
-        assertEquals "show", m.actionName
+        then:
+        "blog" == m.controllerName
+        "show" == m.actionName
 
+        when:
         m = holder.getReverseMapping("book", null, [author:"dierk", title:"GINA", test:3])
-        assert m
-        assertEquals "book", m.controllerName
 
+        then:
+        "book" == m.controllerName
+
+        when:
         m = holder.getReverseMapping(null, null, [:])
-        assert m
+
+        then:
+        m
     }
 }

@@ -1,13 +1,13 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DomainUnitTest
 import spock.lang.Specification
 
 /**
  * Tests the usage of unique contstraint in unit tests
  */
-@Mock(Group)
-class DomainClassWithUniqueConstraintSpec extends Specification {
+class DomainClassWithUniqueConstraintSpec extends Specification implements DomainUnitTest<Group> {
 
     void "Test that unique constraint is enforced"() {
         given:"An existing persisted instance"

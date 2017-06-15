@@ -1,29 +1,22 @@
 package org.grails.web.commandobjects
 
 import grails.artefact.Artefact
+import grails.testing.gorm.DataTest
 import grails.testing.web.controllers.ControllerUnitTest
-import grails.util.ClosureToMapPopulator
-import grails.validation.ConstraintsEvaluator
-import groovy.util.logging.Slf4j
-import org.grails.validation.ConstraintsEvaluatorFactoryBean
-import spock.lang.Ignore;
 import spock.lang.Issue
 import spock.lang.Specification
 
-@Ignore // temporary ignore, requries changes to new testing framework to fix
-class CommandObjectsSpec extends Specification implements ControllerUnitTest<TestController> {
+class CommandObjectsSpec extends Specification implements ControllerUnitTest<TestController>, DataTest {
 
-    def setupSpec() {
-        defineBeans {
-            theAnswer(Integer, 42)
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                def constraintsClosure = {
-                    isProg inList: ['Emerson', 'Lake', 'Palmer']
-                }
-                defaultConstraints = new ClosureToMapPopulator().populate(constraintsClosure)
-            }
+    Closure doWithSpring() {{ ->
+        theAnswer(Integer, 42)
+    }}
+
+    Closure doWithConfig() {{ config ->
+        config.grails.gorm.default.constraints = {
+            isProg inList: ['Emerson', 'Lake', 'Palmer']
         }
-    }
+    }}
 
     void "Test command object with date binding"() {
         setup:

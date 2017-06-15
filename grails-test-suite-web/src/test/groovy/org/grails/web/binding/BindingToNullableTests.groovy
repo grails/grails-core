@@ -1,21 +1,16 @@
 package org.grails.web.binding
 
-import org.grails.core.support.MappingContextBuilder
+import grails.testing.gorm.DomainUnitTest
+import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(NullBindingPersonController)
-class BindingToNullableTests extends Specification {
-
-    void setupSpec() {
-        new MappingContextBuilder(grailsApplication).build(NullBindingPerson)
-    }
+class BindingToNullableTests extends Specification implements ControllerUnitTest<NullBindingPersonController>, DomainUnitTest<NullBindingPerson> {
 
     void testDataBindingBlankStringToNull() {
         controller.params.name = "fred"

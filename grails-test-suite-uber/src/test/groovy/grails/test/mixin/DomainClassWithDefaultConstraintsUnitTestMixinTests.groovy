@@ -1,27 +1,28 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.testing.gorm.DomainUnitTest
+import spock.lang.Specification
 
-import org.junit.Test
+class DomainClassWithDefaultConstraintsUnitTestMixinTests extends Specification implements DomainUnitTest<DomainWithDefaultConstraints> {
 
-@TestFor(DomainWithDefaultConstraints)
-class DomainClassWithDefaultConstraintsUnitTestMixinTests {
-
-    static doWithConfig(c) {
+    Closure doWithConfig() {{ c ->
         c.grails.gorm.default.constraints = {
             '*'(nullable:true)
         }
-    }
+    }}
 
-    @Test
     void testCreateDomainSingleLineWithConfigHavingNullableTrueForAllProperties() {
-        assert new DomainWithDefaultConstraints(name:"My test").save(flush:true) != null
+        expect:
+        new DomainWithDefaultConstraints(name:"My test").save(flush:true) != null
     }
 
-    @Test
     void testCreateDomainAllPropertiesWithConfigHavingNullableTrueForAllProperties() {
+        when:
         def d = new DomainWithDefaultConstraints(name:"My test",value: "My test value")
-        assert new DomainWithDefaultConstraints(name:"My test",value: "My test value").save(flush:true) != null
+
+        then:
+        new DomainWithDefaultConstraints(name:"My test",value: "My test value").save(flush:true) != null
     }
 }
 

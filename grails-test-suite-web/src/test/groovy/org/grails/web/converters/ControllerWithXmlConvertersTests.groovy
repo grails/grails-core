@@ -1,25 +1,26 @@
 package org.grails.web.converters
 
-import grails.artefact.Artefact;
+import grails.artefact.Artefact
 import grails.converters.XML
-import grails.test.mixin.TestFor
+import grails.testing.web.controllers.ControllerUnitTest
+import spock.lang.Specification
 
-import org.junit.Test
+class ControllerWithXmlConvertersTests extends Specification implements ControllerUnitTest<XmlController> {
 
-@TestFor(XmlController)
-class ControllerWithXmlConvertersTests {
-
-    @Test
     void testConvertArrayWithNullEments() {
+        when:
         controller.convertArray()
 
-        assert response.text == '<?xml version="1.0" encoding="UTF-8"?><array><string>tst0</string><string>tst1</string><null /><string>fail</string></array>'
+        then:
+        response.text == '<?xml version="1.0" encoding="UTF-8"?><array><string>tst0</string><string>tst1</string><null /><string>fail</string></array>'
     }
-    @Test
+
     void testConvertListWithNullEments() {
+        when:
         controller.convertList()
 
-        assert response.text == '<?xml version="1.0" encoding="UTF-8"?><list><string>tst0</string><string>tst1</string><null /><string>fail</string></list>'
+        then:
+        response.text == '<?xml version="1.0" encoding="UTF-8"?><list><string>tst0</string><string>tst1</string><null /><string>fail</string></list>'
     }
 }
 
