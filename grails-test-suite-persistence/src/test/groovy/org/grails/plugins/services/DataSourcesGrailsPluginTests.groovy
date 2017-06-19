@@ -2,6 +2,7 @@ package org.grails.plugins.services
 
 import org.grails.commons.test.AbstractGrailsMockTests
 import org.grails.plugins.DefaultGrailsPlugin
+import org.grails.plugins.MockGrailsPluginManager
 import org.grails.web.servlet.context.support.WebRuntimeSpringConfiguration
 import org.springframework.context.ApplicationContext
 
@@ -54,6 +55,7 @@ class DataSourcesGrailsPluginTests  extends AbstractGrailsMockTests {
         springConfig.servletContext = createMockServletContext()
 
         corePlugin.doWithRuntimeConfiguration(springConfig)
+        dataSourcePlugin.manager = new MockGrailsPluginManager(ga)
         dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
 
         springConfig.getApplicationContext()
