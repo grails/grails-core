@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -153,6 +150,41 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 		setBasenames(basename);
 	}
 
+	/**
+	 * Retrieves all codes from one or multiple basenames
+	 * @param locale the locale
+	 * @param basenames the basenames of the bundle
+	 * @return a list with all codes from valid registered bundles
+	 */
+	public Set<String> getBundleCodes(Locale locale,String...basenames){
+		List<String> validBaseNames = getValidBasenames(basenames);
+		
+		Set<String> codes = new HashSet<>();
+		for(String basename: validBaseNames){
+			List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename,locale);
+			for (Pair<String, Resource> filenameAndResource : filenamesAndResources) {
+				if(filenameAndResource.getbValue() != null) {
+					PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
+					codes.addAll(propHolder.getProperties().stringPropertyNames());					
+				}
+			}
+		}
+		return codes;
+	}
+	
+	protected List<String> getValidBasenames(String[] basenames){
+		List<String> validBaseNames = new LinkedList<>();
+		for(String basename:basenames){
+			for(int i=0;i<this.basenames.length;i++){
+				if(basenames[i].equals(basename)){
+					validBaseNames.add(basename);
+					break;
+				}
+			}
+		}
+		return validBaseNames;
+	}
+	
 	/**
 	 * Set an array of basenames, each following the basic ResourceBundle convention
 	 * of not specifying file extension or language codes, but in contrast to

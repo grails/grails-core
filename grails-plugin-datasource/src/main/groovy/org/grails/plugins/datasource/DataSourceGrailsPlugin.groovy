@@ -58,7 +58,6 @@ class DataSourceGrailsPlugin extends Plugin {
                     chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor, config, whitelistPattern ?: null, blacklistPattern ?: null)
                 }
             }
-
             if (ClassUtils.isPresent('org.h2.Driver', this.class.classLoader)) {
                 embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
             }

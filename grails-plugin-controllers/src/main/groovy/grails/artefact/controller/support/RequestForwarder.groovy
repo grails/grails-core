@@ -19,6 +19,7 @@ import grails.web.UrlConverter
 import grails.web.api.WebAttributes
 import grails.web.mapping.LinkGenerator
 import groovy.transform.CompileStatic
+import org.grails.web.mapping.UrlMappingUtils
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
@@ -88,6 +89,13 @@ trait RequestForwarder implements WebAttributes {
 
             if(params.plugin) {
                 params.plugin = params.plugin
+            }
+
+            if ( !params.params ) {
+                params.params =  UrlMappingUtils.findAllParamsNotInKeys(
+                        UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(webRequest.params),
+                        webRequest.originalParams.keySet()
+                )
             }
         }
 
