@@ -85,7 +85,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         return resourceLink.toString();
     }
 
-    private boolean isCacheable(Map attrs) {
+    protected boolean isCacheable(Map attrs) {
         if(attrs.get(LinkGenerator.ATTRIBUTE_PARAMS) instanceof GrailsParameterMap) {
             return false;
         }
@@ -101,7 +101,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     }
 
     // Based on DGM toMapString, but with StringBuilder instead of StringBuffer
-    private void appendMapKey(StringBuilder buffer, Map<String, Object> params) {
+    protected void appendMapKey(StringBuilder buffer, Map<String, Object> params) {
         if (params==null || params.isEmpty()) {
             buffer.append(EMPTY_MAP_STRING);
             buffer.append(OPENING_BRACKET);
@@ -157,7 +157,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         return first;
     }
 
-    private void appendKeyValue(StringBuilder buffer, Map map, Object key, Object value) {
+    protected void appendKeyValue(StringBuilder buffer, Map map, Object key, Object value) {
         buffer.append(key)
               .append(KEY_VALUE_SEPARATOR);
         if (value == map) {
