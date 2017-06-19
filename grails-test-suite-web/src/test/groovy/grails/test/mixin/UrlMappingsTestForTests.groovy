@@ -1,11 +1,11 @@
 package grails.test.mixin
 
 import grails.artefact.Artefact
-import grails.testing.web.UrlMappingTest
+import grails.testing.web.UrlMappingsUnitTest
 import org.junit.Test
 import spock.lang.Specification
 
-class UrlMappingsTestForTests extends Specification implements UrlMappingTest<UrlMappings> {
+class UrlMappingsTestForTests extends Specification implements UrlMappingsUnitTest<UrlMappings> {
 
     Class[] getControllersToMock() {
         [BookController]

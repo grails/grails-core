@@ -3,7 +3,7 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.rest.RestfulController
 import grails.testing.web.GrailsWebUnitTest
-import grails.testing.web.UrlMappingTest
+import grails.testing.web.UrlMappingsUnitTest
 import junit.framework.ComparisonFailure
 import org.springframework.web.context.WebApplicationContext
 import spock.lang.Issue
@@ -107,7 +107,7 @@ class AnotherUrlMappings {
     }
 }
 
-class AnotherUrlMappingsSpec extends Specification implements UrlMappingTest<AnotherUrlMappings> {
+class AnotherUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<AnotherUrlMappings> {
 
     Class[] getControllersToMock() {
         [GrailsUrlMappingsTestCaseFakeController]
@@ -155,7 +155,7 @@ class MyUrlMappings {
     }
 }
 
-class MyUrlMappingsSpec extends Specification implements UrlMappingTest<MyUrlMappings> {
+class MyUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<MyUrlMappings> {
 
     Class[] getControllersToMock() {
         [GrailsUrlMappingsTestCaseFakeController]
@@ -186,7 +186,7 @@ class GRAILS5222UrlMappings {
     }
 }
 
-class GRAILS5222UrlMappingsSpec extends Specification implements UrlMappingTest<GRAILS5222UrlMappings> {
+class GRAILS5222UrlMappingsSpec extends Specification implements UrlMappingsUnitTest<GRAILS5222UrlMappings> {
 
     Class[] getControllersToMock() {
         [UserController]
@@ -210,7 +210,7 @@ class GRAILS9863UrlMappings {
     }
 }
 
-class GRAILS9863UrlMappingsSpec extends Specification implements UrlMappingTest<GRAILS9863UrlMappings> {
+class GRAILS9863UrlMappingsSpec extends Specification implements UrlMappingsUnitTest<GRAILS9863UrlMappings> {
 
     @Issue("https://github.com/grails/grails-core/issues/9863")
     void testGRAILS9863() {
@@ -236,7 +236,7 @@ class GRAILS9110UrlMappings {
     }
 }
 
-class GRAILS9110UrlMappingsSpec extends Specification implements UrlMappingTest<GRAILS9110UrlMappings> {
+class GRAILS9110UrlMappingsSpec extends Specification implements UrlMappingsUnitTest<GRAILS9110UrlMappings> {
 
     Class[] getControllersToMock() {
         [UserController]
@@ -273,7 +273,7 @@ class MethodTestUrlMappings {
     }
 }
 
-class MethodTestUrlMappingsSpec extends Specification implements UrlMappingTest<MethodTestUrlMappings> {
+class MethodTestUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<MethodTestUrlMappings> {
 
     Class[] getControllersToMock() {
         [UserController]
@@ -306,7 +306,7 @@ class ResourceTestUrlMappings {
     }
 }
 
-class ResourceTestUrlMappingsSpec extends Specification implements UrlMappingTest<ResourceTestUrlMappings> {
+class ResourceTestUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<ResourceTestUrlMappings> {
 
     Class[] getControllersToMock() {
         [PersonController]
@@ -363,7 +363,7 @@ class ExceptionTestUrlMappings {
     }
 }
 
-class ExceptionTestUrlMappingsSpec extends Specification implements UrlMappingTest<ExceptionTestUrlMappings> {
+class ExceptionTestUrlMappingsSpec extends Specification implements UrlMappingsUnitTest<ExceptionTestUrlMappings> {
 
     Class[] getControllersToMock() {
         [ExceptionTestErrorsController]
