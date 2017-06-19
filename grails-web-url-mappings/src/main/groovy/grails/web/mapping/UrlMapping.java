@@ -18,9 +18,7 @@ package grails.web.mapping;
 
 import grails.gorm.validation.Constrained;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>Defines a URL mapping. A URL mapping is a mapping between a URI such as /book/list and
@@ -105,19 +103,21 @@ public interface UrlMapping extends Comparable, UrlCreator {
 
     String EXCEPTION = "exception";
 
-    List<String> KEYWORDS = Arrays.asList(CONTROLLER,
-            ACTION,
-            HTTP_METHOD,
-            REDIRECT_INFO,
-            VERSION,
-            URI,
-            PLUGIN,
-            NAMESPACE,
-            VIEW,
-            RESOURCES,
-            INCLUDES,
-            PERMANENT,
-            EXCEPTION);
+    Set<String> KEYWORDS = new HashSet<String>() {{
+        add(CONTROLLER);
+        add(ACTION);
+        add(HTTP_METHOD);
+        add(REDIRECT_INFO);
+        add(VERSION);
+        add(URI);
+        add(PLUGIN);
+        add(NAMESPACE);
+        add(VIEW);
+        add(RESOURCES);
+        add(INCLUDES);
+        add(PERMANENT);
+        add(EXCEPTION);
+    }};
 
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
