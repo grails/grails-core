@@ -19,16 +19,14 @@ import grails.compiler.ast.AllArtefactClassInjector;
 import grails.compiler.ast.AstTransformer;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.logging.Slf4j;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.LogASTTransformation;
 import org.grails.datastore.mapping.reflect.AstUtils;
 
+import java.lang.reflect.Modifier;
 import java.net.URL;
 
 /**
@@ -62,6 +60,12 @@ public class LoggingTransformer implements AllArtefactClassInjector{
             }
         }
 
+        FieldNode logField = classNode.getField("log");
+        if(logField != null) {
+            if(!Modifier.isPrivate(logField.getModifiers())) {
+                return;
+            }
+        }
         AnnotationNode annotationNode = new AnnotationNode(ClassHelper.make(Slf4j.class));
         LogASTTransformation logASTTransformation = new LogASTTransformation();
         logASTTransformation.setCompilationUnit( new CompilationUnit(new GroovyClassLoader(getClass().getClassLoader())) );
