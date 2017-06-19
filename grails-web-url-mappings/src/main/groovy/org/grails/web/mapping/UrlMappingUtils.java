@@ -46,9 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Utility methods for working with UrlMappings
@@ -64,11 +62,15 @@ public class UrlMappingUtils {
      *
      * @return a Map without entries whose key belongs to UrlMapping#KEYWORDS
      */
-    public static  Map<String, Object> findAllParamsNotInUrlMappingKeywords(Map<String, Object> params) {
-        Map<String, Object> urlParams = new HashMap<>();
-        if ( params != null ) {
-            for (String key : params.keySet()) {
-                if (!UrlMapping.KEYWORDS.contains(key)) {
+    public static  Map findAllParamsNotInUrlMappingKeywords(Map params) {
+        return findAllParamsNotInKeys(params, UrlMapping.KEYWORDS);
+    }
+
+    public static  Map findAllParamsNotInKeys(Map params, Set keys) {
+        Map urlParams = new HashMap<>();
+        if ( params != null && keys != null ) {
+            for (Object key : params.keySet()) {
+                if (!keys.contains(key)) {
                     urlParams.put(key, params.get(key));
                 }
             }
