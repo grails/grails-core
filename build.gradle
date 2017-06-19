@@ -56,6 +56,7 @@ ext {
     tomcatVersion = "8.5.2"
     servletApiVersion = "3.0.1"
 
+    testingSupportVersion = "1.0.0.BUILD-SNAPSHOT"
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
 

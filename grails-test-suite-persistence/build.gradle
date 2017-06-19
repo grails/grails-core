@@ -50,9 +50,7 @@ dependencies {
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
                   "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    testCompile ('org.grails:grails-gorm-testing-support:1.0.0.BUILD-SNAPSHOT') {
-        changing = true
-    }
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
 }
 
 test {

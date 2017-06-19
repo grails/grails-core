@@ -203,6 +203,14 @@ publishing {
                                     mkp.version(version)
                                 }
                             }
+
+                            ['gorm-', 'web-', ''].each { name ->
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails'
+                                    mkp.artifactId "grails-${name}testing-support"
+                                    mkp.version( testingSupportVersion )
+                                }
+                            }
                         }
                     }
                 }

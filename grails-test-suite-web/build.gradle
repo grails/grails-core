@@ -61,12 +61,8 @@ dependencies {
     testCompile 'taglibs:standard:1.1.2'
     testCompile "javax.servlet:jstl:1.1.2"
 
-    testCompile ('org.grails:grails-web-testing-support:1.0.0.BUILD-SNAPSHOT') {
-        changing = true
-    }
-    testCompile ('org.grails:grails-gorm-testing-support:1.0.0.BUILD-SNAPSHOT') {
-        changing = true
-    }
+    testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
+    testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
 
     testRuntime "org.springframework:spring-aspects:${springVersion}"
     testRuntime "org.aspectj:aspectjrt:$aspectjVersion",
