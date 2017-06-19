@@ -2,6 +2,7 @@ package grails.test.mixin.unique
 
 import grails.persistence.Entity
 import grails.testing.gorm.DomainUnitTest
+import groovy.transform.NotYetImplemented
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -46,7 +47,7 @@ class UniqueConstraintOnHasOneSpec extends Specification implements DomainUnitTe
         foo2.errors['name']?.code == 'unique'
     }
 
-    @Ignore
+    @NotYetImplemented
     void "Foo's bar should be unique, but..."() {
         given:
         def foo1 = new Foo(name: "FOO1")
