@@ -10,9 +10,10 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
 else
     echo "Executing tests"
     ./gradlew --stop
-    ./gradlew grails-test-suite-persistence:test grails-test-suite-uber:test grails-test-suite-web:test --no-daemon
-    ./gradlew --stop
-    ./gradlew check -x grails-test-suite-persistence:test -x grails-test-suite-uber:test -x grails-test-suite-web:test --no-daemon || EXIT_STATUS=$?
+    ./gradlew grails-test-suite-persistence:test grails-test-suite-uber:test grails-test-suite-web:test --no-daemon && {
+	    ./gradlew --stop
+	    ./gradlew check -x grails-test-suite-persistence:test -x grails-test-suite-uber:test -x grails-test-suite-web:test --no-daemon
+    } || EXIT_STATUS=$?
     echo "Done."
 fi
 
