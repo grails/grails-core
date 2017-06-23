@@ -30,7 +30,7 @@ ext {
     asyncVersion = '3.3.0.RC5'
     gspVersion = '3.3.0.RC1'
     legacyConvertersVersion = "3.3.0.M1"
-    testingSupportVersion = "1.0.0.RC2"
+    testingSupportVersion = "1.0.0.RC3"
     datastoreVersion = "6.1.5.RELEASE"
 
     antTraxVersion = "1.7.1"
