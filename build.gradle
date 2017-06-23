@@ -26,8 +26,8 @@ ext {
     // grailsVersion = '3.3.0.M2'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    asyncVersion = '3.3.0.RC3'
-    gspVersion = '3.3.0.M2'
+    asyncVersion = '3.3.0.RC5'
+    gspVersion = '3.3.0.RC1'
     legacyConvertersVersion = "3.3.0.M1"
 
     antTraxVersion = "1.7.1"
@@ -36,7 +36,7 @@ ext {
     commonsCliVersion = "1.2"
     commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
-    datastoreVersion = "6.1.4.RELEASE"
+    datastoreVersion = "6.1.5.RELEASE"
     gdocEngineVersion = "1.0.1"
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.11"
     jansiVersion = "1.14"
@@ -48,7 +48,6 @@ ext {
     springBootVersion = "1.5.4.RELEASE"
     springLoadedVersion = "1.2.7.RELEASE"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.3.7.RELEASE"
     springVersion = "4.3.9.RELEASE"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
