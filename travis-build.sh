@@ -1,11 +1,6 @@
 #!/bin/bash
 set -x
 
-grailsVersion="$(grep 'grailsVersion =' build.gradle | egrep -v ^[[:blank:]]*\/\/)"
-grailsVersion="${grailsVersion#*=}"
-grailsVersion="${grailsVersion//[[:blank:]\'\"]/}"
-
-echo "Project Version: '$grailsVersion'"
 echo "Gradle command to be run: '$GRADLE_CMD'"
 
 EXIT_STATUS=0
