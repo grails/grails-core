@@ -1,6 +1,4 @@
 #!/bin/bash
-set -x
-
 echo "Gradle command to be run: '$GRADLE_CMD'"
 
 EXIT_STATUS=0
