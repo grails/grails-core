@@ -193,7 +193,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
 
         project.configurations.all( { Configuration configuration ->
-            for(oldPluginExcludes in ['async', 'events', 'converters', 'gsp']) {
+            for(oldPluginExcludes in ['async', 'events', 'converters', 'gsp', 'testing']) {
                 configuration.exclude(group:"org.grails", module:"grails-plugin-$oldPluginExcludes".toString())
             }
 
