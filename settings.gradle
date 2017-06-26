@@ -36,7 +36,6 @@ include (
         'grails-plugin-mimetypes',
         'grails-plugin-rest',
         'grails-plugin-services',
-        'grails-plugin-testing',
         'grails-plugin-url-mappings',
         'grails-plugin-validation',
 
