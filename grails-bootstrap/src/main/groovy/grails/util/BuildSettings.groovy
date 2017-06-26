@@ -204,7 +204,7 @@ class BuildSettings {
     /**
      * The classes directory of the project, null outside of the development environment
      */
-    public static final File CLASSES_DIR = !GRAILS_APP_DIR_PRESENT ? null : (System.getProperty(PROJECT_CLASSES_DIR) ? new File(System.getProperty(PROJECT_CLASSES_DIR)) : new File(TARGET_DIR, "classes/main"))
+    public static final File CLASSES_DIR;
     public static final String RUN_EXECUTED = "grails.run.executed"
 
     /**
@@ -233,6 +233,26 @@ class BuildSettings {
         BuildSettings.package.implementationVersion.endsWith('-SNAPSHOT')
     }
 
+    static {
+        if(!GRAILS_APP_DIR_PRESENT) {
+            CLASSES_DIR = null
+        }
+        else {
+            String fromSystem = System.getProperty(PROJECT_CLASSES_DIR)
+            if(fromSystem) {
+                CLASSES_DIR = new File(fromSystem)
+            }
+            else  {
+                File groovyDir = new File(TARGET_DIR, "classes/groovy/main")
+                if(groovyDir.exists()) {
+                    CLASSES_DIR = groovyDir
+                }
+                else {
+                    CLASSES_DIR = new File(TARGET_DIR, "classes/groovy/main")
+                }
+            }
+        }
+    }
 
 
 }

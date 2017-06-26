@@ -48,11 +48,10 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             List<File> acceptedSourceDirs = []
             SourceSetContainer sourceSets = SourceSets.findSourceSets(project)
             SourceSet integrationTest = sourceSets.create("integrationTest")
-            for(File srcDir in acceptedSourceDirs ) {
-                if (integrationTest.hasProperty(srcDir.name)) {
-                    registerSourceDir(integrationTest, srcDir)
-                    acceptedSourceDirs.add srcDir
-                }
+
+            for(File srcDir in sourceDirs ) {
+                registerSourceDir(integrationTest, srcDir)
+                acceptedSourceDirs.add srcDir
             }
             DependencyHandler dependencies = project.dependencies
             dependencies.add("integrationTestCompile", SourceSets.findMainSourceSet(project).output)
@@ -63,13 +62,14 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             TaskContainer tasks = project.tasks
             Test integrationTestTask = tasks.create('integrationTest', Test)
             integrationTestTask.group = LifecycleBasePlugin.VERIFICATION_GROUP
-            integrationTestTask.setTestClassesDir( integrationTest.output.classesDir )
+            File outputDir = integrationTest.output.classesDir
+            integrationTestTask.setTestClassesDir(outputDir)
             integrationTestTask.classpath = integrationTest.runtimeClasspath
             integrationTestTask.maxParallelForks = 1
             integrationTestTask.reports.html.enabled = false
             integrationTestTask.shouldRunAfter("test")
 
-            tasks.findByName("check")?.dependsOn(integrationTest)
+            tasks.findByName("check")?.dependsOn(integrationTestTask)
 
             TestReport testReportTask = tasks.create("mergeTestReports", TestReport)
             testReportTask.destinationDir = project.file("$project.buildDir/reports/tests")
