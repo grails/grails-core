@@ -1,5 +1,6 @@
 package org.grails.gradle.plugin.run
 
+import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -61,9 +62,20 @@ class FindMainClassTask extends DefaultTask {
 
             MainClassFinder mainClassFinder = createMainClassFinder()
 
-            def mainClass = mainClassFinder.findMainClass(mainSourceSet.output.classesDir)
+            File classesDir = mainSourceSet.output.classesDir
+            String mainClass = mainClassFinder.findMainClass(classesDir)
             if(mainClass != null) {
                 mainClassFile.text = mainClass
+            }
+            else {
+
+                mainClass = mainClassFinder.findMainClass(new File(project.buildDir, "classes/groovy/main"))
+                if(mainClass != null) {
+                    mainClassFile.text = mainClass
+                }
+                else {
+                    throw new RuntimeException("Could not find Application main class. Please set 'springBoot.mainClass'.")
+                }
             }
             return mainClass
         }
