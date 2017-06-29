@@ -43,6 +43,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.util.HtmlUtils;
 
 /**
  * A servlet for handling errors.
@@ -194,7 +195,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
         writer.write("<HTML>\n<HEAD>\n<TITLE>Error " + statusCode + " - " + title);
         writer.write("</TITLE>\n<BODY>\n<H2>Error " + statusCode + " - " + title + ".</H2>\n");
-        writer.write(text + "<BR/>");
+        writer.write(HtmlUtils.htmlEscape(text) + "<BR/>");
 
         for (int i = 0; i < 20; i++) {
             writer.write("\n<!-- Padding for IE                  -->");
