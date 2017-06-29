@@ -29,13 +29,15 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.SmartApplicationListener;
+import org.springframework.core.Ordered;
 import org.springframework.util.ClassUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, ApplicationListener<ApplicationEvent> {
+public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, SmartApplicationListener {
     protected ClassLoader classLoader;
     protected Config config;
     @SuppressWarnings("rawtypes")
@@ -140,5 +142,20 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
         if (event instanceof ContextRefreshedEvent) {
             this.contextInitialized = true;
         }
+    }
+
+    @Override
+    public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
+        return ContextRefreshedEvent.class.isAssignableFrom(eventType);
+    }
+
+    @Override
+    public boolean supportsSourceType(Class<?> sourceType) {
+        return true;
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.LOWEST_PRECEDENCE;
     }
 }
