@@ -47,8 +47,8 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.parentContext = applicationContext;
-        if(applicationContext instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this);
+        if (applicationContext instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) applicationContext).addApplicationListener(this);
         }
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     public boolean isWarDeployed() {
         return Environment.isWarDeployed();
     }
-    
+
     public Config getConfig() {
         return config;
     }
@@ -98,20 +98,20 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     public void configChanged() {
         updateFlatConfig();
         final ArtefactHandler[] handlers = getArtefactHandlers();
-        if(handlers != null) {
+        if (handlers != null) {
             for (ArtefactHandler handler : handlers) {
                 if (handler instanceof GrailsConfigurationAware) {
-                    ((GrailsConfigurationAware)handler).setConfiguration(config);
+                    ((GrailsConfigurationAware) handler).setConfiguration(config);
                 }
             }
         }
     }
-    
+
     @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
-    
+
     @Override
     public ClassLoader getClassLoader() {
         return classLoader;
@@ -121,8 +121,8 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     @Override
     public Class getClassForName(String className) {
         return ClassUtils.resolveClassName(className, getClassLoader());
-    }    
-    
+    }
+
     public ApplicationContext getMainContext() {
         return parentContext;
     }
@@ -137,7 +137,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if(event instanceof ContextRefreshedEvent) {
+        if (event instanceof ContextRefreshedEvent) {
             this.contextInitialized = true;
         }
     }
