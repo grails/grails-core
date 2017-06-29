@@ -35,6 +35,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
@@ -124,13 +125,19 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
      */
     protected void cascadeToAssociativeProperty(Errors errors, BeanWrapper bean, GrailsDomainClassProperty persistentProperty) {
         String propertyName = persistentProperty.getName();
-        if (errors.hasFieldErrors(propertyName)) return;
+        ConstrainedProperty c = (ConstrainedProperty) persistentProperty.getDomainClass().getConstrainedProperties().get(propertyName);
+        if(c != null) {
+            Object cascadeSetting = c.getMetaConstraintValue("cascade");
+            if (cascadeSetting == Boolean.FALSE) {
+                return;
+            }
+        }
 
         if (persistentProperty.isManyToOne() || persistentProperty.isOneToOne() || persistentProperty.isEmbedded()) {
             Object associatedObject = bean.getPropertyValue(propertyName);
             cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, null);
         }
-        else if (persistentProperty.isOneToMany()) {
+        else if (persistentProperty.isOneToMany() ) {
             cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
         }
     }
@@ -147,17 +154,19 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
     @SuppressWarnings("rawtypes")
     protected void cascadeValidationToMany(Errors errors, BeanWrapper bean,
             GrailsDomainClassProperty persistentProperty, String propertyName) {
-
+        Object target = errors instanceof BeanPropertyBindingResult ? ((BeanPropertyBindingResult)errors).getTarget() : bean.getWrappedInstance();
         Object collection = bean.getPropertyValue(propertyName);
         if (collection instanceof List || collection instanceof SortedSet) {
             int idx = 0;
             for (Object associatedObject : ((Collection)collection)) {
+                if(associatedObject == target) continue;
                 cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, idx++);
             }
         }
         else if (collection instanceof Collection) {
             Integer index = 0;
             for (Object associatedObject : ((Collection)collection)) {
+                if(associatedObject == target) continue;
                 cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, index++);
             }
         }
@@ -166,7 +175,9 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
             filterGStringKeys((Map)collection);
             for (Object entryObject : ((Map) collection).entrySet()) {
                 Map.Entry entry = (Map.Entry) entryObject;
-                cascadeValidationToOne(errors, bean, entry.getValue(), persistentProperty, propertyName, entry.getKey());
+                Object associatedObject = entry.getValue();
+                if(associatedObject == target) continue;
+                cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName, entry.getKey());
             }
         }
     }
@@ -174,7 +185,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void filterGStringKeys(Map collection) {
         Set set = collection.keySet();
-        Set<GString> gstrings = new HashSet<GString>();
+        Set<GString> gstrings = new HashSet<>();
         for (Object o : set) {
             if (o instanceof GString) {
                 gstrings.add((GString) o);
@@ -203,6 +214,10 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
         if (fieldError == null) {
             ConstrainedProperty c = (ConstrainedProperty) constrainedProperties.get(constrainedPropertyName);
             c.setMessageSource(messageSource);
+            Object cascadeSetting = c.getMetaConstraintValue("cascade");
+            if(cascadeSetting == Boolean.FALSE) {
+                return;
+            }
             c.validate(obj, bean.getPropertyValue(constrainedPropertyName), errors);
         }
     }
