@@ -25,18 +25,19 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
 import org.grails.config.FlatConfig;
 import org.grails.config.PropertySourcesConfig;
-import org.grails.datastore.mapping.model.MappingContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.SmartApplicationListener;
+import org.springframework.core.Ordered;
 import org.springframework.util.ClassUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, ApplicationListener<ApplicationEvent> {
+public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, SmartApplicationListener {
     protected ClassLoader classLoader;
     protected Config config;
     @SuppressWarnings("rawtypes")
@@ -48,8 +49,8 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.parentContext = applicationContext;
-        if(applicationContext instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext)applicationContext).addApplicationListener(this);
+        if (applicationContext instanceof ConfigurableApplicationContext) {
+            ((ConfigurableApplicationContext) applicationContext).addApplicationListener(this);
         }
     }
 
@@ -62,7 +63,7 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     public boolean isWarDeployed() {
         return Environment.isWarDeployed();
     }
-    
+
     public Config getConfig() {
         return config;
     }
@@ -99,20 +100,20 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     public void configChanged() {
         updateFlatConfig();
         final ArtefactHandler[] handlers = getArtefactHandlers();
-        if(handlers != null) {
+        if (handlers != null) {
             for (ArtefactHandler handler : handlers) {
                 if (handler instanceof GrailsConfigurationAware) {
-                    ((GrailsConfigurationAware)handler).setConfiguration(config);
+                    ((GrailsConfigurationAware) handler).setConfiguration(config);
                 }
             }
         }
     }
-    
+
     @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
-    
+
     @Override
     public ClassLoader getClassLoader() {
         return classLoader;
@@ -122,8 +123,8 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     @Override
     public Class getClassForName(String className) {
         return ClassUtils.resolveClassName(className, getClassLoader());
-    }    
-    
+    }
+
     public ApplicationContext getMainContext() {
         return parentContext;
     }
@@ -138,8 +139,23 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if(event instanceof ContextRefreshedEvent) {
+        if (event instanceof ContextRefreshedEvent) {
             this.contextInitialized = true;
         }
+    }
+
+    @Override
+    public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
+        return ContextRefreshedEvent.class.isAssignableFrom(eventType);
+    }
+
+    @Override
+    public boolean supportsSourceType(Class<?> sourceType) {
+        return true;
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.LOWEST_PRECEDENCE;
     }
 }
