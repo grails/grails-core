@@ -50,7 +50,7 @@ task docs {
     ext.destinationDir = file("${projectDir}/doc")
 }
 
-task javadoc(type:Javadoc) {
+javadoc {
     def subs = subprojects.findAll { it.name != 'grails-dependencies' && it.name != 'grails-bom' && it.name != 'grails-compat' }
     classpath = files(subs.configurations.compile)
     dependsOn stubs
