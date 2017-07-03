@@ -125,7 +125,7 @@ allprojects {
     configurations {
         all {
             resolutionStrategy {
-                def cacheHours = (project.hasProperty("isCiBuild") && isCiBuild) ? 0 : 24
+                def cacheHours = isCiBuild ? 0 : 24
                 cacheDynamicVersionsFor cacheHours, 'hours'
                 cacheChangingModulesFor cacheHours, 'hours'
             }
@@ -480,7 +480,7 @@ subprojects { project ->
 
 
 
-clean {
+task clean(type: Delete) {
     delete buildDir,
            homeBinDir,
            homeConfDir,
