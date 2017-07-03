@@ -203,4 +203,4 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
     from docs.destinationDir
 }*/
 
-assemble.dependsOn zipDist
+task assemble(dependsOn: zipDist)
