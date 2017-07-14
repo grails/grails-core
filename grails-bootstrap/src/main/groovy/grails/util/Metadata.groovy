@@ -99,7 +99,7 @@ class Metadata extends NavigableMap implements ConfigMap  {
 
     private void afterLoading() {
         // allow override via system properties
-        merge(System.properties.findAll { key, val -> val }, true)
+        merge(new LinkedHashMap(System.properties).findAll { key, val -> val }, true)
         def value = get(WAR_DEPLOYED)
         warDeployed = value != null ? Boolean.valueOf(value.toString()) : false
     }
