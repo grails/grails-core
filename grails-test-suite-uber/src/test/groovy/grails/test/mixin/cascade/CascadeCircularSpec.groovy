@@ -16,7 +16,8 @@
 package grails.test.mixin.cascade
 
 import grails.gorm.annotation.Entity
-import grails.test.mixin.TestFor
+import grails.testing.gorm.DataTest
+import grails.validation.ValidationException
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -24,8 +25,7 @@ import spock.lang.Specification
  * @author Graeme Rocher
  * @since 1.0
  */
-@TestFor(Person)
-class CascadeCircularSpec extends Specification {
+class CascadeCircularSpec extends Specification implements DataTest{
 
     @Issue('https://github.com/grails/grails-data-mapping/issues/967')
     void "test cascade circular"() {
@@ -47,8 +47,16 @@ class CascadeCircularSpec extends Specification {
         mikey.peers = [leo, donnie, raph]
         raph.peers = [leo, donnie, mikey]
 
-        expect:
+        when:
         splinter.save(failOnError: true)
+
+        then:
+        thrown(ValidationException)
+    }
+
+    @Override
+    Class[] getDomainClassesToMock() {
+        [Person]
     }
 }
 @Entity
