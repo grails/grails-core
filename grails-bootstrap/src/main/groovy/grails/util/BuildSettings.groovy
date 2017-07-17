@@ -248,7 +248,7 @@ class BuildSettings {
                     CLASSES_DIR = groovyDir
                 }
                 else {
-                    CLASSES_DIR = new File(TARGET_DIR, "classes/groovy/main")
+                    CLASSES_DIR = new File(TARGET_DIR, "classes/main")
                 }
             }
         }
