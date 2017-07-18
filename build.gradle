@@ -3,6 +3,7 @@ buildscript {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
         maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+        maven { url "https://plugins.gradle.org/m2" }
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
@@ -13,11 +14,12 @@ buildscript {
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.8.0"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
+        classpath "com.gradle:build-scan-plugin:1.8"
     }
 }
 
+apply plugin: 'com.gradle.build-scan'
 apply plugin: 'idea'
-
 
 ext {
     bintrayPublish = false
@@ -66,6 +68,15 @@ ext {
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 
 
+}
+
+buildScan {
+    server = "https://gradle.objectcomputing.com"
+    allowUntrustedServer true
+    def publishBuildScan = findProperty('org.grails.gradle.publishBuildScan')
+    if(isTravisBuild || publishBuildScan == 'true') {
+        publishAlways()
+    }
 }
 
 version = grailsVersion

@@ -49,3 +49,15 @@ include (
         'grails-gradle-plugin',
         'grails-gradle-model'
 )
+
+buildCache {
+    def isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    local {
+        enabled = true
+    }
+    remote(HttpBuildCache) {
+        enabled = false
+        url = 'https://gradle.objectcomputing.com/build-cache/'
+        push = isTravisBuild
+    }
+}
