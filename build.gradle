@@ -75,9 +75,9 @@ buildScan {
     if(isTravisBuild) {
         tag 'CI'
         publishAlways()
-//        value 'Git Branch', System.getenv("TRAVIS_BRANCH")
-//        value 'Git Tag', System.getenv("TRAVIS_TAG")
-//        value 'Pull Request', System.getenv("TRAVIS_PULL_REQUEST")
+        value 'Git Branch', System.getenv("TRAVIS_BRANCH")
+        value 'Git Tag', System.getenv("TRAVIS_TAG")
+        value 'Pull Request', System.getenv("TRAVIS_PULL_REQUEST")
     } else {
         tag 'LOCAL'
         def publishBuildScan = findProperty('org.grails.gradle.publishBuildScan')
