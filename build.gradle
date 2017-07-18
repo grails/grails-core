@@ -72,10 +72,15 @@ ext {
 
 buildScan {
     server = "https://gradle.objectcomputing.com"
-    allowUntrustedServer true
-    def publishBuildScan = findProperty('org.grails.gradle.publishBuildScan')
-    if(isTravisBuild || publishBuildScan == 'true') {
+    if(isTravisBuild) {
+        tag 'CI'
         publishAlways()
+    } else {
+        tag 'LOCAL'
+        def publishBuildScan = findProperty('org.grails.gradle.publishBuildScan')
+        if(publishBuildScan == 'true') {
+            publishAlways()
+        }
     }
 }
 

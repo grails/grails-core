@@ -56,8 +56,8 @@ buildCache {
         enabled = true
     }
     remote(HttpBuildCache) {
-        enabled = false
-        url = 'https://gradle.objectcomputing.com/build-cache/'
+        enabled = true
+        url = 'https://gradle.objectcomputing.com/cache/'
         push = isTravisBuild
     }
 }
