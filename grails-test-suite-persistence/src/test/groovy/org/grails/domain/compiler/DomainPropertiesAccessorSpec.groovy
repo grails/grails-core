@@ -9,11 +9,6 @@ import spock.lang.Specification
 
 class DomainPropertiesAccessorSpec extends Specification {
 
-    void 'Testing our CI server'() {
-        expect:
-        false
-    }
-
     void "Test binding constructor adding via AST"() {
         when:
             def test = new TestDomain(age:"10")
