@@ -53,7 +53,7 @@ include (
 buildCache {
     def isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     local {
-        enabled = true
+        enabled = !isTravisBuild
     }
     remote(HttpBuildCache) {
         enabled = true
