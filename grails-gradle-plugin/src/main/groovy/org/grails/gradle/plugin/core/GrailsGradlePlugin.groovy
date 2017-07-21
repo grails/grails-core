@@ -91,6 +91,9 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     void apply(Project project) {
+        // reset the environment to ensure it is resolved again for each invocation
+        Environment.reset()
+
         if( project.tasks.findByName('compileGroovy') == null ) {
             super.apply(project)
         }
