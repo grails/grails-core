@@ -5,8 +5,6 @@ import grails.util.BuildScope
 import grails.util.Environment
 
 import grails.core.DefaultGrailsApplication
-import org.grails.core.exceptions.GrailsConfigurationException
-import org.grails.plugins.DefaultGrailsPlugin
 import grails.plugins.DefaultGrailsPluginManager
 
 /**
@@ -244,10 +242,14 @@ class TestGrailsPlugin {
         pluginManager.loadPlugins()
         assertNotNull pluginManager.getGrailsPlugin("test")
 
-        System.setProperty(Environment.KEY, Environment.PRODUCTION.getName())
+        try {
+            System.setProperty(Environment.KEY, Environment.PRODUCTION.getName())
 
-        pluginManager = new DefaultGrailsPluginManager([test1] as Class[], application)
-        pluginManager.loadPlugins()
-        assertNull pluginManager.getGrailsPlugin("test")
+            pluginManager = new DefaultGrailsPluginManager([test1] as Class[], application)
+            pluginManager.loadPlugins()
+            assertNull pluginManager.getGrailsPlugin("test")
+        } finally {
+            System.setProperty(Environment.KEY, Environment.DEVELOPMENT.getName())
+        }
     }
 }
