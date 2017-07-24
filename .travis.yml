@@ -1,4 +1,5 @@
 language: groovy
+dist: precise
 jdk:
 - oraclejdk8
 env:
