@@ -16,6 +16,7 @@
 
 package org.grails.gradle.plugin.core
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -63,7 +64,8 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             Test integrationTestTask = tasks.create('integrationTest', Test)
             integrationTestTask.group = LifecycleBasePlugin.VERIFICATION_GROUP
             File outputDir = integrationTest.output.classesDir
-            integrationTestTask.setTestClassesDir(outputDir)
+
+            setClassesDirs(project, integrationTestTask, outputDir)
             integrationTestTask.classpath = integrationTest.runtimeClasspath
             integrationTestTask.maxParallelForks = 1
             integrationTestTask.reports.html.enabled = false
@@ -86,6 +88,23 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
                 integrateIdea(project, acceptedSourceDirs)
             }
         }
+    }
+
+    @CompileDynamic
+    protected void setClassesDirs(Project project, Test integrationTestTask, File outputDir) {
+
+        try {
+            // Gradle 4.x
+            integrationTestTask.setTestClassesDirs(project.files(
+                    outputDir,
+                    new File(project.buildDir, "classes/groovy/integrationTest")
+            ))
+        }
+        catch(e) {
+            // Gradle 3.x
+            integrationTestTask.setTestClassesDir(outputDir)
+        }
+
     }
 
     private void registerSourceDir(SourceSet integrationTest, File srcDir) {
