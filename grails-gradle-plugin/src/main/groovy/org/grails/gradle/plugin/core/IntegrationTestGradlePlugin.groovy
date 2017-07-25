@@ -63,9 +63,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             TaskContainer tasks = project.tasks
             Test integrationTestTask = tasks.create('integrationTest', Test)
             integrationTestTask.group = LifecycleBasePlugin.VERIFICATION_GROUP
-            File outputDir = integrationTest.output.classesDir
-
-            setClassesDirs(project, integrationTestTask, outputDir)
+            setClassesDirs(integrationTestTask, integrationTest)
             integrationTestTask.classpath = integrationTest.runtimeClasspath
             integrationTestTask.maxParallelForks = 1
             integrationTestTask.reports.html.enabled = false
@@ -91,18 +89,16 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
     }
 
     @CompileDynamic
-    protected void setClassesDirs(Project project, Test integrationTestTask, File outputDir) {
+    protected void setClassesDirs(Test integrationTestTask, SourceSet sourceSet) {
 
         try {
             // Gradle 4.x
-            integrationTestTask.setTestClassesDirs(project.files(
-                    outputDir,
-                    new File(project.buildDir, "classes/groovy/integrationTest")
-            ))
+            def classesDirs = sourceSet.output.classesDirs
+            integrationTestTask.setTestClassesDirs(classesDirs)
         }
         catch(e) {
             // Gradle 3.x
-            integrationTestTask.setTestClassesDir(outputDir)
+            integrationTestTask.setTestClassesDir(sourceSet.output.classesDir)
         }
 
     }
