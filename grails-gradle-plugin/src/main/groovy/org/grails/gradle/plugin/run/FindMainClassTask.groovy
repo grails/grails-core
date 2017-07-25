@@ -1,12 +1,15 @@
 package org.grails.gradle.plugin.run
 
 import grails.util.BuildSettings
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskAction
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.MainClassFinder
@@ -62,13 +65,18 @@ class FindMainClassTask extends DefaultTask {
 
             MainClassFinder mainClassFinder = createMainClassFinder()
 
-            File classesDir = mainSourceSet.output.classesDir
-            String mainClass = mainClassFinder.findMainClass(classesDir)
-            if(mainClass != null) {
-                mainClassFile.text = mainClass
-            }
-            else {
+            Set<File> classesDirs = resolveClassesDirs(mainSourceSet.output, project).files
+            String mainClass = null
+            for(File classesDir in classesDirs) {
 
+                mainClass = mainClassFinder.findMainClass(classesDir)
+                if(mainClass != null) {
+                    mainClassFile.text = mainClass
+                    break
+                }
+            }
+
+            if(mainClass == null) {
                 mainClass = mainClassFinder.findMainClass(new File(project.buildDir, "classes/groovy/main"))
                 if(mainClass != null) {
                     mainClassFile.text = mainClass
@@ -80,6 +88,18 @@ class FindMainClassTask extends DefaultTask {
             return mainClass
         }
 
+    }
+
+    @CompileDynamic
+    protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
+        FileCollection classesDirs
+        try {
+            classesDirs = output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
+        }
+        catch(e) {
+            classesDirs = output?.classesDir ? project.files(output.classesDir) : project.files(new File(project.buildDir, "classes/main"))
+        }
+        return classesDirs
     }
 
     protected MainClassFinder createMainClassFinder() {
