@@ -22,7 +22,7 @@ apply plugin: 'idea'
 ext {
     bintrayPublish = false
     // Sets release version
-    grailsVersion = '3.3.0'
+    grailsVersion = '3.3.1.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     
