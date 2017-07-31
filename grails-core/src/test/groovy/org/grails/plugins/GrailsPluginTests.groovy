@@ -249,7 +249,7 @@ class TestGrailsPlugin {
             pluginManager.loadPlugins()
             assertNull pluginManager.getGrailsPlugin("test")
         } finally {
-            System.setProperty(Environment.KEY, Environment.DEVELOPMENT.getName())
+            System.setProperty(Environment.KEY, Environment.TEST.getName())
         }
     }
 }
