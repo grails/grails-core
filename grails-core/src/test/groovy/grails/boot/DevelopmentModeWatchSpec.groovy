@@ -3,6 +3,7 @@ package grails.boot
 import grails.plugins.GrailsPlugin
 import grails.plugins.GrailsPluginManager
 import grails.plugins.Plugin
+import grails.util.Environment
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.springframework.context.ConfigurableApplicationContext
@@ -18,6 +19,7 @@ class DevelopmentModeWatchSpec extends Specification {
 
     void "test root watchPattern"() {
         setup:
+        System.setProperty(Environment.KEY, Environment.DEVELOPMENT.getName())
         System.setProperty("base.dir", ".")
         GrailsApp app = new GrailsApp(GrailsTestConfigurationClass.class)
         ConfigurableApplicationContext context = app.run()
@@ -36,6 +38,7 @@ class DevelopmentModeWatchSpec extends Specification {
 
         cleanup:
         System.clearProperty("base.dir")
+        System.setProperty(Environment.KEY, Environment.TEST.getName())
         if(watchedFile != null) {
             watchedFile.delete()
         }
