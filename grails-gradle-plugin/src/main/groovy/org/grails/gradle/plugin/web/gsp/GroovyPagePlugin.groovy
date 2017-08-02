@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
@@ -30,14 +31,14 @@ class GroovyPagePlugin implements Plugin<Project> {
             gspCompile 'javax.servlet:javax.servlet-api:3.1.0'
         }
 
-        def mainSourceSet = SourceSets.findMainSourceSet(project)
+        SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
 
-        def output = mainSourceSet?.output
-        def classesDir = output?.classesDir ?: new File(project.buildDir, "classes/main")
-        def destDir = output?.dir("gsp-classes") ?: new File(project.buildDir, "gsp-classes/main")
+        SourceSetOutput output = mainSourceSet?.output
+        FileCollection classesDirs = resolveClassesDirs(output, project)
+        File destDir = output?.dir("gsp-classes") ?: new File(project.buildDir, "gsp-classes/main")
 
-        def providedConfig = project.configurations.findByName('provided')
-        def allClasspath = project.configurations.compile + project.configurations.gspCompile + project.files(classesDir)
+        Configuration providedConfig = project.configurations.findByName('provided')
+        def allClasspath = project.configurations.compile + project.configurations.gspCompile + classesDirs
         if(providedConfig) {
             allClasspath += providedConfig
         }
@@ -71,6 +72,18 @@ class GroovyPagePlugin implements Plugin<Project> {
                 jar.from destDir
             }
         }
+    }
+
+
+    protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
+        FileCollection classesDirs
+        try {
+            classesDirs = output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
+        }
+        catch(e) {
+            classesDirs = output?.classesDir ? project.files(output.classesDir) : project.files(new File(project.buildDir, "classes/main"))
+        }
+        return classesDirs
     }
 
 }
