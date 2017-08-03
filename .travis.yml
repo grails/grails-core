@@ -1,7 +1,7 @@
 language: groovy
 sudo: false
 jdk:
-- oraclejdk7
+- openjdk7
 env:
   global:
   - TERM=dumb
