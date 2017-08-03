@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import grails.io.IOUtils;
+import grails.web.mime.MimeType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import grails.core.GrailsDomainClassProperty;
@@ -84,7 +85,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         if (requestMap.isEmpty() && ("PUT".equals(request.getMethod()) || "PATCH".equals(request.getMethod())) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
             // attempt manual parse of request body. This is here because some containers don't parse the request body automatically for PUT request
             String contentType = request.getContentType();
-            if ("application/x-www-form-urlencoded".equals(contentType)) {
+            if (MimeType.FORM.equals(new MimeType(contentType))) {
                 try {
                     Reader reader = request.getReader();
                     if(reader != null) {
