@@ -210,7 +210,7 @@ class BuildSettings {
     /**
      * The path to the build classes directory
      */
-    public static final String BUILD_CLASSES_PATH = "build/classes/main"
+    public static final String BUILD_CLASSES_PATH
 
     /**
      * The path to the build resources directory
@@ -236,18 +236,22 @@ class BuildSettings {
     static {
         if(!GRAILS_APP_DIR_PRESENT) {
             CLASSES_DIR = null
+            BUILD_CLASSES_PATH = "build/classes/main"
         }
         else {
             String fromSystem = System.getProperty(PROJECT_CLASSES_DIR)
             if(fromSystem) {
                 CLASSES_DIR = new File(fromSystem)
+                BUILD_CLASSES_PATH = fromSystem
             }
             else  {
                 File groovyDir = new File(TARGET_DIR, "classes/groovy/main")
                 if(groovyDir.exists()) {
+                    BUILD_CLASSES_PATH = "build/classes/groovy/main"
                     CLASSES_DIR = groovyDir
                 }
                 else {
+                    BUILD_CLASSES_PATH = "build/classes/main"
                     CLASSES_DIR = new File(TARGET_DIR, "classes/main")
                 }
             }
