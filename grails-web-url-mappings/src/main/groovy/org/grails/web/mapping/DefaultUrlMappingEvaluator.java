@@ -502,7 +502,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         /**
-         * Matches the PATCH method
+         * Matches the DELETE method
          *
          * @param arguments The arguments
          * @param uri The URI
@@ -543,7 +543,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         /**
-         * Matches the HEAD method
+         * Matches the OPTIONS method
          *
          * @param arguments The arguments
          * @param uri The URI
