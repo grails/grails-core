@@ -186,7 +186,7 @@ class BuildSettings {
     /**
      * The base directory of the project
      */
-    public static final File BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) :  ( IOUtils.findApplicationDirectoryFile() ?: new File("."))
+    public static final File BASE_DIR
 
     /**
      * Whether the application is running inside the development environment or deployed
@@ -256,6 +256,7 @@ class BuildSettings {
                 }
             }
         }
+        BASE_DIR = System.getProperty(APP_BASE_DIR) ? new File(System.getProperty(APP_BASE_DIR)) :  ( IOUtils.findApplicationDirectoryFile() ?: new File("."))
     }
 
 
