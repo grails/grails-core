@@ -247,6 +247,10 @@ public class GrailsNameUtils {
             name = name.substring(pos + 1);
         }
 
+        if (name.isEmpty()) {
+            return name;
+        }
+
         // Check whether the name begins with two upper case letters.
         if (name.length() > 1 && Character.isUpperCase(name.charAt(0)) &&
                 Character.isUpperCase(name.charAt(1))) {
