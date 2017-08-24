@@ -18,7 +18,7 @@ class DomainClassWithCustomValidatorTests extends Specification implements Domai
 
         then:
         // checks there is no stack over flow
-        uni2.save()
+        uni2.save() == null
     }
 }
 
@@ -31,7 +31,7 @@ class Uniqueable {
     }
 
     static onlyOneSomething = { value, obj ->
-        if (value == "something" && Uniqueable.countByWordAndIdNot("something", obj.id)) {
+        if (value == "something" && Uniqueable.countByWord("something")) {
             return "unique"
         }
     }
