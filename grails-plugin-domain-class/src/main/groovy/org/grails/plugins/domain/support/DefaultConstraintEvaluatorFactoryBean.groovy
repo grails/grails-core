@@ -33,7 +33,7 @@ class DefaultConstraintEvaluatorFactoryBean implements FactoryBean<ConstraintsEv
 
     @Override
     Class<?> getObjectType() {
-        DefaultConstraintEvaluator
+        ConstraintsEvaluator
     }
 
     @Override
