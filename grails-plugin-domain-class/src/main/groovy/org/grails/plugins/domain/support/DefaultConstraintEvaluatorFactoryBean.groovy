@@ -1,8 +1,8 @@
 package org.grails.plugins.domain.support
 
 import grails.core.GrailsApplication
-import grails.validation.ConstraintsEvaluator
-import org.grails.validation.DefaultConstraintEvaluator
+import org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator
+import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
 import org.grails.datastore.gorm.validation.constraints.registry.ConstraintRegistry
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.grails.datastore.mapping.model.MappingContext
@@ -28,7 +28,7 @@ class DefaultConstraintEvaluatorFactoryBean implements FactoryBean<ConstraintsEv
     ConstraintsEvaluator getObject() throws Exception {
         ConstraintRegistry registry = new DefaultConstraintRegistry(messageSource)
 
-        new DefaultConstraintEvaluator(new org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator(registry, grailsDomainClassMappingContext, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config)))
+        new DefaultConstraintEvaluator(registry, grailsDomainClassMappingContext, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
     }
 
     @Override
