@@ -19,6 +19,7 @@ import grails.core.GrailsApplication
 import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.validation.ConstraintsEvaluator
+import org.grails.plugins.domain.support.DefaultConstraintEvaluatorFactoryBean
 import org.grails.plugins.domain.support.DefaultMappingContextFactoryBean
 import org.grails.plugins.domain.support.ValidatorRegistryFactoryBean
 import org.grails.validation.DefaultConstraintEvaluator
@@ -41,6 +42,7 @@ class DomainClassGrailsPlugin extends Plugin {
     Closure doWithSpring() {{->
         GrailsApplication application = grailsApplication
         "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
+        validateableConstraintsEvaluator(DefaultConstraintEvaluatorFactoryBean)
         grailsDomainClassMappingContext(DefaultMappingContextFactoryBean, application, applicationContext)
         gormValidatorRegistry(ValidatorRegistryFactoryBean)
     }}
