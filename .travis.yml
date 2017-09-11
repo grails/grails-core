@@ -47,3 +47,7 @@ cache:
 notifications:
   slack:
     secure: WAto/v/ZBvlXxWTHUH6hONQ1uJZxVnUts1V7379hCViN5+DOfIbxzQAq+10SAgD6pa2BcQftpKIWr1/9RUZyK3oxE2mHbVUulkaVHNJJfz6oPD5pnCVMxE+ZuhkRuhkddGDBHpYaVw37QBkalLB0rE0h7Ddvo/gk9ICSQQLTlvE=
+addons:
+  hosts:
+    - grails
+  hostname: grails
