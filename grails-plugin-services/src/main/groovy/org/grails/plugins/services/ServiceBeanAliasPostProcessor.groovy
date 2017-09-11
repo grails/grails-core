@@ -50,25 +50,29 @@ class ServiceBeanAliasPostProcessor implements BeanFactoryPostProcessor {
                 BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName)
                 if (beanDefinition instanceof GenericBeanDefinition) {
                     GenericBeanDefinition genericBeanDefinition = (GenericBeanDefinition) beanDefinition
-                    Class beanClass = genericBeanDefinition.beanClass
-                    Artefact artefactAnn = beanClass?.getAnnotation(Artefact)
-                    if (artefactAnn != null && artefactAnn.value() == ServiceArtefactHandler.TYPE) {
-                        String serviceClassName = beanClass.name
-                        if (serviceClassName) {
-                            String potentialAliasName = GrailsNameUtils.getPropertyName(beanClass.simpleName)
-                            // if the alias name does not conflict with another bean name,
-                            // add it to the Map for consideration
-                            if (!beanNames.contains(potentialAliasName)) {
-                                def aliasExists = false
-                                if (beanFactory instanceof AliasRegistry) {
-                                    aliasExists = ((AliasRegistry) beanFactory).isAlias(potentialAliasName)
-                                }
-                                if (!aliasExists) {
-                                    aliasNamesToListOfBeanNames[potentialAliasName] << beanName
+                    if(genericBeanDefinition.hasBeanClass()) {
+
+                        Class beanClass = genericBeanDefinition.beanClass
+                        Artefact artefactAnn = beanClass?.getAnnotation(Artefact)
+                        if (artefactAnn != null && artefactAnn.value() == ServiceArtefactHandler.TYPE) {
+                            String serviceClassName = beanClass.name
+                            if (serviceClassName) {
+                                String potentialAliasName = GrailsNameUtils.getPropertyName(beanClass.simpleName)
+                                // if the alias name does not conflict with another bean name,
+                                // add it to the Map for consideration
+                                if (!beanNames.contains(potentialAliasName)) {
+                                    def aliasExists = false
+                                    if (beanFactory instanceof AliasRegistry) {
+                                        aliasExists = ((AliasRegistry) beanFactory).isAlias(potentialAliasName)
+                                    }
+                                    if (!aliasExists) {
+                                        aliasNamesToListOfBeanNames[potentialAliasName] << beanName
+                                    }
                                 }
                             }
                         }
                     }
+
 
                 }
             }

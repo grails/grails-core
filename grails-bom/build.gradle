@@ -173,12 +173,26 @@ publishing {
                                 }
                             }
 
-                            mkp.dependency {
-                                mkp.groupId 'org.grails.plugins'
-                                mkp.artifactId "events"
-                                mkp.version( asyncVersion )
+                            ['async', 'events'].each { name ->
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails.plugins'
+                                    mkp.artifactId name
+                                    mkp.version( asyncVersion )
+                                }
                             }
-
+                            
+                            ['gpars', 'rxjava', 'rxjava2'].each { name ->
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails'
+                                    mkp.artifactId "grails-async-$name"
+                                    mkp.version( asyncVersion )
+                                }
+                                mkp.dependency {
+                                    mkp.groupId 'org.grails'
+                                    mkp.artifactId "grails-events-$name"
+                                    mkp.version( asyncVersion )
+                                }                                
+                            }                            
 
                             mkp.dependency {
                                 mkp.groupId 'org.spockframework'
@@ -190,12 +204,6 @@ publishing {
                                 mkp.groupId 'org.spockframework'
                                 mkp.artifactId "spock-spring"
                                 mkp.version( spockVersion )
-                            }
-
-                            mkp.dependency {
-                                mkp.groupId 'org.grails.plugins'
-                                mkp.artifactId "async"
-                                mkp.version( asyncVersion )
                             }
 
                             mkp.dependency {
