@@ -22,6 +22,7 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.grails.datastore.mapping.services.ServiceRegistry
 import org.grails.web.util.GrailsApplicationAttributes
 import org.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,6 +49,9 @@ class GrailsInterceptorHandlerInterceptorAdapter implements HandlerInterceptor {
 
     protected List<Interceptor> interceptors = []
     protected List<Interceptor> reverseInterceptors = []
+
+    @Autowired(required = false)
+    ServiceRegistry[] serviceRegistry // inject the service registry to ensure data services are wired up
 
     @Autowired(required = false)
     @CompileDynamic
