@@ -30,7 +30,7 @@ ext {
     gspVersion = '3.3.0'
     legacyConvertersVersion = "3.3.1"
     testingSupportVersion = "1.0.0"
-    datastoreVersion = "6.1.7.BUILD-SNAPSHOT"
+    datastoreVersion = "6.1.7.RELEASE"
 
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
