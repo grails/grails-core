@@ -29,9 +29,8 @@ ext {
     asyncVersion = '3.3.1'
     gspVersion = '3.3.0'
     legacyConvertersVersion = "3.3.1"
-    testingSupportVersion = "1.0.0"
+    testingSupportVersion = "1.1.1"
     datastoreVersion = "6.1.7.RELEASE"
-
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
