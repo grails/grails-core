@@ -1,13 +1,12 @@
 package org.grails.plugins.testing
 
 import grails.converters.XML
-
 import grails.core.DefaultGrailsApplication
-import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.web.converters.configuration.ConvertersConfigurationInitializer
-
 import spock.lang.Issue
 import spock.lang.Specification
+
+import javax.servlet.http.Part
 
 class GrailsMockHttpServletRequestSpec extends Specification {
     @Issue("GRAILS-11493")
@@ -40,5 +39,21 @@ class GrailsMockHttpServletRequestSpec extends Specification {
 
         then: 'the content is no longer available'
         null == result
+    }
+
+    def 'gets multipartFiles from parts of request'() {
+        given:
+        GrailsMockMultipartFile aFile = new GrailsMockMultipartFile('aFile', 'content of a file'.bytes)
+        GrailsMockMultipartFile anotherFile = new GrailsMockMultipartFile('anotherFile', 'content of another file'.bytes)
+
+        GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest()
+        request.addFile(aFile)
+        request.addFile(anotherFile)
+
+        when:
+        List<Part> parts = request.parts
+
+        then:
+        parts.file == [aFile, anotherFile]
     }
 }
