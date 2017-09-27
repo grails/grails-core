@@ -716,7 +716,6 @@ public enum Environment {
 
     private static String getEnvironment() {
         String envName = System.getProperty(Environment.KEY);
-        
         return isBlank(envName) ? System.getenv(Environment.ENV_KEY) : envName;
     }
 
