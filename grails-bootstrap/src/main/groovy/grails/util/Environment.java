@@ -63,6 +63,11 @@ public enum Environment {
      * Constant used to resolve the environment via System.getProperty(Environment.KEY)
      */
     public static String KEY = "grails.env";
+    
+    /**
+     * Constant used to resolve the environment via System.getenv(Environment.ENV_KEY).
+     */
+    public static final String ENV_KEY = "GRAILS_ENV";
 
     /**
      * The name of the GRAILS_HOME environment variable
@@ -260,7 +265,8 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
-        String envName = System.getProperty(Environment.KEY);
+        String envName = getEnvironment();
+
         Environment env;
         if(!isBlank(envName)) {
             env = getEnvironment(envName);
@@ -278,7 +284,7 @@ public enum Environment {
     }
 
     private static Environment resolveCurrentEnvironment() {
-        String envName = System.getProperty(Environment.KEY);
+        String envName = getEnvironment();
 
         if (isBlank(envName)) {
             Metadata metadata = Metadata.getCurrent();
@@ -417,7 +423,7 @@ public enum Environment {
      * @return Return true if the environment has been set as a System property
      */
     public static boolean isSystemSet() {
-        return System.getProperty(KEY) != null;
+        return getEnvironment() != null;
     }
 
     /**
@@ -708,5 +714,10 @@ public enum Environment {
         return location;
     }
 
+    private static String getEnvironment() {
+        String envName = System.getProperty(Environment.KEY);
+        
+        return isBlank(envName) ? System.getenv(Environment.ENV_KEY) : envName;
+    }
 
 }
