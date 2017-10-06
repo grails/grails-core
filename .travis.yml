@@ -1,5 +1,4 @@
 language: groovy
-dist: precise
 sudo: false
 jdk:
 - openjdk8
