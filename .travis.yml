@@ -2,7 +2,7 @@ language: groovy
 dist: precise
 sudo: false
 jdk:
-- openjdk7
+- openjdk8
 env:
   global:
   - TERM=dumb

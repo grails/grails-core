@@ -37,12 +37,12 @@ class GrailsSwingConsole extends GrailsApp {
         System.setProperty("java.awt.headless", "false");
     }
 
-    GrailsSwingConsole(Object... sources) {
+    GrailsSwingConsole(Class<?>... sources) {
         super(sources)
         configureApplicationContextClass()
     }
 
-    GrailsSwingConsole(ResourceLoader resourceLoader, Object... sources) {
+    GrailsSwingConsole(ResourceLoader resourceLoader, Class<?>... sources) {
         super(resourceLoader, sources)
         configureApplicationContextClass()
     }
@@ -64,8 +64,8 @@ class GrailsSwingConsole extends GrailsApp {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    public static ConfigurableApplicationContext run(Object source, String... args) {
-        return run([ source ] as Object[], args);
+    public static ConfigurableApplicationContext run(Class<?> source, String... args) {
+        return run([ source ] as Class[], args);
     }
 
     /**
@@ -75,7 +75,7 @@ class GrailsSwingConsole extends GrailsApp {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    public static ConfigurableApplicationContext run(Object[] sources, String[] args) {
+    public static ConfigurableApplicationContext run(Class<?>[] sources, String[] args) {
         return new GrailsSwingConsole(sources).run(args);
     }
 

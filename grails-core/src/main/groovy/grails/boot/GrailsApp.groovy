@@ -56,9 +56,9 @@ class GrailsApp extends SpringApplication {
      * {@link #run(String...)}.
      * @param sources the bean sources
      * @see #run(Object, String[])
-     * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Object...)
+     * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Class<?>...)
      */
-    GrailsApp(Object... sources) {
+    GrailsApp(Class<?>... sources) {
         super(sources)
         bannerMode = Banner.Mode.OFF
     }
@@ -71,9 +71,9 @@ class GrailsApp extends SpringApplication {
      * @param resourceLoader the resource loader to use
      * @param sources the bean sources
      * @see #run(Object, String[])
-     * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Object...)
+     * @see #GrailsApp(org.springframework.core.io.ResourceLoader, Class<?>...)
      */
-    GrailsApp(ResourceLoader resourceLoader, Object... sources) {
+    GrailsApp(ResourceLoader resourceLoader, Class<?>... sources) {
         super(resourceLoader, sources)
         bannerMode = Banner.Mode.OFF
     }
@@ -370,8 +370,8 @@ class GrailsApp extends SpringApplication {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    static ConfigurableApplicationContext run(Object source, String... args) {
-        return run([ source ] as Object[], args)
+    static ConfigurableApplicationContext run(Class<?> source, String... args) {
+        return run([ source ] as Class[], args)
     }
 
     /**
@@ -381,7 +381,7 @@ class GrailsApp extends SpringApplication {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    static ConfigurableApplicationContext run(Object[] sources, String[] args) {
+    static ConfigurableApplicationContext run(Class<?>[] sources, String[] args) {
         GrailsApp grailsApp = new GrailsApp(sources)
         grailsApp.banner = new ResourceBanner(new ClassPathResource(GRAILS_BANNER))
         return grailsApp.run(args)

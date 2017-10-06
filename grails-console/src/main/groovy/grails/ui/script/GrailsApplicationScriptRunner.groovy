@@ -33,7 +33,7 @@ import org.springframework.context.ConfigurableApplicationContext
 class GrailsApplicationScriptRunner extends DevelopmentGrailsApplication {
     List<File> scripts
 
-    private GrailsApplicationScriptRunner(List<File> scripts, Object... sources) {
+    private GrailsApplicationScriptRunner(List<File> scripts, Class<?>... sources) {
         super(sources)
         this.scripts = scripts
     }

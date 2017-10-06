@@ -21,7 +21,8 @@ import groovy.transform.CompileStatic
  * A Resource impl used represent a Resource as an array of bytes
  */
 @CompileStatic
-class ByteArrayResource implements Resource{
+class ByteArrayResource implements Resource {
+
     byte[] bytes
     String description = "resource loaded from byte array"
 
