@@ -38,6 +38,7 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.DefaultCompositeFileTree
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.WarPlugin
@@ -648,14 +649,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
             SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
             SourceSetOutput output = mainSourceSet?.output
+            FileCollection mainFiles = resolveClassesDirs(output, project)
 
             Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
-            FileCollection pathingClasspath = resolveClassesDirs(output, project)
-            pathingClasspath.add(project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath))
+            FileCollection pathingClasspath = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath) + mainFiles
 
             Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
-            FileCollection pathingClasspathCommand = resolveClassesDirs(output, project)
-            pathingClasspathCommand.add(project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath))
+            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath) + mainFiles
 
             GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
 
