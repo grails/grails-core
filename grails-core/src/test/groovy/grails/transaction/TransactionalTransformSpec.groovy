@@ -906,7 +906,83 @@ class SomeClass {
         ex.message.contains 'Cannot find matching method java.lang.String#lastName()'
 
     }
+
+
+    void "test transactional behavior is applied to getter methods without a setter"() {
+        given:
+        def someClass = new GroovyShell().evaluate('''
+package demo
+    
+@grails.transaction.Transactional
+class SomeClass {
+
+    public void setAge(String name) {
+        
+    }
+
+    public String getAge() {
+        'valid'
+    }
+
+    public String getPhone() {
+        'valid'
+    }
 }
+
+new SomeClass()
+''')
+
+        final transactionManager = getPlatformTransactionManager()
+        someClass.transactionManager = transactionManager
+
+        when:
+        someClass.setAge('x')
+
+        then:
+        transactionManager.transactionStarted == false
+
+        when:
+        someClass.getAge()
+
+        then:
+        transactionManager.transactionStarted == false
+
+        when:
+        someClass.getPhone()
+
+        then:
+        transactionManager.transactionStarted == true
+    }
+
+    void "test transactional behavior is applied to methods that aren't setters but start with set"() {
+        given:
+        def someClass = new GroovyShell().evaluate('''
+package demo
+
+    
+@grails.transaction.Transactional
+class SomeClass {
+
+    public void setupSessionAfterLogin(String username) {
+    }
+
+}
+
+new SomeClass()
+''')
+
+        final transactionManager = getPlatformTransactionManager()
+        someClass.transactionManager = transactionManager
+
+        when:
+        someClass.setupSessionAfterLogin()
+
+        then:
+        transactionManager.transactionStarted == true
+    }
+}
+
+
 @Transactional
 class TransactionalTransformSpecService implements InitializingBean {
     String name

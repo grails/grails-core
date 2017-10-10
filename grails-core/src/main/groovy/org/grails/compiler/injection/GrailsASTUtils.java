@@ -1457,19 +1457,25 @@ public class GrailsASTUtils {
             scopeVisitor.visitMethod(methodNode);
         }
     }
-    
-    public static boolean isSetterOrGetterMethod(MethodNode md) {
+
+    public static boolean isGetterMethod(MethodNode md) {
         String methodName = md.getName();
-        
-        if((methodName.startsWith("set") && methodName.length() > 3) && md.getParameters() != null && md.getParameters().length == 1) {
-            return true;
-        }
-        
-        if(((methodName.startsWith("get") && methodName.length() > 3) || (methodName.startsWith("is") && methodName.length() > 2)) && (md.getParameters()==null || md.getParameters().length == 0)) {
-            return true;
-        }
-        
-        return false;
+
+        return (((methodName.startsWith("get") && methodName.length() > 3) || (methodName.startsWith("is") && methodName.length() > 2)) && (md.getParameters()==null || md.getParameters().length == 0));
+    }
+
+    public static boolean isSetterMethod(MethodNode md) {
+        String methodName = md.getName();
+
+        return ((methodName.startsWith("set") &&
+                methodName.length() > 3) &&
+                Character.isUpperCase(methodName.substring(3).charAt(0)) &&
+                md.getParameters() != null &&
+                md.getParameters().length == 1);
+    }
+
+    public static boolean isSetterOrGetterMethod(MethodNode md) {
+        return isGetterMethod(md) || isSetterMethod(md);
     }
 
     /**

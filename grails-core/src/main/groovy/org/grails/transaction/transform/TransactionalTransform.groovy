@@ -18,6 +18,8 @@ package org.grails.transaction.transform
 
 import grails.compiler.DelegatingMethod
 import grails.transaction.Rollback
+import grails.util.GrailsClassUtils
+import grails.util.GrailsNameUtils
 import groovy.transform.TypeChecked
 import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.ast.tools.GenericsUtils
@@ -114,7 +116,17 @@ class TransactionalTransform implements ASTTransformation{
     public void weaveTransactionalBehavior(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode) {
         weaveTransactionManagerAware(source, classNode)
         List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods());
-        
+
+        List<String> setterMethodNames = []
+        Iterator<MethodNode> methodNodeIterator = methods.iterator()
+        while (methodNodeIterator.hasNext()) {
+            MethodNode md = methodNodeIterator.next()
+            if (isSetterMethod(md)) {
+                setterMethodNames.add(md.name)
+                methodNodeIterator.remove()
+            }
+        }
+
         for (MethodNode md in methods) {
             String methodName = md.getName()
             int modifiers = md.modifiers
@@ -132,8 +144,15 @@ class TransactionalTransform implements ASTTransformation{
                 }
 
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
-                
-                if(isSetterOrGetterMethod(md)) continue
+
+                if (isGetterMethod(md)) {
+                    final String propertyName = GrailsClassUtils.getPropertyForGetter(md.name, md.returnType.typeClass)
+                    final String setterName = GrailsNameUtils.getSetterName(propertyName)
+
+                    //If a setter exists for the getter, don't apply the transformation
+                    if (setterMethodNames.contains(setterName)) continue
+                }
+
 
                 // don't apply to methods added by traits
                 if(hasAnnotation(md, org.codehaus.groovy.transform.trait.Traits.TraitBridge.class)) continue
