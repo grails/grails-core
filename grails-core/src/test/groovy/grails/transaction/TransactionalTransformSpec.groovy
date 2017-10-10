@@ -782,7 +782,7 @@ new BookService()
         bean.process() != null
         bean.isActualTransactionActive() == false
         bean.name == 'Grails'
-        bean.isActive() == false
+        bean.isActive() == true
     }
 
     @Issue(['GRAILS-11145', 'GRAILS-11134'])
