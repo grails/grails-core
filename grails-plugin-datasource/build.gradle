@@ -10,7 +10,7 @@ dependencies {
     }
 
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
-    runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
+    runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatLog4jVersion"
 
     compile project(":grails-core")
 }
