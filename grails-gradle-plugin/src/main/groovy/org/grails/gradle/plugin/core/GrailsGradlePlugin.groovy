@@ -65,6 +65,7 @@ import org.grails.io.support.FactoriesLoaderSupport
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
+import org.springframework.boot.gradle.tasks.bundling.BootArchive
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.bundling.BootWar
 
@@ -499,9 +500,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void registerFindMainClassTask(Project project) {
         def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
         findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
-        def bootRepackageTask = project.tasks.findByName("bootRepackage")
-        if(bootRepackageTask) {
-            bootRepackageTask.dependsOn findMainClassTask
+        project.tasks.withType(BootArchive) { BootArchive task ->
+            task.dependsOn findMainClassTask
         }
     }
 

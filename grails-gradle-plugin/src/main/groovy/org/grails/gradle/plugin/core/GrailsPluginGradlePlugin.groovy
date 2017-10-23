@@ -174,15 +174,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
                 task.mainClass != null
             }
         }
-/*        def repackageTask = project.tasks.findByName('bootRepackage')
-        repackageTask.onlyIf {
-            BootRun bootRun = (BootRun)project.tasks.findByName('bootRun')
-            String mainClassName
-            if (bootRun) {
-                mainClassName = bootRun.main
-            }
-            mainClassName != null
-        }*/
+
         Jar jarTask = (Jar)project.tasks.findByName('jar')
         jarTask.exclude "application.yml"
         jarTask.exclude "application.groovy"
