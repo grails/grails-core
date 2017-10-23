@@ -104,7 +104,9 @@ trait RequestForwarder implements WebAttributes {
         HttpServletRequest request = webRequest.currentRequest
         HttpServletResponse response = webRequest.currentResponse
 
-        WebUtils.exposeRequestAttributes(request, (Map)model);
+        for (Map.Entry<String, Object> entry : model.entrySet()) {
+            request.setAttribute(entry.getKey(), entry.getValue())
+        }
 
         request.setAttribute(GrailsApplicationAttributes.FORWARD_IN_PROGRESS, true)
         params.includeContext = false

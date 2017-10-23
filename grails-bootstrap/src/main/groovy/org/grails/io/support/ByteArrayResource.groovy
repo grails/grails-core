@@ -61,7 +61,8 @@ class ByteArrayResource implements Resource {
 
     String getFilename() { description }
 
-    Resource createRelative(String relativePath) {
+    //Fully qualified name to work around Groovy bug
+    org.grails.io.support.Resource createRelative(String relativePath) {
         throw new UnsupportedOperationException("Method createRelative not supported")
     }
 }
