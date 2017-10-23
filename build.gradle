@@ -42,7 +42,7 @@ ext {
 
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.12"
     jansiVersion = "1.14"
-    jlineVersion = "2.12"
+    jlineVersion = "2.14.2"
     jnaVersion = "4.2.2"
     slf4jVersion = "1.7.22"
 
