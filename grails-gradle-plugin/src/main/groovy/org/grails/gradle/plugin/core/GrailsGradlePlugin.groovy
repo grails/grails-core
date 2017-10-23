@@ -40,6 +40,7 @@ import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.DefaultCompositeFileTree
 import org.gradle.api.java.archives.Manifest
+import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.tasks.AbstractCopyTask
@@ -61,10 +62,11 @@ import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
-import org.springframework.boot.gradle.SpringBootPluginExtension
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
-import org.springframework.boot.gradle.repackage.RepackageTask
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.bundling.BootWar
 
 import javax.inject.Inject
 
@@ -156,7 +158,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void applyDefaultPlugins(Project project) {
-        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+        def springBoot = project.extensions.findByType(SpringBootExtension)
         if (!springBoot) {
             project.plugins.apply(SpringBootPlugin)
         }
@@ -276,10 +278,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void configureSpringBootExtension(Project project) {
-        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+        def springBoot = project.extensions.findByType(SpringBootExtension)
 
         if(springBoot) {
-            springBoot.providedConfiguration = ProvidedBasePlugin.PROVIDED_CONFIGURATION_NAME
+            //TODO: Boot2
+            //springBoot.providedConfiguration = ProvidedBasePlugin.PROVIDED_CONFIGURATION_NAME
         }
     }
 
@@ -446,8 +449,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
-            def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
-            def mainClassName = bootExtension.mainClass
+            ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) project.getExtensions().getByName("ext")
+            def mainClassName = extraProperties.get('mainClassName')
             if(mainClassName) {
                 consoleTask.args mainClassName
                 shellTask.args mainClassName
@@ -636,13 +639,13 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
             if( project.plugins.findPlugin(WarPlugin) ) {
                 def allTasks = project.tasks
-                allTasks.withType(RepackageTask) { RepackageTask t ->
+                allTasks.withType(BootWar) { BootWar t ->
                     t.withJarTask = allTasks.findByName('war')
                 }
             }
             else {
                 def allTasks = project.tasks
-                allTasks.withType(RepackageTask) { RepackageTask t ->
+                allTasks.withType(BootJar) { BootJar t ->
                     t.withJarTask = allTasks.findByName('jar')
                 }
             }

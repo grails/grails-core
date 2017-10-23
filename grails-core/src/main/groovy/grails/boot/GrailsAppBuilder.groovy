@@ -16,7 +16,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder
 class GrailsAppBuilder extends SpringApplicationBuilder {
 
     @Override
-    protected SpringApplication createSpringApplication(Object... sources) {
+    protected SpringApplication createSpringApplication(Class<?>... sources) {
         return new GrailsApp(sources)
     }
 }

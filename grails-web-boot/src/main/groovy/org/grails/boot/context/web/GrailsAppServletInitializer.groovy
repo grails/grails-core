@@ -5,10 +5,10 @@ import groovy.transform.CompileStatic
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.builder.ParentContextApplicationContextInitializer
 import org.springframework.boot.builder.SpringApplicationBuilder
-import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext
-import org.springframework.boot.web.support.ErrorPageFilter
-import org.springframework.boot.web.support.ServletContextApplicationContextInitializer
-import org.springframework.boot.web.support.SpringBootServletInitializer
+import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext
+import org.springframework.boot.web.servlet.support.ErrorPageFilter
+import org.springframework.boot.web.servlet.support.ServletContextApplicationContextInitializer
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.AnnotationUtils
@@ -42,18 +42,18 @@ abstract class GrailsAppServletInitializer extends SpringBootServletInitializer 
         }
         builder.initializers(new ServletContextApplicationContextInitializer(
                 servletContext))
-        builder.contextClass(AnnotationConfigEmbeddedWebApplicationContext.class)
+        builder.contextClass(AnnotationConfigServletWebServerApplicationContext.class)
         builder = configure(builder)
         SpringApplication application = builder.build()
         if (application.getSources().isEmpty()
                 && AnnotationUtils.findAnnotation(getClass(), Configuration.class) != null) {
-            application.getSources().add(getClass())
+            application.getSources().add(getClass().name)
         }
         Assert.state(application.getSources().size() > 0,
                 "No SpringApplication sources have been defined. Either override the "
                         + "configure method or add an @Configuration annotation")
         // Ensure error pages are registered
-        application.getSources().add(ErrorPageFilter.class)
+        application.getSources().add(ErrorPageFilter.class.name)
         return run(application)
     }
 

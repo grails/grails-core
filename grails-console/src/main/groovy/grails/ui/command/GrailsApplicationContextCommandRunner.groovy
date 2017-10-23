@@ -35,7 +35,7 @@ class GrailsApplicationContextCommandRunner extends DevelopmentGrailsApplication
 
     String commandName
 
-    protected GrailsApplicationContextCommandRunner(String commandName, Object... sources) {
+    protected GrailsApplicationContextCommandRunner(String commandName, Class<?>... sources) {
         super(sources)
         this.commandName = commandName
     }

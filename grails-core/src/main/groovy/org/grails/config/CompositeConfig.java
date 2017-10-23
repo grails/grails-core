@@ -233,26 +233,6 @@ public class CompositeConfig implements Config {
     }
 
     @Override
-    public <T> Class<T> getPropertyAsClass(String key, Class<T> targetType) {
-        String className = getProperty(key, String.class);
-
-        if(!GrailsStringUtils.isBlank(className)) {
-            try {
-                Class<T> clazz = (Class<T>) ClassUtils.forName((String) className, Thread.currentThread().getContextClassLoader());
-                if(clazz != targetType) {
-                    throw new PropertySourcesConfig.ClassConversionException(clazz, targetType);
-                }
-                return clazz;
-            } catch (Exception e) {
-                throw new PropertySourcesConfig.ClassConversionException(className, targetType, e);
-            }
-        }
-        else {
-            throw new IllegalStateException("Value for $key cannot be resolved");
-        }
-    }
-
-    @Override
     public String getRequiredProperty(String key) throws IllegalStateException {
         String value = getProperty(key);
         if(GrailsStringUtils.isBlank(value)) {
