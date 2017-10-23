@@ -12,6 +12,7 @@ import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskAction
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.MainClassFinder
+import org.springframework.boot.gradle.tasks.bundling.BootArchive
 
 /**
  * A task that finds the main task, differs slightly from Boot's version as expects a subclass of GrailsConfiguration
@@ -25,11 +26,11 @@ class FindMainClassTask extends DefaultTask {
     @TaskAction
     void setMainClassProperty() {
         Project project = this.project
-        JavaExec bootRun = (JavaExec)project.tasks.findByName("bootRun")
+        BootArchive bootRun = (BootArchive)project.tasks.findByName("bootRun")
         if ( bootRun != null ) {
             def mainClass = findMainClass()
             if(mainClass != null) {
-                bootRun.setMain(mainClass)
+                bootRun.setMainClass(mainClass)
                 ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) getProject()
                         .getExtensions().getByName("ext")
                 extraProperties.set("mainClassName", mainClass)
