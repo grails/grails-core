@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
@@ -37,12 +38,14 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.DefaultCompositeFileTree
 import org.gradle.api.java.archives.Manifest
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -613,6 +616,18 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
+    protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
+        FileCollection classesDirs
+        try {
+            classesDirs = output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
+        }
+        catch(e) {
+            classesDirs = output?.classesDir ? project.files(output.classesDir) : project.files(new File(project.buildDir, "classes/main"))
+        }
+        return classesDirs
+    }
+
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
             ConfigurationContainer configurations = project.configurations
@@ -632,12 +647,15 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 }
             }
 
+            SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
+            SourceSetOutput output = mainSourceSet?.output
+            FileCollection mainFiles = resolveClassesDirs(output, project)
+
             Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
-            FileCollection pathingClasspath = project.files("${project.buildDir}/classes/main",
-              "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath)
+            FileCollection pathingClasspath = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath) + mainFiles
+
             Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
-            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/classes/main",
-              "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath)
+            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath) + mainFiles
 
             GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
 

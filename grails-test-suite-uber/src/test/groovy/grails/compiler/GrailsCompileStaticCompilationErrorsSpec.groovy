@@ -187,6 +187,35 @@ class SomeClass implements grails.validation.Validateable {
         then: 'no errors are thrown'
         c
     }
+
+    @Issue('GRAILS-11242')
+    void 'Test compiling Validateable with inner class'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+import groovy.transform.TypeCheckingMode
+
+@GrailsCompileStatic
+class SomeClass implements grails.validation.Validateable {
+
+    enum TestKind {
+        BIG,
+        SMALL
+    }
+    
+    String name
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
     
     @Issue('GRAILS-11242')
     void 'Test compiling Validateable which contains unrelated type checking error'() {
