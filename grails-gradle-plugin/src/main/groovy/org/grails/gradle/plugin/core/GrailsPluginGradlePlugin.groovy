@@ -30,6 +30,7 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.util.SourceSets
+import org.springframework.boot.gradle.tasks.bundling.BootArchive
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 import javax.inject.Inject
@@ -168,7 +169,12 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     @CompileStatic
     protected void configurePluginJarTask(Project project) {
-        def repackageTask = project.tasks.findByName('bootRepackage')
+        project.tasks.withType(BootArchive).each { BootArchive task ->
+            task.onlyIf {
+                task.mainClass != null
+            }
+        }
+/*        def repackageTask = project.tasks.findByName('bootRepackage')
         repackageTask.onlyIf {
             BootRun bootRun = (BootRun)project.tasks.findByName('bootRun')
             String mainClassName
@@ -176,7 +182,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
                 mainClassName = bootRun.main
             }
             mainClassName != null
-        }
+        }*/
         Jar jarTask = (Jar)project.tasks.findByName('jar')
         jarTask.exclude "application.yml"
         jarTask.exclude "application.groovy"
