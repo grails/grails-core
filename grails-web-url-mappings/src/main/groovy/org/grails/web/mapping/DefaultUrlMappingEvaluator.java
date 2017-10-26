@@ -707,6 +707,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     }
                     return builder.getConstrainedProperties();
                 } else {
+                    LOG.error("Mapping: '"+ mappedURI + "' does not start with " + SLASH + " or is response code.");
                     return super.invokeMethod(mappedURI, arg);
                 }
             } finally {
