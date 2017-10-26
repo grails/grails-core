@@ -257,7 +257,7 @@ class UrlMappingTagLib implements TagLibrary{
 
         def property = attrs.remove("property")
         def action = attrs.action ? attrs.remove("action") : (actionName ?: "list")
-        def namespace = attrs.namespace ? attrs.remove("namespace") : ""
+        def namespace = attrs.remove("namespace")
 
         def defaultOrder = attrs.remove("defaultOrder")
         if (defaultOrder != "desc") defaultOrder = "asc"
