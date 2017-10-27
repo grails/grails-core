@@ -33,6 +33,7 @@ import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.PropertyMapping;
 import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.model.types.Basic;
 import org.grails.datastore.mapping.model.types.Simple;
 import org.grails.datastore.mapping.reflect.NameUtils;
 import org.grails.validation.discovery.ConstrainedDiscovery;
@@ -223,6 +224,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 PersistentEntity associatedEntity = association.getAssociatedEntity();
                 if (associatedEntity != null) {
                     configurationMap.put(association.getName(), associatedEntity.getJavaClass());
+                } else if (association instanceof Basic) {
+                    configurationMap.put(association.getName(), ((Basic) association).getComponentType());
                 }
             }
             currentEntity = currentEntity.getParentEntity();
@@ -349,7 +352,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      */
     public Class<?> getRelatedClassType(String propertyName) {
         verifyContextIsInitialized();
-        return persistentEntity.getPropertyByName(propertyName).getOwner().getJavaClass();
+        PersistentProperty prop = persistentEntity.getPropertyByName(propertyName);
+        if (prop instanceof Association) {
+            PersistentEntity associatedEntity = ((Association) prop).getAssociatedEntity();
+            if (associatedEntity != null) {
+                return associatedEntity.getJavaClass();
+            }
+        }
+        return null;
     }
 
     /* (non-Javadoc)

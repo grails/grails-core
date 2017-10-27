@@ -257,7 +257,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             } else if (association.isBasic()) {
                 return ((Basic)association).getComponentType();
             }
-        } else if (persistentProperty instanceof Simple) {
+        } else if (persistentProperty instanceof Simple || persistentProperty instanceof Identity) {
             return persistentProperty.getType();
         }
         return null;
