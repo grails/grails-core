@@ -71,6 +71,7 @@ class PdfBuilder {
     private static String cleanupHtml(File htmlFile, String xml) {
         String result = cleanHtml ? Jsoup.parse(xml).outerHtml() : xml
         result = removeCssLinks(result)
+        result = result.replaceAll('</head>', pdfCss() + '</head>')
         if(debugPdf) {
             File before = new File(htmlFile.absolutePath + '.before.xml')
             before.setText(xml, 'UTF-8')
@@ -104,6 +105,19 @@ class PdfBuilder {
             str = removeCssLink(str)
         }
         str
+    }
+
+    static String pdfCss() {
+        """<style type="text/css">
+         pre, code {
+          font-size: 10px;
+         } 
+        .contribute-btn, #navigation, #ref-button { display: none; }
+                .paragraph, table, h2, h3, h4, h5, h6, li, pre, code {
+            width: 595px;
+        }
+        </style>
+        """
     }
 
     static void createPdf(String xml, File outputFile, File urlBase) {
