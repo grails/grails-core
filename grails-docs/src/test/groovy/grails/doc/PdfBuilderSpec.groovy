@@ -1,25 +1,8 @@
-package grails.doc.internal
+package grails.doc
 
-import grails.doc.PdfBuilder
 import spock.lang.Specification
 
-class PublishPDFSpec extends Specification {
-
-    void "generate pdf from docs"() {
-        when:
-        System.setProperty('grails.docs.clean.html','true')
-        String pdfName = 'single.pdf'
-        def outputDir = new File('/Users/sdelamo/git/grails/grails-doc/build/docs')
-        def currFile = new File(outputDir, "guide/single.html")
-        def pdfBuilder = new PdfBuilder()
-        def xml = pdfBuilder.createXml(currFile, outputDir.absolutePath)
-        pdfBuilder.createPdf(xml,
-                new File(currFile.parentFile, pdfName),
-                new File(outputDir, "guide/single.html"))
-
-        then:
-        noExceptionThrown()
-    }
+class PdfBuilderSpec extends Specification {
 
     void "remove CssLinks"() {
         given:
