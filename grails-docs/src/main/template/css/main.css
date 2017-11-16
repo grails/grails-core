@@ -86,7 +86,7 @@ strong {
 }
 
 #main.reference h1 {
-    color: #7C9D00;
+    color: #feb672;
 }
 
 .local {
@@ -189,7 +189,7 @@ strong {
 
 #table-of-content a:hover {
     text-decoration: none;
-    border-right: 2px solid #7c9d00;
+    border-right: 2px solid #feb672;
 }
 
 /*
@@ -247,11 +247,13 @@ strong {
 #navigation {
     border-width: 0;
     font-size: 1.1em;
+    height: 100px;
 }
 
 #navigation ul {
     margin: 0;
     padding: 0;
+    padding-top: 25px;
     height: 3.1em;
 }
 
