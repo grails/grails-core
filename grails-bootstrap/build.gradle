@@ -4,8 +4,8 @@ dependencies {
     compile ( "org.codehaus.groovy:groovy-xml:$groovyVersion" )
     compile ( "org.codehaus.groovy:groovy-templates:$groovyVersion" )
     compile "org.yaml:snakeyaml:1.14"
-    compile "io.methvin:directory-watcher:0.3.0" //TODO: Needs JNA to run
-
+    
+    compileOnly("io.methvin:directory-watcher:0.3.0")
     compileOnly("org.fusesource.jansi:jansi:$jansiVersion")
     compileOnly("jline:jline:$jlineVersion")
     compileOnly("net.java.dev.jna:jna:$jnaVersion")
