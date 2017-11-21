@@ -740,6 +740,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     }
                     return Collections.emptyMap();
                 } else {
+                    LOG.error("Mapping: '"+ mappedURI + "' does not start with " + SLASH + " or is response code.");
                     return super.invokeMethod(mappedURI, arg);
                 }
             } finally {

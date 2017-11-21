@@ -15,6 +15,7 @@
 package grails.doc.gradle
 
 import grails.doc.PdfBuilder
+import grails.doc.PdfPublisher
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
 
@@ -30,14 +31,9 @@ class PublishPdf extends DefaultTask {
 
     @TaskAction
     def publish() {
-        def outputDir = new File(outputDirectory, language ?: "")
+        File outputDir = new File(outputDirectory, language ?: "")
         try {
-            def currFile = new File(outputDir, "guide/single.html")
-            def pdfBuilder = new PdfBuilder()
-            def xml = pdfBuilder.createXml(currFile, outputDir.absolutePath)
-            pdfBuilder.createPdf xml,
-                    new File(currFile.parentFile, pdfName),
-                    new File(outputDir, "guide/single.html")
+            PdfPublisher.publishPdfFromHtml(outputDir, "guide/single.html", pdfName)
         }
         catch (Exception ex) {
             ex.printStackTrace()

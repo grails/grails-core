@@ -65,11 +65,13 @@ class PdfBuilder {
         cleanupHtml(htmlFile, xml)
     }
 
-    static boolean cleanHtml = Boolean.getBoolean("grails.docs.clean.html")
+    static boolean cleanHtml = System.getProperty('grails.docs.clean.html') == null ? true : Boolean.getBoolean("grails.docs.clean.html")
     static boolean debugPdf = Boolean.getBoolean("grails.docs.debug.pdf")
     
-    private static cleanupHtml(File htmlFile, String xml) {
-        def result = cleanHtml ? Jsoup.parse(xml).outerHtml() : xml
+    private static String cleanupHtml(File htmlFile, String xml) {
+        String result = cleanHtml ? Jsoup.parse(xml).outerHtml() : xml
+        result = removeCssLinks(result)
+        result = result.replaceAll('</head>', pdfCss() + '</head>')
         if(debugPdf) {
             File before = new File(htmlFile.absolutePath + '.before.xml')
             before.setText(xml, 'UTF-8')
@@ -81,15 +83,56 @@ class PdfBuilder {
         result
     }
 
-    static void createPdf(String xml, File outputFile, File urlBase) {
-        def dbf = DocumentBuilderFactory.newInstance()
+    private static String removeCssLink(String htmlString) {
+        String output
+        String str = htmlString
+        int index =  str.indexOf('<link rel="stylesheet"')
+        output = str.substring(0, index)
+        String end = str.substring(index, str.size())
+        output += end.substring(end.indexOf('/>') + '/>'.length(), end.size())
+        output
+    }
+
+    static String removeCssLinks(String html) {
+        String str = html
+        for (;;) {
+
+            int index =  str.indexOf('<link rel="stylesheet"')
+            println "index $index"
+            if ( index == -1 ) {
+                break
+            }
+            str = removeCssLink(str)
+        }
+        str
+    }
+
+    static String pdfCss() {
+        """<style type="text/css">
+         pre, code {
+          font-size: 10px;
+         } 
+         .toc-item { margin-bottom: 2px; }
+         .toc-item strong { margin-right: 2px; }
+        .contribute-btn, #navigation, #ref-button, #toggle-col1 { display: none; }
+                .paragraph, table, h2, h3, h4, h5, h6, li, pre, code {
+            width: 595px;
+        }
+        </style>
+        """
+    }
+
+    static Document createDocument(String xml) {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance()
         dbf.validating = false
         dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
         dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false
-        
-        DocumentBuilder builder = dbf.newDocumentBuilder()
-        Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")))
 
+        DocumentBuilder builder = dbf.newDocumentBuilder()
+        builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")))
+    }
+
+    static void createPdfWithDocument(Document doc, File outputFile, File urlBase) {
         ITextRenderer renderer = new ITextRenderer()
         renderer.setDocument(doc, urlBase.toURI().toString())
 
@@ -102,5 +145,11 @@ class PdfBuilder {
         finally {
             outputStream?.close()
         }
+    }
+
+    static void createPdf(String xml, File outputFile, File urlBase) {
+        Document doc = createDocument(xml)
+        createPdfWithDocument(doc, outputFile, urlBase)
+
     }
 }
