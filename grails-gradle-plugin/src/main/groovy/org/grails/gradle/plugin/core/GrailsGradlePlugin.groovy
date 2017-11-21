@@ -474,7 +474,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
             project.dependencies {
                 agent "org.springframework:springloaded"
-                runtime "io.methvin:directory-watcher"
+                agent "io.methvin:directory-watcher"
             }
             project.afterEvaluate(new AgentTasksEnhancer())
         }
