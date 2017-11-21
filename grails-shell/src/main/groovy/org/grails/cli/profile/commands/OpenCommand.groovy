@@ -45,7 +45,7 @@ class OpenCommand implements ProjectCommand, Completer {
         def filePath = executionContext.commandLine.remainingArgsString
         if(filePath) {
             if(filePath == 'test-report') {
-                filePath = 'build/reports/tests/index.html'
+                filePath = 'build/reports/tests/test/index.html'
             }
             if(Desktop.isDesktopSupported())  {
                 try {
