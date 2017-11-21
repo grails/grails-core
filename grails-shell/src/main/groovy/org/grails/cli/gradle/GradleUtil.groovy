@@ -45,15 +45,16 @@ class GradleUtil {
     public static ProjectConnection openGradleConnection(File baseDir) {
         GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
         if (System.getenv("GRAILS_GRADLE_HOME")) {
-            gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
-        }
-        else {
-            def userHome = System.getProperty("user.home")
-            if(userHome) {
-                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/current")
-                if(sdkManGradle.exists()) {
-                    gradleConnector.useInstallation(sdkManGradle)
-                }
+            def grailsGradleHome = new File(System.getenv("GRAILS_GRADLE_HOME"))
+
+            if (grailsGradleHome.canRead() && grailsGradleHome.isDirectory()) {
+                gradleConnector.useInstallation(grailsGradleHome)
+            }
+        } else if (System.getenv("GRADLE_HOME")) {
+            def gradleHome = new File(System.getProperty("GRADLE_HOME"))
+
+            if (gradleHome.canRead() && gradleHome.isDirectory()) {
+                gradleConnector.useInstallation(gradleHome)
             }
         }
 
@@ -120,7 +121,7 @@ class GradleUtil {
         buildActionExecuterCustomizationClosure?.call(buildActionExecuter)
         return buildActionExecuter.run()
     }
-    
+
     public static wireCancellationSupport(ExecutionContext context, BuildLauncher buildLauncher) {
         DefaultCancellationTokenSource cancellationTokenSource = new DefaultCancellationTokenSource()
         buildLauncher.withCancellationToken(cancellationTokenSource.token())
