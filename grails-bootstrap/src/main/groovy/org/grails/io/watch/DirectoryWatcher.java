@@ -44,7 +44,22 @@ public class DirectoryWatcher extends Thread {
         setDaemon(true);
         AbstractDirectoryWatcher directoryWatcherDelegate;
         try {
-			directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.io.watch.WatchServiceDirectoryWatcher").newInstance();
+            if(System.getProperty("os.name").equals("Mac OS X")) {
+                Boolean jnaAvailable = false;
+                try {
+                    Class.forName( "com.sun.jna.Pointer" );
+                    jnaAvailable = true;
+                } catch( ClassNotFoundException e ) {
+                    LOG.error("Error Initializing Native OS X File Event Watcher. Add JNA to classpath for Faster File Watching performance.");
+                }
+                if(jnaAvailable) {
+                    directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.io.watch.MacOsWatchServiceDirectoryWatcher").newInstance();
+                } else {
+                    directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.io.watch.WatchServiceDirectoryWatcher").newInstance();                    
+                }
+            } else {
+                directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.io.watch.WatchServiceDirectoryWatcher").newInstance();                
+            }
 		} catch (Throwable e) {
 			LOG.info("Exception while trying to load WatchServiceDirectoryWatcher (this is probably Java 6 and WatchService isn't available). Falling back to PollingDirectoryWatcher.", e);
 	        directoryWatcherDelegate = new PollingDirectoryWatcher();
