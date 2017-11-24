@@ -50,7 +50,10 @@ public class DirectoryWatcher extends Thread {
                     Class.forName( "com.sun.jna.Pointer" );
                     jnaAvailable = true;
                 } catch( ClassNotFoundException e ) {
-                    LOG.error("Error Initializing Native OS X File Event Watcher. Add JNA to classpath for Faster File Watching performance.");
+                    if(LOG.isWarnEnabled()) {
+                        LOG.warn("Error Initializing Native OS X File Event Watcher. Add JNA to classpath for Faster File Watching performance.");    
+                    }
+                    
                 }
                 if(jnaAvailable) {
                     directoryWatcherDelegate = (AbstractDirectoryWatcher) Class.forName("org.grails.io.watch.MacOsWatchServiceDirectoryWatcher").newInstance();
