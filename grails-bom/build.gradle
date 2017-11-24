@@ -158,6 +158,12 @@ publishing {
                             }
 
                             mkp.dependency {
+                                mkp.groupId 'io.methvin'
+                                mkp.artifactId "directory-watcher"
+                                mkp.version(directoryWatcherVersion) //0.3.0
+                            }
+
+                            mkp.dependency {
                                 mkp.groupId 'org.springframework'
                                 mkp.artifactId "springloaded"
                                 mkp.version( springLoadedVersion )
