@@ -24,7 +24,6 @@ import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.ModuleVersionSelector
 import org.gradle.api.artifacts.component.ProjectComponentSelector
 import org.gradle.api.file.CopySpec
-import org.gradle.api.internal.artifacts.ImmutableModuleIdentifierFactory
 import org.gradle.api.internal.artifacts.ivyservice.projectmodule.ProjectPublicationRegistry
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact
 import org.gradle.api.internal.java.JavaLibrary
@@ -49,8 +48,8 @@ class GrailsProfileGradlePlugin extends BasePlugin {
     public static final String RUNTIME_CONFIGURATION = "runtime"
 
     @Inject
-    GrailsProfileGradlePlugin( ProjectPublicationRegistry publicationRegistry, ProjectConfigurationActionContainer configurationActionContainer, ImmutableModuleIdentifierFactory immutableModuleIdentifierFactory) {
-        super(publicationRegistry, configurationActionContainer, immutableModuleIdentifierFactory)
+    GrailsProfileGradlePlugin( ProjectPublicationRegistry publicationRegistry, ProjectConfigurationActionContainer configurationActionContainer) {
+        super(publicationRegistry, configurationActionContainer)
     }
 
     @Override
