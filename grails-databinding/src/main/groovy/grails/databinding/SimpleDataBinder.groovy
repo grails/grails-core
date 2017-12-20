@@ -285,11 +285,35 @@ class SimpleDataBinder implements DataBinder {
         bindProperty obj, source, metaProperty, val, listener, errors
     }
 
+    protected SimpleMapDataBindingSource splitIndexedStruct(IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, DataBindingSource source) {
+        def propName = indexedPropertyReferenceDescriptor.propertyName
+        Map structValues = new HashMap()
+        String prefix = indexedPropertyReferenceDescriptor.toString()
+        for (String propertyName: source.propertyNames) {
+            if (propertyName.startsWith(prefix)) {
+                String deIndexedPropertyName = propName
+                String[] parts = propertyName.split('_')
+                if (parts.length > 1) {
+                    deIndexedPropertyName = deIndexedPropertyName + '_' + parts[1]
+                }
+                structValues.put(deIndexedPropertyName, source.getPropertyValue(propertyName))
+            }
+        }
+        new SimpleMapDataBindingSource(structValues)
+    }
+
     protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor,
         val, DataBindingSource source, DataBindingListener listener, errors) {
 
         def propName = indexedPropertyReferenceDescriptor.propertyName
         def propertyType = metaProperty.type
+        Class genericType = getReferencedTypeForCollection(propName, obj)
+
+        if (structuredEditors.containsKey(genericType) && ('struct' == val || 'date.struct' == val)) {
+            def structuredEditor = structuredEditors[genericType]
+            val = structuredEditor.getPropertyValue obj, propName, splitIndexedStruct(indexedPropertyReferenceDescriptor, source)
+        }
+
         if (propertyType.isArray()) {
             def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
             def array = initializeArray(obj, propName, propertyType.componentType, index)
@@ -304,7 +328,6 @@ class SimpleDataBinder implements DataBinder {
                 indexedInstance = collectionInstance[index]
             }
             if (indexedInstance == null) {
-                Class genericType = getReferencedTypeForCollection(propName, obj)
                 if (genericType) {
                     if (genericType.isAssignableFrom(val?.getClass())) {
                         addElementToCollectionAt obj, propName, collectionInstance, index, val
