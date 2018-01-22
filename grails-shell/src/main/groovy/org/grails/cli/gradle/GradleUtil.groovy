@@ -49,8 +49,15 @@ class GradleUtil {
         GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
         if (System.getenv("GRAILS_GRADLE_HOME")) {
             gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
-        } else {
-            gradleConnector.forProjectDirectory(baseDir)
+        }
+        else {
+            def userHome = System.getProperty("user.home")
+            if(userHome) {
+                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/current")
+                if(sdkManGradle.exists()) {
+                    gradleConnector.useInstallation(sdkManGradle)
+                }
+            }
         }
 
         gradleConnector.connect()
