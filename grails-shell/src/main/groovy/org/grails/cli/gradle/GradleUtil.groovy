@@ -52,9 +52,13 @@ class GradleUtil {
         }
         else {
             def userHome = System.getProperty("user.home")
-            if(userHome) {
-                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/current")
-                if(sdkManGradle.exists()) {
+            if (userHome) {
+                Properties gradleProperties = new Properties()
+                gradleProperties.load(new File(baseDir, "gradle.properties").newInputStream())
+                String gradleWrapperVersion = gradleProperties.getProperty("gradleWrapperVersion")
+
+                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/$gradleWrapperVersion")
+                if (sdkManGradle.exists()) {
                     gradleConnector.useInstallation(sdkManGradle)
                 }
             }
