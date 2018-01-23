@@ -49,17 +49,19 @@ class GradleUtil {
         GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
         if (System.getenv("GRAILS_GRADLE_HOME")) {
             gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
-        }
-        else {
+        } else {
             def userHome = System.getProperty("user.home")
             if (userHome) {
-                Properties gradleProperties = new Properties()
-                gradleProperties.load(new File(baseDir, "gradle.properties").newInputStream())
-                String gradleWrapperVersion = gradleProperties.getProperty("gradleWrapperVersion")
+                File gradleFile = new File(baseDir, "gradle.properties")
+                if (gradleFile.exists() && gradleFile.canRead()) {
+                    Properties gradleProperties = new Properties()
+                    gradleProperties.load(gradleFile.newInputStream())
+                    String gradleWrapperVersion = gradleProperties.getProperty("gradleWrapperVersion")
 
-                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/$gradleWrapperVersion")
-                if (sdkManGradle.exists()) {
-                    gradleConnector.useInstallation(sdkManGradle)
+                    File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/$gradleWrapperVersion")
+                    if (sdkManGradle.exists()) {
+                        gradleConnector.useInstallation(sdkManGradle)
+                    }
                 }
             }
         }
