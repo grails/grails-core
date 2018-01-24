@@ -59,7 +59,7 @@ class GradleUtil {
                     String gradleWrapperVersion = gradleProperties.getProperty("gradleWrapperVersion")
 
                     File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/$gradleWrapperVersion")
-                    if (sdkManGradle.exists()) {
+                    if (sdkManGradle.exists() && sdkManGradle.isDirectory()) {
                         gradleConnector.useInstallation(sdkManGradle)
                     }
                 }
