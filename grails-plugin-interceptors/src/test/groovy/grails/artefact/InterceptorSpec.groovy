@@ -17,10 +17,8 @@ package grails.artefact
 
 import grails.util.GrailsWebMockUtil
 import org.grails.plugins.web.interceptors.InterceptorArtefactHandler
-import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.grails.web.mapping.ForwardUrlMappingInfo
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -247,6 +245,46 @@ class InterceptorSpec extends Specification {
         '/grails/foo'     | true
         '/grails/foo/x'   | false
         '/grails/foo/bar' | true
+    }
+
+    @Issue('10857')
+    void "Test match excluding uri and with context path and interceptor without context path"() {
+        given: "A test interceptor"
+        def i = new TestExcludeUriWithoutContextPathInterceptor()
+        def mockRequest = new MockHttpServletRequest("", requestUri)
+        mockRequest.setContextPath('/grails')
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), mockRequest, new MockHttpServletResponse())
+        def request = webRequest.request
+
+        expect: "We match: ${shouldMatch}"
+        i.doesMatch() == shouldMatch
+
+        where:
+        requestUri            | shouldMatch
+        '/grails/mgmt/health' | false
+        '/grails'             | true
+        '/grails/foo'         | true
+        '/grails/foo/x'       | true
+    }
+
+    @Issue('10857')
+    void "Test match excluding uri and with context path and interceptor with context path"() {
+        given: "A test interceptor"
+        def i = new TestExcludeUriWithContextPathInterceptor()
+        def mockRequest = new MockHttpServletRequest("", requestUri)
+        mockRequest.setContextPath('/grails')
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), mockRequest, new MockHttpServletResponse())
+        def request = webRequest.request
+
+        expect: "We match: ${shouldMatch}"
+        i.doesMatch() == shouldMatch
+
+        where:
+        requestUri            | shouldMatch
+        '/grails/mgmt/health' | false
+        '/grails'             | true
+        '/grails/foo'         | true
+        '/grails/foo/x'       | true
     }
 
     void clearMatch(i, HttpServletRequest request) {

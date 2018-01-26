@@ -33,9 +33,9 @@ import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
-import org.grails.web.util.WebUtils
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -90,9 +90,15 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
 
         UrlMappingInfo grailsMappingInfo = (UrlMappingInfo)matchedInfo
 
-        for(Matcher matcher in allMatchers) {
-            if(matcher.doesMatch(uri, grailsMappingInfo, req.method) ||
-               (checkNoCtxUri && matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method))) {
+        for (Matcher matcher in allMatchers) {
+            boolean matchUri = matcher.doesMatch(uri, grailsMappingInfo, req.method)
+            boolean matchNoCtxUri = matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method)
+
+            if (matcher.isExclude()) {
+                // Exclude interceptors are special because with only one of the conditions being false the interceptor
+                // won't be applied to the request
+                return matchUri && matchNoCtxUri
+            } else if (matchUri || (checkNoCtxUri && matchNoCtxUri)) {
                 return true
             }
         }
