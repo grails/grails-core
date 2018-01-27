@@ -409,7 +409,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     }
 
     Collection<Part> getParts() {
-        getFileMap().values().collect {new MockPart(it)}
+        getFileMap().values().flatten().collect {new MockPart(it)}
     }
 
     Part getPart(String name) {
