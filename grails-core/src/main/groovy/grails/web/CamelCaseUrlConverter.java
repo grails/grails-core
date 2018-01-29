@@ -30,6 +30,11 @@ public class CamelCaseUrlConverter implements UrlConverter {
         if (!StringUtils.hasText(propertyOrClassName)) {
             return propertyOrClassName;
         }
-        return GrailsNameUtils.getPropertyName(propertyOrClassName);
+
+        if (propertyOrClassName.contains(".")) {
+            return GrailsNameUtils.getFullClassName(propertyOrClassName);
+        } else {
+            return GrailsNameUtils.getPropertyName(propertyOrClassName);
+        }
     }
 }
