@@ -290,46 +290,6 @@ class InterceptorSpec extends Specification {
     void clearMatch(i, HttpServletRequest request) {
         request.removeAttribute(i.getClass().name + InterceptorArtefactHandler.MATCH_SUFFIX)
     }
-
-    @Issue('10857')
-    void "Test match excluding uri and with context path and interceptor without context path"() {
-        given: "A test interceptor"
-        def i = new TestExcludeUriWithoutContextPathInterceptor()
-        def mockRequest = new MockHttpServletRequest("", requestUri)
-        mockRequest.setContextPath('/grails')
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), mockRequest, new MockHttpServletResponse())
-        def request = webRequest.request
-
-        expect: "We match: ${shouldMatch}"
-        i.doesMatch() == shouldMatch
-
-        where:
-        requestUri            | shouldMatch
-        '/grails/mgmt/health' | false
-        '/grails'             | true
-        '/grails/foo'         | true
-        '/grails/foo/x'       | true
-    }
-
-    @Issue('10857')
-    void "Test match excluding uri and with context path and interceptor with context path"() {
-        given: "A test interceptor"
-        def i = new TestExcludeUriWithContextPathInterceptor()
-        def mockRequest = new MockHttpServletRequest("", requestUri)
-        mockRequest.setContextPath('/grails')
-        def webRequest = GrailsWebMockUtil.bindMockWebRequest(new MockServletContext(), mockRequest, new MockHttpServletResponse())
-        def request = webRequest.request
-
-        expect: "We match: ${shouldMatch}"
-        i.doesMatch() == shouldMatch
-
-        where:
-        requestUri            | shouldMatch
-        '/grails/mgmt/health' | false
-        '/grails'             | true
-        '/grails/foo'         | true
-        '/grails/foo/x'       | true
-    }
 }
 
 class TestInterceptor implements Interceptor {
