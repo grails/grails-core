@@ -311,6 +311,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         needsBinding = false
                         def coll = initializeCollection obj, metaProperty.name, metaProperty.type
                         if(coll instanceof Collection) {
+                            clearAssociationInvokingRemoveFrom(obj, metaProperty)
                             coll.clear()
                         }
                         def itemsWhichNeedBinding = []
@@ -339,6 +340,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                             }
                         }
                         if(itemsWhichNeedBinding) {
+
                             for(item in itemsWhichNeedBinding) {
                                 addElementToCollection obj, metaProperty.name, metaProperty.type, item, false
                             }
@@ -527,6 +529,23 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
 
         return metaProperty.getProperty(delegate)
+    }
+
+    protected clearAssociationInvokingRemoveFrom(obj, MetaProperty metaProperty) {
+        def propName = metaProperty.name
+        def domainClass = getPersistentEntity(obj.getClass())
+        if (domainClass != null) {
+            PersistentProperty property = domainClass.getPropertyByName(propName)
+            if (property instanceof Association) {
+                Collection collection = GrailsMetaClassUtils.getPropertyIfExists(obj, propName, Collection)
+                if ( collection ) {
+                    def methodName = 'removeFrom' + GrailsNameUtils.getClassName(propName)
+                    collection.each {
+                        GrailsMetaClassUtils.invokeMethodIfExists(obj[propName], methodName, [it] as Object[])
+                    }
+                }
+            }
+        }
     }
 
     @Override
