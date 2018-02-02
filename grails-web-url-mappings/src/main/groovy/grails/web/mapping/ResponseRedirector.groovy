@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse
 class ResponseRedirector {
 
     public static final String ARGUMENT_PERMANENT = "permanent"
+    public static final String ARGUMENT_ABSOLUTE = "absolute"
     public static final String GRAILS_REDIRECT_ISSUED = GrailsApplicationAttributes.REDIRECT_ISSUED
     private static final String BLANK = "";
 
@@ -82,21 +83,36 @@ class ResponseRedirector {
         // which includes the contextPath
         arguments.put LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK
 
-        redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent)
+        boolean absolute
+        def absoluteArgument = arguments.get(ARGUMENT_ABSOLUTE)
+        if (absoluteArgument instanceof String) {
+            absolute = Boolean.valueOf(absoluteArgument)
+        } else {
+            absolute = (absoluteArgument == null) ? true : (Boolean.TRUE == absoluteArgument)
+        }
+
+        redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent, absolute)
     }
 
     /*
      * Redirects the response the the given URI
      */
-    private void redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
+    private void redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent, boolean absolute) {
         if(log.isDebugEnabled()) {
             log.debug "Method [redirect] forwarding request to [$actualUri]"
             log.debug "Executing redirect with response [$response]"
         }
 
         String processedActualUri = processedUrl(actualUri, request);
-        String absoluteURL = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri
-        String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL
+
+        String redirectURI
+        if (absolute) {
+            redirectURI = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri
+        } else {
+            redirectURI = processedActualUri
+        }
+
+        String redirectUrl = useJessionId ? response.encodeRedirectURL(redirectURI) : redirectURI
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY
 
         response.status = status
