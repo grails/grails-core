@@ -91,6 +91,9 @@ class ResponseRedirector {
             absolute = (absoluteArgument == null) ? true : (Boolean.TRUE == absoluteArgument)
         }
 
+        def webRequest = GrailsWebRequest.lookup()
+        arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, webRequest.originalParams)
+
         redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent, absolute)
     }
 
