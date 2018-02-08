@@ -207,4 +207,32 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
 
         "test3" == not_a_group.controllerName
     }
+
+    @Issue('#10842')
+    void 'Test constraints in multiple urls in same group are applied'() {
+        given: 'a group with two mappings with constraints'
+        def urlMappingsHolder = getUrlMappingsHolder {
+            group "/v2", {
+                "/session/$sessionId(.$format)?"(controller: 'dummy', action: 'bySession') {
+                    constraints {
+                        sessionId(matches: /\p{XDigit}{16}/)
+                    }
+                }
+
+                "/$sessionId(.$format)?"(controller: 'dummy', action: 'bySessionOld') {
+                    constraints {
+                        sessionId(matches: /\p{XDigit}{16}/)
+                    }
+                }
+            }
+        }
+
+        expect: 'both url match and the constraint is applied'
+        urlMappingsHolder.matchAll('/v2/session/123456789ABCDEF0')
+        urlMappingsHolder.matchAll('/v2/123456789ABCDEF0')
+
+        and: 'with a wrong value that does not match the constraint the urls do not match'
+        !urlMappingsHolder.matchAll('/v2/session/A')
+        !urlMappingsHolder.matchAll('/v2/A')
+    }
 }

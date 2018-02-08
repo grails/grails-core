@@ -801,7 +801,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
             ParentResource parentResource = parentResources.peek();
             if (CONSTRAINTS.equals(uri) && parentResource.isGroup) {
-                inGroupConstraints = true;
                 return uri;
             }
 
