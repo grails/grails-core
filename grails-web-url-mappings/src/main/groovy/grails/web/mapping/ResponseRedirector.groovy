@@ -93,7 +93,7 @@ class ResponseRedirector {
 
         // When redirecting from UrlMappings the original request params are on webRequest.originalParams
         // instead of arguments.params
-        def webRequest = GrailsWebRequest.lookup()
+        def webRequest = GrailsWebRequest.lookup(request)
         if (webRequest.originalParams) {
             arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, webRequest.originalParams)
         }
