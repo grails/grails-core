@@ -51,7 +51,7 @@ ext {
     springLoadedVersion = "1.2.8.RELEASE"
     directoryWatcherVersion = "0.3.0"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "4.3.12.RELEASE"
+    springVersion = "4.3.14.RELEASE"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
     cglibVersion = "2.2.2"
