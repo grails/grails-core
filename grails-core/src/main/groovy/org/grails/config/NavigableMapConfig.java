@@ -24,9 +24,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
 import org.springframework.util.ClassUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * A {@link Config} implementation that operates against a {@link org.grails.config.NavigableMap}
@@ -203,26 +210,38 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        Object originalValue = configMap.get(key);
-        if(originalValue != null) {
-            if(targetType.isInstance(originalValue)) {
-                return (T)originalValue;
+        // First try to find the property using all registered propertySources
+        PropertySources propertySources = ((PropertySourcesConfig) this).propertySources;
+        if (propertySources != null) {
+            for (PropertySource<?> propertySource : propertySources) {
+                Object originalValue = propertySource.getProperty(key);
+                if (originalValue != null) {
+                    return convertValueIfNecessary(originalValue, targetType, defaultValue);
+                }
             }
-            else {
-                if(!(originalValue instanceof NavigableMap)) {
+        }
 
-                    try {
-                        T value = conversionService.convert(originalValue, targetType);
-                        return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
-                    } catch (ConversionException e) {
-                        if(targetType.isEnum()) {
-                            String stringValue = originalValue.toString();
-                            try {
-                                T value = (T) toEnumValue(targetType, stringValue);
-                                return value;
-                            } catch (Throwable e2) {
-                                // ignore e2 and throw original
-                            }
+        // If not found, use configMap
+        Object originalValue = configMap.get(key);
+        return convertValueIfNecessary(originalValue, targetType, defaultValue);
+    }
+
+    private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
+        if (targetType.isInstance(originalValue)) {
+            return (T) originalValue;
+        } else {
+            if (!(originalValue instanceof NavigableMap)) {
+                try {
+                    T value = conversionService.convert(originalValue, targetType);
+                    return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+                } catch (ConversionException e) {
+                    if (targetType.isEnum()) {
+                        String stringValue = originalValue.toString();
+                        try {
+                            T value = (T) toEnumValue(targetType, stringValue);
+                            return value;
+                        } catch (Throwable e2) {
+                            // ignore e2 and throw original
                         }
                     }
                 }
