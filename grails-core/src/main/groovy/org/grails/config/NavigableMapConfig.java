@@ -215,7 +215,9 @@ public abstract class NavigableMapConfig implements Config {
         if (propertySources != null) {
             for (PropertySource<?> propertySource : propertySources) {
                 Object originalValue = propertySource.getProperty(key);
-                return convertValueIfNecessary(originalValue, targetType, defaultValue);
+                if (originalValue != null) {
+                    return convertValueIfNecessary(originalValue, targetType, defaultValue);
+                }
             }
         }
 
