@@ -215,9 +215,7 @@ public abstract class NavigableMapConfig implements Config {
         if (propertySources != null) {
             for (PropertySource<?> propertySource : propertySources) {
                 Object originalValue = propertySource.getProperty(key);
-                if (originalValue != null) {
-                    return convertValueIfNecessary(originalValue, targetType, defaultValue);
-                }
+                return convertValueIfNecessary(originalValue, targetType, defaultValue);
             }
         }
 
@@ -227,21 +225,23 @@ public abstract class NavigableMapConfig implements Config {
     }
 
     private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
-        if (targetType.isInstance(originalValue)) {
-            return (T) originalValue;
-        } else {
-            if (!(originalValue instanceof NavigableMap)) {
-                try {
-                    T value = conversionService.convert(originalValue, targetType);
-                    return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
-                } catch (ConversionException e) {
-                    if (targetType.isEnum()) {
-                        String stringValue = originalValue.toString();
-                        try {
-                            T value = (T) toEnumValue(targetType, stringValue);
-                            return value;
-                        } catch (Throwable e2) {
-                            // ignore e2 and throw original
+        if (originalValue != null) {
+            if (targetType.isInstance(originalValue)) {
+                return (T) originalValue;
+            } else {
+                if (!(originalValue instanceof NavigableMap)) {
+                    try {
+                        T value = conversionService.convert(originalValue, targetType);
+                        return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
+                    } catch (ConversionException e) {
+                        if (targetType.isEnum()) {
+                            String stringValue = originalValue.toString();
+                            try {
+                                T value = (T) toEnumValue(targetType, stringValue);
+                                return value;
+                            } catch (Throwable e2) {
+                                // ignore e2 and throw original
+                            }
                         }
                     }
                 }
