@@ -91,6 +91,13 @@ class ResponseRedirector {
             absolute = (absoluteArgument == null) ? true : (Boolean.TRUE == absoluteArgument)
         }
 
+        // When redirecting from UrlMappings the original request params are on webRequest.originalParams
+        // instead of arguments.params
+        def webRequest = GrailsWebRequest.lookup(request)
+        if (webRequest.originalParams) {
+            arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, webRequest.originalParams)
+        }
+
         redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent, absolute)
     }
 
