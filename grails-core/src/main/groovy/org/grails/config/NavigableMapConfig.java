@@ -24,8 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.env.PropertySource;
-import org.springframework.core.env.PropertySources;
 import org.springframework.util.ClassUtils;
 
 import java.util.Collection;
@@ -210,20 +208,60 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        // First try to find the property using all registered propertySources
-        PropertySources propertySources = ((PropertySourcesConfig) this).propertySources;
-        if (propertySources != null) {
-            for (PropertySource<?> propertySource : propertySources) {
-                Object originalValue = propertySource.getProperty(key);
-                if (originalValue != null) {
-                    return convertValueIfNecessary(originalValue, targetType, defaultValue);
-                }
-            }
+        Object value = findInSystemEnvironment(key);
+        if (value == null) {
+            value = configMap.get(key);
         }
 
-        // If not found, use configMap
-        Object originalValue = configMap.get(key);
-        return convertValueIfNecessary(originalValue, targetType, defaultValue);
+        return convertValueIfNecessary(value, targetType, defaultValue);
+    }
+
+    private Object findInSystemEnvironment(String key) {
+        String propertyName = resolvePropertyName(key);
+        return propertyName != null ? System.getenv(propertyName) : null;
+    }
+
+    private String resolvePropertyName(String name) {
+        String resolvedName = checkPropertyName(name);
+        if (resolvedName != null) {
+            return resolvedName;
+        }
+        String uppercasedName = name.toUpperCase();
+        if (!name.equals(uppercasedName)) {
+            resolvedName = checkPropertyName(uppercasedName);
+            if (resolvedName != null) {
+                return resolvedName;
+            }
+        }
+        return name;
+    }
+
+    private String checkPropertyName(String name) {
+        // Check name as-is
+        if (containsKey(name)) {
+            return name;
+        }
+        // Check name with just dots replaced
+        String noDotName = name.replace('.', '_');
+        if (!name.equals(noDotName) && containsKey(noDotName)) {
+            return noDotName;
+        }
+        // Check name with just hyphens replaced
+        String noHyphenName = name.replace('-', '_');
+        if (!name.equals(noHyphenName) && containsKey(noHyphenName)) {
+            return noHyphenName;
+        }
+        // Check name with dots and hyphens replaced
+        String noDotNoHyphenName = noDotName.replace('-', '_');
+        if (!noDotName.equals(noDotNoHyphenName) && containsKey(noDotNoHyphenName)) {
+            return noDotNoHyphenName;
+        }
+        // Give up
+        return null;
+    }
+
+    private boolean containsKey(String name) {
+        return System.getenv(name) != null;
     }
 
     private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
