@@ -77,6 +77,39 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             response.format == 'json'
     }
 
+    void "Test format property is valid for XHR and Accept header with User-Agent"() {
+        when: "The request CONTENT_TYPE header is 'text/xml'"
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+            request.contentType = "application/json"
+            request.addHeader('Accept', 'text/json')
+            request.addHeader('X-Requested-With', 'XMLHttpRequest')
+            request.addHeader('User-Agent', 'Webkit')
+
+        then: "The request format should be 'json'"
+            request.getFormat() == "json"
+            request.getFormat() == "json" // call twice to test cached value
+            request.format == 'json'
+            response.format == 'json'
+    }
+
+    void "Test format property is ignored for non-XHR and Accept header with User-Agent"() {
+        when: "The request CONTENT_TYPE header is 'text/xml'"
+            final webRequest = boundMimeTypeRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+            request.contentType = "application/json"
+            request.addHeader('Accept', 'text/json')
+            request.addHeader('User-Agent', 'Webkit')
+
+        then: "The request format should be 'json'"
+            request.getFormat() == "json"
+            request.getFormat() == "json" // call twice to test cached value
+            request.format == 'json'
+            response.format == 'all'
+    }
+
    void "Test format property is valid for Accept header only"() {
         when: "The request CONTENT_TYPE header is 'text/xml'"
             final webRequest = boundMimeTypeRequest()
