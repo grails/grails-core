@@ -26,7 +26,12 @@ import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.ClassUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * A {@link Config} implementation that operates against a {@link org.grails.config.NavigableMap}
@@ -203,19 +208,73 @@ public abstract class NavigableMapConfig implements Config {
 
     @Override
     public <T> T getProperty(String key, Class<T> targetType, T defaultValue) {
-        Object originalValue = configMap.get(key);
-        if(originalValue != null) {
-            if(targetType.isInstance(originalValue)) {
-                return (T)originalValue;
-            }
-            else {
-                if(!(originalValue instanceof NavigableMap)) {
+        Object value = findInSystemEnvironment(key);
+        if (value == null) {
+            value = configMap.get(key);
+        }
 
+        return convertValueIfNecessary(value, targetType, defaultValue);
+    }
+
+    private Object findInSystemEnvironment(String key) {
+        String propertyName = resolvePropertyName(key);
+        return propertyName != null ? System.getenv(propertyName) : null;
+    }
+
+    private String resolvePropertyName(String name) {
+        String resolvedName = checkPropertyName(name);
+        if (resolvedName != null) {
+            return resolvedName;
+        }
+        String uppercasedName = name.toUpperCase();
+        if (!name.equals(uppercasedName)) {
+            resolvedName = checkPropertyName(uppercasedName);
+            if (resolvedName != null) {
+                return resolvedName;
+            }
+        }
+        return name;
+    }
+
+    private String checkPropertyName(String name) {
+        // Check name as-is
+        if (containsKey(name)) {
+            return name;
+        }
+        // Check name with just dots replaced
+        String noDotName = name.replace('.', '_');
+        if (!name.equals(noDotName) && containsKey(noDotName)) {
+            return noDotName;
+        }
+        // Check name with just hyphens replaced
+        String noHyphenName = name.replace('-', '_');
+        if (!name.equals(noHyphenName) && containsKey(noHyphenName)) {
+            return noHyphenName;
+        }
+        // Check name with dots and hyphens replaced
+        String noDotNoHyphenName = noDotName.replace('-', '_');
+        if (!noDotName.equals(noDotNoHyphenName) && containsKey(noDotNoHyphenName)) {
+            return noDotNoHyphenName;
+        }
+        // Give up
+        return null;
+    }
+
+    private boolean containsKey(String name) {
+        return System.getenv(name) != null;
+    }
+
+    private <T> T convertValueIfNecessary(Object originalValue, Class<T> targetType, T defaultValue) {
+        if (originalValue != null) {
+            if (targetType.isInstance(originalValue)) {
+                return (T) originalValue;
+            } else {
+                if (!(originalValue instanceof NavigableMap)) {
                     try {
                         T value = conversionService.convert(originalValue, targetType);
                         return DefaultGroovyMethods.asBoolean(value) ? value : defaultValue;
                     } catch (ConversionException e) {
-                        if(targetType.isEnum()) {
+                        if (targetType.isEnum()) {
                             String stringValue = originalValue.toString();
                             try {
                                 T value = (T) toEnumValue(targetType, stringValue);
