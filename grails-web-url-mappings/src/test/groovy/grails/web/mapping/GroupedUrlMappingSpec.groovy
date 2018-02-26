@@ -53,6 +53,10 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         and:
         linkGenerator.link(resource: 'employeeA', method: 'PUT', params: [id: 1]) == 'http://localhost/api1/employees/1'
         linkGenerator.link(resource: 'employeeB', method: 'PUT', params: [id: 1]) == 'http://localhost/api2/employees/1'
+
+        and:
+        linkGenerator.link(resource: 'employeeA', method: 'POST', params: [employeeId: 1]) == 'http://localhost/api1/employees?employeeId=1'
+        linkGenerator.link(resource: 'employeeB', method: 'POST', params: [employeeId: 1]) == 'http://localhost/api2/employees?employeeId=1'
     }
 
     @Issue('#9417')
