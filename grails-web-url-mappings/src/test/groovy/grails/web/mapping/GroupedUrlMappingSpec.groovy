@@ -31,14 +31,14 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
     void "Test mapping with group and nested collection"() {
         given:
         def linkGenerator = getLinkGenerator {
-            '/api1/employees'(resources: 'employee') {
+            '/api1/employees'(resources: 'employeeA') {
                 collection {
                     '/search'(controller: 'employee1', action: 'search1', method: 'GET')
                 }
             }
 
             group '/api2', {
-                '/employees'(resources: 'employee') {
+                '/employees'(resources: 'employeeB') {
                     collection {
                         '/search'(controller: 'employee2', action: 'search2', method: 'GET')
                     }
@@ -49,6 +49,10 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         expect:
         linkGenerator.link(controller: 'employee1', action: 'search1', method: 'GET', params: [userId: 1]) == 'http://localhost/api1/employees/search?userId=1'
         linkGenerator.link(controller: 'employee2', action: 'search2', method: 'GET', params: [userId: 1]) == 'http://localhost/api2/employees/search?userId=1'
+
+        and:
+        linkGenerator.link(resource: 'employeeA', method: 'PUT', params: [id: 1]) == 'http://localhost/api1/employees/1'
+        linkGenerator.link(resource: 'employeeB', method: 'PUT', params: [id: 1]) == 'http://localhost/api2/employees/1'
     }
 
     @Issue('#9417')
