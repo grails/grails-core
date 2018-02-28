@@ -3,9 +3,9 @@ package org.grails.config
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
-
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
+import java.util.Map.Entry
 import java.util.regex.Pattern
 
 @EqualsAndHashCode
@@ -13,6 +13,9 @@ import java.util.regex.Pattern
 class NavigableMap implements Map<String, Object>, Cloneable {
 
     private static final Pattern SPLIT_PATTERN = ~/\./
+    private static final String SPRING_PROFILES = 'spring.profiles.active'
+    private static final String SPRING = 'spring'
+    private static final String PROFILES = 'profiles'
 
     final NavigableMap rootConfig
     final List<String> path
@@ -114,30 +117,40 @@ class NavigableMap implements Map<String, Object>, Cloneable {
     public void merge(Map sourceMap, boolean parseFlatKeys=false) {
         mergeMaps(this, "", this, sourceMap, parseFlatKeys)
     }
-    
+
     private void mergeMaps(NavigableMap rootMap, String path, NavigableMap targetMap, Map sourceMap, boolean parseFlatKeys) {
-        for(Map.Entry entry in sourceMap) {
-            Object sourceKeyObject = entry.key
-            Object sourceValue = entry.value
-            String sourceKey = String.valueOf(sourceKeyObject)
-            if(parseFlatKeys) {
-                String[] keyParts = sourceKey.split(/\./)
-                if(keyParts.length > 1) {
-                    mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
-                    def pathParts = keyParts[0..-2]
-                    Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
-                    sourceKey = keyParts[-1]
-                    mergeMapEntry(rootMap, pathParts.join('.'), actualTarget, sourceKey, sourceValue, parseFlatKeys)
+        if (!shouldSkipBlock(sourceMap, path)) {
+            for (Entry entry in sourceMap) {
+                Object sourceKeyObject = entry.key
+                Object sourceValue = entry.value
+                String sourceKey = String.valueOf(sourceKeyObject)
+                if (parseFlatKeys) {
+                    String[] keyParts = sourceKey.split(/\./)
+                    if (keyParts.length > 1) {
+                        mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                        def pathParts = keyParts[0..-2]
+                        Map actualTarget = targetMap.navigateSubMap(pathParts as List, true)
+                        sourceKey = keyParts[-1]
+                        mergeMapEntry(rootMap, pathParts.join('.'), actualTarget, sourceKey, sourceValue, parseFlatKeys)
+                    } else {
+                        mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
+                    }
                 } else {
                     mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
                 }
-            } else {
-                mergeMapEntry(rootMap, path, targetMap, sourceKey, sourceValue, parseFlatKeys)
             }
-
         }
     }
-    
+
+    private boolean shouldSkipBlock(Map sourceMap, String path) {
+        Object springProfileDefined = System.properties.getProperty(SPRING_PROFILES)
+        boolean hasSpringProfiles =
+            sourceMap.get(SPRING) instanceof Map && ((Map)sourceMap.get(SPRING)).get(PROFILES) ||
+            path == SPRING && sourceMap.get(PROFILES)
+
+        return !springProfileDefined && hasSpringProfiles
+    }
+
     protected void mergeMapEntry(NavigableMap rootMap, String path, NavigableMap targetMap, String sourceKey, Object sourceValue, boolean parseFlatKeys, boolean isNestedSet = false) {
         Object currentValue = targetMap.containsKey(sourceKey) ? targetMap.get(sourceKey) : null
         Object newValue

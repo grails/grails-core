@@ -28,6 +28,9 @@ class CamelCaseUrlConverterSpec extends Specification {
             'MyURLHelper'          | 'myURLHelper'
             'myURLHelper'          | 'myURLHelper'
             'MYUrlHelper'          | 'MYUrlHelper'
+            'myNamespace.v1'       | 'myNamespace.v1'
+            'MyNamespace.v1'       | 'myNamespace.v1'
+            'MyNamespace.V1'       | 'myNamespace.v1'
             ''                     | ''
             null                   | null
     }

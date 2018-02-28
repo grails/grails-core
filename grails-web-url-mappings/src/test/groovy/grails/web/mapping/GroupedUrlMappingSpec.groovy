@@ -1,6 +1,8 @@
 package grails.web.mapping
 
+import grails.util.GrailsWebMockUtil
 import grails.web.http.HttpHeaders
+import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 
 import javax.servlet.http.HttpServletRequest
@@ -50,7 +52,6 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         linkGenerator.link(controller:'bar', action:'baz', params:[barId:1]) == 'http://localhost/g/bars/1/baz'
     }
 
-
     @Issue('#9417')
     void "Test that redirects to grouped resource mappings work when the method is specified"() {
         given:
@@ -60,7 +61,7 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
             }
         }
         def responseRedirector = new ResponseRedirector(linkGenerator)
-        HttpServletRequest request = Mock(HttpServletRequest)
+        HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> GrailsWebMockUtil.bindMockWebRequest() }
         HttpServletResponse response = Mock(HttpServletResponse)
 
         when: "The response is redirected"
@@ -70,6 +71,8 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         1 * response.setStatus(302)
         1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/admin/domains")
 
+        cleanup:
+        RequestContextHolder.setRequestAttributes(null)
     }
 
     @Issue('#9417')
@@ -81,7 +84,7 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
             }
         }
         def responseRedirector = new grails.web.mapping.ResponseRedirector(linkGenerator)
-        HttpServletRequest request = Mock(HttpServletRequest)
+        HttpServletRequest request = Mock(HttpServletRequest) { lookup() >> GrailsWebMockUtil.bindMockWebRequest() }
         HttpServletResponse response = Mock(HttpServletResponse)
 
         when: "The response is redirected"
@@ -91,6 +94,8 @@ class GroupedUrlMappingSpec extends AbstractUrlMappingsSpec {
         1 * response.setStatus(302)
         1 * response.setHeader(HttpHeaders.LOCATION, "http://localhost/admin/domains")
 
+        cleanup:
+        RequestContextHolder.setRequestAttributes(null)
     }
 
     @Issue('#9138')

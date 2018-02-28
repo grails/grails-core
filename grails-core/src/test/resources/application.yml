@@ -1,0 +1,13 @@
+---
+hello:
+    message: Default hello!
+---
+spring:
+    profiles: sample
+hello:
+    message: Hello from SAMPLE profile!
+---
+spring:
+    profiles: demo
+hello:
+    message: Hello from DEMO profile!

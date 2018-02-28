@@ -43,6 +43,7 @@ import java.util.regex.Pattern
 class HttpServletResponseExtension {
     // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
     static Pattern disableForUserAgents
+    static boolean useAcceptHeaderXhr
     static boolean useAcceptHeader
     static {
         useDefaultConfig()
@@ -61,6 +62,7 @@ class HttpServletResponseExtension {
 
     private static void useDefaultConfig() {
         disableForUserAgents = ~/(Gecko(?i)|WebKit(?i)|Presto(?i)|Trident(?i))/
+        useAcceptHeaderXhr = true
         useAcceptHeader = true
     }
 
@@ -215,6 +217,11 @@ class HttpServletResponseExtension {
     public static void loadMimeTypeConfig(Config config) {
         useAcceptHeader = config.getProperty(Settings.MIME_USE_ACCEPT_HEADER, Boolean, true)
 
+        if (config.containsKey(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR)) {
+            final disableForUserAgentsXhrConfig = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR,  Boolean, false)
+            // if MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR is set to true, we want xhr's to check the user agent list.
+            useAcceptHeaderXhr = !disableForUserAgentsXhrConfig
+        }
         if (config.containsKey(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS)) {
             final disableForUserAgentsConfig = config.getProperty(Settings.MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS, Object)
             if(disableForUserAgentsConfig instanceof Pattern) {
@@ -238,7 +245,7 @@ class HttpServletResponseExtension {
             def parser = new DefaultAcceptHeaderParser(getMimeTypes())
             String header = null
 
-            boolean disabledForUserAgent = disableForUserAgents != null && userAgent ? disableForUserAgents.matcher(userAgent).find() : false
+            boolean disabledForUserAgent = !(useAcceptHeaderXhr && request.xhr) && disableForUserAgents != null && userAgent ? disableForUserAgents.matcher(userAgent).find() : false
             if (msie) header = "*/*"
             if (!header && useAcceptHeader && !disabledForUserAgent) header = request.getHeader(HttpHeaders.ACCEPT)
             result = parser.parse(header)
