@@ -138,18 +138,15 @@ public final class JSONParser implements JsonParserConstants {
     }
 
     final private void Elements(JSONArray array) throws ParseException {
-        Object element;
-        element = JsonValue();
-        switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
-            case 23:
-                jj_consume_token(23);
-                Elements(array);
-                break;
-            default:
-                jj_la1[5] = jj_gen;
-                ;
+        while(addElementAndGetNextToken(array) == 23) {
+            jj_consume_token(23);
         }
-        array.add(element);
+        jj_la1[5] = jj_gen;
+    }
+
+    final private int addElementAndGetNextToken(JSONArray array) throws ParseException {
+        array.add(JsonValue());
+        return (jj_ntk == -1) ? jj_ntk() : jj_ntk;
     }
 
     final private Object JsonValue() throws ParseException {
