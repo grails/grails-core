@@ -32,12 +32,12 @@ import org.springframework.util.ClassUtils
 @InheritConstructors
 class GrailsShell extends GrailsApp {
 
-    GrailsShell(Object... sources) {
+    GrailsShell(Class<?>... sources) {
         super(sources)
         configureApplicationContextClass()
     }
 
-    GrailsShell(ResourceLoader resourceLoader, Object... sources) {
+    GrailsShell(ResourceLoader resourceLoader, Class<?>... sources) {
         super(resourceLoader, sources)
         configureApplicationContextClass()
     }
@@ -59,8 +59,8 @@ class GrailsShell extends GrailsApp {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    public static ConfigurableApplicationContext run(Object source, String... args) {
-        return run([ source ] as Object[], args);
+    public static ConfigurableApplicationContext run(Class<?> source, String... args) {
+        return run([ source ] as Class[], args);
     }
 
     /**
@@ -70,7 +70,7 @@ class GrailsShell extends GrailsApp {
      * @param args the application arguments (usually passed from a Java main method)
      * @return the running {@link org.springframework.context.ApplicationContext}
      */
-    public static ConfigurableApplicationContext run(Object[] sources, String[] args) {
+    public static ConfigurableApplicationContext run(Class<?>[] sources, String[] args) {
         return new GrailsShell(sources).run(args);
     }
 

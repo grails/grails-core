@@ -236,26 +236,6 @@ public abstract class NavigableMapConfig implements Config {
     }
 
     @Override
-    public <T> Class<T> getPropertyAsClass(String key, Class<T> targetType) {
-        String className = getProperty(key, String.class);
-
-        if(!GrailsStringUtils.isBlank(className)) {
-            try {
-                Class<T> clazz = (Class<T>) ClassUtils.forName(className, classLoader);
-                if(clazz != targetType) {
-                    throw new ClassConversionException(clazz, targetType);
-                }
-                return clazz;
-            } catch (Exception e) {
-                throw new ClassConversionException(className, targetType, e);
-            }
-        }
-        else {
-            throw new IllegalStateException("Value for $key cannot be resolved");
-        }
-    }
-
-    @Override
     public String getRequiredProperty(String key) throws IllegalStateException {
         String value = getProperty(key);
         if(GrailsStringUtils.isBlank(value)) {

@@ -3,8 +3,8 @@ dependencies {
 
     testCompile project(":grails-plugin-controllers")
 
-    testRuntime "org.apache.tomcat.embed:tomcat-embed-core:8.0.33"
-    testRuntime "org.apache.tomcat.embed:tomcat-embed-logging-juli:8.0.33"
+    testCompile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
+    testRuntime "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatLog4jVersion"
     testRuntime project(":grails-plugin-i18n")
     testRuntime project(":grails-plugin-url-mappings")
 }

@@ -28,7 +28,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext
 @CompileStatic
 class DevelopmentGrailsApplication extends GrailsApp {
 
-    protected DevelopmentGrailsApplication(Object... sources) {
+    protected DevelopmentGrailsApplication(Class<?>... sources) {
         super(sources)
         configureApplicationContextClass()
     }

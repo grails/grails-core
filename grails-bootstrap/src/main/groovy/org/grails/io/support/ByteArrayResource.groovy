@@ -21,7 +21,8 @@ import groovy.transform.CompileStatic
  * A Resource impl used represent a Resource as an array of bytes
  */
 @CompileStatic
-class ByteArrayResource implements Resource{
+class ByteArrayResource implements Resource {
+
     byte[] bytes
     String description = "resource loaded from byte array"
 
@@ -60,7 +61,8 @@ class ByteArrayResource implements Resource{
 
     String getFilename() { description }
 
-    Resource createRelative(String relativePath) {
+    //Fully qualified name to work around Groovy bug
+    org.grails.io.support.Resource createRelative(String relativePath) {
         throw new UnsupportedOperationException("Method createRelative not supported")
     }
 }

@@ -22,7 +22,9 @@ dependencies {
     compile "jline:jline:$jlineVersion"
     compile "org.gradle:gradle-tooling-api:$gradleToolingApiVersion"
 
-    compile("org.springframework.boot:spring-boot-cli:$springBootVersion")
+    compile("org.springframework.boot:spring-boot-cli:$springBootVersion") {
+        exclude group: "org.codehaus.groovy", module: "groovy"
+    }
 
     testCompile "net.sf.expectit:expectit-core:0.5.0"
     testCompile "com.github.jnr:jnr-posix:3.0.6"

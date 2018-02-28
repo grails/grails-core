@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import io.spring.gradle.dependencymanagement.DependencyManagementPlugin
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
@@ -37,12 +38,15 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.DefaultCompositeFileTree
 import org.gradle.api.java.archives.Manifest
+import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.WarPlugin
 import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -58,10 +62,12 @@ import org.grails.gradle.plugin.model.GrailsClasspathToolingModelBuilder
 import org.grails.gradle.plugin.run.FindMainClassTask
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.FactoriesLoaderSupport
-import org.springframework.boot.gradle.SpringBootPluginExtension
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
-import org.springframework.boot.gradle.repackage.RepackageTask
+import org.springframework.boot.gradle.tasks.bundling.BootArchive
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.bundling.BootWar
 
 import javax.inject.Inject
 
@@ -153,7 +159,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void applyDefaultPlugins(Project project) {
-        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+        def springBoot = project.extensions.findByType(SpringBootExtension)
         if (!springBoot) {
             project.plugins.apply(SpringBootPlugin)
         }
@@ -273,10 +279,11 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void configureSpringBootExtension(Project project) {
-        def springBoot = project.extensions.findByType(SpringBootPluginExtension)
+        def springBoot = project.extensions.findByType(SpringBootExtension)
 
         if(springBoot) {
-            springBoot.providedConfiguration = ProvidedBasePlugin.PROVIDED_CONFIGURATION_NAME
+            //TODO: Boot2
+            //springBoot.providedConfiguration = ProvidedBasePlugin.PROVIDED_CONFIGURATION_NAME
         }
     }
 
@@ -443,8 +450,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
         def shellTask = createShellTask(project, tasks, consoleConfiguration)
 
         findMainClass.doLast {
-            def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
-            def mainClassName = bootExtension.mainClass
+            ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) project.getExtensions().getByName("ext")
+            def mainClassName = extraProperties.get('mainClassName')
             if(mainClassName) {
                 consoleTask.args mainClassName
                 shellTask.args mainClassName
@@ -493,9 +500,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void registerFindMainClassTask(Project project) {
         def findMainClassTask = project.tasks.create(name: "findMainClass", type: FindMainClassTask, overwrite: true)
         findMainClassTask.mustRunAfter project.tasks.withType(GroovyCompile)
-        def bootRepackageTask = project.tasks.findByName("bootRepackage")
-        if(bootRepackageTask) {
-            bootRepackageTask.dependsOn findMainClassTask
+        project.tasks.withType(BootArchive) { BootArchive task ->
+            task.dependsOn findMainClassTask
         }
     }
 
@@ -613,31 +619,46 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
+    @CompileDynamic
+    protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
+        FileCollection classesDirs
+        try {
+            classesDirs = output?.classesDirs ?: project.files(new File(project.buildDir, "classes/main"))
+        }
+        catch(e) {
+            classesDirs = output?.classesDir ? project.files(output.classesDir) : project.files(new File(project.buildDir, "classes/main"))
+        }
+        return classesDirs
+    }
+
     protected void configurePathingJar(Project project) {
         project.afterEvaluate {
             ConfigurationContainer configurations = project.configurations
             Configuration runtime = configurations.getByName('runtime')
             Configuration console = configurations.getByName('console')
 
-            if( project.plugins.findPlugin(WarPlugin) ) {
+/*            if( project.plugins.findPlugin(WarPlugin) ) {
                 def allTasks = project.tasks
-                allTasks.withType(RepackageTask) { RepackageTask t ->
+                allTasks.withType(BootWar) { BootWar t ->
                     t.withJarTask = allTasks.findByName('war')
                 }
             }
             else {
                 def allTasks = project.tasks
-                allTasks.withType(RepackageTask) { RepackageTask t ->
+                allTasks.withType(BootJar) { BootJar t ->
                     t.withJarTask = allTasks.findByName('jar')
                 }
-            }
+            }*/
+
+            SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
+            SourceSetOutput output = mainSourceSet?.output
+            FileCollection mainFiles = resolveClassesDirs(output, project)
 
             Jar pathingJar = createPathingJarTask(project, "pathingJar", runtime)
-            FileCollection pathingClasspath = project.files("${project.buildDir}/classes/main",
-              "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath)
+            FileCollection pathingClasspath = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJar.archivePath) + mainFiles
+
             Jar pathingJarCommand = createPathingJarTask(project, "pathingJarCommand", runtime, console)
-            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/classes/main",
-              "${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath)
+            FileCollection pathingClasspathCommand = project.files("${project.buildDir}/resources/main", "${project.projectDir}/gsp-classes", pathingJarCommand.archivePath) + mainFiles
 
             GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
 

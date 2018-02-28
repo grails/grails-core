@@ -1,6 +1,5 @@
 package org.grails.gradle.plugin.run
 
-import grails.util.BuildSettings
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.DefaultTask
@@ -13,7 +12,8 @@ import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.TaskAction
 import org.grails.gradle.plugin.util.SourceSets
 import org.grails.io.support.MainClassFinder
-import org.springframework.boot.gradle.SpringBootPluginExtension
+import org.springframework.boot.gradle.tasks.bundling.BootArchive
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 /**
  * A task that finds the main task, differs slightly from Boot's version as expects a subclass of GrailsConfiguration
@@ -27,16 +27,13 @@ class FindMainClassTask extends DefaultTask {
     @TaskAction
     void setMainClassProperty() {
         Project project = this.project
-        def bootExtension = project.extensions.findByType(SpringBootPluginExtension)
-        if ( bootExtension != null ) {
+        BootRun bootRun = (BootRun)project.tasks.findByName("bootRun")
+        if ( bootRun != null ) {
             def mainClass = findMainClass()
             if(mainClass != null) {
-                bootExtension.setMainClass(mainClass)
-                JavaExec javaExec = (JavaExec)project.tasks.findByName("bootRun")
-                javaExec.setMain(mainClass)
-
+                bootRun.setMain(mainClass)
                 ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) getProject()
-                        .getExtensions().getByName("ext");
+                        .getExtensions().getByName("ext")
                 extraProperties.set("mainClassName", mainClass)
             }
         }
@@ -53,11 +50,11 @@ class FindMainClassTask extends DefaultTask {
         }
         else {
 
-            // Try the SpringBoot extension setting
+/*            // Try the SpringBoot extension setting
             def bootExtension = project.extensions.findByType( SpringBootPluginExtension )
             if(bootExtension?.mainClass) {
                 return bootExtension.mainClass
-            }
+            }*/
 
             SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
 

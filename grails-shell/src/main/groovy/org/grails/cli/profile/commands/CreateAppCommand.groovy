@@ -225,7 +225,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
                 return false
             }
 
-            initializeVariables(cmd.appName, defaultpackagename, profileName, cmd.grailsVersion)
+            initializeVariables(profileName, cmd.grailsVersion)
 
             if(profileRepository instanceof MavenProfileRepository) {
                 MavenProfileRepository mpr = (MavenProfileRepository)profileRepository
@@ -532,13 +532,14 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
     }
 
-    private void initializeVariables(String appname, String defaultPackage, String profileName, String grailsVersion) {
+    private void initializeVariables(String profileName, String grailsVersion) {
         variables.APPNAME = appname
 
-        variables['grails.codegen.defaultPackage'] = defaultPackage
-        variables['grails.codegen.defaultPackage.path'] = defaultPackage.replace('.', '/')
+        variables['grails.codegen.defaultPackage'] = defaultpackagename
+        variables['grails.codegen.defaultPackage.path'] = defaultpackagename.replace('.', '/')
 
         def projectClassName = GrailsNameUtils.getNameFromScript(appname)
+
         variables['grails.codegen.projectClassName'] = projectClassName
         variables['grails.codegen.projectNaturalName'] = GrailsNameUtils.getNaturalName(projectClassName)
         variables['grails.codegen.projectName'] = GrailsNameUtils.getScriptName(projectClassName)

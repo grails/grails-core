@@ -454,38 +454,52 @@ class MockPart implements Part {
         this.file = file
     }
 
+    @Override
     InputStream getInputStream() {
         file.inputStream
     }
 
+    @Override
     String getContentType() {
         file.contentType
     }
 
+    @Override
     String getName() {
         file.name
     }
 
+    @Override
+    String getSubmittedFileName() {
+        "N/A"
+    }
+
+    @Override
     long getSize() {
         file.size
     }
 
+    @Override
     void write(String fileName) {
         file.transferTo(new File(fileName))
     }
 
+    @Override
     void delete() {
         // no-op
     }
 
+    @Override
     String getHeader(String name) {
         return headers.getFirst(name)
     }
 
+    @Override
     Collection<String> getHeaders(String name) {
         return headers[name]
     }
 
+    @Override
     Collection<String> getHeaderNames() {
         return headers.keySet()
     }
