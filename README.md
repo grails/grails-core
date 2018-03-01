@@ -43,52 +43,52 @@ First check that the [tests are passing](https://github.com/grails/grails-core/w
 
 #### Steps ####
 
-- Release Grails Profiles and update Grails BOM for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/profiles.properties).
-- Edit `grails-bom/profiles.properties`
-  - Application profiles:
-    - base: https://github.com/grails-profiles/base
-    - web https://github.com/grails-profiles/web
-    - rest-api https://bintray.com/grails/profiles/rest-api
-    - angularjs  https://github.com/grails-profiles/angularjs
-    - angular https://github.com/grails-profiles/angular
-    - react https://bintray.com/grails/profiles/react
-    - react-webpack https://bintray.com/grails/profiles/react-webpack
-    - webpack https://bintray.com/grails/profiles/webpack
-    - vue https://github.com/grails-profiles/vue
-    - web-jboss7 https://github.com/grails-profiles/web-jboss7
-  - Plugin profiles:
-    - plugin https://github.com/grails-profiles/plugin
-    - rest-api-plugin https://github.com/grails-profiles/rest-api-plugin
-    - web-plugin https://github.com/grails-profiles/web-plugin
-  - Third-party profiles:
-    - vaadin https://github.com/macprzepiora/web-vaadin8
-    - ember https://github.com/hgarfer/grails-profile-ember
-- Release Grails plugins and update Grails BOM for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/plugins.properties).
-- Edit `grails-bom/plugins.properties`
-    - hibernate4 https://github.com/grails/gorm-hibernate4
-    - hibernate5 https://github.com/grails/gorm-hibernate5
-    - mongodb https://github.com/grails/gorm-mongodb
-    - rx-gorm-rest-client https://github.com/grails/gorm-rest-client
-    - rx-mongodb https://github.com/grails/gorm-mongodb
-    - neo4j https://github.com/grails/gorm-neo4j
-    - cache https://github.com/grails-plugins/grails-cache
-    - scaffolding https://github.com/grails3-plugins/scaffolding
-    - fields https://github.com/grails-fields-plugin/grails-fields
-    - geb https://github.com/grails3-plugins/geb
-    - rxjava https://github.com/grails-plugins/grails-rxjava
-    - views-json https://github.com/grails/grails-views
-    - views-json-templates https://github.com/grails/grails-views
-    - views-markup https://bintray.com/grails/plugins/grails-views
-    - grails-java8 https://github.com/grails-plugins/grails-java8
-- Release Grails dependencies and update `build.gradle` [here](https://github.com/grails/grails-core/blob/master/build.gradle).
+- [ ] Release Grails Profiles and update Grails BOM for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/profiles.properties).
+- [ ] Edit `grails-bom/profiles.properties`
+  - [ ] Application profiles:
+    - [ ] base: https://github.com/grails-profiles/base
+    - [ ] web https://github.com/grails-profiles/web
+    - [ ] rest-api https://bintray.com/grails/profiles/rest-api
+    - [ ] angularjs  https://github.com/grails-profiles/angularjs
+    - [ ] angular https://github.com/grails-profiles/angular
+    - [ ] react https://bintray.com/grails/profiles/react
+    - [ ] react-webpack https://bintray.com/grails/profiles/react-webpack
+    - [ ] webpack https://bintray.com/grails/profiles/webpack
+    - [ ] vue https://github.com/grails-profiles/vue
+    - [ ] web-jboss7 https://github.com/grails-profiles/web-jboss7
+  - [ ] Plugin profiles:
+    - [ ] plugin https://github.com/grails-profiles/plugin
+    - [ ] rest-api-plugin https://github.com/grails-profiles/rest-api-plugin
+    - [ ] web-plugin https://github.com/grails-profiles/web-plugin
+  - [ ] Third-party profiles:
+    - [ ] vaadin https://github.com/macprzepiora/web-vaadin8
+    - [ ] ember https://github.com/hgarfer/grails-profile-ember
+- [ ] Release Grails plugins and update Grails BOM for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/plugins.properties).
+- [ ] Edit `grails-bom/plugins.properties`
+    - [ ] hibernate4 https://github.com/grails/gorm-hibernate4
+    - [ ] hibernate5 https://github.com/grails/gorm-hibernate5
+    - [ ] mongodb https://github.com/grails/gorm-mongodb
+    - [ ] rx-gorm-rest-client https://github.com/grails/gorm-rest-client
+    - [ ] rx-mongodb https://github.com/grails/gorm-mongodb
+    - [ ] neo4j https://github.com/grails/gorm-neo4j
+    - [ ] cache https://github.com/grails-plugins/grails-cache
+    - [ ] scaffolding https://github.com/grails3-plugins/scaffolding
+    - [ ] fields https://github.com/grails-fields-plugin/grails-fields
+    - [ ] geb https://github.com/grails3-plugins/geb
+    - [ ] rxjava https://github.com/grails-plugins/grails-rxjava
+    - [ ] views-json https://github.com/grails/grails-views
+    - [ ] views-json-templates https://github.com/grails/grails-views
+    - [ ] views-markup https://bintray.com/grails/plugins/grails-views
+    - [ ] grails-java8 https://github.com/grails-plugins/grails-java8
+- [ ] Release Grails dependencies and update `build.gradle` [here](https://github.com/grails/grails-core/blob/master/build.gradle).
 Typically you want to release
-  - async https://github.com/grails/grails-async
-  - gsp https://github.com/grails/grails-gsp
-  - testing-support https://github.com/grails/grails-testing-support
-  - data-store https://github.com/grails/grails-data-mapping
-  - And any other third party dependency such as Groovy, Spring,...
-- Merge the branch for `grails-doc`. If you're releasing `3.2.x` then merge into `3.3.x`
-- Check release of a Github branch of `grails-core` in `grails-doc` repository is correct so that the API docs generate correctly.
+  - [ ] async https://github.com/grails/grails-async
+  - [ ] gsp https://github.com/grails/grails-gsp
+  - [ ] testing-support https://github.com/grails/grails-testing-support
+  - [ ] data-store https://github.com/grails/grails-data-mapping
+  - [ ] And any other third party dependency such as Groovy, Spring,...
+- [ ] Merge the branch for `grails-doc`. If you're releasing `3.2.x` then merge into `3.3.x`
+- [ ] Check release of a Github branch of `grails-core` in `grails-doc` repository is correct so that the API docs generate correctly.
 
 Next, update the Grails version in `build.gradle` and `grails-core/src/test/groovy/grails/util/GrailsUtilTests.java` and then push the changes to git:
 
@@ -101,28 +101,27 @@ Next, update the Grails version in `build.gradle` and `grails-core/src/test/groo
 By tagging the release Travis will perform all the necessary steps to release a new version of Grails, just wait for [the build](https://travis-ci.org/grails/grails-core) to complete.
 This process will also trigger a release of Grails docs.
 
-- Update Grails website to display latest version [here](https://github.com/grails/grails-static-website/blob/master/main/src/main/groovy/org/grails/main/SiteMap.groovy).
-
-- Update profile-versions-repositories https://github.com/grails-profiles-versions
-  - Application profiles:
-    - base
-    - web
-    - rest-api
-    - angularjs
-    - angular
-    - react
-    - react-webpack
-    - webpack
-    - vue
-    - web-jboss7
-  - Plugin profiles:
-    - plugin
-    - rest-api-plugin
-    - web-plugin
-  - Third-party profiles:
-    - vaadin
-    - ember
-- Tweet about it in Social Networks
+- [ ] Update Grails website to display latest version [here](https://github.com/grails/grails-static-website/blob/master/main/src/main/groovy/org/grails/main/SiteMap.groovy).
+- [ ] Update profile-versions-repositories https://github.com/grails-profiles-versions
+  - [ ] Application profiles:
+    - [ ] base
+    - [ ] web
+    - [ ] rest-api
+    - [ ] angularjs
+    - [ ] angular
+    - [ ] react
+    - [ ] react-webpack
+    - [ ] webpack
+    - [ ] vue
+    - [ ] web-jboss7
+  - [ ] Plugin profiles:
+    - [ ] plugin
+    - [ ] rest-api-plugin
+    - [ ] web-plugin
+  - [ ] Third-party profiles:
+    - [ ] vaadin
+    - [ ] ember
+- [ ] Tweet about it in Social Networks
 
 The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatically upload the tagged release to Github and be available on the [Releases page](https://github.com/grails/grails-core/releases).
 
