@@ -121,6 +121,7 @@ This process will also trigger a release of Grails docs.
   - [ ] Third-party profiles:
     - [ ] vaadin
     - [ ] ember
+- [ ] Write the release notes
 - [ ] Tweet about it in Social Networks
 
 The [Travis CI](https://travis-ci.org/grails/grails-core) build will automatically upload the tagged release to Github and be available on the [Releases page](https://github.com/grails/grails-core/releases).
