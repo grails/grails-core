@@ -44,7 +44,7 @@ ext {
     jansiVersion = "1.14"
     jlineVersion = "2.12"
     jnaVersion = "4.2.2"
-    slf4jVersion = "1.7.22"
+    slf4jVersion = "1.7.25"
 
     spockVersion = '1.1-groovy-2.4'
     springBootVersion = "1.5.10.RELEASE"
@@ -56,7 +56,7 @@ ext {
     concurrentlinkedhashmapVersion = "1.4.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
-    tomcatVersion = "8.5.23"
+    tomcatVersion = "8.5.28"
     tomcatLog4jVersion = "8.5.2"
     servletApiVersion = "3.0.1"
 
