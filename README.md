@@ -43,26 +43,8 @@ First check that the [tests are passing](https://github.com/grails/grails-core/w
 
 #### Steps ####
 
-- [ ] Release Grails Profiles and update Grails BOM for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/profiles.properties).
-- [ ] Edit `grails-bom/profiles.properties`
-  - [ ] Application profiles:
-    - [ ] base: https://github.com/grails-profiles/base
-    - [ ] web https://github.com/grails-profiles/web
-    - [ ] rest-api https://bintray.com/grails/profiles/rest-api
-    - [ ] angularjs  https://github.com/grails-profiles/angularjs
-    - [ ] angular https://github.com/grails-profiles/angular
-    - [ ] react https://bintray.com/grails/profiles/react
-    - [ ] react-webpack https://bintray.com/grails/profiles/react-webpack
-    - [ ] webpack https://bintray.com/grails/profiles/webpack
-    - [ ] vue https://github.com/grails-profiles/vue
-    - [ ] web-jboss7 https://github.com/grails-profiles/web-jboss7
-  - [ ] Plugin profiles:
-    - [ ] plugin https://github.com/grails-profiles/plugin
-    - [ ] rest-api-plugin https://github.com/grails-profiles/rest-api-plugin
-    - [ ] web-plugin https://github.com/grails-profiles/web-plugin
-  - [ ] Third-party profiles:
-    - [ ] vaadin https://github.com/macprzepiora/web-vaadin8
-    - [ ] ember https://github.com/hgarfer/grails-profile-ember
+- [ ] Check all of the profiles [here](https://github.com/grails-profiles) to see if any changes need released and update Grails BOM
+ for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/profiles.properties).
 - [ ] Release Grails plugins and update Grails BOM for the Grails branch you plan to release [here](https://github.com/grails/grails-core/blob/master/grails-bom/plugins.properties).
 - [ ] Edit `grails-bom/plugins.properties`
     - [ ] hibernate4 https://github.com/grails/gorm-hibernate4
@@ -103,24 +85,6 @@ This process will also trigger a release of Grails docs.
 
 - [ ] Update Grails website to display latest version [here](https://github.com/grails/grails-static-website/blob/master/main/src/main/groovy/org/grails/main/SiteMap.groovy).
 - [ ] Update profile-versions-repositories https://github.com/grails-profiles-versions
-  - [ ] Application profiles:
-    - [ ] base
-    - [ ] web
-    - [ ] rest-api
-    - [ ] angularjs
-    - [ ] angular
-    - [ ] react
-    - [ ] react-webpack
-    - [ ] webpack
-    - [ ] vue
-    - [ ] web-jboss7
-  - [ ] Plugin profiles:
-    - [ ] plugin
-    - [ ] rest-api-plugin
-    - [ ] web-plugin
-  - [ ] Third-party profiles:
-    - [ ] vaadin
-    - [ ] ember
 - [ ] Write the release notes
 - [ ] Tweet about it in Social Networks
 
