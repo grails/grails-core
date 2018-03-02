@@ -79,7 +79,7 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
         	fi
 	    fi
-	elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
+	elif [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
 	    echo "Builder Leading Publishing Snapshot..."
 	    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
 	    cd ..
