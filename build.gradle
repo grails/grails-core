@@ -28,7 +28,7 @@ ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     
     asyncVersion = '3.3.2'
-    gspVersion = '3.3.1.BUILD-SNAPSHOT'
+    gspVersion = '3.3.1'
     legacyConvertersVersion = "3.3.1"
     testingSupportVersion = "1.1.4"
     datastoreVersion = "6.1.9.BUILD-SNAPSHOT"
