@@ -276,6 +276,30 @@ class SomeClass {
         c
     }
 
+    void 'Test compiling a domain class with a namedQuery block'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a domain class marked with @GrailsTypeChecked contains a mapping block'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsTypeChecked
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+
+    static namedQueries = {
+        findByFirstName { String name ->
+            eq('name', name)
+        }
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
     
     void 'Test compiling a domain class with a mapping block and unrelated dynamic code'() {
         given:

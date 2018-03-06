@@ -372,6 +372,31 @@ class SomeClass {
         c
     }
 
+    void 'Test compiling a domain class with a namedQueries block'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a domain class marked with @GrailsCompileStatic contains a namedQueries block'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+
+    static namedQueries = {
+        findByFirstName { String name ->
+            eq('name', name)
+        }
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
+
     @Issue('https://github.com/grails/grails-core/issues/643')
     void 'Test that a controller marked with @GrailsCompileStatic may reference dynamic request properties'() {
         given:
