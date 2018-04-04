@@ -15,19 +15,18 @@
  */
 package grails.web.mapping
 
-import groovy.transform.CompileStatic
-import groovy.util.logging.Commons
 import grails.web.http.HttpHeaders
-import org.grails.web.servlet.mvc.GrailsWebRequest
 import grails.web.mapping.mvc.RedirectEventListener
 import grails.web.mapping.mvc.exceptions.CannotRedirectException
+import groovy.transform.CompileStatic
+import groovy.util.logging.Commons
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.util.Assert
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
 /**
  * Encapsulates the logic for issuing a redirect based on a Map of arguments
  *
@@ -92,11 +91,15 @@ class ResponseRedirector {
         }
 
         // When redirecting from UrlMappings the original request params are on webRequest.originalParams
-        // instead of arguments.params so we merge them
-        def webRequest = GrailsWebRequest.lookup(request)
-        if (webRequest.originalParams) {
-            Map existingParams = (Map)arguments.get(LinkGenerator.ATTRIBUTE_PARAMS) ?: [:]
-            arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, existingParams + webRequest.originalParams)
+        // instead of arguments.params so we merge them.
+        // When "method" is on the arguments means that the request is a redirect from a controller, so we don't
+        // add the original params
+        if (!arguments.containsKey(LinkGenerator.ATTRIBUTE_METHOD)) {
+            def webRequest = GrailsWebRequest.lookup(request)
+            if (webRequest.originalParams) {
+                Map existingParams = (Map) arguments.get(LinkGenerator.ATTRIBUTE_PARAMS) ?: [:]
+                arguments.put(LinkGenerator.ATTRIBUTE_PARAMS, existingParams + webRequest.originalParams)
+            }
         }
 
         redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(arguments), request, response, permanent, absolute)
