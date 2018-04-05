@@ -54,7 +54,11 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
 	        if [[ $EXIT_STATUS == 0 ]]; then
 			    # Tag and release the docs
-			    git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
+			    version="$TRAVIS_TAG"
+                version=${version:1}
+                majorVersion=${version:0:4}
+                majorVersion="${majorVersion}x"
+                git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git -b ${majorVersion} grails-doc --single-branch > /dev/null
 			    cd grails-doc
 
 			    echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
