@@ -57,7 +57,7 @@ ext {
     concurrentlinkedhashmapVersion = "1.4.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
-    tomcatVersion = "8.5.28"
+    tomcatVersion = "8.5.29"
     tomcatLog4jVersion = "8.5.2"
     servletApiVersion = "3.0.1"
 
