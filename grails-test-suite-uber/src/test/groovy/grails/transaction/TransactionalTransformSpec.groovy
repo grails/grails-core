@@ -18,6 +18,7 @@ package grails.transaction
 
 import grails.spring.BeanBuilder
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.springframework.transaction.TransactionDefinition
 
 import javax.annotation.PostConstruct
 import javax.sql.DataSource
@@ -579,6 +580,72 @@ new BookService()
             status.isRollbackOnly()
     }
 
+    void "Test that a @Transactional annotation on a method sets name of transaction"() {
+        when:"A new instance of a class with a @Transactional method is created"
+        def bookService = new GroovyShell().evaluate('''
+package foo
+
+import grails.transaction.*
+
+class BookService {
+    @Transactional
+    void updateBook() {
+    }
+}
+
+new BookService()
+''')
+
+        then:"It implements TransactionManagerAware"
+        bookService instanceof TransactionManagerAware
+
+        when:"A transactionManager is set"
+        final transactionManager = getPlatformTransactionManager()
+        bookService.transactionManager = transactionManager
+
+        then:"It is not null"
+        bookService.transactionManager != null
+
+        when:"When a transactional method is called"
+        bookService.updateBook()
+
+        then:"transaction name is foo.BookService.updateBook"
+        transactionManager.definition.name == 'foo.BookService.updateBook'
+    }
+
+    void "Test that a @Transactional annotation on a class sets name of transaction"() {
+        when:"A new instance of a class with a @Transactional method is created"
+        def bookService = new GroovyShell().evaluate('''
+package foo
+
+import grails.transaction.*
+
+@Transactional
+class BookService {
+    void updateBook() {
+    }
+}
+
+new BookService()
+''')
+
+        then:"It implements TransactionManagerAware"
+        bookService instanceof TransactionManagerAware
+
+        when:"A transactionManager is set"
+        final transactionManager = getPlatformTransactionManager()
+        bookService.transactionManager = transactionManager
+
+        then:"It is not null"
+        bookService.transactionManager != null
+
+        when:"When a method on a transactional class is called"
+        bookService.updateBook()
+
+        then:"transaction name is foo.BookService.updateBook"
+        transactionManager.definition.name == 'foo.BookService.updateBook'
+    }
+
     void 'test CompileStatic on a method in a class marked with Transactional'() {
         given:
         def gcl = new GroovyClassLoader()
@@ -645,6 +712,7 @@ class TransactionalTransformSpecService implements InitializingBean {
 class TestTransactionManager extends DataSourceTransactionManager {
     boolean transactionStarted = false
     boolean transactionRolledBack = false
+    TransactionDefinition definition = null
 
     TestTransactionManager(DataSource dataSource) {
         super(dataSource)
@@ -654,6 +722,12 @@ class TestTransactionManager extends DataSourceTransactionManager {
     protected Object doGetTransaction() {
         transactionStarted = true
         return super.doGetTransaction()
+    }
+
+    @Override
+    protected void doBegin(Object transaction, TransactionDefinition definition) {
+        this.definition = definition
+        super.doBegin(transaction, definition)
     }
 
     @Override

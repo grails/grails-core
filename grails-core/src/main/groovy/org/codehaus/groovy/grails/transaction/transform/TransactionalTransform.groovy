@@ -161,8 +161,8 @@ class TransactionalTransform implements ASTTransformation{
                 )
             )
         )
-        
-        applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody)
+
+        applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody, classNode, methodNode)
 
 
         def transactionStatusParam = new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")
@@ -209,7 +209,7 @@ class TransactionalTransform implements ASTTransformation{
         new ExpressionStatement(originalMethodCall)
     }
 
-    protected applyTransactionalAttributeSettings(AnnotationNode annotationNode, VariableExpression transactionAttributeVar, BlockStatement methodBody) {
+    protected applyTransactionalAttributeSettings(AnnotationNode annotationNode, VariableExpression transactionAttributeVar, BlockStatement methodBody, ClassNode classNode, MethodNode methodNode) {
         final rollbackRuleAttributeClassNode = ClassHelper.make(RollbackRuleAttribute)
         final noRollbackRuleAttributeClassNode = ClassHelper.make(NoRollbackRuleAttribute)
         final members = annotationNode.getMembers()
@@ -242,6 +242,15 @@ class TransactionalTransform implements ASTTransformation{
                         )
             }
         }
+
+        final transactionName = classNode.name + '.' + methodNode.name
+        methodBody.addStatement(
+                new ExpressionStatement(
+                        new BinaryExpression(new PropertyExpression(transactionAttributeVar, 'name'),
+                        Token.newSymbol(Types.EQUAL, 0, 0),
+                        new ConstantExpression(transactionName))
+                )
+        )
     }
 
     private appendRuleElement(BlockStatement methodBody, VariableExpression transactionAttributeVar, String name, Expression expr) {
