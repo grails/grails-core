@@ -41,6 +41,7 @@ class ResponseRedirector {
     public static final String ARGUMENT_ABSOLUTE = "absolute"
     public static final String GRAILS_REDIRECT_ISSUED = GrailsApplicationAttributes.REDIRECT_ISSUED
     private static final String BLANK = "";
+    private static final String KEEP_PARAMS_WHEN_REDIRECT = 'keepParamsWhenRedirect'
 
     LinkGenerator linkGenerator
     Collection<RedirectEventListener> redirectListeners = []
@@ -90,11 +91,12 @@ class ResponseRedirector {
             absolute = (absoluteArgument == null) ? true : (Boolean.TRUE == absoluteArgument)
         }
 
-        // When redirecting from UrlMappings the original request params are on webRequest.originalParams
-        // instead of arguments.params so we merge them.
-        // When "method" is on the arguments means that the request is a redirect from a controller, so we don't
-        // add the original params
-        if (!arguments.containsKey(LinkGenerator.ATTRIBUTE_METHOD)) {
+        // If the request parameters contain "keepParamsWhenRedirect = true", then we add the original params. The
+        // new attribute can be used from UrlMappings to redirect from old URLs to new ones while keeping the params
+        // See https://github.com/grails/grails-core/issues/10622 & https://github.com/grails/grails-core/issues/10965
+        if (Boolean.valueOf(arguments.get(KEEP_PARAMS_WHEN_REDIRECT).toString())) {
+            // When redirecting from UrlMappings the original request params are on webRequest.originalParams
+            // instead of arguments.params so we merge them.
             def webRequest = GrailsWebRequest.lookup(request)
             if (webRequest.originalParams) {
                 Map existingParams = (Map) arguments.get(LinkGenerator.ATTRIBUTE_PARAMS) ?: [:]
