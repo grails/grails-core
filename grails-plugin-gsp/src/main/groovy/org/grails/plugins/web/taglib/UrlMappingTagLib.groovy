@@ -145,7 +145,7 @@ class UrlMappingTagLib implements TagLibrary{
         def steps = maxsteps > 0
         int currentstep = ((offset / max) as int) + 1
         int firststep = 1
-        int laststep = Math.round(Math.ceil(total / max)) as int
+        int laststep = Math.round(Math.ceil((total / max) as int)) as int
 
         // display previous link when not on firststep unless omitPrev is true
         if (currentstep > firststep && !attrs.boolean('omitPrev')) {

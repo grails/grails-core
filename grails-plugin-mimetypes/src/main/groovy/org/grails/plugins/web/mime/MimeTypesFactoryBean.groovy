@@ -71,7 +71,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
                 }
             }
         }
-        mimeTypes = mimes
+        mimeTypes = mimes as MimeType[]
         mimeTypes
 
     }
