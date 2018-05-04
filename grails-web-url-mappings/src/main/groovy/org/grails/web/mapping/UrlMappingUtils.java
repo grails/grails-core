@@ -15,13 +15,17 @@
  */
 package org.grails.web.mapping;
 
+import grails.core.DefaultGrailsApplication;
+import grails.core.GrailsApplication;
 import grails.util.GrailsStringUtils;
 import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
+import grails.web.mapping.LinkGenerator;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappingsHolder;
 import groovy.lang.Binding;
+import groovy.lang.Closure;
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping;
 import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.WrappedResponseHolder;
@@ -31,6 +35,8 @@ import org.grails.web.util.IncludeResponseWrapper;
 import org.grails.web.util.IncludedContent;
 import org.grails.web.util.WebUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -126,12 +132,10 @@ public class UrlMappingUtils {
             String viewName = info.getViewName();
             if (viewName.startsWith("/")) {
                 forwardUrl.append(viewName);
-            }
-            else {
+            } else {
                 forwardUrl.append(WebUtils.SLASH).append(viewName);
             }
-        }
-        else {
+        } else {
             forwardUrl.append(WebUtils.SLASH).append(info.getControllerName());
 
             if (!GrailsStringUtils.isBlank(info.getActionName())) {
@@ -143,8 +147,43 @@ public class UrlMappingUtils {
         if (parameters != null && !parameters.isEmpty() && includeParams) {
             try {
                 forwardUrl.append(WebUtils.toQueryString(parameters));
+            } catch (UnsupportedEncodingException e) {
+                throw new ControllerExecutionException("Unable to include ");
             }
-            catch (UnsupportedEncodingException e) {
+        }
+        return forwardUrl.toString();
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static String buildDispatchUrlForMapping(UrlMappingInfo info, boolean includeParams, LinkGenerator linkGenerator) {
+        if (info.getURI() != null) {
+            return info.getURI();
+        }
+
+        final StringBuilder forwardUrl = new StringBuilder();
+
+        if (info.getViewName() != null) {
+            // TODO: Evaluate if we can use the linkGenerator here.
+            String viewName = info.getViewName();
+            if (viewName.startsWith("/")) {
+                forwardUrl.append(viewName);
+            } else {
+                forwardUrl.append(WebUtils.SLASH).append(viewName);
+            }
+        } else {
+            Map<String, Object> urlAttrs = new HashMap<>();
+            urlAttrs.put("controller", info.getControllerName());
+            urlAttrs.put("action", info.getActionName());
+            urlAttrs.put("params", info.getParameters());
+
+            forwardUrl.append(linkGenerator.link(urlAttrs));
+        }
+
+        final Map parameters = findAllParamsNotInUrlMappingKeywords(info.getParameters());
+        if (parameters != null && !parameters.isEmpty() && includeParams) {
+            try {
+                forwardUrl.append(WebUtils.toQueryString(parameters));
+            } catch (UnsupportedEncodingException e) {
                 throw new ControllerExecutionException("Unable to include ");
             }
         }
@@ -218,8 +257,34 @@ public class UrlMappingUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model) {
-        String includeUrl = buildDispatchUrlForMapping(info, true);
 
+        final String includeUrl = buildDispatchUrlForMapping(info, true);
+
+        return includeForUrlMappingInfoHelper(includeUrl, request, response, info, model);
+    }
+
+    /**
+     * Include whatever the given UrlMappingInfo maps to within the current response
+     *
+     * @param request The request
+     * @param response The response
+     * @param info The UrlMappingInfo
+     * @param model The model
+     * @param linkGenerator allows for reverse url mapping
+     *
+     * @return The included content
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request,
+           HttpServletResponse response, UrlMappingInfo info, Map model, LinkGenerator linkGenerator) {
+
+        final String includeUrl = buildDispatchUrlForMapping(info, true, linkGenerator);
+
+        return includeForUrlMappingInfoHelper(includeUrl, request, response, info, model);
+    }
+
+    private static IncludedContent includeForUrlMappingInfoHelper(String includeUrl, HttpServletRequest request,
+                                           HttpServletResponse response, UrlMappingInfo info, Map model) {
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
 
         String currentController = null;
@@ -300,11 +365,8 @@ public class UrlMappingUtils {
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
 
-
         final Object previousControllerClass = webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
         final Object previousMatchedRequest = webRequest.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
-
-
 
         try {
             webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
