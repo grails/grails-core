@@ -174,7 +174,6 @@ public class UrlMappingUtils {
             Map<String, Object> urlAttrs = new HashMap<>();
             urlAttrs.put("controller", info.getControllerName());
             urlAttrs.put("action", info.getActionName());
-            urlAttrs.put("params", info.getParameters());
 
             forwardUrl.append(linkGenerator.link(urlAttrs));
         }
