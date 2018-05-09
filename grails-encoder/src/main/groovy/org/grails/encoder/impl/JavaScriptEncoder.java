@@ -58,7 +58,9 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
             case '\t':
                 return "\\t";
             case '\n':
-                if (previousChar != '\r') {
+                if (previousChar == '\r') {
+                    return "";
+                } else {
                     return "\\n";
                 }
             case '\r':
