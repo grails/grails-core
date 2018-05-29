@@ -148,7 +148,8 @@ class TransactionalTransform implements ASTTransformation{
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
 
                 if (isGetterMethod(md)) {
-                    final String propertyName = GrailsClassUtils.getPropertyForGetter(md.name, md.returnType.typeClass)
+
+                    final String propertyName = GrailsClassUtils.getPropertyForGetter(md.name, md.returnType.name)
                     final String setterName = GrailsNameUtils.getSetterName(propertyName)
 
                     //If a setter exists for the getter, don't apply the transformation
