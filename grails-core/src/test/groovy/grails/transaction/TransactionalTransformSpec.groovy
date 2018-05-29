@@ -980,6 +980,37 @@ new SomeClass()
         then:
         transactionManager.transactionStarted == true
     }
+
+
+    void "test transactional behavior is applied to getters with an uncompiled return type"() {
+        given:
+        def someClass = new GroovyShell().evaluate('''
+package demo
+
+    
+@grails.transaction.Transactional
+class SomeClass {
+
+    User getUser() {
+        new User()
+    }
+
+}
+
+class User {}
+
+new SomeClass()
+''')
+
+        final transactionManager = getPlatformTransactionManager()
+        someClass.transactionManager = transactionManager
+
+        when:
+        someClass.getUser()
+
+        then:
+        transactionManager.transactionStarted == true
+    }
 }
 
 

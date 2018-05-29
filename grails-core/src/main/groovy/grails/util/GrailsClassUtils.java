@@ -826,13 +826,17 @@ public class GrailsClassUtils {
      * @return The property name equivalent
      */
     public static String getPropertyForGetter(String getterName, Class returnType) {
+        return getPropertyForGetter(getterName, returnType.getName());
+    }
+
+    public static String getPropertyForGetter(String getterName, String returnType) {
         if (getterName == null || getterName.length() == 0) return null;
 
         if (getterName.startsWith("get")) {
             String prop = getterName.substring(3);
             return convertValidPropertyMethodSuffix(prop);
         }
-        if (getterName.startsWith("is") && returnType == boolean.class) {
+        if (getterName.startsWith("is") && returnType.equals("boolean")) {
             String prop = getterName.substring(2);
             return convertValidPropertyMethodSuffix(prop);
         }
