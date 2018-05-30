@@ -97,7 +97,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 
 		if (!synchronizationManager.isSynchronizationActive() && canCreateTransaction(definition)) {
 			synchronizationManager.initSynchronization();
-			mts.setNewSynchonization();
+			mts.setNewSynchronization();
 		}
 
 		try {
@@ -120,7 +120,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 				}
 			}
 
-			if (mts.isNewSynchonization()) {
+			if (mts.isNewSynchronization()) {
 				synchronizationManager.clearSynchronization();
 			}
 
@@ -172,7 +172,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 			}
 		}
 
-		if (multiTransactionStatus.isNewSynchonization()) {
+		if (multiTransactionStatus.isNewSynchronization()) {
 			synchronizationManager.clearSynchronization();
 		}
 
@@ -208,7 +208,7 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 			}
 		}
 
-		if (multiTransactionStatus.isNewSynchonization()) {
+		if (multiTransactionStatus.isNewSynchronization()) {
 			synchronizationManager.clearSynchronization();
 		}
 
