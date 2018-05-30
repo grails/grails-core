@@ -18,7 +18,6 @@ package org.grails.web.mapping;
 import grails.core.GrailsApplication;
 import grails.core.GrailsControllerClass;
 import grails.core.support.ClassLoaderAware;
-import grails.gorm.validation.Constrained;
 import grails.gorm.validation.ConstrainedProperty;
 import grails.gorm.validation.DefaultConstrainedProperty;
 import grails.io.IOUtils;
@@ -30,7 +29,12 @@ import grails.web.mapping.UrlMappingData;
 import grails.web.mapping.UrlMappingEvaluator;
 import grails.web.mapping.UrlMappingParser;
 import grails.web.mapping.exceptions.UrlMappingException;
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.Script;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.datastore.gorm.validation.constraints.builder.ConstrainedPropertyBuilder;
 import org.grails.datastore.gorm.validation.constraints.eval.ConstraintsEvaluator;
@@ -54,7 +58,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -572,6 +584,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             this.isInCollection = true;
             try {
                 callable.setDelegate(this);
+                callable.setResolveStrategy(Closure.DELEGATE_FIRST);
                 callable.call();
             } finally {
                 isInCollection = previousState ;
