@@ -96,12 +96,12 @@ class InterceptorSpec extends Specification {
         def webRequest = GrailsWebMockUtil.bindMockWebRequest()
         def request = webRequest.request
 
-        when:"The current request is for a controller called test"
+        when:"The current request is for a controller called foo"
         request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
         then:"We match"
         i.doesMatch()
 
-        when:"The current request is for a controller called test and action called bar"
+        when:"The current request is for a controller called foo and action called bar"
         clearMatch(i,request)
         request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName: "bar"))
         then:"We don't match"
