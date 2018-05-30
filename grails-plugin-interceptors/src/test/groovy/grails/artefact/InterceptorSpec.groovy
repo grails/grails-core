@@ -25,6 +25,7 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import javax.servlet.http.HttpServletRequest
 /**
@@ -119,6 +120,65 @@ class InterceptorSpec extends Specification {
         then:"We match"
         i.doesMatch()
 
+    }
+
+    void "Test the multiple match with specific controller interceptor mapping and the exclude"() {
+        given: "A test interceptor"
+        def i = new Test5Interceptor()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def request = webRequest.request
+
+        when: "The current request is for controller called foo"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
+        then: "We match"
+        i.doesMatch()
+
+        when: "The current request is for a controller called foo and action called bar"
+        clearMatch(i, request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo", actionName: "bar"))
+        then: "We don't match"
+        !i.doesMatch()
+
+        when: "The current request is for a controller called test and action called bar"
+        clearMatch(i, request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
+        then: "We match"
+        i.doesMatch()
+    }
+
+    void "Test the multiple match with specific namespace controller action interceptor mapping and the exclude"() {
+        given: "A test interceptor"
+        def i = new Test6Interceptor()
+        def webRequest = GrailsWebMockUtil.bindMockWebRequest()
+        def request = webRequest.request
+
+        when: "The current request is for controller called foo"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "foo"))
+        then: "We don't match"
+        !i.doesMatch()
+
+        when: "The current request is for controller called foo and namespace v1"
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(namespace: "v1", controllerName: "foo"))
+        then: "We match"
+        i.doesMatch()
+
+        when: "The current request is for a controller called foo and action called bar and namespace v1"
+        clearMatch(i, request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(namespace: "v1", controllerName: "foo", actionName: "bar"))
+        then: "We don't match"
+        !i.doesMatch()
+
+        when: "The current request is for a controller called test and action called bar"
+        clearMatch(i, request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(controllerName: "test", actionName: "bar"))
+        then: "We don't match"
+        !i.doesMatch()
+
+        when: "The current request is for a controller called test and action called bar and namespace v1"
+        clearMatch(i, request)
+        request.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, new ForwardUrlMappingInfo(namespace: "v1", controllerName: "test", actionName: "bar"))
+        then: "We match"
+        i.doesMatch()
     }
 
     void "Test the match all interceptor mappings exception an exact controller action pair"() {
@@ -267,6 +327,7 @@ class InterceptorSpec extends Specification {
         '/grails/foo/x'       | true
     }
 
+    @Unroll
     @Issue('10857')
     void "Test match excluding uri and with context path and interceptor with context path"() {
         given: "A test interceptor"
@@ -327,6 +388,22 @@ class Test4Interceptor implements Interceptor {
     Test4Interceptor() {
         matchAll()
             .excludes(controller:"foo", action:"bar")
+    }
+}
+
+class Test5Interceptor implements Interceptor {
+    Test5Interceptor() {
+        match(controller: "foo")
+                .excludes(action: "bar")
+        match(controller: "test")
+    }
+}
+
+class Test6Interceptor implements Interceptor {
+    Test6Interceptor() {
+        match(namespace: "v1", controller: "foo")
+                .excludes(action: "bar")
+        match(namespace: "v1", controller: "test")
     }
 }
 
