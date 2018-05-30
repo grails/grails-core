@@ -94,11 +94,11 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
             boolean matchUri = matcher.doesMatch(uri, grailsMappingInfo, req.method)
             boolean matchNoCtxUri = matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method)
 
-            if (matcher.isExclude()) {
+            if (matcher.isExclude() && matchUri && matchNoCtxUri) {
                 // Exclude interceptors are special because with only one of the conditions being false the interceptor
                 // won't be applied to the request
-                return matchUri && matchNoCtxUri
-            } else if (matchUri || (checkNoCtxUri && matchNoCtxUri)) {
+                return true
+            } else if (!matcher.isExclude() && (matchUri || (checkNoCtxUri && matchNoCtxUri))) {
                 return true
             }
         }
