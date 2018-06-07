@@ -36,9 +36,13 @@ class ApplicationContextCommandFactory implements CommandFactory {
 
         try {
             def classLoader = Thread.currentThread().contextClassLoader
-            def registry = classLoader.loadClass("grails.dev.commands.ApplicationContextCommandRegistry")
+            Class registry
+            try {
+                registry = classLoader.loadClass("grails.dev.commands.ApplicationContextCommandRegistry")
+            } catch (ClassNotFoundException cnf) {
+                return []
+            }
             def commands = registry.findCommands()
-
             return commands.collect() { Named named -> new GradleTaskCommandAdapter(profile, named) }
         } catch (Throwable e) {
             GrailsConsole.instance.error("Error occurred loading commands: $e.message", e)
