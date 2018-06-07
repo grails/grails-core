@@ -25,10 +25,10 @@ env:
   - secure: Frvf9gLJ/pfy3SWMm9LXdprO/snMFfDO9pTd1bl2GN3QBmkF40G20NzoFI6jbYeyg+gwJQmnC6NVi/KDAkJ/EBO05Xk/qMKwWWsASgdDzdnUNTynFPH0zcnv64d6qZAaLWeH/gWQPZ+99zmbVzFqSNDggEo+cPBm9QjqJ608Yx4=
   - secure: JM8mzEz6+UtRnG68vbitVoPzcrSHbEIa0z7Nfhu3RKMDOmQgfGNIF+ZDZPAa/tYpNBTJWKjeIJc8opCfd1p1+s6ISc7B29ymulQ3ztwFWcetunrSmxl8H96aqzjc+82DO6huj4Tzi0u2MADnh9wVm+A1+tcqLjpaLGmskMlvdbw=
   - secure: ICWgIGwHFH37nlY9k094qnnKy0tW2XDSOtGsvHb65AxsPsXB1zqj7Qd76Fboo1xFGQGpg+S6AHekY6Ch1prNOpkpPHw35UaQzaRqUxFUhfZYiD0rlmvzKrvKTesrFLy4LJwrTzGCQrViYgqfHvCeQ3r53wWff6nu8uFmMOPmGNY=
-  - secure: XwKxDJFXlxPhJox9sZYFrOhHY5BfPRNrqolMfOe2ZMMJyeX5uap9i9gyGrKF0gqtJx4XR4kn6HrrtK2DT7LAjPJgY2DJGXtMulRLTGtsCz3PF95Pc7q2Eb4h6t5XM0Hl//xT4fmREQLN4FEsOUkFcJALCua7uS6xYvmHAMLEtsw=
-install: /bin/true
+  - secure: XdMql6e7ToSMuhZuG1baCm6IDvj+X7pAbK210awH8Yww8lGGu2NryHBQliv0CLqd7tkjKSUHP3y/22O8H46Xc0+7ucWF8JwlMvtBeSuK/U/p/R7tOkLNeBuAXj9Xxd1oe9aRQrZS5AT2zkCkMGxTd7uGcm5p9MO0MmypFHzjPlE=
+install: "/bin/true"
 script:
-  - ./travis-build.sh
+- "./travis-build.sh"
 deploy:
   provider: releases
   api_key:
@@ -40,14 +40,14 @@ deploy:
     tags: true
     all_branches: true
 after_deploy:
-- ./gradlew sdkMajorRelease
+- "./gradlew sdkMajorRelease"
 cache:
   directories:
-  - $HOME/.gradle
+  - "$HOME/.gradle"
 notifications:
   slack:
     secure: WAto/v/ZBvlXxWTHUH6hONQ1uJZxVnUts1V7379hCViN5+DOfIbxzQAq+10SAgD6pa2BcQftpKIWr1/9RUZyK3oxE2mHbVUulkaVHNJJfz6oPD5pnCVMxE+ZuhkRuhkddGDBHpYaVw37QBkalLB0rE0h7Ddvo/gk9ICSQQLTlvE=
 addons:
   hosts:
-    - grails
+  - grails
   hostname: grails
