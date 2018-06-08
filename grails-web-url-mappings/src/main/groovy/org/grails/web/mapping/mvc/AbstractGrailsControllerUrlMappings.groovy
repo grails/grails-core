@@ -44,8 +44,8 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
     UrlMappings urlMappingsHolderDelegate
     UrlConverter urlConverter
-    Map<ControllerKey, GrailsControllerClass> mappingsToGrailsControllerMap = new ConcurrentHashMap<>()
-    Map<ControllerKey, GrailsControllerClass> deferredMappings = new ConcurrentHashMap<>()
+    ConcurrentHashMap<ControllerKey, GrailsControllerClass> mappingsToGrailsControllerMap = new ConcurrentHashMap<>()
+    ConcurrentHashMap<ControllerKey, GrailsControllerClass> deferredMappings = new ConcurrentHashMap<>()
 
     AbstractGrailsControllerUrlMappings(GrailsApplication grailsApplication, UrlMappings urlMappingsHolderDelegate, UrlConverter urlConverter = null) {
         this.urlMappingsHolderDelegate = urlMappingsHolderDelegate
