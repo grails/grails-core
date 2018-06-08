@@ -151,7 +151,7 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         //Plugins should override others. Application controllers defaults should be deferred to ensure the right controller/action is chosen due to order being non deterministic
         Map<ControllerKey, GrailsControllerClass> mapToUse = plugin ? mappingsToGrailsControllerMap : deferredMappings
 
-        if(hasNamespace) {
+        if (hasNamespace) {
             def noNamespaceDefaultActionKey = new ControllerKey(null, controllerName, null, pluginNameToRegister)
             mapToUse.put(noNamespaceDefaultActionKey, controller)
             if (hasPlugin) {
@@ -159,17 +159,17 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
                 mapToUse.put(noNamespaceNoPluginDefaultActionKey, controller)
             }
         }
-        if(hasPlugin) {
+        if (hasPlugin) {
             def noPluginDefaultActionKey = new ControllerKey(namespace, controllerName, null, null)
             mapToUse.put(noPluginDefaultActionKey, controller)
         }
 
-        for(action in controller.actions) {
+        for (action in controller.actions) {
             action = hasUrlConverter ? urlConverter.toUrlElement(action) : action
             def withPluginKey = new ControllerKey(namespace, controllerName, action, pluginNameToRegister)
 
             mappingsToGrailsControllerMap.put(withPluginKey, controller)
-            if(hasNamespace) {
+            if (hasNamespace) {
                 def withPluginKeyWithoutNamespaceKey = new ControllerKey(null, controllerName, action, pluginNameToRegister)
 
                 mapToUse.put(withPluginKeyWithoutNamespaceKey, controller)
@@ -179,9 +179,8 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
                 }
             }
 
-            if(hasPlugin) {
+            if (hasPlugin) {
                 def withoutPluginKey = new ControllerKey(namespace, controllerName, action, null)
-
                 mapToUse.put(withoutPluginKey, controller)
             }
         }
