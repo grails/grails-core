@@ -15,13 +15,14 @@
  */
 package org.grails.gradle.plugin.core
 
-import groovy.transform.CompileDynamic
 import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
@@ -86,7 +87,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         def allConfigurations = project.configurations
 
         def runtimeConfiguration = allConfigurations.findByName('runtime')
-        if(Environment.isDevelopmentRun()) {
+        if(Environment.isDevelopmentRun() && isExploded(project)) {
             def explodedConfig = allConfigurations.create('exploded')
             runtimeConfiguration.artifacts.clear()
             explodedConfig.extendsFrom(runtimeConfiguration)
@@ -99,6 +100,25 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             runtimeConfiguration.artifacts.add(new ExplodedDir( groovyCompile.destinationDir, groovyCompile, processResources) )
             explodedConfig.artifacts.add(new ExplodedDir( processResources.destinationDir, groovyCompile, processResources) )
         }
+    }
+
+    private boolean isExploded(Project project) {
+        if (project.parent != null) {
+            for (Project child: project.parent.childProjects.values()) {
+                if (child != project) {
+                    try {
+                        Configuration compile = child.configurations.getByName("compile")
+                        Dependency dependency = compile.dependencies.find { it.name == project.name }
+                        if (dependency && dependency.targetConfiguration == "exploded") {
+                            return true
+                        }
+                    } catch (UnknownConfigurationException | MissingPropertyException e) {
+                        //swallow
+                    }
+                }
+            }
+        }
+        return false
     }
 
     @Override

@@ -142,14 +142,12 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         def noNamespaceNoPluginDefaultActionKey = new ControllerKey(null, controllerName, null, null)
 
         mappingsToGrailsControllerMap.put(defaultActionKey, controller)
-        if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(noNamespaceDefaultActionKey)) {
+        if(hasNamespace) {
             mappingsToGrailsControllerMap.put(noNamespaceDefaultActionKey, controller)
+            mappingsToGrailsControllerMap.put(noNamespaceNoPluginDefaultActionKey, controller)
         }
-        if(plugin != null && !mappingsToGrailsControllerMap.containsKey(noPluginDefaultActionKey)) {
+        if(plugin != null) {
             mappingsToGrailsControllerMap.put(noPluginDefaultActionKey, controller)
-            if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(noNamespaceNoPluginDefaultActionKey)) {
-                mappingsToGrailsControllerMap.put(noNamespaceNoPluginDefaultActionKey, controller)
-            }
         }
 
         for(action in controller.actions) {
@@ -160,15 +158,13 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
             def withoutPluginKeyWithoutNamespace = new ControllerKey(null, controllerName, action, null)
 
             mappingsToGrailsControllerMap.put(withPluginKey, controller)
-            if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(withPluginKeyWithoutNamespaceKey)) {
+            if(hasNamespace) {
                 mappingsToGrailsControllerMap.put(withPluginKeyWithoutNamespaceKey, controller)
+                mappingsToGrailsControllerMap.put(withoutPluginKeyWithoutNamespace, controller)
             }
 
-            if(plugin != null && !mappingsToGrailsControllerMap.containsKey(withoutPluginKey)) {
+            if(plugin != null ) {
                 mappingsToGrailsControllerMap.put(withoutPluginKey, controller)
-                if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(withoutPluginKeyWithoutNamespace)) {
-                    mappingsToGrailsControllerMap.put(withoutPluginKeyWithoutNamespace, controller)
-                }
             }
         }
     }
