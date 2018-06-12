@@ -92,10 +92,9 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     private final Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<>();
     private final Map<String, UrlMapping> namedMappings = new HashMap<>();
     private final UrlMappingsList mappingsListLookup = new UrlMappingsList();
-    private final Set<String> DEFAULT_NAMESPACE_PARAMS = CollectionUtils.newSet(
-            UrlMapping.NAMESPACE, UrlMapping.CONTROLLER, UrlMapping.ACTION);
-    private final Set<String> DEFAULT_CONTROLLER_PARAMS = CollectionUtils.newSet(
-          UrlMapping.CONTROLLER, UrlMapping.ACTION);
+    private final Set<String> DEFAULT_NAMESPACE_PARAMS = CollectionUtils.newSet(UrlMapping.NAMESPACE, UrlMapping.CONTROLLER, UrlMapping.ACTION);
+    private final Set<String> DEFAULT_CONTROLLER_PARAMS = CollectionUtils.newSet(UrlMapping.CONTROLLER, UrlMapping.ACTION);
+    private final Set<String> DEFAULT_CONTROLLER_ONLY_PARAMS = CollectionUtils.newSet(UrlMapping.CONTROLLER);
     private final Set<String> DEFAULT_ACTION_PARAMS = CollectionUtils.newSet(UrlMapping.ACTION);
     private final PathMatcher pathMatcher = new AntPathMatcher();
 
@@ -331,6 +330,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
             Set<String> paramKeys = new HashSet<String>(params.keySet());
             paramKeys.removeAll(lookupParams);
             lookupParams.addAll(paramKeys);
+
             UrlMappingKey lookupKey = new UrlMappingKey(controller, null, namespace, pluginName, httpMethod, version,lookupParams);
             mapping = mappingsLookup.get(lookupKey);
             if (mapping == null) {
@@ -347,12 +347,36 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 }
             }
         }
+
+        if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
+            Set<String> lookupParams = new HashSet<String>(DEFAULT_CONTROLLER_ONLY_PARAMS);
+            Set<String> paramKeys = new HashSet<String>(params.keySet());
+            paramKeys.removeAll(lookupParams);
+            lookupParams.addAll(paramKeys);
+
+            UrlMappingKey lookupKey = new UrlMappingKey(null, action, namespace, pluginName, httpMethod, version, lookupParams);
+            mapping = mappingsLookup.get(lookupKey);
+            if (mapping == null) {
+                lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
+                mapping = mappingsLookup.get(lookupKey);
+            }
+            if (mapping == null) {
+                lookupParams.removeAll(paramKeys);
+                UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(null, action, namespace, pluginName, httpMethod, version, lookupParams);
+                mapping = mappingsLookup.get(lookupKeyModifiedParams);
+                if (mapping == null) {
+                    lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;
+                    mapping = mappingsLookup.get(lookupKeyModifiedParams);
+                }
+            }
+        }
+
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             Set<String> lookupParams = new HashSet<String>(DEFAULT_CONTROLLER_PARAMS);
             Set<String> paramKeys = new HashSet<String>(params.keySet());
             paramKeys.removeAll(lookupParams);
-
             lookupParams.addAll(paramKeys);
+
             UrlMappingKey lookupKey = new UrlMappingKey(null, null, namespace, pluginName, httpMethod, version,lookupParams);
             mapping = mappingsLookup.get(lookupKey);
             if (mapping == null) {
@@ -374,6 +398,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
             Set<String> paramKeys = new HashSet<String>(params.keySet());
             paramKeys.removeAll(lookupParams);
             lookupParams.addAll(paramKeys);
+
             UrlMappingKey lookupKey = new UrlMappingKey(null, null, null, pluginName, httpMethod, version,lookupParams);
             mapping = mappingsLookup.get(lookupKey);
             if (mapping == null) {
