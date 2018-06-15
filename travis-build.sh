@@ -39,7 +39,7 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
 	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 	    ./gradlew --stop
-	    ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
+	    ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
 	    ./gradlew closeAndReleaseRepository
 
 	    if [[ $EXIT_STATUS == 0 ]]; then
