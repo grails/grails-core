@@ -77,6 +77,7 @@ apply plugin: 'io.codearte.nexus-staging'
 
 nexusStaging {
     delayBetweenRetriesInMillis = 5000
+    stagingProfileId = "grails-core-${version.replace("\\.","\\-")}"
 }
 
 // directories created during the build which are related
