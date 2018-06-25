@@ -1,5 +1,5 @@
 language: groovy
-dist: precise
+dist: trusty
 sudo: false
 jdk:
 - openjdk7
@@ -25,9 +25,13 @@ env:
   - secure: U2aQypvBmL3oHvF44/IVQoG+VdTpBhGakIi6PdmGNhYFVB++SJCq1whow2X+xXPimFRSvSiHWa5XDGtdVwN4o4Dy0CPk+72nwa4Yx4L7IZNr7p+ZyceioRmdGXMKyvzhEmUHqDUwrbhwLlP6K+hVFIKTrxQR/6TWbLEbdDPQdjc=
   - secure: tpo5MPUDObdMpZeovj80+SFPjBgsUoyvdUvPhBF1paN4qKdrhcz+xyk3qB1dsXuUmGbzya7gjz9TdniLpSS86CbXd8TGiSL/14YlrSrLxIbhLWNIodaKbV21FIQYyz+E7EP611QcAGr1lHTYKDz2JnKbpSXsJt/qgROnEB62R4U=
   - secure: ikQeb2+ul0PTQqu6Jl2K0tnQIflWM0ifYKUxbZuIApoVyeL53zmzhLoI3waNZRoGyRF8eQ6V8C8SISUpD8fDDWaTMrkp9r3Zd0y9DG2FK5GYK1c+gxeUzLkxQvTMqRCsODlS6ZYR9ofyO2J6jG5H8hxcGnI7LoU6ufYFj8FwN70=
+before_install:
+  # Workaround for https://github.com/gradle/gradle/issues/2421:
+  # download all Gradle distributions with openjdk8
+  - JAVA_HOME=$(jdk_switcher home openjdk8) ./gradlew
 install: "/bin/true"
 script:
-- "./travis-build.sh"
+- JAVA_HOME=$(jdk_switcher home openjdk7) "./travis-build.sh"
 deploy:
   provider: releases
   api_key:
