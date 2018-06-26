@@ -144,7 +144,7 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
                 }
             })
         }
-        junit.run(runRequest)
+        result.failCount = junit.run(runRequest).failureCount
         result
     }
 
