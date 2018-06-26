@@ -45,15 +45,19 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
     @CompileStatic
     void apply(Project project) {
         File[] sourceDirs = findIntegrationTestSources(project)
-        if(sourceDirs) {
+        if (sourceDirs) {
             List<File> acceptedSourceDirs = []
             SourceSetContainer sourceSets = SourceSets.findSourceSets(project)
             SourceSet integrationTest = sourceSets.create("integrationTest")
 
-            for(File srcDir in sourceDirs ) {
+            for (File srcDir in sourceDirs) {
                 registerSourceDir(integrationTest, srcDir)
                 acceptedSourceDirs.add srcDir
             }
+
+            File resources = new File(project.projectDir, "grails-app/conf")
+            integrationTest.resources.srcDir(resources)
+
             DependencyHandler dependencies = project.dependencies
             dependencies.add("integrationTestCompile", SourceSets.findMainSourceSet(project).output)
             dependencies.add("integrationTestCompile", SourceSets.findSourceSet(project, SourceSet.TEST_SOURCE_SET_NAME).output)
@@ -82,7 +86,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
 
             integrationTestTask.finalizedBy testReportTask
 
-            if(ideaIntegration) {
+            if (ideaIntegration) {
                 integrateIdea(project, acceptedSourceDirs)
             }
         }
