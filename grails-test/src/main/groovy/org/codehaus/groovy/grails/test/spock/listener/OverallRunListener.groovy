@@ -61,6 +61,7 @@ class OverallRunListener extends RunListener {
         // I can't think of a situation where this would be called without
         // a perSpecListener being available, even if it does happen
         // our handling options are very limited at this point in execution.
+        this.result.failCount = result.failureCount
         getPerSpecRunListener()?.finish()
     }
 
