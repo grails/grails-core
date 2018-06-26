@@ -89,6 +89,10 @@ class UrlMappingsInfoHandlerAdapter implements HandlerAdapter, ApplicationContex
                 request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
                 def result = controllerClass.invoke(controller, action)
 
+                if ( result instanceof List && result.isEmpty() ) {
+                    result = [:]
+                }
+
                 if(actionResultTransformers) {
                     for(transformer in actionResultTransformers) {
                         result = transformer.transformActionResult(webRequest, action, result)
