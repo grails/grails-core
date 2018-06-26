@@ -98,12 +98,28 @@ class UrlMappingMatcher implements Matcher {
         return false
     }
 
+    protected boolean  doesMatchInternalControllerName(UrlMappingInfo info) {
+        (info.controllerName ?: '') ==~ controllerRegex
+    }
+
+    protected boolean  doesMatchInternalActionName(UrlMappingInfo info) {
+        (info.actionName ?: 'index') ==~ actionRegex
+    }
+
+    protected boolean  doesMatchInternalNamespace(UrlMappingInfo info) {
+        (info.namespace ?: '') ==~ namespaceRegex
+    }
+
+    protected boolean doesMatchInternalMethod(UrlMappingInfo info, String method) {
+        (method  ?: info.httpMethod ?: '') ==~ methodRegex
+    }
+
     protected boolean doesMatchInternal(UrlMappingInfo info, String method) {
-        (info != null &&
-            ((info.controllerName ?: '') ==~ controllerRegex) &&
-            ((info.actionName ?: '') ==~ actionRegex) &&
-            ((info.namespace ?: '') ==~ namespaceRegex) &&
-            ((method  ?: info.httpMethod ?: '') ==~ methodRegex))
+        info != null &&
+                doesMatchInternalControllerName(info) &&
+                doesMatchInternalActionName(info) &&
+                doesMatchInternalNamespace(info) &&
+                doesMatchInternalMethod(info, method)
     }
 
     @Override
