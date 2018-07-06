@@ -26,27 +26,12 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 	git config --global user.email "$GIT_EMAIL"
 
 	if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-	    # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
-	    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
-	    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in pubring.gpg.enc -out pubring.gpg -d
-	    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in settings.xml.enc -out settings.xml -d
-	    mkdir -p ~/.m2
-	    cp settings.xml ~/.m2/settings.xml
 
 	    echo "Publishing archives"
 
-	    gpg --keyserver keyserver.ubuntu.com --recv-key $SIGNING_KEY
-
 	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 	    ./gradlew --stop
-	    ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
-	    ./gradlew closeAndReleaseRepository
-
-	    if [[ $EXIT_STATUS == 0 ]]; then
-	        ./gradlew --stop
-	        ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
-	        ./gradlew closeAndReleaseRepository
-	    fi
+	    ./gradlew --no-daemon bintrayUpload
 
 	    if [[ $EXIT_STATUS == 0 ]]; then
 	        ./gradlew --stop
