@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.web.mapping.exceptions.UrlMappingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -155,18 +156,31 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         }
     }
 
+    Map extractRequestParamsWithUrlMappingHolder(UrlMappingsHolder urlMappings, HttpServletRequest request) {
+        Map params = new HashMap();
+        try {
+            UrlMappingInfo requestInfo = urlMappings.match(request.getRequestURI());
+            if ( requestInfo != null ) {
+                params.putAll(UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(requestInfo.getParameters()));
+            }
+        } catch( UrlMappingException ulrMappingException) {
+            logger.debug("Could not find urlMapping which matches: " + request.getRequestURI() );
+        }
+        return params;
+    }
+
     protected ModelAndView resolveViewOrForward(Exception ex, UrlMappingsHolder urlMappings, HttpServletRequest request,
             HttpServletResponse response, ModelAndView mv) {
 
         UrlMappingInfo info = matchStatusCode(ex, urlMappings);
 
         if ( info != null ) {
-            UrlMappingInfo requestInfo = urlMappings.match(request.getRequestURI());
-
-            if ( requestInfo != null ) {
-                Map params = new HashMap();
-                params.putAll(UrlMappingUtils.findAllParamsNotInUrlMappingKeywords(requestInfo.getParameters()));
-                params.putAll(info.getParameters());
+            Map params = extractRequestParamsWithUrlMappingHolder(urlMappings, request);
+            if ( params != null && !params.isEmpty() ) {
+                Map infoParams = info.getParameters();
+                if (infoParams != null) {
+                    params.putAll(info.getParameters());
+                }
                 info = new DefaultUrlMappingInfo(info, params, grailsApplication);
             }
         }

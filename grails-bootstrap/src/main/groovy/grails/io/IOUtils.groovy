@@ -269,6 +269,11 @@ class IOUtils extends SpringIOUtils {
                 def buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
                 if(rootPath.contains(buildClassespath)) {
                     return new File(rootPath - buildClassespath)
+                } else {
+                    File appDir = findGrailsApp(rootFile)
+                    if (appDir != null) {
+                        return appDir
+                    }
                 }
             } catch (FileNotFoundException fnfe) {
                 return null
@@ -347,9 +352,15 @@ class IOUtils extends SpringIOUtils {
                     File file = new UrlResource(classResource).getFile()
                     String path = file.canonicalPath
 
-                    String buildClassespath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
-                    if(path.contains(buildClassespath)) {
-                        location = path.substring(0, path.indexOf(buildClassespath) - 1)
+
+                    String buildClassesPath = BuildSettings.BUILD_CLASSES_PATH.replace('/', File.separator)
+                    if(path.contains(buildClassesPath)) {
+                        location = path.substring(0, path.indexOf(buildClassesPath) - 1)
+                    } else {
+                        File appDir = findGrailsApp(file)
+                        if (appDir != null) {
+                            location = appDir.canonicalPath
+                        }
                     }
                 }
             }
@@ -361,5 +372,18 @@ class IOUtils extends SpringIOUtils {
         }
         applicationDirectory = location
         return location
+    }
+
+    private static File findGrailsApp(File file) {
+        File parent = file.parentFile
+        while (parent != null) {
+            File grailsApp = new File(parent, "grails-app")
+            if (grailsApp.isDirectory()) {
+                return parent
+            } else {
+                parent = parent.parentFile
+            }
+        }
+        return null
     }
 }

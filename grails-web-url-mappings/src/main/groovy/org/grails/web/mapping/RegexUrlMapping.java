@@ -30,7 +30,6 @@ import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -39,7 +38,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -87,9 +94,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, GrailsApplication grailsApplication) {
         this(null, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, grailsApplication);
     }
-    public RegexUrlMapping(RegexUrlMapping regexUrlMapping, HttpMethod httpMethod) {
-        this(regexUrlMapping.urlData, regexUrlMapping.controllerName, regexUrlMapping.actionName, regexUrlMapping.namespace, regexUrlMapping.pluginName, regexUrlMapping.viewName, httpMethod.toString(), regexUrlMapping.version, regexUrlMapping.constraints, regexUrlMapping.grailsApplication);
-    }
+
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
      *

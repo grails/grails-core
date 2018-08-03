@@ -918,6 +918,17 @@ public class GrailsClassUtils {
         return GrailsNameUtils.getPropertyForGetter(getterName, returnType);
     }
 
+    /**
+     * Returns a property name equivalent for the given getter name and return type or null if it is not a valid getter. If not null
+     * or empty the getter name is assumed to be a valid identifier.
+     *
+     * @param getterName The getter name
+     * @param returnType The class name the method returns
+     * @return The property name equivalent
+     */
+    public static String getPropertyForGetter(String getterName, String returnType) {
+        return GrailsNameUtils.getPropertyForGetter(getterName, returnType);
+    }
 
     /**
      * Returns a property name equivalent for the given setter name or null if it is not a valid setter. If not null

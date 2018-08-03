@@ -18,14 +18,17 @@ package org.grails.cli.gradle
 import grails.build.logging.GrailsConsole
 import grails.io.support.SystemOutErrCapturer
 import grails.io.support.SystemStreamsRedirector
-import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.FromString
 import groovy.transform.stc.SimpleType
-import org.gradle.tooling.*
+import org.gradle.tooling.BuildAction
+import org.gradle.tooling.BuildActionExecuter
+import org.gradle.tooling.BuildLauncher
+import org.gradle.tooling.GradleConnector
+import org.gradle.tooling.LongRunningOperation
+import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.internal.consumer.DefaultCancellationTokenSource
-import org.gradle.tooling.internal.consumer.DefaultGradleConnector
 import org.grails.build.logging.GrailsConsoleErrorPrintStream
 import org.grails.build.logging.GrailsConsolePrintStream
 import org.grails.cli.profile.ExecutionContext
@@ -46,13 +49,19 @@ class GradleUtil {
         GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(baseDir)
         if (System.getenv("GRAILS_GRADLE_HOME")) {
             gradleConnector.useInstallation(new File(System.getenv("GRAILS_GRADLE_HOME")))
-        }
-        else {
+        } else {
             def userHome = System.getProperty("user.home")
-            if(userHome) {
-                File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/current")
-                if(sdkManGradle.exists()) {
-                    gradleConnector.useInstallation(sdkManGradle)
+            if (userHome) {
+                File gradleFile = new File(baseDir, "gradle.properties")
+                if (gradleFile.exists() && gradleFile.canRead()) {
+                    Properties gradleProperties = new Properties()
+                    gradleProperties.load(gradleFile.newInputStream())
+                    String gradleWrapperVersion = gradleProperties.getProperty("gradleWrapperVersion")
+
+                    File sdkManGradle = new File("$userHome/.sdkman/candidates/gradle/$gradleWrapperVersion")
+                    if (sdkManGradle.exists() && sdkManGradle.isDirectory()) {
+                        gradleConnector.useInstallation(sdkManGradle)
+                    }
                 }
             }
         }

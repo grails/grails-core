@@ -44,7 +44,8 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
 
     UrlMappings urlMappingsHolderDelegate
     UrlConverter urlConverter
-    Map<ControllerKey, GrailsControllerClass> mappingsToGrailsControllerMap = new ConcurrentHashMap<>()
+    ConcurrentHashMap<ControllerKey, GrailsControllerClass> mappingsToGrailsControllerMap = new ConcurrentHashMap<>()
+    ConcurrentHashMap<ControllerKey, GrailsControllerClass> deferredMappings = new ConcurrentHashMap<>()
 
     AbstractGrailsControllerUrlMappings(GrailsApplication grailsApplication, UrlMappings urlMappingsHolderDelegate, UrlConverter urlConverter = null) {
         this.urlMappingsHolderDelegate = urlMappingsHolderDelegate
@@ -52,6 +53,10 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         def controllerArtefacts = grailsApplication.getArtefacts(ControllerArtefactHandler.TYPE)
         for(GrailsClass gc in controllerArtefacts) {
             registerController((GrailsControllerClass)gc)
+        }
+
+        for (Map.Entry<ControllerKey, GrailsControllerClass> entry: deferredMappings.entrySet()) {
+            mappingsToGrailsControllerMap.putIfAbsent(entry.key, entry.value)
         }
     }
 
@@ -132,43 +137,51 @@ abstract class AbstractGrailsControllerUrlMappings implements UrlMappings{
         }
         def namespace = hasUrlConverter ? urlConverter.toUrlElement( controller.namespace ) : controller.namespace
         def plugin = hasUrlConverter ? urlConverter.toUrlElement( controller.pluginName ) : controller.pluginName
-        def controllerName = hasUrlConverter ? urlConverter.toUrlElement( controller.logicalPropertyName ) : controller.logicalPropertyName
-        String pluginNameToRegister = plugin ? GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(plugin) : null
         final boolean hasNamespace = namespace != null
+        final boolean hasPlugin = plugin != null
+
+        def controllerName = hasUrlConverter ? urlConverter.toUrlElement( controller.logicalPropertyName ) : controller.logicalPropertyName
+        String pluginNameToRegister = hasPlugin ? GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(plugin) : null
 
         def defaultActionKey = new ControllerKey(namespace, controllerName, null, pluginNameToRegister)
-        def noPluginDefaultActionKey = new ControllerKey(namespace, controllerName, null, null)
-        def noNamespaceDefaultActionKey = new ControllerKey(null, controllerName, null, pluginNameToRegister)
-        def noNamespaceNoPluginDefaultActionKey = new ControllerKey(null, controllerName, null, null)
+
 
         mappingsToGrailsControllerMap.put(defaultActionKey, controller)
-        if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(noNamespaceDefaultActionKey)) {
-            mappingsToGrailsControllerMap.put(noNamespaceDefaultActionKey, controller)
-        }
-        if(plugin != null && !mappingsToGrailsControllerMap.containsKey(noPluginDefaultActionKey)) {
-            mappingsToGrailsControllerMap.put(noPluginDefaultActionKey, controller)
-            if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(noNamespaceNoPluginDefaultActionKey)) {
-                mappingsToGrailsControllerMap.put(noNamespaceNoPluginDefaultActionKey, controller)
+
+        //Plugins should override others. Application controllers defaults should be deferred to ensure the right controller/action is chosen due to order being non deterministic
+        Map<ControllerKey, GrailsControllerClass> mapToUse = plugin ? mappingsToGrailsControllerMap : deferredMappings
+
+        if (hasNamespace) {
+            def noNamespaceDefaultActionKey = new ControllerKey(null, controllerName, null, pluginNameToRegister)
+            mapToUse.put(noNamespaceDefaultActionKey, controller)
+            if (hasPlugin) {
+                def noNamespaceNoPluginDefaultActionKey = new ControllerKey(null, controllerName, null, null)
+                mapToUse.put(noNamespaceNoPluginDefaultActionKey, controller)
             }
         }
+        if (hasPlugin) {
+            def noPluginDefaultActionKey = new ControllerKey(namespace, controllerName, null, null)
+            mapToUse.put(noPluginDefaultActionKey, controller)
+        }
 
-        for(action in controller.actions) {
+        for (action in controller.actions) {
             action = hasUrlConverter ? urlConverter.toUrlElement(action) : action
             def withPluginKey = new ControllerKey(namespace, controllerName, action, pluginNameToRegister)
-            def withoutPluginKey = new ControllerKey(namespace, controllerName, action, null)
-            def withPluginKeyWithoutNamespaceKey = new ControllerKey(null, controllerName, action, pluginNameToRegister)
-            def withoutPluginKeyWithoutNamespace = new ControllerKey(null, controllerName, action, null)
 
             mappingsToGrailsControllerMap.put(withPluginKey, controller)
-            if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(withPluginKeyWithoutNamespaceKey)) {
-                mappingsToGrailsControllerMap.put(withPluginKeyWithoutNamespaceKey, controller)
+            if (hasNamespace) {
+                def withPluginKeyWithoutNamespaceKey = new ControllerKey(null, controllerName, action, pluginNameToRegister)
+
+                mapToUse.put(withPluginKeyWithoutNamespaceKey, controller)
+                if (hasPlugin) {
+                    def withoutPluginKeyWithoutNamespace = new ControllerKey(null, controllerName, action, null)
+                    mapToUse.put(withoutPluginKeyWithoutNamespace, controller)
+                }
             }
 
-            if(plugin != null && !mappingsToGrailsControllerMap.containsKey(withoutPluginKey)) {
-                mappingsToGrailsControllerMap.put(withoutPluginKey, controller)
-                if(hasNamespace && !mappingsToGrailsControllerMap.containsKey(withoutPluginKeyWithoutNamespace)) {
-                    mappingsToGrailsControllerMap.put(withoutPluginKeyWithoutNamespace, controller)
-                }
+            if (hasPlugin) {
+                def withoutPluginKey = new ControllerKey(namespace, controllerName, action, null)
+                mapToUse.put(withoutPluginKey, controller)
             }
         }
     }

@@ -33,9 +33,9 @@ import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.grails.web.util.GrailsApplicationAttributes
-import org.grails.web.util.WebUtils
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.ModelAndView
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -73,10 +73,10 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      */
     boolean doesMatch(HttpServletRequest request) {
         Collection<Matcher> allMatchers = matchers
-        if(allMatchers.isEmpty()) {
+        if (allMatchers.isEmpty()) {
             // default to map just the controller by convention
             def matcher = new UrlMappingMatcher(this)
-            matcher.matches(controller:Pattern.compile(GrailsNameUtils.getLogicalPropertyName(getClass().simpleName, InterceptorArtefactHandler.TYPE)))
+            matcher.matches(controller: Pattern.compile(GrailsNameUtils.getLogicalPropertyName(getClass().simpleName, InterceptorArtefactHandler.TYPE)))
             allMatchers << matcher
         }
 
@@ -88,17 +88,22 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
 
         def matchedInfo = request.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST)
 
-        UrlMappingInfo grailsMappingInfo = (UrlMappingInfo)matchedInfo
+        UrlMappingInfo grailsMappingInfo = (UrlMappingInfo) matchedInfo
 
-        for(Matcher matcher in allMatchers) {
-            if(matcher.doesMatch(uri, grailsMappingInfo, req.method) ||
-               (checkNoCtxUri && matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method))) {
+        for (Matcher matcher in allMatchers) {
+            boolean matchUri = matcher.doesMatch(uri, grailsMappingInfo, req.method)
+            boolean matchNoCtxUri = matcher.doesMatch(noCtxUri, grailsMappingInfo, req.method)
+
+            if (matcher.isExclude() && matchUri && matchNoCtxUri) {
+                // Exclude interceptors are special because with only one of the conditions being false the interceptor
+                // won't be applied to the request
+                return true
+            } else if (!matcher.isExclude() && (matchUri || (checkNoCtxUri && matchNoCtxUri))) {
                 return true
             }
         }
         return false
     }
-
 
     /**
      * Matches all requests
@@ -126,7 +131,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     void setModel(Map<String, Object> model) {
         def request = currentRequestAttributes()
         def modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
-        if(modelAndView == null) {
+        if (modelAndView == null) {
             modelAndView = new ModelAndView()
             request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView, 0)
         }
@@ -149,7 +154,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     void setView(String view) {
         def request = currentRequestAttributes()
         def modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
-        if(modelAndView == null) {
+        if (modelAndView == null) {
             modelAndView = new ModelAndView()
             request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView, 0)
         }
@@ -162,7 +167,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      * @return The ModelAndView
      */
     ModelAndView getModelAndView() {
-        (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
+        (ModelAndView) currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0)
     }
 
     /**
@@ -182,7 +187,7 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
     Throwable getThrowable() {
         def request = currentRequestAttributes()
 
-        (Throwable)request.getAttribute(Matcher.THROWABLE, 0)
+        (Throwable) request.getAttribute(Matcher.THROWABLE, 0)
     }
 
     /**
@@ -196,8 +201,6 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
         matchers << matcher
         return matcher
     }
-
-
 
     /**
      * Executed before a matched action
@@ -240,26 +243,24 @@ trait Interceptor implements ResponseRenderer, ResponseRedirector, RequestForwar
      */
     void render(Map argMap) {
         boolean isRenderView = argMap.containsKey(RenderDynamicMethod.ARGUMENT_VIEW)
-        if(isRenderView) {
+        if (isRenderView) {
             def req = request
-            def previous = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+            def previous = (ModelAndView) req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
             req.setAttribute(GrailsInterceptorHandlerInterceptorAdapter.INTERCEPTOR_RENDERED_VIEW, true)
             ResponseRenderer.super.render(argMap)
-            def mav = (ModelAndView)req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
-            if(mav != null) {
+            def mav = (ModelAndView) req.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+            if (mav != null) {
                 def view = applicationContext.getBean(CompositeViewResolver.BEAN_NAME, CompositeViewResolver).resolveView(mav.viewName, request.getLocale())
-                if(view != null) {
+                if (view != null) {
                     def resp = response
                     view.render(mav.model, req, resp)
                     mav.clear()
                     previous?.clear()
-                }
-                else {
+                } else {
                     throw new ControllerExecutionException("No view found for name [$mav.viewName]")
                 }
             }
-        }
-        else {
+        } else {
             ResponseRenderer.super.render(argMap)
         }
     }

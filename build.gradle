@@ -26,40 +26,42 @@ ext {
     // grailsVersion = '4.0.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    
+
     asyncVersion = '3.3.2'
-    gspVersion = '3.3.0'
+    gspVersion = '3.3.1'
     legacyConvertersVersion = "3.3.1"
-    testingSupportVersion = "1.1.2"
+    testingSupportVersion = "1.1.4"
     datastoreVersion = "6.1.10.BUILD-SNAPSHOT"
+    hibernate4Version = "6.1.8.RELEASE"
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsIOVersion = "2.2"
-    commonsLangVersion = "2.6"    
+    commonsLangVersion = "2.6"
     gdocEngineVersion = "1.0.1"
 
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.12"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.15"
     jansiVersion = "1.14"
     jlineVersion = "2.14.2"
     jnaVersion = "4.2.2"
-    slf4jVersion = "1.7.22"
+    slf4jVersion = "1.7.25"
 
     spockVersion = '1.1-groovy-2.4'
     springBootVersion = "2.0.0.M5"
     springLoadedVersion = "1.2.8.RELEASE"
+    directoryWatcherVersion = "0.3.0"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "5.0.0.RELEASE"
     junitVersion = "4.12"
     concurrentlinkedhashmapVersion = "1.4.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
-    tomcatVersion = "8.5.23"
+    tomcatVersion = "8.5.29"
     tomcatLog4jVersion = "8.5.2"
     servletApiVersion = "4.0.0"
 
-    
+
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
 
@@ -75,6 +77,7 @@ apply plugin: 'io.codearte.nexus-staging'
 
 nexusStaging {
     delayBetweenRetriesInMillis = 5000
+    stagingProfileId = "grails-core-${version.replace("\\.","\\-")}"
 }
 
 // directories created during the build which are related
@@ -211,9 +214,6 @@ subprojects { project ->
         project.ext.artifactoryPublishPassword = System.getenv("ARTIFACTORY_PASSWORD")
     }
 
-    if(project.name == 'grails-dependencies') return
-    if(project.name == 'grails-bom') return
-
     apply plugin: 'groovy'
     apply plugin: "io.github.groovylang.groovydoc"
     if(!isTestSuite) {
@@ -227,6 +227,88 @@ subprojects { project ->
     apply plugin: 'provided-base'
     apply plugin: 'optional-base'
 
+    if (!isTestSuite) {
+
+        modifyPom {
+            delegate.project {
+                def updatePom = pomInfo.clone()
+                updatePom.delegate = delegate
+                updatePom()
+            }
+        }
+
+        publishing {
+
+            repositories {
+                maven {
+                    credentials {
+                        def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                        def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                        username = u
+                        password = p
+                    }
+                    url  "https://repo.grails.org/grails/libs-snapshots-local"
+                }
+            }
+
+            publications {
+                maven(MavenPublication) {
+                    from components.java
+
+                    artifact sourcesJar {
+                        classifier "sources"
+                    }
+                    artifact javadocJar {
+                        classifier "javadoc"
+                    }
+
+                    pom.withXml {
+                        def xml = asNode()
+
+                        xml.children().last() + pomInfo
+                    }
+
+                }
+            }
+        }
+
+        bintray {
+            user = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+            key = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
+            publications = ['maven']
+            publish = false
+            dryRun = false
+            pkg {
+                repo = 'grails-core'
+                userOrg = 'grails'
+                name = 'grails-core'
+                desc = 'Grails Framework'
+                websiteUrl = 'http://grails.org'
+                issueTrackerUrl = 'https://github.com/grails/grails-core/issues'
+                vcsUrl = 'https://github.com/grails/grails-core'
+                licenses = ['Apache-2.0']
+                publicDownloadNumbers = true
+                version {
+                    name = project.version
+                    gpg {
+                        sign = true
+                        passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
+                    }
+                    mavenCentralSync {
+                        sync = false
+                        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+                        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+                        user = ossUser
+                        password = ossPass
+                    }
+
+                }
+            }
+        }
+    }
+
+    if(project.name == 'grails-dependencies') return
+    if(project.name == 'grails-bom') return
 
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
@@ -373,13 +455,7 @@ subprojects { project ->
 
     if(!isTestSuite) {
 
-        modifyPom {
-            delegate.project {
-                def updatePom = pomInfo.clone()
-                updatePom.delegate = delegate
-                updatePom()
-            }
-        }
+
 
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
@@ -388,82 +464,7 @@ subprojects { project ->
             }
         }
 
-        publishing {
 
-            repositories {
-                maven {
-                    credentials {
-                        def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                        def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                        username = u
-                        password = p
-                    }
-                    if(isBuildSnapshot) {
-                        url  "https://repo.grails.org/grails/libs-snapshots-local"
-                    }
-                    else {
-                        url "https://repo.grails.org/grails/libs-releases-local"
-                    }
-                }
-            }
-
-            publications {
-                maven(MavenPublication) {
-                    from components.java
-
-                    artifact sourcesJar {
-                        classifier "sources"
-                    }
-                    artifact javadocJar {
-                        classifier "javadoc"
-                    }
-
-                    pom.withXml {
-                        def xml = asNode()
-
-                        xml.children().last() + pomInfo
-                    }
-
-                }
-            }
-        }
-
-
-        bintray {
-            def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-            def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-
-            user = u
-            key = p
-            publications = ['maven']
-            publish = bintrayPublish
-            pkg {
-                repo = 'grails-core'
-                userOrg = 'grails'
-                name = 'org.grails'
-                desc = 'Grails Framework'
-                websiteUrl = 'http://grails.org'
-                issueTrackerUrl = 'http://jira.grails.org/browse/GRAILS'
-                vcsUrl = 'http://jira.grails.org/browse/GRAILS'
-                licenses = ['Apache-2.0']
-                publicDownloadNumbers = true
-                version {
-                    name = project.version
-                    gpg {
-                        sign = true
-                        passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
-                    }
-                    mavenCentralSync {
-                        sync = false
-                        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-                        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-                        user = ossUser
-                        password = ossPass
-                    }
-
-                }
-            }
-        }
 
         project.tasks.withType(org.gradle.api.publish.maven.tasks.PublishToMavenLocal) { org.gradle.api.publish.maven.tasks.PublishToMavenLocal t ->
             t.dependsOn installToHomeDist

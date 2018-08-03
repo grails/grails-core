@@ -28,6 +28,9 @@ class HyphenatedUrlConverterSpec extends Specification {
             'MyURLHelper'          | 'my-u-r-l-helper'
             'myURLHelper'          | 'my-u-r-l-helper'
             'MYUrlHelper'          | 'm-y-url-helper'
+            'myNamespace.v1'       | 'my-namespace.v1'
+            'MyNamespace.v1'       | 'my-namespace.v1'
+            'MyNamespace.V1'       | 'my-namespace.v1'
             ''                     | ''
             null                   | null
     }

@@ -1,4 +1,5 @@
 language: groovy
+dist: trusty
 sudo: false
 jdk:
 - openjdk8
@@ -9,25 +10,28 @@ env:
   - GRADLE_OPTS="-Xmx768m -Xms256m -XX:MaxPermSize=372m -XX:+CMSClassUnloadingEnabled"
   - GIT_NAME="Graeme Rocher"
   - GIT_EMAIL="graeme.rocher@gmail.com"
-  - secure: tvWIqrDyxdGkC43Us8BNwqU8aiu3NF5YWMPFW216n+KIO6HXJNyS6oV8gWCcUr/7MQzJEKmDvgnaRYykcX7tVfRQznWhXGro2V5Je6OOdvNrXu6Qr9/2Ue586NHWlA7rLhPOS9XOA6rFIKfPAbbjBwY2bhNXQ0ITxQ7oaT+EiyE=
-  - secure: UWz9O2KG0QdQu9n45OTVInrwN3r3+HzgCllnb+N8WsZvSgHt5M2uGNu1KniR+TJ9meTTb5Z2hPoCPBXCMU+Q8BJyYdMM++LeyvucHkJFHgoXM7I4CHEw/LNqf109s4FTw3ErLtlgHi6NXhBg8C1uCGc206FfW7hqlHib8NRIoWw=
-  - secure: E8N5lASIE4lqfCK0uwIov39cA7nH5GwEzvJ7XCd+R3/4rP31TYvSWdlMGYdzTWizOWzUPo+kjreYkmqRuWZNBVJYvlGE8Gm1cThvILemb0Y0jVtvCAAZnmGByNUcmX20HZ53heUb+P59Zdy5AhZy64XwQfbR9K4SQTvq8WJOrKE=
-  - secure: j751QVDiQQGqTXm1MpR57IC8YbGgldHsKtTwfppg7F8Lh6tCKzkSA8cTPWqmCOpmqy7Tx3az1IOPJdLZ8/gwfA6/+izJ7xfkjjUKM3UCg0b+auKphTjuiRSMrLDCQ01S5EVvBBrGADtNzmcj8D8l7D4vQ18aAb+4XfzJ5UfGHHo=
-  - secure: MhEGOXJAXc/IBrh9lvMEm6K0SO4dd1taW8FbJYi6vAMrKTouLFlARjKZzSm/IREjrHr/pbmgn1ViN7bp24QPMqtq/kqMClEUeZTK8dmZfPlswiwfTsg6kjGD+gK4njNj+dAv/RXW7ceSRcbvNdNPwgiyvu7oAPMI9+vKKePKWz0=
-  - secure: MkATC+v6IOk/ab8PByniOC6QBSQlBjEiLqe6BXt/clBDHJW/tZrLtWAxxfMfmkhRptkorsdTAA/I+1Z5A0+9UqSLwrWe4KqPoa/4FnxtU1KmfzWLnpbVJJsh0B7Y8TiDn09wM5R+jkwetANeDyPqDpF4iXJMlHPmX8EK0XJvvTY=
-  - secure: dDI9zb22/GhVryGod9bhcSNeTrgZOpea65Wqg/RlXWczFNqI0B9evsJTD/kDMdwZP242SSXCnFMGERWQpd3IdEQ6XqpZvhaQRtQCLhWOVhtBWJqMNbUVMfKYoiWHCnODWOUZqJ4UjqemICEw+Wmu8vFkuNoaq9TxNmrptOVHRS8=
-  - secure: olcrCPn3vcm9xKHWZAtDDPQogZVsoWHum+41YzfNPbXWHRdJ1g2JQ8Y/SpuS9fK+QBwaN5Xt/CF+A6fKPHeUr1xrDfqTfPEEr3fQyHFMZi09gMQmXwhEUyxpzYhrf3efJrGIL2I7Gh2Q7lc3iBwYwll1tRBBnk9fOSIpsfLgCko=
-  - secure: VJt5eqKPhQbnjQakNrgC9l5MRmTMN9hccTLD+/ijZEMcb9OTHii+T3jbsHH6cw5JuTH5wabjuWYObtlXLZ+lQknU9hmbhSsm5NlqKHhOno+IxNzfhfRm26oo7wGQneW4cujkmOkzLZrSNN8MU1ISMb0g24x4TgbVzjAUD5jsT/M=
-  - secure: bm/8EJkrBeO9H+MHwTogPr/0/19vV+K4O+lRAweKOl2w4QxbIog9cCPKr6+b3N+o2N75OImnRwRNXw2x/clV1Vl8TqxdtwNislW+SCei9N7MxrUK27KWCc/k1vad4D2D26DVxx2PquPo24Q8wfc7rXSeoLi4iHlIdpBECIxtA9c=
-  - secure: X0fScDRO+fo4P4/xUvRmMhpNVqqPrIACIfnywXkUhl4gC/JyxBTfZmw+V6zsnNbyAW8AqJoejB3c709xyqdURXMy89Ect+lY/tei7ah5uZpgv82MhZsGCVaplPJiPDNGPHanqRynIv5brBodZuq0sohKxGRlcoSqChq4ZlY2HII=
-  - secure: M2WGEzaA4K64HCuNaXbEsg9aKg9Uo5VJOUBSiNmBQQfracqDWoPW6BlC+uD8dqBkFG4z3L4rJWnPoUNDZrqIUmInNLXGQrlkmfHTrAvCs6V+Jj4ilIRfc/bZnasoTmLxT4PPFZGCLcRJ3QwAJ+36EOZPDcXPXpN0hw4hB1hOx9Q=
-  - secure: Frvf9gLJ/pfy3SWMm9LXdprO/snMFfDO9pTd1bl2GN3QBmkF40G20NzoFI6jbYeyg+gwJQmnC6NVi/KDAkJ/EBO05Xk/qMKwWWsASgdDzdnUNTynFPH0zcnv64d6qZAaLWeH/gWQPZ+99zmbVzFqSNDggEo+cPBm9QjqJ608Yx4=
-  - secure: JM8mzEz6+UtRnG68vbitVoPzcrSHbEIa0z7Nfhu3RKMDOmQgfGNIF+ZDZPAa/tYpNBTJWKjeIJc8opCfd1p1+s6ISc7B29ymulQ3ztwFWcetunrSmxl8H96aqzjc+82DO6huj4Tzi0u2MADnh9wVm+A1+tcqLjpaLGmskMlvdbw=
-  - secure: ICWgIGwHFH37nlY9k094qnnKy0tW2XDSOtGsvHb65AxsPsXB1zqj7Qd76Fboo1xFGQGpg+S6AHekY6Ch1prNOpkpPHw35UaQzaRqUxFUhfZYiD0rlmvzKrvKTesrFLy4LJwrTzGCQrViYgqfHvCeQ3r53wWff6nu8uFmMOPmGNY=
-  - secure: XwKxDJFXlxPhJox9sZYFrOhHY5BfPRNrqolMfOe2ZMMJyeX5uap9i9gyGrKF0gqtJx4XR4kn6HrrtK2DT7LAjPJgY2DJGXtMulRLTGtsCz3PF95Pc7q2Eb4h6t5XM0Hl//xT4fmREQLN4FEsOUkFcJALCua7uS6xYvmHAMLEtsw=
-install: /bin/true
+  - secure: XdMql6e7ToSMuhZuG1baCm6IDvj+X7pAbK210awH8Yww8lGGu2NryHBQliv0CLqd7tkjKSUHP3y/22O8H46Xc0+7ucWF8JwlMvtBeSuK/U/p/R7tOkLNeBuAXj9Xxd1oe9aRQrZS5AT2zkCkMGxTd7uGcm5p9MO0MmypFHzjPlE=
+  - secure: HMX1CzkCcj9Qal1Syk3kJR1VBQcmT5Uo986dL4r28q00YoyrfRjtAIqvCJSKO1t7aCeJkG74sdeNs43EYpkXCAS9c/ffWAWK1G+YAO5XgJi9cWj/B5F6MGD3YAbO86PIUceq3VcoGztflBB7i9N9YakYt41vnMPULHFBEpLtfOQ=
+  - secure: cxwLqMrf9LXt8KvDmDAduoh8lvsJpn9lI5lzUr/1BZG1c0NLA/n6cK3niqm2bdRVYuQm6lWH5ogJQwYTwrbSri78ATotV4ocNz6Faz/U8C75hSoYiJwenUqv7y06o/xks4vwuka1Rp3A4By6nLr/Uv9RN+GAVlvH6aCHB5nF/zY=
+  - secure: nWjedZFU24YArzL9SvV/wi6kH/VoNLEE4EtrmA0xKwu7TXLPRhs/T/mmwlwLKinl4uv/RcD0ISztQKdrG5Dw7JpA/40fH32f2wVg6DotgGHj6YUK57Gf3QjYhc88Y5s19nqg5Pmq8CS7vz4lEkD141ooY4zBjSQfPhqoUdoAzzM=
+  - secure: SDQ+OFOrZKsJlO7IdLEoPua4XdaYL97uomB+2vLgQwurdJ/dMaqgj5SZU6GF+e+06TcxF/HymhSljlfRWYY1IkvXS6QJ0RCtAXk4/4QcDOiasee2qIA+Mdqzo8wcHyX3ArjGkDAKkO6ba/eahHV/idkVE+UcHN0cnvu23PXuiUo=
+  - secure: eUYGb7t1WKil8i0lQrM+JuT1vmBhoCzleeC9FWWrzbPb5s0YoQxkzsjLZ1GwBvOeusUn/pLOXhQ2Wra2244DTp3kUkTdvneKLM+D1/YySr8Ye07pzQOk2jukMxp3DZi3P1Hjy5jaAtR8hJ5sd7XotdlEeBkIpOw/p5rSPT9oGbw=
+  - secure: GY53nFbVUWnJzQISb3AWMZY5gPsO6clcvanGlh3RvtrRViYum/0LB4BfDJKUZQlezZddQllKXy26uxDkHriAwC3xqpMy4G5b7B2H7tmtCJ3pr+ayLM69Tm3iqAcLZziyUvcuHTS71cy9/N2xqMa1pQWSFODwCQd1XoTHb4YhGKY=
+  - secure: W2R1OV8QnIyLdzOjy2XLgYyE5C9W+Ei4BctsnpjC1bPYzDJcE8lJCEv9+WWa0l5lLRgBWBDREwK6jW20M1Dj+voa82pNYCCsblPFuGhGVHIIExkZatJafF6X4suOMacOYH3oEyLYLKoSINyxqgAQIQTr7+zeStdSSQQq7YRs1gg=
+  - secure: LI9fKkTXvMd0CJCLFDvCAn2T14sXL3AAOMnqThZeNgeICsNy1hhF4dSAi7a4Y1psfV7CVeSjPvda8tONf8GnEpByhiUkqODeFeL1B/PfTYqY8oncjE4xrJnii5ckZbfQ16Yd8j6fRX4fbhcAzX36GHb5adZXZT9eeLPSvHdfla0=
+  - secure: uEQ9bEvqBpu4axSzgVWM4RQZZmndvxuOU5qRUNap9+CVWwq/HLVALss6FFhp5z/YaD1GtVBPeehT9wvMUXSQVv9c9jL9GfJcDpp37kuANPV6f++u1E3Iorqpf7jUIaPxdQO1vV4ZwJM1GmTao+3Gkqx6SdBb/itlMGV6c1sb02U=
+  - secure: Nh3WYZnj/d03m0mvOMGk0ROtLT1ezRkbwrlcBDIHuJ17FX5FAr20UeJ/geV0DUPZE5JvyV69l6dkCRZ40efWhFMeuHpnglf/MNuWZPcqYFsNQtEX2VHVH//3yxqtrg2r497ygoOOnjVG1lIxw4qJVnw0M1YwL7N4fuuo6OtehwI=
+  - secure: fr1fc8/FoGmh3IhyKZ+i9JJFMrV8zMSnoI0Z5I0gtdHSGg3h+ShcAzahsGo20y2NlD+Bg8PslpCSh+jmd/4M/mxAb9cYceJyxMS3d87j9hlVQ8l/bf2VrXRIQEZ/ieADPSA1lg08y9Hd7MMr53UernF9nzKMtsbVX23YE1lkMUA=
+  - secure: U2aQypvBmL3oHvF44/IVQoG+VdTpBhGakIi6PdmGNhYFVB++SJCq1whow2X+xXPimFRSvSiHWa5XDGtdVwN4o4Dy0CPk+72nwa4Yx4L7IZNr7p+ZyceioRmdGXMKyvzhEmUHqDUwrbhwLlP6K+hVFIKTrxQR/6TWbLEbdDPQdjc=
+  - secure: tpo5MPUDObdMpZeovj80+SFPjBgsUoyvdUvPhBF1paN4qKdrhcz+xyk3qB1dsXuUmGbzya7gjz9TdniLpSS86CbXd8TGiSL/14YlrSrLxIbhLWNIodaKbV21FIQYyz+E7EP611QcAGr1lHTYKDz2JnKbpSXsJt/qgROnEB62R4U=
+  - secure: ikQeb2+ul0PTQqu6Jl2K0tnQIflWM0ifYKUxbZuIApoVyeL53zmzhLoI3waNZRoGyRF8eQ6V8C8SISUpD8fDDWaTMrkp9r3Zd0y9DG2FK5GYK1c+gxeUzLkxQvTMqRCsODlS6ZYR9ofyO2J6jG5H8hxcGnI7LoU6ufYFj8FwN70=
+before_install:
+  # Workaround for https://github.com/gradle/gradle/issues/2421:
+  # download all Gradle distributions with openjdk8
+  - JAVA_HOME=$(jdk_switcher home openjdk8) ./gradlew
+install: "/bin/true"
 script:
-  - ./travis-build.sh
+- JAVA_HOME=$(jdk_switcher home openjdk7) "./travis-build.sh"
 deploy:
   provider: releases
   api_key:
@@ -39,14 +43,14 @@ deploy:
     tags: true
     all_branches: true
 after_deploy:
-- ./gradlew sdkMajorRelease
+- "./gradlew sdkMajorRelease"
 cache:
   directories:
-  - $HOME/.gradle
+  - "$HOME/.gradle"
 notifications:
   slack:
     secure: WAto/v/ZBvlXxWTHUH6hONQ1uJZxVnUts1V7379hCViN5+DOfIbxzQAq+10SAgD6pa2BcQftpKIWr1/9RUZyK3oxE2mHbVUulkaVHNJJfz6oPD5pnCVMxE+ZuhkRuhkddGDBHpYaVw37QBkalLB0rE0h7Ddvo/gk9ICSQQLTlvE=
 addons:
   hosts:
-    - grails
+  - grails
   hostname: grails

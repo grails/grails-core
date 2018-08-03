@@ -99,6 +99,11 @@ interface Settings {
     String MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS = 'grails.mime.disable.accept.header.userAgents'
 
     /**
+     * XHR requests will ignore MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS by default, enable to override default
+     */
+    String MIME_DISABLE_ACCEPT_HEADER_FOR_USER_AGENTS_XHR = 'grails.mime.disable.accept.header.userAgentsXhr'
+
+    /**
      * The default scope for controllers
      */
     String CONTROLLERS_DEFAULT_SCOPE = "grails.controllers.defaultScope"

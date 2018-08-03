@@ -247,7 +247,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @return The property value or null
      */
     public <T> T getPropertyValue(String propName, Class<T> type) {
-        return ClassPropertyFetcher.getStaticPropertyValue(getClazz(), name, type);
+        return ClassPropertyFetcher.getStaticPropertyValue(getClazz(), propName, type);
     }
 
 

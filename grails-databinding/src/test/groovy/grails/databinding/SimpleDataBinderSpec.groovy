@@ -324,6 +324,28 @@ class SimpleDataBinderSpec extends Specification {
         2049 == calendar.get(Calendar.YEAR)
     }
 
+    void 'Test struct binding to a list'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new DateCollection()
+
+        when:
+        binder.bind(obj, new SimpleMapDataBindingSource([
+                'dates[0]'      : 'struct',
+                'dates[0]_day'  : '09',
+                'dates[0]_month': '11',
+                'dates[0]_year' : '2012',
+                'dates[1]'      : 'struct',
+                'dates[1]_day'  : '13',
+                'dates[1]_month': '12',
+                'dates[1]_year' : '2012',
+        ]))
+        def dates = obj.dates
+
+        then:
+        dates == [Date.parse('yyyy-MM-d', "2012-11-9"), Date.parse('yyyy-MM-d', "2012-12-13")]
+    }
+
     void 'Test binding String to enum'() {
         given:
         def binder = new SimpleDataBinder()
@@ -600,4 +622,8 @@ abstract class AbstractClassWithTypedCollection {
 }
 
 class ClassWithInheritedTypedCollection extends AbstractClassWithTypedCollection {}
+
+class DateCollection {
+    List<Date> dates
+}
 

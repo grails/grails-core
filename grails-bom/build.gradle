@@ -1,56 +1,7 @@
-import org.gradle.api.internal.project.IsolatedAntBuilder
-
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-configurations {
-    mavenAntTasks
-}
-dependencies {
-    mavenAntTasks 'org.apache.maven:maven-ant-tasks:2.1.1'
-}
-
-task uploadArchives(dependsOn:project.tasks.withType(PublishToMavenLocal)) << {
-    def antBuilder = services.get(IsolatedAntBuilder)
-    def rootDir = project.parent.projectDir
-    antBuilder.withClasspath(configurations.mavenAntTasks).execute {
-        taskdef(resource: 'org/apache/maven/artifact/ant/antlib.xml')
-        def isSnapshot = version.endsWith("-SNAPSHOT")
-        def url = isSnapshot ? "https://oss.sonatype.org/content/repositories/snapshots/" : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-        def repoId = isSnapshot ? "sonatype-nexus-snapshots" : "sonatype-nexus-staging"
-        mvn {
-            arg value:"org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file"
-            arg value:"-Dgpg.homedir=${rootDir.absolutePath}"
-            arg value:"-Dgpg.keyname=${System.getenv("SIGNING_KEY")}"
-            arg value:"-Dgpg.passphrase=${System.getenv("SIGNING_PASSWORD")}"
-            arg value:"-Durl=${url}"
-            arg value:"-DrepositoryId=${repoId}"
-            arg value:"-DpomFile=${buildDir}/publications/maven/pom-default.xml"
-            arg value:"-Dfile=${buildDir}/publications/maven/pom-default.xml"
-            arg value:"-Pgpg"
-        }
-    }
-}
-
 publishing {
-
-    repositories {
-        maven {
-            credentials {
-                def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                username = u
-                password = p
-            }
-            if(isBuildSnapshot) {
-                url  "https://repo.grails.org/grails/libs-snapshots-local"
-            }
-            else {
-                url "https://repo.grails.org/grails/libs-releases-local"
-            }
-        }
-    }
-
     publications {
         maven(MavenPublication) {
             pom.withXml {
@@ -61,37 +12,11 @@ publishing {
                 def profiles = new Properties()
                 profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
 
+                xml.name[0].value = "Grails BOM"
+                xml.description[0].value = "Grails default supported dependency definitions"
+
                 xml.children().last() + {
                     def mkp = delegate
-                    mkp.name "Grails BOM"
-                    mkp.description "Grails default supported dependency definitions"
-                    mkp.url 'http://grails.org'
-                    mkp.licenses {
-                        mkp.license {
-                            mkp.name "Apache License, Version 2.0"
-                            mkp.url 'http://www.apache.org/licenses/LICENSE-2.0'
-                        }
-                    }
-                    mkp.scm {
-                        mkp.url 'scm:git@github.com:grails/grails-core.git'
-                        mkp.connection 'scm:git@github.com:grails/grails-core.git'
-                        mkp.developerConnection 'scm:git@github.com:grails/grails-core.git'
-                    }
-
-                    mkp.developers {
-                        mkp.developer {
-                            mkp.id 'graemerocher'
-                            mkp.name 'Graeme Rocher'
-                        }
-                        mkp.developer {
-                            mkp.id 'jeffscottbrown'
-                            mkp.name 'Jeff Brown'
-                        }
-                        mkp.developer {
-                            mkp.id 'lhotari'
-                            mkp.name 'Lari Hotari'
-                        }
-                    }
 
                     mkp.dependencyManagement {
                         mkp.dependencies {
@@ -153,6 +78,12 @@ publishing {
                                     mkp.artifactId "spring-$name"
                                     mkp.version( springVersion )
                                 }
+                            }
+
+                            mkp.dependency {
+                                mkp.groupId 'io.methvin'
+                                mkp.artifactId "directory-watcher"
+                                mkp.version(directoryWatcherVersion) //0.3.0
                             }
 
                             mkp.dependency {
@@ -235,43 +166,6 @@ publishing {
                         }
                     }
                 }
-            }
-
-        }
-    }
-}
-
-
-bintray {
-    def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-    def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-
-    user = u
-    key = p
-    publications = ['maven']
-    publish = bintrayPublish
-    pkg {
-        repo = 'grails-core'
-        userOrg = 'grails'
-        name = 'org.grails'
-        desc = 'Grails Framework'
-        websiteUrl = 'http://grails.org'
-        issueTrackerUrl = 'http://jira.grails.org/browse/GRAILS'
-        vcsUrl = 'http://jira.grails.org/browse/GRAILS'
-        licenses = ['Apache-2.0']
-        publicDownloadNumbers = true
-        version {
-            name = project.version
-            gpg {
-                sign = true
-                passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
-            }
-            mavenCentralSync {
-                sync = false
-                def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-                def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-                user = ossUser
-                password = ossPass
             }
 
         }

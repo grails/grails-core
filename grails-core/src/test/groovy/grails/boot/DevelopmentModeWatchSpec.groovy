@@ -32,9 +32,9 @@ class DevelopmentModeWatchSpec extends Specification {
         watchedFile.write 'foo.bar=baz'
 
         then:
-        pollingCondition.within(2, {
+        pollingCondition.eventually {
             assert plugin.fileIsChanged.endsWith('testWatchedFile.properties')
-        })
+        }
 
         cleanup:
         System.clearProperty("base.dir")

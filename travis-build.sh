@@ -30,27 +30,12 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 	git config --global user.email "$GIT_EMAIL"
 
 	if [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_REPO_SLUG == grails/grails-core && $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-	    # files encrypted with 'openssl aes-256-cbc -in <INPUT FILE> -out <OUTPUT_FILE> -pass pass:$SIGNING_PASSPHRASE'
-	    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in secring.gpg.enc -out secring.gpg -d
-	    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in pubring.gpg.enc -out pubring.gpg -d
-	    openssl aes-256-cbc -pass pass:$SIGNING_PASSPHRASE -in settings.xml.enc -out settings.xml -d
-	    mkdir -p ~/.m2
-	    cp settings.xml ~/.m2/settings.xml
 
 	    echo "Publishing archives"
 
-	    gpg --keyserver keyserver.ubuntu.com --recv-key $SIGNING_KEY
-
 	    echo "Running Gradle publish for branch $TRAVIS_BRANCH"
 	    ./gradlew --stop
-	    ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish uploadArchives -x grails-bom:uploadArchives -x grails-dependencies:uploadArchives || EXIT_STATUS=$?
-	    ./gradlew closeAndReleaseRepository
-
-	    if [[ $EXIT_STATUS == 0 ]]; then
-	        ./gradlew --stop
-	        ./gradlew --no-daemon -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" grails-dependencies:uploadArchives grails-bom:uploadArchives || EXIT_STATUS=$?
-	        ./gradlew closeAndReleaseRepository
-	    fi
+	    ./gradlew --no-daemon bintrayUpload
 
 	    if [[ $EXIT_STATUS == 0 ]]; then
 	        ./gradlew --stop
@@ -58,7 +43,11 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
 	        if [[ $EXIT_STATUS == 0 ]]; then
 			    # Tag and release the docs
-			    git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git grails-doc
+			    version="$TRAVIS_TAG"
+                            version=${version:1}
+                            majorVersion=${version:0:4}
+                            majorVersion="${majorVersion}x"
+                            git clone https://${GH_TOKEN}@github.com/grails/grails-doc.git -b ${majorVersion} grails-doc --single-branch > /dev/null
 			    cd grails-doc
 
 			    echo "grails.version=${TRAVIS_TAG:1}" > gradle.properties
@@ -83,12 +72,12 @@ if [[ $EXIT_STATUS -eq 0 ]]; then
 
         	fi
 	    fi
-	elif [[ $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
+	elif [[ $TRAVIS_PULL_REQUEST == 'false' && $TRAVIS_BRANCH =~ ^master|[23]\..\.x$ ]]; then
 	    echo "Builder Leading Publishing Snapshot..."
 	    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
 	    cd ..
 	    # Trigger the functional tests
-	    git clone -b master https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
+	    git clone -b 3.3.x https://${GH_TOKEN}@github.com/grails/grails3-functional-tests.git functional-tests
 	    cd functional-tests
 	    echo "$(date)" > .snapshot
 	    git add .snapshot
