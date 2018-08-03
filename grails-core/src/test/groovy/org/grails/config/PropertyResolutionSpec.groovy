@@ -1,6 +1,6 @@
 package org.grails.config
 
-import org.springframework.boot.context.config.RandomValuePropertySource
+import org.springframework.boot.env.RandomValuePropertySource
 import org.springframework.boot.env.YamlPropertySourceLoader
 import org.springframework.core.env.MutablePropertySources
 import org.springframework.core.io.ByteArrayResource
