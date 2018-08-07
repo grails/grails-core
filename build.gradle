@@ -26,7 +26,7 @@ ext {
 //    grailsVersion = '3.3.6'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    
+
     asyncVersion = '3.3.2'
     gspVersion = '3.3.1'
     legacyConvertersVersion = "3.3.1"
@@ -38,7 +38,7 @@ ext {
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
     commonsCliVersion = "1.2"
     commonsIOVersion = "2.2"
-    commonsLangVersion = "2.6"    
+    commonsLangVersion = "2.6"
     gdocEngineVersion = "1.0.1"
 
     groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.15"
@@ -61,7 +61,68 @@ ext {
     tomcatLog4jVersion = "8.5.2"
     servletApiVersion = "3.0.1"
 
-    
+    dependencyVersions = [
+        datastore: [
+            version: datastoreVersion,
+            group  : 'org.grails',
+            names  : ['grails-datastore'],
+            modules: ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'gorm-async', 'test-support', 'hibernate-core', 'gorm-test']
+        ],
+        groovy: [
+            version: groovyVersion,
+            group  : 'org.codehaus.groovy',
+            names  : ['groovy'],
+            modules: ['', 'xml', 'swing', 'console', 'json', 'ant', 'sql', 'templates', 'nio']
+        ],
+        spring: [
+            version: springVersion,
+            group  : 'org.springframework',
+            names  : ['spring'],
+            modules: ['aop', 'aspects', 'beans', 'context-support', 'context', 'core', 'expression', 'instrument', 'jdbc', 'jms', 'messaging', 'orm', 'oxm', 'test', 'tx', 'web', 'webmvc', 'websocket']
+        ],
+        directoryWatcher: [
+            version: directoryWatcherVersion,
+            group  : 'io.methvin',
+            names  : ['directory-watcher'],
+            modules: ['']
+        ],
+        springLoaded: [
+            version: springLoadedVersion,
+            group  : 'org.springframework',
+            names  : ['springloaded'],
+            modules: ['']
+        ],
+        async: [
+            version: asyncVersion,
+            group  : 'org.grails.plugins',
+            names  : ['async', 'events'],
+            modules: ['']
+        ],
+        asyncImpls: [
+            version: asyncVersion,
+            group  : 'org.grails',
+            names  : ['grails-async', 'grails-events'],
+            modules: ['gpars', 'rxjava', 'rxjava2']
+        ],
+        spock: [
+            version: spockVersion,
+            group  : 'org.spockframework',
+            names  : ['spock-core', 'spock-spring'],
+            modules: ['']
+        ],
+        gsp: [
+            version: gspVersion,
+            group  : 'org.grails.plugins',
+            names  : ['gsp'],
+            modules: ['']
+        ],
+        testingSupport: [
+            version: testingSupportVersion,
+            group  : 'org.grails',
+            names  : ['grails-testing-support', 'grails-gorm-testing-support', 'grails-web-testing-support'],
+            modules: ['']
+        ],
+    ]
 
     isJava8Compatible = org.gradle.api.JavaVersion.current().isJava8Compatible()
 
@@ -376,7 +437,7 @@ subprojects { project ->
         module.iml.whenMerged { module ->
             // adding slf4j-simple with scope TEST to .iml
             module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
-                    [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
+                [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
             )
         }
     }
