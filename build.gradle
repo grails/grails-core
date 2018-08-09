@@ -22,8 +22,8 @@ apply plugin: 'idea'
 ext {
     bintrayPublish = false
     // Sets release version
-//    grailsVersion = '3.3.7.BUILD-SNAPSHOT'
-    grailsVersion = '3.3.7'
+    grailsVersion = '3.3.8.BUILD-SNAPSHOT'
+//    grailsVersion = '3.3.7'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
@@ -337,7 +337,7 @@ subprojects { project ->
             user = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
             key = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
             publications = ['maven']
-            publish = false
+            publish = true
             dryRun = false
             pkg {
                 repo = 'grails-core'
