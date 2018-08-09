@@ -87,10 +87,10 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         def allConfigurations = project.configurations
 
         def runtimeConfiguration = allConfigurations.findByName('runtime')
+        def explodedConfig = allConfigurations.create('exploded')
+        explodedConfig.extendsFrom(runtimeConfiguration)
         if(Environment.isDevelopmentRun() && isExploded(project)) {
-            def explodedConfig = allConfigurations.create('exploded')
             runtimeConfiguration.artifacts.clear()
-            explodedConfig.extendsFrom(runtimeConfiguration)
             // add the subproject classes as outputs
             def allTasks = project.tasks
 
@@ -103,22 +103,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     private boolean isExploded(Project project) {
-        if (project.parent != null) {
-            for (Project child: project.parent.childProjects.values()) {
-                if (child != project) {
-                    try {
-                        Configuration compile = child.configurations.getByName("compile")
-                        Dependency dependency = compile.dependencies.find { it.name == project.name }
-                        if (dependency && dependency.targetConfiguration == "exploded") {
-                            return true
-                        }
-                    } catch (UnknownConfigurationException | MissingPropertyException e) {
-                        //swallow
-                    }
-                }
-            }
-        }
-        return false
+        Boolean.valueOf(project.properties.getOrDefault('exploded', 'false').toString())
     }
 
     @Override
