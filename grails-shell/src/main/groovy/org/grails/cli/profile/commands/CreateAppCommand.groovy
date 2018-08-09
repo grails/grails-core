@@ -229,9 +229,9 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
             if(profileRepository instanceof MavenProfileRepository) {
                 MavenProfileRepository mpr = (MavenProfileRepository)profileRepository
-                org.springframework.boot.cli.compiler.dependencies.Dependency gormDep = mpr.profileDependencyVersions.find("org.grails", "grails-datastore-core")
+                String gormDep = mpr.profileDependencyVersions.versionProperties.get('datastore.version')
                 if(gormDep != null) {
-                    variables['gorm.version'] = gormDep.version
+                    variables['gorm.version'] = gormDep
                 }
             }
 
