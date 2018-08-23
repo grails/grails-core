@@ -235,50 +235,53 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     void onApplicationEvent(ApplicationContextEvent event) {
         ApplicationContext context = event.applicationContext
 
-        Collection<GrailsApplicationLifeCycle> lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
-        if(event instanceof ContextRefreshedEvent) {
-            if(context.containsBean("grailsDomainClassMappingContext")) {
-                grailsApplication.setMappingContext(
-                    context.getBean("grailsDomainClassMappingContext", MappingContext)
-                )
-            }
-            Environment.setInitializing(false)
-            pluginManager.setApplicationContext(context)
-            pluginManager.doDynamicMethods()
-            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
-                lifeCycle.doWithDynamicMethods()
-            }
-            pluginManager.doPostProcessing(context)
-            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
-                lifeCycle.doWithApplicationContext()
-            }
-            Holders.pluginManager = pluginManager
-            Map<String,Object> eventMap = [:]
-            eventMap.put('source', pluginManager)
+        if (!applicationContext || applicationContext == context) {
+            // Only act if the event is for our context
+            Collection<GrailsApplicationLifeCycle> lifeCycleBeans = context.getBeansOfType(GrailsApplicationLifeCycle).values()
+            if (event instanceof ContextRefreshedEvent) {
+                if (context.containsBean("grailsDomainClassMappingContext")) {
+                    grailsApplication.setMappingContext(
+                        context.getBean("grailsDomainClassMappingContext", MappingContext)
+                    )
+                }
+                Environment.setInitializing(false)
+                pluginManager.setApplicationContext(context)
+                pluginManager.doDynamicMethods()
+                for (GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                    lifeCycle.doWithDynamicMethods()
+                }
+                pluginManager.doPostProcessing(context)
+                for (GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                    lifeCycle.doWithApplicationContext()
+                }
+                Holders.pluginManager = pluginManager
+                Map<String, Object> eventMap = [:]
+                eventMap.put('source', pluginManager)
 
-            pluginManager.onStartup(eventMap)
-            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
-                lifeCycle.onStartup(eventMap)
-            }
-        }
-        else if(event instanceof ContextClosedEvent) {
-            pluginManager.shutdown()
-            Map<String,Object> eventMap = [:]
-            eventMap.put('source', pluginManager)
-            for(GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
-                lifeCycle.onShutdown(eventMap)
-            }
-            ShutdownOperations.runOperations()
-            Holders.clear()
-            if(reloadingEnabled) {
-                try {
-                    GrailsSpringLoadedPlugin.unregister()
-                } catch (Throwable e) {
-                    // ignore
+                pluginManager.onStartup(eventMap)
+                for (GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                    lifeCycle.onStartup(eventMap)
                 }
             }
+            else if(event instanceof ContextClosedEvent) {
+                pluginManager.shutdown()
+                Map<String, Object> eventMap = [:]
+                eventMap.put('source', pluginManager)
+                for (GrailsApplicationLifeCycle lifeCycle in lifeCycleBeans) {
+                    lifeCycle.onShutdown(eventMap)
+                }
+                ShutdownOperations.runOperations()
+                Holders.clear()
+                if (reloadingEnabled) {
+                    try {
+                        GrailsSpringLoadedPlugin.unregister()
+                    } catch (Throwable e) {
+                        // ignore
+                    }
+                }
 
-            GrailsApp.setDevelopmentModeActive(false)
+                GrailsApp.setDevelopmentModeActive(false)
+            }
         }
     }
 
