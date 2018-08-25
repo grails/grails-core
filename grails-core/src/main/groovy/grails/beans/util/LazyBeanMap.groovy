@@ -31,6 +31,7 @@ import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
  * </p>
  * @since 2.4
  * @author Graeme Rocher
+ * @deprecated use {@link LazyMetaPropertyMap} instead
  */
 @CompileStatic
 class LazyBeanMap implements Map<String,Object>{
