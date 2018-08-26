@@ -51,7 +51,7 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
             dataBindingSource = createDataBindingSource(bindingTargetType, (HttpServletRequest)bindingSource)
         } else if(bindingSource instanceof Map) {
             dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
-        } else if (bindingSource != null){
+        } else if (bindingSource){
             dataBindingSource = new SimpleMapDataBindingSource(new LazyMetaPropertyMap(bindingSource))
         } else {
             dataBindingSource = new SimpleMapDataBindingSource(Collections.emptyMap()) // LazyMetaPropertyMap dislike null source
