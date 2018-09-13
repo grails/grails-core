@@ -30,11 +30,13 @@ import java.lang.annotation.Target;
  * @author Lari Hotari
  *
  * @since 2.3.3
+ * @deprecated Use grails.gorm.transactions.NotTransactional instead
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Deprecated
 public @interface NotTransactional {
 
 }
