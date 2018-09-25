@@ -13,6 +13,7 @@ import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.support.MockApplicationContext
 import org.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.grails.web.mapping.DefaultUrlMappingsHolder
+import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
@@ -22,7 +23,6 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 import org.springframework.web.servlet.View
 import org.springframework.web.servlet.ViewResolver
 import org.springframework.web.servlet.view.InternalResourceView
-
 /**
  * Test case for {@link org.grails.web.errors.GrailsExceptionResolver}.
  */
@@ -73,8 +73,10 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
                 new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
-        mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
+        ViewResolver viewResolver = new DummyViewResolver()
+        mockCtx.registerMockBean "viewResolver", viewResolver
         mockCtx.registerMockBean 'grailsApplication', application
+        mockCtx.registerMockBean CompositeViewResolver.BEAN_NAME, new CompositeViewResolver(viewResolvers: [viewResolver])
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext
