@@ -66,6 +66,11 @@ public class LoggingTransformer implements AllArtefactClassInjector{
                 return;
             }
         }
+
+        if (classNode.getSuperClass().getName().equals("grails.boot.config.GrailsAutoConfiguration")) {
+            return;
+        }
+
         AnnotationNode annotationNode = new AnnotationNode(ClassHelper.make(Slf4j.class));
         LogASTTransformation logASTTransformation = new LogASTTransformation();
         logASTTransformation.setCompilationUnit( new CompilationUnit(new GroovyClassLoader(getClass().getClassLoader())) );

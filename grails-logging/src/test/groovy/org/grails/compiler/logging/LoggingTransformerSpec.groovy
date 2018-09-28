@@ -105,4 +105,23 @@ class LoggingController {
             log instanceof Logger
 
     }
+
+    def "Test log field is not added to Application classes"() {
+        given:
+        def gcl = new GrailsAwareClassLoader()
+        when:
+        def cls = gcl.parseClass('''
+class LoggingController extends grails.boot.config.GrailsAutoConfiguration {
+    def index() {
+        return log
+    }
+}
+''', "foo/src/main/groovy/LoggingController.groovy")
+        def controller = cls.newInstance()
+        controller.index()
+
+        then:
+        thrown(MissingPropertyException)
+
+    }
 }
