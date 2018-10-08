@@ -15,4 +15,17 @@ class CollectionWithVariableUrlMappingSpec extends AbstractUrlMappingsSpec {
         expect:
         urlMappingsHolder.matchAll('/tickets/history/1', 'GET')
     }
+
+    void 'test backwards-compatibility with group mappings'() {
+        given:
+        def urlMappingsHolder = getUrlMappingsHolder {
+            group('/api') {
+                '/photo'(resources: 'photo', includes: ['show'])
+                "/foo/${id}"(controller: 'foo', action: 'show')
+            }
+        }
+
+        expect:
+        urlMappingsHolder.matchAll('/api/foo/123', 'GET')
+    }
 }
