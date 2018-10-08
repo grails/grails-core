@@ -18,28 +18,31 @@ package org.grails.plugins
 import grails.config.Config
 import grails.config.ConfigProperties
 import grails.config.Settings
+import grails.core.support.proxy.DefaultProxyHandler
 import grails.plugins.Plugin
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
+import org.grails.beans.support.PropertiesEditor
+import org.grails.core.io.DefaultResourceLocator
+import org.grails.core.support.ClassEditor
+import org.grails.dev.support.DevelopmentShutdownHook
 import org.grails.spring.DefaultRuntimeSpringConfiguration
+import org.grails.spring.RuntimeSpringConfigUtilities
 import org.grails.spring.RuntimeSpringConfiguration
 import org.grails.spring.aop.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.grails.spring.aop.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
-import org.grails.spring.context.support.GrailsPlaceholderConfigurer
-import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
-import org.grails.spring.RuntimeSpringConfigUtilities
-import org.grails.core.io.DefaultResourceLocator
 import org.grails.spring.beans.GrailsApplicationAwareBeanPostProcessor
 import org.grails.spring.beans.PluginManagerAwareBeanPostProcessor
-import org.grails.core.support.ClassEditor
-import org.grails.dev.support.DevelopmentShutdownHook
-import org.grails.beans.support.PropertiesEditor
-import grails.core.support.proxy.DefaultProxyHandler
+import org.grails.spring.context.support.GrailsPlaceholderConfigurer
+import org.grails.spring.context.support.MapBasedSmartPropertyOverrideConfigurer
+import org.springframework.beans.PropertyValue
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.config.YamlProcessor
+import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.boot.yaml.SpringProfileDocumentMatcher
@@ -63,6 +66,11 @@ class CoreGrailsPlugin extends Plugin {
                                 "file:./grails-app/conf/application.groovy",
                                 "file:./grails-app/conf/application.yml"]
 
+    /**
+     * The bean name of the internally managed auto-proxy creator.
+     */
+    private static final AUTO_PROXY_CREATOR_BEAN_NAME = "org.springframework.aop.config.internalAutoProxyCreator"
+
     @Override
     Closure doWithSpring() { {->
 
@@ -83,12 +91,28 @@ class CoreGrailsPlugin extends Plugin {
         }
         grailsConfigProperties(ConfigProperties, config)
 
+        BeanDefinition apcDefinition = null
+        if (((BeanDefinitionRegistry) applicationContext)?.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
+            apcDefinition = ((BeanDefinitionRegistry) applicationContext).getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)
+        }
+
         // replace AutoProxy advisor with Groovy aware one
         if (ClassUtils.isPresent('org.aspectj.lang.annotation.Around', application.classLoader) && !config.getProperty(Settings.SPRING_DISABLE_ASPECTJ, Boolean)) {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator)
-        }
-        else {
-            "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
+            "$AUTO_PROXY_CREATOR_BEAN_NAME"(GroovyAwareAspectJAwareAdvisorAutoProxyCreator) {
+                if (apcDefinition != null) {
+                    apcDefinition.getPropertyValues().propertyValueList.each {PropertyValue propertyValue->
+                      setProperty(propertyValue.name, propertyValue.value)
+                    }
+                }
+            }
+        } else {
+            "$AUTO_PROXY_CREATOR_BEAN_NAME"(GroovyAwareInfrastructureAdvisorAutoProxyCreator) {
+                if (apcDefinition != null) {
+                    apcDefinition.getPropertyValues().propertyValueList.each {PropertyValue propertyValue->
+                        setProperty(propertyValue.name, propertyValue.value)
+                    }
+                }
+            }
         }
 
         def packagesToScan = []
