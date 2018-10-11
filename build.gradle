@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath "commons-io:commons-io:2.2"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0"
         classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
@@ -47,7 +47,7 @@ ext {
     jnaVersion = "4.2.2"
     slf4jVersion = "1.7.25"
 
-    spockVersion = '1.1-groovy-2.5'
+    spockVersion = '1.2-groovy-2.5'
     springBootVersion = "2.1.0.M4"
     springLoadedVersion = "1.2.8.RELEASE"
     directoryWatcherVersion = "0.3.0"
