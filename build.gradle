@@ -41,13 +41,13 @@ ext {
     commonsLangVersion = "2.6"
     gdocEngineVersion = "1.0.1"
 
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.4.15"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.1"
     jansiVersion = "1.14"
     jlineVersion = "2.14.2"
     jnaVersion = "4.2.2"
     slf4jVersion = "1.7.25"
 
-    spockVersion = '1.1-groovy-2.4'
+    spockVersion = '1.1-groovy-2.5'
     springBootVersion = "2.1.0.M4"
     springLoadedVersion = "1.2.8.RELEASE"
     directoryWatcherVersion = "0.3.0"
