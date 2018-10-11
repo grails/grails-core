@@ -448,6 +448,7 @@ subprojects { project ->
         documentation("org.fusesource.jansi:jansi:$jansiVersion")
         documentation("jline:jline:$jlineVersion")
         documentation "org.codehaus.groovy:groovy-ant:$groovyVersion"
+        documentation "org.codehaus.groovy:groovy-cli-picocli:$groovyVersion"
 
         compile groovyDependency
 
