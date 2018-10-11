@@ -344,6 +344,10 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 if (mapping == null) {
                     lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;
                     mapping = mappingsLookup.get(lookupKeyModifiedParams);
+                    if (mapping == null) {
+                        lookupKeyModifiedParams.paramNames = new HashSet<>();
+                        mapping = mappingsLookup.get(lookupKeyModifiedParams);
+                    }
                 }
             }
         }
