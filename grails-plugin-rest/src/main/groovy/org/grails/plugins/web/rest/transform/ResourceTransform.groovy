@@ -118,7 +118,7 @@ class ResourceTransform implements ASTTransformation, CompilationUnitAware {
         LinkableTransform.addLinkingMethods(parent)
 
         if (resource == null) {
-            ClassNode<?> superClassNode
+            ClassNode superClassNode
             Expression superClassAttribute = annotationNode.getMember(ATTR_SUPER_CLASS)
             if(superClassAttribute instanceof ClassExpression) {
                 superClassNode = ((ClassExpression)superClassAttribute).getType()

@@ -15,7 +15,6 @@
  */
 package org.grails.plugins
 
-import grails.config.Config
 import grails.config.ConfigProperties
 import grails.config.Settings
 import grails.plugins.Plugin
@@ -39,10 +38,8 @@ import org.grails.beans.support.PropertiesEditor
 import grails.core.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.beans.factory.config.YamlProcessor
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
-import org.springframework.boot.yaml.SpringProfileDocumentMatcher
 import org.springframework.context.annotation.AnnotationConfigUtils
 import org.springframework.context.annotation.ConfigurationClassPostProcessor
 import org.springframework.context.support.GenericApplicationContext
@@ -184,16 +181,6 @@ class CoreGrailsPlugin extends Plugin {
                     applicationContext.registerBeanDefinition(beanName, xmlBeans.getBeanDefinition(beanName))
                 }
             }
-            else if(res.filename.endsWith('.yml')) {
-                def processor = new YmlConfigModifier(grailsApplication.config)
-                processor.matchDefault = true
-                processor.setResources(res)
-                processor.modifyConfig()
-                processor.matchDefault = false
-                processor.setDocumentMatchers(new SpringProfileDocumentMatcher(Environment.current.name))
-                grailsApplication.configChanged()
-                pluginManager.informPluginsOfConfigChange()
-            }
         }
         else if (event.source instanceof Class) {
             def clazz = (Class) event.source
@@ -205,19 +192,4 @@ class CoreGrailsPlugin extends Plugin {
         }
     }
 
-    @CompileStatic
-    static class YmlConfigModifier extends YamlProcessor {
-        Config config
-
-        YmlConfigModifier(Config config) {
-            this.config = config
-        }
-
-        void modifyConfig() {
-            process { Properties properties, Map<String, Object> map ->
-                config.merge(map)
-                config.merge((Map<String,Object>)properties)
-            }
-        }
-    }
 }

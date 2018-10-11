@@ -21,6 +21,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.*;
@@ -408,5 +409,15 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     public <T> T getBean(Class<T> requiredType, Object... args)
             throws BeansException {
         return getBean(requiredType);
+    }
+
+    @Override
+    public <T> ObjectProvider<T> getBeanProvider(Class<T> requiredType) {
+        return null;
+    }
+
+    @Override
+    public <T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType) {
+        return null;
     }
 }

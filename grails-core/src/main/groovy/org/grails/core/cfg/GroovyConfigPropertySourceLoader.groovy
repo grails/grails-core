@@ -28,6 +28,8 @@ import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.PropertySource
 import org.springframework.core.io.Resource
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 /**
  * Adds support for defining a 'application.groovy' file in ConfigSlurper format in order to configure Spring Boot within Grails
  *
@@ -40,14 +42,15 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
     final String[] fileExtensions = ['groovy'] as String[]
 
+    AtomicBoolean loaded = new AtomicBoolean(false)
+
     @Override
-    PropertySource<?> load(String name, Resource resource, String profile) {
-        load(name, resource, profile, [])
+    List<PropertySource<?>> load(String name, Resource resource) throws IOException {
+        return load(name, resource, Collections.<String>emptyList())
     }
 
-    PropertySource<?> load(String name, Resource resource, String profile, List<String> filteredKeys) throws IOException {
-        // since ConfigSlurper is already environment aware, don't load it twice
-        if(profile == null) {
+    List<PropertySource<?>> load(String name, Resource resource, List<String> filteredKeys) throws IOException {
+        if (loaded.compareAndSet(false, true)) {
             def env = Environment.current.name
 
             if(resource.exists()) {
@@ -55,13 +58,12 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
 
                 configSlurper.setBinding(userHome: System.getProperty('user.home'),
                         grailsHome: BuildSettings.GRAILS_HOME?.absolutePath,
-                        springProfile: profile,
                         appName: Metadata.getCurrent().getApplicationName(),
                         appVersion: Metadata.getCurrent().getApplicationVersion() )
                 try {
                     def configObject = configSlurper.parse(resource.URL)
 
-                    filteredKeys?.each { key ->
+                    for(key in filteredKeys) {
                         configObject.remove(key)
                     }
 
@@ -74,13 +76,13 @@ class GroovyConfigPropertySourceLoader implements PropertySourceLoader {
                         propertySource.merge(runtimeConfig, false)
                     }
 
-                    return new NavigableMapPropertySource(name, propertySource)
+                    return Collections.<PropertySource>singletonList(new NavigableMapPropertySource(name, propertySource))
                 } catch (Throwable e) {
                     log.error("Unable to load $resource.filename: $e.message", e)
                     throw new GrailsConfigurationException("Error loading $resource.filename due to [${e.getClass().name}]: $e.message", e)
                 }
             }
         }
-        return null
+        return Collections.emptyList()
     }
 }

@@ -177,7 +177,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     protected void configurePluginJarTask(Project project) {
         project.tasks.withType(BootArchive).each { BootArchive task ->
             task.onlyIf {
-                task.mainClass != null
+                task.mainClassName != null
             }
         }
 

@@ -19,7 +19,6 @@ import org.grails.config.PrefixedMapPropertySource
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
-import org.grails.core.util.ClassPropertyFetcher
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.dev.support.GrailsSpringLoadedPlugin
 import org.grails.spring.DefaultRuntimeSpringConfiguration
@@ -41,7 +40,6 @@ import org.springframework.core.env.AbstractEnvironment
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
 import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 /**
  * A {@link BeanDefinitionRegistryPostProcessor} that enhances any ApplicationContext with plugin manager capabilities
