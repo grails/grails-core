@@ -79,7 +79,10 @@ class GrailsParameterMapTests extends GroovyTestCase {
         params = new GrailsParameterMap(request)
         assert params.foo == null // should be null, request can't be parsed twice
 
+        request = new MockHttpServletRequest()
+        request.method = 'PUT'
         request.content = 'foo='.bytes
+        request.contentType = "application/x-www-form-urlencoded"
         request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
 
         params = new GrailsParameterMap(request)
@@ -102,6 +105,9 @@ class GrailsParameterMapTests extends GroovyTestCase {
         params = new GrailsParameterMap(request)
         assert params.foo == null // should be null, request can't be parsed twice
 
+        request = new MockHttpServletRequest()
+        request.method = 'PUT'
+        request.contentType = "application/x-www-form-urlencoded; charset=UTF-8"
         request.content = 'foo='.bytes
         request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
 
@@ -124,6 +130,10 @@ class GrailsParameterMapTests extends GroovyTestCase {
         params = new GrailsParameterMap(request)
         assert params.foo == null // should be null, request can't be parsed twice
 
+        request = new MockHttpServletRequest()
+        request.content = 'foo=bar&one=two'.bytes
+        request.method = 'PATCH'
+        request.contentType = "application/x-www-form-urlencoded"
         request.content = 'foo='.bytes
         request.removeAttribute(GrailsParameterMap.REQUEST_BODY_PARSED)
 

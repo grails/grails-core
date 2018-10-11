@@ -23,6 +23,8 @@ import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
+import java.text.SimpleDateFormat
+
 class SimpleDataBinderSpec extends Specification {
 
     void 'Test binding to dynamically typed properties'() {
@@ -343,7 +345,7 @@ class SimpleDataBinderSpec extends Specification {
         def dates = obj.dates
 
         then:
-        dates == [Date.parse('yyyy-MM-d', "2012-11-9"), Date.parse('yyyy-MM-d', "2012-12-13")]
+        dates == [new SimpleDateFormat('yyyy-MM-d').parse("2012-11-9"), new SimpleDateFormat('yyyy-MM-d').parse("2012-12-13")]
     }
 
     void 'Test binding String to enum'() {
