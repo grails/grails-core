@@ -413,11 +413,51 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     @Override
     public <T> ObjectProvider<T> getBeanProvider(Class<T> requiredType) {
-        return null;
+        return new ObjectProvider<T>() {
+            @Override
+            public T getObject(Object... args) throws BeansException {
+                return getBean(requiredType);
+            }
+
+            @Override
+            public T getIfAvailable() throws BeansException {
+                return getBean(requiredType);
+            }
+
+            @Override
+            public T getIfUnique() throws BeansException {
+                return getBean(requiredType);
+            }
+
+            @Override
+            public T getObject() throws BeansException {
+                return getBean(requiredType);
+            }
+        };
     }
 
     @Override
     public <T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType) {
-        return null;
+        return new ObjectProvider<T>() {
+            @Override
+            public T getObject(Object... args) throws BeansException {
+                return (T) getBean(requiredType.toClass());
+            }
+
+            @Override
+            public T getIfAvailable() throws BeansException {
+                return (T) getBean(requiredType.toClass());
+            }
+
+            @Override
+            public T getIfUnique() throws BeansException {
+                return (T) getBean(requiredType.toClass());
+            }
+
+            @Override
+            public T getObject() throws BeansException {
+                return (T) getBean(requiredType.toClass());
+            }
+        };
     }
 }

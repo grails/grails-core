@@ -42,6 +42,7 @@ import org.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
@@ -447,14 +448,20 @@ trait ResponseRenderer extends WebAttributes {
         if (argMap.containsKey(ARGUMENT_STATUS)) {
             def statusObj = argMap.get(ARGUMENT_STATUS)
             if (statusObj != null) {
-                try {
-                    final int statusCode = statusObj instanceof Number ? ((Number) statusObj).intValue() : Integer.parseInt(statusObj.toString())
-                    response.status = statusCode
+                if (statusObj instanceof HttpStatus) {
+                    response.status = ((HttpStatus)statusObj).value()
                     statusSet = true
-                }
-                catch (NumberFormatException e) {
-                    throw new ControllerExecutionException(
-                            "Argument [status] of method [render] must be a valid integer.")
+                } else {
+
+                    try {
+                        final int statusCode = statusObj instanceof Number ? ((Number) statusObj).intValue() : Integer.parseInt(statusObj.toString())
+                        response.status = statusCode
+                        statusSet = true
+                    }
+                    catch (NumberFormatException e) {
+                        throw new ControllerExecutionException(
+                                "Argument [status] of method [render] must be a valid integer.")
+                    }
                 }
             }
         }

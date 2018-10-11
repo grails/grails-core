@@ -4,6 +4,8 @@ import grails.artefact.Artefact
 import grails.testing.web.controllers.ControllerUnitTest
 import spock.lang.Specification
 
+import java.text.SimpleDateFormat
+
 /**
  * Tests that Groovy's @Mixin works on a controller
  */
@@ -30,6 +32,6 @@ class MixedController {
 class Timestamps {
 
     String getTimestamp() {
-        new Date().format("HH:mm")
+        new SimpleDateFormat("HH:mm").format(new Date())
     }
 }
