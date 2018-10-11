@@ -144,6 +144,7 @@ class GrailsCreateStartScripts extends org.gradle.api.tasks.application.CreateSt
     @org.gradle.api.tasks.TaskAction
     void generate() {
         def generator = new org.gradle.api.internal.plugins.StartScriptGenerator()
+        generator.unixStartScriptGenerator.template = project.rootProject.childProjects['grails-shell'].resources.text.fromFile('src/main/resources/unixStartScript.txt')
         generator.applicationName = getApplicationName()
         generator.mainClassName = getMainClassName()
         generator.defaultJvmOpts = getDefaultJvmOpts()
