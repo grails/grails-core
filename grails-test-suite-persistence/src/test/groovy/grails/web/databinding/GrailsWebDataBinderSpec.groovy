@@ -222,7 +222,7 @@ class GrailsWebDataBinderSpec extends Specification implements DataTest {
 
     void 'Test id binding'() {
         given:
-        def author = new Author(name: 'David Foster Wallace').save(flush: true)
+        def author = new Author(name: 'David Foster Wallace').save(flush: true, failOnError:true)
         def publication = new Publication()
 
         when:
