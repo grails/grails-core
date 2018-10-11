@@ -2,7 +2,6 @@ buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         jcenter()
-        maven { url "https://oss.jfrog.org/artifactory/oss-snapshot-local" }
         maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
     dependencies {
@@ -313,6 +312,9 @@ subprojects { project ->
                     url  "https://repo.grails.org/grails/libs-snapshots-local"
                 }
             }
+
+            if(project.name == 'grails-dependencies') return
+            if(project.name == 'grails-bom') return
 
             publications {
                 maven(MavenPublication) {

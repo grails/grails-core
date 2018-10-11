@@ -52,7 +52,7 @@ class GrailsVersionUtils {
 
         if (requiredVersion.indexOf('>') >- 1) {
             def tokens = requiredVersion.split(">")*.trim()
-            tokens = tokens.collect { String it -> trimTag(it) }
+            tokens = tokens.stream().collect({ String it -> trimTag(it) })
             tokens << pluginVersion
             tokens.sort(true, vc)
 
