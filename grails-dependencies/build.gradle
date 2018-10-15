@@ -8,9 +8,7 @@ publishing {
             pom.withXml {
                 def xml = asNode()
 
-                xml.name[0].value = "Grails Dependencies"
-                xml.description[0].value = "Grails default supported dependency definitions"
-
+                xml.children().last() + pomInfo                
 
                 xml.children().last() + {
                     delegate.dependencies {

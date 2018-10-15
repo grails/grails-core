@@ -13,9 +13,6 @@ publishing {
                 profiles.load(new StringReader(new File("$projectDir/profiles.properties").text))
 
                 xml.children().last() + pomInfo
-                xml.name[0].value = "Grails BOM"
-                xml.description[0].value = "Grails default supported dependency definitions"
-
                 xml.children().last() + {
                     def mkp = delegate
 
