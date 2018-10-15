@@ -24,11 +24,19 @@ import org.grails.plugins.support.WatchPattern
 import org.springframework.boot.Banner
 import org.springframework.boot.ResourceBanner
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.origin.OriginTrackedValue
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.core.ResolvableType
+import org.springframework.core.convert.ConversionService
+import org.springframework.core.convert.TypeDescriptor
+import org.springframework.core.convert.converter.GenericConverter
+import org.springframework.core.convert.support.ConfigurableConversionService
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.lang.Nullable
 
+import java.lang.annotation.Annotation
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
@@ -81,7 +89,7 @@ class GrailsApp extends SpringApplication {
 
     @Override
     ConfigurableApplicationContext run(String... args) {
-        def applicationContext = super.run(args)
+        ConfigurableApplicationContext applicationContext = super.run(args)
 
         Environment environment = Environment.getCurrent()
 
@@ -100,6 +108,7 @@ class GrailsApp extends SpringApplication {
 
     @Override
     protected ConfigurableApplicationContext createApplicationContext() {
+        setAllowBeanDefinitionOverriding(true)
         ConfigurableApplicationContext applicationContext = super.createApplicationContext()
 
         if(enableBeanCreationProfiler) {
@@ -392,4 +401,5 @@ class GrailsApp extends SpringApplication {
         grailsApp.banner = new ResourceBanner(new ClassPathResource(GRAILS_BANNER))
         return grailsApp.run(args)
     }
+
 }

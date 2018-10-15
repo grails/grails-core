@@ -126,18 +126,33 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         }
 
         if (clazz.isEnum()) return false;
-        Artefact artefactAnn = clazz.getAnnotation(Artefact.class);
+        Artefact artefactAnn = null;
+        try {
+            artefactAnn = clazz.getAnnotation(Artefact.class);
+        } catch (ArrayStoreException e) {
+            // happens if a reference to a class that no longer exists is there
+        }
+
         if( artefactAnn != null && artefactAnn.value().equals(DomainClassArtefactHandler.TYPE) ) {
             return true;
         }
 
-        for (Annotation annotation : clazz.getAnnotations()) {
-            Class<? extends Annotation> annType = annotation.annotationType();
-            String annName = annType.getSimpleName();
+        Annotation[] annotations = null;
+        try {
+            annotations = clazz.getAnnotations();
+        } catch (ArrayStoreException e) {
+            // happens if a reference to a class that no longer exists is there
+        }
 
-            String pkgName = annType.getPackage().getName();
-            if(ENTITY_ANN_NAME.equals(annName) && pkgName.startsWith(GRAILS_PACKAGE_PREFIX) || pkgName.startsWith(JAVAX_PERSISTENCE)) {
-                return true;
+        if (annotations != null) {
+            for (Annotation annotation : annotations) {
+                Class<? extends Annotation> annType = annotation.annotationType();
+                String annName = annType.getSimpleName();
+
+                String pkgName = annType.getPackage().getName();
+                if(ENTITY_ANN_NAME.equals(annName) && pkgName.startsWith(GRAILS_PACKAGE_PREFIX) || pkgName.startsWith(JAVAX_PERSISTENCE)) {
+                    return true;
+                }
             }
         }
         return false;
