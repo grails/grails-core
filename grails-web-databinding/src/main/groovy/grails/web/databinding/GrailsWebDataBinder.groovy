@@ -62,9 +62,10 @@ import java.lang.annotation.Annotation
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
+import static grails.web.databinding.DataBindingUtils.*
+
 @CompileStatic
 class GrailsWebDataBinder extends SimpleDataBinder {
-    protected static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>()
     protected GrailsApplication grailsApplication
     protected MessageSource messageSource
     boolean trimStrings = true
@@ -463,31 +464,6 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         set.find {
             it.id == idValue
         }
-    }
-
-    private static List getBindingIncludeList(final Object object) {
-        List includeList = Collections.EMPTY_LIST
-        try {
-            final Class<? extends Object> objectClass = object.getClass()
-            if (CLASS_TO_BINDING_INCLUDE_LIST.containsKey(objectClass)) {
-                includeList = CLASS_TO_BINDING_INCLUDE_LIST.get objectClass
-            } else {
-                def whiteListField = objectClass.getDeclaredField DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST
-                if (whiteListField != null) {
-                    if ((whiteListField.getModifiers() & Modifier.STATIC) != 0) {
-                        final Object whiteListValue = whiteListField.get objectClass
-                        if (whiteListValue instanceof List) {
-                            includeList = (List)whiteListValue
-                        }
-                    }
-                }
-                if (!Environment.getCurrent().isReloadEnabled()) {
-                    CLASS_TO_BINDING_INCLUDE_LIST.put objectClass, includeList
-                }
-            }
-        } catch (Exception e) {
-        }
-        includeList
     }
 
     @Override
