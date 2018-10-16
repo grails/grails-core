@@ -704,12 +704,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 String controllerName = controller.toString();
                                 mappingInfo.setController(controllerName);
                                 parentResources.push(new ParentResource(controllerName, uri, false));
+                                Boolean oldUrlDefiningMode = urlDefiningMode;
                                 try {
                                     urlDefiningMode = true;
                                     invokeLastArgumentIfClosure(args);
                                 } finally {
                                     parentResources.pop();
-                                    urlDefiningMode = false;
+                                    urlDefiningMode = oldUrlDefiningMode;
                                 }
                                 if (controller != null) {
                                     createResourceRestfulMappings(controllerName, mappingInfo.getPlugin(), mappingInfo.getNamespace(), version, urlData, currentConstraints, calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
