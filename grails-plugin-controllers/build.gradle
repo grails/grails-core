@@ -5,6 +5,7 @@ dependencies {
             project(':grails-plugin-validation'),
             project(':grails-plugin-domain-class')
 
+    compile("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
     runtime project(':grails-plugin-i18n')
 
     testRuntime "jline:jline:$jlineVersion"

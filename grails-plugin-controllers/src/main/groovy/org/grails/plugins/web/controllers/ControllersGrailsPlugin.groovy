@@ -31,6 +31,7 @@ import org.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.grails.web.servlet.mvc.TokenResponseActionResultTransformer
 import org.grails.web.servlet.view.CompositeViewResolver
 import org.springframework.beans.factory.support.AbstractBeanDefinition
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.boot.web.servlet.ServletRegistrationBean
 import org.springframework.context.ApplicationContext
@@ -145,7 +146,7 @@ class ControllersGrailsPlugin extends Plugin {
 
         // add the dispatcher servlet
         dispatcherServlet(GrailsDispatcherServlet)
-        dispatcherServletRegistration(ServletRegistrationBean, ref("dispatcherServlet"), grailsServletPath) {
+        dispatcherServletRegistration(DispatcherServletRegistrationBean, ref("dispatcherServlet"), grailsServletPath) {
             loadOnStartup = 2
             asyncSupported = true
             multipartConfig = multipartConfigElement
