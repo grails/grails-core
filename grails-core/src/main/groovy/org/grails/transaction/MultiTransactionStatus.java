@@ -39,7 +39,7 @@ class MultiTransactionStatus implements TransactionStatus {
 	private final Map<PlatformTransactionManager, TransactionStatus> transactionStatuses = Collections
 			.synchronizedMap(new HashMap<PlatformTransactionManager, TransactionStatus>());
 
-	private boolean newSynchonization;
+	private boolean newSynchronization;
 
 	/**
 	 * Creates a new {@link MultiTransactionStatus} for the given {@link PlatformTransactionManager}.
@@ -56,12 +56,12 @@ class MultiTransactionStatus implements TransactionStatus {
 		return transactionStatuses;
 	}
 
-	public void setNewSynchonization() {
-		this.newSynchonization = true;
+	public void setNewSynchronization() {
+		this.newSynchronization = true;
 	}
 
-	public boolean isNewSynchonization() {
-		return newSynchonization;
+	public boolean isNewSynchronization() {
+		return newSynchronization;
 	}
 
 	public void registerTransactionManager(TransactionDefinition definition, PlatformTransactionManager transactionManager) {
