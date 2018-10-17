@@ -12,7 +12,7 @@ class NavigableMapSpringProfilesSpec extends Specification {
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())
         def yamlPropertiesSource = propertySource.load('application.yml', resource, null)
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         expect:
         config.getProperty('hello.message') == 'Default hello!'
@@ -24,8 +24,8 @@ class NavigableMapSpringProfilesSpec extends Specification {
 
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())
-        def yamlPropertiesSource = propertySource.load('application.yml', resource, 'sample')
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def yamlPropertiesSource = propertySource.load('application.yml', resource)
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         expect:
         config.getProperty('hello.message') == 'Hello from SAMPLE profile!'
@@ -37,8 +37,8 @@ class NavigableMapSpringProfilesSpec extends Specification {
 
         def propertySource = new YamlPropertySourceLoader()
         Resource resource = new FileSystemResource(getClass().getClassLoader().getResource('application.yml').getFile())
-        def yamlPropertiesSource = propertySource.load('application.yml', resource, 'demo')
-        def config = new PropertySourcesConfig(yamlPropertiesSource)
+        def yamlPropertiesSource = propertySource.load('application.yml', resource)
+        def config = new PropertySourcesConfig(yamlPropertiesSource.first())
 
         expect:
         config.getProperty('hello.message') == 'Hello from DEMO profile!'

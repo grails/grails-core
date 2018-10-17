@@ -27,7 +27,7 @@ property-with_mixed.symbols: from-yml
         def propertySourceLoader = new YamlPropertySourceLoader()
         def yamlPropertiesSource = propertySourceLoader.load('application.yml', resource1, null)
         def propertySources = new MutablePropertySources()
-        propertySources.addFirst(yamlPropertiesSource)
+        propertySources.addFirst(yamlPropertiesSource.first())
         def config = new PropertySourcesConfig(propertySources)
 
         and: 'overriding value with system environment variable'

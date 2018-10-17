@@ -31,7 +31,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         config.allowedHeaders == DEFAULT_ALLOWED_HEADERS
         config.allowedMethods == DEFAULT_METHODS
         config.exposedHeaders == DEFAULT_EXPOSED_HEADERS
-        config.allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config.allowCredentials == null
         config.maxAge == DEFAULT_MAX_AGE
     }
 
@@ -47,7 +47,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         defaultConfig.allowedHeaders == DEFAULT_ALLOWED_HEADERS
         defaultConfig.allowedMethods == DEFAULT_METHODS
         defaultConfig.exposedHeaders == DEFAULT_EXPOSED_HEADERS
-        defaultConfig.allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        defaultConfig.allowCredentials == null
         defaultConfig.maxAge == DEFAULT_MAX_AGE
     }
 
@@ -108,7 +108,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         config["/foo"].allowedMethods == DEFAULT_METHODS
         config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
         config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -120,7 +120,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         config["/foo"].allowedMethods == ["GET", "PUT"]
         config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
         config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -132,7 +132,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         config["/foo"].allowedMethods == DEFAULT_METHODS
         config["/foo"].allowedHeaders == ["Content-Type"]
         config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -144,7 +144,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         config["/foo"].allowedMethods == DEFAULT_METHODS
         config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
         config["/foo"].exposedHeaders == ["Content-Type"]
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == DEFAULT_MAX_AGE
 
         when:
@@ -168,7 +168,7 @@ class GrailsCorsConfigurationSpec extends Specification {
         config["/foo"].allowedMethods == DEFAULT_METHODS
         config["/foo"].allowedHeaders == DEFAULT_ALLOWED_HEADERS
         config["/foo"].exposedHeaders == DEFAULT_EXPOSED_HEADERS
-        config["/foo"].allowCredentials == DEFAULT_ALLOW_CREDENTIALS
+        config["/foo"].allowCredentials == null
         config["/foo"].maxAge == 3600L
     }
 

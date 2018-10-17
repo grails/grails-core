@@ -29,10 +29,8 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Replacement for Spring Boot's YAML loader that uses Grails' NavigableMap.
@@ -54,41 +52,38 @@ public class YamlPropertySourceLoader extends YamlProcessor implements PropertyS
 
     public List<PropertySource<?>> load(String name, Resource resource, List<String> filteredKeys) throws IOException {
         setResources(resource);
+        setDocumentMatchers((DocumentMatcher) properties -> {
+            final String profile = properties.getProperty("spring.profiles");
+            return profile == null || profile.equalsIgnoreCase(System.getProperty("spring.profiles.active")) ? MatchStatus.FOUND : MatchStatus.NOT_FOUND;
+        });
         List<Map<String, Object>> loaded = load();
         if (loaded.isEmpty()) {
             return Collections.emptyList();
         }
         List<PropertySource<?>> propertySources = new ArrayList<>(loaded.size());
-        for (int i = 0; i < loaded.size(); i++) {
-            String documentNumber = (loaded.size() != 1) ? " (document #" + i + ")" : "";
-            final Map<String, Object> map = loaded.get(i);
-            //Now merge the environment config over the top of the normal stuff
-            final Object environments = map.get(GrailsPlugin.ENVIRONMENTS);
+        NavigableMap propertySource = new NavigableMap();
+        //Now merge the environment config over the top of the normal stuff
+        loaded.forEach(map -> {
             final Environment env = Environment.getCurrentEnvironment();
             String currentEnvironment = env != null ? env.getName() : null;
-            if (environments instanceof Map) {
-                Map envMap = (Map) environments;
-                for (Object envSpecific : envMap.entrySet()) {
-                    if (envSpecific instanceof Map.Entry) {
-                        final Map.Entry envSpecificEntry = (Map.Entry) envSpecific;
-                        Object environmentEntries = envMap.get(envSpecificEntry.getKey());
-                        if (environmentEntries instanceof Map) {
-                            if (envSpecificEntry.getKey().toString().equalsIgnoreCase(currentEnvironment)) {
-                                map.putAll((Map<? extends String, ?>) environmentEntries);
-                            }
-                        }
-                    }
+            if (currentEnvironment != null) {
+                final String prefix = GrailsPlugin.ENVIRONMENTS + "." + currentEnvironment + ".";
+                final Set<String> environmentSpecificEntries =
+                        map.keySet().stream().filter(k -> k.startsWith(prefix)).collect(Collectors.toSet());
+
+                for (String entry : environmentSpecificEntries) {
+                    map.put(entry.substring(prefix.length()), map.get(entry));
                 }
             }
-
-            for (String filteredKey : filteredKeys) {
-                map.remove(filteredKey);
+            if (filteredKeys != null) {
+                for (String filteredKey : filteredKeys) {
+                    map.remove(filteredKey);
+                }
             }
-            NavigableMap propertySource = new NavigableMap();
             propertySource.merge(map, true);
-            propertySources.add(
-                    new NavigableMapPropertySource(name + documentNumber,propertySource));
-        }
+        });
+        propertySources.add(
+                new NavigableMapPropertySource(name ,propertySource));
 
         return propertySources;
     }

@@ -27,9 +27,9 @@ rabbitmq:
 '''.bytes, 'test.yml')
 
         def propertySourceLoader = new YamlPropertySourceLoader()
-        def yamlPropertiesSource1 = propertySourceLoader.load('test.yml', resource1, null)
+        def yamlPropertiesSource1 = propertySourceLoader.load('test.yml', resource1)
         MutablePropertySources propertySources = new MutablePropertySources()
-        propertySources.addFirst(yamlPropertiesSource1)
+        propertySources.addFirst(yamlPropertiesSource1.first())
         propertySources.addFirst(new RandomValuePropertySource())
 
         def config = new PropertySourcesConfig(propertySources)
