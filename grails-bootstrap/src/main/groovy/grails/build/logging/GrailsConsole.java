@@ -373,7 +373,7 @@ public class GrailsConsole implements ConsoleLogger {
             try {
                 ((Flushable)history).flush();
             }
-            catch (IOException e) {
+            catch (Throwable e) {
                 // ignore exception
             }
         }
