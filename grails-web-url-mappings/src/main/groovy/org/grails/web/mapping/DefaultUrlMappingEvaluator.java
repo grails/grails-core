@@ -709,14 +709,16 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                     invokeLastArgumentIfClosure(args);
                                 } finally {
                                     parentResources.pop();
-                                    urlDefiningMode = false;
+                                    hasParent = !parentResources.isEmpty();
+                                    if (!hasParent) {
+                                        urlDefiningMode = false;
+                                    }
                                 }
                                 if (controller != null) {
                                     createResourceRestfulMappings(controllerName, mappingInfo.getPlugin(), mappingInfo.getNamespace(), version, urlData, currentConstraints, calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
                                 }
                             }
                             else {
-
                                 invokeLastArgumentIfClosure(args);
                                 UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, mappedURI, isResponseCode, currentConstraints);
                                 configureUrlMapping(urlMapping);

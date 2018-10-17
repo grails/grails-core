@@ -209,7 +209,6 @@ class GrailsCli {
         if(mainCommandLine.hasOption(CommandLine.VERSION_ARGUMENT) || mainCommandLine.hasOption('v')) {
             def console = GrailsConsole.instance
             console.addStatus("Grails Version: ${GrailsCli.getPackage().implementationVersion}")
-            console.addStatus("Groovy Version: ${GroovySystem.version}")
             console.addStatus("JVM Version: ${System.getProperty('java.version')}")
             exit(0)
         }

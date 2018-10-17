@@ -18,6 +18,11 @@ mappings {
         controller = "content"
         action = "view"
     }
+    
+    group "/api", {
+        "/test"(resources: "test")
+        "/foobar/$id"(controller:"foobar")
+    }
 }
 '''
 
@@ -66,10 +71,12 @@ mappings {
         assertEquals "survey", info.controllerName
 
         info = holder.match("/tsandcs")
-
         assert info
-
         assertEquals "content", info.controllerName
         assertEquals "view", info.actionName
+
+        info = holder.match("/api/foobar/10")
+        assert info
+        assertEquals "10", info.id
     }
 }

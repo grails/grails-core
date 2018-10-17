@@ -150,7 +150,7 @@ public class DataBindingUtils {
         return bindObjectToInstance(object, source, getBindingIncludeList(object), Collections.emptyList(), null);
     }
 
-    private static List getBindingIncludeList(final Object object) {
+    protected static List getBindingIncludeList(final Object object) {
         List includeList = Collections.emptyList();
         try {
             final Class<? extends Object> objectClass = object.getClass();
