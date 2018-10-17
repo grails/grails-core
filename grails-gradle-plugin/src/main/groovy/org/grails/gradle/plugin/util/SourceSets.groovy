@@ -29,12 +29,14 @@ class SourceSets {
      */
     static SourceSet findSourceSet(Project project, String name) {
         SourceSetContainer sourceSets = findSourceSets(project)
-        return sourceSets?.find { SourceSet sourceSet -> sourceSet.name == name}
+        return sourceSets?.find { SourceSet sourceSet ->
+            sourceSet.name == name
+        }
     }
 
     static SourceSetContainer findSourceSets(Project project) {
         JavaPluginConvention plugin = project.getConvention().getPlugin(JavaPluginConvention)
-        def sourceSets = plugin?.sourceSets
+        SourceSetContainer sourceSets = plugin?.sourceSets
         return sourceSets
     }
 }

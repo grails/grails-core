@@ -24,8 +24,11 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.internal.tasks.DefaultTaskDependency
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -123,8 +126,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     }
 
     protected void configureAstSources(Project project) {
-        def mainSourceSet = SourceSets.findMainSourceSet(project)
-        def sourceSets = SourceSets.findSourceSets(project)
+        SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
+        SourceSetContainer sourceSets = SourceSets.findSourceSets(project)
         project.sourceSets {
             ast {
                 groovy {
@@ -141,7 +144,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
         def copyAstClasses = project.task(type: Copy, "copyAstClasses") {
             from sourceSets.ast.output
-            into mainSourceSet.output.classesDir
+            into "${project.buildDir}/classes/groovy/main"
         }
 
         def taskContainer = project.tasks
@@ -175,13 +178,9 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
 
     @CompileStatic
     protected void configurePluginJarTask(Project project) {
-        project.tasks.withType(BootArchive).each { BootArchive task ->
-            task.onlyIf {
-                task.mainClassName != null
-            }
-        }
-
         Jar jarTask = (Jar)project.tasks.findByName('jar')
+        // re-enable, since Boot disable this
+        project.getTasks().getByName(JavaPlugin.JAR_TASK_NAME).setEnabled(true)
         jarTask.exclude "application.yml"
         jarTask.exclude "application.groovy"
         jarTask.exclude "logback.groovy"
@@ -190,7 +189,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     protected void configurePluginResources(Project project) {
         project.afterEvaluate() {
             ProcessResources processResources = (ProcessResources) project.tasks.getByName('processResources')
-            GrailsExtension grailsExtension = project.extensions.findByType(GrailsExtension)
 
             def processResourcesDependencies = []
 

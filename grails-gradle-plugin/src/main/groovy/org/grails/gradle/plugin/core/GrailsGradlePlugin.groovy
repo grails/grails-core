@@ -637,20 +637,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
             ConfigurationContainer configurations = project.configurations
             Configuration runtime = configurations.getByName('runtime')
             Configuration console = configurations.getByName('console')
-
-/*            if( project.plugins.findPlugin(WarPlugin) ) {
-                def allTasks = project.tasks
-                allTasks.withType(BootWar) { BootWar t ->
-                    t.withJarTask = allTasks.findByName('war')
-                }
-            }
-            else {
-                def allTasks = project.tasks
-                allTasks.withType(BootJar) { BootJar t ->
-                    t.withJarTask = allTasks.findByName('jar')
-                }
-            }*/
-
             SourceSet mainSourceSet = SourceSets.findMainSourceSet(project)
             SourceSetOutput output = mainSourceSet?.output
             FileCollection mainFiles = resolveClassesDirs(output, project)
