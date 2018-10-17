@@ -1,8 +1,6 @@
 dependencies {
-    compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
-    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
+    compile 'javax.persistence:javax.persistence-api:2.2'
+    compile "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     compile("org.springframework.boot:spring-boot:$springBootVersion")
     compile("org.springframework:spring-core:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
@@ -20,12 +18,8 @@ dependencies {
     compileOnly("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compileOnly("org.springframework:springloaded:$springLoadedVersion")
     compileOnly("org.codehaus.groovy:groovy-templates:$groovyVersion")
 
-    runtime ( 'xalan:serializer:2.7.2' ) {
-        exclude group: 'xml-apis', module:'xml-apis'
-    }
 
     compile project(":grails-bootstrap"), {
         exclude group:"org.fusesource.jansi", module:"jansi"

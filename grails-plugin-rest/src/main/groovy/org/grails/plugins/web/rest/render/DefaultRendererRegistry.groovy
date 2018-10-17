@@ -53,6 +53,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         .initialCapacity(500)
         .maximumWeightedCapacity(1000)
         .build()
+
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
     @Autowired(required = false)

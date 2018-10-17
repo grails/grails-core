@@ -20,7 +20,7 @@ import org.grails.config.PropertySourcesConfig
 import org.grails.core.exceptions.GrailsConfigurationException
 import org.grails.core.lifecycle.ShutdownOperations
 import org.grails.datastore.mapping.model.MappingContext
-import org.grails.dev.support.GrailsSpringLoadedPlugin
+
 import org.grails.spring.DefaultRuntimeSpringConfiguration
 import org.grails.spring.RuntimeSpringConfigUtilities
 import org.springframework.beans.BeansException
@@ -210,10 +210,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
     void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         beanFactory.registerSingleton(GrailsApplication.APPLICATION_ID, grailsApplication)
         beanFactory.registerSingleton(GrailsPluginManager.BEAN_NAME, pluginManager)
-
-        if(reloadingEnabled) {
-            GrailsSpringLoadedPlugin.register(pluginManager)
-        }
     }
 
     @Override
@@ -270,14 +266,6 @@ class GrailsApplicationPostProcessor implements BeanDefinitionRegistryPostProces
                 }
                 ShutdownOperations.runOperations()
                 Holders.clear()
-                if (reloadingEnabled) {
-                    try {
-                        GrailsSpringLoadedPlugin.unregister()
-                    } catch (Throwable e) {
-                        // ignore
-                    }
-                }
-
                 GrailsApp.setDevelopmentModeActive(false)
             }
         }

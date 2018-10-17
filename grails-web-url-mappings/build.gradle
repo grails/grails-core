@@ -22,9 +22,6 @@ dependencies {
         exclude group: "javax.persistence", module:"persistence-api"
         exclude group: 'java-persistence', module:'persistence-api'
     }
-    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
 
     provided "org.fusesource.jansi:jansi:$jansiVersion"
     provided "jline:jline:$jlineVersion"

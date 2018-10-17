@@ -54,7 +54,7 @@ ext {
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "5.1.0.RELEASE"
     junitVersion = "4.12"
-    concurrentlinkedhashmapVersion = "1.4.2"
+    caffeineVersion = "2.6.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
     tomcatVersion = "8.5.29"
