@@ -105,7 +105,11 @@ trait RestResponder {
             if (statusValue instanceof Number) {
                 statusCode = statusValue.intValue()
             } else {
-                statusCode = statusValue.toString().toInteger()
+                if (statusValue instanceof HttpStatus) {
+                    statusCode = ((HttpStatus)statusValue).value()
+                } else {
+                    statusCode = statusValue.toString().toInteger()
+                }
             }
         }
         if (value == null) {
