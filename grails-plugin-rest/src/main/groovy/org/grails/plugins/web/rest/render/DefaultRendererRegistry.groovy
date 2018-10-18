@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.web.rest.render
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
@@ -49,9 +51,9 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, RendererCacheKey> implements RendererRegistry{
 
     private Map<ContainerRendererCacheKey, Renderer> containerRenderers = new ConcurrentHashMap<>()
-    private Map<ContainerRendererCacheKey, Renderer<?>> containerRendererCache = new ConcurrentLinkedHashMap.Builder<ContainerRendererCacheKey, Renderer<?>>()
+    private Cache<ContainerRendererCacheKey, Renderer<?>> containerRendererCache = Caffeine.newBuilder()
         .initialCapacity(500)
-        .maximumWeightedCapacity(1000)
+        .maximumSize(1000)
         .build()
 
     @Autowired(required = false)
