@@ -39,7 +39,7 @@ public class LazyMetaPropertyMap implements Map {
 
     private MetaClass metaClass;
     private Object instance;
-    private static List<String> EXCLUDES = Arrays.asList("properties", GormProperties.IDENTITY, GormProperties.VERSION, "domainClass", "dirty", GormProperties.ERRORS, "dirtyPropertyNames");
+    private static List<String> EXCLUDES = Arrays.asList("class", "constraints", "hasMany", "mapping", "properties", GormProperties.IDENTITY, GormProperties.VERSION, "domainClass", "dirty", GormProperties.ERRORS, "dirtyPropertyNames");
 
     /**
      * Constructs the map
