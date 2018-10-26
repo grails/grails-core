@@ -344,10 +344,6 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 if (mapping == null) {
                     lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;
                     mapping = mappingsLookup.get(lookupKeyModifiedParams);
-                    if (mapping == null) {
-                        lookupKeyModifiedParams.paramNames = new HashSet<>();
-                        mapping = mappingsLookup.get(lookupKeyModifiedParams);
-                    }
                 }
             }
         }
@@ -419,6 +415,17 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
                 }
             }
         }
+
+        if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
+            Set<String> lookupParams = new HashSet<String>();
+            UrlMappingKey lookupKey = new UrlMappingKey(controller, null, namespace, pluginName, httpMethod, version, lookupParams);
+            mapping = mappingsLookup.get(lookupKey);
+            if (mapping == null) {
+                lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
+                mapping = mappingsLookup.get(lookupKey);
+            }
+        }
+
         UrlCreator creator = null;
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
             if (useDefault) {
