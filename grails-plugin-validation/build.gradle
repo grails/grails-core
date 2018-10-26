@@ -1,5 +1,5 @@
 dependencies {
     compile project(":grails-core"),
-            project(':grails-web'),
+            project(':grails-web-common'),
             project(':grails-plugin-domain-class')
 }
