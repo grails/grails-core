@@ -50,7 +50,7 @@ public class GrailsFlashScope implements FlashScope {
     private final Boolean registerWithSession;
 
     public GrailsFlashScope() {
-        this(true)
+        this(true);
     }
 
     public GrailsFlashScope(boolean registerWithSession) {
