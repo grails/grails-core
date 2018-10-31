@@ -1,8 +1,18 @@
 package org.grails.web.servlet
 
+import org.grails.buffer.StreamCharBuffer
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.springframework.mock.web.MockHttpServletRequest
-import org.grails.buffer.StreamCharBuffer
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockHttpSession
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession
+
+import static org.grails.web.util.GrailsApplicationAttributes.FLASH_SCOPE
 
 class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
 
@@ -57,5 +67,30 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
         scb.writer.write('/mytemplate')
         def templateUri = grailsApplicationAttributes.getTemplateUri(scb, request)
         assertEquals 'wrong template uri', '/_mytemplate.gsp', templateUri
+    }
+
+    void testGrailsFlashScope() {
+        RequestContextHolder.setRequestAttributes new GrailsWebRequest(
+                (MockHttpServletRequest) request, new MockHttpServletResponse(), new MockServletContext())
+
+        // when
+        request.session = new MockHttpSession()
+
+        GrailsFlashScope flash = grailsApplicationAttributes.getFlashScope(request)
+        HttpSession session = ((HttpServletRequest) request).getSession(false)
+
+        // then
+        assertNotNull(session)
+        assertTrue(session.getAttribute(FLASH_SCOPE) instanceof GrailsFlashScope)
+        assertTrue(((GrailsFlashScope)session.getAttribute(FLASH_SCOPE)).isEmpty())
+
+        // when
+        flash.put('foo', 'bar')
+
+        // then
+        assertNull(((HttpServletRequest) request).getAttribute(FLASH_SCOPE))
+        assertEquals("bar", session.getAttribute(FLASH_SCOPE).get("foo"))
+
+
     }
 }
