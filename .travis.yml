@@ -36,7 +36,7 @@ before_install:
     fi
 install: "/bin/true"
 script:
-- JAVA_HOME=$(jdk_switcher home openjdk7) ./travis-build.sh
+- ./travis-build.sh
 deploy:
   provider: releases
   api_key:
