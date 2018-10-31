@@ -47,7 +47,7 @@ public class GrailsFlashScope implements FlashScope {
     public static final String ERRORS_PREFIX = "org.codehaus.groovy.grails.ERRORS_";
     private static final String ERRORS_PROPERTY = "errors";
 
-    private final Boolean registerWithSession;
+    private final boolean registerWithSession;
 
     public GrailsFlashScope() {
         this(true);
