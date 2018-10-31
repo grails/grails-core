@@ -165,10 +165,6 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                 return DefaultGroovyMethods.subMap(wrappedMap, (Collection)key);
             }
         }
-        if ("date.struct".equals(returnValue)) {
-            returnValue = lazyEvaluateDateParam(key);
-            nestedDateMap.put(key, returnValue);
-        }
         return returnValue;
     }
 
@@ -209,6 +205,12 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
      */
     @Override
     public Date getDate(String name) {
+        Object returnValue = wrappedMap.get(name);
+        if ("date.struct".equals(returnValue)) {
+            returnValue = lazyEvaluateDateParam(name);
+            nestedDateMap.put(name, returnValue);
+            return (Date)returnValue;
+        }
         Date date = super.getDate(name);
         if (date == null) {
             // try lookup format from messages.properties
