@@ -16,6 +16,7 @@
 package grails.plugins;
 
 import grails.util.Environment;
+import grails.util.GrailsClassUtils;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
@@ -377,24 +378,28 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     private void checkPluginCompatibility(GrailsPlugin plugin) {
-        final String appGrailsVersion = this.application.getMetadata().getGrailsVersion();
-        final Integer applicationGrailsVersion = this.convertVersionNumber(appGrailsVersion);
-        final GroovyObject pluginInstance = plugin.getInstance();
+        final Object fieldValue = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin.getInstance(), "grailsVersion");
+        String pluginGrailsVersion = null;
 
-        if (pluginInstance != null && this.pluginHasProperty(pluginInstance, "grailsVersion")) {
-            final String pluginGrailsVersion = pluginInstance.getProperty("grailsVersion").toString();
-            final String[] splitVersion = pluginGrailsVersion.split(" ");
-            final Integer pluginMinGrailsVersion = this.convertVersionNumber(splitVersion[0]);
+        if (fieldValue != null) {
+            pluginGrailsVersion = fieldValue.toString();
+        }
 
-            if (pluginGrailsVersion.contains("*")) {    // Case 1: No Max version - expect forward compatibility
+        if (pluginGrailsVersion != null) {
+            final String appGrailsVersion = this.application.getMetadata().getGrailsVersion();
+            final Integer applicationGrailsVersion = this.convertVersionNumber(appGrailsVersion);
+            final Integer pluginMinGrailsVersion = this.convertVersionNumber(GrailsVersionUtils.getLowerVersion(pluginGrailsVersion));
+            final String pluginMaxGrailsVersionStr = GrailsVersionUtils.getUpperVersion(pluginGrailsVersion);
+
+            if (pluginMaxGrailsVersionStr.equals("*")) {    // Case 1: No Max version - expect forward compatibility
                 if (pluginMinGrailsVersion > applicationGrailsVersion) {
                     LOG.warn("Plugin [" + plugin.getName() + ":" + plugin.getVersion() +
                             "] may not be compatible with this application as the application Grails version is less" +
                             " than the plugin requires. Plugin is compatible with Grails version " +
                             pluginGrailsVersion + " but app is " + appGrailsVersion);
                 }
-            } else if (splitVersion.length >= 3) {      // Case 2: Min and Max version - expect limited compatibility
-                final Integer pluginMaxGrailsVersion = this.convertVersionNumber(splitVersion[2]);
+            } else if (!pluginMaxGrailsVersionStr.equals("*")) {      // Case 2: Min and Max version - expect limited compatibility
+                final Integer pluginMaxGrailsVersion = this.convertVersionNumber(pluginMaxGrailsVersionStr);
 
                 if (pluginMinGrailsVersion > applicationGrailsVersion) {
                     LOG.warn("Plugin [" + plugin.getName() + ":" + plugin.getVersion() +
@@ -417,33 +422,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
 
     private Integer convertVersionNumber(String version) {
         return Integer.valueOf(version.replaceAll("\\.", ""));
-    }
-
-    private Boolean pluginHasProperty(Object obj, String propertyName){
-        final List<Field> properties = getAllProperties(obj);
-        Boolean hasProperty = Boolean.FALSE;
-
-        for(Field field : properties){
-            if(field.getName().equalsIgnoreCase(propertyName)) {
-                hasProperty = Boolean.TRUE;
-            }
-        }
-        return hasProperty;
-    }
-
-    private List<Field> getAllProperties(Object obj){
-        List<Field> fields = new ArrayList<>();
-        this.getAllPropertiesRecursive(fields, obj.getClass());
-        return fields;
-    }
-
-    private List<Field> getAllPropertiesRecursive(List<Field> fields, Class<?> type) {
-        Collections.addAll(fields, type.getDeclaredFields());
-
-        if (type.getSuperclass() != null) {
-            fields = getAllPropertiesRecursive(fields, type.getSuperclass());
-        }
-        return fields;
     }
 
     private GrailsPlugin createBinaryGrailsPlugin(Class<?> pluginClass, BinaryGrailsPluginDescriptor binaryDescriptor) {
