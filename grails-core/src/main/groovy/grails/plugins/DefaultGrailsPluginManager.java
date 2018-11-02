@@ -423,7 +423,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         try {
             versionNumber = Integer.valueOf(version.replaceAll("\\.|-|[A-Z]+", ""));
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         }
         return versionNumber;
     }
