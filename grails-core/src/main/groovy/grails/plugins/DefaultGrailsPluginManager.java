@@ -419,7 +419,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     private Integer convertVersionNumber(String version) {
-        return Integer.valueOf(version.replaceAll("\\.", ""));
+        return Integer.valueOf(version.replaceAll("\\.|-|[A-Z]+", ""));
     }
 
     private GrailsPlugin createBinaryGrailsPlugin(Class<?> pluginClass, BinaryGrailsPluginDescriptor binaryDescriptor) {
