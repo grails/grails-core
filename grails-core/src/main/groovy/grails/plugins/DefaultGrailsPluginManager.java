@@ -18,7 +18,6 @@ package grails.plugins;
 import grails.util.Environment;
 import grails.util.GrailsClassUtils;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
@@ -44,7 +43,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
