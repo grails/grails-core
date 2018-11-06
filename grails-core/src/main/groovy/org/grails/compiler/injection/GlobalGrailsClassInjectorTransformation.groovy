@@ -148,8 +148,8 @@ class GlobalGrailsClassInjectorTransformation implements ASTTransformation, Comp
     }
 
     static File resolveCompilationTargetDirectory(SourceUnit source) {
-        File targetDirectory = source.configuration.targetDirectory
-        if(targetDirectory==null && source.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
+        File targetDirectory = null
+        if(source.getClass().name == 'org.codehaus.jdt.groovy.control.EclipseSourceUnit') {
             targetDirectory = GroovyEclipseCompilationHelper.resolveEclipseCompilationTargetDirectory(source)
         }
         if(targetDirectory == null) {
