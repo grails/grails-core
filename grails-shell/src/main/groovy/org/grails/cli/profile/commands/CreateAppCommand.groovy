@@ -156,7 +156,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         destDir
     }
 
-    protected void appendFeatureFiles(File skeletonDir, Profile profile) {
+    protected void appendFeatureFiles(File skeletonDir, Profile profile, Feature feature) {
         def ymlFiles = findAllFilesByName(skeletonDir, APPLICATION_YML)
         def buildGradleFiles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
 
@@ -170,7 +170,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             }
 
         }
-        if (!profile.skeletonExcludes.contains(BUILD_GRADLE)) {
+        if (!profile.skeletonExcludes.contains(BUILD_GRADLE) || feature.profile == profile) {
             buildGradleFiles.each { File srcFile ->
                 File destFile = new File(getDestinationDirectory(srcFile), BUILD_GRADLE)
                 destFile.text = destFile.getText(ENCODING) + System.lineSeparator() + srcFile.getText(ENCODING)
@@ -283,7 +283,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
                 targetDirectory = targetDirs[f.profile]
 
-                appendFeatureFiles(skeletonDir, profileInstance)
+                appendFeatureFiles(skeletonDir, profileInstance, f)
 
                 if(skeletonDir.exists()) {
                     copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML], profileInstance.binaryExtensions)
