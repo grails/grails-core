@@ -156,7 +156,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         destDir
     }
 
-    protected void appendFeatureFiles(File skeletonDir) {
+    protected void appendFeatureFiles(File skeletonDir, Profile profile) {
         def ymlFiles = findAllFilesByName(skeletonDir, APPLICATION_YML)
         def buildGradleFiles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
 
@@ -170,9 +170,11 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
             }
 
         }
-        buildGradleFiles.each { File srcFile ->
-            File destFile = new File(getDestinationDirectory(srcFile), BUILD_GRADLE)
-            destFile.text = destFile.getText(ENCODING) + System.lineSeparator() + srcFile.getText(ENCODING)
+        if (!profile.skeletonExcludes.contains(BUILD_GRADLE)) {
+            buildGradleFiles.each { File srcFile ->
+                File destFile = new File(getDestinationDirectory(srcFile), BUILD_GRADLE)
+                destFile.text = destFile.getText(ENCODING) + System.lineSeparator() + srcFile.getText(ENCODING)
+            }
         }
     }
 
@@ -281,7 +283,7 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
 
                 targetDirectory = targetDirs[f.profile]
 
-                appendFeatureFiles(skeletonDir)
+                appendFeatureFiles(skeletonDir, profileInstance)
 
                 if(skeletonDir.exists()) {
                     copySrcToTarget(ant, skeletonDir, ['**/' + APPLICATION_YML], profileInstance.binaryExtensions)
@@ -594,27 +596,29 @@ class CreateAppCommand extends ArgumentCompletingCommand implements ProfileRepos
         }
         copySrcToTarget(ant, skeletonDir, excludes, profile.binaryExtensions)
 
-        Set<File> sourceBuildGradles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
+        if (!excludes.contains(BUILD_GRADLE)) {
+            Set<File> sourceBuildGradles = findAllFilesByName(skeletonDir, BUILD_GRADLE)
 
-        sourceBuildGradles.each { File srcFile ->
-            File srcDir = srcFile.parentFile
-            File destDir = getDestinationDirectory(srcFile)
-            File destFile = new File(destDir, BUILD_GRADLE)
+            sourceBuildGradles.each { File srcFile ->
+                File srcDir = srcFile.parentFile
+                File destDir = getDestinationDirectory(srcFile)
+                File destFile = new File(destDir, BUILD_GRADLE)
 
-            ant.copy(file:"${srcDir}/.gitignore", todir: destDir, failonerror:false)
+                ant.copy(file: "${srcDir}/.gitignore", todir: destDir, failonerror: false)
 
-            if (!destFile.exists()) {
-                ant.copy file:srcFile, tofile:destFile
-            } else if (buildMergeProfileNames.contains(participatingProfile.name)) {
-                def concatFile = "${destDir}/concat.gradle"
-                ant.move(file:destFile, tofile: concatFile)
-                ant.concat([destfile: destFile, fixlastline: true], {
-                    path {
-                        pathelement location: concatFile
-                        pathelement location: srcFile
-                    }
-                })
-                ant.delete(file: concatFile, failonerror: false)
+                if (!destFile.exists()) {
+                    ant.copy file: srcFile, tofile: destFile
+                } else if (buildMergeProfileNames.contains(participatingProfile.name)) {
+                    def concatFile = "${destDir}/concat.gradle"
+                    ant.move(file: destFile, tofile: concatFile)
+                    ant.concat([destfile: destFile, fixlastline: true], {
+                        path {
+                            pathelement location: concatFile
+                            pathelement location: srcFile
+                        }
+                    })
+                    ant.delete(file: concatFile, failonerror: false)
+                }
             }
         }
 
