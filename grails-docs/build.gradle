@@ -43,7 +43,7 @@ task docFilesJar(type: Jar, description: 'Package up files used for generating d
     doLast {
         copy {
             from docFilesJar.archivePath
-            into "${buildDir}/classes/main"
+            into "${buildDir}/classes/groovy/main"
         }
     }
 }

@@ -28,7 +28,7 @@ ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
 
     asyncVersion = '3.3.2'
-    gspVersion = '4.0.0.BUILD-SNAPSHOT'
+    gspVersion = '3.3.1'
     legacyConvertersVersion = "3.3.1"
     testingSupportVersion = "1.1.4"
     datastoreVersion = "6.1.10.BUILD-SNAPSHOT"
@@ -41,7 +41,7 @@ ext {
     commonsLangVersion = "2.6"
     gdocEngineVersion = "1.0.1"
 
-    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.3"
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: "2.5.4"
     jansiVersion = "1.14"
     jlineVersion = "2.14.2"
     jnaVersion = "4.2.2"

@@ -119,7 +119,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         for(MimeType mt in renderer.mimeTypes) {
             def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
 
-            containerRendererCache.remove(key)
+            containerRendererCache.invalidate(key)
             containerRenderers.put(key, renderer)
         }
     }
@@ -133,14 +133,14 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     def <C, T> Renderer<C> findContainerRenderer(MimeType mimeType, Class<C> containerType, T object) {
         if (object == null) return null
         if (proxyHandler != null) {
-            object = proxyHandler.unwrapIfProxy(object)
+            object = (T)proxyHandler.unwrapIfProxy(object)
         }
 
         def originalTargetClass = object instanceof Class ? (Class) object : object.getClass()
         originalTargetClass = getTargetClassForContainer(originalTargetClass, object)
         def originalKey = new ContainerRendererCacheKey(containerType, originalTargetClass, mimeType)
 
-        Renderer<C> renderer = (Renderer<C>)containerRendererCache.get(originalKey)
+        Renderer<C> renderer = (Renderer<C>)containerRendererCache.getIfPresent(originalKey)
 
         if (renderer == null) {
             def key = originalKey
