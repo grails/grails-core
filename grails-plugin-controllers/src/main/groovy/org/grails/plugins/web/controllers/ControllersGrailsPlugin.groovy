@@ -34,12 +34,13 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletRegistrationBean
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.boot.web.servlet.ServletRegistrationBean
+import org.springframework.boot.web.servlet.filter.OrderedFilter
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.filter.CharacterEncodingFilter
 import org.springframework.web.multipart.support.StandardServletMultipartResolver
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
@@ -97,19 +98,19 @@ class ControllersGrailsPlugin extends Plugin {
                 forceEncoding = filtersForceEncoding
             }
             urlPatterns = catchAllMapping
-            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 10
+            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 10
         }
 
         hiddenHttpMethodFilter(FilterRegistrationBean) {
             filter = bean(HiddenHttpMethodFilter)
             urlPatterns = catchAllMapping
-            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 20
+            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 20
         }
 
         grailsWebRequestFilter(FilterRegistrationBean) {
             filter = bean(GrailsWebRequestFilter)
             urlPatterns = catchAllMapping
-            order = FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
+            order = OrderedFilter.REQUEST_WRAPPER_FILTER_MAX_ORDER + 30
         }
 
 
@@ -212,7 +213,7 @@ class ControllersGrailsPlugin extends Plugin {
 
 
     @CompileStatic
-    static class GrailsWebMvcConfigurer extends WebMvcConfigurerAdapter {
+    static class GrailsWebMvcConfigurer implements WebMvcConfigurer {
 
         private static final String[] SERVLET_RESOURCE_LOCATIONS = [ "/" ]
 

@@ -1,11 +1,11 @@
-package org.grails.validation.discovery.impl
+package org.grails.web.plugins.support
 
 import grails.gorm.validation.ConstrainedEntity
 import grails.gorm.validation.ConstrainedProperty
 import grails.validation.Constrained
+import grails.validation.ConstrainedDelegate
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.validation.ConstrainedDelegate
 import org.grails.validation.discovery.ConstrainedDiscovery
 import org.springframework.validation.Validator
 

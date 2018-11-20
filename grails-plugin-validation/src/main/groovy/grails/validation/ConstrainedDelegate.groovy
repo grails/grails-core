@@ -1,12 +1,9 @@
-package org.grails.validation
+package grails.validation
 
 import grails.gorm.validation.ConstrainedProperty
 import grails.gorm.validation.Constraint
-import grails.util.GrailsUtil
-import grails.validation.Constrained
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import org.springframework.validation.Errors
 
 /**
@@ -21,8 +18,6 @@ import org.springframework.validation.Errors
 class ConstrainedDelegate implements Constrained, ConstrainedProperty {
     final ConstrainedProperty property
 
-    private grails.validation.ConstrainedProperty copy
-
     ConstrainedDelegate(ConstrainedProperty property) {
         this.property = property
     }
@@ -31,7 +26,7 @@ class ConstrainedDelegate implements Constrained, ConstrainedProperty {
      * @return Returns the appliedConstraints.
      */
     Collection<Constraint> getAppliedConstraints() {
-        return (Collection<Constraint>)property.appliedConstraints.collect() { new ConstraintDelegate(it) }
+        return property.appliedConstraints
     }
 
     @Override
@@ -179,24 +174,4 @@ class ConstrainedDelegate implements Constrained, ConstrainedProperty {
         return property.getOwner()
     }
 
-    Object asType(Class type) {
-        if(type == grails.validation.ConstrainedProperty) {
-            GrailsUtil.deprecated("A class used the deprecated [grails.validation.ConstrainedProperty] type. Please update to use [$ConstrainedProperty.name] instead")
-            if(copy == null) {
-                copy = new grails.validation.ConstrainedProperty(owner, propertyName, propertyType)
-                for(constraint in appliedConstraints) {
-                    copy.applyConstraint(constraint.name, constraint.parameter)
-                }
-                copy.widget = widget
-                copy.display = display
-                copy.editable = editable
-                copy.order = order
-                copy.format = format
-                copy.password = password
-            }
-
-            return copy
-        }
-        throw new GroovyCastException(this, type)
-    }
 }

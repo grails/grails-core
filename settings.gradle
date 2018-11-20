@@ -12,7 +12,6 @@ include (
         'grails-shell',
         'grails-spring',
         'grails-test',
-        'grails-validation',
         'grails-web',
         'grails-web-common',
         'grails-web-boot',

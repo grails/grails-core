@@ -4,7 +4,6 @@ import grails.util.ClosureToMapPopulator
 import grails.util.Holders
 import org.grails.core.support.GrailsApplicationDiscoveryStrategy
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
-import org.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.validation.FieldError
 import spock.lang.Issue

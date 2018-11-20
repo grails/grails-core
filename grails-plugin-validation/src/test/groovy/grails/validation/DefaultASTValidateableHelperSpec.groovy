@@ -2,7 +2,6 @@ package grails.validation
 
 import grails.util.Holders
 
-import org.grails.validation.DefaultConstraintEvaluator;
 import org.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.web.context.support.GenericWebApplicationContext
 import org.codehaus.groovy.ast.ClassNode

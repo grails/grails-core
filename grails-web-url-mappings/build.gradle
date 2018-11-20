@@ -1,8 +1,7 @@
 dependencies {
-    compile project(":grails-web-common"),
-            project(":grails-validation")
+    compile project(":grails-web-common")
 
-    compile("org.grails:grails-datastore-core:$datastoreVersion") {
+    compile("org.grails:grails-datastore-gorm-validation:$datastoreVersion") {
         exclude group: 'org.springframework', module:'spring-core'
         exclude group: 'org.springframework', module:'spring-context'
         exclude group: 'org.springframework', module:'spring-web'

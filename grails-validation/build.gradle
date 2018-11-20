@@ -1,6 +1,0 @@
-dependencies {
-    compile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
-    provided ("org.fusesource.jansi:jansi:$jansiVersion")
-    compile project(":grails-core")
-}
-

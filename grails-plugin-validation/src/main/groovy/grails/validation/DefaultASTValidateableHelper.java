@@ -17,6 +17,8 @@ package grails.validation;
 
 import static grails.compiler.ast.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
 import static grails.compiler.ast.GrailsArtefactClassInjector.ZERO_PARAMETERS;
+
+import grails.gorm.validation.ConstrainedProperty;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;

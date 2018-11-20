@@ -17,12 +17,12 @@ package org.grails.web.plugins.support
 
 import grails.util.Holders
 import grails.validation.Constrained
+import grails.validation.ConstrainedDelegate
 import grails.validation.ValidationErrors
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
-import org.grails.validation.ConstrainedDelegate
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.validation.FieldError

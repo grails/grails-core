@@ -1,6 +1,7 @@
 dependencies {
 
-    compile project(":grails-core"), project(":grails-spring"), project(":grails-validation")
+    compile project(":grails-core"), project(":grails-spring")
+    compile project(":grails-plugin-validation")
 
     provided "org.grails:grails-async:$asyncVersion"
 
@@ -55,4 +56,6 @@ dependencies {
         exclude group: "javax.persistence", module:"persistence-api"
         exclude group: 'java-persistence', module:'persistence-api'
     }
+
+
 }
