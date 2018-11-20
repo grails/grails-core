@@ -560,6 +560,20 @@ class SimpleDataBinderSpec extends Specification {
         obj.map.one == 1
         obj.map.two == 2
     }
+
+    @Issue('https://github.com/grails/grails-core/issues/11140')
+    void 'Test bind a Integer on a List<Long>'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+
+        when:
+        binder.bind widget, [listOfLongs: 4] as SimpleMapDataBindingSource
+
+        then:
+        widget.listOfLongs == [4L]
+        widget.listOfLongs.first().getClass() == Long
+    }
 }
 
 class Factory {
@@ -587,6 +601,7 @@ class Widget {
         result
     })
     List<Integer> listOfIntegers = []
+    List<Long> listOfLongs = []
     Set<Factory> factories
 }
 
