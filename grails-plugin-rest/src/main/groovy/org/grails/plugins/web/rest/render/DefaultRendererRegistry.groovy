@@ -39,8 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
-
 /**
  * Default implementation of the {@link RendererRegistry} interface
  *

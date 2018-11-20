@@ -15,6 +15,9 @@
  */
 package org.grails.web.mapping;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Weigher;
 import grails.core.GrailsControllerClass;
 import grails.gorm.validation.Constrained;
 import grails.gorm.validation.ConstrainedProperty;
@@ -51,8 +54,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.googlecode.concurrentlinkedhashmap.Weigher;
 
 /**
  * Default implementation of the UrlMappingsHolder interface that takes a list of mappings and
@@ -72,14 +73,15 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     public static final UrlMappingInfo[] EMPTY_RESULTS = new UrlMappingInfo[0];
 
     private int maxWeightedCacheCapacity = DEFAULT_MAX_WEIGHTED_CAPACITY;
-    private Map<String, UrlMappingInfo> cachedMatches;
-    private Map<UriToUrlMappingKey, List<UrlMappingInfo>> cachedListMatches;
+    private Cache<String, UrlMappingInfo> cachedMatches;
+    private Cache<UriToUrlMappingKey, List<UrlMappingInfo>> cachedListMatches;
 
 
-    private enum CustomListWeigher implements Weigher<List<UrlMappingInfo>> {
+    private enum CustomListWeigher implements Weigher<UriToUrlMappingKey, List<UrlMappingInfo>> {
         INSTANCE;
-        public int weightOf(List<UrlMappingInfo> values) {
-            return values.size() + 1;
+        @Override
+        public int weigh(UriToUrlMappingKey key, List<UrlMappingInfo> value) {
+            return value.size() + 1;
         }
     }
 
@@ -129,11 +131,11 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     public void initialize() {
         sortMappings();
 
-        cachedMatches = new ConcurrentLinkedHashMap.Builder<String, UrlMappingInfo>()
-            .maximumWeightedCapacity(maxWeightedCacheCapacity)
+        cachedMatches = Caffeine.newBuilder()
+            .maximumSize(maxWeightedCacheCapacity)
             .build();
-        cachedListMatches = new ConcurrentLinkedHashMap.Builder<UriToUrlMappingKey, List<UrlMappingInfo>>()
-            .maximumWeightedCapacity(maxWeightedCacheCapacity)
+        cachedListMatches = Caffeine.newBuilder()
+            .maximumWeight(maxWeightedCacheCapacity)
             .weigher(CustomListWeigher.INSTANCE)
             .build();
         if (urlCreatorMaxWeightedCacheCapacity > 0) {
@@ -493,9 +495,9 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
      * @see grails.web.mapping.UrlMappingsHolder#match(String)
      */
     public UrlMappingInfo match(String uri) {
-        UrlMappingInfo info = null;
-        if (cachedMatches.containsKey(uri)) {
-            return cachedMatches.get(uri);
+        UrlMappingInfo info = cachedMatches.getIfPresent(uri);
+        if (info != null) {
+            return info;
         }
 
         for (UrlMapping mapping : mappings) {
@@ -521,12 +523,10 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
         if (isExcluded(uri)) return EMPTY_RESULTS;
 
         boolean anyHttpMethod = httpMethod != null && httpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD);
-        List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
         UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, UrlMapping.ANY_VERSION);
-        if (cachedListMatches.containsKey(cacheKey)) {
-            matchingUrls = cachedListMatches.get(cacheKey);
-        }
-        else {
+        List<UrlMappingInfo> matchingUrls = cachedListMatches.getIfPresent(cacheKey);
+        if (matchingUrls == null) {
+            matchingUrls = new ArrayList<>();
             for (UrlMapping mapping : mappings) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Attempting to match URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "]");
@@ -545,7 +545,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
             }
             cachedListMatches.put(cacheKey, matchingUrls);
         }
-        return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
+        return matchingUrls.toArray(new UrlMappingInfo[0]);
     }
 
     private boolean isExcluded(String uri) {
@@ -562,13 +562,10 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     public UrlMappingInfo[] matchAll(String uri, String httpMethod, String version) {
         if (isExcluded(uri)) return EMPTY_RESULTS;
 
-        List<UrlMappingInfo> matchingUrls;
         UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, version);
-        if (cachedListMatches.containsKey(cacheKey)) {
-            matchingUrls = cachedListMatches.get(cacheKey);
-        }
-        else {
-            matchingUrls = new ArrayList<UrlMappingInfo>();
+        List<UrlMappingInfo> matchingUrls = cachedListMatches.getIfPresent(cacheKey);
+        if (matchingUrls == null) {
+            matchingUrls = new ArrayList<>();
             boolean anyHttpMethod = httpMethod != null && httpMethod.equals(UrlMapping.ANY_HTTP_METHOD);
             boolean anyVersion = version != null && version.equals(UrlMapping.ANY_VERSION);
             for (UrlMapping mapping : mappings) {
@@ -622,7 +619,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     @Override
     public Set<HttpMethod> allowedMethods(String uri) {
         UrlMappingInfo[] urlMappingInfos = matchAll(uri, UrlMapping.ANY_HTTP_METHOD);
-        Set<HttpMethod> methods = new HashSet<HttpMethod>();
+        Set<HttpMethod> methods = new HashSet<>();
 
         for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
             if (urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
@@ -721,7 +718,7 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
         String pluginName;
         String httpMethod;
         String version;
-        Set<String> paramNames = Collections.emptySet();
+        Set<String> paramNames;
 
         public UrlMappingKey(String controller, String action, String namespace, String pluginName, String httpMethod, String version,Set<String> paramNames) {
             this.controller = controller;

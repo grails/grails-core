@@ -11,11 +11,11 @@ import grails.web.UrlConverter
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import grails.web.pages.GroovyPagesUriService
+import org.grails.plugins.domain.support.DefaultMappingContextFactoryBean
 import org.grails.web.util.GrailsApplicationAttributes
 
 import org.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.databinding.converters.DateConversionHelper
-import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.grails.plugins.DefaultGrailsPlugin
 import org.grails.plugins.MockGrailsPluginManager
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
@@ -126,7 +126,9 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
-        ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(ga))
+        def mappingContextFactoryBean = new DefaultMappingContextFactoryBean(ga, ctx)
+        mappingContextFactoryBean.afterPropertiesSet()
+        ctx.registerMockBean("grailsDomainClassMappingContext", mappingContextFactoryBean.getObject())
         ga.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
 

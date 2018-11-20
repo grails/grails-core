@@ -31,8 +31,7 @@ ext {
     gspVersion = '3.3.1'
     legacyConvertersVersion = "3.3.1"
     testingSupportVersion = "1.1.4"
-    datastoreVersion = "6.1.10.BUILD-SNAPSHOT"
-    hibernate4Version = "6.1.8.RELEASE"
+    datastoreVersion = "7.0.0.BUILD-SNAPSHOT"
     antTraxVersion = "1.7.1"
     antVersion = "1.9.7"
     aspectjVersion = "1.8.7"  // use same version as org.springframework:spring-aspects uses
@@ -52,14 +51,14 @@ ext {
     springLoadedVersion = "1.2.8.RELEASE"
     directoryWatcherVersion = "0.5.1"
     springLoadedCommonOptions = "-Xverify:none -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
-    springVersion = "5.1.0.RELEASE"
+    springVersion = "5.1.2.RELEASE"
     junitVersion = "4.12"
     caffeineVersion = "2.6.2"
     cglibVersion = "2.2.2"
     objenesisVersion = "1.4"
-    tomcatVersion = "8.5.29"
+    tomcatVersion = "9.0.13"
     tomcatLog4jVersion = "8.5.2"
-    servletApiVersion = "4.0.0"
+    servletApiVersion = "4.0.1"
 
     
     dependencyVersions = [

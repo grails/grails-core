@@ -41,7 +41,6 @@ class DomainClassGrailsPlugin extends Plugin {
 
     Closure doWithSpring() {{->
         GrailsApplication application = grailsApplication
-        "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
         validateableConstraintsEvaluator(DefaultConstraintEvaluatorFactoryBean)
         grailsDomainClassMappingContext(DefaultMappingContextFactoryBean, application, applicationContext)
         gormValidatorRegistry(ValidatorRegistryFactoryBean)
