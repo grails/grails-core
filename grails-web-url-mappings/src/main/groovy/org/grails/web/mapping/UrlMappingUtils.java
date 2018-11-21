@@ -324,7 +324,7 @@ public class UrlMappingUtils {
             return includeForUrl(includeUrl, request, response, model);
         }
         finally {
-            if (webRequest!=null) {
+            if (webRequest!=null && webRequest.isActive()) {
                 webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
                 if (currentLayoutAttribute != null) {
                     webRequest.setAttribute(WebUtils.LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
@@ -376,6 +376,7 @@ public class UrlMappingUtils {
             final IncludeResponseWrapper responseWrapper = new IncludeResponseWrapper(response);
             try {
                 WrappedResponseHolder.setWrappedResponse(responseWrapper);
+                WebUtils.clearGrailsWebRequest();
                 dispatcher.include(request, responseWrapper);
                 if (responseWrapper.getRedirectURL()!=null) {
                     return new IncludedContent(responseWrapper.getRedirectURL());
@@ -383,8 +384,11 @@ public class UrlMappingUtils {
                 return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
             }
             finally {
-                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, previousControllerClass,WebRequest.SCOPE_REQUEST);
-                webRequest.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST,previousMatchedRequest, WebRequest.SCOPE_REQUEST);
+                WebUtils.storeGrailsWebRequest(webRequest);
+                if (webRequest.isActive()) {
+                    webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, previousControllerClass,WebRequest.SCOPE_REQUEST);
+                    webRequest.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST,previousMatchedRequest, WebRequest.SCOPE_REQUEST);
+                }
 
                 WrappedResponseHolder.setWrappedResponse(wrapped);
             }
