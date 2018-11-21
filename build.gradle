@@ -59,7 +59,7 @@ ext {
     tomcatVersion = "9.0.13"
     tomcatLog4jVersion = "8.5.2"
     servletApiVersion = "4.0.1"
-
+    scaffoldingCoreVersion = "2.0.0.BUILD-SNAPSHOT"
     
     dependencyVersions = [
         datastore: [
@@ -67,6 +67,12 @@ ext {
             group  : 'org.grails',
             names  : ['grails-datastore'],
             modules: ['core', 'simple', 'web', 'rest-client', 'gorm', 'gorm-validation', 'gorm-support', 'gorm-async', 'test-support', 'hibernate-core', 'gorm-test']
+        ],
+        'scaffolding-core': [
+                version: scaffoldingCoreVersion,
+                group  : 'org.grails',
+                names  : ['scaffolding'],
+                modules: ['core']
         ],
         groovy: [
             version: groovyVersion,
