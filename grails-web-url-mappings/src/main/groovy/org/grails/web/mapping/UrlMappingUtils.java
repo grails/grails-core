@@ -30,6 +30,7 @@ import org.grails.web.util.IncludeResponseWrapper;
 import org.grails.web.util.IncludedContent;
 import org.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -319,21 +320,26 @@ public class UrlMappingUtils {
             return includeForUrl(includeUrl, request, response, model);
         }
         finally {
-            if (webRequest!=null && webRequest.isActive()) {
-                webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
-                if (currentLayoutAttribute != null) {
-                    webRequest.setAttribute(WebUtils.LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
-                }
-                if (currentRenderingView != null) {
-                    webRequest.setAttribute(WebUtils.RENDERING_VIEW, currentRenderingView, 0);
-                }
-                webRequest.getParameterMap().clear();
-                webRequest.getParameterMap().putAll(currentParams);
-                webRequest.setId(currentId);
-                webRequest.setControllerName(currentController);
-                webRequest.setActionName(currentAction);
-                if (currentMv != null) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, currentMv, 0);
+            if (webRequest!=null) {
+                if (webRequest.isActive()) {
+
+                    webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
+                    if (currentLayoutAttribute != null) {
+                        webRequest.setAttribute(WebUtils.LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
+                    }
+                    if (currentRenderingView != null) {
+                        webRequest.setAttribute(WebUtils.RENDERING_VIEW, currentRenderingView, 0);
+                    }
+                    webRequest.getParameterMap().clear();
+                    webRequest.getParameterMap().putAll(currentParams);
+                    webRequest.setId(currentId);
+                    webRequest.setControllerName(currentController);
+                    webRequest.setActionName(currentAction);
+                    if (currentMv != null) {
+                        webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, currentMv, 0);
+                    }
+                } else {
+                    RequestContextHolder.setRequestAttributes(null);
                 }
             }
         }
