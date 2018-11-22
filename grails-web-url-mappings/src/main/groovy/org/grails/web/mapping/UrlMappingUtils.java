@@ -15,28 +15,20 @@
  */
 package org.grails.web.mapping;
 
-import grails.core.DefaultGrailsApplication;
-import grails.core.GrailsApplication;
 import grails.util.GrailsStringUtils;
-import grails.web.CamelCaseUrlConverter;
-import grails.web.UrlConverter;
 import grails.web.mapping.LinkGenerator;
 import grails.web.mapping.UrlMapping;
 import grails.web.mapping.UrlMappingInfo;
 import grails.web.mapping.UrlMappingsHolder;
 import groovy.lang.Binding;
-import groovy.lang.Closure;
 import org.grails.web.mapping.mvc.UrlMappingsHandlerMapping;
-import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.servlet.WrappedResponseHolder;
 import org.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.grails.web.util.GrailsApplicationAttributes;
 import org.grails.web.util.IncludeResponseWrapper;
 import org.grails.web.util.IncludedContent;
 import org.grails.web.util.WebUtils;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -52,7 +44,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility methods for working with UrlMappings
@@ -315,7 +310,7 @@ public class UrlMappingUtils {
             currentMv = (ModelAndView)webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
         }
         try {
-            if (webRequest!=null) {
+            if (webRequest != null) {
                 webRequest.getParameterMap().clear();
                 info.configure(webRequest);
                 webRequest.getParameterMap().putAll(info.getParameters());
@@ -365,14 +360,16 @@ public class UrlMappingUtils {
         Map toRestore = WebUtils.exposeRequestAttributesAndReturnOldValues(request, model);
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-
-        final Object previousControllerClass = webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-        final Object previousMatchedRequest = webRequest.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
+        final boolean hasPreviousWebRequest = webRequest != null;
+        final Object previousControllerClass = hasPreviousWebRequest ? webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST) : null;
+        final Object previousMatchedRequest = hasPreviousWebRequest ? webRequest.getAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST) : null;
 
         try {
-            webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-            webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
-            webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, WebRequest.SCOPE_REQUEST);
+            if (hasPreviousWebRequest) {
+                webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+                webRequest.removeAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST, WebRequest.SCOPE_REQUEST);
+                webRequest.removeAttribute("grailsWebRequestFilter" + OncePerRequestFilter.ALREADY_FILTERED_SUFFIX, WebRequest.SCOPE_REQUEST);
+            }
             final IncludeResponseWrapper responseWrapper = new IncludeResponseWrapper(response);
             try {
                 WrappedResponseHolder.setWrappedResponse(responseWrapper);
@@ -384,10 +381,12 @@ public class UrlMappingUtils {
                 return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
             }
             finally {
-                WebUtils.storeGrailsWebRequest(webRequest);
-                if (webRequest.isActive()) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, previousControllerClass,WebRequest.SCOPE_REQUEST);
-                    webRequest.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST,previousMatchedRequest, WebRequest.SCOPE_REQUEST);
+                if (hasPreviousWebRequest) {
+                    WebUtils.storeGrailsWebRequest(webRequest);
+                    if (webRequest.isActive()) {
+                        webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, previousControllerClass,WebRequest.SCOPE_REQUEST);
+                        webRequest.setAttribute(UrlMappingsHandlerMapping.MATCHED_REQUEST,previousMatchedRequest, WebRequest.SCOPE_REQUEST);
+                    }
                 }
 
                 WrappedResponseHolder.setWrappedResponse(wrapped);
