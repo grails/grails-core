@@ -410,8 +410,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             u = webRequest?.baseUrl
             if (!u && !Environment.isWarDeployed()) {
                 u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
-            } else {
-                return configuredServerBaseURL
             }
         }
         return u
