@@ -27,3 +27,12 @@ dependencies {
 
     testCompile project(":grails-test-suite-base")
 }
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+    afterSuite {
+        System.out.print(".")
+        System.out.flush()
+    }
+}
