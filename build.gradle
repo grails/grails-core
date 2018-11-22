@@ -13,6 +13,9 @@ buildscript {
         classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.8.0"
         classpath "gradle.plugin.io.sdkman:gradle-sdkvendor-plugin:1.0.0"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
+        classpath "javax.xml.bind:jaxb-api:$jaxbVersion"
+        classpath "com.sun.xml.bind:jaxb-impl:$jaxbVersion"
+
     }
 }
 
@@ -26,7 +29,6 @@ ext {
     // grailsVersion = '4.0.0'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-
     asyncVersion = '3.3.2'
     gspVersion = '3.3.1'
     legacyConvertersVersion = "3.3.1"
@@ -62,6 +64,12 @@ ext {
     scaffoldingCoreVersion = "2.0.0.BUILD-SNAPSHOT"
     
     dependencyVersions = [
+        'javax.annotation-api': [
+                version: javaxAnnotationApiVersion,
+                group:'javax.annotation',
+                name:'javax.annotation',
+                modules:['api']
+        ],
         datastore: [
             version: datastoreVersion,
             group  : 'org.grails',

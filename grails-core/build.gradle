@@ -1,5 +1,7 @@
 dependencies {
     compile 'javax.persistence:javax.persistence-api:2.2'
+    compile "javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion"
+
     compile "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     compile("org.springframework.boot:spring-boot:$springBootVersion")
     compile("org.springframework:spring-core:${springVersion}") {
