@@ -30,6 +30,7 @@ dependencies {
 tasks.withType(Test) {
     testLogging {
         exceptionFormat = 'full'
+        showStandardStreams = true
     }
     afterSuite {
         System.out.print(".")

@@ -11,6 +11,7 @@ import org.grails.web.mapping.DefaultUrlMappingsHolder
 
 //import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
+import org.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
 
@@ -22,6 +23,10 @@ import spock.lang.Specification
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
+    def setup() {
+        WebUtils.clearGrailsWebRequest()
+    }
+
     @Issue('https://github.com/grails/grails-core/issues/9849')
     void "Test conflicting UrlMappings related to a resource mappings"() {
         given:"A URL mappings definition with a single resource"
