@@ -450,15 +450,6 @@ subprojects { project ->
         }
     }
 
-    idea {
-        module.iml.whenMerged { module ->
-            // adding slf4j-simple with scope TEST to .iml
-            module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
-                [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
-            )
-        }
-    }
-
     dependencies {
         documentation("org.fusesource.jansi:jansi:$jansiVersion")
         documentation("jline:jline:$jlineVersion")
@@ -480,7 +471,7 @@ subprojects { project ->
 
             // Testing
             testCompile "junit:junit:${junitVersion}"
-
+            testCompile "org.slf4j:slf4j-simple:$slf4jVersion"
             testCompile("org.spockframework:spock-core:${spockVersion}") {
                 transitive = false
                 exclude group:'junit', module: 'junit-dep'

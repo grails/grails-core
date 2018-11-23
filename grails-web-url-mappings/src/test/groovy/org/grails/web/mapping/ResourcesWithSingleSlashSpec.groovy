@@ -2,6 +2,7 @@ package org.grails.web.mapping
 
 import grails.web.mapping.AbstractUrlMappingsSpec
 import grails.web.mapping.LinkGenerator
+import org.grails.web.util.WebUtils
 import spock.lang.Issue
 
 /**
