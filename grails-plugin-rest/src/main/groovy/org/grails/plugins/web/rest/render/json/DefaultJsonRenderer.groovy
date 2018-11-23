@@ -15,6 +15,13 @@
  */
 package org.grails.plugins.web.rest.render.json
 
+import com.fasterxml.jackson.annotation.JsonFilter
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
+import com.fasterxml.jackson.databind.ser.FilterProvider
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
 import grails.converters.JSON
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
@@ -47,6 +54,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     RendererRegistry rendererRegistry
 
+    private ObjectMapper objectMapper
+
     String namedConfiguration
     HttpStatus errorsHttpStatus = HttpStatus.UNPROCESSABLE_ENTITY
 
@@ -70,6 +79,14 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         this.rendererRegistry = rendererRegistry
     }
 
+    @Autowired(required = false)
+    void setObjectMapper(ObjectMapper objectMapper) {
+        objectMapper.addMixIn(
+                Object.class, PropertyFilterMixIn.class)
+
+        this.objectMapper = objectMapper
+    }
+
     @Override
     void render(T object, RenderContext context) {
         final mimeType = context.acceptMimeType ?: MimeType.JSON
@@ -88,31 +105,53 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
                 context.setStatus(errorsHttpStatus)
             }
-            renderJson(object, context)
-        }
-    }
+            ObjectMapper objectMapper = this.objectMapper
+            if (objectMapper == null) {
+                objectMapper = new ObjectMapper()
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                objectMapper.addMixIn(
+                        Object.class, PropertyFilterMixIn.class)
 
-    /**
-     * Subclasses should override to customize JSON response rendering
-     *
-     * @param object
-     * @param context
-     */
-    protected void renderJson(T object, RenderContext context) {
-        JSON converter
-        if (namedConfiguration) {
-            JSON.use(namedConfiguration) {
-                converter = object as JSON
             }
-        } else {
-            converter = object as JSON
+
+
+            renderJson(objectMapper, object, context, context.includes, context.excludes)
         }
-        renderJson(converter, context)
     }
 
-    protected void renderJson(JSON converter, RenderContext context) {
-        converter.setExcludes(context.excludes)
-        converter.setIncludes(context.includes)
-        converter.render(context.getWriter())
+    protected void renderJson(
+            ObjectMapper objectMapper,
+            T object,
+            RenderContext context,
+            List<String> includes,
+            List<String> excludes) {
+
+        ObjectWriter writer
+        if (excludes) {
+            FilterProvider filters = new SimpleFilterProvider()
+                    .addFilter("json-renderer-filter",
+                    SimpleBeanPropertyFilter.serializeAllExcept(
+                            excludes as Set))
+
+            writer = objectMapper.writer(filters)
+        } else if (includes) {
+
+            FilterProvider filters = new SimpleFilterProvider()
+                    .addFilter("json-renderer-filter",
+                    SimpleBeanPropertyFilter.filterOutAllExcept(
+                            includes as Set))
+
+            writer = objectMapper.writer(filters)
+        } else {
+            FilterProvider filters = new SimpleFilterProvider()
+                    .addFilter("json-renderer-filter",
+                    SimpleBeanPropertyFilter.serializeAll())
+
+            writer = objectMapper.writer(filters)
+        }
+        writer.writeValue(context.writer, object)
     }
+
+    @JsonFilter("json-renderer-filter")
+    static class PropertyFilterMixIn {}
 }

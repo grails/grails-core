@@ -15,23 +15,16 @@
  */
 package grails.rest.render.json
 
-import grails.converters.JSON
-import grails.rest.render.RenderContext
-import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-import org.grails.core.artefact.DomainClassArtefactHandler
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
 import grails.core.GrailsApplication
 import grails.core.support.proxy.DefaultProxyHandler
 import grails.core.support.proxy.ProxyHandler
-import org.grails.datastore.mapping.model.config.GormProperties
-import org.grails.web.converters.marshaller.ObjectMarshaller
-import org.grails.web.converters.marshaller.json.DeepDomainClassMarshaller
-import org.grails.web.converters.marshaller.json.GroovyBeanMarshaller
+import grails.rest.render.RenderContext
 import grails.web.mime.MimeType
+import groovy.transform.CompileStatic
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.springframework.beans.factory.annotation.Autowired
-
-import javax.annotation.PostConstruct
 
 /**
  *
@@ -66,63 +59,14 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
         super(targetType, mimeTypes)
     }
 
-    @PostConstruct
-    void registerCustomConverter() {
-
-        def domain = grailsApplication != null ? grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, targetType.name) : null
-
-        ObjectMarshaller<JSON> marshaller  = null
-
-        if (domain) {
-            DeepDomainClassMarshaller domainClassMarshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
-                @Override
-                protected boolean includesProperty(Object o, String property) {
-                    return includes == null || includes.contains(property)
-                }
-
-                @Override
-                protected boolean excludesProperty(Object o, String property) {
-                    return excludes.contains(property)
-                }
-            }
-            if(includes?.contains(GormProperties.VERSION)) {
-                domainClassMarshaller.includeVersion = true
-            }
-            if(includes?.contains('class')) {
-                domainClassMarshaller.includeClass = true
-            }
-
-            marshaller = domainClassMarshaller
-        } else if(!Collection.isAssignableFrom(targetType) && !Map.isAssignableFrom(targetType)) {
-            marshaller = (ObjectMarshaller<JSON>)new GroovyBeanMarshaller() {
-                @Override
-                protected boolean includesProperty(Object o, String property) {
-                    return includes == null || includes.contains(property)
-                }
-
-                @Override
-                protected boolean excludesProperty(Object o, String property) {
-                    return excludes.contains(property)
-                }
-            }
-        }
-        if(marshaller) {
-
-            registerCustomMarshaller(marshaller)
-        }
-    }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerCustomMarshaller(ObjectMarshaller marshaller) {
-        JSON.registerObjectMarshaller(targetType, { Object object, JSON json ->
-            marshaller.marshalObject(object, json)
-        })
-    }
-
     @Override
-    protected void renderJson(JSON converter, RenderContext context) {
-        converter.setExcludes(excludes ?: context.excludes)
-        converter.setIncludes(includes != null ? includes : context.includes)
-        converter.render(context.getWriter())
+    protected void renderJson(ObjectMapper objectMapper, T object, RenderContext context, List<String> includes, List<String> excludes) {
+        super.renderJson(
+                objectMapper,
+                object,
+                context,
+                this.includes != null ? this.includes : context.includes,
+                this.excludes ?: context.excludes
+        )
     }
 }

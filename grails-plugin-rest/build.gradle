@@ -3,7 +3,7 @@ dependencies {
     compile project(":grails-web"),
             project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
-
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
     compile "org.grails.plugins:converters:$legacyConvertersVersion"
 
     testCompile project(":grails-plugin-url-mappings"),

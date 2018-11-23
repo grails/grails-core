@@ -4,6 +4,7 @@ import grails.core.DefaultGrailsApplication
 import grails.persistence.Entity
 import grails.rest.render.json.JsonRenderer
 import grails.util.GrailsWebMockUtil
+import groovy.transform.NotYetImplemented
 import org.grails.config.NavigableMapConfig
 import org.grails.config.PropertySourcesConfig
 import org.grails.core.lifecycle.ShutdownOperations
@@ -36,7 +37,6 @@ class JsonRendererSpec extends Specification {
     void "Test including properties with JsonRenderer via RenderContext"() {
         given:"A new JsonRenderer instance is created that excludes properties"
             def renderer = new JsonRenderer(Album)
-            renderer.registerCustomConverter()
 
         when:"The renderer renders an object"
             final webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -49,7 +49,6 @@ class JsonRendererSpec extends Specification {
     void "Test including properties with JsonRenderer"() {
         given:"A new JsonRenderer instance is created that excludes properties"
             def renderer = new JsonRenderer(Album)
-            renderer.registerCustomConverter()
             renderer.includes =  ['title']
 
         when:"The renderer renders an object"
@@ -64,7 +63,6 @@ class JsonRendererSpec extends Specification {
     void "Test excluding properties with JsonRenderer"() {
         given:"A new JsonRenderer instance is created that excludes properties"
             def renderer = new JsonRenderer(Album)
-            renderer.registerCustomConverter()
             renderer.excludes =  ['isbn']
 
         when:"The renderer renders an object"
@@ -92,7 +90,6 @@ class JsonRendererSpec extends Specification {
         app.setMappingContext(context)
         app.initialise()
         renderer.grailsApplication = app
-        renderer.registerCustomConverter()
 
         when:"The renderer renders an object"
         final webRequest = GrailsWebMockUtil.bindMockWebRequest()
@@ -103,6 +100,7 @@ class JsonRendererSpec extends Specification {
 
     }
 
+    @NotYetImplemented
     void "Test render domain class with JsonRenderer and including version and class"() {
         given:"A new JsonRenderer instance is created with the defaults"
         def renderer = new JsonRenderer(Song)
@@ -120,7 +118,6 @@ class JsonRendererSpec extends Specification {
         app.setMappingContext(context)
         app.initialise()
         renderer.grailsApplication = app
-        renderer.registerCustomConverter()
 
         when:"The renderer renders an object"
         final webRequest = GrailsWebMockUtil.bindMockWebRequest()

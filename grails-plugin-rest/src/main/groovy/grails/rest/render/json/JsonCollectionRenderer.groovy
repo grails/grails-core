@@ -15,12 +15,10 @@
  */
 package grails.rest.render.json
 
-import grails.converters.JSON
-import grails.rest.render.ContainerRenderer
-import grails.rest.render.RenderContext
-import groovy.transform.CompileStatic
 
+import grails.rest.render.ContainerRenderer
 import grails.web.mime.MimeType
+import groovy.transform.CompileStatic
 
 /**
  * A JSON renderer for a collection of objects
@@ -39,12 +37,5 @@ class JsonCollectionRenderer extends JsonRenderer implements ContainerRenderer {
     public JsonCollectionRenderer(Class componentType, MimeType... mimeTypes) {
         super(Collection, mimeTypes)
         this.componentType = componentType
-    }
-    
-    @Override
-    protected void renderJson(JSON converter, RenderContext context) {
-        converter.setExcludes(componentType, excludes != null ? excludes : context.excludes)
-        converter.setIncludes(componentType, includes != null ? includes : context.includes)
-        converter.render(context.getWriter())
     }
 }
