@@ -20,6 +20,7 @@ import grails.config.Settings
 import grails.core.GrailsApplication
 import grails.web.http.HttpHeaders
 import grails.web.mime.MimeType
+import groovy.transform.CompileDynamic
 import org.grails.web.util.GrailsApplicationAttributes
 import groovy.transform.CompileStatic
 import org.grails.core.lifecycle.ShutdownOperations
@@ -235,6 +236,7 @@ class HttpServletResponseExtension {
         }
     }
 
+    @CompileDynamic
     private static MimeType[] getMimeTypesInternal(HttpServletRequest request) {
         MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
         if (!result) {

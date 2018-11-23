@@ -24,7 +24,7 @@ import grails.persistence.Entity
 import grails.testing.gorm.DataTest
 import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
-import org.apache.commons.lang.builder.CompareToBuilder
+import groovy.transform.Sortable
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -1405,13 +1405,14 @@ class Author {
 }
 
 @Entity
-class Widget implements Comparable {
+@Sortable(includes = ["isBindable", "isNotBindable"])
+class Widget  {
     String isBindable
     String isNotBindable
     @BindUsing({ obj, source ->
         def cnt = source['listOfIntegers'] as int
         def result = []
-        cnt.times { c -> 
+        cnt.times { c ->
             result << c 
         }
         result
@@ -1424,11 +1425,7 @@ class Widget implements Comparable {
         timeZone nullable: true
     }
 
-    int compareTo(Object rhs) {
-        new CompareToBuilder().append(isBindable, rhs.isBindable).append(isNotBindable, rhs.isNotBindable).toComparison()
-    }
 }
-
 @Entity
 class Fidget extends Widget {
     String name

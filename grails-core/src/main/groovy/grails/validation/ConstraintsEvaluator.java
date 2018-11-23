@@ -15,8 +15,6 @@
  */
 package grails.validation;
 
-import grails.core.GrailsDomainClass;
-import grails.core.GrailsDomainClassProperty;
 import groovy.lang.Closure;
 
 import java.util.Map;
@@ -69,29 +67,4 @@ public interface ConstraintsEvaluator {
      */
     Map<String, Constrained> evaluate(Class<?> cls, boolean defaultNullable, boolean useOnlyAdHocConstraints, Closure... adHocConstraintsClosures);
 
-    /**
-     * Evaluate constraints for the given class
-     *
-     * @param cls The class to evaluate constraints for
-     * @return A map of constrained properties
-     */
-    Map<String, Constrained> evaluate(GrailsDomainClass cls);
-
-    /**
-     * Evaluate constraints for the given object and properties
-     *
-     * @param object The object
-     * @param properties The domain class properties
-     * @return A map of constraints
-     */
-    Map<String, Constrained> evaluate(Object object, GrailsDomainClassProperty[] properties);
-
-    /**
-     * Evaluate constraints for the given Class and properties
-     *
-     * @param cls The object
-     * @param properties The domain class properties
-     * @return A map of constraints
-     */
-    Map<String, Constrained> evaluate(Class<?> cls, GrailsDomainClassProperty[] properties);
 }

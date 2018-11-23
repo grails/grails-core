@@ -139,7 +139,5 @@ class Album {
 
 @Entity
 class Song {
-    Long id
-    Long version
     String title
 }

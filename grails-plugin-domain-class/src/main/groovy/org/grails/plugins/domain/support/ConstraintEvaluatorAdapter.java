@@ -1,7 +1,5 @@
 package org.grails.plugins.domain.support;
 
-import grails.core.GrailsDomainClass;
-import grails.core.GrailsDomainClassProperty;
 import grails.gorm.validation.ConstrainedProperty;
 import grails.validation.Constrained;
 import grails.validation.ConstrainedDelegate;
@@ -40,22 +38,6 @@ public class ConstraintEvaluatorAdapter implements ConstraintsEvaluator {
     public Map<String, Constrained> evaluate(Class<?> cls, boolean defaultNullable, boolean useOnlyAdHocConstraints, Closure... adHocConstraintsClosures) {
         final Map<String, ConstrainedProperty> result = constraintsEvaluator.evaluate(cls, defaultNullable, useOnlyAdHocConstraints);
         return adapt(result);
-    }
-
-    @Override
-    public Map<String, Constrained> evaluate(GrailsDomainClass cls) {
-        final Map<String, ConstrainedProperty> result = constraintsEvaluator.evaluate(cls.getClazz());
-        return adapt(result);
-    }
-
-    @Override
-    public Map<String, Constrained> evaluate(Object object, GrailsDomainClassProperty[] properties) {
-        throw new UnsupportedOperationException("Method no longer supported");
-    }
-
-    @Override
-    public Map<String, Constrained> evaluate(Class<?> cls, GrailsDomainClassProperty[] properties) {
-        throw new UnsupportedOperationException("Method no longer supported");
     }
 
     private Map<String, Constrained> adapt(Map<String, ConstrainedProperty> result) {
