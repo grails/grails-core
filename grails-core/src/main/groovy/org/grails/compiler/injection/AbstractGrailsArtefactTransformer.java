@@ -220,15 +220,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected void addEnhancedAnnotation(ClassNode classNode) {
-        final AnnotationNode annotationNode = GrailsASTUtils.addEnhancedAnnotation(classNode);
-
-        AnnotationNode annotation = GrailsASTUtils.findAnnotation(classNode, Mixin.class);
-        if (annotation != null) {
-            Expression value = annotation.getMember("value");
-            if (value != null) {
-                annotationNode.setMember("mixins", value);
-            }
-        }
+        GrailsASTUtils.addEnhancedAnnotation(classNode);
     }
 
     protected boolean shouldSkipInjection(ClassNode classNode) {

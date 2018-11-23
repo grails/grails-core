@@ -19,11 +19,9 @@ import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.Plugin;
 import grails.spring.BeanBuilder;
-import grails.util.BuildScope;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
-import grails.util.Metadata;
 import groovy.lang.*;
 
 import java.io.File;
@@ -104,7 +102,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private Closure onShutdownListener;
     private Class<?>[] providedArtefacts = {};
     private Collection profiles = null;
-    private Map pluginScopes;
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
     private Collection<? extends TypeFilter> typeFilters = new ArrayList<TypeFilter>();
@@ -219,19 +216,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     private void evaluatePluginScopes() {
         // Damn I wish Java had closures
-        pluginScopes = evaluateIncludeExcludeProperty(SCOPES, new Closure(this) {
-            private static final long serialVersionUID = 1;
-            @Override
-            public Object call(Object arguments) {
-                final String scopeName = ((String) arguments).toUpperCase();
-                try {
-                    return BuildScope.valueOf(scopeName);
-                }
-                catch (IllegalArgumentException e) {
-                    throw new GrailsConfigurationException("Plugin " + this + " specifies invalid scope [" + scopeName + "]");
-                }
-            }
-        });
         pluginEnvs = evaluateIncludeExcludeProperty(ENVIRONMENTS, new Closure(this) {
             private static final long serialVersionUID = 1;
             @Override
@@ -583,10 +567,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return pluginGrailsClass.getLogicalPropertyName();
     }
 
-    public void addExclude(BuildScope buildScope) {
-        addExcludeRuleInternal(pluginScopes, buildScope);
-    }
-
     @SuppressWarnings("unchecked")
     private void addExcludeRuleInternal(Map map, Object o) {
         Collection excludes = (Collection) map.get(EXCLUDES);
@@ -603,18 +583,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         addExcludeRuleInternal(pluginEnvs, env);
     }
 
-    public boolean supportsScope(BuildScope buildScope) {
-        return supportsValueInIncludeExcludeMap(pluginScopes, buildScope);
-    }
-
     public boolean supportsEnvironment(Environment environment) {
         return supportsValueInIncludeExcludeMap(pluginEnvs, environment.getName());
     }
 
     public boolean supportsCurrentScopeAndEnvironment() {
-        BuildScope bs = BuildScope.getCurrent();
         Environment e = Environment.getCurrent();
-        return supportsEnvironment(e) && supportsScope(bs);
+        return supportsEnvironment(e);
     }
 
     private boolean supportsValueInIncludeExcludeMap(Map includeExcludeMap, Object value) {

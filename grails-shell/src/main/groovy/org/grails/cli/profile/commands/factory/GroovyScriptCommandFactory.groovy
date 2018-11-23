@@ -13,6 +13,8 @@ import org.grails.cli.profile.commands.script.GroovyScriptCommand
 import org.grails.cli.profile.commands.script.GroovyScriptCommandTransform
 import org.grails.io.support.Resource
 
+import java.nio.charset.StandardCharsets
+
 /*
  * Copyright 2014 original authors
  *
@@ -45,7 +47,7 @@ class GroovyScriptCommandFactory extends ResourceResolvingCommandFactory<GroovyS
     protected GroovyScriptCommand readCommandFile(Resource resource) {
         GroovyClassLoader classLoader = createGroovyScriptCommandClassLoader()
         try {
-            return (GroovyScriptCommand) classLoader.parseClass(resource.getInputStream(), resource.filename).newInstance()
+            return (GroovyScriptCommand) classLoader.parseClass(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8 ), resource.filename).newInstance()
         } catch (Throwable e) {
             GrailsConsole.getInstance().error("Failed to compile ${resource.filename}: " + e.getMessage(), e)
         }

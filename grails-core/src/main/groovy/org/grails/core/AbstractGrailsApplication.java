@@ -23,26 +23,22 @@ import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
-import org.grails.config.FlatConfig;
 import org.grails.config.PropertySourcesConfig;
-import org.grails.datastore.mapping.model.MappingContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.context.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.util.ClassUtils;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 public abstract class AbstractGrailsApplication extends GroovyObjectSupport implements GrailsApplication, ApplicationContextAware, BeanClassLoaderAware, SmartApplicationListener {
     protected ClassLoader classLoader;
     protected Config config;
     @SuppressWarnings("rawtypes")
-    protected Map flatConfig = Collections.emptyMap();
     protected ApplicationContext parentContext;
     protected Metadata applicationMeta = Metadata.getCurrent();
     protected boolean contextInitialized;
@@ -72,34 +68,15 @@ public abstract class AbstractGrailsApplication extends GroovyObjectSupport impl
     public void setConfig(Config config) {
         this.config = config;
         Holders.setConfig(config);
-        updateFlatConfig();
     }
 
     public void setConfig(ConfigObject config) {
         this.config = new PropertySourcesConfig().merge(config);
         Holders.setConfig(this.config);
-        updateFlatConfig();
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Deprecated
-    public void updateFlatConfig() {
-        if (config == null) {
-            flatConfig = new LinkedHashMap();
-        } else {
-            flatConfig = config;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public Map<String, Object> getFlatConfig() {
-        return new FlatConfig(getConfig());
     }
 
     @Override
     public void configChanged() {
-        updateFlatConfig();
         final ArtefactHandler[] handlers = getArtefactHandlers();
         if (handlers != null) {
             for (ArtefactHandler handler : handlers) {

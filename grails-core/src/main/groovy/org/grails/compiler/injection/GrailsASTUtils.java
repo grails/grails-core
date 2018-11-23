@@ -17,7 +17,6 @@ package org.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
 import grails.compiler.ast.GrailsArtefactClassInjector;
-import grails.core.GrailsDomainClassProperty;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
@@ -37,6 +36,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation;
 import org.codehaus.groovy.transform.trait.Traits;
+import org.grails.datastore.mapping.model.config.GormProperties;
 import org.grails.io.support.FileSystemResource;
 import org.grails.io.support.Resource;
 import org.springframework.util.StringUtils;
@@ -1101,9 +1101,9 @@ public class GrailsASTUtils {
 
     public static Map<String,ClassNode> getAllAssociationMap(ClassNode classNode) {
         Map<String, ClassNode> associationMap = new HashMap<String, ClassNode>();
-        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_MANY));
-        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_ONE));
-        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.BELONGS_TO));
+        associationMap.putAll( getAssocationMap(classNode, GormProperties.HAS_MANY));
+        associationMap.putAll( getAssocationMap(classNode, GormProperties.HAS_ONE));
+        associationMap.putAll( getAssocationMap(classNode, GormProperties.BELONGS_TO));
         return associationMap;
     }
 

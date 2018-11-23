@@ -507,7 +507,7 @@ class SomeClass {
         gcl.parseClass('''
 package demo
 
-@grails.transaction.Transactional
+@grails.gorm.transactions.Transactional
 class SomeService {
     @grails.compiler.GrailsCompileStatic
     def someMethod() {

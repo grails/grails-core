@@ -373,19 +373,6 @@ public class DefaultGrailsApplication extends AbstractGrailsApplication implemen
     }
 
     /**
-     * Refreshes constraints defined by the DomainClassArtefactHandler.
-     *
-     * TODO: Move this out of GrailsApplication
-     */
-    public void refreshConstraints() {
-        ArtefactInfo info = getArtefactInfo(DomainClassArtefactHandler.TYPE, true);
-        GrailsClass[] domainClasses = info.getGrailsClasses();
-        for (GrailsClass domainClass : domainClasses) {
-            ((GrailsDomainClass) domainClass).refreshConstraints();
-        }
-    }
-
-    /**
      * Refreshes this GrailsApplication, rebuilding all of the artefact definitions as
      * defined by the registered ArtefactHandler instances.
      */

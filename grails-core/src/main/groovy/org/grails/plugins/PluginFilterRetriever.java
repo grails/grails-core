@@ -38,7 +38,7 @@ public class PluginFilterRetriever {
     @SuppressWarnings("rawtypes")
     public PluginFilter getPluginFilter(Config config) {
 
-        Assert.notNull(config);
+        Assert.notNull(config, "Config should not be null");
         Object includes = config.getProperty(Settings.PLUGIN_INCLUDES, Object.class, null);
         Object excludes = config.getProperty(Settings.PLUGIN_EXCLUDES, Object.class, null);
 

@@ -33,7 +33,6 @@ import org.grails.core.artefact.ControllerArtefactHandler;
 import grails.core.GrailsApplication;
 import grails.util.GrailsStringUtils;
 import org.grails.core.artefact.ServiceArtefactHandler;
-import org.grails.core.artefact.TagLibArtefactHandler;
 import org.grails.core.io.support.GrailsFactoriesLoader;
 import org.grails.core.exceptions.GrailsException;
 import org.grails.exceptions.reporting.SourceCodeAware;
@@ -160,7 +159,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, className)) {
                             urlPrefix += "/controllers/";
                         }
-                        else if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, className)) {
+                        else if (application.isArtefactOfType("TagLib", className)) {
                             urlPrefix += "/taglib/";
                         }
                         else if (application.isArtefactOfType(ServiceArtefactHandler.TYPE, className)) {

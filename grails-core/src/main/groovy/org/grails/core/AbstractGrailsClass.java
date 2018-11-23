@@ -155,7 +155,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public Object getReferenceInstance() {
-        Object obj = BeanUtils.instantiate(clazz);
+        Object obj = BeanUtils.instantiateClass(clazz);
         if (obj instanceof GroovyObject) {
             ((GroovyObject)obj).setMetaClass(getMetaClass());
         }

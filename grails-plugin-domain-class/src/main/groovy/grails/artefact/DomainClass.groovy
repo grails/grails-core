@@ -15,11 +15,12 @@
  */
 package grails.artefact
 
-import grails.core.GrailsDomainClass
 import grails.util.Holders
 import grails.validation.Constrained
 import groovy.transform.CompileStatic
-import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.web.plugins.support.DefaultConstrainedDiscovery
 
 /**
  *
@@ -38,12 +39,11 @@ trait DomainClass {
      * @return The constrained properties for this domain class
      */
     static Map<String, Constrained> getConstrainedProperties() {
-        GrailsDomainClass domainClass = (GrailsDomainClass)Holders?.grailsApplication?.getArtefact(DomainClassArtefactHandler.TYPE, this.name)
-        def constrainedProperties = domainClass?.getConstrainedProperties()
-        if(constrainedProperties) {
-            return constrainedProperties
-        }
-        else {
+        MappingContext mappingContext = Holders?.grailsApplication?.mappingContext
+        PersistentEntity persistentEntity = mappingContext?.getPersistentEntity(this.name)
+        if (persistentEntity) {
+            return new DefaultConstrainedDiscovery().findConstrainedProperties(persistentEntity)
+        } else {
             return Collections.<String,Constrained>emptyMap()
         }
     }

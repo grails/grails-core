@@ -249,7 +249,6 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
                 config.merge(new ConfigSlurper().parse(String.valueOf(additionalConfig)))
             }
             application.setConfig(config)
-            println "$userAgent - $additionalConfig - ${application.flatConfig.get('grails.mime.disable.accept.header.userAgents')}"
             final webRequest = boundMimeTypeRequest()
             def request = webRequest.currentRequest
             def response = webRequest.currentResponse

@@ -22,7 +22,6 @@ import org.grails.config.NavigableMap;
 import grails.plugins.GrailsPlugin;
 import grails.plugins.GrailsPluginManager;
 import grails.plugins.GrailsVersionUtils;
-import grails.util.BuildScope;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
@@ -370,12 +369,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     @Override
     public void setPluginFilter(PluginFilter pluginFilter) {
         // no-op
-    }
-
-    @Deprecated
-    public boolean supportsCurrentBuildScope(String pluginName) {
-        GrailsPlugin plugin = getGrailsPlugin(pluginName);
-        return plugin == null || plugin.supportsScope(BuildScope.getCurrent());
     }
 
     public void setLoadCorePlugins(boolean shouldLoadCorePlugins) {

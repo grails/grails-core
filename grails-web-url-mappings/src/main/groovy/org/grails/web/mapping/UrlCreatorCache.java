@@ -205,7 +205,7 @@ public class UrlCreatorCache {
                         value = String.valueOf(entry.getValue());
                     }
                     else if (entry.getValue() instanceof Collection) {
-                        value = DefaultGroovyMethods.join((Collection) entry.getValue(), ",");
+                        value = DefaultGroovyMethods.join((Iterable) entry.getValue(), ",");
                     }
                     else if (entry.getValue() instanceof Object[]) {
                         value = DefaultGroovyMethods.join((Object[])entry.getValue(), ",");

@@ -70,44 +70,6 @@ public class DataBindingUtils {
      *
      * @param object The object
      * @param source The source map
-     * @param domainClass The DomainClass for the object
-     * @deprecated Use {@link #assignBidirectionalAssociations(Object, Map, PersistentEntity)} instead
-     */
-    @Deprecated
-    public static void assignBidirectionalAssociations(Object object, Map source, GrailsDomainClass domainClass) {
-        if (source == null) {
-            return;
-        }
-
-        for (Object key : source.keySet()) {
-            String propertyName = key.toString();
-            if (propertyName.indexOf('.') > -1) {
-                propertyName = propertyName.substring(0, propertyName.indexOf('.'));
-            }
-            if (domainClass.hasPersistentProperty(propertyName)) {
-                GrailsDomainClassProperty prop = domainClass.getPropertyByName(propertyName);
-                if (prop != null && prop.isOneToOne() && prop.isBidirectional()) {
-                    Object val = source.get(key);
-                    GrailsDomainClassProperty otherSide = prop.getOtherSide();
-                    if (val != null && otherSide != null) {
-                        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(val.getClass());
-                        try {
-                            mc.setProperty(val, otherSide.getName(), object);
-                        }
-                        catch (Exception e) {
-                            // ignore
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Associations both sides of any bidirectional relationships found in the object and source map to bind
-     *
-     * @param object The object
-     * @param source The source map
      * @param persistentEntity The PersistentEntity for the object
      */
     public static void assignBidirectionalAssociations(Object object, Map source, PersistentEntity persistentEntity) {

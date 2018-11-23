@@ -1,12 +1,12 @@
 package grails.test.mixin
 
+import grails.gorm.transactions.Transactional
 import grails.testing.gorm.DomainUnitTest
 import grails.testing.web.controllers.ControllerUnitTest
 
 import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.persistence.Entity
-import grails.transaction.Transactional
 import spock.lang.Specification
 
 /**
