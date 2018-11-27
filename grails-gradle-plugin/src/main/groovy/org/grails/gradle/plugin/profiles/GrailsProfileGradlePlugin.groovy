@@ -131,7 +131,7 @@ class GrailsProfileGradlePlugin extends BasePlugin {
             jar.setGroup(BUILD_GROUP)
 
             ArchivePublishArtifact jarArtifact = new ArchivePublishArtifact(jar)
-            project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()));
+            project.getComponents().add(new JavaLibrary(jarArtifact, profileConfiguration.getAllDependencies()))
 
             jar.doFirst {
                 DirectoryScanner.defaultExcludes.each { String file -> DirectoryScanner.removeDefaultExclude(file) }
