@@ -31,7 +31,7 @@ class SourceSets {
         SourceSetContainer sourceSets = findSourceSets(project)
         return sourceSets?.find { SourceSet sourceSet ->
             sourceSet.name == name
-        }
+        } as SourceSet
     }
 
     static SourceSetContainer findSourceSets(Project project) {
