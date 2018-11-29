@@ -1,6 +1,5 @@
 language: groovy
 dist: trusty
-sudo: false
 jdk:
 - openjdk8
 env:
