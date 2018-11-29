@@ -20,6 +20,7 @@ import grails.plugins.Plugin
 import grails.util.GrailsUtil
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
+import org.grails.databinding.converters.UUIDConverter
 import org.grails.web.databinding.bindingsource.DataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.DefaultDataBindingSourceRegistry
 import org.grails.web.databinding.bindingsource.HalJsonDataBindingSourceCreator
@@ -69,6 +70,7 @@ class DataBindingGrailsPlugin extends Plugin {
         }
 
         timeZoneConverter(TimeZoneConverter)
+        uuidConverter(UUIDConverter)
 
         defaultDateConverter(DateConversionHelper) {
             formatStrings = dateFormats
