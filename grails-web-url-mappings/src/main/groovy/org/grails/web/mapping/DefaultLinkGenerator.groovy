@@ -263,12 +263,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
                 boolean absolute = isAbsolute(attrs)
 
+                println "Link is absolute: " + absolute
+
                 if (!absolute) {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, namespace, pluginName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
+                        println "Calling handleAbsolute"
                         writer.append handleAbsolute(attrs)
                     }
                     else if(includeContext) {
@@ -382,11 +385,14 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
     private handleAbsolute(Map attrs) {
         def base = attrs.base
         if (base) {
+            println "returning base: " + base.toString()
             return base
         }
 
+        println "is absolute: " + isAbsolute(attrs)
         if (isAbsolute(attrs)) {
             def u = makeServerURL()
+            println "URL is: " + u
             if (u) {
                 return u
             }
