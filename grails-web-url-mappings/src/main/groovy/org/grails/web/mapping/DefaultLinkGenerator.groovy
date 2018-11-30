@@ -269,7 +269,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     println "context path attribute: " + contextPathAttribute
                     final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
-                    println "context path: " + cp
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
                         writer.append handleAbsolute(attrs)
