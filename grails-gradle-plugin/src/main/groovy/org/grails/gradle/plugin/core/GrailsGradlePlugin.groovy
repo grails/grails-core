@@ -439,7 +439,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         tasks.withType(JavaExec).each systemPropertyConfigurer.curry(grailsEnvSystemProperty ?: Environment.DEVELOPMENT.name)
     }
 
-
     @CompileStatic
     protected void configureConsoleTask(Project project) {
         TaskContainer tasks = project.tasks
@@ -524,7 +523,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                     task.dependsOn(native2asciiTask)
                 }
 
-
                 Map<String, String> replaceTokens = [
                         'info.app.name'         : project.name,
                         'info.app.version'      : project.version?.toString(),
@@ -534,7 +532,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 task.from(project.relativePath("src/main/templates")) {
                     into("META-INF/templates")
                 }
-
 
                 if (!native2ascii) {
                     task.from(sourceSet.resources) {
@@ -565,7 +562,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
                 }
             }
         }
-
     }
 
     protected Task createNative2AsciiTask(TaskContainer taskContainer, src, dest) {

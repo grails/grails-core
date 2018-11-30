@@ -41,7 +41,6 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
     boolean ideaIntegration = true
     String sourceFolderName = "src/integration-test"
 
-
     @Override
     @CompileStatic
     void apply(Project project) {
@@ -95,7 +94,6 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
 
     @CompileDynamic
     protected void setClassesDirs(Test integrationTestTask, SourceSet sourceSet) {
-
         try {
             // Gradle 4.x
             FileCollection classesDirs = sourceSet.output.classesDirs
@@ -105,7 +103,6 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
             // Gradle 3.x
             integrationTestTask.setTestClassesDir(sourceSet.output.classesDir)
         }
-
     }
 
     private void registerSourceDir(SourceSet integrationTest, File srcDir) {

@@ -61,6 +61,5 @@ class GrailsDocGradlePlugin implements Plugin<Project> {
             docsTask.dependsOn(groovydocTask)
             docsTask.dependsOn(javadocTask)
         }
-
     }
 }

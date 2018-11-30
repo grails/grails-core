@@ -74,7 +74,6 @@ class GroovyPagePlugin implements Plugin<Project> {
         }
     }
 
-
     protected FileCollection resolveClassesDirs(SourceSetOutput output, Project project) {
         FileCollection classesDirs
         try {

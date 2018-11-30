@@ -27,7 +27,6 @@ import org.grails.gradle.plugin.publishing.GrailsCentralPublishGradlePlugin
  */
 class GrailsProfilePublishGradlePlugin extends GrailsCentralPublishGradlePlugin {
 
-
     @Override
     protected String getDefaultGrailsCentralReleaseRepo() {
         "https://repo.grails.org/grails/libs-releases-local"

@@ -30,7 +30,6 @@ class GrailsWatchPlugin implements Plugin<Project> {
                                                .forProjectDirectory( project.projectDir )
                                                .connect()
 
-
             Thread.start {
                 sleep 6000
                 // initialise the build in a background thread so as to make it quicker to run the first time
@@ -46,8 +45,6 @@ class GrailsWatchPlugin implements Plugin<Project> {
                     System.out = previousOut
                 }
             }
-
-
 
             List<String> tasks = []
             for(WatchConfig wc in watchConfigs) {

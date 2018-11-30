@@ -205,7 +205,6 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
                 exclude "**/*.gsp"
             }
         }
-
     }
 
     protected void configureProjectNameAndVersionASTMetadata(Project project) {
