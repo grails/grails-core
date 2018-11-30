@@ -156,7 +156,6 @@ class GrailsGradlePlugin extends GroovyPlugin {
         }
     }
 
-
     @CompileStatic
     protected void applyDefaultPlugins(Project project) {
         def springBoot = project.extensions.findByType(SpringBootExtension)
@@ -667,7 +666,4 @@ class GrailsGradlePlugin extends GroovyPlugin {
             }
         }
     }
-
-
-
 }
