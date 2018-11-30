@@ -16,10 +16,8 @@
 
 package org.grails.gradle.plugin.model
 
-import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
-import org.gradle.api.artifacts.DependencyResolveDetails
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.artifacts.ResolvedArtifact
