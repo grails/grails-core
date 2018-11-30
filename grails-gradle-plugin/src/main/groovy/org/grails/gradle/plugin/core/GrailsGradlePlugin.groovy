@@ -178,7 +178,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
         String gormVersion
 
         if(hasGormVersion) {
-            gormVersion = project.properties['gormVersion']
+            gormVersion = project.properties['gormVersion'] as String
             isGorm61 = GrailsVersionUtils.supportsAtLeastVersion(gormVersion, "6.1.0")
         }
 
@@ -249,12 +249,12 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     protected Task createBuildPropertiesTask(Project project) {
 
-        def resourcesDir = SourceSets.findMainSourceSet(project).output.resourcesDir
-        def buildInfoFile = new File(resourcesDir, "META-INF/grails.build.info")
+        File resourcesDir = SourceSets.findMainSourceSet(project).output.resourcesDir
+        File buildInfoFile = new File(resourcesDir, "META-INF/grails.build.info")
 
 
-        def buildPropertiesTask = project.tasks.create("buildProperties")
-        def buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
+        Task buildPropertiesTask = project.tasks.create("buildProperties")
+        Map<String, Object> buildPropertiesContents = ['grails.env': Environment.isSystemSet() ? Environment.current.name : Environment.PRODUCTION.name,
                                         'info.app.name': project.name,
                                         'info.app.version':  project.version instanceof Serializable ? project.version : project.version.toString(),
                                         'info.app.grailsVersion': project.properties.get('grailsVersion')]
@@ -317,8 +317,8 @@ class GrailsGradlePlugin extends GroovyPlugin {
     protected void configureApplicationCommands(Project project) {
         def applicationContextCommands = FactoriesLoaderSupport.loadFactoryNames(APPLICATION_CONTEXT_COMMAND_CLASS)
         for (ctxCommand in applicationContextCommands) {
-            def taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
-            def commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
+            String taskName = GrailsNameUtils.getLogicalPropertyName(ctxCommand, "Command")
+            String commandName = GrailsNameUtils.getScriptName(GrailsNameUtils.getLogicalName(ctxCommand, "Command"))
             project.tasks.create(taskName, ApplicationContextCommandTask) {
                 classpath = project.sourceSets.main.runtimeClasspath + project.configurations.console
                 command = commandName
@@ -346,7 +346,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     @CompileStatic
     protected List<File> resolveGrailsResourceDirs(Project project) {
         List<File> grailsResourceDirs = [project.file("src/main/resources")]
-        for(f in grailsAppResourceDirs) {
+        for(String f in grailsAppResourceDirs) {
             grailsResourceDirs.add(project.file("grails-app/${f}"))
         }
         grailsResourceDirs
@@ -443,7 +443,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
 
     @CompileStatic
     protected void configureConsoleTask(Project project) {
-        def tasks = project.tasks
+        TaskContainer tasks = project.tasks
         def consoleConfiguration = project.configurations.create("console")
         def findMainClass = tasks.findByName('findMainClass')
         def consoleTask = createConsoleTask(project, tasks, consoleConfiguration)
@@ -513,20 +513,20 @@ class GrailsGradlePlugin extends GroovyPlugin {
         project.afterEvaluate {
             SourceSet sourceSet = SourceSets.findMainSourceSet(project)
 
-            def taskContainer = project.tasks
+            TaskContainer taskContainer = project.tasks
 
             taskContainer.getByName(sourceSet.processResourcesTaskName) { AbstractCopyTask task ->
 
-                def grailsExt = project.extensions.getByType(GrailsExtension)
-                def native2ascii = grailsExt.native2ascii
+                GrailsExtension grailsExt = project.extensions.getByType(GrailsExtension)
+                boolean native2ascii = grailsExt.native2ascii
                 if(native2ascii && grailsExt.native2asciiAnt && !taskContainer.findByName('native2ascii')) {
-                    def destinationDir = ((ProcessResources) task).destinationDir
+                    File destinationDir = ((ProcessResources) task).destinationDir
                     Task native2asciiTask = createNative2AsciiTask(taskContainer, project.file('grails-app/i18n'), destinationDir)
                     task.dependsOn(native2asciiTask)
                 }
 
 
-                def replaceTokens = [
+                Map<String, String> replaceTokens = [
                         'info.app.name'         : project.name,
                         'info.app.version'      : project.version?.toString(),
                         'info.app.grailsVersion': grailsVersion
@@ -570,7 +570,7 @@ class GrailsGradlePlugin extends GroovyPlugin {
     }
 
     protected Task createNative2AsciiTask(TaskContainer taskContainer, src, dest) {
-        def native2asciiTask = taskContainer.create('native2ascii')
+        Task native2asciiTask = taskContainer.create('native2ascii')
         native2asciiTask.doLast {
             ant.native2ascii(src: src, dest: dest,
                     includes: "**/*.properties", encoding: "UTF-8")
