@@ -19,10 +19,7 @@ import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.PublishArtifact
-import org.gradle.api.artifacts.UnknownConfigurationException
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.Copy
@@ -35,8 +32,6 @@ import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.grails.gradle.plugin.util.SourceSets
-import org.springframework.boot.gradle.tasks.bundling.BootArchive
-import org.springframework.boot.gradle.tasks.run.BootRun
 
 import javax.inject.Inject
 
