@@ -23,7 +23,7 @@ class AgentTasksEnhancer implements Action<Project> {
                 File agentJar = agentJars.iterator().next().file
                 for (Task task : project.getTasks()) {
                     if (task instanceof JavaExec) {
-                        addAgent(project, (JavaExec) task, agentJar);
+                        addAgent(project, (JavaExec) task, agentJar)
                     }
                 }
             }
