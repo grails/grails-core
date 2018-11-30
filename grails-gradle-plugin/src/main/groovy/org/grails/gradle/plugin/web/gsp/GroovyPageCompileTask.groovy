@@ -1,5 +1,6 @@
 package org.grails.gradle.plugin.web.gsp
 
+import org.gradle.api.Project
 import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -49,11 +50,11 @@ class GroovyPageCompileTask extends AbstractCompile {
     @Override
     protected void compile() {
 
-        def gradleProject = project
         def compileTask = this
+        Project gradleProject = project
         def antBuilder = gradleProject.services.get(IsolatedAntBuilder)
-        def packagename = packagename ?: project.name
-        def serverpath = serverpath ?: "/"
+        String packagename = packagename ?: project.name
+        String serverpath = serverpath ?: "/"
 
         antBuilder.withClasspath(classpath).execute {
             taskdef(name: 'gspc', classname: 'org.grails.web.pages.GroovyPageCompilerTask')

@@ -16,9 +16,11 @@
 package org.grails.gradle.plugin.core
 
 import grails.util.Environment
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.internal.tasks.DefaultTaskDependency
 import org.gradle.api.plugins.JavaPlugin
@@ -26,6 +28,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.compile.GroovyCompile
@@ -82,7 +85,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
     @CompileStatic
     protected void configureExplodedDirConfiguration(Project project) {
 
-        def allConfigurations = project.configurations
+        ConfigurationContainer allConfigurations = project.configurations
 
         def runtimeConfiguration = allConfigurations.findByName('runtime')
         def explodedConfig = allConfigurations.create('exploded')
@@ -90,7 +93,7 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
         if(Environment.isDevelopmentRun() && isExploded(project)) {
             runtimeConfiguration.artifacts.clear()
             // add the subproject classes as outputs
-            def allTasks = project.tasks
+            TaskContainer allTasks = project.tasks
 
             GroovyCompile groovyCompile = (GroovyCompile) allTasks.findByName('compileGroovy')
             ProcessResources processResources = (ProcessResources) allTasks.findByName("processResources")
@@ -148,8 +151,8 @@ class GrailsPluginGradlePlugin extends GrailsGradlePlugin {
             classpath += sourceSets.ast.output
         }
 
-        def javadocTask = taskContainer.findByName('javadoc')
-        def groovydocTask = taskContainer.findByName('groovydoc')
+        Task javadocTask = taskContainer.findByName('javadoc')
+        Task groovydocTask = taskContainer.findByName('groovydoc')
         if (javadocTask) {
             javadocTask.configure {
                 source += sourceSets.ast.allJava

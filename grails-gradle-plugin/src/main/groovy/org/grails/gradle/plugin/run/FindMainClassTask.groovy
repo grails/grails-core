@@ -29,7 +29,7 @@ class FindMainClassTask extends DefaultTask {
         Project project = this.project
         BootRun bootRun = (BootRun)project.tasks.findByName("bootRun")
         if ( bootRun != null ) {
-            def mainClass = findMainClass()
+            String mainClass = findMainClass()
             if(mainClass != null) {
                 bootRun.setMain(mainClass)
                 ExtraPropertiesExtension extraProperties = (ExtraPropertiesExtension) getProject()
@@ -42,9 +42,9 @@ class FindMainClassTask extends DefaultTask {
     protected String findMainClass() {
         Project project = this.project
 
-        def buildDir = project.buildDir
+        File buildDir = project.buildDir
         buildDir.mkdirs()
-        def mainClassFile = new File(buildDir, ".mainClass")
+        File mainClassFile = new File(buildDir, ".mainClass")
         if(mainClassFile.exists()) {
             return mainClassFile.text
         }

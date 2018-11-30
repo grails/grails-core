@@ -64,7 +64,7 @@ class PublishGuideTask extends AbstractCompile {
     protected void compile() {
         def urls = getClasspath().files.collect() { File f -> f.toURI().toURL() }
 
-        def classLoader = new URLClassLoader(urls as URL[], (ClassLoader) null)
+        URLClassLoader classLoader = new URLClassLoader(urls as URL[], (ClassLoader) null)
         def docPublisher = classLoader.loadClass("grails.doc.DocPublisher").newInstance(srcDir, destinationDir, project.logger)
         if(groovydocDir?.exists()) {
             project.copy {

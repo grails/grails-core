@@ -21,6 +21,7 @@ import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskContainer
@@ -97,7 +98,7 @@ class IntegrationTestGradlePlugin implements Plugin<Project> {
 
         try {
             // Gradle 4.x
-            def classesDirs = sourceSet.output.classesDirs
+            FileCollection classesDirs = sourceSet.output.classesDirs
             integrationTestTask.setTestClassesDirs(classesDirs)
         }
         catch(e) {
