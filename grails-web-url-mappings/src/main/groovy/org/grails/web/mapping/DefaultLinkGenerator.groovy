@@ -24,6 +24,7 @@ import grails.web.mapping.UrlMapping
 import grails.web.mapping.UrlMappingsHolder
 import groovy.util.logging.Slf4j
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.util.StringUtils
 
 import javax.annotation.PostConstruct
 import java.util.regex.Pattern
@@ -270,7 +271,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
                     println "context path: " + cp
-                    if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
+                    if (attrs.get(ATTRIBUTE_BASE) || StringUtils.isEmpty(cp)) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
                         println "Calling handleAbsolute"
                         writer.append handleAbsolute(attrs)
