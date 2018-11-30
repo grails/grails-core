@@ -35,7 +35,6 @@ import org.grails.gradle.plugin.util.SourceSets
 
 import javax.inject.Inject
 
-
 /**
  * A Gradle plugin for Grails plugins
  *
